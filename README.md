@@ -1,0 +1,54 @@
+# football-intelligence
+
+Spor zekası platformu — futbol teknik ekiplerine veriyle karar desteği veren sistem.
+Bugün: futbol verisi (API-Football) çek, doğrula, depola, sun.
+Yarın: tracking, tahmin, otomasyon. Sonra: diğer sporlar.
+
+## Mimari prensipler
+- **Gevşek bağlı katmanlar.** Bağımlılık tek yönlü: `api → ai → engine → domain`.
+  `engine/` saf hesap; API/DB/LLM bilmez.
+- **Veri kaynakları soyut.** Her kaynak `DataSource` arayüzüne uyan bir adapter.
+  Yeni kaynak = yeni adapter, çekirdek değişmez.
+- **Sporlar parametrik.** `"football"` stringi koda gömülmez; `sports/football.py`
+  sportif sabitleri tutar.
+- **Hiçbir veri doğrulanmadan DB'ye girmez.** `data/validation/` kapı bekçisi.
+- **Açıklanabilirlik baştan.** Her motor çıktısı `audit/` üzerinden gerekçesini taşır.
+- **İleriye hazır, ama bugün over-engineer yok.** Boş iskeletler yer tutar,
+  içleri ilgili faz gelince dolar.
+
+## Klasörler — bir bakışta
+| Klasör | Faz | Görev |
+|---|---|---|
+| `app/core/` | 1 | config, logging, ortak yardımcılar |
+| `app/core/usage/` | 1 | API çağrı / token sayacı, kota koruması |
+| `app/domain/` | 1 | spordan bağımsız temel modeller |
+| `app/db/` | 1 | SQLAlchemy modelleri + Alembic |
+| `app/data/sources/` | 1 | veri kaynağı adapter'ları (api_football) |
+| `app/data/cache/` | 1 | API yakmamak için cache |
+| `app/data/validation/` | 1 | DB'ye yazmadan önce kontrol |
+| `app/data/ingest/` | 1 | çek → doğrula → normalize → yaz |
+| `app/snapshot/` | 1 | zaman içinde durum kaydı (tahmin yakıtı) |
+| `app/api/` | 1 | FastAPI endpoint'leri |
+| `app/sports/` | 1 (football) | spor tanımları, parametrik sabitler |
+| `app/engine/form\|load\|rating\|opponent/` | 2 | saf analiz fonksiyonları |
+| `app/audit/` | 2 | "neden bunu önerdi" izi |
+| `app/ai/` | 3 | Claude yorum katmanı |
+| `app/scheduler/` | ileri | zamanlanmış sync |
+| `app/engine/tracking/` | 6 | tracking analizi |
+| `app/data/sources/tracking.py` | 6 | tracking adapter |
+| `app/engine/predict/` | ufuk 3 | ML tahmin |
+| `app/agents/` | ufuk 3 | otomasyon |
+| `app/sports/<diğer>` | ufuk 4 | basketbol/voleybol |
+
+## Kurulum (Faz 1 tamamlandıktan sonra)
+```bash
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env       # API_FOOTBALL_KEY, DATABASE_URL doldur
+alembic upgrade head
+python scripts/sync_league.py --league 203 --season 2024
+uvicorn app.api.main:app --reload
+```
+
+Detaylı yol haritası: [ROADMAP.md](ROADMAP.md).

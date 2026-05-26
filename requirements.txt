@@ -1,0 +1,13 @@
+# NOT: bu liste Faz 1 kodu yazılırken son haline getirilecek;
+# aşağıdakiler planlanan minimum set.
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+alembic
+psycopg[binary]
+httpx
+python-dateutil
+# test (geliştirme)
+pytest

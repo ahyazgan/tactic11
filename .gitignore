@@ -1,0 +1,35 @@
+# env
+.env
+.env.local
+.env.*.local
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# db
+*.db
+*.sqlite3
+
+# ide
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# logs
+*.log
+logs/
+
+# cache / fixtures (yerel kayıt)
+.cache/
