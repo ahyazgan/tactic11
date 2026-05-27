@@ -300,3 +300,91 @@ def test_predict_accuracy_includes_buckets(session, client):
     # 0.7 bucket'ı [0.7, 0.8)
     bucket_07 = next(b for b in body["value"]["home_outcome_buckets"] if b["bucket_lower"] == 0.7)
     assert bucket_07["sample_count"] == 1
+
+
+# ---- /admin/leagues-summary (PR F2) ---------------------------------------
+
+
+def test_leagues_summary_empty_db(client):
+    r = client.get("/admin/leagues-summary")
+    assert r.status_code == 200
+    assert r.json() == []
+
+
+def test_leagues_summary_aggregates_per_league(session, client):
+    now = datetime.now(UTC)
+    session.add_all([
+        models.League(
+            sport=football.SPORT_NAME, external_id=203, name="Süper Lig",
+            season=2024, country="Turkey",
+        ),
+        models.League(
+            sport=football.SPORT_NAME, external_id=39, name="Premier League",
+            season=2024, country="England",
+        ),
+        # Süper Lig: 2 maç FT, 1 NS
+        models.Match(
+            sport=football.SPORT_NAME, external_id=1, league_external_id=203, season=2024,
+            kickoff=now - timedelta(days=20), status="FT",
+            home_team_external_id=611, away_team_external_id=607, home_score=2, away_score=1,
+        ),
+        models.Match(
+            sport=football.SPORT_NAME, external_id=2, league_external_id=203, season=2024,
+            kickoff=now - timedelta(days=10), status="FT",
+            home_team_external_id=614, away_team_external_id=611, home_score=0, away_score=1,
+        ),
+        models.Match(
+            sport=football.SPORT_NAME, external_id=3, league_external_id=203, season=2024,
+            kickoff=now + timedelta(days=5), status="NS",
+            home_team_external_id=611, away_team_external_id=607, home_score=None, away_score=None,
+        ),
+        # PL: 1 maç FT
+        models.Match(
+            sport=football.SPORT_NAME, external_id=4, league_external_id=39, season=2024,
+            kickoff=now - timedelta(days=15), status="FT",
+            home_team_external_id=50, away_team_external_id=42, home_score=3, away_score=0,
+        ),
+    ])
+    session.flush()
+    r = client.get("/admin/leagues-summary")
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body) == 2
+    sl = next(x for x in body if x["league_external_id"] == 203)
+    pl = next(x for x in body if x["league_external_id"] == 39)
+    assert sl["name"] == "Süper Lig"
+    assert sl["team_count"] == 3  # 611, 607, 614
+    assert sl["match_count_total"] == 3
+    assert sl["match_count_ft"] == 2
+    assert sl["match_count_ns"] == 1
+    assert pl["name"] == "Premier League"
+    assert pl["team_count"] == 2
+    assert pl["match_count_total"] == 1
+    assert pl["match_count_ft"] == 1
+    assert pl["match_count_ns"] == 0
+
+
+def test_leagues_summary_includes_last_snapshot(session, client):
+    now = datetime.now(UTC)
+    session.add_all([
+        models.League(
+            sport=football.SPORT_NAME, external_id=203, name="Süper Lig",
+            season=2024, country="Turkey",
+        ),
+        models.Snapshot(
+            sport=football.SPORT_NAME, scope="league:203:season:2024",
+            created_at=now - timedelta(hours=1),
+            leagues_count=1, teams_count=10, matches_count=45,
+        ),
+        models.Snapshot(
+            sport=football.SPORT_NAME, scope="league:203:season:2024",
+            created_at=now,  # daha yeni
+            leagues_count=1, teams_count=10, matches_count=46,
+        ),
+    ])
+    session.flush()
+    r = client.get("/admin/leagues-summary")
+    body = r.json()
+    sl = body[0]
+    assert sl["last_snapshot_at"] is not None
+    assert sl["last_snapshot_id"] is not None
