@@ -50,6 +50,10 @@ class Settings(BaseSettings):
     # Geliştirme/test
     use_fixtures: bool = Field(default=False, alias="USE_FIXTURES")
     log_level: LogLevel = Field(default="INFO", alias="LOG_LEVEL")
+    log_format: Literal["text", "json"] = Field(default="text", alias="LOG_FORMAT")
+
+    # Production hardening
+    rate_limit_per_minute: int = Field(default=120, alias="RATE_LIMIT_PER_MINUTE")
 
 
 @lru_cache(maxsize=1)
