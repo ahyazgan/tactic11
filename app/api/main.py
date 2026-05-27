@@ -80,6 +80,13 @@ _TAGS_METADATA = [
         ),
     },
     {"name": "admin", "description": "Operasyonel görünürlük + observability."},
+    {
+        "name": "assistant",
+        "description": (
+            "Yardımcı manager — Claude tool_use ile DB'den gerçek veriyle "
+            "soruları cevaplar, karar destek sağlar."
+        ),
+    },
 ]
 
 app = FastAPI(
@@ -840,6 +847,219 @@ def match_preview(
             kickoff_iso=match.kickoff.isoformat(),
         )
     return payload
+
+
+# ---- assistant chat (Faz K1) -----------------------------------------------
+
+
+@protected.post(
+    "/assistant/chat",
+    tags=["assistant"],
+    summary="Yardımcı manager — soru sor, Claude tool'larla cevap verir",
+)
+def assistant_chat(
+    body: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """`{"message": str, "history"?: [...], "team_external_id"?: int}` →
+    asistan cevabı + tool trace.
+
+    `team_external_id` verilirse o takıma ait assistant_memory enjekte edilir.
+    Stateless conversation: history dilersen client-side tut. ANTHROPIC_API_KEY
+    yoksa stub cevabı (tool listesi). Quota `anthropic_assistant` source'unda.
+    """
+    from app.assistant import chat as assistant_chat_fn
+
+    message = body.get("message")
+    if not isinstance(message, str) or not message.strip():
+        raise HTTPException(status_code=422, detail="message gerekli (non-empty str)")
+    history = body.get("history") or []
+    if not isinstance(history, list):
+        raise HTTPException(status_code=422, detail="history list[dict] olmalı")
+    team_id = body.get("team_external_id")
+    if team_id is not None and not isinstance(team_id, int):
+        raise HTTPException(status_code=422, detail="team_external_id int olmalı")
+
+    result = assistant_chat_fn(
+        session, user_message=message, history=history,
+        team_external_id=team_id,
+    )
+    return {
+        "text": result.text,
+        "tool_traces": [
+            {"name": t.name, "input": t.input, "output_preview": t.output[:300]}
+            for t in result.tool_traces
+        ],
+        "iterations": result.iterations,
+        "total_tokens": result.total_tokens,
+        "stub": result.stub,
+    }
+
+
+# ---- assistant memory (Faz K3) ---------------------------------------------
+
+
+@protected.get(
+    "/assistant/memory/{subject_type}/{subject_id}",
+    tags=["assistant"],
+    summary="Saklı asistan hafızasını listele",
+)
+def list_assistant_memory(
+    subject_type: str, subject_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.assistant import memory_list
+
+    return {
+        "subject_type": subject_type,
+        "subject_id": subject_id,
+        "memory": memory_list(session, subject_type=subject_type, subject_id=subject_id),
+    }
+
+
+@protected.put(
+    "/assistant/memory/{subject_type}/{subject_id}/{key}",
+    tags=["assistant"],
+    summary="Asistan hafızasında bir anahtarı kaydet/güncelle",
+)
+def set_assistant_memory(
+    subject_type: str, subject_id: int, key: str,
+    body: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Body: `{"value": <any>}` — value JSON-serializable olmalı."""
+    from app.assistant import memory_set
+
+    if "value" not in body:
+        raise HTTPException(status_code=422, detail="value gerekli")
+    memory_set(
+        session, subject_type=subject_type, subject_id=subject_id,
+        key=key, value=body["value"],
+    )
+    session.commit()
+    return {"ok": True, "key": key}
+
+
+@protected.delete(
+    "/assistant/memory/{subject_type}/{subject_id}/{key}",
+    tags=["assistant"],
+    summary="Asistan hafızasından bir anahtarı sil",
+)
+def delete_assistant_memory(
+    subject_type: str, subject_id: int, key: str,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.assistant import memory_delete
+
+    deleted = memory_delete(
+        session, subject_type=subject_type, subject_id=subject_id, key=key,
+    )
+    session.commit()
+    return {"ok": True, "deleted": deleted}
+
+
+# ---- match simulator (Faz K4) ----------------------------------------------
+
+
+@protected.post(
+    "/matches/{match_id}/simulate",
+    tags=["match-analysis"],
+    summary="Karşı-olgu (counterfactual) tahmin: form override'larıyla simüle et",
+)
+def simulate_match(
+    match_id: int,
+    body: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """`{"home_form_override"?: {goals_for_per_match, goals_against_per_match},
+        "away_form_override"?: {...}, "rho"?: float}` → simüle predict.
+
+    Use case: "ev sahibi takım 1 yerine 2.5 gol attığı bir senaryoda olasılık
+    nasıl değişir?" → counterfactual karar destek.
+    """
+    from app.engine.form import FormReport
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+
+    # Baseline form'ları al
+    def _prior(tid: int):
+        return list(
+            session.execute(
+                select(models.Match).where(
+                    models.Match.sport == football.SPORT_NAME,
+                    models.Match.kickoff < match.kickoff,
+                    or_(
+                        models.Match.home_team_external_id == tid,
+                        models.Match.away_team_external_id == tid,
+                    ),
+                )
+            ).scalars()
+        )
+
+    home_baseline = compute_form(match.home_team_external_id, _prior(match.home_team_external_id), last_n=5).value
+    away_baseline = compute_form(match.away_team_external_id, _prior(match.away_team_external_id), last_n=5).value
+
+    def _apply_override(baseline: FormReport, override: dict[str, Any] | None) -> FormReport:
+        if not override:
+            return baseline
+        # dataclass.replace; sadece sayısal alanlar override edilebilir
+        from dataclasses import replace
+        kw: dict[str, Any] = {}
+        if "goals_for_per_match" in override:
+            kw["goals_for_per_match"] = float(override["goals_for_per_match"])
+        if "goals_against_per_match" in override:
+            kw["goals_against_per_match"] = float(override["goals_against_per_match"])
+        return replace(baseline, **kw) if kw else baseline
+
+    home_form = _apply_override(home_baseline, body.get("home_form_override"))
+    away_form = _apply_override(away_baseline, body.get("away_form_override"))
+    rho = float(body.get("rho", -0.12))
+
+    p = compute_predict(
+        home_form, away_form,
+        home_team_id=match.home_team_external_id,
+        away_team_id=match.away_team_external_id,
+        rho=rho,
+    ).value
+    return {
+        "match_id": match_id,
+        "rho_used": rho,
+        "baseline_form": {
+            "home": {
+                "goals_for_per_match": home_baseline.goals_for_per_match,
+                "goals_against_per_match": home_baseline.goals_against_per_match,
+            },
+            "away": {
+                "goals_for_per_match": away_baseline.goals_for_per_match,
+                "goals_against_per_match": away_baseline.goals_against_per_match,
+            },
+        },
+        "applied_form": {
+            "home": {
+                "goals_for_per_match": home_form.goals_for_per_match,
+                "goals_against_per_match": home_form.goals_against_per_match,
+            },
+            "away": {
+                "goals_for_per_match": away_form.goals_for_per_match,
+                "goals_against_per_match": away_form.goals_against_per_match,
+            },
+        },
+        "simulated_prediction": {
+            "expected_home_goals": p.expected_home_goals,
+            "expected_away_goals": p.expected_away_goals,
+            "prob_home_win": p.prob_home_win,
+            "prob_draw": p.prob_draw,
+            "prob_away_win": p.prob_away_win,
+            "most_likely_score": list(p.most_likely_score),
+        },
+    }
 
 
 protected.include_router(admin_router)

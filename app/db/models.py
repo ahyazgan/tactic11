@@ -296,6 +296,36 @@ class TrackingFrameRow(Base):
     minute: Mapped[float] = mapped_column(Float)
     ball_x: Mapped[float | None] = mapped_column(Float, nullable=True)
     ball_y: Mapped[float | None] = mapped_column(Float, nullable=True)
-    players_json: Mapped[str] = mapped_column(Text)  # tuple[PlayerPosition,...] serialized
+    players_json: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class AssistantMemory(Base):
+    """Manager asistanın takım/sezon-bazlı kalıcı hafızası.
+
+    Key-value: (subject_type, subject_id) altında namespaced key'ler.
+    Örnek subject_type: "team", "league"; key: "preferred_formation",
+    "playing_style", "last_decision_context", "user_notes".
+
+    Idempotent: aynı (subject_type, subject_id, key) → update.
+    """
+
+    __tablename__ = "assistant_memory"
+    __table_args__ = (
+        UniqueConstraint(
+            "subject_type", "subject_id", "key",
+            name="uq_assistant_memory_request",
+        ),
+        Index("ix_assistant_memory_subject", "subject_type", "subject_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    subject_type: Mapped[str] = mapped_column(String(16))  # "team" | "league"
+    subject_id: Mapped[int] = mapped_column(Integer)
+    key: Mapped[str] = mapped_column(String(64))
+    value_json: Mapped[str] = mapped_column(Text)  # serialize edilmiş any-type
+    created_at_: Mapped[datetime] = mapped_column(
+        "created_at", DateTime(timezone=True),
+    )
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
