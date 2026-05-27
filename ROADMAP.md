@@ -19,7 +19,7 @@ kodunu yazar. Boş iskeletler yer tutar; sırası gelince doldurulur.
 - [x] `app/data/validation/` — kural listesi + çalıştırıcı
 - [x] `app/data/ingest/` — çek + doğrula + normalize + yaz
 - [ ] `app/snapshot/` — her sync'te durum özeti, üzerine yazmadan
-- [ ] `app/api/main.py` — FastAPI app + `/health`, `/leagues`, `/teams/...`
+- [x] `app/api/main.py` — FastAPI app + `/health`, `/leagues`, `/teams/...`
 - [x] `app/sports/football.py` — futbol sabitleri
 - [x] `scripts/sync_league.py` — uçtan uca CLI
 - [x] `tests/fixtures/` — örnek JSON + fixture modu
