@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import or_, select, text
 from sqlalchemy.exc import SQLAlchemyError
@@ -61,6 +62,19 @@ if not get_settings().api_auth_key:
 APP_VERSION = "0.4.0"  # production hardening turunda bumped
 app = FastAPI(title="football-intelligence", version=APP_VERSION)
 register_exception_handlers(app)  # HTTPException → ErrorResponse şeması
+
+# CORS — settings'tan virgülle ayrılmış origin listesi. Boş ise middleware
+# kayıtlı olmaz (browser tarafından çağrılan client yok demektir).
+_cors_origins = get_settings().cors_origins_list()
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+        expose_headers=["X-Request-ID"],  # client log eşleştirsin
+    )
 
 # Rate limiter — settings'ten okur, tek instance.
 _rate_limiter = SlidingWindowRateLimiter(get_settings().rate_limit_per_minute)
