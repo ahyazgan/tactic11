@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.audit import AuditRecord, EngineResult
 from app.domain import PlayerAppearance
@@ -40,7 +40,7 @@ def compute_player_load(
     if window_days <= 0:
         raise ValueError("window_days > 0 olmalı")
 
-    cutoff = (now or datetime.now(timezone.utc)) - timedelta(days=window_days)
+    cutoff = (now or datetime.now(UTC)) - timedelta(days=window_days)
     window = [
         a
         for a in appearances

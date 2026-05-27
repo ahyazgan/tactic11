@@ -5,7 +5,7 @@ In-memory SQLite + override get_session ile gerçek DB gerektirmeden çalışır
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -65,7 +65,7 @@ def _seed_matches(session, base: datetime):
 
 
 def test_team_form_returns_engine_value_and_audit(session, client):
-    _seed_matches(session, datetime.now(timezone.utc))
+    _seed_matches(session, datetime.now(UTC))
     r = client.get("/teams/611/form?last_n=10")
     assert r.status_code == 200
     body = r.json()
@@ -77,7 +77,7 @@ def test_team_form_returns_engine_value_and_audit(session, client):
 
 
 def test_team_rating_endpoint(session, client):
-    _seed_matches(session, datetime.now(timezone.utc))
+    _seed_matches(session, datetime.now(UTC))
     r = client.get("/teams/611/rating?last_n=5")
     assert r.status_code == 200
     body = r.json()
@@ -86,7 +86,7 @@ def test_team_rating_endpoint(session, client):
 
 
 def test_head_to_head_endpoint(session, client):
-    _seed_matches(session, datetime.now(timezone.utc))
+    _seed_matches(session, datetime.now(UTC))
     r = client.get("/teams/611/vs/607")
     assert r.status_code == 200
     body = r.json()
@@ -102,7 +102,7 @@ def test_head_to_head_rejects_self_pair(session, client):
 
 
 def test_match_preview_excludes_match_itself_from_form(session, client):
-    _seed_matches(session, datetime.now(timezone.utc))
+    _seed_matches(session, datetime.now(UTC))
     r = client.get("/matches/99/preview")
     assert r.status_code == 200
     body = r.json()
@@ -120,7 +120,7 @@ def test_match_preview_404_for_unknown(session, client):
 
 
 def test_explain_flag_returns_stub_when_no_api_key(session, client):
-    _seed_matches(session, datetime.now(timezone.utc))
+    _seed_matches(session, datetime.now(UTC))
     r = client.get("/teams/611/form?explain=true")
     assert r.status_code == 200
     body = r.json()
@@ -130,7 +130,7 @@ def test_explain_flag_returns_stub_when_no_api_key(session, client):
 
 
 def test_match_preview_explain_returns_stub_when_no_api_key(session, client):
-    _seed_matches(session, datetime.now(timezone.utc))
+    _seed_matches(session, datetime.now(UTC))
     r = client.get("/matches/99/preview?explain=true")
     assert r.status_code == 200
     body = r.json()

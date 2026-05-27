@@ -6,7 +6,7 @@ Bu modüller Faz 6'da gerçek implementasyonla doldurulacak; o güne kadar
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -16,8 +16,10 @@ from app.engine.tracking import compute_formation, compute_pressure
 
 
 def test_player_position_validates_bounds():
+    from pydantic import ValidationError
+
     PlayerPosition(player_external_id=1, x=50.0, y=50.0)
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         PlayerPosition(player_external_id=1, x=150.0, y=0.0)  # x > 100
 
 
@@ -25,7 +27,7 @@ def test_tracking_frame_holds_player_positions():
     frame = TrackingFrame(
         sport="football",
         match_external_id=1,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
         period=1,
         minute=12.5,
         players=(

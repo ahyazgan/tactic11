@@ -11,7 +11,7 @@ from dataclasses import asdict, dataclass
 from typing import Literal
 
 from app.audit import AuditRecord, EngineResult
-from app.domain import Match
+from app.engine._protocols import MatchLike
 from app.sports import football
 
 ENGINE_NAME = "engine.form"
@@ -40,7 +40,7 @@ class FormReport:
     last_results: list[Outcome]
 
 
-def _outcome_for(team_id: int, match: Match) -> Outcome:
+def _outcome_for(team_id: int, match: MatchLike) -> Outcome:
     is_home = match.home_team_external_id == team_id
     gf = match.home_score if is_home else match.away_score
     ga = match.away_score if is_home else match.home_score
@@ -54,7 +54,7 @@ def _outcome_for(team_id: int, match: Match) -> Outcome:
 
 def compute_form(
     team_external_id: int,
-    matches: Iterable[Match],
+    matches: Iterable[MatchLike],
     *,
     last_n: int = 5,
 ) -> EngineResult[FormReport]:

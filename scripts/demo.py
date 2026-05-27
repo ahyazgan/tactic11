@@ -66,8 +66,9 @@ def _maybe_reset(reset: bool) -> None:
 
 def _alembic_check() -> None:
     """Migrasyonların güncel olduğunu doğrula; değilse upgrade et."""
-    from alembic import command
     from alembic.config import Config
+
+    from alembic import command
 
     cfg = Config(str(_PROJECT_ROOT / "alembic.ini"))
     cfg.set_main_option("script_location", str(_PROJECT_ROOT / "alembic"))
@@ -76,6 +77,7 @@ def _alembic_check() -> None:
 
 def _print_db_stats() -> None:
     from sqlalchemy import func, select
+
     from app.db import models
 
     _hr("DB durumu")
@@ -102,6 +104,7 @@ def _run_sync(league_id: int, season: int) -> None:
 
 def _show_team_analysis(team_id: int, *, com: ClaudeCommentator | None) -> None:
     from sqlalchemy import or_, select
+
     from app.db import models
 
     with SessionLocal() as s:
@@ -157,6 +160,7 @@ def _show_team_analysis(team_id: int, *, com: ClaudeCommentator | None) -> None:
 
 def _show_h2h(a: int, b: int, *, com: ClaudeCommentator | None) -> None:
     from sqlalchemy import or_, select
+
     from app.db import models
 
     with SessionLocal() as s:
@@ -191,6 +195,7 @@ def _show_h2h(a: int, b: int, *, com: ClaudeCommentator | None) -> None:
 
 def _show_preview(match_id: int, *, com: ClaudeCommentator | None) -> None:
     from sqlalchemy import or_, select
+
     from app.db import models
 
     with SessionLocal() as s:

@@ -9,7 +9,16 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Index, Integer, PrimaryKeyConstraint, String, Text, UniqueConstraint
+from sqlalchemy import (
+    Date,
+    DateTime,
+    Index,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base

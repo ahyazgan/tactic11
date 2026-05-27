@@ -7,7 +7,7 @@ tahmin kalibrasyonuna yakıt olur.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
@@ -69,7 +69,7 @@ def save_snapshot(
     snap = models.Snapshot(
         sport=sport,
         scope=build_scope(league_id, season),
-        created_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
         leagues_count=leagues_count,
         teams_count=teams_count,
         matches_count=matches_count,

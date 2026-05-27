@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from app.core.logging import get_logger
@@ -49,7 +49,7 @@ def run_job(
         row = models.JobRun(
             job_name=name,
             args=args_json,
-            started_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
             status="running",
             attempts=0,
         )
@@ -91,7 +91,7 @@ def _finalize_run(run_id: int, *, status: str, attempts: int, error: str | None)
         if row is None:
             raise RuntimeError(f"job_run {run_id} kayboldu")
         row.status = status
-        row.ended_at = datetime.now(timezone.utc)
+        row.ended_at = datetime.now(UTC)
         row.attempts = attempts
         row.error = error
         session.commit()

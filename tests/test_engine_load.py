@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.domain import PlayerAppearance
 from app.engine.load import compute_player_load
@@ -18,7 +18,7 @@ def _app(player_id, match_id, minutes, days_ago, *, now: datetime):
 
 
 def test_load_window_excludes_old_matches():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     apps = [
         _app(7, 1, 90, days_ago=1, now=now),
         _app(7, 2, 70, days_ago=5, now=now),
@@ -31,7 +31,7 @@ def test_load_window_excludes_old_matches():
 
 
 def test_load_filters_by_player_and_sport():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     apps = [
         _app(7, 1, 90, days_ago=1, now=now),
         _app(8, 2, 90, days_ago=1, now=now),  # başka oyuncu
@@ -48,7 +48,7 @@ def test_load_filters_by_player_and_sport():
 
 
 def test_high_load_flag_trips_above_threshold():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     apps = [
         _app(7, i, 90, days_ago=i, now=now) for i in range(1, 7)  # 6 maç, 14 gün
     ]

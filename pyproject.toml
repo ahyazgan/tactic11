@@ -1,0 +1,52 @@
+[project]
+name = "football-intelligence"
+version = "0.4.0"
+description = "Spor zekası platformu — futbol teknik ekiplerine veriyle karar desteği"
+requires-python = ">=3.11"
+
+# Runtime bağımlılıkları requirements.txt'te tutuluyor (alembic + cron + deploy
+# script'leriyle uyumlu olsun diye). Lint/test araçları aşağıdaki opsiyonel
+# grup'ta.
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "pytest",
+]
+
+# --- ruff (lint + format) ---------------------------------------------------
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+# E/W: pycodestyle, F: pyflakes, I: isort, B: bugbear, UP: pyupgrade, SIM: simplify
+select = ["E", "W", "F", "I", "B", "UP", "SIM"]
+# E501: satır uzunluğu zaten yukarıda; çok agresif değil
+# B008: FastAPI Depends() default değer pattern'i — kasıtlı
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# Testlerde private erişime ve uzun string'lere izin
+"tests/*" = ["E402"]
+# Demo script: argparse + heredoc pattern, daha esnek
+"scripts/*" = ["E402"]
+# Alembic env modülü: __init__'siz import path manipülasyonu
+"alembic/env.py" = ["E402"]
+
+# --- mypy (basit, gradual) --------------------------------------------------
+
+[tool.mypy]
+python_version = "3.11"
+exclude = ["alembic/versions", "venv", "tests/fixtures"]
+# Gradually strict — şimdilik kibar
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true  # test ergonomics > strict typing

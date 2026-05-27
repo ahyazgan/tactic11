@@ -13,7 +13,7 @@ from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 
 from app.audit import AuditRecord, EngineResult
-from app.domain import Match
+from app.engine._protocols import MatchLike
 from app.engine.form import compute_form
 
 ENGINE_NAME = "engine.rating"
@@ -33,7 +33,7 @@ class TeamRating:
 
 def compute_team_rating(
     team_external_id: int,
-    matches: Iterable[Match],
+    matches: Iterable[MatchLike],
     *,
     last_n: int = 10,
 ) -> EngineResult[TeamRating]:

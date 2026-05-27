@@ -11,7 +11,7 @@ from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 
 from app.audit import AuditRecord, EngineResult
-from app.domain import Match
+from app.engine._protocols import MatchLike
 from app.sports import football
 
 ENGINE_NAME = "engine.opponent"
@@ -33,7 +33,7 @@ class HeadToHead:
 def compute_head_to_head(
     team_a_id: int,
     team_b_id: int,
-    matches: Iterable[Match],
+    matches: Iterable[MatchLike],
 ) -> EngineResult[HeadToHead]:
     if team_a_id == team_b_id:
         raise ValueError("aynı takım için head-to-head olmaz")

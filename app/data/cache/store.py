@@ -8,7 +8,7 @@ ile oluşturulur; bu modül anahtar şemasına karışmaz.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import select
@@ -30,8 +30,8 @@ def cache_get(session: Session, *, source: str, key: str) -> dict[str, Any] | No
     if row is None:
         return None
     # SQLite tz bilgisini kaybeder; naive geldiyse UTC kabul et (yazılan an UTC idi).
-    expires = row.expires_at if row.expires_at.tzinfo else row.expires_at.replace(tzinfo=timezone.utc)
-    if expires <= datetime.now(timezone.utc):
+    expires = row.expires_at if row.expires_at.tzinfo else row.expires_at.replace(tzinfo=UTC)
+    if expires <= datetime.now(UTC):
         return None
     try:
         return json.loads(row.value)
@@ -50,7 +50,7 @@ def cache_set(
     value: dict[str, Any],
     ttl_seconds: int,
 ) -> None:
-    expires = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
+    expires = datetime.now(UTC) + timedelta(seconds=ttl_seconds)
     serialized = json.dumps(value)
     row = session.execute(
         select(models.CacheEntry).where(

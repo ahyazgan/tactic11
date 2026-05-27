@@ -11,7 +11,7 @@ Sözleşme:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -37,7 +37,7 @@ def record_call(
             source=source,
             endpoint=endpoint,
             tokens=tokens,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
     )
     session.flush()
@@ -88,7 +88,7 @@ def consume_quota(
 
 def guard_quota(session: Session, source: str) -> None:
     s = get_settings()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
     start_of_month = start_of_day.replace(day=1)
 

@@ -146,7 +146,7 @@ def build_match_preview_prompt(
     hh = h2h.audit.value
 
     h2h_line = (
-        f"Geçmiş karşılaşma yok."
+        "Geçmiş karşılaşma yok."
         if hh["matches_played"] == 0
         else (
             f"Geçmiş {hh['matches_played']} karşılaşma: "
