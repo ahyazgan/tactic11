@@ -210,6 +210,85 @@ def list_leagues(session: Session = Depends(get_session)) -> list[models.League]
     )
 
 
+_BATCH_INCLUDABLES: frozenset[str] = frozenset({"form", "rating", "schedule"})
+
+
+@protected.get("/teams/batch")
+def teams_batch_analysis(
+    ids: str = Query(
+        ...,
+        description="Virgülle ayrılmış team external_id listesi. Max 20.",
+    ),
+    include: str = Query(
+        "form,rating",
+        description="Hangi engine'leri çağır (virgülle ayrı): form, rating, schedule",
+    ),
+    last_n: int = Query(5, ge=1, le=50),
+    session: Session = Depends(get_session),
+) -> dict[str, dict[str, Any]]:
+    """Birden çok takım için form/rating/schedule tek istekte.
+
+    Browser/mobile client'lar N tane HTTP çağrısı yerine 1 batch yapabilir.
+    Response: `{team_id: {form?, rating?, schedule?, error?}}`.
+
+    Maks 20 id (DoS koruması). Bilinmeyen team_id → `{"error": "no_matches"}`
+    (404 yerine satır-içi hata, batch akışı bozulmasın).
+    """
+    try:
+        team_ids = [int(x.strip()) for x in ids.split(",") if x.strip()]
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "invalid_ids", "message": "ids tamsayı listesi olmalı"},
+        ) from None
+    if not team_ids:
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "empty_ids", "message": "ids boş olamaz"},
+        )
+    if len(team_ids) > 20:
+        raise HTTPException(
+            status_code=400,
+            detail={"code": "too_many_ids", "message": "en fazla 20 team_id"},
+        )
+
+    requested = {tok.strip() for tok in include.split(",") if tok.strip()}
+    unknown = requested - _BATCH_INCLUDABLES
+    if unknown:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "invalid_include",
+                "message": f"bilinmeyen engine adı: {sorted(unknown)}",
+                "details": {"allowed": sorted(_BATCH_INCLUDABLES)},
+            },
+        )
+
+    out: dict[str, dict[str, Any]] = {}
+    for tid in team_ids:
+        team_matches = _team_matches(session, tid)
+        if not team_matches:
+            out[str(tid)] = {"error": "no_matches"}
+            continue
+        entry: dict[str, Any] = {}
+        if "form" in requested:
+            entry["form"] = engine_result_to_dict(
+                compute_form(tid, team_matches, last_n=last_n)
+            )
+        if "rating" in requested:
+            entry["rating"] = engine_result_to_dict(
+                compute_team_rating(tid, team_matches, last_n=last_n)
+            )
+        if "schedule" in requested:
+            ref_tz = team_matches[0].kickoff.tzinfo
+            now = datetime.now(ref_tz)
+            entry["schedule"] = engine_result_to_dict(
+                compute_schedule(tid, team_matches, now=now, horizon_days=30)
+            )
+        out[str(tid)] = entry
+    return out
+
+
 @protected.get("/teams/{league_id}", response_model=list[TeamOut])
 def teams_in_league(
     league_id: int, session: Session = Depends(get_session)
