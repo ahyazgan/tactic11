@@ -20,8 +20,12 @@ from sqlalchemy.orm import Session
 
 from app.ai import ClaudeCommentator
 from app.api.admin import router as admin_router
-from app.api.auth import require_api_key
+from app.api.auth import (
+    require_api_key,
+    router as auth_router,
+)
 from app.api.errors import register_exception_handlers
+from app.db.tenant_filter import install_tenant_filter
 from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
@@ -49,6 +53,9 @@ from app.sports import football
 
 setup_logging()
 
+# Multi-tenant filter — global SQLAlchemy event listener
+install_tenant_filter()
+
 # Prod modunda zorunlu secret'lar varsa fail-fast (ConfigError → boot durur).
 # Dev/staging modlarda kontrol pas geçer; aşağıdaki yumuşak uyarı devam eder.
 get_settings().validate_for_production()
@@ -64,6 +71,13 @@ APP_VERSION = "0.4.0"  # production hardening turunda bumped
 # OpenAPI tag metadata — Swagger UI'de endpoint'leri gruplar.
 _TAGS_METADATA = [
     {"name": "ops", "description": "Sağlık kontrolü, liveness/readiness."},
+    {
+        "name": "auth",
+        "description": (
+            "Multi-tenant JWT auth — login, refresh, logout, me. "
+            "Eski X-API-Key backward-compat olarak desteklenir."
+        ),
+    },
     {"name": "catalog", "description": "Lig + takım + maç kataloğu (read-only)."},
     {
         "name": "team-analysis",
@@ -1186,6 +1200,10 @@ def simulate_match(
         },
     }
 
+
+# Auth endpoint'leri PROTECTED router'a değil app'e — login/refresh
+# bearer header gerektirmez (login'in kendisi token üretir).
+app.include_router(auth_router)
 
 protected.include_router(admin_router)
 app.include_router(protected)
