@@ -149,6 +149,61 @@ def save_model(
     log.info("xg model saved: %s + %s", output, meta_path)
 
 
+def _load_statsbomb_shots(
+    *, competitions: list[tuple[int, int]] | None = None,
+    max_matches: int | None = None,
+) -> pd.DataFrame:
+    """StatsBomb Open Data'dan shot event'lerini çek + DataFrame.
+
+    `competitions`: (competition_id, season_id) tuple listesi. Default: La Liga
+    (11, 90) + FIFA WC 2022 (43, 106) — popüler ve açık.
+
+    Penalty şutları DAHIL EDILMEZ (sabit 0.76 zaten).
+    """
+    from app.data.sources.statsbomb_open import StatsBombOpen
+
+    if competitions is None:
+        # Default: küçük + popüler — La Liga 2020-21 + WC 2022
+        competitions = [(11, 90), (43, 106)]
+
+    adapter = StatsBombOpen()
+    all_rows: list[dict] = []
+    for comp_id, season_id in competitions:
+        try:
+            matches = adapter.get_matches(
+                competition_id=comp_id, season_id=season_id,
+            )
+        except RuntimeError as e:
+            log.warning("statsbomb skip %d/%d: %s", comp_id, season_id, e)
+            continue
+        if max_matches:
+            matches = matches[:max_matches]
+        for m in matches:
+            mid = m.get("match_id")
+            if mid is None:
+                continue
+            try:
+                shots = adapter.get_shots_for_match(int(mid))
+            except RuntimeError as e:
+                log.warning("statsbomb skip match %s: %s", mid, e)
+                continue
+            for s in shots:
+                if s.pattern == "penalty":
+                    continue  # penalty xG=0.76 sabit
+                all_rows.append({
+                    "x": s.x, "y": s.y,
+                    "body_part": s.body_part,
+                    "pattern": s.pattern,
+                    "is_goal": s.is_goal,
+                })
+    if not all_rows:
+        raise RuntimeError(
+            "StatsBomb data toplanamadı — ağ erişimi var mı? "
+            "Synthetic fallback için --source synthetic kullan."
+        )
+    return pd.DataFrame(all_rows)
+
+
 def train_and_save(
     df: pd.DataFrame, output: Path,
     *, test_size: float = 0.2, random_state: int = 42,
@@ -178,11 +233,7 @@ def main() -> int:
     if args.source == "synthetic":
         df = generate_synthetic_shots(n=args.n, seed=args.seed)
     else:
-        # TODO: StatsBomb Open adapter — competitions=[43, 11] vs.
-        raise NotImplementedError(
-            "statsbomb_open kaynağı henüz implement edilmedi. "
-            "app/data/sources/statsbomb_open.py oluştur ve burada wire et."
-        )
+        df = _load_statsbomb_shots()
     metrics = train_and_save(
         df, args.output, version=args.version,
     )
