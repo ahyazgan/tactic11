@@ -154,3 +154,31 @@ def test_predict_endpoint_explain_also_saves(session, client):
     assert r.status_code == 200
     rows = session.execute(select(models.Prediction)).scalars().all()
     assert len(rows) == 1
+
+
+def test_predict_endpoint_shadow_creates_extra_rows(session, client):
+    """shadow=true → birincil + 2 shadow (rho=0, rho=-0.18) = 3 satır."""
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/matches/99/predict?shadow=true")
+    assert r.status_code == 200
+    rows = session.execute(select(models.Prediction)).scalars().all()
+    assert len(rows) == 3
+    hashes = {row.params_hash for row in rows}
+    assert len(hashes) == 3  # her tahmin için farklı params_hash
+
+
+def test_predict_endpoint_shadow_idempotent(session, client):
+    """İki ardışık shadow çağrısı → yine 3 satır (upsert)."""
+    _seed_matches(session, datetime.now(UTC))
+    client.get("/matches/99/predict?shadow=true")
+    client.get("/matches/99/predict?shadow=true")
+    rows = session.execute(select(models.Prediction)).scalars().all()
+    assert len(rows) == 3
+
+
+def test_predict_endpoint_shadow_off_only_primary(session, client):
+    """shadow=false (default) → sadece primary, 1 satır."""
+    _seed_matches(session, datetime.now(UTC))
+    client.get("/matches/99/predict")
+    rows = session.execute(select(models.Prediction)).scalars().all()
+    assert len(rows) == 1
