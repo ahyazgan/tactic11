@@ -61,6 +61,9 @@ alembic upgrade head                # tabloları oluştur
 
 ## Çalıştırma
 ```bash
+# 0) Uçtan uca demo (fixture; anahtar gerekmez) — her şey nasıl çalışıyor?
+python scripts/demo.py --reset
+
 # 1) Bir lig + sezonu çek, doğrula, DB'ye yaz, snapshot al
 python scripts/sync_league.py --league 203 --season 2024
 
