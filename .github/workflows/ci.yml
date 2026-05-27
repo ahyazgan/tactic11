@@ -68,3 +68,26 @@ jobs:
         run: |
           alembic downgrade base
           alembic upgrade head
+
+  docker_build:
+    runs-on: ubuntu-latest
+    # Dockerfile değişirse veya main'e merge'de doğrula; PR'larda da
+    # opsiyonel ama hızlı (Docker layer cache).
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: manager2:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: smoke — image starts
+        run: |
+          # Container short-lived: just verify entrypoint module imports.
+          # DATABASE_URL fake (no real DB) — uvicorn boot olmaz ama import OK olmalı.
+          docker run --rm --entrypoint python manager2:ci -c \
+            "import app.api.main; print('import ok, version=', app.api.main.APP_VERSION)"
