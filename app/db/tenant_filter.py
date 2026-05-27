@@ -32,20 +32,26 @@ _TENANT_MODELS = (
 def install_tenant_filter() -> None:
     """Global event listener kur — Session.do_orm_execute her query'de tetiklenir.
 
+    İki tenant_id kaynağı (öncelik sırasıyla):
+    1. `session.info["tenant_id"]` — FastAPI/request-scoped (güvenilir,
+       threadpool context copy sorunu olmaz)
+    2. ContextVar `current_tenant_id()` — test'lerde explicit set için
+
+    Bypass: `session.info["tenant_bypass"] = True` veya `is_bypassed()` ContextVar.
+
     İdempotent: tekrar çağrılırsa zaten kayıtlı listener'a dokunmaz.
-    Test'ler veya app boot bu fonksiyonu çağırır.
     """
     if getattr(install_tenant_filter, "_installed", False):
         return
 
     @event.listens_for(Session, "do_orm_execute")
     def _add_tenant_filter(execute_state):
-        # Bypass açık → hiçbir filtre ekleme
-        if is_bypassed():
+        session = execute_state.session
+        # Session.info'dan bypass kontrolü (öncelik) + ContextVar fallback
+        if session.info.get("tenant_bypass") or is_bypassed():
             return
-        tid = current_tenant_id()
+        tid = session.info.get("tenant_id") or current_tenant_id()
         if tid is None:
-            # ContextVar set'li değil → filtre uygulamadan geç (test/mevcut kod)
             return
         # SELECT/UPDATE/DELETE'lere uygula; INSERT'lere değil
         if not execute_state.is_select and not (

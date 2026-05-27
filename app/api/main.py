@@ -275,6 +275,23 @@ def health(session: Session = Depends(get_session)) -> JSONResponse:
 
 
 @protected.get(
+    "/teams",
+    response_model=list[TeamOut],
+    tags=["catalog"],
+    summary="Kayıtlı tüm takımları listele (tenant-filtered)",
+)
+def list_teams(session: Session = Depends(get_session)) -> list[models.Team]:
+    """Tüm takımlar. Tenant filter aktifse otomatik current tenant'a kısıtlı."""
+    return list(
+        session.execute(
+            select(models.Team)
+            .where(models.Team.sport == football.SPORT_NAME)
+            .order_by(models.Team.name)
+        ).scalars()
+    )
+
+
+@protected.get(
     "/leagues",
     response_model=list[LeagueOut],
     tags=["catalog"],
@@ -446,8 +463,19 @@ def team_form(
     explain: bool = False,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
+    # Team lookup ÖNCE — cross-tenant 404'ü garanti eder (loader_criteria
+    # filter aktifse current tenant'ın takımı değilse Team yok → 404)
+    team = session.execute(
+        select(models.Team).where(
+            models.Team.sport == football.SPORT_NAME,
+            models.Team.external_id == team_id,
+        )
+    ).scalar_one_or_none()
+    if team is None:
+        raise HTTPException(status_code=404, detail=f"team {team_id} bulunamadı")
     matches = _team_matches(session, team_id)
     if not matches:
+        # Team var ama maç yok — yine 404 (eski semantik)
         raise HTTPException(status_code=404, detail=f"team {team_id} için maç yok")
     result = compute_form(team_id, matches, last_n=last_n, time_decay_rate=time_decay_rate)
     return _maybe_explain(engine_result_to_dict(result), result, explain)

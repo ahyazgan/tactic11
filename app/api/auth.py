@@ -223,6 +223,22 @@ def _user_from_legacy_api_key(
     return ghost
 
 
+def _apply_user_context(
+    request: Request, session: Session, user: models.User,
+) -> None:
+    """User resolve edildi — tenant_id'yi session.info ve ContextVar'a yaz.
+
+    `session.info` request-scoped (FastAPI session her request'te yeni
+    instance); tenant_filter listener bunu okur. ContextVar de ayrıca
+    set'lenir ama threadpool context copy nedeniyle güvenilmez — info dict
+    asıl kaynak.
+    """
+    request.state.current_user_id = user.id
+    request.state.current_tenant_id = user.tenant_id
+    session.info["tenant_id"] = user.tenant_id
+    set_current_tenant_id(user.tenant_id)
+
+
 def get_current_user(
     request: Request,
     session: Session = Depends(get_session),
@@ -232,16 +248,12 @@ def get_current_user(
     """JWT bearer veya X-API-Key — sırasıyla dene; ikisi de fail ise 401."""
     if authorization:
         user = _user_from_jwt(authorization, session)
-        request.state.current_user_id = user.id
-        request.state.current_tenant_id = user.tenant_id
-        set_current_tenant_id(user.tenant_id)
+        _apply_user_context(request, session, user)
         return user
     if x_api_key:
         user = _user_from_legacy_api_key(x_api_key, session)
         if user is not None:
-            request.state.current_user_id = user.id
-            request.state.current_tenant_id = user.tenant_id
-            set_current_tenant_id(user.tenant_id)
+            _apply_user_context(request, session, user)
             return user
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
