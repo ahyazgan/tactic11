@@ -682,6 +682,61 @@ def scout_watchlist_remove(
 
 
 # --------------------------------------------------------------------------- #
+# Player similarity (B6) — scout aracı
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/scout/similar/{player_external_id}",
+    tags=["admin"],
+    summary="Hedef oyuncuya benzer top-N oyuncu (cosine similarity)",
+)
+def scout_similar_players(
+    player_external_id: int,
+    top_n: int = Query(10, ge=1, le=50),
+    min_minutes: int = Query(270, ge=0),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """player_appearances'tan per-90 stat vektörleri → cosine similarity.
+
+    Aday havuzu: tenant filter aktifse current tenant'ın oyuncuları.
+    """
+    from app.engine.player_similarity import compute_similar_players
+    from app.sports import football
+
+    target_apps = list(
+        session.execute(
+            select(models.PlayerAppearance).where(
+                models.PlayerAppearance.sport == football.SPORT_NAME,
+                models.PlayerAppearance.player_external_id == player_external_id,
+            )
+        ).scalars()
+    )
+    if not target_apps:
+        raise HTTPException(
+            status_code=404,
+            detail=f"player {player_external_id} için appearance yok",
+        )
+    all_apps = list(
+        session.execute(
+            select(models.PlayerAppearance).where(
+                models.PlayerAppearance.sport == football.SPORT_NAME,
+            )
+        ).scalars()
+    )
+    candidates_by_pid: dict[int, list[Any]] = {}
+    for a in all_apps:
+        if a.player_external_id == player_external_id:
+            continue
+        candidates_by_pid.setdefault(a.player_external_id, []).append(a)
+    result = compute_similar_players(
+        player_external_id, target_apps, candidates_by_pid,
+        top_n=top_n, min_minutes=min_minutes,
+    )
+    return engine_result_to_dict(result)
+
+
+# --------------------------------------------------------------------------- #
 # Prompt 2 — xG model status
 # --------------------------------------------------------------------------- #
 
