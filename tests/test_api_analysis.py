@@ -127,3 +127,15 @@ def test_explain_flag_returns_stub_when_no_api_key(session, client):
     assert "explanation" in body
     # Anahtar yok → stub
     assert "stub" in body["explanation"].lower()
+
+
+def test_match_preview_explain_returns_stub_when_no_api_key(session, client):
+    _seed_matches(session, datetime.now(timezone.utc))
+    r = client.get("/matches/99/preview?explain=true")
+    assert r.status_code == 200
+    body = r.json()
+    assert "explanation" in body
+    assert "stub:match_preview" in body["explanation"]
+    assert "611" in body["explanation"] and "607" in body["explanation"]
+    # Engine sonuçları hâlâ payload'da
+    assert "home_form" in body and "away_form" in body and "head_to_head" in body
