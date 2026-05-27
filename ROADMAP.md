@@ -5,7 +5,7 @@ kodunu yazar. Boş iskeletler yer tutar; sırası gelince doldurulur.
 
 ---
 
-## Faz 1 — Veri katmanı çalışır (BUGÜN)
+## Faz 1 — Veri katmanı çalışır ✓
 **Hedef:** API-Football'dan veri çekip doğrulayıp DB'ye yazmak ve okumak.
 
 - [x] `app/core/config.py` — pydantic-settings ile `.env` okuma
@@ -30,12 +30,15 @@ görünür → `GET /teams/203` boş değil.
 
 ---
 
-## Faz 2 — Analiz motoru
-- `engine/form/` — son N maç trendi, ev/deplasman, gol farkı
-- `engine/load/` — oyuncu yük/rotasyon (dakika, maç sıklığı)
-- `engine/rating/` — basit takım/oyuncu skoru
-- `engine/opponent/` — rakip örüntü analizi
-- `audit/` doldurulmaya başlar: her motor çıktısı gerekçeli
+## Faz 2 — Analiz motoru ✓ (load için veri akışı eklenmedi)
+- [x] `engine/form/` — son N maç trendi, W/D/L, ev/deplasman, gol farkı, ppg
+- [x] `engine/load/` — pencere içi dakika/maç, yüksek yük bayrağı
+      (engine hazır; DB'de PlayerAppearance henüz yok, ingest Faz 6 lineup
+      adapter'ı gelince doldurur)
+- [x] `engine/rating/` — ppg+gd_per_match kompoziti, açıklanabilir
+- [x] `engine/opponent/` — head-to-head özet
+- [x] `audit/record.py` — `AuditRecord` + `EngineResult[T]` (engine sonuç +
+      gerekçeyi birlikte taşır); kalıcı yazma orkestrasyon işi
 
 **Kural:** engine fonksiyonları saf. İçeri veri (pydantic model / DataFrame),
 dışarı hesap. DB/API/LLM bilmez.
