@@ -19,9 +19,11 @@ from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
 from app.api.observability import METRICS, PROCESS_STARTED_AT
+from app.api.serialize import engine_result_to_dict
 from app.core.config import get_settings
 from app.db import models
 from app.db.session import get_session
+from app.engine.calibration import compute_calibration
 from app.snapshot import diff_snapshots, get_latest_snapshot, get_snapshot_at_or_before
 from app.sports import football
 
@@ -270,6 +272,60 @@ def request_metrics() -> dict[str, Any]:
         "counts": snap.counts,
         "p50_latency_ms": snap.latency_p50_ms,
     }
+
+
+@router.get("/predict-accuracy")
+def predict_accuracy(
+    engine: str = Query("engine.predict"),
+    engine_version: str = Query("2"),
+    days: int = Query(30, ge=1, le=365),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Reconciled tahminler üzerinde Brier + log loss + ECE raporu.
+
+    `(engine, engine_version)` filter — version'lar arası A/B karşılaştırma
+    için. `days`: son N gün içinde reconcile edilmiş tahminler.
+    """
+    import json as _json
+
+    since = datetime.now(UTC) - timedelta(days=days)
+    rows = list(
+        session.execute(
+            select(models.Prediction).where(
+                models.Prediction.engine == engine,
+                models.Prediction.engine_version == engine_version,
+                models.Prediction.actual_outcome.is_not(None),
+                models.Prediction.reconciled_at >= since,
+            )
+        ).scalars()
+    )
+
+    samples: list[tuple[float, float, float, str]] = []
+    for r in rows:
+        try:
+            v = _json.loads(r.predicted_value_json)
+        except _json.JSONDecodeError:
+            continue
+        ph = v.get("prob_home_win")
+        pd = v.get("prob_draw")
+        pa = v.get("prob_away_win")
+        if ph is None or pd is None or pa is None or r.actual_outcome is None:
+            continue
+        samples.append((float(ph), float(pd), float(pa), r.actual_outcome))
+
+    result = compute_calibration(
+        samples, engine=engine, engine_version=engine_version
+    )
+    payload = engine_result_to_dict(result)
+    payload["filter"] = {
+        "engine": engine,
+        "engine_version": engine_version,
+        "days": days,
+        "since": since.isoformat(),
+        "reconciled_count": len(rows),
+        "valid_samples": len(samples),
+    }
+    return payload
 
 
 @router.get("/db-stats")

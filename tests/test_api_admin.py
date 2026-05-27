@@ -233,3 +233,70 @@ def test_quota_status_anthropic_token_sum(session, client):
     assert an["used"] == 100_000
     assert an["fraction"] == 0.5
     assert an["level"] == "ok"
+
+
+def _seed_prediction(
+    session, *, match_id: int, prob_home: float, prob_draw: float, prob_away: float,
+    actual_outcome: str, engine_version: str = "2",
+) -> None:
+    import json as _json
+    now = datetime.now(UTC)
+    session.add(models.Prediction(
+        sport=football.SPORT_NAME,
+        match_external_id=match_id,
+        engine="engine.predict",
+        engine_version=engine_version,
+        params_hash="hash-" + str(match_id),
+        params_json="{}",
+        predicted_value_json=_json.dumps({
+            "prob_home_win": prob_home,
+            "prob_draw": prob_draw,
+            "prob_away_win": prob_away,
+        }),
+        created_at=now,
+        updated_at=now,
+        actual_home_score=0,
+        actual_away_score=0,
+        actual_outcome=actual_outcome,
+        reconciled_at=now,
+    ))
+    session.flush()
+
+
+def test_predict_accuracy_empty_returns_none_metrics(client):
+    r = client.get("/admin/predict-accuracy")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["filter"]["valid_samples"] == 0
+    assert body["value"]["brier_score"] is None
+
+
+def test_predict_accuracy_computes_brier_for_reconciled(session, client):
+    _seed_prediction(session, match_id=1, prob_home=1.0, prob_draw=0.0, prob_away=0.0, actual_outcome="home")
+    _seed_prediction(session, match_id=2, prob_home=0.0, prob_draw=1.0, prob_away=0.0, actual_outcome="draw")
+    r = client.get("/admin/predict-accuracy")
+    body = r.json()
+    assert body["filter"]["reconciled_count"] == 2
+    assert body["filter"]["valid_samples"] == 2
+    # İki perfect tahmin → Brier ≈ 0
+    assert body["value"]["brier_score"] == pytest.approx(0.0, abs=0.001)
+
+
+def test_predict_accuracy_filters_by_engine_version(session, client):
+    _seed_prediction(session, match_id=1, prob_home=0.5, prob_draw=0.3, prob_away=0.2, actual_outcome="home", engine_version="1")
+    _seed_prediction(session, match_id=2, prob_home=0.5, prob_draw=0.3, prob_away=0.2, actual_outcome="home", engine_version="2")
+    r1 = client.get("/admin/predict-accuracy?engine_version=1")
+    r2 = client.get("/admin/predict-accuracy?engine_version=2")
+    assert r1.json()["filter"]["valid_samples"] == 1
+    assert r2.json()["filter"]["valid_samples"] == 1
+    # A/B karşılaştırma: ayrı raporlar
+
+
+def test_predict_accuracy_includes_buckets(session, client):
+    _seed_prediction(session, match_id=1, prob_home=0.7, prob_draw=0.2, prob_away=0.1, actual_outcome="home")
+    r = client.get("/admin/predict-accuracy")
+    body = r.json()
+    assert len(body["value"]["home_outcome_buckets"]) == 10
+    # 0.7 bucket'ı [0.7, 0.8)
+    bucket_07 = next(b for b in body["value"]["home_outcome_buckets"] if b["bucket_lower"] == 0.7)
+    assert bucket_07["sample_count"] == 1
