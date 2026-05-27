@@ -649,6 +649,14 @@ def match_predict(
         False,
         description="True → birincilin yanına ρ=0 ve ρ=-0.18 shadow tahminleri de kaydeder (A/B accuracy için).",
     ),
+    use_ml: bool = Query(
+        False,
+        description=(
+            "True → engine.predict_ml cache'inden learned ρ oku ve onu kullan; "
+            "cache yok/stale ise default ρ ile fallback. audit.inputs.ml_status "
+            "her zaman set'lenir (fresh|stale|untrained)."
+        ),
+    ),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Maç için Poisson skor tahmini.
@@ -663,6 +671,10 @@ def match_predict(
     `shadow=true` ise birincil tahminin yanına ρ=0 (saf Poisson) ve
     ρ=-0.18 (agresif DC) shadow tahminleri de saklanır (rapor B3'te
     `engine_version` aynı ama params farklı → ayrı satırlar).
+
+    `use_ml=true` ise engine.predict_ml'in cache'ten okuduğu learned ρ
+    kullanılır (train job çalışıp populate ettiyse); aksi durumda default
+    ρ ile fallback. ml_status audit'te işaretli.
     """
     match = session.execute(
         select(models.Match).where(
@@ -675,7 +687,37 @@ def match_predict(
 
     home_id = match.home_team_external_id
     away_id = match.away_team_external_id
-    params = {"last_n": last_n, "time_decay_rate": time_decay_rate}
+
+    # use_ml resolve: cache'ten learned ρ oku; yoksa default'a düş.
+    # ml_status: "fresh" → cache hit, "stale" → expired row mevcut,
+    # "untrained" → hiç yok. Üçünde de fallback rho var; status açıkça
+    # audit'te görünür.
+    effective_rho: float | None = None
+    ml_status: str | None = None
+    if use_ml:
+        from app.data.cache.store import cache_get
+        from app.engine.predict_ml import CACHE_KEY, CACHE_SOURCE
+        cached = cache_get(session, source=CACHE_SOURCE, key=CACHE_KEY)
+        if cached and cached.get("best_rho") is not None:
+            effective_rho = float(cached["best_rho"])
+            ml_status = "fresh"
+        else:
+            # cache_get None döner hem missing hem expired durumda;
+            # ayırt etmek için raw row'a bak
+            row = session.execute(
+                select(models.CacheEntry).where(
+                    models.CacheEntry.source == CACHE_SOURCE,
+                    models.CacheEntry.key == CACHE_KEY,
+                )
+            ).scalar_one_or_none()
+            ml_status = "stale" if row is not None else "untrained"
+            # learned_rho yok → default fallback (None bırak; compute_predict
+            # kendi default'unu kullansın)
+
+    params: dict[str, Any] = {"last_n": last_n, "time_decay_rate": time_decay_rate}
+    if use_ml:
+        params["use_ml"] = True
+        params["ml_status"] = ml_status
 
     def _forms():
         home_form = compute_form(
@@ -690,10 +732,12 @@ def match_predict(
 
     def _build_result():
         home_form, away_form = _forms()
-        return compute_predict(
-            home_form.value, away_form.value,
-            home_team_id=home_id, away_team_id=away_id,
-        )
+        kwargs: dict[str, Any] = {
+            "home_team_id": home_id, "away_team_id": away_id,
+        }
+        if effective_rho is not None:
+            kwargs["rho"] = effective_rho
+        return compute_predict(home_form.value, away_form.value, **kwargs)
 
     def _save_shadows() -> None:
         """Birincilin yanına ρ=0 ve ρ=-0.18 shadow'larını kaydet."""
@@ -709,6 +753,12 @@ def match_predict(
                 params={**params, "rho": rho},  # params_hash farklı
             )
 
+    def _inject_ml_status(payload: dict[str, Any]) -> dict[str, Any]:
+        """audit.inputs.ml_status ekle (use_ml=true case'inde transparency)."""
+        if use_ml and ml_status is not None:
+            payload.setdefault("audit", {}).setdefault("inputs", {})["ml_status"] = ml_status
+        return payload
+
     # `explain=True` Claude'a hit eder (kendi cache'i AI commentator'da);
     # cache atlanır, prediction her zaman saklanır (kalibrasyon).
     if explain:
@@ -720,7 +770,9 @@ def match_predict(
         if shadow:
             _save_shadows()
         session.commit()
-        return _maybe_explain(engine_result_to_dict(result), result, explain=True)
+        return _inject_ml_status(
+            _maybe_explain(engine_result_to_dict(result), result, explain=True)
+        )
 
     # explain yoksa snapshot-keyed cache devreye girer; ilk miss'te
     # save_prediction da burada çalışır (idempotent upsert)
@@ -734,16 +786,22 @@ def match_predict(
             _save_shadows()
         return engine_result_to_dict(result)
 
+    # use_ml ve ml_status'u cache key'e dahil et: aynı match için use_ml=true
+    # ile use_ml=false ayrı cache entries; learned ρ değişirse stale cache
+    # otomatik invalid (key prefix snapshot.id'ye bağlı).
     payload, _was_cached = engine_cached(
         session,
         sport=football.SPORT_NAME,
         key_parts=(
             "predict", match_id, "last_n", last_n,
-            "decay", str(time_decay_rate), "shadow", int(shadow),
+            "decay", str(time_decay_rate),
+            "shadow", int(shadow),
+            "ml", int(use_ml), "ml_status", ml_status or "n/a",
+            "rho", str(effective_rho) if effective_rho is not None else "default",
         ),
         compute_fn=_compute,
     )
-    return payload
+    return _inject_ml_status(payload)
 
 
 @protected.get(

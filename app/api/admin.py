@@ -472,6 +472,47 @@ def agent_outputs(
     ]
 
 
+@router.get("/ml-model-status")
+def ml_model_status(session: Session = Depends(get_session)) -> dict[str, Any]:
+    """engine.predict_ml train job son çalıştırma durumu.
+
+    cache_entries(source='ml_predict_model', key='best_rho_v1') okur:
+    - Hiç train edilmediyse: {status: "untrained"}
+    - Cache var ama expires_at geçmişse: {status: "stale", ...}
+    - Fresh: {status: "fresh", best_rho, sample_count, best_log_loss, ...}
+
+    Inference yolu (/predict?use_ml=true) bu status'a göre fallback yapar.
+    """
+    from app.data.cache.store import cache_get
+    from app.engine.predict_ml import CACHE_KEY, CACHE_SOURCE
+
+    # cache_get TTL'i otomatik kontrol eder — expired ise None döner.
+    cached = cache_get(session, source=CACHE_SOURCE, key=CACHE_KEY)
+    if cached is None:
+        # Stale veya hiç yok ayırt et: row var ama expired mi?
+        from sqlalchemy import select as _select
+        row = session.execute(
+            _select(models.CacheEntry).where(
+                models.CacheEntry.source == CACHE_SOURCE,
+                models.CacheEntry.key == CACHE_KEY,
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            return {"status": "untrained"}
+        return {
+            "status": "stale",
+            "expires_at": row.expires_at.isoformat(),
+        }
+    return {
+        "status": "fresh",
+        "best_rho": cached.get("best_rho"),
+        "sample_count": cached.get("sample_count"),
+        "best_log_loss": cached.get("best_log_loss"),
+        "rho_grid": cached.get("rho_grid"),
+        "log_loss_per_rho": cached.get("log_loss_per_rho"),
+    }
+
+
 @router.get("/db-stats")
 def db_stats(session: Session = Depends(get_session)) -> dict[str, int]:
     """Tablo başına satır sayısı — sync ilerlemesini görmek için hızlı bakış."""
