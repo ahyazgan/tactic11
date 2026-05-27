@@ -133,3 +133,49 @@ register(
         description="Önümüzdeki N gündeki NS maçlar için PreMatchReportAgent çalıştır.",
     )
 )
+
+
+def train_predict_ml_handler(*, min_samples: int = 20) -> None:
+    """engine.predict_ml — predictions tablosundan best ρ öğren.
+
+    Sonucu cache_entries(source='ml_predict_model', key='best_rho_v1')'e
+    JSON olarak yazar. TTL 30 gün — yeniden train'e kadar geçerli.
+    Yetersiz veri → NotEnoughTrainingData → log + skip (job fail değil).
+    """
+    from dataclasses import asdict as _asdict
+
+    from app.data.cache.store import cache_set
+    from app.engine.predict_ml import (
+        CACHE_KEY,
+        CACHE_SOURCE,
+        NotEnoughTrainingData,
+        train_best_rho,
+    )
+
+    with SessionLocal() as session:
+        try:
+            report = train_best_rho(session, min_samples=min_samples)
+        except NotEnoughTrainingData as e:
+            log.info("predict_ml train atlandı: %s", e)
+            return
+        cache_set(
+            session,
+            source=CACHE_SOURCE,
+            key=CACHE_KEY,
+            value=_asdict(report),
+            ttl_seconds=30 * 86_400,
+        )
+        session.commit()
+    log.info(
+        "job train_predict_ml: samples=%d best_rho=%.2f best_log_loss=%.4f",
+        report.sample_count, report.best_rho, report.best_log_loss,
+    )
+
+
+register(
+    JobSpec(
+        name="train_predict_ml",
+        handler=train_predict_ml_handler,
+        description="engine.predict_ml: predictions tablosundan best ρ öğren.",
+    )
+)
