@@ -13,7 +13,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy import or_, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -200,6 +200,28 @@ def _maybe_explain(payload: dict[str, Any], result, explain: bool) -> dict[str, 
 
 
 # ---- okuma uçları (Faz 1) ---------------------------------------------------
+
+
+_DASHBOARD_HTML_PATH = (
+    __import__("pathlib").Path(__file__).resolve().parent / "templates" / "dashboard.html"
+)
+
+
+@app.get(
+    "/dashboard",
+    response_class=HTMLResponse,
+    tags=["ops"],
+    summary="Minimal operations dashboard (HTML)",
+    include_in_schema=False,
+)
+def dashboard() -> HTMLResponse:
+    """Tarayıcı-tarafı dashboard.
+
+    Auth header'ı tarayıcıda kullanıcı girer → localStorage'ta saklanır.
+    İçeriği `/health`, `/admin/*`, `/leagues` uçlarından fetch'le çeker;
+    Bu endpoint sadece HTML'i static olarak servis eder.
+    """
+    return HTMLResponse(_DASHBOARD_HTML_PATH.read_text(encoding="utf-8"))
 
 
 @app.get("/health", tags=["ops"], summary="Liveness + readiness check")

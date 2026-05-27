@@ -179,3 +179,48 @@ register(
         description="engine.predict_ml: predictions tablosundan best ρ öğren.",
     )
 )
+
+
+def ingest_tracking_match_handler(*, match_external_id: int, replace: bool = False) -> None:
+    """Bir maç için tracking frame'lerini DB'ye yaz.
+
+    Default `FixtureTrackingSource` — repo'daki tests/fixtures/tracking_<id>.json
+    okur. Gerçek vendor adapter eklendiğinde bu handler'a `source_name` arg'ı
+    eklenip dispatch edilir.
+    """
+    from app.data.ingest import (
+        delete_match_frames as _delete,
+    )
+    from app.data.ingest import (
+        ingest_tracking_match as _ingest,
+    )
+    from app.data.sources.fixture_tracking import FixtureTrackingSource
+
+    source = FixtureTrackingSource()
+    if not source.has_fixture(match_external_id):
+        log.info("tracking ingest atlandı: match=%d fixture yok", match_external_id)
+        return
+    with SessionLocal() as session:
+        if replace:
+            removed = _delete(session, sport="football", match_external_id=match_external_id)
+            log.info("tracking replace: match=%d silindi=%d", match_external_id, removed)
+        report = _ingest(
+            session, source, match_external_id=match_external_id,
+        )
+        session.commit()
+    log.info(
+        "job ingest_tracking_match: match=%d written=%d updated=%d",
+        report.match_external_id, report.frames_written, report.frames_updated,
+    )
+
+
+register(
+    JobSpec(
+        name="ingest_tracking_match",
+        handler=ingest_tracking_match_handler,
+        description=(
+            "Bir maçın tracking frame'lerini adapter'dan oku, DB'ye yaz. "
+            "Varsayılan FixtureTrackingSource (tests/fixtures/tracking_<id>.json)."
+        ),
+    )
+)
