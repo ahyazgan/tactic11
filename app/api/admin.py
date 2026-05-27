@@ -14,11 +14,12 @@ import time
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
 from app.api.observability import METRICS, PROCESS_STARTED_AT
+from app.api.pagination import build_next_cursor, decode_cursor
 from app.api.serialize import engine_result_to_dict
 from app.core.config import get_settings
 from app.db import models
@@ -32,26 +33,56 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.get("/jobs")
 def recent_jobs(
+    response: Response,
     limit: int = Query(20, ge=1, le=200),
     job_name: str | None = None,
     status: Literal["running", "success", "failed"] | None = None,
     since_hours: int = Query(168, ge=1, le=24 * 30),  # default 7 gün
+    cursor: str | None = Query(
+        None,
+        description="Önceki yanıtın X-Next-Cursor header'ından gelen değer.",
+    ),
     session: Session = Depends(get_session),
 ) -> list[dict[str, Any]]:
-    """Son job run'ları — scheduler sağlığı için."""
+    """Son job run'ları — scheduler sağlığı için.
+
+    Pagination: `limit` döner; daha fazla satır varsa `X-Next-Cursor`
+    response header'ı set'lenir. Sonraki sayfa için `?cursor=<value>`.
+    """
     since = datetime.now(UTC) - timedelta(hours=since_hours)
     stmt = (
         select(models.JobRun)
         .where(models.JobRun.started_at >= since)
-        .order_by(desc(models.JobRun.started_at))
-        .limit(limit)
+        .order_by(desc(models.JobRun.started_at), desc(models.JobRun.id))
     )
     if job_name is not None:
         stmt = stmt.where(models.JobRun.job_name == job_name)
     if status is not None:
         stmt = stmt.where(models.JobRun.status == status)
 
-    rows = session.execute(stmt).scalars().all()
+    decoded = decode_cursor(cursor)
+    if decoded is not None:
+        cursor_dt = datetime.fromisoformat(decoded.sort_value)
+        # Tuple comparison: (started_at, id) DESC sıralı; cursor'dan sonra
+        # devam et (cursor'un atladığı son satır dahil değil)
+        stmt = stmt.where(
+            (models.JobRun.started_at < cursor_dt)
+            | (
+                (models.JobRun.started_at == cursor_dt)
+                & (models.JobRun.id < decoded.row_id)
+            )
+        )
+
+    # limit + 1 çek; varsa next_cursor için son satır
+    rows = list(session.execute(stmt.limit(limit + 1)).scalars())
+    has_next = len(rows) > limit
+    items = rows[:limit]
+
+    if has_next:
+        nc = build_next_cursor(items, "started_at")
+        if nc is not None:
+            response.headers["X-Next-Cursor"] = nc
+
     return [
         {
             "id": r.id,
@@ -68,7 +99,7 @@ def recent_jobs(
             ),
             "error": r.error,
         }
-        for r in rows
+        for r in items
     ]
 
 
