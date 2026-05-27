@@ -22,7 +22,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import httpx
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.agents import (
@@ -115,8 +115,10 @@ def run_brief_for_tenant(
     )
 
     lineup_agent = LineupRecommendationAgent()
-    injury_agent = InjuryLoadAgent()
     pre_match_agent = PreMatchReportAgent()
+    # InjuryLoadAgent player_external_ids context'i gerektirir; roster lookup
+    # ayrı bir job'da yapılacak (Prompt 4 sonrası).
+    _ = InjuryLoadAgent  # import keep for future use
 
     succeeded = failed = 0
     errors: list[str] = []
@@ -164,11 +166,9 @@ def run_brief_for_tenant(
             )
             if ok is True:
                 succeeded += 1
-            elif ok is False and not _last_op_was_skip(errors):
-                # Skip vs fail ayrımı: errors'a yazıldıysa fail
-                if errors and errors[-1].startswith(f"{lineup_agent.name}:"):
-                    failed += 1
-                # else: idempotent skip — sayma
+            elif errors and errors[-1].startswith(f"{lineup_agent.name}:"):
+                failed += 1
+            # else: idempotent skip — sayma
 
         # Injury — takım roster proxy gerektirir; placeholder atla
         # (gerçek injury_load player_external_ids gerektirir; bu daily job'da
@@ -196,12 +196,6 @@ def run_brief_for_tenant(
         agents_failed=failed,
         errors=errors,
     )
-
-
-def _last_op_was_skip(errors: list[str]) -> bool:
-    """No-op marker — caller _run_and_save False döndüyse skip mi fail mi ayrımı."""
-    # errors'a yeni ekleme yapılmadıysa skip; bu basit helper sayım için.
-    return True  # default: skip kabul et
 
 
 def run_daily_brief(

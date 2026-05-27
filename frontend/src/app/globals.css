@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+
+html, body { background: theme('colors.bg'); color: theme('colors.fg'); }
+
+body {
+  font-family: theme('fontFamily.sans');
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  background: theme('colors.panel');
+  border: 1px solid theme('colors.border');
+  border-radius: 0.5rem;
+  padding: 1rem;
+}

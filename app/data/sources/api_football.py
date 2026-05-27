@@ -152,7 +152,10 @@ class APIFootball(DataSource):
         except (KeyError, TypeError, ValueError):
             return None
         rating_raw = games.get("rating")
-        rating = float(rating_raw) if rating_raw not in (None, "") else None
+        rating: float | None = (
+            None if rating_raw is None or rating_raw == ""
+            else float(rating_raw)
+        )
         return PlayerMatchStats(
             match_external_id=fixture_id,
             team_external_id=team_id,

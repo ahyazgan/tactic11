@@ -8,8 +8,6 @@ import json
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-import pytest
-
 from app.db import models
 from app.scheduler.daily_brief import (
     _deliver_webhook,

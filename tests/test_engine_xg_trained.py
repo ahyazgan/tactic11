@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from app.domain import Shot
@@ -22,7 +20,6 @@ from app.engine.xg.train import (
     build_feature_matrix,
     evaluate,
     generate_synthetic_shots,
-    save_model,
     train_and_save,
     train_model,
 )

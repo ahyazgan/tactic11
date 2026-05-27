@@ -11,7 +11,6 @@ Akış:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -77,7 +76,12 @@ def ingest_appearances_for_match(
         st = stats_by_pid.get(pid)
         # Oynamadı (lineup'ta ama stats yok) → minutes=0; kadroya dahil olarak yine kaydet
         minutes = st.minutes if st else 0
-        team_id = (st.team_external_id if st else lin.team_external_id) if (st or lin) else None
+        if st is not None:
+            team_id: int | None = st.team_external_id
+        elif lin is not None:
+            team_id = lin.team_external_id
+        else:
+            team_id = None
         attrs = dict(
             minutes=minutes,
             kickoff=match.kickoff,

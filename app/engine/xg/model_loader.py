@@ -82,10 +82,9 @@ def get_model_status() -> dict[str, Any]:
         }
     metadata: dict[str, Any] = {}
     if meta_path.exists():
-        try:
+        import contextlib
+        with contextlib.suppress(json.JSONDecodeError):
             metadata = json.loads(meta_path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            pass
     return {
         "status": "trained",
         "model_path": str(model_path),
