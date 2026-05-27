@@ -69,11 +69,12 @@ def test_history_preserved_not_overwritten(session):
 
 
 def test_get_snapshot_at_or_before_returns_closest_earlier(session):
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
+
     from app.db import models
     from app.snapshot import get_snapshot_at_or_before
 
-    base = datetime(2024, 6, 1, 12, 0, tzinfo=timezone.utc)
+    base = datetime(2024, 6, 1, 12, 0, tzinfo=UTC)
     scope = build_scope(203, 2024)
     session.add_all([
         models.Snapshot(
@@ -105,11 +106,12 @@ def test_get_snapshot_at_or_before_returns_closest_earlier(session):
 
 
 def test_diff_snapshots_computes_delta(session):
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timedelta
+
     from app.db import models
     from app.snapshot import diff_snapshots
 
-    base = datetime(2024, 6, 1, tzinfo=timezone.utc)
+    base = datetime(2024, 6, 1, tzinfo=UTC)
     earlier = models.Snapshot(
         sport=football.SPORT_NAME, scope="x", created_at=base,
         leagues_count=1, teams_count=18, matches_count=100,

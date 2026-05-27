@@ -18,7 +18,11 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from app.db.session import SessionLocal  # noqa: E402
-from app.snapshot import diff_snapshots, get_latest_snapshot, get_snapshot_at_or_before  # noqa: E402
+from app.snapshot import (  # noqa: E402
+    diff_snapshots,
+    get_latest_snapshot,
+    get_snapshot_at_or_before,
+)
 from app.sports import football  # noqa: E402
 
 

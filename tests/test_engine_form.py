@@ -73,3 +73,67 @@ def test_audit_carries_inputs_and_formula():
     assert a.metric == "form_report"
     assert a.inputs["considered_match_ids"] == [1]
     assert "ppg" in a.formula
+
+
+# ---- v2 alanları -----------------------------------------------------------
+
+
+def test_form_counts_clean_sheets_and_per_match():
+    matches = [
+        _match(1, home=611, away=607, home_score=2, away_score=0, days_ago=10),  # CS (home)
+        _match(2, home=614, away=611, home_score=1, away_score=3, days_ago=7),   # CS yok
+        _match(3, home=611, away=998, home_score=4, away_score=0, days_ago=3),   # CS (home)
+    ]
+    f = compute_form(611, matches, last_n=5).value
+    assert f.clean_sheets == 2
+    assert f.goals_for_per_match == 3.0  # round((2+3+4)/3, 3)
+    assert f.goals_against_per_match == 0.333  # round((0+1+0)/3, 3)
+
+
+def test_form_momentum_positive_when_recent_better():
+    # 5 maç: ilk 2 mağlubiyet, son 3 galibiyet → recent>older, momentum > 0
+    matches = [
+        _match(1, home=611, away=607, home_score=3, away_score=0, days_ago=1),
+        _match(2, home=611, away=614, home_score=2, away_score=0, days_ago=3),
+        _match(3, home=611, away=998, home_score=4, away_score=1, days_ago=5),
+        _match(4, home=998, away=611, home_score=3, away_score=0, days_ago=10),
+        _match(5, home=607, away=611, home_score=2, away_score=0, days_ago=15),
+    ]
+    f = compute_form(611, matches, last_n=5).value
+    assert f.recent_ppg == pytest.approx(3.0)  # son 3 maç hep W
+    # older 2 maç hep L → older_ppg=0
+    assert f.momentum == pytest.approx(3.0)
+
+
+def test_form_streak_positive_for_consecutive_wins():
+    matches = [
+        _match(1, home=611, away=607, home_score=2, away_score=0, days_ago=1),  # W
+        _match(2, home=611, away=614, home_score=3, away_score=1, days_ago=3),  # W
+        _match(3, home=998, away=611, home_score=0, away_score=2, days_ago=5),  # W
+        _match(4, home=998, away=611, home_score=2, away_score=1, days_ago=10), # L
+    ]
+    f = compute_form(611, matches, last_n=5).value
+    assert f.last_results == ["W", "W", "W", "L"]
+    assert f.current_streak == 3
+    assert f.current_unbeaten == 3
+
+
+def test_form_streak_negative_for_consecutive_losses():
+    matches = [
+        _match(1, home=998, away=611, home_score=2, away_score=0, days_ago=1),   # L
+        _match(2, home=611, away=607, home_score=0, away_score=3, days_ago=3),   # L
+        _match(3, home=611, away=614, home_score=2, away_score=0, days_ago=10),  # W
+    ]
+    f = compute_form(611, matches, last_n=5).value
+    assert f.current_streak == -2
+    assert f.current_unbeaten == 0  # son maç L
+
+
+def test_form_streak_zero_when_last_match_draw():
+    matches = [
+        _match(1, home=611, away=607, home_score=1, away_score=1, days_ago=1),   # D
+        _match(2, home=611, away=614, home_score=2, away_score=0, days_ago=3),   # W
+    ]
+    f = compute_form(611, matches, last_n=5).value
+    assert f.current_streak == 0
+    assert f.current_unbeaten == 2  # D + W
