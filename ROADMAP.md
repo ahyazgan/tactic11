@@ -8,19 +8,19 @@ kodunu yazar. Boş iskeletler yer tutar; sırası gelince doldurulur.
 ## Faz 1 — Veri katmanı çalışır (BUGÜN)
 **Hedef:** API-Football'dan veri çekip doğrulayıp DB'ye yazmak ve okumak.
 
-- [ ] `app/core/config.py` — pydantic-settings ile `.env` okuma
-- [ ] `app/core/logging.py` — yapılandırılmış log
+- [x] `app/core/config.py` — pydantic-settings ile `.env` okuma
+- [x] `app/core/logging.py` — yapılandırılmış log
 - [ ] `app/core/usage/` — API çağrı sayacı + eşik kontrolü
-- [ ] `app/domain/` — League, Team, Match, Player (pydantic)
-- [ ] `app/db/` — SQLAlchemy modelleri + Alembic ilk migration
-- [ ] `app/data/sources/base.py` — `DataSource` arayüzü
+- [x] `app/domain/` — League, Team, Match, Player (pydantic)
+- [x] `app/db/` — SQLAlchemy modelleri + Alembic ilk migration
+- [x] `app/data/sources/base.py` — `DataSource` arayüzü
 - [ ] `app/data/sources/api_football.py` — adapter (rate-limit + cache aware)
 - [ ] `app/data/cache/` — basit cache (DB veya bellek)
 - [ ] `app/data/validation/` — kural listesi + çalıştırıcı
 - [ ] `app/data/ingest/` — çek + doğrula + normalize + yaz
 - [ ] `app/snapshot/` — her sync'te durum özeti, üzerine yazmadan
 - [ ] `app/api/main.py` — FastAPI app + `/health`, `/leagues`, `/teams/...`
-- [ ] `app/sports/football.py` — futbol sabitleri
+- [x] `app/sports/football.py` — futbol sabitleri
 - [ ] `scripts/sync_league.py` — uçtan uca CLI
 - [ ] `tests/fixtures/` — örnek JSON + fixture modu
 
