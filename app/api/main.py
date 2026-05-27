@@ -23,7 +23,7 @@ from app.core.logging import get_logger, setup_logging
 from app.data.cache import engine_cached
 from app.db import models
 from app.db.session import get_session
-from app.engine.fixture_difficulty import compute_fixture_difficulty
+from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty
 from app.engine.form import compute_form
 from app.engine.matchup import compute_matchup
 from app.engine.opponent import compute_head_to_head
@@ -254,14 +254,22 @@ def team_fixture_difficulty(
         and team_id in (m.home_team_external_id, m.away_team_external_id)
     }
 
-    opponent_ratings: dict[int, float] = {}
+    opponent_ratings: dict[int, OpponentRating] = {}
     for opp_id in upcoming_opponents:
         opp_matches = _team_matches(session, opp_id)
         if not opp_matches:
             continue
         rating = compute_team_rating(opp_id, opp_matches, last_n=last_n).value
-        if rating.matches_considered > 0:
-            opponent_ratings[opp_id] = rating.rating
+        if rating.matches_considered == 0:
+            continue
+        # Side-aware: rakibin ev/dep profili farklı olabilir → her ikisini
+        # de besleyelim, engine maç başına uygunu seçer. Boş subset (0 maç)
+        # için side-specific'i None bırak; overall fallback devreye girer.
+        opponent_ratings[opp_id] = OpponentRating(
+            home_rating=rating.home_rating if rating.home_matches > 0 else None,
+            away_rating=rating.away_rating if rating.away_matches > 0 else None,
+            overall_rating=rating.rating,
+        )
 
     # Engine kendi içinde horizon'u uygulamıyor; önceden filtreyi yukarıda
     # yaptık zaten — engine'e ufuk içi maçların hepsini geçiyoruz.
