@@ -49,7 +49,11 @@ def create_access_token(
     *, user_id: str, tenant_id: str, role: str,
     expires_minutes: int | None = None,
 ) -> str:
-    """HS256 imzalı access token. Default expiry settings.jwt_access_minutes."""
+    """HS256 imzalı access token. Default expiry settings.jwt_access_minutes.
+
+    `jti` (JWT ID) claim: cryptographic random — aynı saniyede üretilen
+    token'lar farklı olur (refresh rotation testleri için).
+    """
     s = get_settings()
     minutes = expires_minutes if expires_minutes is not None else s.jwt_access_minutes
     now = datetime.now(UTC)
@@ -59,6 +63,7 @@ def create_access_token(
         "role": role,
         "iat": int(now.timestamp()),
         "exp": int((now + timedelta(minutes=minutes)).timestamp()),
+        "jti": secrets.token_hex(8),  # unique identifier
     }
     return jwt.encode(payload, _secret(), algorithm="HS256")
 
