@@ -1,0 +1,50 @@
+# Production-benzeri yerel kurulum. Üç servis:
+#   db      → Postgres (verisi named volume'de)
+#   migrate → tek seferlik alembic upgrade head, sonra exit
+#   api     → uvicorn (api/main:app)
+#
+# Scheduler/cron compose içinde yok — host'un cron'undan tetiklemek doğru
+# (container kısa ömürlü, cron host'ta yaşar). DEPLOYMENT.md'ye bak.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-manager2}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: ${POSTGRES_DB:-manager2}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-manager2}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-manager2}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-manager2}"
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+
+  api:
+    build: .
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    env_file: .env
+    environment:
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-manager2}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-manager2}"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

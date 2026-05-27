@@ -89,4 +89,8 @@ pytest -q
 ```
 Testler in-memory SQLite ile çalışır; gerçek DB veya API anahtarı gerekmez.
 
+## Deployment
+Docker Compose + Postgres ya da bare-metal systemd + cron kurulumu için
+[DEPLOYMENT.md](DEPLOYMENT.md).
+
 Detaylı yol haritası: [ROADMAP.md](ROADMAP.md).
