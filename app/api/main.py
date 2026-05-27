@@ -32,6 +32,7 @@ from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
 from app.core.request_context import clear_request_id, set_request_id
 from app.data.cache import engine_cached
+from app.data.predictions import save_prediction
 from app.db import models
 from app.db.session import get_session
 from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty
@@ -432,33 +433,38 @@ def match_predict(
 
     home_id = match.home_team_external_id
     away_id = match.away_team_external_id
+    params = {"last_n": last_n}
 
-    # `explain=True` Claude'a hit eder (kendi cache'i AI commentator'da); engine
-    # sonucunu yine de tek seferde üret, payload + audit ikisini de elde tut.
-    if explain:
+    def _build_result():
         home_form = compute_form(
             home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n
         )
         away_form = compute_form(
             away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n
         )
-        result = compute_predict(
+        return compute_predict(
             home_form.value, away_form.value,
             home_team_id=home_id, away_team_id=away_id,
         )
+
+    # `explain=True` Claude'a hit eder (kendi cache'i AI commentator'da);
+    # cache atlanır, prediction her zaman saklanır (kalibrasyon).
+    if explain:
+        result = _build_result()
+        save_prediction(
+            session, sport=football.SPORT_NAME,
+            match_external_id=match_id, result=result, params=params,
+        )
+        session.commit()
         return _maybe_explain(engine_result_to_dict(result), result, explain=True)
 
-    # explain yoksa snapshot-keyed cache devreye girer
+    # explain yoksa snapshot-keyed cache devreye girer; ilk miss'te
+    # save_prediction da burada çalışır (idempotent upsert)
     def _compute() -> dict[str, Any]:
-        home_form = compute_form(
-            home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n
-        )
-        away_form = compute_form(
-            away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n
-        )
-        result = compute_predict(
-            home_form.value, away_form.value,
-            home_team_id=home_id, away_team_id=away_id,
+        result = _build_result()
+        save_prediction(
+            session, sport=football.SPORT_NAME,
+            match_external_id=match_id, result=result, params=params,
         )
         return engine_result_to_dict(result)
 
