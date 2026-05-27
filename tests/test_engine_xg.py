@@ -77,7 +77,7 @@ def test_team_xg_aggregates():
 def test_audit_records_formula():
     r = compute_shot_xg(_shot(x=85.0, y=50.0))
     assert r.audit.engine == "engine.xg"
-    assert r.audit.engine_version == "1"
+    assert r.audit.engine_version == "2"  # v1 → v2 trained mode eklendi
     assert "sigmoid" in r.audit.formula
 
 

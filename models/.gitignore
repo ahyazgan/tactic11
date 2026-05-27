@@ -1,0 +1,5 @@
+# xG modeli artifact'leri — büyük dosyalar git'e girmesin
+*.pkl
+*.joblib
+# Metadata commit edilebilir (boyut küçük)
+!*.json

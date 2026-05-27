@@ -501,3 +501,34 @@ register(JobSpec(
     handler=run_lineup_for_upcoming_handler,
     description="Takımın önümüzdeki N gündeki maçları için lineup önerileri.",
 ))
+
+
+def daily_decision_brief_handler(
+    *, horizon_days: int = 7, force: bool = False,
+) -> None:
+    """Tüm aktif tenant'lar için günlük brief (Prompt 3).
+
+    Her tenant için bu haftaki maçları bul → lineup + pre_match agent'larını
+    sırayla çalıştır. Idempotent: aynı gün ikinci çağrı agent_outputs'a
+    yeniden yazmaz (force=True override).
+    """
+    from app.scheduler.daily_brief import run_daily_brief
+    with SessionLocal() as session:
+        result = run_daily_brief(
+            session, horizon_days=horizon_days, force=force,
+        )
+    log.info(
+        "job daily_decision_brief: tenants=%d succeeded=%d failed=%d skipped=%d",
+        result.tenants_processed, result.total_succeeded,
+        result.total_failed, result.tenants_skipped,
+    )
+
+
+register(JobSpec(
+    name="daily_decision_brief",
+    handler=daily_decision_brief_handler,
+    description=(
+        "Tüm aktif tenant'lar için günlük decision brief — bu haftaki maçlar "
+        "için lineup + pre_match agent çalıştır. Idempotent (gün başına bir kez)."
+    ),
+))

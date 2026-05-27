@@ -679,3 +679,59 @@ def scout_watchlist_remove(
     )
     session.commit()
     return {"ok": True, "deleted": deleted}
+
+
+# --------------------------------------------------------------------------- #
+# Prompt 2 — xG model status
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/xg-model-status",
+    tags=["admin"],
+    summary="xG modeli artifact durumu (trained/untrained + metrikler)",
+)
+def xg_model_status() -> dict[str, Any]:
+    from app.engine.xg.model_loader import get_model_status
+
+    return get_model_status()
+
+
+# --------------------------------------------------------------------------- #
+# Prompt 3 — Daily decision brief manual trigger + notifications
+# --------------------------------------------------------------------------- #
+
+
+@router.post(
+    "/trigger-daily-brief",
+    tags=["admin"],
+    summary="Daily decision brief job'unu manuel tetikle (test için)",
+)
+def trigger_daily_brief(
+    horizon_days: int = Query(7, ge=1, le=30),
+    force: bool = Query(False, description="Idempotency bypass — aynı gün tekrar çalıştır"),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.scheduler.daily_brief import run_daily_brief
+
+    result = run_daily_brief(
+        session, horizon_days=horizon_days, force=force,
+    )
+    return {
+        "run_at": result.run_at.isoformat(),
+        "tenants_processed": result.tenants_processed,
+        "tenants_skipped": result.tenants_skipped,
+        "total_succeeded": result.total_succeeded,
+        "total_failed": result.total_failed,
+        "per_tenant": [
+            {
+                "tenant_id": r.tenant_id,
+                "tenant_slug": r.tenant_slug,
+                "matches_processed": r.matches_processed,
+                "agents_succeeded": r.agents_succeeded,
+                "agents_failed": r.agents_failed,
+                "errors": r.errors,
+            }
+            for r in result.per_tenant
+        ],
+    }

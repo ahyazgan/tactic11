@@ -30,7 +30,10 @@ from app.db.base import Base
 class League(Base):
     __tablename__ = "leagues"
     __table_args__ = (
-        UniqueConstraint("sport", "external_id", "season", name="uq_leagues_sport_extid_season"),
+        UniqueConstraint(
+            "sport", "external_id", "season", "tenant_id",
+            name="uq_leagues_sport_extid_season",
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -47,7 +50,7 @@ class League(Base):
 class Team(Base):
     __tablename__ = "teams"
     __table_args__ = (
-        UniqueConstraint("sport", "external_id", name="uq_teams_sport_extid"),
+        UniqueConstraint("sport", "external_id", "tenant_id", name="uq_teams_sport_extid"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -64,7 +67,7 @@ class Team(Base):
 class Player(Base):
     __tablename__ = "players"
     __table_args__ = (
-        UniqueConstraint("sport", "external_id", name="uq_players_sport_extid"),
+        UniqueConstraint("sport", "external_id", "tenant_id", name="uq_players_sport_extid"),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -82,7 +85,9 @@ class Player(Base):
 class Match(Base):
     __tablename__ = "matches"
     __table_args__ = (
-        UniqueConstraint("sport", "external_id", name="uq_matches_sport_extid"),
+        UniqueConstraint(
+            "sport", "external_id", "tenant_id", name="uq_matches_sport_extid",
+        ),
         Index("ix_matches_league_season", "league_external_id", "season"),
         Index("ix_matches_kickoff", "kickoff"),
     )
@@ -198,7 +203,7 @@ class PlayerAppearance(Base):
     __tablename__ = "player_appearances"
     __table_args__ = (
         UniqueConstraint(
-            "sport", "player_external_id", "match_external_id",
+            "sport", "player_external_id", "match_external_id", "tenant_id",
             name="uq_player_appearances_player_match",
         ),
         Index(
@@ -216,6 +221,25 @@ class PlayerAppearance(Base):
     tenant_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
     )
+    # Prompt 4 — API-Football fixture/players ingest
+    team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rating_apifootball: Mapped[float | None] = mapped_column(Float, nullable=True)
+    passes_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    passes_accuracy: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    shots_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    shots_on: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    dribbles_attempts: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    dribbles_success: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fouls_committed: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fouls_drawn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    yellow_cards: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    red_cards: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    second_yellow: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    substituted_in_minute: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    substituted_out_minute: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    position_played: Mapped[str | None] = mapped_column(String(5), nullable=True)
+    formation_played: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    captain: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
 
 class AgentOutput(Base):
@@ -233,7 +257,7 @@ class AgentOutput(Base):
     __tablename__ = "agent_outputs"
     __table_args__ = (
         UniqueConstraint(
-            "agent_name", "agent_version", "subject_type", "subject_id",
+            "agent_name", "agent_version", "subject_type", "subject_id", "tenant_id",
             name="uq_agent_outputs_request",
         ),
         Index(
@@ -270,7 +294,7 @@ class Prediction(Base):
     __tablename__ = "predictions"
     __table_args__ = (
         UniqueConstraint(
-            "sport", "match_external_id", "engine", "engine_version", "params_hash",
+            "sport", "match_external_id", "engine", "engine_version", "params_hash", "tenant_id",
             name="uq_predictions_unique_request",
         ),
         Index("ix_predictions_match", "sport", "match_external_id"),
@@ -317,7 +341,7 @@ class TrackingFrameRow(Base):
     __tablename__ = "tracking_frames"
     __table_args__ = (
         UniqueConstraint(
-            "sport", "match_external_id", "timestamp",
+            "sport", "match_external_id", "timestamp", "tenant_id",
             name="uq_tracking_frame_unique",
         ),
         Index("ix_tracking_match_time", "sport", "match_external_id", "timestamp"),
@@ -351,7 +375,7 @@ class AssistantMemory(Base):
     __tablename__ = "assistant_memory"
     __table_args__ = (
         UniqueConstraint(
-            "subject_type", "subject_id", "key",
+            "subject_type", "subject_id", "key", "tenant_id",
             name="uq_assistant_memory_request",
         ),
         Index("ix_assistant_memory_subject", "subject_type", "subject_id"),
@@ -405,7 +429,7 @@ class ScoutWatchlist(Base):
     __tablename__ = "scout_watchlist"
     __table_args__ = (
         UniqueConstraint(
-            "user_id", "player_external_id",
+            "user_id", "player_external_id", "tenant_id",
             name="uq_scout_watchlist_user_player",
         ),
         Index("ix_scout_watchlist_user", "user_id"),

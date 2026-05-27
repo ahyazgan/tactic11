@@ -21,7 +21,7 @@ from app.core.usage import consume_quota
 from app.data.cache import cache_get, cache_set
 from app.data.sources.base import DataSource
 from app.db.session import SessionLocal
-from app.domain import League, Match, Team
+from app.domain import League, LineupEntry, Match, PlayerMatchStats, Team
 from app.sports import football
 
 log = get_logger(__name__)
@@ -65,6 +65,117 @@ class APIFootball(DataSource):
     def get_team_matches(self, team_id: int, last_n: int) -> list[Match]:
         raw = self._get("fixtures", {"team": team_id, "last": last_n})
         return [self._to_match(item) for item in raw.get("response", [])]
+
+    # ---- Prompt 4: lineup + per-player stats --------------------------------
+
+    def get_fixture_lineups(self, fixture_id: int) -> list[LineupEntry]:
+        """Bir maçın ilk-11 + bench oyuncularını döner.
+
+        API yanıtı `response: [{team, formation, startXI: [...], substitutes: [...]}]`
+        — iki takımlık liste; her takım için ayrı LineupEntry üretiriz.
+        """
+        raw = self._get("fixtures/lineups", {"fixture": fixture_id})
+        out: list[LineupEntry] = []
+        for team_block in raw.get("response", []):
+            team_id = int(team_block["team"]["id"])
+            formation = team_block.get("formation")
+            for slot in team_block.get("startXI", []):
+                p = slot.get("player", slot)
+                out.append(self._to_lineup_entry(
+                    fixture_id=fixture_id, team_id=team_id,
+                    raw_player=p, is_starter=True, formation=formation,
+                ))
+            for slot in team_block.get("substitutes", []):
+                p = slot.get("player", slot)
+                out.append(self._to_lineup_entry(
+                    fixture_id=fixture_id, team_id=team_id,
+                    raw_player=p, is_starter=False, formation=formation,
+                ))
+        return out
+
+    def get_fixture_player_stats(self, fixture_id: int) -> list[PlayerMatchStats]:
+        """Bir maçın per-player istatistikleri (rating, pas, şut, dakika, kart).
+
+        API yanıtı `response: [{team, players: [{player, statistics: [{...}]}]}]`.
+        statistics tek-elemanlı liste (maç başına bir kayıt).
+        """
+        raw = self._get("fixtures/players", {"fixture": fixture_id})
+        out: list[PlayerMatchStats] = []
+        for team_block in raw.get("response", []):
+            team_id = int(team_block["team"]["id"])
+            for p in team_block.get("players", []):
+                stat = self._to_player_match_stats(
+                    fixture_id=fixture_id, team_id=team_id, raw=p,
+                )
+                if stat is not None:
+                    out.append(stat)
+        return out
+
+    @staticmethod
+    def _to_lineup_entry(
+        *, fixture_id: int, team_id: int, raw_player: dict[str, Any],
+        is_starter: bool, formation: str | None,
+    ) -> LineupEntry:
+        return LineupEntry(
+            match_external_id=fixture_id,
+            team_external_id=team_id,
+            player_external_id=int(raw_player["id"]),
+            player_name=str(raw_player.get("name") or "unknown"),
+            position_code=raw_player.get("pos"),
+            jersey=raw_player.get("number"),
+            is_starter=is_starter,
+            captain=bool(raw_player.get("captain", False)),
+            formation_played=formation,
+        )
+
+    @staticmethod
+    def _to_player_match_stats(
+        *, fixture_id: int, team_id: int, raw: dict[str, Any],
+    ) -> PlayerMatchStats | None:
+        player = raw.get("player") or {}
+        stats_list = raw.get("statistics") or []
+        if not stats_list:
+            return None
+        s = stats_list[0]
+        games = s.get("games") or {}
+        passes = s.get("passes") or {}
+        shots = s.get("shots") or {}
+        dribbles = s.get("dribbles") or {}
+        fouls = s.get("fouls") or {}
+        cards = s.get("cards") or {}
+        subs = s.get("substitutes") or {}
+        minutes = games.get("minutes")
+        if minutes is None:
+            return None  # oynamamış oyuncu
+        try:
+            pid = int(player["id"])
+        except (KeyError, TypeError, ValueError):
+            return None
+        rating_raw = games.get("rating")
+        rating: float | None = (
+            None if rating_raw is None or rating_raw == ""
+            else float(rating_raw)
+        )
+        return PlayerMatchStats(
+            match_external_id=fixture_id,
+            team_external_id=team_id,
+            player_external_id=pid,
+            minutes=int(minutes),
+            rating=rating,
+            passes_total=passes.get("total"),
+            passes_accuracy=passes.get("accuracy"),
+            shots_total=shots.get("total"),
+            shots_on=shots.get("on"),
+            dribbles_attempts=dribbles.get("attempts"),
+            dribbles_success=dribbles.get("success"),
+            fouls_committed=fouls.get("committed"),
+            fouls_drawn=fouls.get("drawn"),
+            yellow_cards=cards.get("yellow"),
+            red_cards=cards.get("red"),
+            second_yellow=cards.get("yellowred") if cards.get("yellowred") else None,
+            substituted_in_minute=subs.get("in"),
+            substituted_out_minute=subs.get("out"),
+        )
 
     # Internals ------------------------------------------------------------
 
@@ -112,6 +223,10 @@ class APIFootball(DataSource):
             name = f"teams_{params['league']}.json"
         elif path == "fixtures":
             name = f"matches_{params['team']}.json"
+        elif path == "fixtures/lineups":
+            name = f"lineups_{params['fixture']}.json"
+        elif path == "fixtures/players":
+            name = f"player_stats_{params['fixture']}.json"
         else:
             raise ValueError(f"fixture eşlemesi yok: {path}")
         fp = FIXTURE_DIR / name

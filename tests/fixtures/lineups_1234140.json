@@ -1,0 +1,52 @@
+{
+  "get": "fixtures/lineups",
+  "parameters": {"fixture": "1234140"},
+  "errors": [],
+  "results": 2,
+  "response": [
+    {
+      "team": {"id": 611, "name": "Galatasaray"},
+      "formation": "4-3-3",
+      "startXI": [
+        {"player": {"id": 6111, "name": "Muslera", "number": 1, "pos": "G"}},
+        {"player": {"id": 6112, "name": "Bardakci", "number": 4, "pos": "D"}},
+        {"player": {"id": 6113, "name": "Sanchez", "number": 6, "pos": "D"}},
+        {"player": {"id": 6114, "name": "Boey", "number": 2, "pos": "D"}},
+        {"player": {"id": 6115, "name": "Kaan", "number": 22, "pos": "D"}},
+        {"player": {"id": 6116, "name": "Torreira", "number": 8, "pos": "M"}},
+        {"player": {"id": 6117, "name": "Ndombele", "number": 5, "pos": "M", "captain": true}},
+        {"player": {"id": 6118, "name": "Mertens", "number": 10, "pos": "M"}},
+        {"player": {"id": 6119, "name": "Ziyech", "number": 7, "pos": "F"}},
+        {"player": {"id": 6120, "name": "Icardi", "number": 9, "pos": "F"}},
+        {"player": {"id": 6121, "name": "Zaha", "number": 11, "pos": "F"}}
+      ],
+      "substitutes": [
+        {"player": {"id": 6122, "name": "Jankat", "number": 13, "pos": "G"}},
+        {"player": {"id": 6123, "name": "Demirbay", "number": 15, "pos": "M"}},
+        {"player": {"id": 6124, "name": "Akturkoglu", "number": 17, "pos": "F"}}
+      ]
+    },
+    {
+      "team": {"id": 607, "name": "Fenerbahce"},
+      "formation": "4-2-3-1",
+      "startXI": [
+        {"player": {"id": 6071, "name": "Livakovic", "number": 1, "pos": "G"}},
+        {"player": {"id": 6072, "name": "Djiku", "number": 4, "pos": "D", "captain": true}},
+        {"player": {"id": 6073, "name": "Soyuncu", "number": 24, "pos": "D"}},
+        {"player": {"id": 6074, "name": "Osayi-Samuel", "number": 17, "pos": "D"}},
+        {"player": {"id": 6075, "name": "Kadioglu", "number": 14, "pos": "D"}},
+        {"player": {"id": 6076, "name": "Fred", "number": 6, "pos": "M"}},
+        {"player": {"id": 6077, "name": "Ismail", "number": 8, "pos": "M"}},
+        {"player": {"id": 6078, "name": "Tadic", "number": 10, "pos": "M"}},
+        {"player": {"id": 6079, "name": "Szymanski", "number": 7, "pos": "M"}},
+        {"player": {"id": 6080, "name": "Kostic", "number": 11, "pos": "M"}},
+        {"player": {"id": 6081, "name": "Dzeko", "number": 9, "pos": "F"}}
+      ],
+      "substitutes": [
+        {"player": {"id": 6082, "name": "Egribayat", "number": 35, "pos": "G"}},
+        {"player": {"id": 6083, "name": "Crespo", "number": 27, "pos": "M"}},
+        {"player": {"id": 6084, "name": "Yandas", "number": 18, "pos": "F"}}
+      ]
+    }
+  ]
+}
