@@ -69,6 +69,16 @@ class Settings(BaseSettings):
         default=0.8, ge=0.0, le=1.0, alias="QUOTA_WARN_FRACTION"
     )
 
+    # CORS — virgülle ayrılmış origin listesi.
+    # Dev: "*" → tüm origins (kolay).
+    # Prod: "https://app.example.com,https://admin.example.com" gibi whitelist.
+    # Boş ise CORS middleware kayıtlı olmaz (browser client yok varsayımı).
+    cors_allowed_origins: str = Field(default="", alias="CORS_ALLOWED_ORIGINS")
+
+    def cors_origins_list(self) -> list[str]:
+        """Comma-separated string → list, boş entry'leri filtrele."""
+        return [s.strip() for s in self.cors_allowed_origins.split(",") if s.strip()]
+
     def validate_for_production(self) -> None:
         """`app_env == "prod"` ise zorunlu secret'ları doğrula; eksikse fail.
 
