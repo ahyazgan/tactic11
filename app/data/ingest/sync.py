@@ -16,6 +16,8 @@ from app.data.sources.base import DataSource
 from app.data.validation import validate_leagues, validate_matches, validate_teams
 from app.db import models
 from app.domain import League, Match, Team
+from app.snapshot import save_snapshot
+from app.sports import football
 
 log = get_logger(__name__)
 
@@ -28,6 +30,7 @@ class SyncReport:
     teams_written: int
     matches_written: int
     rejected_count: int
+    snapshot_id: int
 
 
 def sync_league(
@@ -68,12 +71,24 @@ def sync_league(
         matches_written += len(m_res.accepted)
     log.info("match upsert: %d kayıt", matches_written)
 
+    snap = save_snapshot(
+        session,
+        sport=football.SPORT_NAME,
+        league_id=league_id,
+        season=season,
+    )
+    log.info(
+        "snapshot id=%d leagues=%d teams=%d matches=%d",
+        snap.id, snap.leagues_count, snap.teams_count, snap.matches_count,
+    )
+
     session.commit()
     return SyncReport(
         leagues_written=len(target_leagues),
         teams_written=len(t_res.accepted),
         matches_written=matches_written,
         rejected_count=rejected,
+        snapshot_id=snap.id,
     )
 
 

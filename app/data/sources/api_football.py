@@ -17,7 +17,10 @@ import httpx
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
+from app.core.usage import guard_quota, record_call
+from app.data.cache import cache_get, cache_set
 from app.data.sources.base import DataSource
+from app.db.session import SessionLocal
 from app.domain import League, Match, Team
 from app.sports import football
 
@@ -25,6 +28,19 @@ log = get_logger(__name__)
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
 FIXTURE_DIR = _PROJECT_ROOT / "tests" / "fixtures"
+
+_SOURCE_NAME = "api_football"
+# Veriye göre TTL: lig/takım listesi nadiren değişir, fikstür sıklıkla.
+_TTL_SECONDS: dict[str, int] = {
+    "leagues": 86_400,
+    "teams": 86_400,
+    "fixtures": 3_600,
+}
+_DEFAULT_TTL = 600
+
+
+def _cache_key(path: str, params: dict[str, Any]) -> str:
+    return f"{path}?{json.dumps(params, sort_keys=True)}"
 
 
 class APIFootball(DataSource):
@@ -63,12 +79,31 @@ class APIFootball(DataSource):
                 "API_FOOTBALL_KEY boş. USE_FIXTURES=true ile fixture'tan okuyun "
                 "ya da .env içine anahtar girin."
             )
+        cache_key = _cache_key(path, params)
+
+        with SessionLocal() as session:
+            cached = cache_get(session, source=_SOURCE_NAME, key=cache_key)
+        if cached is not None:
+            log.info("api_football cache hit: %s", cache_key)
+            return cached
+
+        with SessionLocal() as session:
+            guard_quota(session, _SOURCE_NAME)
+            session.commit()
+
         url = f"{self._base_url}/{path}"
         log.info("api_football GET %s params=%s", path, params)
         with httpx.Client(timeout=10.0) as client:
             r = client.get(url, params=params, headers={"x-apisports-key": self._key})
             r.raise_for_status()
-            return r.json()
+            data = r.json()
+
+        ttl = _TTL_SECONDS.get(path, _DEFAULT_TTL)
+        with SessionLocal() as session:
+            record_call(session, source=_SOURCE_NAME, endpoint=path)
+            cache_set(session, source=_SOURCE_NAME, key=cache_key, value=data, ttl_seconds=ttl)
+            session.commit()
+        return data
 
     def _read_fixture(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
         if path == "leagues":

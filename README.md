@@ -40,15 +40,40 @@ Yarın: tracking, tahmin, otomasyon. Sonra: diğer sporlar.
 | `app/agents/` | ufuk 3 | otomasyon |
 | `app/sports/<diğer>` | ufuk 4 | basketbol/voleybol |
 
-## Kurulum (Faz 1 tamamlandıktan sonra)
+## Kurulum
 ```bash
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+source venv/bin/activate            # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env       # API_FOOTBALL_KEY, DATABASE_URL doldur
-alembic upgrade head
-python scripts/sync_league.py --league 203 --season 2024
-uvicorn app.api.main:app --reload
+cp .env.example .env                # DATABASE_URL'i doldur
+alembic upgrade head                # tabloları oluştur
 ```
+
+`.env` notları:
+- `DATABASE_URL` zorunlu (yerel: Postgres ya da test için `sqlite:///./dev.db`).
+- `API_FOOTBALL_KEY` boşsa `USE_FIXTURES=true` yap; adapter
+  `tests/fixtures/*.json` üzerinden okur, API'ye dokunmaz.
+- `API_FOOTBALL_DAILY_LIMIT` / `MONTHLY_LIMIT` ile kota koruması;
+  `core/usage` her gerçek HTTP çağrısını sayar, eşiğe yaklaşınca uyarır,
+  aşınca `QuotaExceeded` fırlatır.
+
+## Çalıştırma
+```bash
+# 1) Bir lig + sezonu çek, doğrula, DB'ye yaz, snapshot al
+python scripts/sync_league.py --league 203 --season 2024
+
+# 2) API'yi ayağa kaldır
+uvicorn app.api.main:app --reload
+# GET /health
+# GET /leagues
+# GET /teams/{league_id}
+# GET /teams/{team_id}/matches
+```
+
+## Test
+```bash
+pytest -q
+```
+Testler in-memory SQLite ile çalışır; gerçek DB veya API anahtarı gerekmez.
 
 Detaylı yol haritası: [ROADMAP.md](ROADMAP.md).

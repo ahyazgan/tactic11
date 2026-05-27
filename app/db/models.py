@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Index, Integer, String, UniqueConstraint
+from sqlalchemy import Date, DateTime, Index, Integer, PrimaryKeyConstraint, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -77,3 +77,54 @@ class Match(Base):
     away_team_external_id: Mapped[int] = mapped_column(Integer)
     home_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     away_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class Snapshot(Base):
+    """Bir sync sonunda durumun fotoğrafı.
+
+    Üzerine yazılmaz; her sync yeni satır ekler. `scope` örn:
+    `"league:203:season:2024"`.
+    """
+
+    __tablename__ = "snapshots"
+    __table_args__ = (
+        Index("ix_snapshots_sport_scope_created", "sport", "scope", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    scope: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    leagues_count: Mapped[int] = mapped_column(Integer)
+    teams_count: Mapped[int] = mapped_column(Integer)
+    matches_count: Mapped[int] = mapped_column(Integer)
+
+
+class UsageEvent(Base):
+    """Her dış servis çağrısı için bir kayıt (kota koruması ve maliyet izleme)."""
+
+    __tablename__ = "usage_events"
+    __table_args__ = (
+        Index("ix_usage_events_source_created", "source", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    source: Mapped[str] = mapped_column(String(64))
+    endpoint: Mapped[str] = mapped_column(String(255))
+    tokens: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class CacheEntry(Base):
+    """Adapter yanıtları için TTL'li cache satırı."""
+
+    __tablename__ = "cache_entries"
+    __table_args__ = (
+        PrimaryKeyConstraint("source", "key", name="pk_cache_entries"),
+        Index("ix_cache_entries_expires", "expires_at"),
+    )
+
+    source: Mapped[str] = mapped_column(String(64))
+    key: Mapped[str] = mapped_column(String(512))
+    value: Mapped[str] = mapped_column(Text)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

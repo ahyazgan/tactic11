@@ -44,11 +44,12 @@ def main() -> None:
         )
 
     log.info(
-        "sync tamam: leagues=%d teams=%d matches=%d rejected=%d",
+        "sync tamam: leagues=%d teams=%d matches=%d rejected=%d snapshot=%d",
         report.leagues_written,
         report.teams_written,
         report.matches_written,
         report.rejected_count,
+        report.snapshot_id,
     )
 
 

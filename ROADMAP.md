@@ -10,15 +10,15 @@ kodunu yazar. Boş iskeletler yer tutar; sırası gelince doldurulur.
 
 - [x] `app/core/config.py` — pydantic-settings ile `.env` okuma
 - [x] `app/core/logging.py` — yapılandırılmış log
-- [ ] `app/core/usage/` — API çağrı sayacı + eşik kontrolü
+- [x] `app/core/usage/` — API çağrı sayacı + eşik kontrolü
 - [x] `app/domain/` — League, Team, Match, Player (pydantic)
 - [x] `app/db/` — SQLAlchemy modelleri + Alembic ilk migration
 - [x] `app/data/sources/base.py` — `DataSource` arayüzü
-- [x] `app/data/sources/api_football.py` — adapter (fixture modlu; cache/rate-limit sonraki tur)
-- [ ] `app/data/cache/` — basit cache (DB veya bellek)
+- [x] `app/data/sources/api_football.py` — adapter (cache + kota guard)
+- [x] `app/data/cache/` — DB-destekli TTL cache
 - [x] `app/data/validation/` — kural listesi + çalıştırıcı
-- [x] `app/data/ingest/` — çek + doğrula + normalize + yaz
-- [ ] `app/snapshot/` — her sync'te durum özeti, üzerine yazmadan
+- [x] `app/data/ingest/` — çek + doğrula + normalize + yaz + snapshot
+- [x] `app/snapshot/` — her sync'te durum özeti, üzerine yazmadan
 - [x] `app/api/main.py` — FastAPI app + `/health`, `/leagues`, `/teams/...`
 - [x] `app/sports/football.py` — futbol sabitleri
 - [x] `scripts/sync_league.py` — uçtan uca CLI
