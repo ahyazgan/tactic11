@@ -175,14 +175,18 @@ def _build_predict_prompt(v: dict[str, Any], a: AuditRecord) -> str:
         f" UYARI: örneklem küçük ({sample} maç), tahmin güveni DÜŞÜK."
         if low else ""
     )
+    rho = v.get("rho_used", 0.0)
+    model_note = (
+        "Poisson + Dixon-Coles (düşük-skor düzeltmeli)" if rho != 0.0 else "saf Poisson"
+    )
     return (
-        f"Maç tahmini (Poisson modeli) — ev {home_id} vs deplasman {away_id}. "
+        f"Maç tahmini ({model_note}) — ev {home_id} vs deplasman {away_id}. "
         f"Beklenen goller: ev {lam_h}, dep {lam_a}. "
         f"1X2 olasılıkları: ev galibiyet %{int(pH * 100)}, "
         f"beraberlik %{int(pD * 100)}, dep galibiyet %{int(pA * 100)}. "
         f"En olası skor: {score[0]}-{score[1]} (P=%{score_p * 100:.1f}).{confidence_note}\n\n"
         "Bu sayıları yorumla; en olası ihtimal hangisi, fark ne kadar belirgin? "
-        "Model bağımsızlık varsayar; küçük örneklemde gürültülü olabilir. "
+        "Küçük örneklemde gürültülü olabilir. "
         "'Bu skor olur' deme — 'sayılara göre şu yöne işaret' de."
     )
 

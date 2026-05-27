@@ -73,15 +73,46 @@ def test_predict_no_low_confidence_with_5plus_matches():
 
 
 def test_predict_most_likely_score_is_grid_max():
-    """En olası skor, olasılık matrisindeki maksimumla aynı."""
+    """En olası skor, olasılık matrisindeki maksimumla aynı.
+
+    λ=1 için Poisson modu k=0 veya k=1; iki taraf da 1.0 ise (0,0) ve (1,1)
+    saf Poisson'da eşittir (~0.135). Dixon-Coles düzeltmesi (ρ=-0.12 default)
+    her ikisini de τ=1.12 ile çarpar → her iki hücre ~0.151'e çıkar; eşitlik
+    korunur, en olası set aynı.
+    """
     home_f = _form_for(611, scoring_avg=1.0)
     away_f = _form_for(607, scoring_avg=1.0)
     p = compute_predict(home_f, away_f, home_team_id=611, away_team_id=607).value
-    # λ=1 için Poisson modu k=0 veya k=1; iki taraf da 1.0 ise (0,0) veya (1,1) olası.
-    # Tam sayısal eşitlikten dolayı (0,0)'ın matrisinde değeri = e^-1·e^-1 ≈ 0.135
-    # (1,1) = 1·e^-1·1·e^-1 ≈ 0.135 — aynı. En olası set: (0,0) veya (1,1).
     assert p.most_likely_score in [(0, 0), (1, 1)]
+    # DC default (ρ=-0.12) ile ~0.151
+    assert p.most_likely_score_prob == pytest.approx(0.151, abs=0.01)
+
+
+def test_predict_rho_zero_falls_back_to_pure_poisson():
+    """ρ=0 → DC etkisiz, sonuç saf Poisson olur (geriye uyumlu baseline)."""
+    home_f = _form_for(611, scoring_avg=1.0)
+    away_f = _form_for(607, scoring_avg=1.0)
+    p = compute_predict(home_f, away_f, home_team_id=611, away_team_id=607, rho=0.0).value
+    # Saf Poisson: P(0,0) = P(1,1) = e^-1 · e^-1 ≈ 0.135
     assert p.most_likely_score_prob == pytest.approx(0.135, abs=0.01)
+    assert p.rho_used == 0.0
+
+
+def test_predict_dixon_coles_bumps_low_score_cells():
+    """Negatif ρ ile (0-0)/(1-1) hücresi yukarı, (0-1)/(1-0) aşağı."""
+    home_f = _form_for(611, scoring_avg=1.0)
+    away_f = _form_for(607, scoring_avg=1.0)
+    p_poisson = compute_predict(home_f, away_f, home_team_id=611, away_team_id=607, rho=0.0).value
+    p_dc = compute_predict(home_f, away_f, home_team_id=611, away_team_id=607).value  # ρ=-0.12
+
+    # DC negatif ρ → draw payı artar (P(0-0)+P(1-1)+... yukarı)
+    assert p_dc.prob_draw > p_poisson.prob_draw
+    # ev/dep galibiyeti toplamı düşer (sıfır-toplam düzeltme)
+    total_dc = p_dc.prob_home_win + p_dc.prob_away_win
+    total_poisson = p_poisson.prob_home_win + p_poisson.prob_away_win
+    assert total_dc < total_poisson
+    # Toplam yine ~1
+    assert (p_dc.prob_home_win + p_dc.prob_draw + p_dc.prob_away_win) == pytest.approx(1.0, abs=0.01)
 
 
 def test_predict_audit_carries_formula_and_inputs():
@@ -89,9 +120,12 @@ def test_predict_audit_carries_formula_and_inputs():
     away_f = _form_for(607, scoring_avg=1.0)
     res = compute_predict(home_f, away_f, home_team_id=611, away_team_id=607)
     assert res.audit.engine == "engine.predict"
+    assert res.audit.engine_version == "2"
     assert "Poisson" in res.audit.formula
+    assert "Dixon-Coles" in res.audit.formula
     assert res.audit.inputs["lam_home"] == 1.5 or res.audit.inputs["lam_home"] == 2.0  # round nedeniyle
     assert res.audit.inputs["min_confident_sample"] == 5
+    assert res.audit.inputs["rho"] == pytest.approx(-0.12)
 
 
 def test_predict_zero_goals_doesnt_crash():
