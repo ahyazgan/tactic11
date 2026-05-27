@@ -7,10 +7,16 @@ kayıt side effect'i tetiklenir.
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
+
+from sqlalchemy import select
+
+from app.agents import PreMatchReportAgent, save_agent_output
 from app.core.logging import get_logger
 from app.data.ingest import sync_league
 from app.data.predictions import reconcile_pending_predictions
 from app.data.sources.api_football import APIFootball
+from app.db import models
 from app.db.session import SessionLocal
 from app.scheduler.registry import JobSpec, register
 from app.sports import football
@@ -62,5 +68,68 @@ register(
         name="reconcile_predictions",
         handler=reconcile_predictions_handler,
         description="Bitmiş maçların actual sonucunu predictions tablosuna yaz (kalibrasyon).",
+    )
+)
+
+
+def run_pre_match_reports_handler(*, horizon_days: int = 7) -> None:
+    """Önümüzdeki N gündeki NS maçlar için PreMatchReportAgent çalıştır.
+
+    Idempotent: save_agent_output upsert — aynı maç için tekrar çalışırsa
+    output_json refresh edilir (yeni veri / yeni form penceresi yansır).
+    """
+    agent = PreMatchReportAgent()
+    processed = 0
+    failed = 0
+    upcoming_count = 0
+    with SessionLocal() as session:
+        # SQLite tz-strip; engine.schedule ile aynı pattern (PR #14)
+        sample = session.execute(
+            select(models.Match)
+            .where(models.Match.sport == football.SPORT_NAME)
+            .limit(1)
+        ).scalar_one_or_none()
+        ref_tz = sample.kickoff.tzinfo if sample is not None else None
+        now_local = datetime.now(ref_tz)
+        horizon_local = now_local + timedelta(days=horizon_days)
+
+        upcoming = list(
+            session.execute(
+                select(models.Match)
+                .where(
+                    models.Match.sport == football.SPORT_NAME,
+                    models.Match.kickoff > now_local,
+                    models.Match.kickoff <= horizon_local,
+                    ~models.Match.status.in_(football.FINISHED_STATUSES),
+                )
+                .order_by(models.Match.kickoff)
+            ).scalars()
+        )
+        upcoming_count = len(upcoming)
+        for match in upcoming:
+            try:
+                result = agent.run(session, context={"match_external_id": match.external_id})
+                save_agent_output(
+                    session, result=result,
+                    agent_name=agent.name, agent_version=agent.version,
+                )
+                processed += 1
+            except Exception as e:  # noqa: BLE001 — agent loop bir maçta düşmesin
+                log.warning(
+                    "pre_match_report match=%d başarısız: %s", match.external_id, e
+                )
+                failed += 1
+        session.commit()
+    log.info(
+        "job run_pre_match_reports: upcoming=%d processed=%d failed=%d horizon_days=%d",
+        upcoming_count, processed, failed, horizon_days,
+    )
+
+
+register(
+    JobSpec(
+        name="run_pre_match_reports",
+        handler=run_pre_match_reports_handler,
+        description="Önümüzdeki N gündeki NS maçlar için PreMatchReportAgent çalıştır.",
     )
 )
