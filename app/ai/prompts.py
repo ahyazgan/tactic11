@@ -85,13 +85,25 @@ def _build_form_prompt(v: dict[str, Any], a: AuditRecord) -> str:
 
 
 def _build_rating_prompt(v: dict[str, Any], a: AuditRecord) -> str:
+    # v2 alanları geriye uyumlu erişim (eski cache satırı için fallback)
+    home_r = v.get("home_rating")
+    away_r = v.get("away_rating")
+    home_n = v.get("home_matches", 0)
+    away_n = v.get("away_matches", 0)
+    split_line = ""
+    if home_r is not None and away_r is not None and (home_n > 0 or away_n > 0):
+        split_line = (
+            f" Ev rating'i {home_r} ({home_n} maç), "
+            f"dep rating'i {away_r} ({away_n} maç)."
+        )
     return (
         f"Takım {a.subject_id} rating raporu (son {v['matches_considered']} maç): "
         f"rating={v['rating']}, ppg={v['points_per_game']}, "
-        f"maç başı gol farkı={v['goal_diff_per_match']:+}. "
+        f"maç başı gol farkı={v['goal_diff_per_match']:+}.{split_line} "
         f"Formül: ppg × ağırlık + gd_per_match × ağırlık. "
         f"(Detay: {a.formula})\n\n"
-        "Rating'in nereden geldiğini ve takımın bu sayılarla ne durumda olduğunu özetle."
+        "Rating'in nereden geldiğini ve takımın bu sayılarla ne durumda olduğunu özetle; "
+        "ev-dep farkı belirginse not düş."
     )
 
 
