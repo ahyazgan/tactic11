@@ -1,7 +1,7 @@
 {
   "get": "fixtures",
   "parameters": {
-    "team": "611",
+    "team": "1009",
     "last": "10"
   },
   "errors": [],
@@ -13,7 +13,7 @@
   "response": [
     {
       "fixture": {
-        "id": 1234140,
+        "id": 1234142,
         "date": "2026-06-14T18:00:00+00:00",
         "status": {
           "short": "NS",
@@ -27,12 +27,12 @@
       },
       "teams": {
         "home": {
-          "id": 611,
-          "name": "Galatasaray"
+          "id": 1009,
+          "name": "Samsunspor"
         },
         "away": {
-          "id": 1014,
-          "name": "Alanyaspor"
+          "id": 627,
+          "name": "Konyaspor"
         }
       },
       "goals": {
@@ -42,7 +42,7 @@
     },
     {
       "fixture": {
-        "id": 1234135,
+        "id": 1234138,
         "date": "2026-06-07T18:00:00+00:00",
         "status": {
           "short": "NS",
@@ -56,12 +56,12 @@
       },
       "teams": {
         "home": {
-          "id": 1003,
-          "name": "Kayserispor"
+          "id": 1009,
+          "name": "Samsunspor"
         },
         "away": {
-          "id": 611,
-          "name": "Galatasaray"
+          "id": 614,
+          "name": "Besiktas"
         }
       },
       "goals": {
@@ -71,7 +71,7 @@
     },
     {
       "fixture": {
-        "id": 1234130,
+        "id": 1234134,
         "date": "2024-09-28T18:00:00+00:00",
         "status": {
           "short": "FT",
@@ -85,22 +85,22 @@
       },
       "teams": {
         "home": {
-          "id": 611,
-          "name": "Galatasaray"
+          "id": 1009,
+          "name": "Samsunspor"
         },
         "away": {
-          "id": 627,
-          "name": "Konyaspor"
+          "id": 999,
+          "name": "Basaksehir"
         }
       },
       "goals": {
-        "home": 3,
+        "home": 2,
         "away": 0
       }
     },
     {
       "fixture": {
-        "id": 1234125,
+        "id": 1234129,
         "date": "2024-09-21T18:00:00+00:00",
         "status": {
           "short": "FT",
@@ -114,22 +114,22 @@
       },
       "teams": {
         "home": {
-          "id": 1004,
-          "name": "Antalyaspor"
+          "id": 607,
+          "name": "Fenerbahce"
         },
         "away": {
-          "id": 611,
-          "name": "Galatasaray"
+          "id": 1009,
+          "name": "Samsunspor"
         }
       },
       "goals": {
-        "home": 2,
+        "home": 1,
         "away": 3
       }
     },
     {
       "fixture": {
-        "id": 1234120,
+        "id": 1234123,
         "date": "2024-09-14T18:00:00+00:00",
         "status": {
           "short": "FT",
@@ -143,22 +143,22 @@
       },
       "teams": {
         "home": {
-          "id": 611,
-          "name": "Galatasaray"
+          "id": 1003,
+          "name": "Kayserispor"
         },
         "away": {
-          "id": 614,
-          "name": "Besiktas"
+          "id": 1009,
+          "name": "Samsunspor"
         }
       },
       "goals": {
-        "home": 1,
-        "away": 1
+        "home": 2,
+        "away": 3
       }
     },
     {
       "fixture": {
-        "id": 1234115,
+        "id": 1234117,
         "date": "2024-09-07T18:00:00+00:00",
         "status": {
           "short": "FT",
@@ -172,22 +172,22 @@
       },
       "teams": {
         "home": {
-          "id": 998,
-          "name": "Trabzonspor"
+          "id": 1004,
+          "name": "Antalyaspor"
         },
         "away": {
-          "id": 611,
-          "name": "Galatasaray"
+          "id": 1009,
+          "name": "Samsunspor"
         }
       },
       "goals": {
-        "home": 1,
-        "away": 1
+        "home": 0,
+        "away": 0
       }
     },
     {
       "fixture": {
-        "id": 1234110,
+        "id": 1234111,
         "date": "2024-08-31T18:00:00+00:00",
         "status": {
           "short": "FT",
@@ -201,17 +201,17 @@
       },
       "teams": {
         "home": {
-          "id": 611,
-          "name": "Galatasaray"
+          "id": 998,
+          "name": "Trabzonspor"
         },
         "away": {
-          "id": 999,
-          "name": "Basaksehir"
+          "id": 1009,
+          "name": "Samsunspor"
         }
       },
       "goals": {
-        "home": 0,
-        "away": 3
+        "home": 2,
+        "away": 1
       }
     },
     {
@@ -245,7 +245,7 @@
     },
     {
       "fixture": {
-        "id": 1234100,
+        "id": 1234101,
         "date": "2024-08-17T18:00:00+00:00",
         "status": {
           "short": "FT",
@@ -259,17 +259,17 @@
       },
       "teams": {
         "home": {
-          "id": 611,
-          "name": "Galatasaray"
+          "id": 1009,
+          "name": "Samsunspor"
         },
         "away": {
-          "id": 607,
-          "name": "Fenerbahce"
+          "id": 1014,
+          "name": "Alanyaspor"
         }
       },
       "goals": {
-        "home": 1,
-        "away": 6
+        "home": 3,
+        "away": 1
       }
     }
   ]

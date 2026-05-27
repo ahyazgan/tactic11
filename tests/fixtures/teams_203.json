@@ -1,13 +1,115 @@
 {
   "get": "teams",
-  "parameters": {"league": "203", "season": "2024"},
+  "parameters": {
+    "league": "203",
+    "season": "2024"
+  },
   "errors": [],
-  "results": 4,
-  "paging": {"current": 1, "total": 1},
+  "results": 10,
+  "paging": {
+    "current": 1,
+    "total": 1
+  },
   "response": [
-    {"team": {"id": 611, "name": "Galatasaray", "country": "Turkey", "founded": 1905, "national": false}, "venue": {}},
-    {"team": {"id": 607, "name": "Fenerbahce", "country": "Turkey", "founded": 1907, "national": false}, "venue": {}},
-    {"team": {"id": 614, "name": "Besiktas", "country": "Turkey", "founded": 1903, "national": false}, "venue": {}},
-    {"team": {"id": 998, "name": "Trabzonspor", "country": "Turkey", "founded": 1967, "national": false}, "venue": {}}
+    {
+      "team": {
+        "id": 611,
+        "name": "Galatasaray",
+        "country": "Turkey",
+        "founded": 1905,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 607,
+        "name": "Fenerbahce",
+        "country": "Turkey",
+        "founded": 1907,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 1009,
+        "name": "Samsunspor",
+        "country": "Turkey",
+        "founded": 1965,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 999,
+        "name": "Basaksehir",
+        "country": "Turkey",
+        "founded": 1990,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 998,
+        "name": "Trabzonspor",
+        "country": "Turkey",
+        "founded": 1967,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 614,
+        "name": "Besiktas",
+        "country": "Turkey",
+        "founded": 1903,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 1004,
+        "name": "Antalyaspor",
+        "country": "Turkey",
+        "founded": 1966,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 627,
+        "name": "Konyaspor",
+        "country": "Turkey",
+        "founded": 1922,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 1003,
+        "name": "Kayserispor",
+        "country": "Turkey",
+        "founded": 1966,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 1014,
+        "name": "Alanyaspor",
+        "country": "Turkey",
+        "founded": 1948,
+        "national": false
+      },
+      "venue": {}
+    }
   ]
 }
