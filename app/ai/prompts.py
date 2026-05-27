@@ -49,7 +49,7 @@ Kurallar:
 
 def _build_form_prompt(v: dict[str, Any], a: AuditRecord) -> str:
     last = " ".join(v["last_results"]) if v["last_results"] else "—"
-    # v2 alanlarına geriye uyumlu erişim — eski cache satırı için fallback.
+    # v2/v3 alanlarına geriye uyumlu erişim — eski cache satırı için fallback.
     clean = v.get("clean_sheets", 0)
     gpm = v.get("goals_for_per_match", 0.0)
     cpm = v.get("goals_against_per_match", 0.0)
@@ -60,6 +60,10 @@ def _build_form_prompt(v: dict[str, Any], a: AuditRecord) -> str:
         else f"{abs(streak)} mağlubiyet serisi" if streak < 0
         else "seride yok (son maç beraberlik veya seri kırıldı)"
     )
+    dominant = v.get("dominant_wins", 0)
+    close_l = v.get("close_losses", 0)
+    fts = v.get("failed_to_score", 0)
+    scoring_rate = v.get("scoring_rate", 0.0)
     return (
         f"Takım {a.subject_id} son {v['matches_played']} tamamlanmış maçta: "
         f"{v['wins']} galibiyet, {v['draws']} beraberlik, {v['losses']} mağlubiyet. "
@@ -71,8 +75,12 @@ def _build_form_prompt(v: dict[str, Any], a: AuditRecord) -> str:
         f"deplasman: {v['away_wins']}G-{v['away_draws']}B-{v['away_losses']}M. "
         f"Son sonuçlar (yeniden eskiye): {last}. "
         f"Momentum: {momentum:+} (yakın geçmiş ppg ile eskinin farkı). "
-        f"Şu an: {streak_text}.\n\n"
-        "Bu form raporunu kısa bir yorumla özetle; yön/momentum varsa not düş."
+        f"Şu an: {streak_text}. "
+        f"Galibiyet kalitesi: {dominant} dominant (2+ farkla), "
+        f"{close_l} dar mağlubiyet (1 farkla). "
+        f"Gol atamadığı maç: {fts} (gol attığı oran %{int(scoring_rate * 100)}).\n\n"
+        "Bu form raporunu kısa bir yorumla özetle; "
+        "yön/momentum, gol üretimi, savunma örüntüsü varsa not düş."
     )
 
 
@@ -131,11 +139,54 @@ def _build_load_prompt(v: dict[str, Any], a: AuditRecord) -> str:
     )
 
 
+def _build_schedule_prompt(v: dict[str, Any], a: AuditRecord) -> str:
+    if v["upcoming_count"] == 0:
+        return (
+            f"Takım {a.subject_id} için ufuktaki maç yok. "
+            "Bunu söyle, rotasyon kararına gerek yok."
+        )
+    next_3 = ", ".join(v.get("next_kickoffs", [])[:3]) or "—"
+    dense = "evet" if v.get("dense_schedule") else "hayır"
+    days = v.get("days_until_next_match")
+    return (
+        f"Takım {a.subject_id} fikstür yoğunluğu: önümüzdeki ufukta "
+        f"{v['upcoming_count']} maç. "
+        f"Önümüzdeki 7 günde {v['matches_next_7d']}, 14 günde {v['matches_next_14d']} maç. "
+        f"İlk maça kalan: {days} gün. "
+        f"En yakın 3 kickoff: {next_3}. "
+        f"Yoğun fikstür uyarısı: {dense}.\n\n"
+        "Bu yoğunluğu rotasyon/dinlenme açısından kısa yorumla."
+    )
+
+
+def _build_matchup_prompt(v: dict[str, Any], a: AuditRecord) -> str:
+    dom = v.get("h2h_dominance", 0.0)
+    if dom > 0:
+        dom_text = f"{v['home_team_id']} {abs(dom):.0f}% baskın"
+    elif dom < 0:
+        dom_text = f"{v['away_team_id']} {abs(dom):.0f}% baskın"
+    else:
+        dom_text = "dengeli ya da veri yok"
+    return (
+        f"Maç kıyas raporu — ev sahibi {v['home_team_id']} vs deplasman {v['away_team_id']}. "
+        f"Form farkı (ev perspektifi): ppg {v['form_delta_ppg']:+}, "
+        f"gd/maç {v['form_delta_goal_diff']:+}, momentum {v['momentum_delta']:+}, "
+        f"clean sheet farkı {v['clean_sheets_delta']:+d}. "
+        f"Ev sahibi sahasında: galibiyet oranı %{int(v['home_advantage_factor'] * 100)}. "
+        f"H2H baskınlığı: {dom_text}. "
+        f"Yön ipucu (advantage_score): {v['advantage_score']:+}.\n\n"
+        "Bu sayılara dayanarak 2-3 cümlelik kıyas özeti — kim hangi yönde "
+        "avantajlı, hangi nokta riskli. 'Kazanır' tahmini yapma."
+    )
+
+
 _BUILDERS: dict[str, Callable[[dict[str, Any], AuditRecord], str]] = {
     "engine.form": _build_form_prompt,
     "engine.rating": _build_rating_prompt,
     "engine.opponent": _build_h2h_prompt,
     "engine.load": _build_load_prompt,
+    "engine.schedule": _build_schedule_prompt,
+    "engine.matchup": _build_matchup_prompt,
 }
 
 
