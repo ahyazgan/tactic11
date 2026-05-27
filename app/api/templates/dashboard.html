@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>manager2 — Dashboard</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #161b22;
+    --border: #30363d;
+    --fg: #e6edf3;
+    --muted: #8b949e;
+    --accent: #58a6ff;
+    --good: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+  }
+  header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .auth {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px; margin-bottom: 24px;
+    display: flex; gap: 12px; align-items: center;
+  }
+  .auth label { color: var(--muted); font-size: 12px; }
+  .auth input {
+    background: var(--bg); border: 1px solid var(--border); color: var(--fg);
+    padding: 8px 12px; border-radius: 6px; flex: 1; font-family: monospace;
+  }
+  .auth button {
+    background: var(--accent); color: #fff; border: 0; padding: 8px 16px;
+    border-radius: 6px; cursor: pointer; font-weight: 600;
+  }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px;
+  }
+  .card h2 { margin: 0 0 12px; font-size: 14px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .card .num { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .card .sub { color: var(--muted); font-size: 12px; }
+  .status-ok { color: var(--good); }
+  .status-warn { color: var(--warn); }
+  .status-bad { color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--muted); font-weight: 500; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  pre {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 12px; overflow-x: auto; font-size: 12px; color: var(--muted);
+  }
+  .footer { margin-top: 32px; text-align: center; color: var(--muted); font-size: 12px; }
+  .footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>manager2 — Operations Dashboard</h1>
+  <div class="meta" id="meta">yükleniyor...</div>
+</header>
+<main>
+
+<div class="auth">
+  <label for="apikey">X-API-Key:</label>
+  <input id="apikey" type="password" placeholder="API anahtarınız" />
+  <button id="reload">Yenile</button>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <h2>Sistem durumu</h2>
+    <div class="num" id="health-status">—</div>
+    <div class="sub" id="health-detail">DB ping + uptime</div>
+  </div>
+
+  <div class="card">
+    <h2>DB istatistikleri</h2>
+    <div id="db-stats" class="sub">—</div>
+  </div>
+
+  <div class="card">
+    <h2>API kotası</h2>
+    <div class="num" id="quota-num">—</div>
+    <div class="sub" id="quota-detail">api-football günlük kullanım</div>
+  </div>
+
+  <div class="card">
+    <h2>ML model durumu</h2>
+    <div class="num" id="ml-status">—</div>
+    <div class="sub" id="ml-detail">best ρ + örneklem</div>
+  </div>
+
+  <div class="card" style="grid-column: 1 / -1;">
+    <h2>Tahmin doğruluğu (son 30 gün)</h2>
+    <div id="accuracy">—</div>
+  </div>
+
+  <div class="card" style="grid-column: 1 / -1;">
+    <h2>Ligler</h2>
+    <div id="leagues">—</div>
+  </div>
+
+  <div class="card" style="grid-column: 1 / -1;">
+    <h2>Son agent çıktıları</h2>
+    <div id="agent-outputs">—</div>
+  </div>
+
+</div>
+
+<div class="footer">
+  manager2 — kalibre edilmiş futbol istihbaratı.
+  Operasyonel rehber: <a href="https://github.com/" target="_blank">DEPLOYMENT.md</a> ·
+  Pilot programı: <a href="https://github.com/" target="_blank">PILOT.md</a>
+</div>
+
+</main>
+
+<script>
+const apikeyInput = document.getElementById('apikey');
+const reloadBtn = document.getElementById('reload');
+const STORAGE_KEY = 'manager2_apikey';
+
+apikeyInput.value = localStorage.getItem(STORAGE_KEY) || '';
+
+reloadBtn.addEventListener('click', () => {
+  localStorage.setItem(STORAGE_KEY, apikeyInput.value);
+  loadAll();
+});
+
+async function fetchJSON(path, requireAuth = true) {
+  const headers = {};
+  if (requireAuth && apikeyInput.value) {
+    headers['X-API-Key'] = apikeyInput.value;
+  }
+  const r = await fetch(path, { headers });
+  if (!r.ok) {
+    return { __error: true, status: r.status, body: await r.text() };
+  }
+  return r.json();
+}
+
+function setText(id, text, cls) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  if (cls) el.className = el.className.split(' ').filter(c => !c.startsWith('status-')).join(' ') + ' ' + cls;
+}
+
+async function loadHealth() {
+  const d = await fetchJSON('/health', false);
+  if (d.__error) { setText('health-status', 'down', 'status-bad'); setText('health-detail', `HTTP ${d.status}`); return; }
+  setText('health-status', d.status, d.status === 'ok' ? 'status-ok' : 'status-bad');
+  setText('health-detail', `v${d.version} · uptime ${Math.round(d.uptime_seconds)}s · DB ${d.db}`);
+}
+
+async function loadDBStats() {
+  const d = await fetchJSON('/admin/db-stats');
+  const el = document.getElementById('db-stats');
+  if (d.__error) { el.textContent = `auth gerekli (HTTP ${d.status})`; return; }
+  let rows = '';
+  Object.entries(d).sort().forEach(([k, v]) => {
+    rows += `<tr><td>${k}</td><td>${v}</td></tr>`;
+  });
+  el.innerHTML = `<table>${rows}</table>`;
+}
+
+async function loadQuota() {
+  const d = await fetchJSON('/admin/quota-status');
+  if (d.__error) { setText('quota-num', '—'); setText('quota-detail', `auth gerekli (HTTP ${d.status})`); return; }
+  // Try several common shapes
+  let af = d.api_football || (d.sources && d.sources.api_football) || null;
+  if (!af && Array.isArray(d)) af = d.find(x => x.source === 'api_football');
+  if (af) {
+    const used = af.used ?? af.count ?? 0;
+    const limit = af.limit ?? '?';
+    const frac = limit && limit !== '?' ? (used / limit) : null;
+    setText('quota-num', `${used} / ${limit}`, frac && frac > 0.8 ? 'status-warn' : 'status-ok');
+    setText('quota-detail', frac !== null ? `${Math.round(frac * 100)}% kullanım` : 'günlük');
+  } else {
+    setText('quota-num', '—');
+    setText('quota-detail', JSON.stringify(d).slice(0, 80));
+  }
+}
+
+async function loadMLStatus() {
+  const d = await fetchJSON('/admin/ml-model-status');
+  if (d.__error) { setText('ml-status', '—'); setText('ml-detail', `auth gerekli (HTTP ${d.status})`); return; }
+  if (d.status === 'untrained') {
+    setText('ml-status', 'untrained', 'status-warn');
+    setText('ml-detail', 'train_predict_ml job henüz çalışmadı');
+  } else if (d.status === 'stale') {
+    setText('ml-status', 'stale', 'status-warn');
+    setText('ml-detail', `expires_at ${d.expires_at || '?'}`);
+  } else if (d.status === 'fresh') {
+    setText('ml-status', `ρ = ${d.best_rho?.toFixed(3) ?? '?'}`, 'status-ok');
+    setText('ml-detail', `n=${d.sample_count} · log_loss=${d.best_log_loss?.toFixed(4) ?? '?'}`);
+  } else {
+    setText('ml-status', d.status || '?');
+    setText('ml-detail', '');
+  }
+}
+
+async function loadAccuracy() {
+  const d = await fetchJSON('/admin/predict-accuracy?days=30');
+  const el = document.getElementById('accuracy');
+  if (d.__error) { el.textContent = `auth gerekli (HTTP ${d.status})`; return; }
+  const buckets = d.calibration_buckets || [];
+  el.innerHTML = `
+    <table>
+      <thead><tr><th>metric</th><th>değer</th></tr></thead>
+      <tbody>
+        <tr><td>brier score</td><td>${d.brier_score?.toFixed(4) ?? '—'}</td></tr>
+        <tr><td>log loss</td><td>${d.log_loss?.toFixed(4) ?? '—'}</td></tr>
+        <tr><td>ECE</td><td>${d.ece?.toFixed(4) ?? '—'}</td></tr>
+        <tr><td>örneklem</td><td>${d.sample_count ?? d.matches_considered ?? '—'}</td></tr>
+      </tbody>
+    </table>
+    <pre style="margin-top:12px;">${buckets.length ? JSON.stringify(buckets, null, 2) : 'kalibrasyon bucket\'ı yok'}</pre>
+  `;
+}
+
+async function loadLeagues() {
+  const d = await fetchJSON('/leagues');
+  const el = document.getElementById('leagues');
+  if (d.__error) { el.textContent = `auth gerekli (HTTP ${d.status})`; return; }
+  if (!Array.isArray(d) || !d.length) { el.textContent = 'lig yok'; return; }
+  let rows = '<table><thead><tr><th>external_id</th><th>ad</th><th>ülke</th><th>sezon</th></tr></thead><tbody>';
+  d.forEach(l => {
+    rows += `<tr><td>${l.external_id}</td><td>${l.name}</td><td>${l.country ?? '—'}</td><td>${l.season}</td></tr>`;
+  });
+  rows += '</tbody></table>';
+  el.innerHTML = rows;
+}
+
+async function loadAgentOutputs() {
+  const d = await fetchJSON('/admin/agent-outputs?limit=5');
+  const el = document.getElementById('agent-outputs');
+  if (d.__error) { el.textContent = `auth gerekli (HTTP ${d.status})`; return; }
+  const items = Array.isArray(d) ? d : (d.items || []);
+  if (!items.length) { el.textContent = 'henüz agent çıktısı yok (run_pre_match_reports job\'ı tetikleyin)'; return; }
+  let rows = '<table><thead><tr><th>agent</th><th>subject</th><th>updated</th><th>özet</th></tr></thead><tbody>';
+  items.forEach(o => {
+    const summary = (o.summary || '').slice(0, 80);
+    rows += `<tr><td>${o.agent_name}</td><td>${o.subject_type}:${o.subject_id}</td><td>${o.updated_at?.slice(0,16) ?? '—'}</td><td>${summary}</td></tr>`;
+  });
+  rows += '</tbody></table>';
+  el.innerHTML = rows;
+}
+
+async function loadAll() {
+  document.getElementById('meta').textContent = 'son yenileme: ' + new Date().toLocaleTimeString();
+  await Promise.all([
+    loadHealth(),
+    loadDBStats(),
+    loadQuota(),
+    loadMLStatus(),
+    loadAccuracy(),
+    loadLeagues(),
+    loadAgentOutputs(),
+  ]);
+}
+
+loadAll();
+</script>
+</body>
+</html>

@@ -12,6 +12,7 @@ from datetime import date, datetime
 from sqlalchemy import (
     Date,
     DateTime,
+    Float,
     Index,
     Integer,
     PrimaryKeyConstraint,
@@ -264,4 +265,37 @@ class Prediction(Base):
     reconciled_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+
+class TrackingFrameRow(Base):
+    """Bir maçın bir anının tüm oyuncu pozisyonları (tracking ingest).
+
+    Yüksek hacimli: tipik maç 25 Hz × 90 dk ≈ 135k frame; bizim test
+    fixture 30 frame. Per-player satıra split etmek yerine players_json
+    içinde toplu sakla — ingest hızı + okuma da batch'le yapılıyor.
+
+    Idempotency: aynı (match_external_id, timestamp) yeniden ingest
+    edilirse mevcut satır güncellenir. Bir maçı tamamen yeniden çekmek
+    için önce silip sonra ingest etmek caller'ın sorumluluğu (`ingest_tracking_match`).
+    """
+
+    __tablename__ = "tracking_frames"
+    __table_args__ = (
+        UniqueConstraint(
+            "sport", "match_external_id", "timestamp",
+            name="uq_tracking_frame_unique",
+        ),
+        Index("ix_tracking_match_time", "sport", "match_external_id", "timestamp"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    period: Mapped[int] = mapped_column(Integer)
+    minute: Mapped[float] = mapped_column(Float)
+    ball_x: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ball_y: Mapped[float | None] = mapped_column(Float, nullable=True)
+    players_json: Mapped[str] = mapped_column(Text)  # tuple[PlayerPosition,...] serialized
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 

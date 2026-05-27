@@ -24,6 +24,60 @@ curl -H "X-API-Key: $API_AUTH_KEY" http://localhost:8000/leagues
 docker compose exec api python scripts/run_job.py sync_league --league 203 --season 2024
 ```
 
+## İlk gerçek sync — api-football production smoke
+
+`USE_FIXTURES=true` ile sentetik veri yeterli; ama prod'a çıkmadan önce
+`API_FOOTBALL_KEY`'in çalıştığını, kotanın yeterli olduğunu ve adapter'ın
+gerçek response şeklini parse edebildiğini doğrulamak gerek.
+
+### 1) API anahtarı edin
+- [api-football](https://www.api-sports.io/documentation/football/v3) — RapidAPI
+  veya doğrudan abonelik (Free plan: 100 req/gün; Pro: 7500/gün).
+- Anahtarı `.env` içine yaz: `API_FOOTBALL_KEY=...`
+- `API_FOOTBALL_DAILY_LIMIT` (default 100) planınla uyumlu olsun;
+  yoksa `app/core/usage.py:consume_quota` kotayı boşa harcayıp 429 fırlatır.
+
+### 2) Smoke (sync'ten ÖNCE — ~3 request harcar)
+```bash
+python scripts/api_football_smoke.py --key $API_FOOTBALL_KEY --league 203 --season 2024
+# beklenen çıktı:
+#   [1/3] /leagues   ✔ leagues   id=203 name='Süper Lig' seasons=N
+#   [2/3] /teams     ✔ teams     count=20 sample=611:'Galatasaray'
+#   [3/3] /fixtures  ✔ fixtures  count=5  sample=... 'Galatasaray' vs 'X' status=FT
+#   OK — 3/3 endpoint passed.
+```
+Smoke geçmezse sync denemeden problemi izole et:
+- HTTP 401/403 → anahtar yanlış veya plan kapsamı dışı endpoint
+- `api errors → {requests: ...}` → günlük kota dolmuş, ertesi gün dene
+- `response anahtarı eksik` → api-football tarafında schema değişikliği
+  olmuş; issue aç ve adapter'ı güncelle (`app/data/sources/api_football.py`)
+
+### 3) Kota durumunu kontrol et
+```bash
+curl -H "X-API-Key: $API_AUTH_KEY" http://localhost:8000/admin/quota-status
+# api_football: { used: 3, limit: 100, fraction: 0.03 }
+# warn fraction (default 0.80) altındaysa rahat; üstündeyse cron öncesi
+# limit artır ya da daha az takım/sezon sync et.
+```
+
+### 4) İlk gerçek sync (~ 1 league + N team × 1 fixtures call)
+```bash
+# USE_FIXTURES=false olduğundan emin ol — yoksa gerçek API'a hiç dokunmaz
+docker compose exec api env USE_FIXTURES=false python scripts/run_job.py sync_league --league 203 --season 2024 --last 10
+# log çıktısında:
+#   sync tamam: leagues=1 teams=20 matches=200 rejected=0 snapshot=<id>
+```
+Sync'ten sonra kotayı tekrar kontrol et (`/admin/quota-status`); 20 takım ×
+1 fixtures call ≈ 22 request (1 leagues + 1 teams + 20 fixtures).
+
+### 5) Veri akışını doğrula
+```bash
+curl -H "X-API-Key: $API_AUTH_KEY" http://localhost:8000/admin/db-stats
+# matches > 0, teams > 0, leagues > 0 görmelisiniz
+curl -H "X-API-Key: $API_AUTH_KEY" http://localhost:8000/admin/leagues-summary
+# 203 / Süper Lig: teams_count=20, matches_count=200, last_snapshot=...
+```
+
 Logları izle:
 ```bash
 docker compose logs -f api
