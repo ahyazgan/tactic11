@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 from app.ai import ClaudeCommentator
 from app.api.admin import router as admin_router
 from app.api.auth import require_api_key
+from app.api.errors import register_exception_handlers
 from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
@@ -59,6 +60,7 @@ if not get_settings().api_auth_key:
 
 APP_VERSION = "0.4.0"  # production hardening turunda bumped
 app = FastAPI(title="football-intelligence", version=APP_VERSION)
+register_exception_handlers(app)  # HTTPException → ErrorResponse şeması
 
 # Rate limiter — settings'ten okur, tek instance.
 _rate_limiter = SlidingWindowRateLimiter(get_settings().rate_limit_per_minute)
