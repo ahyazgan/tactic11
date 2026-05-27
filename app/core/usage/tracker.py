@@ -22,11 +22,14 @@ from app.db import models
 
 log = get_logger(__name__)
 
-WARN_FRACTION = 0.8
-
 
 class QuotaExceeded(RuntimeError):
     pass
+
+
+def _warn_fraction() -> float:
+    """Settings'ten çağrı anında okur — testlerin monkeypatch'i etkili olsun."""
+    return get_settings().quota_warn_fraction
 
 
 def record_call(
@@ -98,7 +101,7 @@ def guard_quota(session: Session, source: str) -> None:
             raise QuotaExceeded(
                 f"api_football günlük kota aşıldı: {day}/{s.api_football_daily_limit}"
             )
-        if day >= s.api_football_daily_limit * WARN_FRACTION:
+        if day >= s.api_football_daily_limit * _warn_fraction():
             log.warning(
                 "api_football günlük kotaya yaklaşıldı: %d/%d",
                 day,
@@ -110,7 +113,7 @@ def guard_quota(session: Session, source: str) -> None:
             raise QuotaExceeded(
                 f"api_football aylık kota aşıldı: {month}/{s.api_football_monthly_limit}"
             )
-        if month >= s.api_football_monthly_limit * WARN_FRACTION:
+        if month >= s.api_football_monthly_limit * _warn_fraction():
             log.warning(
                 "api_football aylık kotaya yaklaşıldı: %d/%d",
                 month,
@@ -123,7 +126,7 @@ def guard_quota(session: Session, source: str) -> None:
             raise QuotaExceeded(
                 f"anthropic günlük token kotası aşıldı: {tokens}/{s.anthropic_daily_token_limit}"
             )
-        if tokens >= s.anthropic_daily_token_limit * WARN_FRACTION:
+        if tokens >= s.anthropic_daily_token_limit * _warn_fraction():
             log.warning(
                 "anthropic günlük token kotasına yaklaşıldı: %d/%d",
                 tokens,

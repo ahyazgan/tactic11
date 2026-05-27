@@ -175,3 +175,61 @@ def test_snapshots_diff_handles_no_baseline(session, client):
     assert "note" in body
     assert "bulunamadı" in body["note"]
     assert "latest" in body
+
+
+def test_quota_status_empty_db_returns_ok_levels(client):
+    """Boş usage_events → tüm fraction'lar 0, level ok."""
+    r = client.get("/admin/quota-status")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["api_football"]["daily"]["used"] == 0
+    assert body["api_football"]["daily"]["level"] == "ok"
+    assert body["api_football"]["monthly"]["level"] == "ok"
+    assert body["anthropic"]["daily_tokens"]["level"] == "ok"
+    assert "warn_fraction" in body
+
+
+def test_quota_status_reports_warn_level_at_80_percent(session, client):
+    """api_football_daily_limit default 100; 80 çağrı → fraction 0.8, level warn."""
+    now = datetime.now(UTC)
+    session.add_all([
+        models.UsageEvent(source="api_football", endpoint="fixtures", tokens=0, created_at=now)
+        for _ in range(80)
+    ])
+    session.flush()
+    r = client.get("/admin/quota-status")
+    body = r.json()
+    daily = body["api_football"]["daily"]
+    assert daily["used"] == 80
+    assert daily["fraction"] == 0.8
+    assert daily["level"] == "warn"
+
+
+def test_quota_status_reports_exceeded_at_limit(session, client):
+    """100 çağrı = limit → fraction 1.0, level exceeded."""
+    now = datetime.now(UTC)
+    session.add_all([
+        models.UsageEvent(source="api_football", endpoint="fixtures", tokens=0, created_at=now)
+        for _ in range(100)
+    ])
+    session.flush()
+    r = client.get("/admin/quota-status")
+    body = r.json()
+    daily = body["api_football"]["daily"]
+    assert daily["fraction"] == 1.0
+    assert daily["level"] == "exceeded"
+
+
+def test_quota_status_anthropic_token_sum(session, client):
+    """anthropic_daily_token_limit default 200000; 100000 token → 0.5 fraction."""
+    now = datetime.now(UTC)
+    session.add(models.UsageEvent(
+        source="anthropic", endpoint="messages", tokens=100_000, created_at=now,
+    ))
+    session.flush()
+    r = client.get("/admin/quota-status")
+    body = r.json()
+    an = body["anthropic"]["daily_tokens"]
+    assert an["used"] == 100_000
+    assert an["fraction"] == 0.5
+    assert an["level"] == "ok"

@@ -19,6 +19,7 @@ from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
 from app.api.observability import METRICS, PROCESS_STARTED_AT
+from app.core.config import get_settings
 from app.db import models
 from app.db.session import get_session
 from app.snapshot import diff_snapshots, get_latest_snapshot, get_snapshot_at_or_before
@@ -94,6 +95,81 @@ def usage_summary(
         "now": now.isoformat(),
         "today": _agg(start_of_day),
         "this_month": _agg(start_of_month),
+    }
+
+
+@router.get("/quota-status")
+def quota_status(session: Session = Depends(get_session)) -> dict[str, Any]:
+    """Mevcut kullanımın limit'lere oranı + uyarı seviyesi.
+
+    `usage_events` üzerinden günlük/aylık sayım; `Settings`'teki limit'lerle
+    yüzde olarak döner. UI/dashboard tek seferde "ne kadar daldık"ı görsün.
+    """
+    s = get_settings()
+    now = datetime.now(UTC)
+    start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    start_of_month = start_of_day.replace(day=1)
+
+    def _calls(source: str, since: datetime) -> int:
+        return session.scalar(
+            select(func.count())
+            .select_from(models.UsageEvent)
+            .where(
+                models.UsageEvent.source == source,
+                models.UsageEvent.created_at >= since,
+            )
+        ) or 0
+
+    def _tokens(source: str, since: datetime) -> int:
+        return session.scalar(
+            select(func.coalesce(func.sum(models.UsageEvent.tokens), 0))
+            .select_from(models.UsageEvent)
+            .where(
+                models.UsageEvent.source == source,
+                models.UsageEvent.created_at >= since,
+            )
+        ) or 0
+
+    def _level(fraction: float) -> str:
+        if fraction >= 1.0:
+            return "exceeded"
+        if fraction >= s.quota_warn_fraction:
+            return "warn"
+        return "ok"
+
+    af_day = _calls("api_football", start_of_day)
+    af_month = _calls("api_football", start_of_month)
+    an_tokens = _tokens("anthropic", start_of_day)
+
+    af_day_frac = af_day / s.api_football_daily_limit if s.api_football_daily_limit else 0.0
+    af_month_frac = af_month / s.api_football_monthly_limit if s.api_football_monthly_limit else 0.0
+    an_frac = an_tokens / s.anthropic_daily_token_limit if s.anthropic_daily_token_limit else 0.0
+
+    return {
+        "now": now.isoformat(),
+        "warn_fraction": s.quota_warn_fraction,
+        "api_football": {
+            "daily": {
+                "used": af_day,
+                "limit": s.api_football_daily_limit,
+                "fraction": round(af_day_frac, 3),
+                "level": _level(af_day_frac),
+            },
+            "monthly": {
+                "used": af_month,
+                "limit": s.api_football_monthly_limit,
+                "fraction": round(af_month_frac, 3),
+                "level": _level(af_month_frac),
+            },
+        },
+        "anthropic": {
+            "daily_tokens": {
+                "used": an_tokens,
+                "limit": s.anthropic_daily_token_limit,
+                "fraction": round(an_frac, 3),
+                "level": _level(an_frac),
+            },
+        },
     }
 
 
