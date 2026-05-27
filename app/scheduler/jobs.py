@@ -11,7 +11,16 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import select
 
-from app.agents import PreMatchReportAgent, save_agent_output
+from app.agents import (
+    InjuryLoadAgent,
+    MegaMatchAgent,
+    NoUpcomingMatch,
+    OpponentScoutAgent,
+    PostMatchReportAgent,
+    PreMatchReportAgent,
+    WeeklyDigestAgent,
+    save_agent_output,
+)
 from app.core.logging import get_logger
 from app.data.ingest import sync_league
 from app.data.predictions import reconcile_pending_predictions
@@ -224,3 +233,155 @@ register(
         ),
     )
 )
+
+
+def run_post_match_reports_handler(*, lookback_days: int = 3) -> None:
+    """Son N günde reconciled olan tahminler için PostMatchReport üret."""
+    from datetime import datetime as _dt
+    from datetime import timedelta as _td
+
+    agent = PostMatchReportAgent()
+    processed = failed = 0
+    cutoff = _dt.now(tz=_dt.now().astimezone().tzinfo) - _td(days=lookback_days)
+    with SessionLocal() as session:
+        rows = list(
+            session.execute(
+                select(models.Prediction).where(
+                    models.Prediction.engine == "engine.predict",
+                    models.Prediction.reconciled_at.is_not(None),
+                    models.Prediction.reconciled_at >= cutoff,
+                )
+            ).scalars()
+        )
+        match_ids = sorted({r.match_external_id for r in rows})
+        for mid in match_ids:
+            try:
+                result = agent.run(session, context={"match_external_id": mid})
+                save_agent_output(
+                    session, result=result,
+                    agent_name=agent.name, agent_version=agent.version,
+                )
+                processed += 1
+            except Exception as e:  # noqa: BLE001
+                log.warning("post_match match=%d başarısız: %s", mid, e)
+                failed += 1
+        session.commit()
+    log.info(
+        "job run_post_match_reports: candidates=%d processed=%d failed=%d",
+        len(match_ids), processed, failed,
+    )
+
+
+register(JobSpec(
+    name="run_post_match_reports",
+    handler=run_post_match_reports_handler,
+    description="Son N günde reconciled tahminler için PostMatchReportAgent.",
+))
+
+
+def run_weekly_digest_handler(*, league_external_id: int, lookback_days: int = 7) -> None:
+    """Verilen lig için haftalık özet."""
+    agent = WeeklyDigestAgent()
+    with SessionLocal() as session:
+        result = agent.run(session, context={
+            "league_external_id": league_external_id,
+            "lookback_days": lookback_days,
+        })
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name, agent_version=agent.version,
+        )
+        session.commit()
+    log.info(
+        "job run_weekly_digest: league=%d summary=%s",
+        league_external_id, result.summary,
+    )
+
+
+register(JobSpec(
+    name="run_weekly_digest",
+    handler=run_weekly_digest_handler,
+    description="Bir lig için haftalık özet (WeeklyDigestAgent).",
+))
+
+
+def run_opponent_scouts_handler() -> None:
+    """Tüm takımlar için sıradaki rakip scout raporu."""
+    agent = OpponentScoutAgent()
+    processed = skipped = failed = 0
+    with SessionLocal() as session:
+        teams = list(
+            session.execute(
+                select(models.Team).where(models.Team.sport == football.SPORT_NAME)
+            ).scalars()
+        )
+        for t in teams:
+            try:
+                result = agent.run(session, context={"team_external_id": t.external_id})
+                save_agent_output(
+                    session, result=result,
+                    agent_name=agent.name, agent_version=agent.version,
+                )
+                processed += 1
+            except NoUpcomingMatch:
+                skipped += 1
+            except Exception as e:  # noqa: BLE001
+                log.warning("opponent_scout team=%d başarısız: %s", t.external_id, e)
+                failed += 1
+        session.commit()
+    log.info(
+        "job run_opponent_scouts: teams=%d processed=%d skipped=%d failed=%d",
+        len(teams), processed, skipped, failed,
+    )
+
+
+register(JobSpec(
+    name="run_opponent_scouts",
+    handler=run_opponent_scouts_handler,
+    description="Tüm takımlar için sıradaki rakip scout raporu.",
+))
+
+
+def run_injury_load_handler(*, player_external_ids: list[int], subject_id: int = 0,
+                            window_days: int = 14) -> None:
+    """Verilen oyuncu listesi için yük raporu."""
+    agent = InjuryLoadAgent()
+    with SessionLocal() as session:
+        result = agent.run(session, context={
+            "player_external_ids": player_external_ids,
+            "subject_id": subject_id,
+            "window_days": window_days,
+        })
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name, agent_version=agent.version,
+        )
+        session.commit()
+    log.info("job run_injury_load: %s", result.summary)
+
+
+register(JobSpec(
+    name="run_injury_load",
+    handler=run_injury_load_handler,
+    description="Verilen oyuncu listesi için yük + rotasyon raporu.",
+))
+
+
+def run_mega_match_handler(*, match_external_id: int) -> None:
+    """Bir maç için kapsamlı MegaMatch brief."""
+    agent = MegaMatchAgent()
+    with SessionLocal() as session:
+        result = agent.run(session, context={"match_external_id": match_external_id})
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name, agent_version=agent.version,
+        )
+        session.commit()
+    log.info("job run_mega_match: %s", result.summary)
+
+
+register(JobSpec(
+    name="run_mega_match",
+    handler=run_mega_match_handler,
+    description="Bir maç için kapsamlı MegaMatchAgent brief'i.",
+))
