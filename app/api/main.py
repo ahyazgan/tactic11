@@ -409,11 +409,20 @@ def matchup(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
+# Shadow tahminler için sabit ρ seti — A/B karşılaştırma:
+# 0.0 saf Poisson (PR #17'den önceki baseline), -0.18 daha agresif DC
+_SHADOW_RHOS: tuple[float, ...] = (0.0, -0.18)
+
+
 @protected.get("/matches/{match_id}/predict")
 def match_predict(
     match_id: int,
     last_n: int = Query(5, ge=1, le=50),
     explain: bool = False,
+    shadow: bool = Query(
+        False,
+        description="True → birincilin yanına ρ=0 ve ρ=-0.18 shadow tahminleri de kaydeder (A/B accuracy için).",
+    ),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Maç için Poisson skor tahmini.
@@ -421,6 +430,10 @@ def match_predict(
     Form, maçın kickoff'undan ÖNCEKİ maçlardan hesaplanır (leakage yok); bu
     sayede tahmin hem NS maçlar için "pre-game" hem FT maçlar için
     "backtest" anlamı taşır.
+
+    `shadow=true` ise birincil tahminin yanına ρ=0 (saf Poisson) ve
+    ρ=-0.18 (agresif DC) shadow tahminleri de saklanır (rapor B3'te
+    `engine_version` aynı ama params farklı → ayrı satırlar).
     """
     match = session.execute(
         select(models.Match).where(
@@ -435,17 +448,35 @@ def match_predict(
     away_id = match.away_team_external_id
     params = {"last_n": last_n}
 
-    def _build_result():
+    def _forms():
         home_form = compute_form(
             home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n
         )
         away_form = compute_form(
             away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n
         )
+        return home_form, away_form
+
+    def _build_result():
+        home_form, away_form = _forms()
         return compute_predict(
             home_form.value, away_form.value,
             home_team_id=home_id, away_team_id=away_id,
         )
+
+    def _save_shadows() -> None:
+        """Birincilin yanına ρ=0 ve ρ=-0.18 shadow'larını kaydet."""
+        home_form, away_form = _forms()
+        for rho in _SHADOW_RHOS:
+            shadow_result = compute_predict(
+                home_form.value, away_form.value,
+                home_team_id=home_id, away_team_id=away_id, rho=rho,
+            )
+            save_prediction(
+                session, sport=football.SPORT_NAME,
+                match_external_id=match_id, result=shadow_result,
+                params={**params, "rho": rho},  # params_hash farklı
+            )
 
     # `explain=True` Claude'a hit eder (kendi cache'i AI commentator'da);
     # cache atlanır, prediction her zaman saklanır (kalibrasyon).
@@ -455,6 +486,8 @@ def match_predict(
             session, sport=football.SPORT_NAME,
             match_external_id=match_id, result=result, params=params,
         )
+        if shadow:
+            _save_shadows()
         session.commit()
         return _maybe_explain(engine_result_to_dict(result), result, explain=True)
 
@@ -466,12 +499,14 @@ def match_predict(
             session, sport=football.SPORT_NAME,
             match_external_id=match_id, result=result, params=params,
         )
+        if shadow:
+            _save_shadows()
         return engine_result_to_dict(result)
 
     payload, _was_cached = engine_cached(
         session,
         sport=football.SPORT_NAME,
-        key_parts=("predict", match_id, "last_n", last_n),
+        key_parts=("predict", match_id, "last_n", last_n, "shadow", int(shadow)),
         compute_fn=_compute,
     )
     return payload
