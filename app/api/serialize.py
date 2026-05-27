@@ -14,7 +14,7 @@ from app.audit import EngineResult
 
 
 def engine_result_to_dict(result: EngineResult) -> dict[str, Any]:
-    value = asdict(result.value) if is_dataclass(result.value) else result.value
+    value = asdict(result.value) if is_dataclass(result.value) and not isinstance(result.value, type) else result.value
     return {
         "value": value,
         "audit": {

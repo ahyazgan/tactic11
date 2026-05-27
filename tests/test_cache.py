@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.data.cache import cache_get, cache_set
 from app.db import models
@@ -13,17 +13,11 @@ def test_set_then_get_returns_value(session):
 
 def test_expired_entry_returns_none(session):
     cache_set(session, source="api_football", key="x", value={"v": 1}, ttl_seconds=60)
-    row = session.execute(
-        models.CacheEntry.__table__.select().where(
-            models.CacheEntry.source == "api_football",
-            models.CacheEntry.key == "x",
-        )
-    ).one()
     # Süreyi geriye it
     session.execute(
         models.CacheEntry.__table__.update()
         .where(models.CacheEntry.source == "api_football", models.CacheEntry.key == "x")
-        .values(expires_at=datetime.now(timezone.utc) - timedelta(seconds=1))
+        .values(expires_at=datetime.now(UTC) - timedelta(seconds=1))
     )
     session.flush()
     assert cache_get(session, source="api_football", key="x") is None

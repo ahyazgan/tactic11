@@ -7,7 +7,7 @@ Her kural saf fonksiyon: domain modelini alır, hata mesajı listesi döner
 from __future__ import annotations
 
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.domain import League, Match, Team
 from app.sports import football
@@ -40,7 +40,7 @@ def _match_teams_distinct(item: Match) -> list[str]:
 
 
 def _match_no_future_finished(item: Match) -> list[str]:
-    if item.status in football.FINISHED_STATUSES and item.kickoff > datetime.now(timezone.utc):
+    if item.status in football.FINISHED_STATUSES and item.kickoff > datetime.now(UTC):
         return ["maç gelecekte ama status 'finished'"]
     return []
 

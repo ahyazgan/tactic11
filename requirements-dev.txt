@@ -1,0 +1,5 @@
+# Geliştirme/CI araçları. Production image bunları çekmez (Dockerfile sadece
+# requirements.txt kullanıyor).
+-r requirements.txt
+ruff>=0.6
+mypy>=1.10

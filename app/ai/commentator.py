@@ -21,8 +21,8 @@ import json
 from app.ai.anthropic_client import AnthropicClient
 from app.ai.base import Commentator
 from app.ai.prompts import (
-    SYSTEM_PROMPT,
     _PREVIEW_SYSTEM_PROMPT,
+    SYSTEM_PROMPT,
     build_match_preview_prompt,
     build_user_prompt,
     stub_match_preview,
@@ -81,7 +81,7 @@ class ClaudeCommentator(Commentator):
     def __init__(self, client: AnthropicClient | None = None) -> None:
         self._client = client or AnthropicClient()
 
-    def explain(self, engine_output: EngineResult) -> str:  # type: ignore[override]
+    def explain(self, engine_output: EngineResult) -> str:
         if self._client.is_stub():
             log.info("commentator stub mode (no api key)")
             return stub_response(engine_output)

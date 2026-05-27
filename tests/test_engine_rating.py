@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.domain import Match
 from app.engine.rating import compute_team_rating
@@ -14,7 +14,7 @@ def _match(ext_id, home, away, hs, as_, days_ago=1):
         external_id=ext_id,
         league_external_id=203,
         season=2024,
-        kickoff=datetime.now(timezone.utc) - timedelta(days=days_ago),
+        kickoff=datetime.now(UTC) - timedelta(days=days_ago),
         status="FT",
         home_team_external_id=home,
         away_team_external_id=away,

@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-
-import pytest
+from datetime import UTC, datetime, timedelta
 
 from app.ai import AnthropicClient, ClaudeCommentator
 from app.ai.anthropic_client import MessageResult
@@ -13,7 +11,7 @@ from app.sports import football
 
 
 def _matches():
-    base = datetime.now(timezone.utc)
+    base = datetime.now(UTC)
     return [
         Match(
             sport=football.SPORT_NAME,
@@ -126,7 +124,8 @@ def test_commentator_records_usage_and_returns_text(monkeypatch, session):
     text = com.explain(compute_form(611, _matches()))
     assert text == fake.text
 
-    from sqlalchemy import select, func
+    from sqlalchemy import func, select
+
     from app.db import models
     # consume_quota iki kez çağrılır: HTTP öncesi rezervasyon (tokens=0) +
     # HTTP sonrası gerçek tüketim. Toplam tokens doğrudur, satır sayısı 2'dir.
@@ -243,7 +242,7 @@ def test_explain_cache_invalidates_on_value_change(monkeypatch, session):
         Match(
             sport=football.SPORT_NAME, external_id=99,
             league_external_id=203, season=2024,
-            kickoff=datetime.now(timezone.utc) - timedelta(days=1),
+            kickoff=datetime.now(UTC) - timedelta(days=1),
             status="FT",
             home_team_external_id=611, away_team_external_id=614,
             home_score=3, away_score=0,
@@ -259,6 +258,7 @@ def test_explain_cache_invalidates_on_value_change(monkeypatch, session):
 def test_explain_cache_hit_skips_usage_recording(monkeypatch, session):
     """Cache hit'te usage_events'e satır eklenmemeli (API çağrılmadığı için)."""
     from sqlalchemy import func, select
+
     from app.db import models
 
     client = AnthropicClient(api_key="dummy")

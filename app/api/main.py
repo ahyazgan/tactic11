@@ -48,7 +48,7 @@ def _team_matches(
     session: Session,
     team_id: int,
     *,
-    before: "datetime | None" = None,
+    before: datetime | None = None,
 ) -> list[models.Match]:
     """Bir takımın maçları, kickoff desc; `before` verildiyse o tarihten önceki."""
     stmt = select(models.Match).where(

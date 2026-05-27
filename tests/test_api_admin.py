@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -35,7 +35,7 @@ def test_db_stats_returns_zero_for_empty_db(client):
 
 
 def test_jobs_filters_by_status_and_since(session, client):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     session.add_all(
         [
             models.JobRun(
@@ -72,7 +72,7 @@ def test_jobs_filters_by_status_and_since(session, client):
 
 
 def test_usage_aggregates_by_source(session, client):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     session.add_all(
         [
             models.UsageEvent(source="api_football", endpoint="leagues", tokens=0, created_at=now),
@@ -94,7 +94,7 @@ def test_usage_aggregates_by_source(session, client):
 
 
 def test_snapshots_filter_by_scope(session, client):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     session.add_all(
         [
             models.Snapshot(

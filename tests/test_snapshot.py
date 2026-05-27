@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.db import models
 from app.snapshot import build_scope, get_latest_snapshot, save_snapshot
@@ -22,7 +22,7 @@ def _seed(session):
                 external_id=1,
                 league_external_id=203,
                 season=2024,
-                kickoff=datetime(2024, 8, 10, 18, 0, tzinfo=timezone.utc),
+                kickoff=datetime(2024, 8, 10, 18, 0, tzinfo=UTC),
                 status="FT",
                 home_team_external_id=611,
                 away_team_external_id=607,
@@ -34,7 +34,7 @@ def _seed(session):
                 external_id=2,
                 league_external_id=203,
                 season=2024,
-                kickoff=datetime(2024, 8, 17, 18, 0, tzinfo=timezone.utc),
+                kickoff=datetime(2024, 8, 17, 18, 0, tzinfo=UTC),
                 status="FT",
                 home_team_external_id=614,
                 away_team_external_id=611,

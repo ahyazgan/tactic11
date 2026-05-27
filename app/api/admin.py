@@ -10,7 +10,7 @@ HTTP karşılığı.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, Query
@@ -32,7 +32,7 @@ def recent_jobs(
     session: Session = Depends(get_session),
 ) -> list[dict[str, Any]]:
     """Son job run'ları — scheduler sağlığı için."""
-    since = datetime.now(timezone.utc) - timedelta(hours=since_hours)
+    since = datetime.now(UTC) - timedelta(hours=since_hours)
     stmt = (
         select(models.JobRun)
         .where(models.JobRun.started_at >= since)
@@ -70,7 +70,7 @@ def usage_summary(
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Bugün/bu ay başına source başına kullanım — kota görünürlüğü."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
     start_of_month = start_of_day.replace(day=1)
 
