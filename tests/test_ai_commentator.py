@@ -184,3 +184,97 @@ def test_explain_match_preview_stub_mode():
     )
     assert "stub:match_preview" in text
     assert "611" in text and "607" in text
+
+
+def _patch_session(monkeypatch, session):
+    """ClaudeCommentator'ın SessionLocal'ini test session'a yönlendir."""
+    from app.ai import commentator as commentator_module
+
+    class _Ctx:
+        def __init__(self, s):
+            self.s = s
+
+        def __enter__(self):
+            return self.s
+
+        def __exit__(self, *a):
+            return False
+
+    monkeypatch.setattr(commentator_module, "SessionLocal", lambda: _Ctx(session))
+
+
+def test_explain_cache_hit_skips_api_call(monkeypatch, session):
+    """Aynı engine result iki kez explain edilirse 2. çağrı API'yi atlar."""
+    client = AnthropicClient(api_key="dummy")
+    call_count = {"n": 0}
+
+    def fake_message(**kw):
+        call_count["n"] += 1
+        return MessageResult(text=f"yanit#{call_count['n']}", input_tokens=100, output_tokens=20)
+
+    monkeypatch.setattr(client, "message", fake_message)
+    _patch_session(monkeypatch, session)
+
+    com = ClaudeCommentator(client=client)
+    res = compute_form(611, _matches())
+
+    t1 = com.explain(res)
+    t2 = com.explain(res)
+
+    assert t1 == t2 == "yanit#1"
+    assert call_count["n"] == 1  # 2. çağrı cache'den
+
+
+def test_explain_cache_invalidates_on_value_change(monkeypatch, session):
+    """Engine value değişirse cache anahtarı değişir → yeni API çağrısı."""
+    client = AnthropicClient(api_key="dummy")
+    call_count = {"n": 0}
+
+    def fake_message(**kw):
+        call_count["n"] += 1
+        return MessageResult(text=f"yanit#{call_count['n']}", input_tokens=100, output_tokens=20)
+
+    monkeypatch.setattr(client, "message", fake_message)
+    _patch_session(monkeypatch, session)
+
+    com = ClaudeCommentator(client=client)
+    matches_1 = _matches()
+    matches_2 = matches_1 + [
+        Match(
+            sport=football.SPORT_NAME, external_id=99,
+            league_external_id=203, season=2024,
+            kickoff=datetime.now(timezone.utc) - timedelta(days=1),
+            status="FT",
+            home_team_external_id=611, away_team_external_id=614,
+            home_score=3, away_score=0,
+        ),
+    ]
+
+    com.explain(compute_form(611, matches_1))
+    com.explain(compute_form(611, matches_2))  # yeni maç → farklı value → cache miss
+
+    assert call_count["n"] == 2
+
+
+def test_explain_cache_hit_skips_usage_recording(monkeypatch, session):
+    """Cache hit'te usage_events'e satır eklenmemeli (API çağrılmadığı için)."""
+    from sqlalchemy import func, select
+    from app.db import models
+
+    client = AnthropicClient(api_key="dummy")
+    monkeypatch.setattr(
+        client, "message",
+        lambda **kw: MessageResult(text="ok", input_tokens=100, output_tokens=20),
+    )
+    _patch_session(monkeypatch, session)
+
+    com = ClaudeCommentator(client=client)
+    res = compute_form(611, _matches())
+
+    com.explain(res)
+    n1 = session.scalar(select(func.count()).select_from(models.UsageEvent))
+    com.explain(res)  # cache hit
+    n2 = session.scalar(select(func.count()).select_from(models.UsageEvent))
+
+    assert n1 > 0
+    assert n2 == n1  # cache hit ek satır eklemedi
