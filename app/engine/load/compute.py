@@ -12,7 +12,7 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime, timedelta
 
 from app.audit import AuditRecord, EngineResult
-from app.domain import PlayerAppearance
+from app.engine._protocols import PlayerAppearanceLike
 from app.sports import football
 
 ENGINE_NAME = "engine.load"
@@ -32,7 +32,7 @@ class PlayerLoad:
 
 def compute_player_load(
     player_external_id: int,
-    appearances: Iterable[PlayerAppearance],
+    appearances: Iterable[PlayerAppearanceLike],
     *,
     window_days: int = 14,
     now: datetime | None = None,

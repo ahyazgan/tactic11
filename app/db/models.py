@@ -161,6 +161,33 @@ class JobRun(Base):
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class PlayerAppearance(Base):
+    """Bir oyuncunun bir maçtaki dakika kaydı.
+
+    Lineup adapter (Faz 6) bu tabloyu dolduracak; şu an boş kalır. Engine
+    (`engine.load`) bu satırları okuyup oyuncu yük raporu üretir.
+    """
+
+    __tablename__ = "player_appearances"
+    __table_args__ = (
+        UniqueConstraint(
+            "sport", "player_external_id", "match_external_id",
+            name="uq_player_appearances_player_match",
+        ),
+        Index(
+            "ix_player_appearances_player_kickoff",
+            "player_external_id", "kickoff",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    player_external_id: Mapped[int] = mapped_column(Integer)
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    minutes: Mapped[int] = mapped_column(Integer)
+    kickoff: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class Prediction(Base):
     """Bir engine'in bir maç için yaptığı tahmin (kalibrasyon için kalıcı).
 

@@ -28,3 +28,13 @@ class MatchLike(Protocol):
     away_team_external_id: int
     home_score: int | None
     away_score: int | None
+
+
+class PlayerAppearanceLike(Protocol):
+    """Engine.load'un tükettiği oyuncu-dakika şekli (domain ve DB uyumlu)."""
+
+    sport: str
+    player_external_id: int
+    match_external_id: int
+    minutes: int
+    kickoff: datetime
