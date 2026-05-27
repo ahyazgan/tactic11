@@ -45,6 +45,10 @@ from app.sports import football
 
 setup_logging()
 
+# Prod modunda zorunlu secret'lar varsa fail-fast (ConfigError → boot durur).
+# Dev/staging modlarda kontrol pas geçer; aşağıdaki yumuşak uyarı devam eder.
+get_settings().validate_for_production()
+
 if not get_settings().api_auth_key:
     get_logger(__name__).warning(
         "API_AUTH_KEY boş — auth DEVRE DIŞI. Production'da bu değeri set edin "
