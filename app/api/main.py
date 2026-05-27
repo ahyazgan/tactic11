@@ -37,6 +37,7 @@ from app.db import models
 from app.db.session import get_session
 from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty
 from app.engine.form import compute_form
+from app.engine.load import compute_player_load
 from app.engine.matchup import compute_matchup
 from app.engine.opponent import compute_head_to_head
 from app.engine.predict import compute_predict
@@ -291,6 +292,41 @@ def head_to_head(
         ).scalars()
     )
     result = compute_head_to_head(a, b, matches)
+    return _maybe_explain(engine_result_to_dict(result), result, explain)
+
+
+@protected.get("/players/{player_id}/load")
+def player_load(
+    player_id: int,
+    window_days: int = Query(14, ge=1, le=90),
+    explain: bool = False,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Oyuncu yük raporu — son N gündeki dakika + maç sıklığı.
+
+    Veri kaynağı `player_appearances` tablosu (lineup adapter Faz 6'da
+    dolduracak; şimdilik boş — endpoint 404 döner). high_load eşiği
+    haftalık 270 dakika (~3 maçlık yük).
+    """
+    appearances = list(
+        session.execute(
+            select(models.PlayerAppearance).where(
+                models.PlayerAppearance.sport == football.SPORT_NAME,
+                models.PlayerAppearance.player_external_id == player_id,
+            )
+        ).scalars()
+    )
+    if not appearances:
+        raise HTTPException(
+            status_code=404, detail=f"player {player_id} için appearance yok"
+        )
+    # SQLite tz-strip (engine.schedule ile aynı pattern); engine içeride
+    # kickoff'u cutoff ile karşılaştırıyor
+    ref_tz = appearances[0].kickoff.tzinfo
+    now = datetime.now(ref_tz)
+    result = compute_player_load(
+        player_id, appearances, window_days=window_days, now=now
+    )
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
