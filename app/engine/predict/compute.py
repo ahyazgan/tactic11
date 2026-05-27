@@ -1,23 +1,35 @@
-"""Poisson skor tahmini — klasik futbol istatistiği.
+"""Poisson + Dixon-Coles skor tahmini — klasik futbol istatistiği.
 
-Varsayım: bir takımın bir maçta atacağı gol sayısı Poisson dağılır, oranı
-(λ) o takımın geçmiş maçlarındaki ortalama gol oranıdır. İki takımın
-skorları bağımsız varsayılır.
+Baz model: bir takımın bir maçta atacağı gol sayısı Poisson dağılır, oranı
+(λ) o takımın geçmiş maçlarındaki ortalama gol oranıdır.
 
 P(k gol) = (λ^k · e^-λ) / k!
 
-Bu, üzerinden 100 yıllık literatür bulunan **en açıklanabilir** futbol
-tahmin modeli. ML değil; "sayılara göre şu beklenti var" diyebilirsin.
-Audit'e formül net yazılır.
+**Dixon-Coles düzeltmesi** (1997): basit Poisson, futbol verisinde
+0-0/1-0/0-1/1-1 frekansını sistematik biçimde altında tahmin eder
+(düşük skorlu maçlarda hafif negatif korelasyon var). DC bu dört hücreyi
+bir τ faktörüyle düzeltir:
+
+    τ(0,0) = 1 - λμρ
+    τ(0,1) = 1 + λρ
+    τ(1,0) = 1 + μρ
+    τ(1,1) = 1 - ρ
+    τ(x,y) = 1   diğer hücrelerde
+
+ρ tipik olarak -0.18 ile -0.05 arasında; biz literatür ortasında
+ρ=-0.12 default'u tutuyoruz. ρ=0 saf Poisson'a indirger
+(geriye uyumlu baseline; karşılaştırma için audit'lenebilir).
+
+τ değişimleri sıfır toplamlı: P(0,0)/P(1,1) artar, P(0,1)/P(1,0) eşit
+miktarda azalır — toplam olasılık 1 kalır.
 
 Sınırlamalar:
-- Küçük örneklemde (N<5) gürültülü; `low_confidence` flag ile döner
-- Ev sahibi avantajı modele dahil değil (form zaten home/away ayrımı taşıyor
-  ama bu engine'de toplu kullanılıyor — gelecekte refine edilebilir)
-- Karşılıklı korelasyon (defansif maç → ikisi de az gol) yok; bağımsız
-  varsayım
-- ML modeli değil — gerçek veri biriktiğinde elastic-net veya XGBoost ile
-  rakip-spesifik kalibre edilebilir; bu modül baseline olarak kalır
+- Küçük örneklemde (N<5) gürültülü; `low_confidence` flag
+- Ev sahibi avantajı modele dahil değil (form zaten home/away ayrımı taşıyor)
+- ρ sabit; literatür değeri. Veri biriktiğinde ρ'yu MLE ile öğrenmek
+  mümkün — bu modül baseline olarak kalır
+- ML değil — gerçek veri biriktiğinde elastic-net / XGBoost'la rakip-
+  spesifik kalibre edilebilir
 
 Engine kuralı: saf hesap. Girdi `FormReport` (engine.form'dan), çıktı
 `EngineResult[PredictReport]`.
@@ -32,12 +44,15 @@ from app.audit import AuditRecord, EngineResult
 from app.engine.form import FormReport
 
 ENGINE_NAME = "engine.predict"
-ENGINE_VERSION = "1"
+ENGINE_VERSION = "2"  # v1 → v2: Dixon-Coles düşük skor düzeltmesi default
 
 # Sample size eşiği — bu altında low_confidence flag açılır.
 _MIN_CONFIDENT_SAMPLE = 5
 # Gol olasılığı hesabında üst sınır — 10 üstü gol pratikte sıfır.
 _MAX_GOALS = 10
+# Dixon-Coles korelasyon parametresi — literatür tipik -0.18..-0.05;
+# ortasını alıp -0.12 default. ρ=0 → saf Poisson (baseline).
+_DEFAULT_RHO = -0.12
 
 
 @dataclass(frozen=True)
@@ -53,6 +68,7 @@ class PredictReport:
     most_likely_score_prob: float
     low_confidence: bool  # sample_size < eşik
     sample_size: int  # min(home_form.matches_played, away_form.matches_played)
+    rho_used: float  # Dixon-Coles ρ; 0.0 → saf Poisson
 
 
 def _poisson_pmf(lam: float, k: int) -> float:
@@ -62,13 +78,36 @@ def _poisson_pmf(lam: float, k: int) -> float:
     return (lam**k) * math.exp(-lam) / math.factorial(k)
 
 
+def _dixon_coles_tau(home_goals: int, away_goals: int, lam_home: float, lam_away: float, rho: float) -> float:
+    """DC τ düzeltmesi — yalnız (0,0), (0,1), (1,0), (1,1) hücrelerinde 1'den sapar."""
+    if home_goals == 0 and away_goals == 0:
+        return 1.0 - lam_home * lam_away * rho
+    if home_goals == 0 and away_goals == 1:
+        return 1.0 + lam_home * rho
+    if home_goals == 1 and away_goals == 0:
+        return 1.0 + lam_away * rho
+    if home_goals == 1 and away_goals == 1:
+        return 1.0 - rho
+    return 1.0
+
+
 def _score_matrix(
-    lam_home: float, lam_away: float, max_goals: int = _MAX_GOALS
+    lam_home: float, lam_away: float, *, rho: float, max_goals: int = _MAX_GOALS
 ) -> list[list[float]]:
-    """`max_goals+1` × `max_goals+1` olasılık matrisi: M[h][a] = P(home=h ∧ away=a)."""
+    """`max_goals+1` × `max_goals+1` olasılık matrisi: M[h][a] = P(home=h ∧ away=a).
+
+    Saf Poisson × DC τ. ρ=0 ise τ ≡ 1 ve sonuç bağımsız Poisson çarpımı.
+    """
     home_probs = [_poisson_pmf(lam_home, k) for k in range(max_goals + 1)]
     away_probs = [_poisson_pmf(lam_away, k) for k in range(max_goals + 1)]
-    return [[home_probs[h] * away_probs[a] for a in range(max_goals + 1)] for h in range(max_goals + 1)]
+    return [
+        [
+            home_probs[h] * away_probs[a]
+            * _dixon_coles_tau(h, a, lam_home, lam_away, rho)
+            for a in range(max_goals + 1)
+        ]
+        for h in range(max_goals + 1)
+    ]
 
 
 def compute_predict(
@@ -77,16 +116,21 @@ def compute_predict(
     *,
     home_team_id: int,
     away_team_id: int,
+    rho: float = _DEFAULT_RHO,
 ) -> EngineResult[PredictReport]:
-    """İki form raporundan Poisson skor tahmini.
+    """İki form raporundan Poisson + Dixon-Coles skor tahmini.
 
     λ_home = home_form.goals_for_per_match (kendi geçmişindeki ortalama)
     λ_away = away_form.goals_for_per_match
+
+    `rho`: Dixon-Coles korelasyon parametresi. Default -0.12 (literatür
+    ortası). ρ=0 saf Poisson baseline'a indirger — karşılaştırma için
+    kasıtlı kullanılır.
     """
     lam_home = home_form.goals_for_per_match
     lam_away = away_form.goals_for_per_match
 
-    matrix = _score_matrix(lam_home, lam_away)
+    matrix = _score_matrix(lam_home, lam_away, rho=rho)
 
     p_home_win = sum(
         matrix[h][a]
@@ -124,6 +168,7 @@ def compute_predict(
         most_likely_score_prob=round(best_p, 4),
         low_confidence=low_conf,
         sample_size=sample,
+        rho_used=rho,
     )
 
     audit = AuditRecord(
@@ -131,12 +176,13 @@ def compute_predict(
         engine_version=ENGINE_VERSION,
         subject_type="team_pair",
         subject_id=home_team_id,
-        metric="poisson_predict",
+        metric="poisson_dixon_coles_predict",
         value=asdict(report),
         inputs={
             "away_team_id": away_team_id,
             "lam_home": lam_home,
             "lam_away": lam_away,
+            "rho": rho,
             "home_form_matches": home_form.matches_played,
             "away_form_matches": away_form.matches_played,
             "min_confident_sample": _MIN_CONFIDENT_SAMPLE,
@@ -144,9 +190,12 @@ def compute_predict(
         },
         formula=(
             "X ~ Poisson(λ); λ_home = home_form.goals_for_per_match; "
-            "λ_away = away_form.goals_for_per_match; P(home=h, away=a) = "
-            "P_home(h)·P_away(a) (bağımsız); sample_size < "
-            f"{_MIN_CONFIDENT_SAMPLE} → low_confidence"
+            "λ_away = away_form.goals_for_per_match; "
+            "P(h, a) = P_home(h)·P_away(a)·τ(h, a, λ_h, λ_a, ρ); "
+            "Dixon-Coles τ(0,0)=1-λ_h·λ_a·ρ, τ(0,1)=1+λ_h·ρ, "
+            "τ(1,0)=1+λ_a·ρ, τ(1,1)=1-ρ, diğer=1; "
+            "ρ=0 saf Poisson; "
+            f"sample_size < {_MIN_CONFIDENT_SAMPLE} → low_confidence"
         ),
     )
     return EngineResult(value=report, audit=audit)
