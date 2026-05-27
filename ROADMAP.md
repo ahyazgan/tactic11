@@ -14,15 +14,15 @@ kodunu yazar. Boş iskeletler yer tutar; sırası gelince doldurulur.
 - [x] `app/domain/` — League, Team, Match, Player (pydantic)
 - [x] `app/db/` — SQLAlchemy modelleri + Alembic ilk migration
 - [x] `app/data/sources/base.py` — `DataSource` arayüzü
-- [ ] `app/data/sources/api_football.py` — adapter (rate-limit + cache aware)
+- [x] `app/data/sources/api_football.py` — adapter (fixture modlu; cache/rate-limit sonraki tur)
 - [ ] `app/data/cache/` — basit cache (DB veya bellek)
-- [ ] `app/data/validation/` — kural listesi + çalıştırıcı
-- [ ] `app/data/ingest/` — çek + doğrula + normalize + yaz
+- [x] `app/data/validation/` — kural listesi + çalıştırıcı
+- [x] `app/data/ingest/` — çek + doğrula + normalize + yaz
 - [ ] `app/snapshot/` — her sync'te durum özeti, üzerine yazmadan
 - [ ] `app/api/main.py` — FastAPI app + `/health`, `/leagues`, `/teams/...`
 - [x] `app/sports/football.py` — futbol sabitleri
-- [ ] `scripts/sync_league.py` — uçtan uca CLI
-- [ ] `tests/fixtures/` — örnek JSON + fixture modu
+- [x] `scripts/sync_league.py` — uçtan uca CLI
+- [x] `tests/fixtures/` — örnek JSON + fixture modu
 
 **Faz 1 bitiş kriteri:** `.env` doldur → `alembic upgrade head` →
 `python scripts/sync_league.py --league 203 --season 2024` → DB'de takımlar

@@ -1,0 +1,13 @@
+{
+  "get": "teams",
+  "parameters": {"league": "203", "season": "2024"},
+  "errors": [],
+  "results": 4,
+  "paging": {"current": 1, "total": 1},
+  "response": [
+    {"team": {"id": 611, "name": "Galatasaray", "country": "Turkey", "founded": 1905, "national": false}, "venue": {}},
+    {"team": {"id": 607, "name": "Fenerbahce", "country": "Turkey", "founded": 1907, "national": false}, "venue": {}},
+    {"team": {"id": 614, "name": "Besiktas", "country": "Turkey", "founded": 1903, "national": false}, "venue": {}},
+    {"team": {"id": 998, "name": "Trabzonspor", "country": "Turkey", "founded": 1967, "national": false}, "venue": {}}
+  ]
+}

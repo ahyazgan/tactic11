@@ -1,0 +1,23 @@
+{
+  "get": "leagues",
+  "parameters": [],
+  "errors": [],
+  "results": 2,
+  "paging": {"current": 1, "total": 1},
+  "response": [
+    {
+      "league": {"id": 203, "name": "Süper Lig", "type": "League"},
+      "country": {"name": "Turkey", "code": "TR"},
+      "seasons": [
+        {"year": 2024, "start": "2024-08-09", "end": "2025-05-25", "current": true}
+      ]
+    },
+    {
+      "league": {"id": 39, "name": "Premier League", "type": "League"},
+      "country": {"name": "England", "code": "GB"},
+      "seasons": [
+        {"year": 2024, "start": "2024-08-16", "end": "2025-05-25", "current": true}
+      ]
+    }
+  ]
+}
