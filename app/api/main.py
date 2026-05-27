@@ -7,6 +7,7 @@ Engine pure kalsın diye serileştirme `serialize.py` üzerinden.
 from __future__ import annotations
 
 import time
+import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -29,6 +30,7 @@ from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
 from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
+from app.core.request_context import clear_request_id, set_request_id
 from app.data.cache import engine_cached
 from app.db import models
 from app.db.session import get_session
@@ -56,34 +58,50 @@ app = FastAPI(title="football-intelligence", version=APP_VERSION)
 _rate_limiter = SlidingWindowRateLimiter(get_settings().rate_limit_per_minute)
 
 
+_REQUEST_ID_HEADER = "x-request-id"
+
+
 @app.middleware("http")
 async def observability_middleware(request: Request, call_next):
-    """Her istek için: rate limit + duration + metrics counter."""
-    path = request.url.path
-    # Rate limit (sadece /health bypass)
-    if not should_bypass_rate_limit(path):
-        # Key: API key varsa onu, yoksa client IP. Auth disabled olsa bile rate
-        # limit IP üzerinden devam eder (DoS koruması).
-        key = request.headers.get("x-api-key") or (
-            request.client.host if request.client else "unknown"
-        )
-        if not _rate_limiter.allow(key):
-            METRICS.record(
-                method=request.method, path=path, status=429, duration_seconds=0.0
-            )
-            return JSONResponse(
-                {"detail": "rate limit exceeded (per minute)"},
-                status_code=429,
-                headers={"Retry-After": "60"},
-            )
+    """Her istek için: request_id + rate limit + duration + metrics counter."""
+    # Request ID — varsa gelen header'ı kullan, yoksa uuid4 üret. Hem log'lara
+    # contextvar üzerinden enjekte edilir hem response header'ı olarak döner.
+    rid = request.headers.get(_REQUEST_ID_HEADER) or uuid.uuid4().hex
+    set_request_id(rid)
+    request.state.request_id = rid
 
-    start = time.perf_counter()
-    response = await call_next(request)
-    duration = time.perf_counter() - start
-    METRICS.record(
-        method=request.method, path=path, status=response.status_code, duration_seconds=duration
-    )
-    return response
+    path = request.url.path
+    try:
+        # Rate limit (sadece /health bypass)
+        if not should_bypass_rate_limit(path):
+            # Key: API key varsa onu, yoksa client IP. Auth disabled olsa bile
+            # rate limit IP üzerinden devam eder (DoS koruması).
+            key = request.headers.get("x-api-key") or (
+                request.client.host if request.client else "unknown"
+            )
+            if not _rate_limiter.allow(key):
+                METRICS.record(
+                    method=request.method, path=path, status=429, duration_seconds=0.0
+                )
+                return JSONResponse(
+                    {"detail": "rate limit exceeded (per minute)"},
+                    status_code=429,
+                    headers={"Retry-After": "60", "X-Request-ID": rid},
+                )
+
+        start = time.perf_counter()
+        response = await call_next(request)
+        duration = time.perf_counter() - start
+        METRICS.record(
+            method=request.method,
+            path=path,
+            status=response.status_code,
+            duration_seconds=duration,
+        )
+        response.headers["X-Request-ID"] = rid
+        return response
+    finally:
+        clear_request_id()
 
 
 # /health hariç tüm uçlar bu router üzerinden — auth tek noktada uygulanır.
