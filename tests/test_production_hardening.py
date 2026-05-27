@@ -163,3 +163,71 @@ def test_json_log_handler_writes_one_line_per_record():
     lines = [ln for ln in buf.getvalue().split("\n") if ln]
     assert len(lines) == 2
     assert all(json.loads(ln) for ln in lines)
+
+
+# ---- request_id propagation -----------------------------------------------
+
+
+def test_request_id_generated_when_header_missing(client):
+    r = client.get("/health")
+    assert r.status_code == 200
+    rid = r.headers.get("X-Request-ID")
+    assert rid is not None
+    assert len(rid) == 32  # uuid4().hex
+
+
+def test_request_id_echoed_when_header_provided(client):
+    r = client.get("/health", headers={"X-Request-ID": "my-trace-abc"})
+    assert r.headers.get("X-Request-ID") == "my-trace-abc"
+
+
+def test_request_id_uniquely_generated_per_request(client):
+    rids = {client.get("/health").headers["X-Request-ID"] for _ in range(5)}
+    assert len(rids) == 5  # her istek farklı uuid
+
+
+def test_request_id_present_on_429_rate_limited_response(client):
+    api_main._rate_limiter = SlidingWindowRateLimiter(max_per_minute=1)
+    try:
+        assert client.get("/leagues").status_code == 200
+        r = client.get("/leagues", headers={"X-Request-ID": "trace-rate"})
+        assert r.status_code == 429
+        # 429 yanıtında da request_id korunmalı
+        assert r.headers.get("X-Request-ID") == "trace-rate"
+    finally:
+        api_main._rate_limiter = SlidingWindowRateLimiter(120)
+
+
+def test_request_id_injected_into_json_log_records():
+    """contextvar set'liyken JsonFormatter request_id alanını ekler."""
+    from app.core.logging import RequestIdFilter
+    from app.core.request_context import clear_request_id, set_request_id
+
+    fmt = JsonFormatter()
+    set_request_id("rid-xyz-123")
+    try:
+        record = logging.LogRecord(
+            name="t", level=logging.INFO, pathname="x", lineno=1,
+            msg="hi", args=None, exc_info=None,
+        )
+        RequestIdFilter().filter(record)
+        parsed = json.loads(fmt.format(record))
+        assert parsed["request_id"] == "rid-xyz-123"
+    finally:
+        clear_request_id()
+
+
+def test_request_id_omitted_when_not_set():
+    """contextvar set'li değilken request_id alanı yok (parazit yok)."""
+    from app.core.logging import RequestIdFilter
+    from app.core.request_context import clear_request_id
+
+    clear_request_id()
+    fmt = JsonFormatter()
+    record = logging.LogRecord(
+        name="t", level=logging.INFO, pathname="x", lineno=1,
+        msg="hi", args=None, exc_info=None,
+    )
+    RequestIdFilter().filter(record)
+    parsed = json.loads(fmt.format(record))
+    assert "request_id" not in parsed
