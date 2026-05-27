@@ -139,3 +139,76 @@ def test_match_preview_explain_returns_stub_when_no_api_key(session, client):
     assert "611" in body["explanation"] and "607" in body["explanation"]
     # Engine sonuçları hâlâ payload'da
     assert "home_form" in body and "away_form" in body and "head_to_head" in body
+
+
+def test_team_schedule_counts_upcoming(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/teams/611/schedule?horizon_days=30")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["audit"]["engine"] == "engine.schedule"
+    assert body["value"]["upcoming_count"] == 1  # sadece NS match 99
+    assert body["value"]["matches_next_7d"] == 1
+    # match 99 ~2 gün sonra → days_until_next_match küçük pozitif
+    assert 0 < body["value"]["days_until_next_match"] < 7
+
+
+def test_team_schedule_404_for_unknown_team(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/teams/999999/schedule")
+    assert r.status_code == 404
+
+
+def test_matchup_returns_engine_value(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/matchup/611/607?last_n=5")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["audit"]["engine"] == "engine.matchup"
+    assert body["value"]["home_team_id"] == 611
+    assert body["value"]["away_team_id"] == 607
+    # Galatasaray (611) form daha güçlü → ppg delta pozitif
+    assert body["value"]["form_delta_ppg"] > 0
+
+
+def test_matchup_rejects_self_pair(session, client):
+    r = client.get("/matchup/611/611")
+    assert r.status_code == 400
+
+
+def test_matchup_404_when_team_has_no_matches(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/matchup/611/999999")
+    assert r.status_code == 404
+
+
+def test_match_predict_returns_poisson(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/matches/99/predict")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["audit"]["engine"] == "engine.predict"
+    v = body["value"]
+    # Olasılıklar ~1'e toplanır (max_goals=10 grid kuyruk toleransı)
+    total = v["prob_home_win"] + v["prob_draw"] + v["prob_away_win"]
+    assert abs(total - 1.0) < 0.01
+    # Galatasaray form daha güçlü → ev galibiyeti olasılığı en yüksek
+    assert v["prob_home_win"] > v["prob_away_win"]
+    # Form sample küçük (2) → low_confidence flag
+    assert v["low_confidence"] is True
+    assert v["sample_size"] == 2
+
+
+def test_match_predict_404_for_unknown_match(session, client):
+    r = client.get("/matches/123456789/predict")
+    assert r.status_code == 404
+
+
+def test_match_predict_excludes_match_itself(session, client):
+    """Form, maçın kickoff'undan önceki maçlardan; match 99 (NS) dahil olmamalı."""
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/matches/99/predict")
+    assert r.status_code == 200
+    body = r.json()
+    # 611 için 3 geçmiş maç, 607 için 2 → sample_size = min(3,2) = 2
+    assert body["value"]["sample_size"] == 2
