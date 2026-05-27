@@ -100,3 +100,56 @@ def test_h2h_no_matches_has_none_last_meeting():
     assert h.last_meeting_result is None
     assert h.team_a_clean_sheets == 0
     assert h.team_b_clean_sheets == 0
+    # v3 alanları: empty case
+    assert h.avg_goals_per_match == 0.0
+    assert h.biggest_a_win_margin == 0
+    assert h.recent_a_wins == 0
+
+
+def test_h2h_avg_goals_per_match():
+    matches = [
+        _match(1, 611, 607, 2, 1, 30),  # 3 gol
+        _match(2, 607, 611, 0, 0, 10),  # 0 gol
+        _match(3, 611, 607, 1, 2, 5),   # 3 gol
+    ]
+    h = compute_head_to_head(611, 607, matches).value
+    # Toplam 6 gol / 3 maç = 2.0
+    assert h.avg_goals_per_match == 2.0
+
+
+def test_h2h_biggest_win_margins():
+    matches = [
+        _match(1, 611, 607, 5, 0, 30),  # A wins by 5
+        _match(2, 611, 607, 2, 1, 20),  # A wins by 1
+        _match(3, 607, 611, 4, 0, 10),  # B wins by 4 (607 home, A away 0-4)
+    ]
+    h = compute_head_to_head(611, 607, matches).value
+    assert h.biggest_a_win_margin == 5
+    assert h.biggest_b_win_margin == 4
+
+
+def test_h2h_recent_trend_isolates_last_3():
+    """10 maçta dengeli ama son 3'te A dominant — recent_a_wins göstermeli."""
+    # 7 eski maç: A 2, B 2, draw 3 (dengeli)
+    matches = []
+    matches += [_match(i, 611, 607, 1, 2, 100 - i) for i in range(1, 3)]  # 2 B wins
+    matches += [_match(i, 611, 607, 2, 1, 100 - i) for i in range(3, 5)]  # 2 A wins
+    matches += [_match(i, 611, 607, 1, 1, 100 - i) for i in range(5, 8)]  # 3 draws
+    # Son 3 maç: A 3, daha yeni tarihlere
+    matches += [_match(i, 611, 607, 3, 0, 20 - i) for i in range(8, 11)]  # 3 A wins
+    h = compute_head_to_head(611, 607, matches).value
+    assert h.matches_played == 10
+    # Overall: 5 A wins (2 eski + 3 yeni), 2 B wins, 3 draws
+    assert h.team_a_wins == 5
+    # Recent (son 3 = son 3 maç): hepsi A
+    assert h.recent_a_wins == 3
+    assert h.recent_b_wins == 0
+    assert h.recent_draws == 0
+
+
+def test_h2h_v3_audit_includes_recent_window():
+    matches = [_match(1, 611, 607, 1, 0, 5)]
+    res = compute_head_to_head(611, 607, matches)
+    assert res.audit.engine_version == "3"
+    assert res.audit.inputs["recent_window"] == 3
+    assert "biggest" in res.audit.formula

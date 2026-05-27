@@ -1,8 +1,11 @@
 """Rakip örüntü analizi — head-to-head özet + ev/dep parite + clean sheet'ler.
 
 İki takımın geçmiş karşılaşmalarındaki sayılar. v2'de "last_meeting", ev/dep
-ayrımı ve clean sheet kayıtları da eklendi — preview brief'i için sentez
-malzemesi.
+ayrımı ve clean sheet; v3'te recent trend (son 3 maç ayrı sayım), goal margin
+records, avg goals per match.
+
+`recent_*` alanları geçmiş 3 maçın trend'ini izole eder — "10 maçta dengeli
+ama son 3'te A dominant" gibi insight'lar preview brief'inde fark yaratır.
 """
 
 from __future__ import annotations
@@ -15,7 +18,9 @@ from app.engine._protocols import MatchLike
 from app.sports import football
 
 ENGINE_NAME = "engine.opponent"
-ENGINE_VERSION = "2"  # v1 → v2: last_meeting, ev/dep, clean sheets
+ENGINE_VERSION = "3"  # v2 → v3: recent trend + goal margins + avg goals
+
+_RECENT_WINDOW = 3
 
 
 @dataclass(frozen=True)
@@ -36,6 +41,14 @@ class HeadToHead:
     team_a_away_wins: int  # A deplasmandayken galibiyet
     last_meeting_kickoff: str | None  # ISO; oynanmış maç yoksa None
     last_meeting_result: str | None  # "team_a", "draw", "team_b", veya None
+
+    # v3 eklemeleri — trend + margin
+    avg_goals_per_match: float  # (a_goals + b_goals) / matches_played; 0 maç=0
+    biggest_a_win_margin: int  # A'nın en büyük galibiyet farkı; yoksa 0
+    biggest_b_win_margin: int
+    recent_a_wins: int  # son _RECENT_WINDOW h2h maçında A galibiyet
+    recent_draws: int
+    recent_b_wins: int
 
 
 def compute_head_to_head(
@@ -61,8 +74,12 @@ def compute_head_to_head(
     a_goals = b_goals = 0
     a_clean = b_clean = 0
     a_home_wins = a_away_wins = 0
+    biggest_a_margin = 0  # A galibiyetlerindeki en büyük fark
+    biggest_b_margin = 0
     considered_ids: list[int] = []
     last: MatchLike | None = None
+    # Trend için match-bazlı sonuç listesi (kronolojik)
+    outcomes: list[str] = []  # "a", "draw", "b"
 
     for m in relevant:
         considered_ids.append(m.external_id)
@@ -82,10 +99,19 @@ def compute_head_to_head(
                 a_home_wins += 1
             else:
                 a_away_wins += 1
+            margin = a_goal - b_goal
+            if margin > biggest_a_margin:
+                biggest_a_margin = margin
+            outcomes.append("a")
         elif a_goal < b_goal:
             b_wins += 1
+            margin = b_goal - a_goal
+            if margin > biggest_b_margin:
+                biggest_b_margin = margin
+            outcomes.append("b")
         else:
             draws += 1
+            outcomes.append("draw")
         last = m
 
     if last is not None:
@@ -104,10 +130,18 @@ def compute_head_to_head(
         last_result = None
         last_kickoff = None
 
+    n = len(relevant)
+    avg_goals = (a_goals + b_goals) / n if n else 0.0
+    # Recent trend: son _RECENT_WINDOW maç (kronolojik, en yeni en sonda)
+    recent_slice = outcomes[-_RECENT_WINDOW:]
+    recent_a = sum(1 for o in recent_slice if o == "a")
+    recent_draws_count = sum(1 for o in recent_slice if o == "draw")
+    recent_b = sum(1 for o in recent_slice if o == "b")
+
     h2h = HeadToHead(
         team_a_id=team_a_id,
         team_b_id=team_b_id,
-        matches_played=len(relevant),
+        matches_played=n,
         team_a_wins=a_wins,
         draws=draws,
         team_b_wins=b_wins,
@@ -119,6 +153,12 @@ def compute_head_to_head(
         team_a_away_wins=a_away_wins,
         last_meeting_kickoff=last_kickoff,
         last_meeting_result=last_result,
+        avg_goals_per_match=round(avg_goals, 3),
+        biggest_a_win_margin=biggest_a_margin,
+        biggest_b_win_margin=biggest_b_margin,
+        recent_a_wins=recent_a,
+        recent_draws=recent_draws_count,
+        recent_b_wins=recent_b,
     )
 
     audit = AuditRecord(
@@ -131,10 +171,13 @@ def compute_head_to_head(
         inputs={
             "team_b_id": team_b_id,
             "considered_match_ids": considered_ids,
+            "recent_window": _RECENT_WINDOW,
         },
         formula=(
             "sum over finished matches between (team_a, team_b); "
-            "clean sheet = rakip gol atamamış; last_meeting = en geç kickoff"
+            "clean sheet = rakip gol atamamış; last_meeting = en geç kickoff; "
+            f"recent_* = son {_RECENT_WINDOW} maç ayrı sayım; "
+            "biggest_*_win_margin = en büyük gol farkı"
         ),
     )
     return EngineResult(value=h2h, audit=audit)
