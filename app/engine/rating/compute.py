@@ -58,22 +58,31 @@ def compute_team_rating(
     matches: Iterable[MatchLike],
     *,
     last_n: int = 10,
+    time_decay_rate: float = 0.0,
 ) -> EngineResult[TeamRating]:
     """Takım rating'i — overall + side-aware (ev/dep).
 
     `last_n`: overall ve her side subset için ayrı uygulanır (yani son N ev
     maç + son N dep maç olabilir; sample asimetrisi raporda görünür).
+    `time_decay_rate`: compute_form'a doğrudan geçer; rate>0 ise gf/ga
+    per-match averages zaman-ağırlıklı (PR #22 form v4).
     """
     # Tek seferde materialize — engine.form iki kez tüketecek, generator olamaz
     materialized = list(matches)
 
-    form_all = compute_form(team_external_id, materialized, last_n=last_n).value
+    form_all = compute_form(
+        team_external_id, materialized, last_n=last_n, time_decay_rate=time_decay_rate
+    ).value
 
     # Side subsetleri — sadece team'in o tarafta oynadığı maçları geçir
     home_only = [m for m in materialized if m.home_team_external_id == team_external_id]
     away_only = [m for m in materialized if m.away_team_external_id == team_external_id]
-    form_home = compute_form(team_external_id, home_only, last_n=last_n).value
-    form_away = compute_form(team_external_id, away_only, last_n=last_n).value
+    form_home = compute_form(
+        team_external_id, home_only, last_n=last_n, time_decay_rate=time_decay_rate
+    ).value
+    form_away = compute_form(
+        team_external_id, away_only, last_n=last_n, time_decay_rate=time_decay_rate
+    ).value
 
     overall = _score_from(form_all)
     home_r = _score_from(form_home)
@@ -106,6 +115,7 @@ def compute_team_rating(
         value=asdict(rating),
         inputs={
             "last_n": last_n,
+            "time_decay_rate": time_decay_rate,
             "ppg": ppg_overall,
             "goal_diff": form_all.goal_diff,
             "matches_played": form_all.matches_played,

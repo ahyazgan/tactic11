@@ -90,6 +90,33 @@ def test_team_form_time_decay_affects_per_match_averages(session, client):
     assert r1["audit"]["inputs"]["time_decay_rate"] == 0.1
 
 
+def test_team_rating_propagates_time_decay_to_audit(session, client):
+    """/rating endpoint'i time_decay_rate'i compute_team_rating'e geçirir."""
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/teams/611/rating?time_decay_rate=0.05").json()
+    assert r["audit"]["inputs"]["time_decay_rate"] == 0.05
+
+
+def test_match_predict_propagates_time_decay(session, client):
+    """predict: decay aktifse cache key farklı → ayrı tahmin satırı."""
+    _seed_matches(session, datetime.now(UTC))
+    r0 = client.get("/matches/99/predict?time_decay_rate=0").json()
+    r1 = client.get("/matches/99/predict?time_decay_rate=0.1").json()
+    assert "audit" in r0 and "audit" in r1
+    # params_hash farklı (time_decay_rate params'da) → 2 prediction satırı
+    rows = session.execute(models.Prediction.__table__.select()).fetchall()
+    assert len(rows) == 2
+
+
+def test_match_preview_propagates_time_decay(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/matches/99/preview?time_decay_rate=0.05")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["home_form"]["audit"]["inputs"]["time_decay_rate"] == 0.05
+    assert body["away_form"]["audit"]["inputs"]["time_decay_rate"] == 0.05
+
+
 def test_team_rating_endpoint(session, client):
     _seed_matches(session, datetime.now(UTC))
     r = client.get("/teams/611/rating?last_n=5")
