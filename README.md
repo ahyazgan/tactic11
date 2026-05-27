@@ -64,10 +64,16 @@ python scripts/sync_league.py --league 203 --season 2024
 
 # 2) API'yi ayağa kaldır
 uvicorn app.api.main:app --reload
-# GET /health
-# GET /leagues
-# GET /teams/{league_id}
-# GET /teams/{team_id}/matches
+# Okuma (Faz 1):
+#   GET /health
+#   GET /leagues
+#   GET /teams/{league_id}                      # liglerde görünen takımlar
+#   GET /teams/{team_id}/matches                # takım maçları
+# Analiz (Faz 5; ?explain=true ile Claude yorumu — ANTHROPIC_API_KEY yoksa stub):
+#   GET /teams/{team_id}/form?last_n=5
+#   GET /teams/{team_id}/rating?last_n=10
+#   GET /teams/{a}/vs/{b}                       # head-to-head
+#   GET /matches/{match_id}/preview?last_n=5    # ev+dep form + H2H, kickoff öncesi
 
 # 3) Scheduler — kayıtlı bir job'u çalıştır (dış cron buradan tetikler)
 python scripts/run_job.py --list

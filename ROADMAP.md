@@ -63,9 +63,15 @@ dışarı hesap. DB/API/LLM bilmez.
 
 ---
 
-## Faz 5 — API olgunlaşır
-- Analiz endpoint'leri (`/teams/{id}/form`, `/matches/{id}/preview`)
-- Auth (kullanıcı/rol)
+## Faz 5 — API olgunlaşır (auth dışında ✓)
+- [x] `GET /teams/{id}/form?last_n=N&explain=bool` — engine/form sonucu + audit
+- [x] `GET /teams/{id}/rating?last_n=N&explain=bool` — engine/rating
+- [x] `GET /teams/{a}/vs/{b}?explain=bool` — engine/opponent head-to-head
+- [x] `GET /matches/{id}/preview?last_n=N` — ev/dep form + H2H; kickoff'tan
+      önceki maçlar üzerinden (sızıntı yok)
+- [x] `api/serialize.py` — EngineResult → dict adaptörü (engine pure kalsın)
+- [x] `?explain=true` → `ClaudeCommentator.explain` (anahtar yoksa stub)
+- [ ] Auth (kullanıcı/rol) — sonraki tur, JWT/OAuth seçimi açık
 
 ---
 
