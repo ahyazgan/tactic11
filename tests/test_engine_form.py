@@ -167,9 +167,63 @@ def test_form_failed_to_score_and_scoring_rate():
     assert f.scoring_rate == 0.5  # 2/4
 
 
-def test_form_v3_audit_mentions_new_metrics():
+def test_form_audit_mentions_v3_v4_metrics():
+    """v3 alanları (dominant, scoring_rate) + v4 (time_decay_rate input) formula'da."""
     matches = [_match(1, home=611, away=607, home_score=3, away_score=0, days_ago=1)]
     res = compute_form(611, matches)
     assert "dominant" in res.audit.formula
     assert "scoring_rate" in res.audit.formula
-    assert res.audit.engine_version == "3"
+    assert res.audit.engine_version == "4"
+    assert "time_decay_rate" in res.audit.inputs
+
+
+def test_form_time_decay_zero_is_backwards_compatible():
+    """rate=0 (default) → goals_for_per_match raw average; eski davranışla aynı."""
+    matches = [
+        _match(1, home=611, away=607, home_score=3, away_score=1, days_ago=30),
+        _match(2, home=611, away=607, home_score=1, away_score=1, days_ago=1),
+    ]
+    f = compute_form(611, matches, last_n=5).value
+    # Raw: (3+1)/2 = 2.0, (1+1)/2 = 1.0
+    assert f.goals_for_per_match == 2.0
+    assert f.goals_against_per_match == 1.0
+
+
+def test_form_time_decay_weights_recent_matches_higher():
+    """Yakın maçta 1 gol, uzak maçta 3 gol → decay'siz avg=2; decay'li avg < 2."""
+    matches = [
+        _match(1, home=611, away=607, home_score=3, away_score=0, days_ago=30),
+        _match(2, home=611, away=607, home_score=1, away_score=0, days_ago=1),
+    ]
+    f_raw = compute_form(611, matches, last_n=5, time_decay_rate=0.0).value
+    f_decay = compute_form(611, matches, last_n=5, time_decay_rate=0.05).value
+    # Raw: (3+1)/2 = 2.0
+    assert f_raw.goals_for_per_match == 2.0
+    # Decay: yakın 1.0'a, uzak 3.0'a yakın ama düşük ağırlık → ortalama 2'den az
+    assert f_decay.goals_for_per_match < f_raw.goals_for_per_match
+    assert f_decay.goals_for_per_match > 1.0  # tamamen yakına çekilmez
+    # Raw totals değişmez
+    assert f_decay.goals_for == f_raw.goals_for == 4
+    assert f_decay.matches_played == 2
+
+
+def test_form_time_decay_only_affects_per_match_fields():
+    """W/D/L, points, momentum gibi alanlar decay'den etkilenmez (asimetri kasıtlı)."""
+    matches = [
+        _match(1, home=611, away=607, home_score=3, away_score=0, days_ago=30),
+        _match(2, home=614, away=611, home_score=2, away_score=1, days_ago=1),  # L
+    ]
+    f_raw = compute_form(611, matches, last_n=5, time_decay_rate=0.0).value
+    f_decay = compute_form(611, matches, last_n=5, time_decay_rate=0.1).value
+    # W/D/L + points + ppg değişmez
+    assert f_raw.wins == f_decay.wins
+    assert f_raw.losses == f_decay.losses
+    assert f_raw.points == f_decay.points
+    assert f_raw.points_per_game == f_decay.points_per_game
+
+
+def test_form_time_decay_rejects_negative_rate():
+    import pytest
+    matches = [_match(1, home=611, away=607, home_score=1, away_score=0, days_ago=1)]
+    with pytest.raises(ValueError, match="time_decay_rate"):
+        compute_form(611, matches, time_decay_rate=-0.01)

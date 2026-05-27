@@ -1,6 +1,19 @@
 """Form analizi — son N maçtaki sonuçlar, gol farkı, ev/deplasman ayrımı,
 clean sheet'ler, momentum.
 
+**v3 → v4:** opsiyonel zaman ağırlığı (`time_decay_rate`). Eski maçlar yeni
+maçlardan daha az sayar; `goals_for_per_match` ve `goals_against_per_match`
+zaman-ağırlıklı ortalamaya döner. Diğer alanlar (W/D/L, points, ppg, raw
+totals) ham sayım kalır — kalite eşikleri (dominant, close) ve momentum
+zaten kendi zaman semantiğini taşıyor.
+
+Decay formülü (lineer üs):
+    w_i = exp(-rate · days_old_i)
+
+`rate=0` (default) → uniform ağırlık, geriye uyumlu. Tipik rate: 0.0077
+(~90 gün half-life), 0.023 (~30 gün), 0.069 (~10 gün). Referans zaman
+penceredeki en yeni maçın kickoff'u (deterministik; çağrı anına bağlı değil).
+
 SAF FONKSİYON: girdi `Iterable[MatchLike]`, çıktı `EngineResult[FormReport]`.
 DB/API'ye dokunmaz. Maç tamamlandı sayılan statüler `sports/football.py`'den
 gelir.
@@ -8,6 +21,7 @@ gelir.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from typing import Literal
@@ -17,7 +31,7 @@ from app.engine._protocols import MatchLike
 from app.sports import football
 
 ENGINE_NAME = "engine.form"
-ENGINE_VERSION = "3"  # v2 → v3: dominant_wins, close_losses, failed_to_score, scoring_rate
+ENGINE_VERSION = "4"  # v3 → v4: opsiyonel time_decay_rate (gf/ga per_match)
 
 # Kalite eşikleri — "dominant" / "close" subjektif değil, sayıyla tanımlı.
 _DOMINANT_MARGIN = 2  # 2+ gol farkıyla kazandıysa "dominant"
@@ -114,10 +128,19 @@ def compute_form(
     matches: Iterable[MatchLike],
     *,
     last_n: int = 5,
+    time_decay_rate: float = 0.0,
 ) -> EngineResult[FormReport]:
-    """Bir takımın son N tamamlanmış maçındaki form raporu."""
+    """Bir takımın son N tamamlanmış maçındaki form raporu.
+
+    `time_decay_rate > 0` → `goals_for_per_match` ve `goals_against_per_match`
+    zaman-ağırlıklı (exp(-rate · days_old), referans = pencerenin en yeni
+    maçı). Diğer alanlar (W/D/L, points, raw totals) ham sayım kalır.
+    `rate=0` (default) tamamen geriye uyumlu.
+    """
     if last_n <= 0:
         raise ValueError("last_n > 0 olmalı")
+    if time_decay_rate < 0:
+        raise ValueError("time_decay_rate >= 0 olmalı")
 
     team_matches = [
         m
@@ -129,6 +152,17 @@ def compute_form(
     ]
     team_matches.sort(key=lambda m: m.kickoff, reverse=True)
     window = team_matches[:last_n]
+
+    # Zaman ağırlığı: referans = pencerenin en yeni maçı (deterministik,
+    # çağrı anına bağlı değil). Decay yoksa weight=1.0 — eski yola eşdeğer.
+    if window and time_decay_rate > 0:
+        ref_kickoff = window[0].kickoff
+        weights = [
+            math.exp(-time_decay_rate * max(0.0, (ref_kickoff - m.kickoff).total_seconds() / 86400))
+            for m in window
+        ]
+    else:
+        weights = [1.0] * len(window)
 
     wins = draws = losses = 0
     home_w = home_d = home_l = 0
@@ -143,6 +177,11 @@ def compute_form(
     recent_points = 0
     recent_count = 0
 
+    # gf/ga için weighted toplamlar — per_match averages için sum_w'a böleceğiz
+    weighted_gf = 0.0
+    weighted_ga = 0.0
+    sum_w = 0.0
+
     for idx, m in enumerate(window):
         is_home = m.home_team_external_id == team_external_id
         gf = m.home_score if is_home else m.away_score
@@ -150,6 +189,10 @@ def compute_form(
         assert gf is not None and ga is not None  # filter ile garantili
         gf_total += gf
         ga_total += ga
+        w = weights[idx]
+        weighted_gf += w * gf
+        weighted_ga += w * ga
+        sum_w += w
         if ga == 0:
             clean_sheets += 1
         if gf == 0:
@@ -203,6 +246,10 @@ def compute_form(
     current_streak, current_unbeaten = _calc_streaks(last_results)
 
     scoring_rate = matches_with_goal / played if played else 0.0
+    # per_match: rate>0 ise zaman-ağırlıklı; rate=0 ise sum_w == played ve
+    # weighted toplamlar raw totals'a eşit (geriye uyumlu)
+    gf_per_match = weighted_gf / sum_w if sum_w else 0.0
+    ga_per_match = weighted_ga / sum_w if sum_w else 0.0
     report = FormReport(
         matches_played=played,
         wins=wins,
@@ -221,8 +268,8 @@ def compute_form(
         away_losses=away_l,
         last_results=last_results,
         clean_sheets=clean_sheets,
-        goals_for_per_match=round(gf_total / played, 3) if played else 0.0,
-        goals_against_per_match=round(ga_total / played, 3) if played else 0.0,
+        goals_for_per_match=round(gf_per_match, 3),
+        goals_against_per_match=round(ga_per_match, 3),
         recent_ppg=round(recent_ppg, 3),
         momentum=round(momentum, 3),
         current_streak=current_streak,
@@ -233,6 +280,11 @@ def compute_form(
         scoring_rate=round(scoring_rate, 3),
     )
 
+    decay_formula = (
+        " gf_per_match ve ga_per_match Σ(w_i·g_i)/Σ(w_i) zaman-ağırlıklı; "
+        f"w_i = exp(-{time_decay_rate}·days_old), referans = pencerenin en yeni maçı."
+        if time_decay_rate > 0 else ""
+    )
     audit = AuditRecord(
         engine=ENGINE_NAME,
         engine_version=ENGINE_VERSION,
@@ -243,6 +295,7 @@ def compute_form(
         inputs={
             "last_n": last_n,
             "recent_window": _RECENT_WINDOW,
+            "time_decay_rate": time_decay_rate,
             "considered_match_ids": [m.external_id for m in window],
         },
         formula=(
@@ -250,7 +303,7 @@ def compute_form(
             "momentum=recent_ppg-older_ppg; clean_sheet=rakipsiz; "
             "current_streak=son maçtan ardışık W (+) veya L (-), D=0; "
             f"dominant=margin>={_DOMINANT_MARGIN} W; close_loss=margin<={_CLOSE_MARGIN} L; "
-            "scoring_rate=gol attığı maç oranı"
+            "scoring_rate=gol attığı maç oranı." + decay_formula
         ),
     )
     return EngineResult(value=report, audit=audit)
