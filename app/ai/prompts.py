@@ -159,6 +159,34 @@ def _build_schedule_prompt(v: dict[str, Any], a: AuditRecord) -> str:
     )
 
 
+def _build_predict_prompt(v: dict[str, Any], a: AuditRecord) -> str:
+    home_id = v["home_team_id"]
+    away_id = v["away_team_id"]
+    lam_h = v["expected_home_goals"]
+    lam_a = v["expected_away_goals"]
+    pH = v["prob_home_win"]
+    pD = v["prob_draw"]
+    pA = v["prob_away_win"]
+    score = v["most_likely_score"]
+    score_p = v["most_likely_score_prob"]
+    low = v.get("low_confidence", False)
+    sample = v.get("sample_size", 0)
+    confidence_note = (
+        f" UYARI: örneklem küçük ({sample} maç), tahmin güveni DÜŞÜK."
+        if low else ""
+    )
+    return (
+        f"Maç tahmini (Poisson modeli) — ev {home_id} vs deplasman {away_id}. "
+        f"Beklenen goller: ev {lam_h}, dep {lam_a}. "
+        f"1X2 olasılıkları: ev galibiyet %{int(pH * 100)}, "
+        f"beraberlik %{int(pD * 100)}, dep galibiyet %{int(pA * 100)}. "
+        f"En olası skor: {score[0]}-{score[1]} (P=%{score_p * 100:.1f}).{confidence_note}\n\n"
+        "Bu sayıları yorumla; en olası ihtimal hangisi, fark ne kadar belirgin? "
+        "Model bağımsızlık varsayar; küçük örneklemde gürültülü olabilir. "
+        "'Bu skor olur' deme — 'sayılara göre şu yöne işaret' de."
+    )
+
+
 def _build_matchup_prompt(v: dict[str, Any], a: AuditRecord) -> str:
     dom = v.get("h2h_dominance", 0.0)
     if dom > 0:
@@ -187,6 +215,7 @@ _BUILDERS: dict[str, Callable[[dict[str, Any], AuditRecord], str]] = {
     "engine.load": _build_load_prompt,
     "engine.schedule": _build_schedule_prompt,
     "engine.matchup": _build_matchup_prompt,
+    "engine.predict": _build_predict_prompt,
 }
 
 
