@@ -10,9 +10,11 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from sqlalchemy import (
+    Boolean,
     Date,
     DateTime,
     Float,
+    ForeignKey,
     Index,
     Integer,
     PrimaryKeyConstraint,
@@ -395,5 +397,86 @@ class ChatMessage(Base):
     content_json: Mapped[str] = mapped_column(Text)
     tool_traces_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     total_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+# --------------------------------------------------------------------------- #
+# Multi-tenant (Ufuk 1): tenants + users + refresh_tokens
+# --------------------------------------------------------------------------- #
+
+
+class Tenant(Base):
+    """Tenant = bir kulüp / bir müşteri. Tüm domain verisi tenant_id ile izole.
+
+    `id` UUID string (36 karakter) — SQLite + Postgres uyumlu, ORM string olarak
+    tutar (FK string). `slug` URL-safe kısa kimlik; unique. `settings` JSON
+    (Text) — webhook, brand config, scheduler cron override vs.
+    """
+
+    __tablename__ = "tenants"
+    __table_args__ = (
+        UniqueConstraint("slug", name="uq_tenants_slug"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    slug: Mapped[str] = mapped_column(String(64))
+    name: Mapped[str] = mapped_column(String(200))
+    settings_json: Mapped[str] = mapped_column(Text, default="{}")
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class User(Base):
+    """Kullanıcı — bir tenant'a bağlı. Email unique per tenant (cross-tenant
+    aynı email olabilir).
+
+    `role`: admin | analyst | coach | viewer.
+    `password_hash`: bcrypt çıktısı (60 karakter). Asla loglanmaz.
+    """
+
+    __tablename__ = "users"
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "email", name="uq_users_tenant_email"),
+        Index("ix_users_tenant", "tenant_id"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"),
+    )
+    email: Mapped[str] = mapped_column(String(255))
+    password_hash: Mapped[str] = mapped_column(String(100))
+    role: Mapped[str] = mapped_column(String(16))  # admin|analyst|coach|viewer
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_login_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+    )
+
+
+class RefreshToken(Base):
+    """JWT refresh token — server-side revocable. token_hash bcrypt değil,
+    SHA-256 — refresh token'i tek tek doğrularken bcrypt yavaş olur ve secret
+    olarak yeterli (refresh token uzun random string zaten).
+    """
+
+    __tablename__ = "refresh_tokens"
+    __table_args__ = (
+        UniqueConstraint("token_hash", name="uq_refresh_tokens_hash"),
+        Index("ix_refresh_tokens_user", "user_id"),
+        Index("ix_refresh_tokens_expires", "expires_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"),
+    )
+    token_hash: Mapped[str] = mapped_column(String(64))  # sha256 hex
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+    )
+    user_agent: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    ip: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
