@@ -39,6 +39,9 @@ class League(Base):
     name: Mapped[str] = mapped_column(String(255))
     season: Mapped[int] = mapped_column(Integer, index=True)
     country: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class Team(Base):
@@ -53,6 +56,9 @@ class Team(Base):
     name: Mapped[str] = mapped_column(String(255))
     country: Mapped[str | None] = mapped_column(String(128), nullable=True)
     founded: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class Player(Base):
@@ -68,6 +74,9 @@ class Player(Base):
     position: Mapped[str | None] = mapped_column(String(8), nullable=True)
     birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     nationality: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class Match(Base):
@@ -89,6 +98,9 @@ class Match(Base):
     away_team_external_id: Mapped[int] = mapped_column(Integer)
     home_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     away_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class Snapshot(Base):
@@ -110,6 +122,9 @@ class Snapshot(Base):
     leagues_count: Mapped[int] = mapped_column(Integer)
     teams_count: Mapped[int] = mapped_column(Integer)
     matches_count: Mapped[int] = mapped_column(Integer)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class UsageEvent(Base):
@@ -125,6 +140,9 @@ class UsageEvent(Base):
     endpoint: Mapped[str] = mapped_column(String(255))
     tokens: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class CacheEntry(Base):
@@ -140,6 +158,9 @@ class CacheEntry(Base):
     key: Mapped[str] = mapped_column(String(512))
     value: Mapped[str] = mapped_column(Text)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class JobRun(Base):
@@ -162,6 +183,9 @@ class JobRun(Base):
     status: Mapped[str] = mapped_column(String(16))
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class PlayerAppearance(Base):
@@ -189,6 +213,9 @@ class PlayerAppearance(Base):
     match_external_id: Mapped[int] = mapped_column(Integer)
     minutes: Mapped[int] = mapped_column(Integer)
     kickoff: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class AgentOutput(Base):
@@ -225,6 +252,9 @@ class AgentOutput(Base):
     summary: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class Prediction(Base):
@@ -267,6 +297,9 @@ class Prediction(Base):
     reconciled_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class TrackingFrameRow(Base):
@@ -300,6 +333,9 @@ class TrackingFrameRow(Base):
     ball_y: Mapped[float | None] = mapped_column(Float, nullable=True)
     players_json: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class AssistantMemory(Base):
@@ -330,6 +366,9 @@ class AssistantMemory(Base):
         "created_at", DateTime(timezone=True),
     )
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class ChatConversation(Base):
@@ -350,6 +389,9 @@ class ChatConversation(Base):
     title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class ScoutWatchlist(Base):
@@ -375,6 +417,9 @@ class ScoutWatchlist(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 class ChatMessage(Base):
@@ -398,6 +443,9 @@ class ChatMessage(Base):
     tool_traces_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     total_tokens: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
 
 
 # --------------------------------------------------------------------------- #
