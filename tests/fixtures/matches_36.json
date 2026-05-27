@@ -1,0 +1,276 @@
+{
+  "get": "fixtures",
+  "parameters": {
+    "team": "36",
+    "last": "10"
+  },
+  "errors": [],
+  "results": 9,
+  "paging": {
+    "current": 1,
+    "total": 1
+  },
+  "response": [
+    {
+      "fixture": {
+        "id": 1234341,
+        "date": "2026-06-19T19:00:00+00:00",
+        "status": {
+          "short": "NS",
+          "long": "Not Started"
+        }
+      },
+      "league": {
+        "id": 39,
+        "season": 2026,
+        "round": "Regular Season - 2"
+      },
+      "teams": {
+        "home": {
+          "id": 42,
+          "name": "Arsenal"
+        },
+        "away": {
+          "id": 36,
+          "name": "Fulham"
+        }
+      },
+      "goals": {
+        "home": null,
+        "away": null
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234335,
+        "date": "2026-06-12T19:00:00+00:00",
+        "status": {
+          "short": "NS",
+          "long": "Not Started"
+        }
+      },
+      "league": {
+        "id": 39,
+        "season": 2026,
+        "round": "Regular Season - 1"
+      },
+      "teams": {
+        "home": {
+          "id": 36,
+          "name": "Fulham"
+        },
+        "away": {
+          "id": 50,
+          "name": "Manchester City"
+        }
+      },
+      "goals": {
+        "home": null,
+        "away": null
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234331,
+        "date": "2024-09-27T20:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 39,
+        "season": 2024,
+        "round": "Regular Season - 7"
+      },
+      "teams": {
+        "home": {
+          "id": 36,
+          "name": "Fulham"
+        },
+        "away": {
+          "id": 34,
+          "name": "Newcastle"
+        }
+      },
+      "goals": {
+        "home": 2,
+        "away": 4
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234327,
+        "date": "2024-09-20T20:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 39,
+        "season": 2024,
+        "round": "Regular Season - 6"
+      },
+      "teams": {
+        "home": {
+          "id": 36,
+          "name": "Fulham"
+        },
+        "away": {
+          "id": 47,
+          "name": "Tottenham"
+        }
+      },
+      "goals": {
+        "home": 0,
+        "away": 1
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234323,
+        "date": "2024-09-13T20:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 39,
+        "season": 2024,
+        "round": "Regular Season - 5"
+      },
+      "teams": {
+        "home": {
+          "id": 36,
+          "name": "Fulham"
+        },
+        "away": {
+          "id": 40,
+          "name": "Liverpool"
+        }
+      },
+      "goals": {
+        "home": 0,
+        "away": 3
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234319,
+        "date": "2024-09-06T20:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 39,
+        "season": 2024,
+        "round": "Regular Season - 4"
+      },
+      "teams": {
+        "home": {
+          "id": 36,
+          "name": "Fulham"
+        },
+        "away": {
+          "id": 41,
+          "name": "Southampton"
+        }
+      },
+      "goals": {
+        "home": 1,
+        "away": 0
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234314,
+        "date": "2024-08-30T20:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 39,
+        "season": 2024,
+        "round": "Regular Season - 3"
+      },
+      "teams": {
+        "home": {
+          "id": 35,
+          "name": "Everton"
+        },
+        "away": {
+          "id": 36,
+          "name": "Fulham"
+        }
+      },
+      "goals": {
+        "home": 0,
+        "away": 0
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234308,
+        "date": "2024-08-23T20:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 39,
+        "season": 2024,
+        "round": "Regular Season - 2"
+      },
+      "teams": {
+        "home": {
+          "id": 33,
+          "name": "Manchester United"
+        },
+        "away": {
+          "id": 36,
+          "name": "Fulham"
+        }
+      },
+      "goals": {
+        "home": 1,
+        "away": 1
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234302,
+        "date": "2024-08-16T20:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 39,
+        "season": 2024,
+        "round": "Regular Season - 1"
+      },
+      "teams": {
+        "home": {
+          "id": 49,
+          "name": "Chelsea"
+        },
+        "away": {
+          "id": 36,
+          "name": "Fulham"
+        }
+      },
+      "goals": {
+        "home": 3,
+        "away": 0
+      }
+    }
+  ]
+}
