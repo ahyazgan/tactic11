@@ -14,6 +14,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.ai import ClaudeCommentator
+from app.api.admin import router as admin_router
 from app.api.auth import require_api_key
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
@@ -253,4 +254,5 @@ def match_preview(
     return payload
 
 
+protected.include_router(admin_router)
 app.include_router(protected)

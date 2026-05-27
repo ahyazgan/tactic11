@@ -76,6 +76,11 @@ uvicorn app.api.main:app --reload
 #   GET /teams/{team_id}/rating?last_n=10
 #   GET /teams/{a}/vs/{b}                       # head-to-head
 #   GET /matches/{match_id}/preview?last_n=5    # ev+dep form + H2H, kickoff öncesi
+# Operasyonel (admin):
+#   GET /admin/jobs?since_hours=24&status=failed
+#   GET /admin/usage                            # source başına call + token
+#   GET /admin/snapshots?scope=...
+#   GET /admin/db-stats                         # tablo boyutları
 
 # 3) Scheduler — kayıtlı bir job'u çalıştır (dış cron buradan tetikler)
 python scripts/run_job.py --list

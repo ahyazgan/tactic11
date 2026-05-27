@@ -105,6 +105,9 @@ Nginx önünde reverse proxy + TLS önerilir (`proxy_pass http://127.0.0.1:8000`
 
 ## Sağlık kontrolü
 
+Operasyonel sorular için iki yol var: `/admin/*` HTTP uçları (auth gerekli)
+ya da doğrudan psql. HTTP daha pratik, psql ise debug için.
+
 ```bash
 # API canlı mı?
 curl http://localhost:8000/health  # → {"status":"ok"}
@@ -112,12 +115,23 @@ curl http://localhost:8000/health  # → {"status":"ok"}
 # Auth doğru mu?
 curl -H "X-API-Key: $API_AUTH_KEY" http://localhost:8000/leagues
 
-# Sync ne durumda?
+# Sync ne durumda? — son 24 saatin job run'ları
+curl -H "X-API-Key: $API_AUTH_KEY" "http://localhost:8000/admin/jobs?since_hours=24"
+
+# Sadece başarısızları gör
+curl -H "X-API-Key: $API_AUTH_KEY" "http://localhost:8000/admin/jobs?status=failed&since_hours=168"
+
+# Bugün ve bu ay kota tüketimi (source başına call + token)
+curl -H "X-API-Key: $API_AUTH_KEY" http://localhost:8000/admin/usage
+
+# Bir lig için snapshot tarihçesi (tahmin yakıtı)
+curl -H "X-API-Key: $API_AUTH_KEY" "http://localhost:8000/admin/snapshots?scope=league:203:season:2024"
+
+# Tablo boyutları — sync ilerlemesi hızlı bakış
+curl -H "X-API-Key: $API_AUTH_KEY" http://localhost:8000/admin/db-stats
+
+# --- Doğrudan psql (debug için) ---
 psql $DATABASE_URL -c "SELECT job_name, status, attempts, error FROM job_runs ORDER BY started_at DESC LIMIT 5;"
-
-# Kota ne durumda?
 psql $DATABASE_URL -c "SELECT source, COUNT(*) FROM usage_events WHERE created_at > now() - interval '1 day' GROUP BY source;"
-
-# Snapshot tarihçesi (tahmin yakıtı)
 psql $DATABASE_URL -c "SELECT scope, leagues_count, teams_count, matches_count, created_at FROM snapshots ORDER BY created_at DESC LIMIT 10;"
 ```
