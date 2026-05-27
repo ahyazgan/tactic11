@@ -208,6 +208,37 @@ def _build_matchup_prompt(v: dict[str, Any], a: AuditRecord) -> str:
     )
 
 
+def _build_fixture_difficulty_prompt(v: dict[str, Any], a: AuditRecord) -> str:
+    considered = v["matches_considered"]
+    unknown = v["matches_unknown_opponent"]
+    if considered == 0:
+        kapsam = (
+            f" (rating'i bilinen rakip yok; {unknown} maç kapsam dışı)"
+            if unknown > 0 else " (ufukta maç yok)"
+        )
+        return (
+            f"Takım {a.subject_id} fikstür zorluğu hesaplanamadı{kapsam}. "
+            "Bunu söyle, veri yetersiz."
+        )
+    hardest_id = v["hardest_opponent_id"]
+    hardest_r = v["hardest_opponent_rating"]
+    easiest_id = v["easiest_opponent_id"]
+    easiest_r = v["easiest_opponent_rating"]
+    kapsam_uyari = (
+        f" UYARI: {unknown} rakibin rating'i bilinmiyor, kapsam dışı." if unknown > 0 else ""
+    )
+    return (
+        f"Takım {a.subject_id} önündeki fikstür zorluğu: "
+        f"{considered} maç (ev {v['home_match_count']}, dep {v['away_match_count']}). "
+        f"Rakip rating ortalaması {v['avg_opponent_rating']}; "
+        f"zaman ağırlıklı zorluk {v['weighted_difficulty']} (yakın maç ağırlıklı). "
+        f"En zor: takım {hardest_id} (rating {hardest_r}). "
+        f"En kolay: takım {easiest_id} (rating {easiest_r}).{kapsam_uyari}\n\n"
+        "Bu sayıları rotasyon/dinlenme açısından kısa yorumla; "
+        "'önümüzdeki haftalar' (weighted) ile 'ortalama' farkına dikkat çek."
+    )
+
+
 _BUILDERS: dict[str, Callable[[dict[str, Any], AuditRecord], str]] = {
     "engine.form": _build_form_prompt,
     "engine.rating": _build_rating_prompt,
@@ -216,6 +247,7 @@ _BUILDERS: dict[str, Callable[[dict[str, Any], AuditRecord], str]] = {
     "engine.schedule": _build_schedule_prompt,
     "engine.matchup": _build_matchup_prompt,
     "engine.predict": _build_predict_prompt,
+    "engine.fixture_difficulty": _build_fixture_difficulty_prompt,
 }
 
 
