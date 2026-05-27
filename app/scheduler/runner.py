@@ -61,28 +61,39 @@ def run_job(
     final_status = "failed"
     attempts_made = 0
 
-    for attempt in range(1, max_attempts + 1):
-        attempts_made = attempt
-        log.info("job %s deneme %d/%d kwargs=%s", name, attempt, max_attempts, kwargs)
-        try:
-            spec.handler(**kwargs)
-            final_status = "success"
-            last_error = None
-            break
-        except Exception as e:  # noqa: BLE001 — job hataları yakalanır, audit'e yazılır
-            last_error = f"{type(e).__name__}: {e}"
-            log.warning("job %s deneme %d başarısız: %s", name, attempt, last_error)
-            if attempt < max_attempts:
-                _sleep(_backoff(attempt))
+    try:
+        for attempt in range(1, max_attempts + 1):
+            attempts_made = attempt
+            log.info("job %s deneme %d/%d kwargs=%s", name, attempt, max_attempts, kwargs)
+            try:
+                spec.handler(**kwargs)
+                final_status = "success"
+                last_error = None
+                break
+            except Exception as e:  # noqa: BLE001 — job hataları yakalanır, audit'e yazılır
+                last_error = f"{type(e).__name__}: {e}"
+                log.warning("job %s deneme %d başarısız: %s", name, attempt, last_error)
+                if attempt < max_attempts:
+                    _sleep(_backoff(attempt))
+    except BaseException as e:
+        # KeyboardInterrupt / SystemExit vb — audit'i de işaretle, sonra reraise et.
+        last_error = f"{type(e).__name__}: {e}"
+        attempts_made = max(attempts_made, 1)
+        _finalize_run(run_id, status="failed", attempts=attempts_made, error=last_error)
+        raise
 
+    return _finalize_run(run_id, status=final_status, attempts=attempts_made, error=last_error)
+
+
+def _finalize_run(run_id: int, *, status: str, attempts: int, error: str | None) -> models.JobRun:
     with SessionLocal() as session:
         row = session.get(models.JobRun, run_id)
         if row is None:
             raise RuntimeError(f"job_run {run_id} kayboldu")
-        row.status = final_status
+        row.status = status
         row.ended_at = datetime.now(timezone.utc)
-        row.attempts = attempts_made
-        row.error = last_error
+        row.attempts = attempts
+        row.error = error
         session.commit()
         session.refresh(row)
         return row

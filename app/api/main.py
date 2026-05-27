@@ -16,7 +16,8 @@ from app.ai import ClaudeCommentator
 from app.api.auth import require_api_key
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
-from app.core.logging import setup_logging
+from app.core.config import get_settings
+from app.core.logging import get_logger, setup_logging
 from app.db import models
 from app.db.session import get_session
 from app.engine.form import compute_form
@@ -25,6 +26,12 @@ from app.engine.rating import compute_team_rating
 from app.sports import football
 
 setup_logging()
+
+if not get_settings().api_auth_key:
+    get_logger(__name__).warning(
+        "API_AUTH_KEY boş — auth DEVRE DIŞI. Production'da bu değeri set edin "
+        "(env-var typosu? .env yüklendi mi?). /health dışında her uç açık."
+    )
 
 app = FastAPI(title="football-intelligence", version="0.3.0")
 

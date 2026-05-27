@@ -69,6 +69,14 @@ class AnthropicClient:
             messages=[{"role": "user", "content": user}],
         )
         text = next((b.text for b in response.content if b.type == "text"), "")
+        if not text:
+            # Model sadece thinking bloğu döndürdüyse veya max_tokens'a takıldıysa
+            # text boş olabilir; caller sessizce boş yorum almasın.
+            log.warning(
+                "anthropic yanıtında text bloğu yok (stop_reason=%s, max_tokens=%d)",
+                response.stop_reason,
+                max_tokens,
+            )
         return MessageResult(
             text=text,
             input_tokens=response.usage.input_tokens,

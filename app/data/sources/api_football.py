@@ -56,7 +56,7 @@ class APIFootball(DataSource):
 
     def get_leagues(self) -> list[League]:
         raw = self._get("leagues", {})
-        return [self._to_league(item) for item in raw.get("response", [])]
+        return [lg for lg in (self._to_league(item) for item in raw.get("response", [])) if lg is not None]
 
     def get_teams(self, league_id: int, season: int) -> list[Team]:
         raw = self._get("teams", {"league": league_id, "season": season})
@@ -122,17 +122,20 @@ class APIFootball(DataSource):
     # Map raw → domain -----------------------------------------------------
 
     @staticmethod
-    def _to_league(item: dict[str, Any]) -> League:
+    def _to_league(item: dict[str, Any]) -> League | None:
         league = item["league"]
         country = item.get("country", {}) or {}
         seasons = item.get("seasons") or []
         current = next((s for s in seasons if s.get("current")), seasons[0] if seasons else None)
-        season_year = int(current["year"]) if current else 0
+        if current is None:
+            # API geçici olarak seasons=[] döndü; sessiz reject yerine açıkça atla.
+            log.warning("api_football: league=%s sezon listesi boş, atlandı", league.get("id"))
+            return None
         return League(
             sport=football.SPORT_NAME,
             external_id=int(league["id"]),
             name=str(league["name"]),
-            season=season_year,
+            season=int(current["year"]),
             country=country.get("name"),
         )
 

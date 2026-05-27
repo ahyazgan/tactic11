@@ -33,3 +33,15 @@ def test_set_overwrites_existing(session):
     cache_set(session, source="s", key="k", value={"v": 1}, ttl_seconds=60)
     cache_set(session, source="s", key="k", value={"v": 2}, ttl_seconds=60)
     assert cache_get(session, source="s", key="k") == {"v": 2}
+
+
+def test_corrupted_value_returns_none_not_raises(session):
+    cache_set(session, source="s", key="k", value={"ok": True}, ttl_seconds=60)
+    # value sütununu doğrudan bozuk JSON'a çevir
+    session.execute(
+        models.CacheEntry.__table__.update()
+        .where(models.CacheEntry.source == "s", models.CacheEntry.key == "k")
+        .values(value="{not json")
+    )
+    session.flush()
+    assert cache_get(session, source="s", key="k") is None

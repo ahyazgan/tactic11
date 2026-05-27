@@ -33,7 +33,13 @@ def cache_get(session: Session, *, source: str, key: str) -> dict[str, Any] | No
     expires = row.expires_at if row.expires_at.tzinfo else row.expires_at.replace(tzinfo=timezone.utc)
     if expires <= datetime.now(timezone.utc):
         return None
-    return json.loads(row.value)
+    try:
+        return json.loads(row.value)
+    except json.JSONDecodeError:
+        log.warning(
+            "cache_entries source=%s key=%s bozuk JSON — miss olarak ele alındı", source, key
+        )
+        return None
 
 
 def cache_set(

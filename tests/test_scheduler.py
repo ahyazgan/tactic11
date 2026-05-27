@@ -106,3 +106,26 @@ def test_args_serialized_to_json_in_audit(session, monkeypatch):
     ).scalar_one()
     assert '"league_id": 203' in row.args
     assert '"season": 2024' in row.args
+
+
+def test_base_exception_still_writes_audit(session, monkeypatch):
+    # KeyboardInterrupt / SystemExit gibi BaseException atılırsa JobRun satırı
+    # 'running' kalmasın; exception reraise edilsin.
+    import pytest as _pytest
+
+    def handler():
+        raise KeyboardInterrupt()
+
+    _register_once("test_ki", handler)
+    _patch_session(monkeypatch, session)
+
+    with _pytest.raises(KeyboardInterrupt):
+        runner_module.run_job("test_ki")
+
+    row = session.execute(
+        select(models.JobRun).where(models.JobRun.job_name == "test_ki")
+    ).scalar_one()
+    assert row.status == "failed"
+    assert row.attempts == 1
+    assert "KeyboardInterrupt" in row.error
+    assert row.ended_at is not None
