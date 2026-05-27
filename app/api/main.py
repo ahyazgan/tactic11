@@ -60,7 +60,39 @@ if not get_settings().api_auth_key:
     )
 
 APP_VERSION = "0.4.0"  # production hardening turunda bumped
-app = FastAPI(title="football-intelligence", version=APP_VERSION)
+
+# OpenAPI tag metadata — Swagger UI'de endpoint'leri gruplar.
+_TAGS_METADATA = [
+    {"name": "ops", "description": "Sağlık kontrolü, liveness/readiness."},
+    {"name": "catalog", "description": "Lig + takım + maç kataloğu (read-only)."},
+    {
+        "name": "team-analysis",
+        "description": (
+            "Takım-bazlı analiz: form, rating, schedule, fixture difficulty, "
+            "head-to-head, player load."
+        ),
+    },
+    {
+        "name": "match-analysis",
+        "description": (
+            "Maç-bazlı analiz: matchup kıyas, preview (form+h2h sentezi), "
+            "predict (Poisson+Dixon-Coles)."
+        ),
+    },
+    {"name": "admin", "description": "Operasyonel görünürlük + observability."},
+]
+
+app = FastAPI(
+    title="football-intelligence",
+    version=APP_VERSION,
+    description=(
+        "Süper Lig odaklı futbol zekası API'si. Tüm uçlar X-API-Key header'ı "
+        "ister (/health hariç). Tepkiler ErrorResponse şemasıyla "
+        "yapılandırılmış; istekler X-Request-ID ile trace edilir; "
+        "rate limit dakika başına (default 120)."
+    ),
+    openapi_tags=_TAGS_METADATA,
+)
 register_exception_handlers(app)  # HTTPException → ErrorResponse şeması
 
 # CORS — settings'tan virgülle ayrılmış origin listesi. Boş ise middleware
@@ -170,7 +202,7 @@ def _maybe_explain(payload: dict[str, Any], result, explain: bool) -> dict[str, 
 # ---- okuma uçları (Faz 1) ---------------------------------------------------
 
 
-@app.get("/health")
+@app.get("/health", tags=["ops"], summary="Liveness + readiness check")
 def health(session: Session = Depends(get_session)) -> JSONResponse:
     """Liveness + readiness check.
 
@@ -199,7 +231,12 @@ def health(session: Session = Depends(get_session)) -> JSONResponse:
     return JSONResponse(payload, status_code=status_code)
 
 
-@protected.get("/leagues", response_model=list[LeagueOut])
+@protected.get(
+    "/leagues",
+    response_model=list[LeagueOut],
+    tags=["catalog"],
+    summary="Kayıtlı tüm ligleri listele",
+)
 def list_leagues(session: Session = Depends(get_session)) -> list[models.League]:
     return list(
         session.execute(
@@ -213,7 +250,11 @@ def list_leagues(session: Session = Depends(get_session)) -> list[models.League]
 _BATCH_INCLUDABLES: frozenset[str] = frozenset({"form", "rating", "schedule"})
 
 
-@protected.get("/teams/batch")
+@protected.get(
+    "/teams/batch",
+    tags=["team-analysis"],
+    summary="Birden çok takımın analizi tek istekte (form/rating/schedule)",
+)
 def teams_batch_analysis(
     ids: str = Query(
         ...,
@@ -289,7 +330,12 @@ def teams_batch_analysis(
     return out
 
 
-@protected.get("/teams/{league_id}", response_model=list[TeamOut])
+@protected.get(
+    "/teams/{league_id}",
+    response_model=list[TeamOut],
+    tags=["catalog"],
+    summary="Lig içindeki takımları listele",
+)
 def teams_in_league(
     league_id: int, session: Session = Depends(get_session)
 ) -> list[models.Team]:
@@ -325,7 +371,12 @@ def teams_in_league(
     )
 
 
-@protected.get("/teams/{team_id}/matches", response_model=list[MatchOut])
+@protected.get(
+    "/teams/{team_id}/matches",
+    response_model=list[MatchOut],
+    tags=["catalog"],
+    summary="Takımın tüm maçları (kickoff desc)",
+)
 def matches_for_team(
     team_id: int, session: Session = Depends(get_session)
 ) -> list[models.Match]:
@@ -335,7 +386,11 @@ def matches_for_team(
 # ---- analiz uçları (Faz 5) --------------------------------------------------
 
 
-@protected.get("/teams/{team_id}/form")
+@protected.get(
+    "/teams/{team_id}/form",
+    tags=["team-analysis"],
+    summary="Son N maçtaki form (engine.form v4)",
+)
 def team_form(
     team_id: int,
     last_n: int = Query(5, ge=1, le=50),
@@ -355,7 +410,11 @@ def team_form(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
-@protected.get("/teams/{team_id}/rating")
+@protected.get(
+    "/teams/{team_id}/rating",
+    tags=["team-analysis"],
+    summary="Takım rating'i — overall + ev/dep (engine.rating v2)",
+)
 def team_rating(
     team_id: int,
     last_n: int = Query(10, ge=1, le=50),
@@ -377,7 +436,11 @@ def team_rating(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
-@protected.get("/teams/{a}/vs/{b}")
+@protected.get(
+    "/teams/{a}/vs/{b}",
+    tags=["team-analysis"],
+    summary="İki takım arası head-to-head özet (engine.opponent v3)",
+)
 def head_to_head(
     a: int,
     b: int,
@@ -398,7 +461,11 @@ def head_to_head(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
-@protected.get("/players/{player_id}/load")
+@protected.get(
+    "/players/{player_id}/load",
+    tags=["team-analysis"],
+    summary="Oyuncu yük raporu (engine.load)",
+)
 def player_load(
     player_id: int,
     window_days: int = Query(14, ge=1, le=90),
@@ -433,7 +500,11 @@ def player_load(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
-@protected.get("/teams/{team_id}/schedule")
+@protected.get(
+    "/teams/{team_id}/schedule",
+    tags=["team-analysis"],
+    summary="Fikstür yoğunluğu — ufuk içi maç sayımı (engine.schedule)",
+)
 def team_schedule(
     team_id: int,
     horizon_days: int = Query(30, ge=1, le=180),
@@ -452,7 +523,11 @@ def team_schedule(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
-@protected.get("/teams/{team_id}/fixture-difficulty")
+@protected.get(
+    "/teams/{team_id}/fixture-difficulty",
+    tags=["team-analysis"],
+    summary="Önündeki rakiplerin gücü (side-aware rating, engine.fixture_difficulty v2)",
+)
 def team_fixture_difficulty(
     team_id: int,
     horizon_days: int = Query(30, ge=1, le=180),
@@ -508,7 +583,11 @@ def team_fixture_difficulty(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
-@protected.get("/matchup/{home}/{away}")
+@protected.get(
+    "/matchup/{home}/{away}",
+    tags=["match-analysis"],
+    summary="İki takım kıyas raporu (engine.matchup)",
+)
 def matchup(
     home: int,
     away: int,
@@ -553,7 +632,11 @@ def matchup(
 _SHADOW_RHOS: tuple[float, ...] = (0.0, -0.18)
 
 
-@protected.get("/matches/{match_id}/predict")
+@protected.get(
+    "/matches/{match_id}/predict",
+    tags=["match-analysis"],
+    summary="Skor tahmini (Poisson + Dixon-Coles, engine.predict v2)",
+)
 def match_predict(
     match_id: int,
     last_n: int = Query(5, ge=1, le=50),
@@ -663,7 +746,11 @@ def match_predict(
     return payload
 
 
-@protected.get("/matches/{match_id}/preview")
+@protected.get(
+    "/matches/{match_id}/preview",
+    tags=["match-analysis"],
+    summary="Maç öncesi brief: form + head-to-head sentezi",
+)
 def match_preview(
     match_id: int,
     last_n: int = Query(5, ge=1, le=50),
