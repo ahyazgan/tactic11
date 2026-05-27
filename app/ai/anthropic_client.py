@@ -11,7 +11,8 @@ ileride büyüdüğünde otomatik kazanım sağlar.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 import anthropic
 
@@ -29,6 +30,34 @@ class MessageResult:
     text: str
     input_tokens: int
     output_tokens: int
+
+    @property
+    def total_tokens(self) -> int:
+        return self.input_tokens + self.output_tokens
+
+
+@dataclass(frozen=True)
+class ToolCall:
+    """Claude'un istek attığı bir tool call."""
+    id: str
+    name: str
+    input: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class ToolUseResult:
+    """Tool-use loop'undan dönen ara sonuç.
+
+    `text` final cevap (tool_use bittiğinde dolar); `tool_calls` mevcut turda
+    Claude'un istek attığı tool'lar (caller execute eder ve sonuçları geri verir).
+    `stop_reason` "tool_use" ise hâlâ devam ediyor; "end_turn" ise bitti.
+    """
+    text: str
+    tool_calls: list[ToolCall]
+    stop_reason: str
+    raw_content: list[dict[str, Any]] = field(default_factory=list)
+    input_tokens: int = 0
+    output_tokens: int = 0
 
     @property
     def total_tokens(self) -> int:
@@ -79,6 +108,63 @@ class AnthropicClient:
             )
         return MessageResult(
             text=text,
+            input_tokens=response.usage.input_tokens,
+            output_tokens=response.usage.output_tokens,
+        )
+
+    def message_with_tools(
+        self,
+        *,
+        system: str,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]],
+        max_tokens: int = 1024,
+    ) -> ToolUseResult:
+        """Tool-use destekli tek tur. Caller loop'u yönetir.
+
+        `messages` standart Anthropic format'ı (user/assistant turn'leri).
+        Tool sonuçları dönülürken caller bu listeye assistant tool_use bloğunu
+        ve user tool_result bloğunu ekleyip tekrar çağırır.
+
+        Stub mode kontrolü is_stub() ile caller tarafında yapılır.
+        """
+        if not self._enabled or self._client is None:
+            raise RuntimeError("ANTHROPIC_API_KEY boş; önce is_stub() kontrolü yapın.")
+
+        log.info(
+            "anthropic messages.create (tool_use) model=%s max_tokens=%d msgs=%d tools=%d",
+            MODEL, max_tokens, len(messages), len(tools),
+        )
+        response = self._client.messages.create(
+            model=MODEL,
+            max_tokens=max_tokens,
+            system=[{
+                "type": "text", "text": system,
+                "cache_control": {"type": "ephemeral"},
+            }],
+            tools=tools,
+            messages=messages,
+        )
+
+        text_parts: list[str] = []
+        tool_calls: list[ToolCall] = []
+        raw: list[dict[str, Any]] = []
+        for block in response.content:
+            if block.type == "text":
+                text_parts.append(block.text)
+                raw.append({"type": "text", "text": block.text})
+            elif block.type == "tool_use":
+                tc = ToolCall(id=block.id, name=block.name, input=dict(block.input))
+                tool_calls.append(tc)
+                raw.append({
+                    "type": "tool_use", "id": block.id,
+                    "name": block.name, "input": dict(block.input),
+                })
+        return ToolUseResult(
+            text="".join(text_parts),
+            tool_calls=tool_calls,
+            stop_reason=response.stop_reason or "",
+            raw_content=raw,
             input_tokens=response.usage.input_tokens,
             output_tokens=response.usage.output_tokens,
         )
