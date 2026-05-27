@@ -385,3 +385,119 @@ register(JobSpec(
     handler=run_mega_match_handler,
     description="Bir maç için kapsamlı MegaMatchAgent brief'i.",
 ))
+
+
+# --------------------------------------------------------------------------- #
+# Karar agent'ları (lineup / sub / tactical) — manuel match+team başına job
+# --------------------------------------------------------------------------- #
+
+
+def run_lineup_recommendation_handler(*, match_external_id: int, team_external_id: int) -> None:
+    """Bir maç+takım için lineup öneri üret + sakla."""
+    from app.agents import LineupRecommendationAgent
+    agent = LineupRecommendationAgent()
+    with SessionLocal() as session:
+        result = agent.run(session, context={
+            "match_external_id": match_external_id,
+            "team_external_id": team_external_id,
+        })
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name, agent_version=agent.version,
+        )
+        session.commit()
+    log.info("job run_lineup_recommendation: %s", result.summary)
+
+
+register(JobSpec(
+    name="run_lineup_recommendation",
+    handler=run_lineup_recommendation_handler,
+    description="Bir maç+takım için LineupRecommendationAgent.",
+))
+
+
+def run_tactical_adjustment_handler(*, match_external_id: int, team_external_id: int,
+                                    preferred_formation: str = "4-3-3") -> None:
+    """Bir maç+takım için taktiksel ayarlama önerisi."""
+    from app.agents import TacticalAdjustmentAgent
+    agent = TacticalAdjustmentAgent()
+    with SessionLocal() as session:
+        result = agent.run(session, context={
+            "match_external_id": match_external_id,
+            "team_external_id": team_external_id,
+            "preferred_formation": preferred_formation,
+        })
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name, agent_version=agent.version,
+        )
+        session.commit()
+    log.info("job run_tactical_adjustment: %s", result.summary)
+
+
+register(JobSpec(
+    name="run_tactical_adjustment",
+    handler=run_tactical_adjustment_handler,
+    description="Bir maç+takım için TacticalAdjustmentAgent.",
+))
+
+
+def run_lineup_for_upcoming_handler(
+    *, team_external_id: int, horizon_days: int = 7,
+) -> None:
+    """Bir takımın önümüzdeki N gündeki maçları için lineup önerileri.
+
+    Maç günü asistanın hazır 11 önerisini push'lamasını sağlar.
+    """
+    from app.agents import LineupRecommendationAgent
+    agent = LineupRecommendationAgent()
+    processed = failed = 0
+    with SessionLocal() as session:
+        sample = session.execute(
+            select(models.Match).where(
+                models.Match.sport == football.SPORT_NAME,
+            ).limit(1)
+        ).scalar_one_or_none()
+        ref_tz = sample.kickoff.tzinfo if sample is not None else None
+        now_local = datetime.now(ref_tz)
+        horizon_local = now_local + timedelta(days=horizon_days)
+        upcoming = list(
+            session.execute(
+                select(models.Match).where(
+                    models.Match.sport == football.SPORT_NAME,
+                    models.Match.kickoff > now_local,
+                    models.Match.kickoff <= horizon_local,
+                    ~models.Match.status.in_(football.FINISHED_STATUSES),
+                    (models.Match.home_team_external_id == team_external_id)
+                    | (models.Match.away_team_external_id == team_external_id),
+                ).order_by(models.Match.kickoff)
+            ).scalars()
+        )
+        for match in upcoming:
+            try:
+                result = agent.run(session, context={
+                    "match_external_id": match.external_id,
+                    "team_external_id": team_external_id,
+                })
+                save_agent_output(
+                    session, result=result,
+                    agent_name=agent.name, agent_version=agent.version,
+                )
+                processed += 1
+            except Exception as e:  # noqa: BLE001
+                log.warning(
+                    "lineup match=%d başarısız: %s", match.external_id, e,
+                )
+                failed += 1
+        session.commit()
+    log.info(
+        "job run_lineup_for_upcoming: team=%d upcoming=%d processed=%d failed=%d",
+        team_external_id, len(upcoming), processed, failed,
+    )
+
+
+register(JobSpec(
+    name="run_lineup_for_upcoming",
+    handler=run_lineup_for_upcoming_handler,
+    description="Takımın önümüzdeki N gündeki maçları için lineup önerileri.",
+))

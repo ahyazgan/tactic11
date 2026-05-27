@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     # Anthropic (Faz 3'te kullanılacak)
     anthropic_api_key: str = Field(default="", alias="ANTHROPIC_API_KEY")
 
+    # LLM provider seçimi — şu an "anthropic" (default), "openai"/"gemini" iskelet
+    llm_provider: str = Field(default="anthropic", alias="LLM_PROVIDER")
+
     # Kota koruması
     api_football_daily_limit: int = Field(default=100, alias="API_FOOTBALL_DAILY_LIMIT")
     api_football_monthly_limit: int = Field(default=2000, alias="API_FOOTBALL_MONTHLY_LIMIT")
