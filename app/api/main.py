@@ -195,6 +195,7 @@ def head_to_head(
 def match_preview(
     match_id: int,
     last_n: int = Query(5, ge=1, le=50),
+    explain: bool = False,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Bir maç için ön bakış: ev/dep form + head-to-head.
@@ -228,7 +229,7 @@ def match_preview(
     )
     h2h = compute_head_to_head(home_id, away_id, h2h_matches)
 
-    return {
+    payload: dict[str, Any] = {
         "match": {
             "external_id": match.external_id,
             "kickoff": match.kickoff.isoformat(),
@@ -240,6 +241,16 @@ def match_preview(
         "away_form": engine_result_to_dict(away_form),
         "head_to_head": engine_result_to_dict(h2h),
     }
+    if explain:
+        payload["explanation"] = ClaudeCommentator().explain_match_preview(
+            home_form=home_form,
+            away_form=away_form,
+            h2h=h2h,
+            home_team_id=home_id,
+            away_team_id=away_id,
+            kickoff_iso=match.kickoff.isoformat(),
+        )
+    return payload
 
 
 app.include_router(protected)
