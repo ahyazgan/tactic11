@@ -66,3 +66,65 @@ def test_history_preserved_not_overwritten(session):
     )
     assert latest is not None
     assert latest.id == s2.id
+
+
+def test_get_snapshot_at_or_before_returns_closest_earlier(session):
+    from datetime import datetime, timedelta, timezone
+    from app.db import models
+    from app.snapshot import get_snapshot_at_or_before
+
+    base = datetime(2024, 6, 1, 12, 0, tzinfo=timezone.utc)
+    scope = build_scope(203, 2024)
+    session.add_all([
+        models.Snapshot(
+            sport=football.SPORT_NAME, scope=scope, created_at=base,
+            leagues_count=1, teams_count=10, matches_count=50,
+        ),
+        models.Snapshot(
+            sport=football.SPORT_NAME, scope=scope, created_at=base + timedelta(days=7),
+            leagues_count=1, teams_count=12, matches_count=80,
+        ),
+        models.Snapshot(
+            sport=football.SPORT_NAME, scope=scope, created_at=base + timedelta(days=14),
+            leagues_count=1, teams_count=14, matches_count=110,
+        ),
+    ])
+    session.flush()
+
+    # 10 gün sonrası → 7. günü dönmeli (en yakın <= baseline)
+    target = base + timedelta(days=10)
+    snap = get_snapshot_at_or_before(session, sport=football.SPORT_NAME, scope=scope, ts=target)
+    assert snap is not None
+    assert snap.teams_count == 12
+
+    # base'den önce → None
+    snap_too_early = get_snapshot_at_or_before(
+        session, sport=football.SPORT_NAME, scope=scope, ts=base - timedelta(days=1),
+    )
+    assert snap_too_early is None
+
+
+def test_diff_snapshots_computes_delta(session):
+    from datetime import datetime, timedelta, timezone
+    from app.db import models
+    from app.snapshot import diff_snapshots
+
+    base = datetime(2024, 6, 1, tzinfo=timezone.utc)
+    earlier = models.Snapshot(
+        sport=football.SPORT_NAME, scope="x", created_at=base,
+        leagues_count=1, teams_count=18, matches_count=100,
+    )
+    later = models.Snapshot(
+        sport=football.SPORT_NAME, scope="x", created_at=base + timedelta(days=7),
+        leagues_count=1, teams_count=20, matches_count=145,
+    )
+    session.add_all([earlier, later])
+    session.flush()
+
+    d = diff_snapshots(earlier, later)
+    assert d["delta"]["leagues_count"] == 0
+    assert d["delta"]["teams_count"] == 2
+    assert d["delta"]["matches_count"] == 45
+    assert d["delta"]["elapsed_seconds"] == 7 * 86400
+    assert d["from"]["id"] == earlier.id
+    assert d["to"]["id"] == later.id

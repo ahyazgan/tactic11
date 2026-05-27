@@ -124,3 +124,54 @@ def test_snapshots_filter_by_scope(session, client):
     r_all = client.get("/admin/snapshots")
     assert r_all.status_code == 200
     assert len(r_all.json()) == 3
+
+
+def test_snapshots_diff_endpoint(session, client):
+    now = datetime.now(timezone.utc)
+    scope = "league:203:season:2024"
+    session.add_all([
+        models.Snapshot(
+            sport=football.SPORT_NAME, scope=scope, created_at=now - timedelta(days=10),
+            leagues_count=1, teams_count=18, matches_count=80,
+        ),
+        models.Snapshot(
+            sport=football.SPORT_NAME, scope=scope, created_at=now - timedelta(days=3),
+            leagues_count=1, teams_count=19, matches_count=100,
+        ),
+        models.Snapshot(
+            sport=football.SPORT_NAME, scope=scope, created_at=now,
+            leagues_count=1, teams_count=20, matches_count=140,
+        ),
+    ])
+    session.flush()
+
+    # 7 gün geri → baseline 10 gün önceki snapshot (en yakın <= now-7days)
+    r = client.get(f"/admin/snapshots/diff?scope={scope}&days=7")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["scope"] == scope
+    assert body["delta"]["teams_count"] == 2  # 18 → 20
+    assert body["delta"]["matches_count"] == 60  # 80 → 140
+    assert body["delta"]["leagues_count"] == 0
+
+
+def test_snapshots_diff_404_when_scope_empty(client):
+    r = client.get("/admin/snapshots/diff?scope=league:999:season:2099&days=7")
+    assert r.status_code == 404
+
+
+def test_snapshots_diff_handles_no_baseline(session, client):
+    """Çok geriye gidildiyse baseline yok — note dön, hata değil."""
+    now = datetime.now(timezone.utc)
+    session.add(models.Snapshot(
+        sport=football.SPORT_NAME, scope="league:203:season:2024",
+        created_at=now, leagues_count=1, teams_count=20, matches_count=140,
+    ))
+    session.flush()
+
+    r = client.get("/admin/snapshots/diff?scope=league:203:season:2024&days=30")
+    assert r.status_code == 200
+    body = r.json()
+    assert "note" in body
+    assert "bulunamadı" in body["note"]
+    assert "latest" in body
