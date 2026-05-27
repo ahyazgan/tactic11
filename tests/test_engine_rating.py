@@ -41,3 +41,56 @@ def test_zero_matches_zero_rating():
     res = compute_team_rating(611, [], last_n=5)
     assert res.value.rating == 0.0
     assert res.value.matches_considered == 0
+    assert res.value.home_rating == 0.0
+    assert res.value.away_rating == 0.0
+    assert res.value.home_matches == 0
+    assert res.value.away_matches == 0
+
+
+def test_home_rating_separates_home_only_matches():
+    """Takım evde çok güçlü, dep'te zayıf → home_rating > away_rating."""
+    matches = [
+        # Evde 3 maç: hep galibiyet, hepsi 2 farkla
+        _match(1, 611, 607, 3, 1, 30),
+        _match(2, 611, 614, 2, 0, 20),
+        _match(3, 611, 998, 2, 0, 10),
+        # Dep'te 3 maç: hep mağlubiyet
+        _match(4, 607, 611, 2, 0, 25),
+        _match(5, 614, 611, 1, 0, 15),
+        _match(6, 998, 611, 3, 1, 5),
+    ]
+    res = compute_team_rating(611, matches, last_n=10).value
+    assert res.home_matches == 3
+    assert res.away_matches == 3
+    # Evde 9 puan / 3 maç = ppg 3.0, gd_per = +1.67
+    # Dep'te 0 puan / 3 maç = ppg 0.0, gd_per = -1.33
+    assert res.home_rating > res.away_rating
+    assert res.home_rating > res.rating  # overall'dan yüksek (evdeki kısmı)
+    assert res.away_rating < res.rating  # overall'dan düşük (depteki kısmı)
+    # Sayısal: home = 3.0*50 + 1.667*10 ≈ 166.67
+    assert res.home_rating > 160
+    # Dep: 0*50 + (-1.333)*10 ≈ -13.33
+    assert res.away_rating < 0
+
+
+def test_home_only_team_has_zero_away_rating():
+    """Sadece evde oynamış takım → away_rating=0.0, home_matches>0."""
+    matches = [_match(1, 611, 607, 2, 1, 10)]
+    res = compute_team_rating(611, matches, last_n=5).value
+    assert res.home_matches == 1
+    assert res.away_matches == 0
+    assert res.home_rating > 0  # 1 galibiyet
+    assert res.away_rating == 0.0
+
+
+def test_rating_audit_carries_split_inputs():
+    matches = [
+        _match(1, 611, 607, 2, 1, 10),
+        _match(2, 614, 611, 1, 3, 5),
+    ]
+    res = compute_team_rating(611, matches, last_n=10)
+    assert res.audit.engine_version == "2"
+    assert res.audit.inputs["home_matches"] == 1
+    assert res.audit.inputs["away_matches"] == 1
+    assert "home_rating" in res.audit.formula
+    assert "away_rating" in res.audit.formula
