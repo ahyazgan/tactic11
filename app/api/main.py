@@ -6,7 +6,7 @@ Engine pure kalsın diye serileştirme `serialize.py` üzerinden.
 
 from __future__ import annotations
 
-from datetime import datetime  # noqa: F401  type hint only
+from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
@@ -23,8 +23,11 @@ from app.core.logging import get_logger, setup_logging
 from app.db import models
 from app.db.session import get_session
 from app.engine.form import compute_form
+from app.engine.matchup import compute_matchup
 from app.engine.opponent import compute_head_to_head
+from app.engine.predict import compute_predict
 from app.engine.rating import compute_team_rating
+from app.engine.schedule import compute_schedule
 from app.sports import football
 
 setup_logging()
@@ -189,6 +192,106 @@ def head_to_head(
         ).scalars()
     )
     result = compute_head_to_head(a, b, matches)
+    return _maybe_explain(engine_result_to_dict(result), result, explain)
+
+
+@protected.get("/teams/{team_id}/schedule")
+def team_schedule(
+    team_id: int,
+    horizon_days: int = Query(30, ge=1, le=180),
+    explain: bool = False,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    matches = _team_matches(session, team_id)
+    if not matches:
+        raise HTTPException(status_code=404, detail=f"team {team_id} için maç yok")
+    # SQLite, DateTime(timezone=True) sütunlarını naive döndürür; engine
+    # Python seviyesinde m.kickoff <= now karşılaştırması yapıyor → `now`'u
+    # kickoff'un tz'ine eşitle. PG'de tz-aware, SQLite'da naive — aynı yol.
+    ref_tz = matches[0].kickoff.tzinfo
+    now = datetime.now(ref_tz)
+    result = compute_schedule(team_id, matches, now=now, horizon_days=horizon_days)
+    return _maybe_explain(engine_result_to_dict(result), result, explain)
+
+
+@protected.get("/matchup/{home}/{away}")
+def matchup(
+    home: int,
+    away: int,
+    last_n: int = Query(5, ge=1, le=50),
+    explain: bool = False,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    if home == away:
+        raise HTTPException(status_code=400, detail="aynı takım için matchup olmaz")
+
+    home_matches = _team_matches(session, home)
+    away_matches = _team_matches(session, away)
+    if not home_matches:
+        raise HTTPException(status_code=404, detail=f"team {home} için maç yok")
+    if not away_matches:
+        raise HTTPException(status_code=404, detail=f"team {away} için maç yok")
+
+    home_form = compute_form(home, home_matches, last_n=last_n)
+    away_form = compute_form(away, away_matches, last_n=last_n)
+    h2h_matches = list(
+        session.execute(
+            select(models.Match).where(
+                models.Match.sport == football.SPORT_NAME,
+                _match_pair_filter(home, away),
+            )
+        ).scalars()
+    )
+    h2h = compute_head_to_head(home, away, h2h_matches)
+
+    result = compute_matchup(
+        home_form.value,
+        away_form.value,
+        h2h.value,
+        home_team_id=home,
+        away_team_id=away,
+    )
+    return _maybe_explain(engine_result_to_dict(result), result, explain)
+
+
+@protected.get("/matches/{match_id}/predict")
+def match_predict(
+    match_id: int,
+    last_n: int = Query(5, ge=1, le=50),
+    explain: bool = False,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Maç için Poisson skor tahmini.
+
+    Form, maçın kickoff'undan ÖNCEKİ maçlardan hesaplanır (leakage yok); bu
+    sayede tahmin hem NS maçlar için "pre-game" hem FT maçlar için
+    "backtest" anlamı taşır.
+    """
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} bulunamadı")
+
+    home_id = match.home_team_external_id
+    away_id = match.away_team_external_id
+
+    home_form = compute_form(
+        home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n
+    )
+    away_form = compute_form(
+        away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n
+    )
+
+    result = compute_predict(
+        home_form.value,
+        away_form.value,
+        home_team_id=home_id,
+        away_team_id=away_id,
+    )
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
