@@ -432,6 +432,46 @@ def leagues_summary(session: Session = Depends(get_session)) -> list[dict[str, A
     return out
 
 
+@router.get("/agent-outputs")
+def agent_outputs(
+    agent_name: str | None = Query(None, description="Belirli bir agent için filtre."),
+    subject_type: str | None = Query(None, description="match | team | player"),
+    subject_id: int | None = Query(None),
+    limit: int = Query(50, ge=1, le=500),
+    session: Session = Depends(get_session),
+) -> list[dict[str, Any]]:
+    """Agent çıktıları — dashboard için (PR G2: PreMatchReportAgent)."""
+    import json as _json
+
+    stmt = (
+        select(models.AgentOutput)
+        .order_by(desc(models.AgentOutput.updated_at))
+        .limit(limit)
+    )
+    if agent_name is not None:
+        stmt = stmt.where(models.AgentOutput.agent_name == agent_name)
+    if subject_type is not None:
+        stmt = stmt.where(models.AgentOutput.subject_type == subject_type)
+    if subject_id is not None:
+        stmt = stmt.where(models.AgentOutput.subject_id == subject_id)
+
+    rows = list(session.execute(stmt).scalars())
+    return [
+        {
+            "id": r.id,
+            "agent_name": r.agent_name,
+            "agent_version": r.agent_version,
+            "subject_type": r.subject_type,
+            "subject_id": r.subject_id,
+            "summary": r.summary,
+            "output": _json.loads(r.output_json),
+            "created_at": r.created_at.isoformat(),
+            "updated_at": r.updated_at.isoformat(),
+        }
+        for r in rows
+    ]
+
+
 @router.get("/db-stats")
 def db_stats(session: Session = Depends(get_session)) -> dict[str, int]:
     """Tablo başına satır sayısı — sync ilerlemesini görmek için hızlı bakış."""
