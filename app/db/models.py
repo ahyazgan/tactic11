@@ -216,6 +216,25 @@ class PlayerAppearance(Base):
     tenant_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
     )
+    # Prompt 4 — API-Football fixture/players ingest
+    team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    rating_apifootball: Mapped[float | None] = mapped_column(Float, nullable=True)
+    passes_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    passes_accuracy: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    shots_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    shots_on: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    dribbles_attempts: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    dribbles_success: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fouls_committed: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fouls_drawn: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    yellow_cards: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    red_cards: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    second_yellow: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    substituted_in_minute: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    substituted_out_minute: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    position_played: Mapped[str | None] = mapped_column(String(5), nullable=True)
+    formation_played: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    captain: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
 
 class AgentOutput(Base):

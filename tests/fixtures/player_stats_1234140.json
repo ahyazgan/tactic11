@@ -1,0 +1,66 @@
+{
+  "get": "fixtures/players",
+  "parameters": {"fixture": "1234140"},
+  "errors": [],
+  "results": 2,
+  "response": [
+    {
+      "team": {"id": 611, "name": "Galatasaray"},
+      "players": [
+        {
+          "player": {"id": 6120, "name": "Icardi"},
+          "statistics": [{
+            "games": {"minutes": 90, "rating": "8.5", "captain": false, "position": "F"},
+            "passes": {"total": 22, "accuracy": 86},
+            "shots": {"total": 5, "on": 3},
+            "dribbles": {"attempts": 4, "success": 3},
+            "fouls": {"committed": 1, "drawn": 4},
+            "cards": {"yellow": 0, "red": 0},
+            "substitutes": {"in": null, "out": null}
+          }]
+        },
+        {
+          "player": {"id": 6117, "name": "Ndombele"},
+          "statistics": [{
+            "games": {"minutes": 75, "rating": "7.4", "captain": true, "position": "M"},
+            "passes": {"total": 68, "accuracy": 91},
+            "shots": {"total": 1, "on": 0},
+            "dribbles": {"attempts": 3, "success": 2},
+            "fouls": {"committed": 2, "drawn": 1},
+            "cards": {"yellow": 1, "red": 0},
+            "substitutes": {"in": null, "out": 75}
+          }]
+        },
+        {
+          "player": {"id": 6116, "name": "Torreira"},
+          "statistics": [{
+            "games": {"minutes": 90, "rating": "7.0", "captain": false, "position": "M"},
+            "passes": {"total": 55, "accuracy": 88},
+            "shots": {"total": 0, "on": 0},
+            "dribbles": {"attempts": 1, "success": 1},
+            "fouls": {"committed": 3, "drawn": 2},
+            "cards": {"yellow": 1, "red": 0},
+            "substitutes": {"in": null, "out": null}
+          }]
+        }
+      ]
+    },
+    {
+      "team": {"id": 607, "name": "Fenerbahce"},
+      "players": [
+        {
+          "player": {"id": 6081, "name": "Dzeko"},
+          "statistics": [{
+            "games": {"minutes": 90, "rating": "6.8", "captain": false, "position": "F"},
+            "passes": {"total": 18, "accuracy": 72},
+            "shots": {"total": 3, "on": 1},
+            "dribbles": {"attempts": 1, "success": 0},
+            "fouls": {"committed": 2, "drawn": 3},
+            "cards": {"yellow": 0, "red": 0},
+            "substitutes": {"in": null, "out": null}
+          }]
+        }
+      ]
+    }
+  ]
+}
