@@ -53,9 +53,13 @@ dışarı hesap. DB/API/LLM bilmez.
 
 ---
 
-## Faz 4 — Scheduler
-- `scheduler/` — günlük otomatik sync (Faz 1'deki CLI'yi tetikler)
-- Görev kaydı, başarısız çalıştırma yeniden deneme
+## Faz 4 — Scheduler ✓
+- [x] `scheduler/registry.py` — `JobSpec` katalog, ad ile çözüm
+- [x] `scheduler/jobs.py` — `sync_league` job kaydı (modül import'unda otomatik)
+- [x] `scheduler/runner.py` — `run_job(name, **kwargs)` retry + exponential backoff;
+      bir çağrı = bir `job_runs` satırı; status/attempts/error denetlenebilir
+- [x] `scripts/run_job.py` — dış cron buradan tetikler (`--list`, `--max-attempts`)
+- Cron örneği: `0 6 * * * cd /opt/manager2 && venv/bin/python scripts/run_job.py sync_league --league 203 --season 2024`
 
 ---
 

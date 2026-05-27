@@ -128,3 +128,26 @@ class CacheEntry(Base):
     key: Mapped[str] = mapped_column(String(512))
     value: Mapped[str] = mapped_column(Text)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class JobRun(Base):
+    """Scheduler bir job'u çalıştırdığında kayıt; bir job çağrısı = bir satır.
+
+    `status`: running | success | failed. `attempts` deneme sayısı (retry
+    sonrası nihai). Başarısız son denemeden gelen hata `error`'a yazılır.
+    """
+
+    __tablename__ = "job_runs"
+    __table_args__ = (
+        Index("ix_job_runs_name_started", "job_name", "started_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    job_name: Mapped[str] = mapped_column(String(64))
+    args: Mapped[str] = mapped_column(Text)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(String(16))
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+

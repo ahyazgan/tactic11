@@ -68,6 +68,11 @@ uvicorn app.api.main:app --reload
 # GET /leagues
 # GET /teams/{league_id}
 # GET /teams/{team_id}/matches
+
+# 3) Scheduler — kayıtlı bir job'u çalıştır (dış cron buradan tetikler)
+python scripts/run_job.py --list
+python scripts/run_job.py sync_league --league 203 --season 2024
+# Cron örneği: 0 6 * * * cd /opt/manager2 && venv/bin/python scripts/run_job.py sync_league --league 203 --season 2024
 ```
 
 ## Test
