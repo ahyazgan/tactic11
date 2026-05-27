@@ -160,3 +160,45 @@ class JobRun(Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
+
+class Prediction(Base):
+    """Bir engine'in bir maç için yaptığı tahmin (kalibrasyon için kalıcı).
+
+    Idempotency: aynı (match, engine, engine_version, params_hash) yeniden
+    çağrılırsa yeni satır oluşmaz; mevcut satır predicted_value_json + updated_at
+    ile yenilenir.
+
+    Actual sütunları: maç bittiğinde reconcile job dolduracak (PR B2).
+    """
+
+    __tablename__ = "predictions"
+    __table_args__ = (
+        UniqueConstraint(
+            "sport", "match_external_id", "engine", "engine_version", "params_hash",
+            name="uq_predictions_unique_request",
+        ),
+        Index("ix_predictions_match", "sport", "match_external_id"),
+        Index("ix_predictions_engine_version", "engine", "engine_version"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    engine: Mapped[str] = mapped_column(String(64))  # ör: "engine.predict"
+    engine_version: Mapped[str] = mapped_column(String(16))
+    params_hash: Mapped[str] = mapped_column(String(64))  # input params'in sha256[:32]
+    params_json: Mapped[str] = mapped_column(Text)  # hangi rho/last_n vb. kullanıldı
+    predicted_value_json: Mapped[str] = mapped_column(Text)  # tahmin payload
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    # Reconciliation (PR B2 dolduracak)
+    actual_home_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    actual_away_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    actual_outcome: Mapped[str | None] = mapped_column(
+        String(4), nullable=True
+    )  # "home" | "draw" | "away" | None
+    reconciled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
