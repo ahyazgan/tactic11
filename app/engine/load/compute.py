@@ -16,9 +16,19 @@ from app.engine._protocols import PlayerAppearanceLike
 from app.sports import football
 
 ENGINE_NAME = "engine.load"
-ENGINE_VERSION = "1"
+ENGINE_VERSION = "2"  # v1 → v2: risk_level + back_to_back_count eklendi
 
 HIGH_LOAD_MINUTES_PER_WEEK = 270  # ~3 maçlık yük
+
+# Sakatlık risk eşikleri — heuristic (ML yerine):
+# Gerçek ML 2+ sezon load data ister; bu eşikler literatür (Gabbett 2016
+# acute:chronic workload) ve futbol kondisyon ekiplerinin standart pratiği:
+#   - low:    <180 dk/hafta
+#   - medium: 180-270 dk/hafta
+#   - high:   ≥270 dk/hafta (HIGH_LOAD_MINUTES_PER_WEEK)
+#   - extreme: ≥360 dk/hafta VEYA 5 günde 3+ maç back-to-back
+RISK_THRESHOLDS_MIN_PER_WEEK = {"medium": 180, "high": 270, "extreme": 360}
+BACK_TO_BACK_DAYS = 5  # 5 günde ≥3 maç → extreme bayrağı
 
 
 @dataclass(frozen=True)
@@ -28,6 +38,35 @@ class PlayerLoad:
     minutes_per_match: float
     minutes_per_week: float
     high_load: bool
+    risk_level: str  # "low" | "medium" | "high" | "extreme"
+    back_to_back_count: int  # 5-günlük en yoğun pencerede maç sayısı
+
+
+def _max_window_match_count(kickoffs: list[datetime], window_days: int) -> int:
+    """Sliding window: bir oyuncunun ardışık `window_days` günde max maç sayısı."""
+    if len(kickoffs) <= 1:
+        return len(kickoffs)
+    sorted_ks = sorted(kickoffs)
+    window_seconds = window_days * 86400
+    max_count = 1
+    left = 0
+    for right in range(len(sorted_ks)):
+        while (sorted_ks[right] - sorted_ks[left]).total_seconds() > window_seconds:
+            left += 1
+        max_count = max(max_count, right - left + 1)
+    return max_count
+
+
+def _classify_risk(minutes_per_week: float, back_to_back: int) -> str:
+    if back_to_back >= 3:
+        return "extreme"
+    if minutes_per_week >= RISK_THRESHOLDS_MIN_PER_WEEK["extreme"]:
+        return "extreme"
+    if minutes_per_week >= RISK_THRESHOLDS_MIN_PER_WEEK["high"]:
+        return "high"
+    if minutes_per_week >= RISK_THRESHOLDS_MIN_PER_WEEK["medium"]:
+        return "medium"
+    return "low"
 
 
 def compute_player_load(
@@ -54,6 +93,10 @@ def compute_player_load(
     minutes_per_match = round(minutes_total / matches, 2) if matches else 0.0
     minutes_per_week = round(minutes_total / window_days * 7, 2)
     high_load = minutes_per_week >= HIGH_LOAD_MINUTES_PER_WEEK
+    back_to_back = _max_window_match_count(
+        [a.kickoff for a in window], BACK_TO_BACK_DAYS,
+    )
+    risk_level = _classify_risk(minutes_per_week, back_to_back)
 
     load = PlayerLoad(
         matches_in_window=matches,
@@ -61,6 +104,8 @@ def compute_player_load(
         minutes_per_match=minutes_per_match,
         minutes_per_week=minutes_per_week,
         high_load=high_load,
+        risk_level=risk_level,
+        back_to_back_count=back_to_back,
     )
 
     audit = AuditRecord(
@@ -74,7 +119,12 @@ def compute_player_load(
             "window_days": window_days,
             "considered_match_ids": [a.match_external_id for a in window],
             "high_load_threshold_minutes_per_week": HIGH_LOAD_MINUTES_PER_WEEK,
+            "risk_thresholds_min_per_week": RISK_THRESHOLDS_MIN_PER_WEEK,
+            "back_to_back_window_days": BACK_TO_BACK_DAYS,
         },
-        formula="sum(minutes in last window_days); per_week = sum/window_days*7",
+        formula=(
+            "minutes/week + 5-günde sliding window maç sayısı; risk_level: "
+            "extreme(>=360 ya da ≥3 maç/5g) > high(>=270) > medium(>=180) > low"
+        ),
     )
     return EngineResult(value=load, audit=audit)

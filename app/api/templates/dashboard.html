@@ -120,6 +120,38 @@
     <div id="agent-outputs">—</div>
   </div>
 
+  <div class="card" style="grid-column: 1 / -1;">
+    <h2>Yardımcı manager (chat)</h2>
+    <div id="chat-log" style="
+      min-height: 120px; max-height: 320px; overflow-y: auto;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 12px; margin-bottom: 8px;
+      font-size: 13px; line-height: 1.6;
+    "></div>
+    <div style="display: flex; gap: 8px;">
+      <input id="chat-team-id" placeholder="team_external_id (opsiyonel)"
+             style="
+        background: var(--bg); border: 1px solid var(--border); color: var(--fg);
+        padding: 6px 10px; border-radius: 6px; font-family: monospace;
+        width: 180px; font-size: 12px;
+      " />
+      <input id="chat-input" placeholder="Soru yaz (örn. 'Galatasaray sıradaki maç için 11 öner')"
+             style="
+        background: var(--bg); border: 1px solid var(--border); color: var(--fg);
+        padding: 6px 10px; border-radius: 6px; flex: 1; font-size: 13px;
+      " />
+      <button id="chat-send" style="
+        background: var(--accent); color: #fff; border: 0; padding: 6px 14px;
+        border-radius: 6px; cursor: pointer; font-weight: 600;
+      ">Sor</button>
+      <button id="chat-clear" title="Konuşmayı sıfırla" style="
+        background: var(--bg); color: var(--muted); border: 1px solid var(--border);
+        padding: 6px 12px; border-radius: 6px; cursor: pointer;
+      ">×</button>
+    </div>
+    <div class="sub" id="chat-meta" style="margin-top: 6px;">—</div>
+  </div>
+
 </div>
 
 <div class="footer">
@@ -273,6 +305,81 @@ async function loadAll() {
     loadAgentOutputs(),
   ]);
 }
+
+// ----- Chat widget -----
+const chatLog = document.getElementById('chat-log');
+const chatInput = document.getElementById('chat-input');
+const chatTeamId = document.getElementById('chat-team-id');
+const chatSend = document.getElementById('chat-send');
+const chatClear = document.getElementById('chat-clear');
+const chatMeta = document.getElementById('chat-meta');
+let currentConversationId = null;
+
+function appendChatLine(role, text) {
+  const div = document.createElement('div');
+  div.style.marginBottom = '8px';
+  const tag = document.createElement('span');
+  tag.textContent = role === 'user' ? 'Sen' : 'Asistan';
+  tag.style.color = role === 'user' ? 'var(--accent)' : 'var(--good)';
+  tag.style.fontWeight = '600';
+  tag.style.marginRight = '6px';
+  div.appendChild(tag);
+  const body = document.createElement('span');
+  body.textContent = text;
+  body.style.whiteSpace = 'pre-wrap';
+  div.appendChild(body);
+  chatLog.appendChild(div);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+async function sendChat() {
+  const message = chatInput.value.trim();
+  if (!message) return;
+  const teamIdRaw = chatTeamId.value.trim();
+  const teamId = teamIdRaw ? parseInt(teamIdRaw, 10) : null;
+  appendChatLine('user', message);
+  chatInput.value = '';
+  chatSend.disabled = true;
+  chatMeta.textContent = 'düşünüyor...';
+  const body = { message };
+  if (teamId !== null && !isNaN(teamId)) body.team_external_id = teamId;
+  if (currentConversationId !== null) body.conversation_id = currentConversationId;
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (apikeyInput.value) headers['X-API-Key'] = apikeyInput.value;
+    const r = await fetch('/assistant/chat', {
+      method: 'POST', headers, body: JSON.stringify(body),
+    });
+    if (!r.ok) {
+      const t = await r.text();
+      appendChatLine('assistant', `[hata HTTP ${r.status}] ${t.slice(0, 200)}`);
+      chatMeta.textContent = '—';
+    } else {
+      const data = await r.json();
+      currentConversationId = data.conversation_id;
+      appendChatLine('assistant', data.text);
+      const tools = (data.tool_traces || []).map(t => t.name).join(', ');
+      chatMeta.textContent = `conv #${data.conversation_id} · ${data.iterations} tur · `
+        + `${data.total_tokens} token${tools ? ' · tools: ' + tools : ''}`
+        + (data.stub ? ' · STUB MODE' : '');
+    }
+  } catch (e) {
+    appendChatLine('assistant', `[exception] ${e.message}`);
+    chatMeta.textContent = '—';
+  } finally {
+    chatSend.disabled = false;
+  }
+}
+
+chatSend.addEventListener('click', sendChat);
+chatInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+chatClear.addEventListener('click', () => {
+  chatLog.innerHTML = '';
+  currentConversationId = null;
+  chatMeta.textContent = 'yeni konuşma';
+});
 
 loadAll();
 </script>

@@ -849,7 +849,7 @@ def match_preview(
     return payload
 
 
-# ---- assistant chat (Faz K1) -----------------------------------------------
+# ---- assistant chat (Faz K1 + Faz L1 persist) ------------------------------
 
 
 @protected.post(
@@ -861,30 +861,67 @@ def assistant_chat(
     body: dict[str, Any],
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    """`{"message": str, "history"?: [...], "team_external_id"?: int}` →
-    asistan cevabı + tool trace.
+    """`{"message": str, "conversation_id"?: int, "team_external_id"?: int}` →
+    asistan cevabı + tool trace + conversation_id (yeni oluşturulduysa).
 
-    `team_external_id` verilirse o takıma ait assistant_memory enjekte edilir.
-    Stateless conversation: history dilersen client-side tut. ANTHROPIC_API_KEY
-    yoksa stub cevabı (tool listesi). Quota `anthropic_assistant` source'unda.
+    `conversation_id` verilirse o konuşmanın tüm geçmişi DB'den okunup
+    Claude'a history olarak verilir. Yoksa yeni konuşma yaratılır.
+    `team_external_id` ile assistant_memory enjekte edilir.
     """
-    from app.assistant import chat as assistant_chat_fn
+    from app.assistant import (
+        append_message,
+        create_conversation,
+        get_conversation_history,
+    )
+    from app.assistant import (
+        chat as assistant_chat_fn,
+    )
 
     message = body.get("message")
     if not isinstance(message, str) or not message.strip():
         raise HTTPException(status_code=422, detail="message gerekli (non-empty str)")
-    history = body.get("history") or []
-    if not isinstance(history, list):
-        raise HTTPException(status_code=422, detail="history list[dict] olmalı")
     team_id = body.get("team_external_id")
     if team_id is not None and not isinstance(team_id, int):
         raise HTTPException(status_code=422, detail="team_external_id int olmalı")
+    conversation_id = body.get("conversation_id")
+    if conversation_id is not None and not isinstance(conversation_id, int):
+        raise HTTPException(status_code=422, detail="conversation_id int olmalı")
+
+    # Konuşma yarat ya da geçmişi yükle
+    if conversation_id is None:
+        conv = create_conversation(
+            session, team_external_id=team_id, title=message[:80],
+        )
+        conversation_id = conv.id
+        history: list[dict[str, Any]] = []
+    else:
+        history = get_conversation_history(session, conversation_id)
+
+    # User mesajını kaydet
+    append_message(
+        session, conversation_id=conversation_id,
+        role="user", content=message,
+    )
 
     result = assistant_chat_fn(
         session, user_message=message, history=history,
         team_external_id=team_id,
     )
+
+    # Assistant cevabını kaydet
+    append_message(
+        session, conversation_id=conversation_id,
+        role="assistant", content=result.text,
+        tool_traces=[
+            {"name": t.name, "input": t.input, "output_preview": t.output[:300]}
+            for t in result.tool_traces
+        ],
+        total_tokens=result.total_tokens,
+    )
+    session.commit()
+
     return {
+        "conversation_id": conversation_id,
         "text": result.text,
         "tool_traces": [
             {"name": t.name, "input": t.input, "output_preview": t.output[:300]}
@@ -894,6 +931,52 @@ def assistant_chat(
         "total_tokens": result.total_tokens,
         "stub": result.stub,
     }
+
+
+@protected.get(
+    "/assistant/conversations",
+    tags=["assistant"],
+    summary="Geçmiş konuşmaları listele",
+)
+def list_assistant_conversations(
+    team_external_id: int | None = Query(None),
+    limit: int = Query(20, ge=1, le=100),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.assistant import list_conversations
+
+    rows = list_conversations(
+        session, team_external_id=team_external_id, limit=limit,
+    )
+    return {
+        "conversations": [
+            {
+                "id": r.id, "team_external_id": r.team_external_id,
+                "title": r.title,
+                "created_at": r.created_at.isoformat(),
+                "updated_at": r.updated_at.isoformat(),
+            }
+            for r in rows
+        ],
+    }
+
+
+@protected.get(
+    "/assistant/conversations/{conversation_id}",
+    tags=["assistant"],
+    summary="Bir konuşmanın tüm mesajlarını döndür",
+)
+def get_assistant_conversation(
+    conversation_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.assistant import get_conversation_history
+
+    history = get_conversation_history(session, conversation_id)
+    if not history:
+        # Konuşma yok ya da boş — caller ayırt edebilsin diye sade dönüyoruz
+        return {"conversation_id": conversation_id, "messages": []}
+    return {"conversation_id": conversation_id, "messages": history}
 
 
 # ---- assistant memory (Faz K3) ---------------------------------------------

@@ -329,3 +329,46 @@ class AssistantMemory(Base):
     )
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
+
+class ChatConversation(Base):
+    """Asistan chat geçmişi için konuşma kaydı.
+
+    Bir konuşma birden çok mesajdan oluşur (ChatMessage). Opsiyonel
+    team_external_id ile hangi takımın bağlamında konuşulduğu işaretlenir.
+    """
+
+    __tablename__ = "chat_conversations"
+    __table_args__ = (
+        Index("ix_chat_conversations_team", "team_external_id"),
+        Index("ix_chat_conversations_updated", "updated_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    title: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ChatMessage(Base):
+    """Konuşma içindeki bir mesaj (user veya assistant).
+
+    `content_json` Anthropic format'ında content list (user için string ya da
+    tool_result; assistant için text + tool_use). Tool izlerini de tutar
+    (tool_traces_json) — UI/audit için.
+    """
+
+    __tablename__ = "chat_messages"
+    __table_args__ = (
+        Index("ix_chat_messages_conv_seq", "conversation_id", "seq"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    conversation_id: Mapped[int] = mapped_column(Integer)
+    seq: Mapped[int] = mapped_column(Integer)  # konuşmadaki sıra
+    role: Mapped[str] = mapped_column(String(16))  # "user" | "assistant"
+    content_json: Mapped[str] = mapped_column(Text)
+    tool_traces_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    total_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
