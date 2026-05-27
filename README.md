@@ -56,6 +56,8 @@ alembic upgrade head                # tabloları oluştur
 - `API_FOOTBALL_DAILY_LIMIT` / `MONTHLY_LIMIT` ile kota koruması;
   `core/usage` her gerçek HTTP çağrısını sayar, eşiğe yaklaşınca uyarır,
   aşınca `QuotaExceeded` fırlatır.
+- `API_AUTH_KEY` production'da set edilmeli. İstemciler `X-API-Key: <değer>`
+  header'ında gönderir. Boş ise auth devre dışı (dev). `/health` her zaman açık.
 
 ## Çalıştırma
 ```bash

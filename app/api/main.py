@@ -8,11 +8,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.ai import ClaudeCommentator
+from app.api.auth import require_api_key
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
 from app.core.logging import setup_logging
@@ -25,7 +26,10 @@ from app.sports import football
 
 setup_logging()
 
-app = FastAPI(title="football-intelligence", version="0.2.0")
+app = FastAPI(title="football-intelligence", version="0.3.0")
+
+# /health hariç tüm uçlar bu router üzerinden — auth tek noktada uygulanır.
+protected = APIRouter(dependencies=[Depends(require_api_key)])
 
 
 # ---- yardımcı sorgular ------------------------------------------------------
@@ -62,7 +66,7 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/leagues", response_model=list[LeagueOut])
+@protected.get("/leagues", response_model=list[LeagueOut])
 def list_leagues(session: Session = Depends(get_session)) -> list[models.League]:
     return list(
         session.execute(
@@ -73,7 +77,7 @@ def list_leagues(session: Session = Depends(get_session)) -> list[models.League]
     )
 
 
-@app.get("/teams/{league_id}", response_model=list[TeamOut])
+@protected.get("/teams/{league_id}", response_model=list[TeamOut])
 def teams_in_league(
     league_id: int, session: Session = Depends(get_session)
 ) -> list[models.Team]:
@@ -109,7 +113,7 @@ def teams_in_league(
     )
 
 
-@app.get("/teams/{team_id}/matches", response_model=list[MatchOut])
+@protected.get("/teams/{team_id}/matches", response_model=list[MatchOut])
 def matches_for_team(
     team_id: int, session: Session = Depends(get_session)
 ) -> list[models.Match]:
@@ -119,7 +123,7 @@ def matches_for_team(
 # ---- analiz uçları (Faz 5) --------------------------------------------------
 
 
-@app.get("/teams/{team_id}/form")
+@protected.get("/teams/{team_id}/form")
 def team_form(
     team_id: int,
     last_n: int = Query(5, ge=1, le=50),
@@ -133,7 +137,7 @@ def team_form(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
-@app.get("/teams/{team_id}/rating")
+@protected.get("/teams/{team_id}/rating")
 def team_rating(
     team_id: int,
     last_n: int = Query(10, ge=1, le=50),
@@ -147,7 +151,7 @@ def team_rating(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
-@app.get("/teams/{a}/vs/{b}")
+@protected.get("/teams/{a}/vs/{b}")
 def head_to_head(
     a: int,
     b: int,
@@ -173,7 +177,7 @@ def head_to_head(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
-@app.get("/matches/{match_id}/preview")
+@protected.get("/matches/{match_id}/preview")
 def match_preview(
     match_id: int,
     last_n: int = Query(5, ge=1, le=50),
@@ -243,3 +247,6 @@ def match_preview(
         "away_form": engine_result_to_dict(away_form),
         "head_to_head": engine_result_to_dict(h2h),
     }
+
+
+app.include_router(protected)

@@ -71,7 +71,8 @@ dışarı hesap. DB/API/LLM bilmez.
       önceki maçlar üzerinden (sızıntı yok)
 - [x] `api/serialize.py` — EngineResult → dict adaptörü (engine pure kalsın)
 - [x] `?explain=true` → `ClaudeCommentator.explain` (anahtar yoksa stub)
-- [ ] Auth (kullanıcı/rol) — sonraki tur, JWT/OAuth seçimi açık
+- [x] Auth (`X-API-Key`); `API_AUTH_KEY` boş ise dev modu (auth devre dışı).
+      JWT/OAuth ve kullanıcı/rol modeli multi-tenant (Ufuk 1) ile birlikte.
 
 ---
 

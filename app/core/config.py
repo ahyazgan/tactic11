@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     api_football_monthly_limit: int = Field(default=2000, alias="API_FOOTBALL_MONTHLY_LIMIT")
     anthropic_daily_token_limit: int = Field(default=200000, alias="ANTHROPIC_DAILY_TOKEN_LIMIT")
 
+    # API erişim anahtarı (boş ise auth devre dışı — sadece dev için)
+    api_auth_key: str = Field(default="", alias="API_AUTH_KEY")
+
     # Geliştirme/test
     use_fixtures: bool = Field(default=False, alias="USE_FIXTURES")
     log_level: LogLevel = Field(default="INFO", alias="LOG_LEVEL")
