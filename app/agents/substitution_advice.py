@@ -105,16 +105,68 @@ class SubstitutionAdviceAgent(Agent):
         else:
             priority = "balance"
 
-        # Basit kural: en yüksek yüklü 2 oyuncuyu çıkar
+        # Bench impact skoru — son maçlardaki goal involvement proxy:
+        # Yedek oyuncunun son 10 maçındaki ortalama dakika > 30 → "regular contributor".
+        # Bu primitive bir proxy; gerçek "goal involvement" event-feed gerektirir.
+        bench_impact: dict[int, dict[str, Any]] = {}
+        for bid in bench:
+            apps = list(
+                session.execute(
+                    select(models.PlayerAppearance).where(
+                        models.PlayerAppearance.player_external_id == bid,
+                        models.PlayerAppearance.kickoff >= now - timedelta(days=60),
+                    ).order_by(models.PlayerAppearance.kickoff.desc()).limit(10)
+                ).scalars()
+            )
+            recent_avg = (sum(a.minutes for a in apps) / len(apps)) if apps else 0.0
+            bench_impact[bid] = {
+                "recent_appearances": len(apps),
+                "avg_minutes_recent": round(recent_avg, 1),
+                # impact tier: regular contributor (≥30 dk/maç), squad player (≥10), fringe
+                "tier": (
+                    "regular" if recent_avg >= 30
+                    else "squad" if recent_avg >= 10
+                    else "fringe"
+                ),
+            }
+
+        # Önerilen değişiklik kuralı:
+        # 1) En yüksek yüklü 2 oyuncuyu çıkar
+        # 2) Bench'ten "regular" → "squad" → "fringe" sırasıyla en iyileri al
         sorted_pitch = sorted(
             on_pitch, key=lambda p: loads_by_player[p]["minutes_per_week"], reverse=True,
         )
         suggested_out = sorted_pitch[:2]
-        suggested_in = bench[:2] if bench else []
-        # Tek-tek eşle
+        # Bench'i impact tier'a göre sırala (regular > squad > fringe), tier içinde
+        # avg_minutes desc
+        _tier_rank = {"regular": 0, "squad": 1, "fringe": 2}
+        sorted_bench = sorted(
+            bench,
+            key=lambda b: (
+                _tier_rank.get(bench_impact[b]["tier"], 3),
+                -bench_impact[b]["avg_minutes_recent"],
+            ),
+        )
+        suggested_in = sorted_bench[:2]
+
+        # Optimum dakika önerisi — basit heuristic:
+        # - chase: 60-70. dk arası ilk sub; 75-80 ikinci
+        # - protect: 70+ ilk sub (savunma takviyesi); 85+ ikinci (zaman tüketme)
+        # - balance: 55-65 ilk; 70-75 ikinci
+        suggested_minutes_map = {
+            "chase": [max(int(minute), 60), max(int(minute), 75)],
+            "protect": [max(int(minute), 70), max(int(minute), 85)],
+            "balance": [max(int(minute), 55), max(int(minute), 70)],
+        }
+        suggested_minutes = suggested_minutes_map[priority]
         proposed_subs = [
-            {"out": out, "in": inn}
-            for out, inn in zip(suggested_out, suggested_in, strict=False)
+            {
+                "out": out, "in": inn,
+                "out_load_per_week": loads_by_player[out]["minutes_per_week"],
+                "in_tier": bench_impact[inn]["tier"] if inn in bench_impact else "unknown",
+                "suggested_minute": suggested_minutes[i] if i < len(suggested_minutes) else None,
+            }
+            for i, (out, inn) in enumerate(zip(suggested_out, suggested_in, strict=False))
         ]
 
         ai_brief = _build_sub_brief(
@@ -135,6 +187,7 @@ class SubstitutionAdviceAgent(Agent):
             "priority": priority,
             "proposed_subs": proposed_subs,
             "on_pitch_loads": {str(pid): loads_by_player[pid] for pid in on_pitch},
+            "bench_impact": {str(bid): bench_impact[bid] for bid in bench},
             "ai_brief": ai_brief,
         }
         summary = (

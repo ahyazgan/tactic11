@@ -490,3 +490,192 @@ def db_stats(session: Session = Depends(get_session)) -> dict[str, int]:
             select(func.count()).select_from(model)
         ) or 0
     return out
+
+
+# --------------------------------------------------------------------------- #
+# Faz M — Manager performance dashboard (C9)
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/manager-performance",
+    tags=["admin"],
+    summary="TD performans değerlendirmesi — xPts vs actual points",
+)
+def manager_performance(
+    team_external_id: int,
+    days: int = 90,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """`predictions` tablosundaki tahminlerden xPts hesaplayıp gerçek puanla kıyaslar.
+
+    xPts = sum(prob_win * 3 + prob_draw * 1) tahmin başına.
+    Actual = gerçek sonuçtan o takımın puanı.
+    overperformance = actual - xPts (>0: TD ortalamadan iyi sonuç çıkarıyor).
+    """
+    import json as _json
+
+    from app.sports import football
+
+    cutoff = datetime.now(UTC) - timedelta(days=days)
+    rows = list(
+        session.execute(
+            select(models.Prediction).where(
+                models.Prediction.engine == "engine.predict",
+                models.Prediction.actual_outcome.is_not(None),
+                models.Prediction.reconciled_at.is_not(None),
+                models.Prediction.reconciled_at >= cutoff,
+            )
+        ).scalars()
+    )
+    # Hangi maçların team_external_id ile ilgili olduğunu bul
+    match_ids = {r.match_external_id for r in rows}
+    matches = {
+        m.external_id: m for m in session.execute(
+            select(models.Match).where(
+                models.Match.sport == football.SPORT_NAME,
+                models.Match.external_id.in_(match_ids),
+                (models.Match.home_team_external_id == team_external_id)
+                | (models.Match.away_team_external_id == team_external_id),
+            )
+        ).scalars()
+    }
+    relevant = [r for r in rows if r.match_external_id in matches]
+    if not relevant:
+        return {
+            "team_id": team_external_id,
+            "days": days, "matches_considered": 0,
+            "xpts": 0.0, "actual_points": 0,
+            "overperformance": 0.0,
+            "per_match": [],
+        }
+
+    total_xpts = 0.0
+    total_actual = 0
+    per_match: list[dict[str, Any]] = []
+    for r in relevant:
+        try:
+            p = _json.loads(r.predicted_value_json)
+        except _json.JSONDecodeError:
+            continue
+        m = matches[r.match_external_id]
+        is_home = m.home_team_external_id == team_external_id
+        # Bu takımın bakış açısından prob_win, prob_draw, prob_loss
+        if is_home:
+            p_win = float(p.get("prob_home_win", 0.0))
+            p_loss = float(p.get("prob_away_win", 0.0))
+        else:
+            p_win = float(p.get("prob_away_win", 0.0))
+            p_loss = float(p.get("prob_home_win", 0.0))
+        p_draw = float(p.get("prob_draw", 0.0))
+        xpts_match = p_win * 3 + p_draw * 1
+        # Actual points
+        if r.actual_outcome == "draw":
+            actual = 1
+        elif (r.actual_outcome == "home" and is_home) or (r.actual_outcome == "away" and not is_home):
+            actual = 3
+        else:
+            actual = 0
+        total_xpts += xpts_match
+        total_actual += actual
+        per_match.append({
+            "match_id": r.match_external_id,
+            "is_home": is_home,
+            "xpts": round(xpts_match, 3),
+            "actual_pts": actual,
+            "delta": round(actual - xpts_match, 3),
+            "p_win": round(p_win, 3),
+            "p_draw": round(p_draw, 3),
+            "p_loss": round(p_loss, 3),
+        })
+
+    return {
+        "team_id": team_external_id,
+        "days": days,
+        "matches_considered": len(per_match),
+        "xpts": round(total_xpts, 3),
+        "actual_points": total_actual,
+        "overperformance": round(total_actual - total_xpts, 3),
+        "ppg_xpts": round(total_xpts / len(per_match), 3) if per_match else 0.0,
+        "ppg_actual": round(total_actual / len(per_match), 3) if per_match else 0.0,
+        "per_match": per_match,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Faz M — Scout watchlist CRUD
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/scout/watchlist",
+    tags=["admin"],
+    summary="Scout izleme listesi",
+)
+def scout_watchlist_list(
+    user_id: str = "default",
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.scout import list_watchlist
+
+    entries = list_watchlist(session, user_id=user_id)
+    return {
+        "user_id": user_id,
+        "count": len(entries),
+        "players": [
+            {
+                "id": e.id, "player_external_id": e.player_external_id,
+                "notes": e.notes,
+                "created_at": e.created_at.isoformat(),
+                "updated_at": e.updated_at.isoformat(),
+            }
+            for e in entries
+        ],
+    }
+
+
+@router.post(
+    "/scout/watchlist",
+    tags=["admin"],
+    summary="Scout izleme listesine oyuncu ekle (idempotent)",
+)
+def scout_watchlist_add(
+    body: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.scout import add_to_watchlist
+
+    player_id = body.get("player_external_id")
+    if not isinstance(player_id, int):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail="player_external_id (int) gerekli")
+    user_id = body.get("user_id", "default")
+    notes = body.get("notes")
+    entry = add_to_watchlist(
+        session, player_external_id=player_id, user_id=user_id, notes=notes,
+    )
+    session.commit()
+    return {
+        "id": entry.id,
+        "player_external_id": entry.player_external_id,
+        "user_id": entry.user_id,
+    }
+
+
+@router.delete(
+    "/scout/watchlist/{player_external_id}",
+    tags=["admin"],
+    summary="Scout izleme listesinden oyuncu çıkar",
+)
+def scout_watchlist_remove(
+    player_external_id: int,
+    user_id: str = "default",
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.scout import remove_from_watchlist
+
+    deleted = remove_from_watchlist(
+        session, player_external_id=player_external_id, user_id=user_id,
+    )
+    session.commit()
+    return {"ok": True, "deleted": deleted}
