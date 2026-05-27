@@ -63,6 +63,11 @@ class Settings(BaseSettings):
 
     # Production hardening
     rate_limit_per_minute: int = Field(default=120, alias="RATE_LIMIT_PER_MINUTE")
+    # Kota uyarı eşiği (0..1) — bu fraksiyona ulaşınca WARNING log
+    # Default 0.8 = %80. 0.6 → daha erken uyarı; 0.9 → daha geç.
+    quota_warn_fraction: float = Field(
+        default=0.8, ge=0.0, le=1.0, alias="QUOTA_WARN_FRACTION"
+    )
 
     def validate_for_production(self) -> None:
         """`app_env == "prod"` ise zorunlu secret'ları doğrula; eksikse fail.
