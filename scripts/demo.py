@@ -19,6 +19,7 @@ Bölümler (mevcut tüm engine'ler):
 6. Matchup kıyas raporu (engine.matchup)
 7. Maç önizleme (form+h2h sentezi)
 8. Skor tahmini (engine.predict — Poisson + Dixon-Coles)
+9. Tracking — ball-zone distribution (fixture varsa, opsiyonel)
 
 ENV davranışı:
 - DATABASE_URL boşsa sqlite:///./_demo.db
@@ -45,6 +46,7 @@ os.environ.setdefault("LOG_LEVEL", "WARNING")
 from app.ai import AnthropicClient, ClaudeCommentator  # noqa: E402
 from app.data.ingest import sync_league  # noqa: E402
 from app.data.sources.api_football import APIFootball  # noqa: E402
+from app.data.sources.fixture_tracking import FixtureTrackingSource  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
 from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty  # noqa: E402
 from app.engine.form import compute_form  # noqa: E402
@@ -53,6 +55,7 @@ from app.engine.opponent import compute_head_to_head  # noqa: E402
 from app.engine.predict import compute_predict  # noqa: E402
 from app.engine.rating import compute_team_rating  # noqa: E402
 from app.engine.schedule import compute_schedule  # noqa: E402
+from app.engine.tracking import compute_ball_zone_distribution  # noqa: E402
 from app.sports import football  # noqa: E402
 
 
@@ -515,6 +518,26 @@ def _show_fixture_difficulty(team_id: int, *, com: ClaudeCommentator | None) -> 
         print("    " + com.explain(result).replace("\n", "\n    "))
 
 
+def _show_tracking(match_id: int) -> None:
+    """Tracking adapter — varsa ball-zone distribution. Yoksa atla.
+
+    tests/fixtures/tracking_<match_id>.json mevcut değilse sessizce skip;
+    yeni bir fixture üretmek için `python scripts/generate_tracking_fixture.py`.
+    """
+    src = FixtureTrackingSource()
+    if not src.has_fixture(match_id):
+        return
+    _hr(f"Tracking — ball-zone distribution (match {match_id})")
+    frames = list(src.get_match_frames(match_id))
+    result = compute_ball_zone_distribution(frames)
+    v = result.value
+    _row("toplam frame", v.total_frames)
+    _row("ball'lu frame", v.frames_with_ball)
+    _row("defansif üçte (%)", f"{v.defensive_third_fraction * 100:.1f}")
+    _row("orta üçte (%)", f"{v.middle_third_fraction * 100:.1f}")
+    _row("hücum üçte (%)", f"{v.attacking_third_fraction * 100:.1f}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="football-intelligence end-to-end demo")
     parser.add_argument("--league", type=int, default=203, help="API-Football league.id (fixture varsa)")
@@ -523,6 +546,10 @@ def main() -> None:
     parser.add_argument("--team", type=int, default=611, help="Analiz edilecek takım")
     parser.add_argument("--vs", type=int, default=607, help="Head-to-head karşılaştırılacak takım")
     parser.add_argument("--match", type=int, default=1234140, help="Preview için maç external_id (NS olan ideal)")
+    parser.add_argument(
+        "--tracking-match", type=int, default=99,
+        help="Tracking adapter için match_external_id (tests/fixtures/tracking_<id>.json varsa)",
+    )
     args = parser.parse_args()
 
     _maybe_reset(args.reset)
@@ -547,6 +574,7 @@ def main() -> None:
     _show_matchup(args.team, args.vs, com=com)
     _show_preview(args.match, com=com)
     _show_predict(args.match, com=com)
+    _show_tracking(args.tracking_match)
 
     _hr("Demo tamam")
     print("  Sıradakiler:")

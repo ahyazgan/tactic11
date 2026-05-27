@@ -1,0 +1,3666 @@
+{
+  "match_external_id": 99,
+  "sport": "football",
+  "frames": [
+    {
+      "timestamp": "2024-08-15T18:00:00+00:00",
+      "period": 1,
+      "minute": 0.0,
+      "ball": {
+        "player_external_id": 0,
+        "x": 40.0,
+        "y": 50.0
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 7.56,
+          "y": 49.34
+        },
+        {
+          "player_external_id": 611002,
+          "x": 19.34,
+          "y": 18.19
+        },
+        {
+          "player_external_id": 611003,
+          "x": 19.36,
+          "y": 37.52
+        },
+        {
+          "player_external_id": 611004,
+          "x": 20.39,
+          "y": 59.92
+        },
+        {
+          "player_external_id": 611005,
+          "x": 20.73,
+          "y": 80.5
+        },
+        {
+          "player_external_id": 611006,
+          "x": 38.64,
+          "y": 27.09
+        },
+        {
+          "player_external_id": 611007,
+          "x": 37.08,
+          "y": 52.84
+        },
+        {
+          "player_external_id": 611008,
+          "x": 42.96,
+          "y": 69.16
+        },
+        {
+          "player_external_id": 611009,
+          "x": 57.83,
+          "y": 24.53
+        },
+        {
+          "player_external_id": 611010,
+          "x": 57.75,
+          "y": 51.62
+        },
+        {
+          "player_external_id": 611011,
+          "x": 60.47,
+          "y": 74.01
+        },
+        {
+          "player_external_id": 607001,
+          "x": 94.69,
+          "y": 50.55
+        },
+        {
+          "player_external_id": 607002,
+          "x": 78.08,
+          "y": 21.06
+        },
+        {
+          "player_external_id": 607003,
+          "x": 79.25,
+          "y": 37.17
+        },
+        {
+          "player_external_id": 607004,
+          "x": 80.08,
+          "y": 58.43
+        },
+        {
+          "player_external_id": 607005,
+          "x": 80.1,
+          "y": 77.44
+        },
+        {
+          "player_external_id": 607006,
+          "x": 59.9,
+          "y": 32.61
+        },
+        {
+          "player_external_id": 607007,
+          "x": 57.55,
+          "y": 49.56
+        },
+        {
+          "player_external_id": 607008,
+          "x": 58.34,
+          "y": 67.53
+        },
+        {
+          "player_external_id": 607009,
+          "x": 37.2,
+          "y": 23.28
+        },
+        {
+          "player_external_id": 607010,
+          "x": 39.98,
+          "y": 47.22
+        },
+        {
+          "player_external_id": 607011,
+          "x": 41.82,
+          "y": 73.77
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:02+00:00",
+      "period": 1,
+      "minute": 0.033,
+      "ball": {
+        "player_external_id": 0,
+        "x": 41.21,
+        "y": 49.48
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 5.0,
+          "y": 52.09
+        },
+        {
+          "player_external_id": 611002,
+          "x": 20.37,
+          "y": 20.01
+        },
+        {
+          "player_external_id": 611003,
+          "x": 22.63,
+          "y": 37.35
+        },
+        {
+          "player_external_id": 611004,
+          "x": 21.03,
+          "y": 62.86
+        },
+        {
+          "player_external_id": 611005,
+          "x": 22.01,
+          "y": 80.17
+        },
+        {
+          "player_external_id": 611006,
+          "x": 37.04,
+          "y": 32.47
+        },
+        {
+          "player_external_id": 611007,
+          "x": 38.0,
+          "y": 52.14
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.41,
+          "y": 70.98
+        },
+        {
+          "player_external_id": 611009,
+          "x": 61.29,
+          "y": 27.51
+        },
+        {
+          "player_external_id": 611010,
+          "x": 58.56,
+          "y": 51.74
+        },
+        {
+          "player_external_id": 611011,
+          "x": 60.71,
+          "y": 74.2
+        },
+        {
+          "player_external_id": 607001,
+          "x": 93.96,
+          "y": 51.93
+        },
+        {
+          "player_external_id": 607002,
+          "x": 78.04,
+          "y": 21.5
+        },
+        {
+          "player_external_id": 607003,
+          "x": 78.08,
+          "y": 38.93
+        },
+        {
+          "player_external_id": 607004,
+          "x": 82.56,
+          "y": 58.43
+        },
+        {
+          "player_external_id": 607005,
+          "x": 80.24,
+          "y": 78.09
+        },
+        {
+          "player_external_id": 607006,
+          "x": 57.78,
+          "y": 28.55
+        },
+        {
+          "player_external_id": 607007,
+          "x": 61.24,
+          "y": 51.76
+        },
+        {
+          "player_external_id": 607008,
+          "x": 60.97,
+          "y": 68.29
+        },
+        {
+          "player_external_id": 607009,
+          "x": 39.31,
+          "y": 25.5
+        },
+        {
+          "player_external_id": 607010,
+          "x": 42.26,
+          "y": 48.11
+        },
+        {
+          "player_external_id": 607011,
+          "x": 40.69,
+          "y": 77.64
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:04+00:00",
+      "period": 1,
+      "minute": 0.067,
+      "ball": {
+        "player_external_id": 0,
+        "x": 42.41,
+        "y": 51.03
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 6.07,
+          "y": 49.09
+        },
+        {
+          "player_external_id": 611002,
+          "x": 18.44,
+          "y": 19.36
+        },
+        {
+          "player_external_id": 611003,
+          "x": 18.54,
+          "y": 41.87
+        },
+        {
+          "player_external_id": 611004,
+          "x": 21.89,
+          "y": 58.81
+        },
+        {
+          "player_external_id": 611005,
+          "x": 19.09,
+          "y": 77.9
+        },
+        {
+          "player_external_id": 611006,
+          "x": 37.71,
+          "y": 27.15
+        },
+        {
+          "player_external_id": 611007,
+          "x": 37.41,
+          "y": 51.12
+        },
+        {
+          "player_external_id": 611008,
+          "x": 40.3,
+          "y": 70.07
+        },
+        {
+          "player_external_id": 611009,
+          "x": 62.78,
+          "y": 26.31
+        },
+        {
+          "player_external_id": 611010,
+          "x": 61.08,
+          "y": 47.85
+        },
+        {
+          "player_external_id": 611011,
+          "x": 61.83,
+          "y": 75.81
+        },
+        {
+          "player_external_id": 607001,
+          "x": 93.31,
+          "y": 48.23
+        },
+        {
+          "player_external_id": 607002,
+          "x": 77.39,
+          "y": 21.89
+        },
+        {
+          "player_external_id": 607003,
+          "x": 79.53,
+          "y": 38.04
+        },
+        {
+          "player_external_id": 607004,
+          "x": 82.77,
+          "y": 62.93
+        },
+        {
+          "player_external_id": 607005,
+          "x": 77.42,
+          "y": 77.19
+        },
+        {
+          "player_external_id": 607006,
+          "x": 60.32,
+          "y": 31.36
+        },
+        {
+          "player_external_id": 607007,
+          "x": 62.24,
+          "y": 49.53
+        },
+        {
+          "player_external_id": 607008,
+          "x": 61.91,
+          "y": 71.09
+        },
+        {
+          "player_external_id": 607009,
+          "x": 39.92,
+          "y": 22.57
+        },
+        {
+          "player_external_id": 607010,
+          "x": 37.46,
+          "y": 50.22
+        },
+        {
+          "player_external_id": 607011,
+          "x": 37.31,
+          "y": 75.31
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:06+00:00",
+      "period": 1,
+      "minute": 0.1,
+      "ball": {
+        "player_external_id": 0,
+        "x": 43.62,
+        "y": 48.45
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 7.45,
+          "y": 49.66
+        },
+        {
+          "player_external_id": 611002,
+          "x": 17.93,
+          "y": 21.38
+        },
+        {
+          "player_external_id": 611003,
+          "x": 18.69,
+          "y": 41.63
+        },
+        {
+          "player_external_id": 611004,
+          "x": 22.5,
+          "y": 60.47
+        },
+        {
+          "player_external_id": 611005,
+          "x": 19.32,
+          "y": 77.55
+        },
+        {
+          "player_external_id": 611006,
+          "x": 38.41,
+          "y": 27.21
+        },
+        {
+          "player_external_id": 611007,
+          "x": 40.37,
+          "y": 49.12
+        },
+        {
+          "player_external_id": 611008,
+          "x": 37.63,
+          "y": 68.57
+        },
+        {
+          "player_external_id": 611009,
+          "x": 62.72,
+          "y": 25.85
+        },
+        {
+          "player_external_id": 611010,
+          "x": 57.62,
+          "y": 48.23
+        },
+        {
+          "player_external_id": 611011,
+          "x": 62.84,
+          "y": 75.42
+        },
+        {
+          "player_external_id": 607001,
+          "x": 93.04,
+          "y": 51.86
+        },
+        {
+          "player_external_id": 607002,
+          "x": 77.12,
+          "y": 19.68
+        },
+        {
+          "player_external_id": 607003,
+          "x": 80.47,
+          "y": 37.03
+        },
+        {
+          "player_external_id": 607004,
+          "x": 81.15,
+          "y": 57.09
+        },
+        {
+          "player_external_id": 607005,
+          "x": 79.25,
+          "y": 77.71
+        },
+        {
+          "player_external_id": 607006,
+          "x": 60.54,
+          "y": 28.98
+        },
+        {
+          "player_external_id": 607007,
+          "x": 61.68,
+          "y": 51.73
+        },
+        {
+          "player_external_id": 607008,
+          "x": 58.28,
+          "y": 71.5
+        },
+        {
+          "player_external_id": 607009,
+          "x": 42.08,
+          "y": 27.13
+        },
+        {
+          "player_external_id": 607010,
+          "x": 39.58,
+          "y": 49.19
+        },
+        {
+          "player_external_id": 607011,
+          "x": 37.21,
+          "y": 74.71
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:08+00:00",
+      "period": 1,
+      "minute": 0.133,
+      "ball": {
+        "player_external_id": 0,
+        "x": 44.83,
+        "y": 52.07
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 6.32,
+          "y": 52.22
+        },
+        {
+          "player_external_id": 611002,
+          "x": 21.68,
+          "y": 21.23
+        },
+        {
+          "player_external_id": 611003,
+          "x": 21.82,
+          "y": 39.72
+        },
+        {
+          "player_external_id": 611004,
+          "x": 22.06,
+          "y": 60.06
+        },
+        {
+          "player_external_id": 611005,
+          "x": 21.88,
+          "y": 79.35
+        },
+        {
+          "player_external_id": 611006,
+          "x": 37.06,
+          "y": 28.52
+        },
+        {
+          "player_external_id": 611007,
+          "x": 39.1,
+          "y": 47.68
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.31,
+          "y": 70.11
+        },
+        {
+          "player_external_id": 611009,
+          "x": 60.04,
+          "y": 23.93
+        },
+        {
+          "player_external_id": 611010,
+          "x": 60.65,
+          "y": 50.37
+        },
+        {
+          "player_external_id": 611011,
+          "x": 62.45,
+          "y": 77.26
+        },
+        {
+          "player_external_id": 607001,
+          "x": 97.86,
+          "y": 52.76
+        },
+        {
+          "player_external_id": 607002,
+          "x": 82.28,
+          "y": 20.68
+        },
+        {
+          "player_external_id": 607003,
+          "x": 77.3,
+          "y": 39.98
+        },
+        {
+          "player_external_id": 607004,
+          "x": 79.33,
+          "y": 57.3
+        },
+        {
+          "player_external_id": 607005,
+          "x": 78.23,
+          "y": 82.9
+        },
+        {
+          "player_external_id": 607006,
+          "x": 59.2,
+          "y": 31.93
+        },
+        {
+          "player_external_id": 607007,
+          "x": 61.45,
+          "y": 47.2
+        },
+        {
+          "player_external_id": 607008,
+          "x": 60.19,
+          "y": 72.94
+        },
+        {
+          "player_external_id": 607009,
+          "x": 39.7,
+          "y": 26.16
+        },
+        {
+          "player_external_id": 607010,
+          "x": 37.5,
+          "y": 47.91
+        },
+        {
+          "player_external_id": 607011,
+          "x": 37.84,
+          "y": 77.65
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:10+00:00",
+      "period": 1,
+      "minute": 0.167,
+      "ball": {
+        "player_external_id": 0,
+        "x": 46.03,
+        "y": 47.41
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 5.89,
+          "y": 51.25
+        },
+        {
+          "player_external_id": 611002,
+          "x": 22.53,
+          "y": 20.31
+        },
+        {
+          "player_external_id": 611003,
+          "x": 19.42,
+          "y": 40.69
+        },
+        {
+          "player_external_id": 611004,
+          "x": 22.08,
+          "y": 60.98
+        },
+        {
+          "player_external_id": 611005,
+          "x": 22.14,
+          "y": 78.39
+        },
+        {
+          "player_external_id": 611006,
+          "x": 40.5,
+          "y": 30.35
+        },
+        {
+          "player_external_id": 611007,
+          "x": 42.05,
+          "y": 48.63
+        },
+        {
+          "player_external_id": 611008,
+          "x": 39.1,
+          "y": 69.87
+        },
+        {
+          "player_external_id": 611009,
+          "x": 62.89,
+          "y": 24.45
+        },
+        {
+          "player_external_id": 611010,
+          "x": 61.16,
+          "y": 49.01
+        },
+        {
+          "player_external_id": 611011,
+          "x": 61.59,
+          "y": 74.54
+        },
+        {
+          "player_external_id": 607001,
+          "x": 92.23,
+          "y": 48.83
+        },
+        {
+          "player_external_id": 607002,
+          "x": 79.33,
+          "y": 19.56
+        },
+        {
+          "player_external_id": 607003,
+          "x": 81.4,
+          "y": 42.29
+        },
+        {
+          "player_external_id": 607004,
+          "x": 77.18,
+          "y": 59.71
+        },
+        {
+          "player_external_id": 607005,
+          "x": 77.71,
+          "y": 78.14
+        },
+        {
+          "player_external_id": 607006,
+          "x": 57.63,
+          "y": 27.62
+        },
+        {
+          "player_external_id": 607007,
+          "x": 62.47,
+          "y": 47.09
+        },
+        {
+          "player_external_id": 607008,
+          "x": 60.96,
+          "y": 68.94
+        },
+        {
+          "player_external_id": 607009,
+          "x": 39.57,
+          "y": 23.38
+        },
+        {
+          "player_external_id": 607010,
+          "x": 42.19,
+          "y": 51.71
+        },
+        {
+          "player_external_id": 607011,
+          "x": 40.27,
+          "y": 75.8
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:12+00:00",
+      "period": 1,
+      "minute": 0.2,
+      "ball": {
+        "player_external_id": 0,
+        "x": 47.24,
+        "y": 53.1
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 4.61,
+          "y": 52.26
+        },
+        {
+          "player_external_id": 611002,
+          "x": 20.21,
+          "y": 19.84
+        },
+        {
+          "player_external_id": 611003,
+          "x": 17.88,
+          "y": 39.83
+        },
+        {
+          "player_external_id": 611004,
+          "x": 20.09,
+          "y": 60.37
+        },
+        {
+          "player_external_id": 611005,
+          "x": 22.04,
+          "y": 77.99
+        },
+        {
+          "player_external_id": 611006,
+          "x": 42.86,
+          "y": 30.45
+        },
+        {
+          "player_external_id": 611007,
+          "x": 40.96,
+          "y": 48.12
+        },
+        {
+          "player_external_id": 611008,
+          "x": 42.27,
+          "y": 71.83
+        },
+        {
+          "player_external_id": 611009,
+          "x": 61.34,
+          "y": 24.25
+        },
+        {
+          "player_external_id": 611010,
+          "x": 57.78,
+          "y": 51.75
+        },
+        {
+          "player_external_id": 611011,
+          "x": 60.99,
+          "y": 77.21
+        },
+        {
+          "player_external_id": 607001,
+          "x": 94.76,
+          "y": 48.1
+        },
+        {
+          "player_external_id": 607002,
+          "x": 81.54,
+          "y": 17.4
+        },
+        {
+          "player_external_id": 607003,
+          "x": 79.75,
+          "y": 38.23
+        },
+        {
+          "player_external_id": 607004,
+          "x": 81.99,
+          "y": 58.56
+        },
+        {
+          "player_external_id": 607005,
+          "x": 81.12,
+          "y": 78.9
+        },
+        {
+          "player_external_id": 607006,
+          "x": 57.21,
+          "y": 30.88
+        },
+        {
+          "player_external_id": 607007,
+          "x": 60.73,
+          "y": 50.51
+        },
+        {
+          "player_external_id": 607008,
+          "x": 62.14,
+          "y": 69.74
+        },
+        {
+          "player_external_id": 607009,
+          "x": 42.45,
+          "y": 22.85
+        },
+        {
+          "player_external_id": 607010,
+          "x": 37.85,
+          "y": 49.3
+        },
+        {
+          "player_external_id": 607011,
+          "x": 42.68,
+          "y": 74.87
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:14+00:00",
+      "period": 1,
+      "minute": 0.233,
+      "ball": {
+        "player_external_id": 0,
+        "x": 48.45,
+        "y": 46.38
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 4.76,
+          "y": 52.56
+        },
+        {
+          "player_external_id": 611002,
+          "x": 22.54,
+          "y": 19.64
+        },
+        {
+          "player_external_id": 611003,
+          "x": 19.79,
+          "y": 39.17
+        },
+        {
+          "player_external_id": 611004,
+          "x": 20.3,
+          "y": 62.01
+        },
+        {
+          "player_external_id": 611005,
+          "x": 20.2,
+          "y": 79.11
+        },
+        {
+          "player_external_id": 611006,
+          "x": 39.35,
+          "y": 28.34
+        },
+        {
+          "player_external_id": 611007,
+          "x": 42.64,
+          "y": 47.55
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.77,
+          "y": 69.7
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.62,
+          "y": 27.18
+        },
+        {
+          "player_external_id": 611010,
+          "x": 59.72,
+          "y": 52.98
+        },
+        {
+          "player_external_id": 611011,
+          "x": 57.02,
+          "y": 75.77
+        },
+        {
+          "player_external_id": 607001,
+          "x": 95.76,
+          "y": 48.86
+        },
+        {
+          "player_external_id": 607002,
+          "x": 77.34,
+          "y": 19.45
+        },
+        {
+          "player_external_id": 607003,
+          "x": 78.27,
+          "y": 38.42
+        },
+        {
+          "player_external_id": 607004,
+          "x": 81.06,
+          "y": 58.99
+        },
+        {
+          "player_external_id": 607005,
+          "x": 80.14,
+          "y": 77.29
+        },
+        {
+          "player_external_id": 607006,
+          "x": 60.68,
+          "y": 29.02
+        },
+        {
+          "player_external_id": 607007,
+          "x": 58.48,
+          "y": 49.17
+        },
+        {
+          "player_external_id": 607008,
+          "x": 61.68,
+          "y": 69.29
+        },
+        {
+          "player_external_id": 607009,
+          "x": 37.76,
+          "y": 22.47
+        },
+        {
+          "player_external_id": 607010,
+          "x": 42.19,
+          "y": 50.96
+        },
+        {
+          "player_external_id": 607011,
+          "x": 38.93,
+          "y": 76.12
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:16+00:00",
+      "period": 1,
+      "minute": 0.267,
+      "ball": {
+        "player_external_id": 0,
+        "x": 49.66,
+        "y": 54.14
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 4.88,
+          "y": 47.95
+        },
+        {
+          "player_external_id": 611002,
+          "x": 21.51,
+          "y": 18.19
+        },
+        {
+          "player_external_id": 611003,
+          "x": 21.87,
+          "y": 38.47
+        },
+        {
+          "player_external_id": 611004,
+          "x": 17.35,
+          "y": 61.29
+        },
+        {
+          "player_external_id": 611005,
+          "x": 20.48,
+          "y": 81.58
+        },
+        {
+          "player_external_id": 611006,
+          "x": 42.63,
+          "y": 32.87
+        },
+        {
+          "player_external_id": 611007,
+          "x": 42.78,
+          "y": 52.03
+        },
+        {
+          "player_external_id": 611008,
+          "x": 42.85,
+          "y": 71.47
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.41,
+          "y": 23.42
+        },
+        {
+          "player_external_id": 611010,
+          "x": 62.0,
+          "y": 49.53
+        },
+        {
+          "player_external_id": 611011,
+          "x": 60.27,
+          "y": 76.38
+        },
+        {
+          "player_external_id": 607001,
+          "x": 95.92,
+          "y": 48.04
+        },
+        {
+          "player_external_id": 607002,
+          "x": 79.3,
+          "y": 21.89
+        },
+        {
+          "player_external_id": 607003,
+          "x": 80.0,
+          "y": 41.99
+        },
+        {
+          "player_external_id": 607004,
+          "x": 81.53,
+          "y": 61.24
+        },
+        {
+          "player_external_id": 607005,
+          "x": 82.83,
+          "y": 78.62
+        },
+        {
+          "player_external_id": 607006,
+          "x": 58.75,
+          "y": 29.93
+        },
+        {
+          "player_external_id": 607007,
+          "x": 58.73,
+          "y": 48.42
+        },
+        {
+          "player_external_id": 607008,
+          "x": 62.21,
+          "y": 69.83
+        },
+        {
+          "player_external_id": 607009,
+          "x": 42.47,
+          "y": 23.67
+        },
+        {
+          "player_external_id": 607010,
+          "x": 42.92,
+          "y": 48.75
+        },
+        {
+          "player_external_id": 607011,
+          "x": 38.49,
+          "y": 75.94
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:18+00:00",
+      "period": 1,
+      "minute": 0.3,
+      "ball": {
+        "player_external_id": 0,
+        "x": 50.86,
+        "y": 45.34
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 2.76,
+          "y": 52.76
+        },
+        {
+          "player_external_id": 611002,
+          "x": 19.77,
+          "y": 17.24
+        },
+        {
+          "player_external_id": 611003,
+          "x": 22.73,
+          "y": 40.02
+        },
+        {
+          "player_external_id": 611004,
+          "x": 17.79,
+          "y": 61.02
+        },
+        {
+          "player_external_id": 611005,
+          "x": 22.45,
+          "y": 81.79
+        },
+        {
+          "player_external_id": 611006,
+          "x": 41.03,
+          "y": 29.43
+        },
+        {
+          "player_external_id": 611007,
+          "x": 41.3,
+          "y": 47.79
+        },
+        {
+          "player_external_id": 611008,
+          "x": 40.26,
+          "y": 68.8
+        },
+        {
+          "player_external_id": 611009,
+          "x": 58.64,
+          "y": 26.47
+        },
+        {
+          "player_external_id": 611010,
+          "x": 58.17,
+          "y": 49.02
+        },
+        {
+          "player_external_id": 611011,
+          "x": 57.47,
+          "y": 77.42
+        },
+        {
+          "player_external_id": 607001,
+          "x": 94.67,
+          "y": 50.58
+        },
+        {
+          "player_external_id": 607002,
+          "x": 77.15,
+          "y": 22.88
+        },
+        {
+          "player_external_id": 607003,
+          "x": 80.53,
+          "y": 37.25
+        },
+        {
+          "player_external_id": 607004,
+          "x": 79.01,
+          "y": 61.59
+        },
+        {
+          "player_external_id": 607005,
+          "x": 81.22,
+          "y": 77.15
+        },
+        {
+          "player_external_id": 607006,
+          "x": 60.31,
+          "y": 31.14
+        },
+        {
+          "player_external_id": 607007,
+          "x": 59.82,
+          "y": 51.45
+        },
+        {
+          "player_external_id": 607008,
+          "x": 62.6,
+          "y": 71.46
+        },
+        {
+          "player_external_id": 607009,
+          "x": 40.32,
+          "y": 25.64
+        },
+        {
+          "player_external_id": 607010,
+          "x": 38.76,
+          "y": 52.29
+        },
+        {
+          "player_external_id": 607011,
+          "x": 42.8,
+          "y": 74.23
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:20+00:00",
+      "period": 1,
+      "minute": 0.333,
+      "ball": {
+        "player_external_id": 0,
+        "x": 52.07,
+        "y": 55.17
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 4.18,
+          "y": 50.41
+        },
+        {
+          "player_external_id": 611002,
+          "x": 20.77,
+          "y": 20.19
+        },
+        {
+          "player_external_id": 611003,
+          "x": 17.82,
+          "y": 37.54
+        },
+        {
+          "player_external_id": 611004,
+          "x": 21.82,
+          "y": 57.62
+        },
+        {
+          "player_external_id": 611005,
+          "x": 20.09,
+          "y": 80.99
+        },
+        {
+          "player_external_id": 611006,
+          "x": 41.01,
+          "y": 31.9
+        },
+        {
+          "player_external_id": 611007,
+          "x": 38.98,
+          "y": 52.23
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.2,
+          "y": 68.13
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.82,
+          "y": 23.35
+        },
+        {
+          "player_external_id": 611010,
+          "x": 62.97,
+          "y": 51.32
+        },
+        {
+          "player_external_id": 611011,
+          "x": 57.21,
+          "y": 73.16
+        },
+        {
+          "player_external_id": 607001,
+          "x": 92.22,
+          "y": 47.59
+        },
+        {
+          "player_external_id": 607002,
+          "x": 81.31,
+          "y": 17.06
+        },
+        {
+          "player_external_id": 607003,
+          "x": 81.15,
+          "y": 40.21
+        },
+        {
+          "player_external_id": 607004,
+          "x": 78.55,
+          "y": 59.98
+        },
+        {
+          "player_external_id": 607005,
+          "x": 79.49,
+          "y": 77.82
+        },
+        {
+          "player_external_id": 607006,
+          "x": 57.73,
+          "y": 27.2
+        },
+        {
+          "player_external_id": 607007,
+          "x": 61.77,
+          "y": 50.36
+        },
+        {
+          "player_external_id": 607008,
+          "x": 60.21,
+          "y": 72.73
+        },
+        {
+          "player_external_id": 607009,
+          "x": 40.41,
+          "y": 22.37
+        },
+        {
+          "player_external_id": 607010,
+          "x": 40.24,
+          "y": 48.36
+        },
+        {
+          "player_external_id": 607011,
+          "x": 41.16,
+          "y": 73.45
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:22+00:00",
+      "period": 1,
+      "minute": 0.367,
+      "ball": {
+        "player_external_id": 0,
+        "x": 53.28,
+        "y": 44.31
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 2.11,
+          "y": 47.15
+        },
+        {
+          "player_external_id": 611002,
+          "x": 19.18,
+          "y": 17.38
+        },
+        {
+          "player_external_id": 611003,
+          "x": 20.57,
+          "y": 42.3
+        },
+        {
+          "player_external_id": 611004,
+          "x": 17.19,
+          "y": 58.1
+        },
+        {
+          "player_external_id": 611005,
+          "x": 17.72,
+          "y": 79.18
+        },
+        {
+          "player_external_id": 611006,
+          "x": 41.21,
+          "y": 30.32
+        },
+        {
+          "player_external_id": 611007,
+          "x": 41.08,
+          "y": 52.78
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.54,
+          "y": 69.45
+        },
+        {
+          "player_external_id": 611009,
+          "x": 58.95,
+          "y": 23.53
+        },
+        {
+          "player_external_id": 611010,
+          "x": 60.71,
+          "y": 47.58
+        },
+        {
+          "player_external_id": 611011,
+          "x": 62.49,
+          "y": 75.96
+        },
+        {
+          "player_external_id": 607001,
+          "x": 97.86,
+          "y": 48.04
+        },
+        {
+          "player_external_id": 607002,
+          "x": 80.83,
+          "y": 19.64
+        },
+        {
+          "player_external_id": 607003,
+          "x": 82.54,
+          "y": 41.78
+        },
+        {
+          "player_external_id": 607004,
+          "x": 77.81,
+          "y": 57.83
+        },
+        {
+          "player_external_id": 607005,
+          "x": 78.21,
+          "y": 78.31
+        },
+        {
+          "player_external_id": 607006,
+          "x": 58.37,
+          "y": 29.47
+        },
+        {
+          "player_external_id": 607007,
+          "x": 62.22,
+          "y": 49.66
+        },
+        {
+          "player_external_id": 607008,
+          "x": 61.02,
+          "y": 67.39
+        },
+        {
+          "player_external_id": 607009,
+          "x": 37.0,
+          "y": 24.81
+        },
+        {
+          "player_external_id": 607010,
+          "x": 40.33,
+          "y": 52.51
+        },
+        {
+          "player_external_id": 607011,
+          "x": 41.04,
+          "y": 77.79
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:24+00:00",
+      "period": 1,
+      "minute": 0.4,
+      "ball": {
+        "player_external_id": 0,
+        "x": 54.48,
+        "y": 56.21
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 7.27,
+          "y": 51.71
+        },
+        {
+          "player_external_id": 611002,
+          "x": 21.65,
+          "y": 20.48
+        },
+        {
+          "player_external_id": 611003,
+          "x": 22.24,
+          "y": 40.36
+        },
+        {
+          "player_external_id": 611004,
+          "x": 20.73,
+          "y": 62.58
+        },
+        {
+          "player_external_id": 611005,
+          "x": 17.9,
+          "y": 77.61
+        },
+        {
+          "player_external_id": 611006,
+          "x": 42.22,
+          "y": 30.88
+        },
+        {
+          "player_external_id": 611007,
+          "x": 40.42,
+          "y": 47.47
+        },
+        {
+          "player_external_id": 611008,
+          "x": 37.99,
+          "y": 68.58
+        },
+        {
+          "player_external_id": 611009,
+          "x": 58.04,
+          "y": 26.51
+        },
+        {
+          "player_external_id": 611010,
+          "x": 59.55,
+          "y": 47.24
+        },
+        {
+          "player_external_id": 611011,
+          "x": 62.08,
+          "y": 73.55
+        },
+        {
+          "player_external_id": 607001,
+          "x": 97.04,
+          "y": 52.58
+        },
+        {
+          "player_external_id": 607002,
+          "x": 78.81,
+          "y": 21.52
+        },
+        {
+          "player_external_id": 607003,
+          "x": 79.51,
+          "y": 37.35
+        },
+        {
+          "player_external_id": 607004,
+          "x": 82.32,
+          "y": 57.9
+        },
+        {
+          "player_external_id": 607005,
+          "x": 78.57,
+          "y": 80.47
+        },
+        {
+          "player_external_id": 607006,
+          "x": 59.4,
+          "y": 32.72
+        },
+        {
+          "player_external_id": 607007,
+          "x": 58.51,
+          "y": 52.25
+        },
+        {
+          "player_external_id": 607008,
+          "x": 57.43,
+          "y": 68.06
+        },
+        {
+          "player_external_id": 607009,
+          "x": 39.82,
+          "y": 25.38
+        },
+        {
+          "player_external_id": 607010,
+          "x": 38.62,
+          "y": 48.2
+        },
+        {
+          "player_external_id": 607011,
+          "x": 42.82,
+          "y": 77.92
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:26+00:00",
+      "period": 1,
+      "minute": 0.433,
+      "ball": {
+        "player_external_id": 0,
+        "x": 55.69,
+        "y": 43.28
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 3.79,
+          "y": 51.66
+        },
+        {
+          "player_external_id": 611002,
+          "x": 18.79,
+          "y": 21.14
+        },
+        {
+          "player_external_id": 611003,
+          "x": 19.26,
+          "y": 42.68
+        },
+        {
+          "player_external_id": 611004,
+          "x": 21.85,
+          "y": 59.33
+        },
+        {
+          "player_external_id": 611005,
+          "x": 21.8,
+          "y": 78.73
+        },
+        {
+          "player_external_id": 611006,
+          "x": 39.0,
+          "y": 29.86
+        },
+        {
+          "player_external_id": 611007,
+          "x": 40.29,
+          "y": 47.57
+        },
+        {
+          "player_external_id": 611008,
+          "x": 38.62,
+          "y": 70.84
+        },
+        {
+          "player_external_id": 611009,
+          "x": 58.57,
+          "y": 23.74
+        },
+        {
+          "player_external_id": 611010,
+          "x": 58.78,
+          "y": 47.23
+        },
+        {
+          "player_external_id": 611011,
+          "x": 63.0,
+          "y": 72.44
+        },
+        {
+          "player_external_id": 607001,
+          "x": 96.46,
+          "y": 47.17
+        },
+        {
+          "player_external_id": 607002,
+          "x": 80.62,
+          "y": 22.03
+        },
+        {
+          "player_external_id": 607003,
+          "x": 80.97,
+          "y": 41.35
+        },
+        {
+          "player_external_id": 607004,
+          "x": 78.38,
+          "y": 60.78
+        },
+        {
+          "player_external_id": 607005,
+          "x": 79.87,
+          "y": 82.64
+        },
+        {
+          "player_external_id": 607006,
+          "x": 62.54,
+          "y": 31.73
+        },
+        {
+          "player_external_id": 607007,
+          "x": 60.01,
+          "y": 50.78
+        },
+        {
+          "player_external_id": 607008,
+          "x": 58.82,
+          "y": 72.18
+        },
+        {
+          "player_external_id": 607009,
+          "x": 40.2,
+          "y": 26.43
+        },
+        {
+          "player_external_id": 607010,
+          "x": 37.03,
+          "y": 51.88
+        },
+        {
+          "player_external_id": 607011,
+          "x": 37.21,
+          "y": 76.8
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:28+00:00",
+      "period": 1,
+      "minute": 0.467,
+      "ball": {
+        "player_external_id": 0,
+        "x": 56.9,
+        "y": 57.24
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 6.49,
+          "y": 49.13
+        },
+        {
+          "player_external_id": 611002,
+          "x": 18.86,
+          "y": 18.64
+        },
+        {
+          "player_external_id": 611003,
+          "x": 17.3,
+          "y": 41.11
+        },
+        {
+          "player_external_id": 611004,
+          "x": 18.78,
+          "y": 61.7
+        },
+        {
+          "player_external_id": 611005,
+          "x": 19.3,
+          "y": 77.62
+        },
+        {
+          "player_external_id": 611006,
+          "x": 42.36,
+          "y": 27.26
+        },
+        {
+          "player_external_id": 611007,
+          "x": 40.3,
+          "y": 50.13
+        },
+        {
+          "player_external_id": 611008,
+          "x": 39.92,
+          "y": 71.07
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.43,
+          "y": 22.3
+        },
+        {
+          "player_external_id": 611010,
+          "x": 62.96,
+          "y": 48.75
+        },
+        {
+          "player_external_id": 611011,
+          "x": 58.97,
+          "y": 72.03
+        },
+        {
+          "player_external_id": 607001,
+          "x": 96.93,
+          "y": 51.85
+        },
+        {
+          "player_external_id": 607002,
+          "x": 80.49,
+          "y": 19.61
+        },
+        {
+          "player_external_id": 607003,
+          "x": 78.15,
+          "y": 41.18
+        },
+        {
+          "player_external_id": 607004,
+          "x": 82.65,
+          "y": 57.33
+        },
+        {
+          "player_external_id": 607005,
+          "x": 80.21,
+          "y": 80.92
+        },
+        {
+          "player_external_id": 607006,
+          "x": 60.63,
+          "y": 30.77
+        },
+        {
+          "player_external_id": 607007,
+          "x": 59.42,
+          "y": 51.97
+        },
+        {
+          "player_external_id": 607008,
+          "x": 58.46,
+          "y": 72.75
+        },
+        {
+          "player_external_id": 607009,
+          "x": 42.25,
+          "y": 22.63
+        },
+        {
+          "player_external_id": 607010,
+          "x": 37.36,
+          "y": 52.32
+        },
+        {
+          "player_external_id": 607011,
+          "x": 42.86,
+          "y": 72.66
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:30+00:00",
+      "period": 1,
+      "minute": 0.5,
+      "ball": {
+        "player_external_id": 0,
+        "x": 58.1,
+        "y": 42.24
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 4.12,
+          "y": 48.86
+        },
+        {
+          "player_external_id": 611002,
+          "x": 21.46,
+          "y": 20.64
+        },
+        {
+          "player_external_id": 611003,
+          "x": 20.04,
+          "y": 40.79
+        },
+        {
+          "player_external_id": 611004,
+          "x": 22.14,
+          "y": 58.91
+        },
+        {
+          "player_external_id": 611005,
+          "x": 18.14,
+          "y": 78.08
+        },
+        {
+          "player_external_id": 611006,
+          "x": 37.55,
+          "y": 32.77
+        },
+        {
+          "player_external_id": 611007,
+          "x": 37.66,
+          "y": 50.05
+        },
+        {
+          "player_external_id": 611008,
+          "x": 38.87,
+          "y": 71.66
+        },
+        {
+          "player_external_id": 611009,
+          "x": 57.83,
+          "y": 24.95
+        },
+        {
+          "player_external_id": 611010,
+          "x": 57.58,
+          "y": 50.53
+        },
+        {
+          "player_external_id": 611011,
+          "x": 57.53,
+          "y": 74.15
+        },
+        {
+          "player_external_id": 607001,
+          "x": 93.84,
+          "y": 48.18
+        },
+        {
+          "player_external_id": 607002,
+          "x": 79.69,
+          "y": 22.47
+        },
+        {
+          "player_external_id": 607003,
+          "x": 78.38,
+          "y": 39.18
+        },
+        {
+          "player_external_id": 607004,
+          "x": 77.91,
+          "y": 59.54
+        },
+        {
+          "player_external_id": 607005,
+          "x": 81.45,
+          "y": 79.78
+        },
+        {
+          "player_external_id": 607006,
+          "x": 59.55,
+          "y": 29.88
+        },
+        {
+          "player_external_id": 607007,
+          "x": 62.61,
+          "y": 49.22
+        },
+        {
+          "player_external_id": 607008,
+          "x": 62.22,
+          "y": 67.99
+        },
+        {
+          "player_external_id": 607009,
+          "x": 39.58,
+          "y": 22.8
+        },
+        {
+          "player_external_id": 607010,
+          "x": 41.22,
+          "y": 52.03
+        },
+        {
+          "player_external_id": 607011,
+          "x": 41.44,
+          "y": 73.07
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:32+00:00",
+      "period": 1,
+      "minute": 0.533,
+      "ball": {
+        "player_external_id": 0,
+        "x": 59.31,
+        "y": 58.28
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 4.85,
+          "y": 52.29
+        },
+        {
+          "player_external_id": 611002,
+          "x": 22.22,
+          "y": 17.5
+        },
+        {
+          "player_external_id": 611003,
+          "x": 20.94,
+          "y": 40.64
+        },
+        {
+          "player_external_id": 611004,
+          "x": 19.65,
+          "y": 60.69
+        },
+        {
+          "player_external_id": 611005,
+          "x": 20.06,
+          "y": 78.47
+        },
+        {
+          "player_external_id": 611006,
+          "x": 42.72,
+          "y": 31.45
+        },
+        {
+          "player_external_id": 611007,
+          "x": 41.46,
+          "y": 51.89
+        },
+        {
+          "player_external_id": 611008,
+          "x": 40.71,
+          "y": 67.19
+        },
+        {
+          "player_external_id": 611009,
+          "x": 58.47,
+          "y": 25.33
+        },
+        {
+          "player_external_id": 611010,
+          "x": 59.7,
+          "y": 49.08
+        },
+        {
+          "player_external_id": 611011,
+          "x": 60.93,
+          "y": 73.3
+        },
+        {
+          "player_external_id": 607001,
+          "x": 93.44,
+          "y": 49.03
+        },
+        {
+          "player_external_id": 607002,
+          "x": 77.39,
+          "y": 18.23
+        },
+        {
+          "player_external_id": 607003,
+          "x": 80.81,
+          "y": 42.91
+        },
+        {
+          "player_external_id": 607004,
+          "x": 80.5,
+          "y": 57.03
+        },
+        {
+          "player_external_id": 607005,
+          "x": 77.03,
+          "y": 82.98
+        },
+        {
+          "player_external_id": 607006,
+          "x": 58.97,
+          "y": 27.89
+        },
+        {
+          "player_external_id": 607007,
+          "x": 62.35,
+          "y": 48.35
+        },
+        {
+          "player_external_id": 607008,
+          "x": 62.33,
+          "y": 68.93
+        },
+        {
+          "player_external_id": 607009,
+          "x": 40.32,
+          "y": 24.26
+        },
+        {
+          "player_external_id": 607010,
+          "x": 38.53,
+          "y": 52.23
+        },
+        {
+          "player_external_id": 607011,
+          "x": 39.12,
+          "y": 74.15
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:34+00:00",
+      "period": 1,
+      "minute": 0.567,
+      "ball": {
+        "player_external_id": 0,
+        "x": 60.52,
+        "y": 41.21
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 2.02,
+          "y": 47.8
+        },
+        {
+          "player_external_id": 611002,
+          "x": 17.93,
+          "y": 20.79
+        },
+        {
+          "player_external_id": 611003,
+          "x": 19.39,
+          "y": 39.61
+        },
+        {
+          "player_external_id": 611004,
+          "x": 20.55,
+          "y": 62.71
+        },
+        {
+          "player_external_id": 611005,
+          "x": 17.4,
+          "y": 81.75
+        },
+        {
+          "player_external_id": 611006,
+          "x": 40.27,
+          "y": 30.05
+        },
+        {
+          "player_external_id": 611007,
+          "x": 38.06,
+          "y": 47.04
+        },
+        {
+          "player_external_id": 611008,
+          "x": 40.91,
+          "y": 67.3
+        },
+        {
+          "player_external_id": 611009,
+          "x": 61.69,
+          "y": 24.15
+        },
+        {
+          "player_external_id": 611010,
+          "x": 59.55,
+          "y": 52.4
+        },
+        {
+          "player_external_id": 611011,
+          "x": 57.96,
+          "y": 72.83
+        },
+        {
+          "player_external_id": 607001,
+          "x": 95.72,
+          "y": 52.58
+        },
+        {
+          "player_external_id": 607002,
+          "x": 78.34,
+          "y": 21.1
+        },
+        {
+          "player_external_id": 607003,
+          "x": 78.15,
+          "y": 40.38
+        },
+        {
+          "player_external_id": 607004,
+          "x": 82.36,
+          "y": 59.82
+        },
+        {
+          "player_external_id": 607005,
+          "x": 77.07,
+          "y": 80.13
+        },
+        {
+          "player_external_id": 607006,
+          "x": 59.5,
+          "y": 28.29
+        },
+        {
+          "player_external_id": 607007,
+          "x": 58.18,
+          "y": 50.75
+        },
+        {
+          "player_external_id": 607008,
+          "x": 58.05,
+          "y": 67.75
+        },
+        {
+          "player_external_id": 607009,
+          "x": 38.3,
+          "y": 26.93
+        },
+        {
+          "player_external_id": 607010,
+          "x": 37.02,
+          "y": 50.36
+        },
+        {
+          "player_external_id": 607011,
+          "x": 41.67,
+          "y": 76.91
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:36+00:00",
+      "period": 1,
+      "minute": 0.6,
+      "ball": {
+        "player_external_id": 0,
+        "x": 61.72,
+        "y": 59.31
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 6.49,
+          "y": 50.81
+        },
+        {
+          "player_external_id": 611002,
+          "x": 17.57,
+          "y": 19.81
+        },
+        {
+          "player_external_id": 611003,
+          "x": 19.33,
+          "y": 40.46
+        },
+        {
+          "player_external_id": 611004,
+          "x": 18.29,
+          "y": 62.07
+        },
+        {
+          "player_external_id": 611005,
+          "x": 18.36,
+          "y": 77.07
+        },
+        {
+          "player_external_id": 611006,
+          "x": 39.46,
+          "y": 31.21
+        },
+        {
+          "player_external_id": 611007,
+          "x": 40.9,
+          "y": 48.12
+        },
+        {
+          "player_external_id": 611008,
+          "x": 38.7,
+          "y": 68.98
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.1,
+          "y": 27.9
+        },
+        {
+          "player_external_id": 611010,
+          "x": 57.55,
+          "y": 52.6
+        },
+        {
+          "player_external_id": 611011,
+          "x": 59.6,
+          "y": 75.49
+        },
+        {
+          "player_external_id": 607001,
+          "x": 96.91,
+          "y": 50.32
+        },
+        {
+          "player_external_id": 607002,
+          "x": 80.98,
+          "y": 21.06
+        },
+        {
+          "player_external_id": 607003,
+          "x": 80.23,
+          "y": 40.55
+        },
+        {
+          "player_external_id": 607004,
+          "x": 80.81,
+          "y": 60.44
+        },
+        {
+          "player_external_id": 607005,
+          "x": 82.87,
+          "y": 78.08
+        },
+        {
+          "player_external_id": 607006,
+          "x": 58.98,
+          "y": 27.64
+        },
+        {
+          "player_external_id": 607007,
+          "x": 61.68,
+          "y": 48.87
+        },
+        {
+          "player_external_id": 607008,
+          "x": 62.16,
+          "y": 69.9
+        },
+        {
+          "player_external_id": 607009,
+          "x": 37.51,
+          "y": 27.2
+        },
+        {
+          "player_external_id": 607010,
+          "x": 39.9,
+          "y": 51.26
+        },
+        {
+          "player_external_id": 607011,
+          "x": 38.73,
+          "y": 74.88
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:38+00:00",
+      "period": 1,
+      "minute": 0.633,
+      "ball": {
+        "player_external_id": 0,
+        "x": 62.93,
+        "y": 40.17
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 5.46,
+          "y": 51.06
+        },
+        {
+          "player_external_id": 611002,
+          "x": 19.13,
+          "y": 18.46
+        },
+        {
+          "player_external_id": 611003,
+          "x": 22.78,
+          "y": 40.91
+        },
+        {
+          "player_external_id": 611004,
+          "x": 22.12,
+          "y": 62.92
+        },
+        {
+          "player_external_id": 611005,
+          "x": 17.04,
+          "y": 79.71
+        },
+        {
+          "player_external_id": 611006,
+          "x": 39.13,
+          "y": 32.11
+        },
+        {
+          "player_external_id": 611007,
+          "x": 38.94,
+          "y": 47.77
+        },
+        {
+          "player_external_id": 611008,
+          "x": 42.14,
+          "y": 70.32
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.65,
+          "y": 26.8
+        },
+        {
+          "player_external_id": 611010,
+          "x": 57.77,
+          "y": 51.87
+        },
+        {
+          "player_external_id": 611011,
+          "x": 62.2,
+          "y": 74.89
+        },
+        {
+          "player_external_id": 607001,
+          "x": 96.34,
+          "y": 49.76
+        },
+        {
+          "player_external_id": 607002,
+          "x": 82.5,
+          "y": 18.84
+        },
+        {
+          "player_external_id": 607003,
+          "x": 79.26,
+          "y": 37.35
+        },
+        {
+          "player_external_id": 607004,
+          "x": 82.48,
+          "y": 61.59
+        },
+        {
+          "player_external_id": 607005,
+          "x": 81.23,
+          "y": 77.63
+        },
+        {
+          "player_external_id": 607006,
+          "x": 59.25,
+          "y": 31.24
+        },
+        {
+          "player_external_id": 607007,
+          "x": 58.87,
+          "y": 50.95
+        },
+        {
+          "player_external_id": 607008,
+          "x": 60.06,
+          "y": 72.48
+        },
+        {
+          "player_external_id": 607009,
+          "x": 38.43,
+          "y": 22.12
+        },
+        {
+          "player_external_id": 607010,
+          "x": 37.48,
+          "y": 49.99
+        },
+        {
+          "player_external_id": 607011,
+          "x": 42.48,
+          "y": 75.25
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:40+00:00",
+      "period": 1,
+      "minute": 0.667,
+      "ball": {
+        "player_external_id": 0,
+        "x": 64.14,
+        "y": 60.34
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 3.56,
+          "y": 48.03
+        },
+        {
+          "player_external_id": 611002,
+          "x": 17.4,
+          "y": 19.42
+        },
+        {
+          "player_external_id": 611003,
+          "x": 21.26,
+          "y": 39.43
+        },
+        {
+          "player_external_id": 611004,
+          "x": 22.22,
+          "y": 58.23
+        },
+        {
+          "player_external_id": 611005,
+          "x": 17.55,
+          "y": 81.11
+        },
+        {
+          "player_external_id": 611006,
+          "x": 37.16,
+          "y": 32.19
+        },
+        {
+          "player_external_id": 611007,
+          "x": 38.62,
+          "y": 51.83
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.78,
+          "y": 70.67
+        },
+        {
+          "player_external_id": 611009,
+          "x": 58.96,
+          "y": 26.84
+        },
+        {
+          "player_external_id": 611010,
+          "x": 59.3,
+          "y": 50.79
+        },
+        {
+          "player_external_id": 611011,
+          "x": 60.37,
+          "y": 77.28
+        },
+        {
+          "player_external_id": 607001,
+          "x": 96.03,
+          "y": 50.76
+        },
+        {
+          "player_external_id": 607002,
+          "x": 80.6,
+          "y": 21.7
+        },
+        {
+          "player_external_id": 607003,
+          "x": 81.15,
+          "y": 40.03
+        },
+        {
+          "player_external_id": 607004,
+          "x": 81.06,
+          "y": 61.28
+        },
+        {
+          "player_external_id": 607005,
+          "x": 78.24,
+          "y": 81.46
+        },
+        {
+          "player_external_id": 607006,
+          "x": 62.36,
+          "y": 32.28
+        },
+        {
+          "player_external_id": 607007,
+          "x": 60.44,
+          "y": 50.11
+        },
+        {
+          "player_external_id": 607008,
+          "x": 60.2,
+          "y": 68.65
+        },
+        {
+          "player_external_id": 607009,
+          "x": 42.14,
+          "y": 24.69
+        },
+        {
+          "player_external_id": 607010,
+          "x": 39.21,
+          "y": 50.42
+        },
+        {
+          "player_external_id": 607011,
+          "x": 39.54,
+          "y": 73.87
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:42+00:00",
+      "period": 1,
+      "minute": 0.7,
+      "ball": {
+        "player_external_id": 0,
+        "x": 65.34,
+        "y": 39.14
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 5.75,
+          "y": 49.45
+        },
+        {
+          "player_external_id": 611002,
+          "x": 20.66,
+          "y": 22.39
+        },
+        {
+          "player_external_id": 611003,
+          "x": 17.91,
+          "y": 38.89
+        },
+        {
+          "player_external_id": 611004,
+          "x": 18.25,
+          "y": 58.1
+        },
+        {
+          "player_external_id": 611005,
+          "x": 22.65,
+          "y": 80.1
+        },
+        {
+          "player_external_id": 611006,
+          "x": 38.48,
+          "y": 27.33
+        },
+        {
+          "player_external_id": 611007,
+          "x": 42.76,
+          "y": 49.24
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.01,
+          "y": 68.77
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.03,
+          "y": 23.05
+        },
+        {
+          "player_external_id": 611010,
+          "x": 60.48,
+          "y": 52.24
+        },
+        {
+          "player_external_id": 611011,
+          "x": 61.52,
+          "y": 72.73
+        },
+        {
+          "player_external_id": 607001,
+          "x": 97.14,
+          "y": 48.56
+        },
+        {
+          "player_external_id": 607002,
+          "x": 79.44,
+          "y": 18.94
+        },
+        {
+          "player_external_id": 607003,
+          "x": 78.57,
+          "y": 39.3
+        },
+        {
+          "player_external_id": 607004,
+          "x": 79.06,
+          "y": 59.18
+        },
+        {
+          "player_external_id": 607005,
+          "x": 78.1,
+          "y": 77.49
+        },
+        {
+          "player_external_id": 607006,
+          "x": 57.68,
+          "y": 29.82
+        },
+        {
+          "player_external_id": 607007,
+          "x": 59.29,
+          "y": 50.03
+        },
+        {
+          "player_external_id": 607008,
+          "x": 61.79,
+          "y": 67.39
+        },
+        {
+          "player_external_id": 607009,
+          "x": 42.3,
+          "y": 23.53
+        },
+        {
+          "player_external_id": 607010,
+          "x": 40.06,
+          "y": 51.7
+        },
+        {
+          "player_external_id": 607011,
+          "x": 41.87,
+          "y": 74.78
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:44+00:00",
+      "period": 1,
+      "minute": 0.733,
+      "ball": {
+        "player_external_id": 0,
+        "x": 66.55,
+        "y": 61.38
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 5.2,
+          "y": 49.24
+        },
+        {
+          "player_external_id": 611002,
+          "x": 17.25,
+          "y": 20.87
+        },
+        {
+          "player_external_id": 611003,
+          "x": 18.25,
+          "y": 39.76
+        },
+        {
+          "player_external_id": 611004,
+          "x": 18.55,
+          "y": 58.61
+        },
+        {
+          "player_external_id": 611005,
+          "x": 17.96,
+          "y": 77.97
+        },
+        {
+          "player_external_id": 611006,
+          "x": 42.27,
+          "y": 28.2
+        },
+        {
+          "player_external_id": 611007,
+          "x": 41.29,
+          "y": 51.25
+        },
+        {
+          "player_external_id": 611008,
+          "x": 42.99,
+          "y": 68.21
+        },
+        {
+          "player_external_id": 611009,
+          "x": 60.47,
+          "y": 25.51
+        },
+        {
+          "player_external_id": 611010,
+          "x": 60.15,
+          "y": 50.24
+        },
+        {
+          "player_external_id": 611011,
+          "x": 59.14,
+          "y": 72.62
+        },
+        {
+          "player_external_id": 607001,
+          "x": 94.93,
+          "y": 50.13
+        },
+        {
+          "player_external_id": 607002,
+          "x": 82.93,
+          "y": 21.51
+        },
+        {
+          "player_external_id": 607003,
+          "x": 81.53,
+          "y": 37.63
+        },
+        {
+          "player_external_id": 607004,
+          "x": 77.44,
+          "y": 62.4
+        },
+        {
+          "player_external_id": 607005,
+          "x": 77.63,
+          "y": 79.5
+        },
+        {
+          "player_external_id": 607006,
+          "x": 57.04,
+          "y": 27.33
+        },
+        {
+          "player_external_id": 607007,
+          "x": 59.11,
+          "y": 49.81
+        },
+        {
+          "player_external_id": 607008,
+          "x": 57.64,
+          "y": 70.39
+        },
+        {
+          "player_external_id": 607009,
+          "x": 39.57,
+          "y": 22.85
+        },
+        {
+          "player_external_id": 607010,
+          "x": 40.0,
+          "y": 47.97
+        },
+        {
+          "player_external_id": 607011,
+          "x": 37.47,
+          "y": 73.27
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:46+00:00",
+      "period": 1,
+      "minute": 0.767,
+      "ball": {
+        "player_external_id": 0,
+        "x": 67.76,
+        "y": 38.1
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 7.17,
+          "y": 50.87
+        },
+        {
+          "player_external_id": 611002,
+          "x": 19.72,
+          "y": 20.84
+        },
+        {
+          "player_external_id": 611003,
+          "x": 22.5,
+          "y": 39.51
+        },
+        {
+          "player_external_id": 611004,
+          "x": 22.15,
+          "y": 59.19
+        },
+        {
+          "player_external_id": 611005,
+          "x": 17.07,
+          "y": 81.27
+        },
+        {
+          "player_external_id": 611006,
+          "x": 41.01,
+          "y": 28.04
+        },
+        {
+          "player_external_id": 611007,
+          "x": 39.22,
+          "y": 49.66
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.01,
+          "y": 72.18
+        },
+        {
+          "player_external_id": 611009,
+          "x": 61.45,
+          "y": 25.41
+        },
+        {
+          "player_external_id": 611010,
+          "x": 62.17,
+          "y": 51.84
+        },
+        {
+          "player_external_id": 611011,
+          "x": 59.1,
+          "y": 72.07
+        },
+        {
+          "player_external_id": 607001,
+          "x": 96.9,
+          "y": 52.68
+        },
+        {
+          "player_external_id": 607002,
+          "x": 80.11,
+          "y": 21.47
+        },
+        {
+          "player_external_id": 607003,
+          "x": 78.05,
+          "y": 41.12
+        },
+        {
+          "player_external_id": 607004,
+          "x": 81.94,
+          "y": 59.11
+        },
+        {
+          "player_external_id": 607005,
+          "x": 80.58,
+          "y": 82.91
+        },
+        {
+          "player_external_id": 607006,
+          "x": 58.4,
+          "y": 32.02
+        },
+        {
+          "player_external_id": 607007,
+          "x": 59.4,
+          "y": 47.53
+        },
+        {
+          "player_external_id": 607008,
+          "x": 59.47,
+          "y": 72.84
+        },
+        {
+          "player_external_id": 607009,
+          "x": 42.1,
+          "y": 25.27
+        },
+        {
+          "player_external_id": 607010,
+          "x": 40.48,
+          "y": 51.48
+        },
+        {
+          "player_external_id": 607011,
+          "x": 37.61,
+          "y": 73.52
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:48+00:00",
+      "period": 1,
+      "minute": 0.8,
+      "ball": {
+        "player_external_id": 0,
+        "x": 68.97,
+        "y": 62.41
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 3.77,
+          "y": 52.38
+        },
+        {
+          "player_external_id": 611002,
+          "x": 19.8,
+          "y": 22.3
+        },
+        {
+          "player_external_id": 611003,
+          "x": 20.28,
+          "y": 40.0
+        },
+        {
+          "player_external_id": 611004,
+          "x": 18.96,
+          "y": 58.87
+        },
+        {
+          "player_external_id": 611005,
+          "x": 18.52,
+          "y": 80.4
+        },
+        {
+          "player_external_id": 611006,
+          "x": 37.19,
+          "y": 32.32
+        },
+        {
+          "player_external_id": 611007,
+          "x": 39.32,
+          "y": 51.48
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.47,
+          "y": 69.72
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.49,
+          "y": 23.93
+        },
+        {
+          "player_external_id": 611010,
+          "x": 59.72,
+          "y": 48.55
+        },
+        {
+          "player_external_id": 611011,
+          "x": 59.48,
+          "y": 76.65
+        },
+        {
+          "player_external_id": 607001,
+          "x": 93.33,
+          "y": 48.32
+        },
+        {
+          "player_external_id": 607002,
+          "x": 81.04,
+          "y": 17.25
+        },
+        {
+          "player_external_id": 607003,
+          "x": 77.95,
+          "y": 37.89
+        },
+        {
+          "player_external_id": 607004,
+          "x": 80.15,
+          "y": 60.21
+        },
+        {
+          "player_external_id": 607005,
+          "x": 77.72,
+          "y": 80.07
+        },
+        {
+          "player_external_id": 607006,
+          "x": 61.79,
+          "y": 30.74
+        },
+        {
+          "player_external_id": 607007,
+          "x": 61.71,
+          "y": 52.44
+        },
+        {
+          "player_external_id": 607008,
+          "x": 57.18,
+          "y": 67.64
+        },
+        {
+          "player_external_id": 607009,
+          "x": 41.98,
+          "y": 27.68
+        },
+        {
+          "player_external_id": 607010,
+          "x": 41.59,
+          "y": 47.57
+        },
+        {
+          "player_external_id": 607011,
+          "x": 38.27,
+          "y": 73.43
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:50+00:00",
+      "period": 1,
+      "minute": 0.833,
+      "ball": {
+        "player_external_id": 0,
+        "x": 70.17,
+        "y": 37.07
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 5.0,
+          "y": 52.16
+        },
+        {
+          "player_external_id": 611002,
+          "x": 22.47,
+          "y": 20.83
+        },
+        {
+          "player_external_id": 611003,
+          "x": 21.83,
+          "y": 39.79
+        },
+        {
+          "player_external_id": 611004,
+          "x": 18.85,
+          "y": 58.66
+        },
+        {
+          "player_external_id": 611005,
+          "x": 17.11,
+          "y": 80.78
+        },
+        {
+          "player_external_id": 611006,
+          "x": 38.1,
+          "y": 28.78
+        },
+        {
+          "player_external_id": 611007,
+          "x": 42.17,
+          "y": 50.38
+        },
+        {
+          "player_external_id": 611008,
+          "x": 37.7,
+          "y": 71.04
+        },
+        {
+          "player_external_id": 611009,
+          "x": 62.2,
+          "y": 26.02
+        },
+        {
+          "player_external_id": 611010,
+          "x": 62.57,
+          "y": 49.74
+        },
+        {
+          "player_external_id": 611011,
+          "x": 59.1,
+          "y": 73.14
+        },
+        {
+          "player_external_id": 607001,
+          "x": 92.98,
+          "y": 51.56
+        },
+        {
+          "player_external_id": 607002,
+          "x": 79.71,
+          "y": 19.07
+        },
+        {
+          "player_external_id": 607003,
+          "x": 77.9,
+          "y": 40.69
+        },
+        {
+          "player_external_id": 607004,
+          "x": 81.21,
+          "y": 57.67
+        },
+        {
+          "player_external_id": 607005,
+          "x": 82.15,
+          "y": 80.34
+        },
+        {
+          "player_external_id": 607006,
+          "x": 61.96,
+          "y": 30.64
+        },
+        {
+          "player_external_id": 607007,
+          "x": 59.5,
+          "y": 51.57
+        },
+        {
+          "player_external_id": 607008,
+          "x": 61.31,
+          "y": 71.56
+        },
+        {
+          "player_external_id": 607009,
+          "x": 40.91,
+          "y": 25.14
+        },
+        {
+          "player_external_id": 607010,
+          "x": 38.07,
+          "y": 51.76
+        },
+        {
+          "player_external_id": 607011,
+          "x": 38.25,
+          "y": 73.72
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:52+00:00",
+      "period": 1,
+      "minute": 0.867,
+      "ball": {
+        "player_external_id": 0,
+        "x": 71.38,
+        "y": 63.45
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 4.2,
+          "y": 50.21
+        },
+        {
+          "player_external_id": 611002,
+          "x": 20.67,
+          "y": 20.25
+        },
+        {
+          "player_external_id": 611003,
+          "x": 20.76,
+          "y": 39.31
+        },
+        {
+          "player_external_id": 611004,
+          "x": 19.26,
+          "y": 62.91
+        },
+        {
+          "player_external_id": 611005,
+          "x": 22.73,
+          "y": 79.91
+        },
+        {
+          "player_external_id": 611006,
+          "x": 39.61,
+          "y": 32.31
+        },
+        {
+          "player_external_id": 611007,
+          "x": 37.37,
+          "y": 50.48
+        },
+        {
+          "player_external_id": 611008,
+          "x": 37.34,
+          "y": 71.98
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.91,
+          "y": 27.09
+        },
+        {
+          "player_external_id": 611010,
+          "x": 62.99,
+          "y": 51.83
+        },
+        {
+          "player_external_id": 611011,
+          "x": 62.82,
+          "y": 77.49
+        },
+        {
+          "player_external_id": 607001,
+          "x": 97.78,
+          "y": 50.51
+        },
+        {
+          "player_external_id": 607002,
+          "x": 79.6,
+          "y": 19.73
+        },
+        {
+          "player_external_id": 607003,
+          "x": 77.05,
+          "y": 41.41
+        },
+        {
+          "player_external_id": 607004,
+          "x": 77.85,
+          "y": 60.09
+        },
+        {
+          "player_external_id": 607005,
+          "x": 80.56,
+          "y": 82.44
+        },
+        {
+          "player_external_id": 607006,
+          "x": 59.83,
+          "y": 32.22
+        },
+        {
+          "player_external_id": 607007,
+          "x": 61.51,
+          "y": 52.11
+        },
+        {
+          "player_external_id": 607008,
+          "x": 62.64,
+          "y": 71.18
+        },
+        {
+          "player_external_id": 607009,
+          "x": 42.88,
+          "y": 25.21
+        },
+        {
+          "player_external_id": 607010,
+          "x": 40.28,
+          "y": 48.75
+        },
+        {
+          "player_external_id": 607011,
+          "x": 37.43,
+          "y": 76.84
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:54+00:00",
+      "period": 1,
+      "minute": 0.9,
+      "ball": {
+        "player_external_id": 0,
+        "x": 72.59,
+        "y": 36.03
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 4.61,
+          "y": 50.38
+        },
+        {
+          "player_external_id": 611002,
+          "x": 22.21,
+          "y": 22.61
+        },
+        {
+          "player_external_id": 611003,
+          "x": 21.45,
+          "y": 41.02
+        },
+        {
+          "player_external_id": 611004,
+          "x": 18.47,
+          "y": 60.12
+        },
+        {
+          "player_external_id": 611005,
+          "x": 18.49,
+          "y": 78.96
+        },
+        {
+          "player_external_id": 611006,
+          "x": 42.14,
+          "y": 28.71
+        },
+        {
+          "player_external_id": 611007,
+          "x": 42.96,
+          "y": 50.38
+        },
+        {
+          "player_external_id": 611008,
+          "x": 38.82,
+          "y": 70.07
+        },
+        {
+          "player_external_id": 611009,
+          "x": 59.63,
+          "y": 27.06
+        },
+        {
+          "player_external_id": 611010,
+          "x": 59.16,
+          "y": 50.32
+        },
+        {
+          "player_external_id": 611011,
+          "x": 62.32,
+          "y": 76.16
+        },
+        {
+          "player_external_id": 607001,
+          "x": 92.43,
+          "y": 47.88
+        },
+        {
+          "player_external_id": 607002,
+          "x": 77.34,
+          "y": 22.93
+        },
+        {
+          "player_external_id": 607003,
+          "x": 81.73,
+          "y": 41.81
+        },
+        {
+          "player_external_id": 607004,
+          "x": 81.53,
+          "y": 62.86
+        },
+        {
+          "player_external_id": 607005,
+          "x": 79.78,
+          "y": 82.58
+        },
+        {
+          "player_external_id": 607006,
+          "x": 57.05,
+          "y": 30.6
+        },
+        {
+          "player_external_id": 607007,
+          "x": 58.58,
+          "y": 49.81
+        },
+        {
+          "player_external_id": 607008,
+          "x": 59.42,
+          "y": 71.31
+        },
+        {
+          "player_external_id": 607009,
+          "x": 42.95,
+          "y": 26.06
+        },
+        {
+          "player_external_id": 607010,
+          "x": 40.01,
+          "y": 52.29
+        },
+        {
+          "player_external_id": 607011,
+          "x": 42.63,
+          "y": 75.13
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:56+00:00",
+      "period": 1,
+      "minute": 0.933,
+      "ball": {
+        "player_external_id": 0,
+        "x": 73.79,
+        "y": 64.48
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 7.12,
+          "y": 51.75
+        },
+        {
+          "player_external_id": 611002,
+          "x": 22.69,
+          "y": 17.17
+        },
+        {
+          "player_external_id": 611003,
+          "x": 20.22,
+          "y": 42.42
+        },
+        {
+          "player_external_id": 611004,
+          "x": 20.5,
+          "y": 57.61
+        },
+        {
+          "player_external_id": 611005,
+          "x": 19.02,
+          "y": 82.79
+        },
+        {
+          "player_external_id": 611006,
+          "x": 37.05,
+          "y": 28.83
+        },
+        {
+          "player_external_id": 611007,
+          "x": 42.23,
+          "y": 47.05
+        },
+        {
+          "player_external_id": 611008,
+          "x": 37.73,
+          "y": 70.07
+        },
+        {
+          "player_external_id": 611009,
+          "x": 62.62,
+          "y": 25.42
+        },
+        {
+          "player_external_id": 611010,
+          "x": 60.76,
+          "y": 52.5
+        },
+        {
+          "player_external_id": 611011,
+          "x": 57.34,
+          "y": 75.23
+        },
+        {
+          "player_external_id": 607001,
+          "x": 95.38,
+          "y": 47.84
+        },
+        {
+          "player_external_id": 607002,
+          "x": 81.16,
+          "y": 21.98
+        },
+        {
+          "player_external_id": 607003,
+          "x": 78.49,
+          "y": 39.27
+        },
+        {
+          "player_external_id": 607004,
+          "x": 77.74,
+          "y": 60.12
+        },
+        {
+          "player_external_id": 607005,
+          "x": 77.37,
+          "y": 82.16
+        },
+        {
+          "player_external_id": 607006,
+          "x": 59.76,
+          "y": 32.9
+        },
+        {
+          "player_external_id": 607007,
+          "x": 58.82,
+          "y": 50.45
+        },
+        {
+          "player_external_id": 607008,
+          "x": 60.96,
+          "y": 68.63
+        },
+        {
+          "player_external_id": 607009,
+          "x": 39.48,
+          "y": 22.58
+        },
+        {
+          "player_external_id": 607010,
+          "x": 37.2,
+          "y": 52.13
+        },
+        {
+          "player_external_id": 607011,
+          "x": 38.06,
+          "y": 76.92
+        }
+      ]
+    },
+    {
+      "timestamp": "2024-08-15T18:00:58+00:00",
+      "period": 1,
+      "minute": 0.967,
+      "ball": {
+        "player_external_id": 0,
+        "x": 75.0,
+        "y": 35.0
+      },
+      "players": [
+        {
+          "player_external_id": 611001,
+          "x": 3.72,
+          "y": 49.31
+        },
+        {
+          "player_external_id": 611002,
+          "x": 18.82,
+          "y": 17.48
+        },
+        {
+          "player_external_id": 611003,
+          "x": 21.76,
+          "y": 42.09
+        },
+        {
+          "player_external_id": 611004,
+          "x": 18.71,
+          "y": 58.84
+        },
+        {
+          "player_external_id": 611005,
+          "x": 18.09,
+          "y": 77.25
+        },
+        {
+          "player_external_id": 611006,
+          "x": 39.33,
+          "y": 32.67
+        },
+        {
+          "player_external_id": 611007,
+          "x": 42.97,
+          "y": 50.87
+        },
+        {
+          "player_external_id": 611008,
+          "x": 41.21,
+          "y": 70.4
+        },
+        {
+          "player_external_id": 611009,
+          "x": 61.49,
+          "y": 27.05
+        },
+        {
+          "player_external_id": 611010,
+          "x": 57.39,
+          "y": 52.6
+        },
+        {
+          "player_external_id": 611011,
+          "x": 62.02,
+          "y": 73.53
+        },
+        {
+          "player_external_id": 607001,
+          "x": 95.36,
+          "y": 50.23
+        },
+        {
+          "player_external_id": 607002,
+          "x": 80.52,
+          "y": 21.12
+        },
+        {
+          "player_external_id": 607003,
+          "x": 78.3,
+          "y": 38.22
+        },
+        {
+          "player_external_id": 607004,
+          "x": 79.38,
+          "y": 59.89
+        },
+        {
+          "player_external_id": 607005,
+          "x": 79.24,
+          "y": 78.22
+        },
+        {
+          "player_external_id": 607006,
+          "x": 60.23,
+          "y": 28.89
+        },
+        {
+          "player_external_id": 607007,
+          "x": 62.58,
+          "y": 52.47
+        },
+        {
+          "player_external_id": 607008,
+          "x": 59.6,
+          "y": 72.78
+        },
+        {
+          "player_external_id": 607009,
+          "x": 38.3,
+          "y": 26.03
+        },
+        {
+          "player_external_id": 607010,
+          "x": 41.23,
+          "y": 48.75
+        },
+        {
+          "player_external_id": 607011,
+          "x": 38.01,
+          "y": 77.44
+        }
+      ]
+    }
+  ]
+}
