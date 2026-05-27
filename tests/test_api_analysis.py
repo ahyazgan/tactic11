@@ -212,3 +212,35 @@ def test_match_predict_excludes_match_itself(session, client):
     body = r.json()
     # 611 için 3 geçmiş maç, 607 için 2 → sample_size = min(3,2) = 2
     assert body["value"]["sample_size"] == 2
+
+
+def test_team_fixture_difficulty_uses_opponent_ratings(session, client):
+    """Match 99 (Gala home vs Fener, NS, 2 gün sonra) → tek upcoming rakip 607."""
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/teams/611/fixture-difficulty?horizon_days=30")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["audit"]["engine"] == "engine.fixture_difficulty"
+    v = body["value"]
+    # 607'nin geçmiş maçları var → rating bilinir
+    assert v["matches_considered"] == 1
+    assert v["matches_unknown_opponent"] == 0
+    assert v["hardest_opponent_id"] == 607
+    assert v["home_match_count"] == 1
+    assert v["away_match_count"] == 0
+
+
+def test_team_fixture_difficulty_404_for_unknown_team(session, client):
+    r = client.get("/teams/999999/fixture-difficulty")
+    assert r.status_code == 404
+
+
+def test_team_fixture_difficulty_empty_horizon(session, client):
+    """Çok kısa ufukta upcoming kalmıyor → rapor boş ama 200."""
+    _seed_matches(session, datetime.now(UTC))
+    # Match 99 ~2 gün sonra; horizon_days=1 → ufuk dışı
+    r = client.get("/teams/611/fixture-difficulty?horizon_days=1")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["value"]["matches_considered"] == 0
+    assert body["value"]["hardest_opponent_id"] is None

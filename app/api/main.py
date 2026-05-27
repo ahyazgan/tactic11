@@ -6,7 +6,7 @@ Engine pure kalsın diye serileştirme `serialize.py` üzerinden.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
@@ -22,6 +22,7 @@ from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
 from app.db import models
 from app.db.session import get_session
+from app.engine.fixture_difficulty import compute_fixture_difficulty
 from app.engine.form import compute_form
 from app.engine.matchup import compute_matchup
 from app.engine.opponent import compute_head_to_head
@@ -211,6 +212,54 @@ def team_schedule(
     ref_tz = matches[0].kickoff.tzinfo
     now = datetime.now(ref_tz)
     result = compute_schedule(team_id, matches, now=now, horizon_days=horizon_days)
+    return _maybe_explain(engine_result_to_dict(result), result, explain)
+
+
+@protected.get("/teams/{team_id}/fixture-difficulty")
+def team_fixture_difficulty(
+    team_id: int,
+    horizon_days: int = Query(30, ge=1, le=180),
+    last_n: int = Query(10, ge=1, le=50),
+    explain: bool = False,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Önümüzdeki maçlardaki rakip zorluğu (rating-ağırlıklı).
+
+    Rakip rating'leri `engine.rating` ile rakibin geçmiş `last_n` maçından
+    hesaplanır. Bilinmeyen rakipler rapor'da `matches_unknown_opponent`
+    olarak işaretlenir (rotasyon kararı için kapsam sinyali).
+    """
+    matches = _team_matches(session, team_id)
+    if not matches:
+        raise HTTPException(status_code=404, detail=f"team {team_id} için maç yok")
+
+    # SQLite tz-strip workaround (engine.schedule ile aynı).
+    ref_tz = matches[0].kickoff.tzinfo
+    now = datetime.now(ref_tz)
+    horizon_cutoff = now + timedelta(days=horizon_days)
+
+    upcoming_opponents: set[int] = {
+        (m.away_team_external_id if m.home_team_external_id == team_id else m.home_team_external_id)
+        for m in matches
+        if m.kickoff > now
+        and m.kickoff <= horizon_cutoff
+        and m.status not in football.FINISHED_STATUSES
+        and team_id in (m.home_team_external_id, m.away_team_external_id)
+    }
+
+    opponent_ratings: dict[int, float] = {}
+    for opp_id in upcoming_opponents:
+        opp_matches = _team_matches(session, opp_id)
+        if not opp_matches:
+            continue
+        rating = compute_team_rating(opp_id, opp_matches, last_n=last_n).value
+        if rating.matches_considered > 0:
+            opponent_ratings[opp_id] = rating.rating
+
+    # Engine kendi içinde horizon'u uygulamıyor; önceden filtreyi yukarıda
+    # yaptık zaten — engine'e ufuk içi maçların hepsini geçiyoruz.
+    horizon_matches = [m for m in matches if m.kickoff <= horizon_cutoff]
+    result = compute_fixture_difficulty(team_id, horizon_matches, opponent_ratings, now=now)
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
