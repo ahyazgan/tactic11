@@ -359,6 +359,79 @@ def predict_accuracy(
     return payload
 
 
+@router.get("/leagues-summary")
+def leagues_summary(session: Session = Depends(get_session)) -> list[dict[str, Any]]:
+    """Her lig için: takım sayısı, maç sayısı (toplam + FT + NS), en son
+    snapshot zamanı. Multi-league deploy'da hangi ligin ne kadar dolu
+    olduğunu tek istekte görmek için.
+
+    Pre-existing /admin/db-stats global toplamı verir; bu endpoint
+    her lig için ayrıştırır.
+    """
+    leagues = session.execute(
+        select(models.League).order_by(
+            models.League.sport, models.League.external_id, models.League.season
+        )
+    ).scalars().all()
+
+    out: list[dict[str, Any]] = []
+    for lg in leagues:
+        # Bu lig + sezona ait maç sayımları
+        match_base = select(func.count()).select_from(models.Match).where(
+            models.Match.sport == lg.sport,
+            models.Match.league_external_id == lg.external_id,
+            models.Match.season == lg.season,
+        )
+        total_matches = session.scalar(match_base) or 0
+        ft_matches = session.scalar(
+            match_base.where(models.Match.status.in_(football.FINISHED_STATUSES))
+        ) or 0
+        ns_matches = total_matches - ft_matches
+
+        # Bu lig + sezona ait takım sayımı (matches'taki home/away id'lerinin distinct'i)
+        home_ids = (
+            select(models.Match.home_team_external_id)
+            .where(
+                models.Match.sport == lg.sport,
+                models.Match.league_external_id == lg.external_id,
+                models.Match.season == lg.season,
+            ).distinct()
+        )
+        away_ids = (
+            select(models.Match.away_team_external_id)
+            .where(
+                models.Match.sport == lg.sport,
+                models.Match.league_external_id == lg.external_id,
+                models.Match.season == lg.season,
+            ).distinct()
+        )
+        team_count = len({row[0] for row in session.execute(home_ids.union(away_ids)).all()})
+
+        # Son snapshot
+        scope = f"league:{lg.external_id}:season:{lg.season}"
+        last_snap = session.execute(
+            select(models.Snapshot)
+            .where(models.Snapshot.sport == lg.sport, models.Snapshot.scope == scope)
+            .order_by(desc(models.Snapshot.created_at))
+            .limit(1)
+        ).scalar_one_or_none()
+
+        out.append({
+            "sport": lg.sport,
+            "league_external_id": lg.external_id,
+            "name": lg.name,
+            "season": lg.season,
+            "country": lg.country,
+            "team_count": team_count,
+            "match_count_total": total_matches,
+            "match_count_ft": ft_matches,
+            "match_count_ns": ns_matches,
+            "last_snapshot_at": last_snap.created_at.isoformat() if last_snap else None,
+            "last_snapshot_id": last_snap.id if last_snap else None,
+        })
+    return out
+
+
 @router.get("/db-stats")
 def db_stats(session: Session = Depends(get_session)) -> dict[str, int]:
     """Tablo başına satır sayısı — sync ilerlemesini görmek için hızlı bakış."""
