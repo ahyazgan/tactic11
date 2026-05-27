@@ -1,21 +1,276 @@
 {
   "get": "fixtures",
-  "parameters": {"team": "607", "last": "10"},
+  "parameters": {
+    "team": "607",
+    "last": "10"
+  },
   "errors": [],
-  "results": 2,
-  "paging": {"current": 1, "total": 1},
+  "results": 9,
+  "paging": {
+    "current": 1,
+    "total": 1
+  },
   "response": [
     {
-      "fixture": {"id": 1234001, "date": "2024-09-15T18:00:00+00:00", "status": {"short": "FT"}},
-      "league": {"id": 203, "season": 2024},
-      "teams": {"home": {"id": 611, "name": "Galatasaray"}, "away": {"id": 607, "name": "Fenerbahce"}},
-      "goals": {"home": 2, "away": 1}
+      "fixture": {
+        "id": 1234141,
+        "date": "2026-06-14T18:00:00+00:00",
+        "status": {
+          "short": "NS",
+          "long": "Not Started"
+        }
+      },
+      "league": {
+        "id": 203,
+        "season": 2026,
+        "round": "Regular Season - 2"
+      },
+      "teams": {
+        "home": {
+          "id": 607,
+          "name": "Fenerbahce"
+        },
+        "away": {
+          "id": 1003,
+          "name": "Kayserispor"
+        }
+      },
+      "goals": {
+        "home": null,
+        "away": null
+      }
     },
     {
-      "fixture": {"id": 1234004, "date": "2024-09-08T18:00:00+00:00", "status": {"short": "FT"}},
-      "league": {"id": 203, "season": 2024},
-      "teams": {"home": {"id": 607, "name": "Fenerbahce"}, "away": {"id": 998, "name": "Trabzonspor"}},
-      "goals": {"home": 3, "away": 0}
+      "fixture": {
+        "id": 1234137,
+        "date": "2026-06-07T18:00:00+00:00",
+        "status": {
+          "short": "NS",
+          "long": "Not Started"
+        }
+      },
+      "league": {
+        "id": 203,
+        "season": 2026,
+        "round": "Regular Season - 1"
+      },
+      "teams": {
+        "home": {
+          "id": 607,
+          "name": "Fenerbahce"
+        },
+        "away": {
+          "id": 1004,
+          "name": "Antalyaspor"
+        }
+      },
+      "goals": {
+        "home": null,
+        "away": null
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234133,
+        "date": "2024-09-28T18:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 203,
+        "season": 2024,
+        "round": "Regular Season - 7"
+      },
+      "teams": {
+        "home": {
+          "id": 607,
+          "name": "Fenerbahce"
+        },
+        "away": {
+          "id": 998,
+          "name": "Trabzonspor"
+        }
+      },
+      "goals": {
+        "home": 2,
+        "away": 2
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234129,
+        "date": "2024-09-21T18:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 203,
+        "season": 2024,
+        "round": "Regular Season - 6"
+      },
+      "teams": {
+        "home": {
+          "id": 607,
+          "name": "Fenerbahce"
+        },
+        "away": {
+          "id": 1009,
+          "name": "Samsunspor"
+        }
+      },
+      "goals": {
+        "home": 1,
+        "away": 3
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234124,
+        "date": "2024-09-14T18:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 203,
+        "season": 2024,
+        "round": "Regular Season - 5"
+      },
+      "teams": {
+        "home": {
+          "id": 1014,
+          "name": "Alanyaspor"
+        },
+        "away": {
+          "id": 607,
+          "name": "Fenerbahce"
+        }
+      },
+      "goals": {
+        "home": 1,
+        "away": 2
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234118,
+        "date": "2024-09-07T18:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 203,
+        "season": 2024,
+        "round": "Regular Season - 4"
+      },
+      "teams": {
+        "home": {
+          "id": 627,
+          "name": "Konyaspor"
+        },
+        "away": {
+          "id": 607,
+          "name": "Fenerbahce"
+        }
+      },
+      "goals": {
+        "home": 2,
+        "away": 5
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234112,
+        "date": "2024-08-31T18:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 203,
+        "season": 2024,
+        "round": "Regular Season - 3"
+      },
+      "teams": {
+        "home": {
+          "id": 614,
+          "name": "Besiktas"
+        },
+        "away": {
+          "id": 607,
+          "name": "Fenerbahce"
+        }
+      },
+      "goals": {
+        "home": 1,
+        "away": 4
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234106,
+        "date": "2024-08-24T18:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 203,
+        "season": 2024,
+        "round": "Regular Season - 2"
+      },
+      "teams": {
+        "home": {
+          "id": 999,
+          "name": "Basaksehir"
+        },
+        "away": {
+          "id": 607,
+          "name": "Fenerbahce"
+        }
+      },
+      "goals": {
+        "home": 0,
+        "away": 2
+      }
+    },
+    {
+      "fixture": {
+        "id": 1234100,
+        "date": "2024-08-17T18:00:00+00:00",
+        "status": {
+          "short": "FT",
+          "long": "Match Finished"
+        }
+      },
+      "league": {
+        "id": 203,
+        "season": 2024,
+        "round": "Regular Season - 1"
+      },
+      "teams": {
+        "home": {
+          "id": 611,
+          "name": "Galatasaray"
+        },
+        "away": {
+          "id": 607,
+          "name": "Fenerbahce"
+        }
+      },
+      "goals": {
+        "home": 1,
+        "away": 6
+      }
     }
   ]
 }

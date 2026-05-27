@@ -271,7 +271,7 @@ def main() -> None:
     parser.add_argument("--reset", action="store_true", help="DB'yi sıfırla (yalnız SQLite)")
     parser.add_argument("--team", type=int, default=611, help="Analiz edilecek takım")
     parser.add_argument("--vs", type=int, default=607, help="Head-to-head karşılaştırılacak takım")
-    parser.add_argument("--match", type=int, default=1234003, help="Preview için maç external_id (NS olan ideal)")
+    parser.add_argument("--match", type=int, default=1234140, help="Preview için maç external_id (NS olan ideal)")
     args = parser.parse_args()
 
     _maybe_reset(args.reset)
