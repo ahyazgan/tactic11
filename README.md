@@ -59,6 +59,40 @@ alembic upgrade head                # tabloları oluştur
 - `API_AUTH_KEY` production'da set edilmeli. İstemciler `X-API-Key: <değer>`
   header'ında gönderir. Boş ise auth devre dışı (dev). `/health` her zaman açık.
 
+## Auth — JWT + multi-tenant (Ufuk 1)
+
+**İki kulüp aynı deploy'da yan yana**, veri izole. JWT bearer token + tenant ContextVar
+loader_criteria ile her ORM query otomatik tenant_id'ye filtrelenir.
+
+```bash
+# 1) Login → token pair
+curl -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@konyaspor.com","password":"...","tenant_slug":"konyaspor"}'
+# → {"access_token":"eyJ...","refresh_token":"abc...","token_type":"bearer"}
+
+# 2) Korumalı endpoint'lere Authorization header'ı
+curl http://localhost:8000/teams -H "Authorization: Bearer eyJ..."
+
+# 3) Token expired → refresh
+curl -X POST http://localhost:8000/auth/refresh \
+  -d '{"refresh_token":"abc..."}'
+# → yeni token pair. Eski refresh REVOKED (rotation güvenlik).
+
+# 4) Logout (refresh revoke)
+curl -X POST http://localhost:8000/auth/logout -d '{"refresh_token":"abc..."}'
+
+# 5) Current user info
+curl http://localhost:8000/auth/me -H "Authorization: Bearer eyJ..."
+```
+
+**Roller:** `admin | analyst | coach | viewer`. Admin tüm endpoint'lere erişir;
+analyst/coach/viewer'a `require_role(["admin"])` korumalı endpoint'ler 403 döner.
+
+**Backward-compat:** `BACKWARD_COMPAT_API_KEY` set'liyse `X-API-Key: <değer>` hâlâ
+kabul edilir ve default tenant + admin user'a map edilir — eski entegrasyonlar
+kırılmaz.
+
 ## Çalıştırma
 ```bash
 # 0) Uçtan uca demo (fixture; anahtar gerekmez) — her şey nasıl çalışıyor?

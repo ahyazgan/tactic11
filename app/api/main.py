@@ -20,7 +20,12 @@ from sqlalchemy.orm import Session
 
 from app.ai import ClaudeCommentator
 from app.api.admin import router as admin_router
-from app.api.auth import require_api_key
+from app.api.auth import (
+    require_api_key,
+)
+from app.api.auth import (
+    router as auth_router,
+)
 from app.api.errors import register_exception_handlers
 from app.api.observability import (
     METRICS,
@@ -37,6 +42,7 @@ from app.data.cache import engine_cached
 from app.data.predictions import save_prediction
 from app.db import models
 from app.db.session import get_session
+from app.db.tenant_filter import install_tenant_filter
 from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty
 from app.engine.form import compute_form
 from app.engine.load import compute_player_load
@@ -48,6 +54,9 @@ from app.engine.schedule import compute_schedule
 from app.sports import football
 
 setup_logging()
+
+# Multi-tenant filter — global SQLAlchemy event listener
+install_tenant_filter()
 
 # Prod modunda zorunlu secret'lar varsa fail-fast (ConfigError → boot durur).
 # Dev/staging modlarda kontrol pas geçer; aşağıdaki yumuşak uyarı devam eder.
@@ -64,6 +73,13 @@ APP_VERSION = "0.4.0"  # production hardening turunda bumped
 # OpenAPI tag metadata — Swagger UI'de endpoint'leri gruplar.
 _TAGS_METADATA = [
     {"name": "ops", "description": "Sağlık kontrolü, liveness/readiness."},
+    {
+        "name": "auth",
+        "description": (
+            "Multi-tenant JWT auth — login, refresh, logout, me. "
+            "Eski X-API-Key backward-compat olarak desteklenir."
+        ),
+    },
     {"name": "catalog", "description": "Lig + takım + maç kataloğu (read-only)."},
     {
         "name": "team-analysis",
@@ -261,6 +277,23 @@ def health(session: Session = Depends(get_session)) -> JSONResponse:
 
 
 @protected.get(
+    "/teams",
+    response_model=list[TeamOut],
+    tags=["catalog"],
+    summary="Kayıtlı tüm takımları listele (tenant-filtered)",
+)
+def list_teams(session: Session = Depends(get_session)) -> list[models.Team]:
+    """Tüm takımlar. Tenant filter aktifse otomatik current tenant'a kısıtlı."""
+    return list(
+        session.execute(
+            select(models.Team)
+            .where(models.Team.sport == football.SPORT_NAME)
+            .order_by(models.Team.name)
+        ).scalars()
+    )
+
+
+@protected.get(
     "/leagues",
     response_model=list[LeagueOut],
     tags=["catalog"],
@@ -432,8 +465,19 @@ def team_form(
     explain: bool = False,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
+    # Team lookup ÖNCE — cross-tenant 404'ü garanti eder (loader_criteria
+    # filter aktifse current tenant'ın takımı değilse Team yok → 404)
+    team = session.execute(
+        select(models.Team).where(
+            models.Team.sport == football.SPORT_NAME,
+            models.Team.external_id == team_id,
+        )
+    ).scalar_one_or_none()
+    if team is None:
+        raise HTTPException(status_code=404, detail=f"team {team_id} bulunamadı")
     matches = _team_matches(session, team_id)
     if not matches:
+        # Team var ama maç yok — yine 404 (eski semantik)
         raise HTTPException(status_code=404, detail=f"team {team_id} için maç yok")
     result = compute_form(team_id, matches, last_n=last_n, time_decay_rate=time_decay_rate)
     return _maybe_explain(engine_result_to_dict(result), result, explain)
@@ -1186,6 +1230,10 @@ def simulate_match(
         },
     }
 
+
+# Auth endpoint'leri PROTECTED router'a değil app'e — login/refresh
+# bearer header gerektirmez (login'in kendisi token üretir).
+app.include_router(auth_router)
 
 protected.include_router(admin_router)
 app.include_router(protected)

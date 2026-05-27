@@ -82,8 +82,16 @@ dışarı hesap. DB/API/LLM bilmez.
 
 ---
 
-## Ufuk 1 — Çok-kulüp (multi-tenant)
-- DB modellerine `tenant_id` eklenir (bugün varsayım gömülmedi, kolay olacak)
+## Ufuk 1 — Çok-kulüp (multi-tenant) ✓
+- [x] `tenants` + `users` + `refresh_tokens` tabloları (alembic 0011)
+- [x] 16 domain tablosuna `tenant_id` NOT NULL FK (0011 NULLABLE + 0012 NOT NULL)
+- [x] JWT auth (HS256, access 15dk + refresh 7g rotation)
+- [x] 4 rol: admin | analyst | coach | viewer (`require_role` factory)
+- [x] SQLAlchemy `with_loader_criteria` + `session.info["tenant_id"]` —
+      her ORM query otomatik tenant'a filtre
+- [x] Cross-tenant 404 (403 değil — exist'i bile gizle)
+- [x] Backward-compat `BACKWARD_COMPAT_API_KEY` — eski X-API-Key entegrasyonu
+- [x] 73 yeni test (login/JWT/refresh/role/isolation)
 
 ## Ufuk 2 — Görselleştirme/ön yüz
 ## Ufuk 3 — ML tahmin (`engine/predict/`) + otomasyon (`agents/`)

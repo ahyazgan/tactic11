@@ -15,6 +15,7 @@ def _make(**overrides) -> Settings:
         "DATABASE_URL": "postgresql://u:p@h:5432/db",
         "USE_FIXTURES": False,
         "API_FOOTBALL_KEY": "real-key",
+        "JWT_SECRET_KEY": "test-secret-32-bytes-min-for-prod-mode",
     }
     base.update(overrides)
     return Settings(**{k: v for k, v in base.items()})
@@ -39,6 +40,12 @@ def test_prod_passes_with_all_required_set():
 def test_prod_fails_when_api_auth_key_missing():
     s = _make(API_AUTH_KEY="")
     with pytest.raises(ConfigError, match="API_AUTH_KEY"):
+        s.validate_for_production()
+
+
+def test_prod_fails_when_jwt_secret_missing():
+    s = _make(JWT_SECRET_KEY="")
+    with pytest.raises(ConfigError, match="JWT_SECRET_KEY"):
         s.validate_for_production()
 
 

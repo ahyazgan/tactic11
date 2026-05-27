@@ -59,6 +59,16 @@ class Settings(BaseSettings):
     # API erişim anahtarı (boş ise auth devre dışı — sadece dev için)
     api_auth_key: str = Field(default="", alias="API_AUTH_KEY")
 
+    # Multi-tenant JWT auth (Ufuk 1)
+    jwt_secret_key: str = Field(default="", alias="JWT_SECRET_KEY")
+    jwt_access_minutes: int = Field(default=15, alias="JWT_ACCESS_MINUTES")
+    jwt_refresh_days: int = Field(default=7, alias="JWT_REFRESH_DAYS")
+    # Eski X-API-Key kullanımını DESTEKLE: bu değer set'liyse o key'i kabul
+    # eder ve default tenant + admin user'a map eder. Geriye uyumluluk için.
+    backward_compat_api_key: str = Field(
+        default="", alias="BACKWARD_COMPAT_API_KEY",
+    )
+
     # Geliştirme/test
     use_fixtures: bool = Field(default=False, alias="USE_FIXTURES")
     log_level: LogLevel = Field(default="INFO", alias="LOG_LEVEL")
@@ -109,6 +119,10 @@ class Settings(BaseSettings):
         if not self.api_football_key:
             errors.append(
                 "API_FOOTBALL_KEY boş — USE_FIXTURES=false ise sync başarısız olur"
+            )
+        if not self.jwt_secret_key:
+            errors.append(
+                "JWT_SECRET_KEY boş — prod'da auth için zorunlu (32+ byte random)"
             )
         if errors:
             joined = "\n  - ".join(errors)
