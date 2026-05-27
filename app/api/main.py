@@ -6,16 +6,25 @@ Engine pure kalsın diye serileştirme `serialize.py` üzerinden.
 
 from __future__ import annotations
 
+import time
 from datetime import datetime, timedelta
 from typing import Any
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
-from sqlalchemy import or_, select
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
+from fastapi.responses import JSONResponse
+from sqlalchemy import or_, select, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.ai import ClaudeCommentator
 from app.api.admin import router as admin_router
 from app.api.auth import require_api_key
+from app.api.observability import (
+    METRICS,
+    PROCESS_STARTED_AT,
+    SlidingWindowRateLimiter,
+    should_bypass_rate_limit,
+)
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
 from app.core.config import get_settings
@@ -40,7 +49,42 @@ if not get_settings().api_auth_key:
         "(env-var typosu? .env yüklendi mi?). /health dışında her uç açık."
     )
 
-app = FastAPI(title="football-intelligence", version="0.3.0")
+APP_VERSION = "0.4.0"  # production hardening turunda bumped
+app = FastAPI(title="football-intelligence", version=APP_VERSION)
+
+# Rate limiter — settings'ten okur, tek instance.
+_rate_limiter = SlidingWindowRateLimiter(get_settings().rate_limit_per_minute)
+
+
+@app.middleware("http")
+async def observability_middleware(request: Request, call_next):
+    """Her istek için: rate limit + duration + metrics counter."""
+    path = request.url.path
+    # Rate limit (sadece /health bypass)
+    if not should_bypass_rate_limit(path):
+        # Key: API key varsa onu, yoksa client IP. Auth disabled olsa bile rate
+        # limit IP üzerinden devam eder (DoS koruması).
+        key = request.headers.get("x-api-key") or (
+            request.client.host if request.client else "unknown"
+        )
+        if not _rate_limiter.allow(key):
+            METRICS.record(
+                method=request.method, path=path, status=429, duration_seconds=0.0
+            )
+            return JSONResponse(
+                {"detail": "rate limit exceeded (per minute)"},
+                status_code=429,
+                headers={"Retry-After": "60"},
+            )
+
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration = time.perf_counter() - start
+    METRICS.record(
+        method=request.method, path=path, status=response.status_code, duration_seconds=duration
+    )
+    return response
+
 
 # /health hariç tüm uçlar bu router üzerinden — auth tek noktada uygulanır.
 protected = APIRouter(dependencies=[Depends(require_api_key)])
@@ -87,8 +131,32 @@ def _maybe_explain(payload: dict[str, Any], result, explain: bool) -> dict[str, 
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+def health(session: Session = Depends(get_session)) -> JSONResponse:
+    """Liveness + readiness check.
+
+    DB ping başarısızsa 503 ile döner — orkestrasyon (k8s/docker) bu uca
+    bakar. Auth kapsamı dışında: load balancer'lar API key tutmaz.
+    `get_session` test ortamında override edilebilir (in-memory SQLite).
+    """
+    db_status = "ok"
+    db_error: str | None = None
+    try:
+        session.execute(text("SELECT 1"))
+    except SQLAlchemyError as e:  # noqa: BLE001 — geniş yakalama bilinçli
+        db_status = "error"
+        db_error = type(e).__name__
+
+    uptime = round(time.time() - PROCESS_STARTED_AT, 2)
+    payload: dict[str, Any] = {
+        "status": "ok" if db_status == "ok" else "degraded",
+        "version": APP_VERSION,
+        "uptime_seconds": uptime,
+        "db": db_status,
+    }
+    if db_error:
+        payload["db_error"] = db_error
+    status_code = 200 if db_status == "ok" else 503
+    return JSONResponse(payload, status_code=status_code)
 
 
 @protected.get("/leagues", response_model=list[LeagueOut])

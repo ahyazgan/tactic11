@@ -10,6 +10,7 @@ HTTP karşılığı.
 
 from __future__ import annotations
 
+import time
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
@@ -17,6 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
+from app.api.observability import METRICS, PROCESS_STARTED_AT
 from app.db import models
 from app.db.session import get_session
 from app.snapshot import diff_snapshots, get_latest_snapshot, get_snapshot_at_or_before
@@ -175,6 +177,23 @@ def snapshot_diff(
             },
         }
     return {"scope": scope, **diff_snapshots(earlier, latest)}
+
+
+@router.get("/metrics")
+def request_metrics() -> dict[str, Any]:
+    """Bu process'in request sayaçları + p50 latency.
+
+    In-memory; process restart'ta sıfırlanır. Tek process için yeterli;
+    multi-process / multi-pod deploy'da Prometheus/StatsD ile değiştirilir.
+    """
+    snap = METRICS.snapshot()
+    uptime = round(time.time() - PROCESS_STARTED_AT, 2)
+    return {
+        "uptime_seconds": uptime,
+        "total_requests": snap.total_requests,
+        "counts": snap.counts,
+        "p50_latency_ms": snap.latency_p50_ms,
+    }
 
 
 @router.get("/db-stats")
