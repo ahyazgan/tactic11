@@ -137,3 +137,39 @@ def test_form_streak_zero_when_last_match_draw():
     f = compute_form(611, matches, last_n=5).value
     assert f.current_streak == 0
     assert f.current_unbeaten == 2  # D + W
+
+
+# ---- v3 alanları ----------------------------------------------------------
+
+
+def test_form_dominant_wins_and_close_losses():
+    matches = [
+        _match(1, home=611, away=607, home_score=4, away_score=1, days_ago=10),  # W +3 dominant
+        _match(2, home=611, away=614, home_score=2, away_score=0, days_ago=8),   # W +2 dominant
+        _match(3, home=611, away=998, home_score=1, away_score=0, days_ago=5),   # W +1 NOT dominant
+        _match(4, home=998, away=611, home_score=1, away_score=0, days_ago=3),   # L -1 close
+        _match(5, home=607, away=611, home_score=3, away_score=1, days_ago=1),   # L -2 NOT close
+    ]
+    f = compute_form(611, matches, last_n=10).value
+    assert f.dominant_wins == 2
+    assert f.close_losses == 1
+
+
+def test_form_failed_to_score_and_scoring_rate():
+    matches = [
+        _match(1, home=611, away=607, home_score=0, away_score=0, days_ago=10),  # FTS
+        _match(2, home=614, away=611, home_score=2, away_score=0, days_ago=7),   # FTS
+        _match(3, home=611, away=998, home_score=1, away_score=2, days_ago=3),   # gol attı
+        _match(4, home=998, away=611, home_score=0, away_score=3, days_ago=1),   # gol attı
+    ]
+    f = compute_form(611, matches, last_n=10).value
+    assert f.failed_to_score == 2
+    assert f.scoring_rate == 0.5  # 2/4
+
+
+def test_form_v3_audit_mentions_new_metrics():
+    matches = [_match(1, home=611, away=607, home_score=3, away_score=0, days_ago=1)]
+    res = compute_form(611, matches)
+    assert "dominant" in res.audit.formula
+    assert "scoring_rate" in res.audit.formula
+    assert res.audit.engine_version == "3"

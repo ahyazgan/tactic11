@@ -17,7 +17,11 @@ from app.engine._protocols import MatchLike
 from app.sports import football
 
 ENGINE_NAME = "engine.form"
-ENGINE_VERSION = "2"  # v1 → v2: clean_sheets, per_match, momentum, streak alanları
+ENGINE_VERSION = "3"  # v2 → v3: dominant_wins, close_losses, failed_to_score, scoring_rate
+
+# Kalite eşikleri — "dominant" / "close" subjektif değil, sayıyla tanımlı.
+_DOMINANT_MARGIN = 2  # 2+ gol farkıyla kazandıysa "dominant"
+_CLOSE_MARGIN = 1     # 1 gol farkıyla kaybettiyse "close"
 
 # Momentum için "yakın geçmiş" eşiği — son 3 maçın ppg'sini ayrı hesapla.
 _RECENT_WINDOW = 3
@@ -52,6 +56,12 @@ class FormReport:
     momentum: float  # recent_ppg - older_ppg; pozitif=yükseliyor
     current_streak: int  # arda arda son N maç W/L olarak; pozitif=galibiyet
     current_unbeaten: int  # ardarda W veya D sayısı (son maçtan geriye)
+
+    # v3 eklemeleri — galibiyet/mağlubiyet kalitesi sinyalleri
+    dominant_wins: int  # >=2 gol farkıyla kazanılan
+    close_losses: int   # 1 gol farkıyla kaybedilen
+    failed_to_score: int  # GF=0 olan maç sayısı
+    scoring_rate: float  # gol attığı maçların oranı (0..1)
 
 
 def _outcome_for(team_id: int, match: MatchLike) -> Outcome:
@@ -125,6 +135,10 @@ def compute_form(
     away_w = away_d = away_l = 0
     gf_total = ga_total = 0
     clean_sheets = 0
+    dominant_wins = 0
+    close_losses = 0
+    failed_to_score = 0
+    matches_with_goal = 0
     last_results: list[Outcome] = []
     recent_points = 0
     recent_count = 0
@@ -138,8 +152,18 @@ def compute_form(
         ga_total += ga
         if ga == 0:
             clean_sheets += 1
+        if gf == 0:
+            failed_to_score += 1
+        else:
+            matches_with_goal += 1
+        margin = gf - ga
 
         outcome = _outcome_for(team_external_id, m)
+        if outcome == "W" and margin >= _DOMINANT_MARGIN:
+            dominant_wins += 1
+        elif outcome == "L" and -margin <= _CLOSE_MARGIN:
+            close_losses += 1
+
         last_results.append(outcome)
         pts = 3 if outcome == "W" else (1 if outcome == "D" else 0)
         if idx < _RECENT_WINDOW:
@@ -178,6 +202,7 @@ def compute_form(
 
     current_streak, current_unbeaten = _calc_streaks(last_results)
 
+    scoring_rate = matches_with_goal / played if played else 0.0
     report = FormReport(
         matches_played=played,
         wins=wins,
@@ -202,6 +227,10 @@ def compute_form(
         momentum=round(momentum, 3),
         current_streak=current_streak,
         current_unbeaten=current_unbeaten,
+        dominant_wins=dominant_wins,
+        close_losses=close_losses,
+        failed_to_score=failed_to_score,
+        scoring_rate=round(scoring_rate, 3),
     )
 
     audit = AuditRecord(
@@ -219,7 +248,9 @@ def compute_form(
         formula=(
             f"W=3, D=1, L=0; ppg=points/N; recent_ppg=points of last {_RECENT_WINDOW}/min(N,{_RECENT_WINDOW}); "
             "momentum=recent_ppg-older_ppg; clean_sheet=rakipsiz; "
-            "current_streak=son maçtan ardışık W (+) veya L (-), D=0"
+            "current_streak=son maçtan ardışık W (+) veya L (-), D=0; "
+            f"dominant=margin>={_DOMINANT_MARGIN} W; close_loss=margin<={_CLOSE_MARGIN} L; "
+            "scoring_rate=gol attığı maç oranı"
         ),
     )
     return EngineResult(value=report, audit=audit)
