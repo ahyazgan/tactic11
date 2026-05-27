@@ -45,10 +45,11 @@ dışarı hesap. DB/API/LLM bilmez.
 
 ---
 
-## Faz 3 — AI yorum katmanı
-- `ai/` — engine çıktısını Claude'a verip insan diline çevirir
-- Prompt'lar şablonlu, motor sayıları üzerinden açıklama üretir
-- `core/usage/` Claude token'larını da sayar
+## Faz 3 — AI yorum katmanı ✓
+- [x] `ai/anthropic_client.py` — `claude-opus-4-7` çağrısı + stub mod (anahtar yok)
+- [x] `ai/prompts.py` — sabit sistem promptu (caching uyumlu) + EngineResult → JSON gövdesi
+- [x] `ai/commentator.py` — `Commentator` arayüzünün somut implementasyonu;
+      anthropic kotasını `guard_quota`/`record_call` ile sayar
 
 ---
 
