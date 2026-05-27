@@ -235,6 +235,65 @@ def test_quota_status_anthropic_token_sum(session, client):
     assert an["level"] == "ok"
 
 
+# ---- /admin/agent-outputs (PR G3) -----------------------------------------
+
+
+def _seed_agent_output(session, **kwargs) -> None:
+    import json as _json
+    now = datetime.now(UTC)
+    defaults = {
+        "agent_name": "pre_match_report",
+        "agent_version": "1",
+        "subject_type": "match",
+        "subject_id": 99,
+        "output_json": _json.dumps({"k": "v"}),
+        "summary": "test summary",
+        "created_at": now,
+        "updated_at": now,
+    }
+    defaults.update(kwargs)
+    session.add(models.AgentOutput(**defaults))
+    session.flush()
+
+
+def test_agent_outputs_empty(client):
+    r = client.get("/admin/agent-outputs")
+    assert r.status_code == 200
+    assert r.json() == []
+
+
+def test_agent_outputs_returns_recent_first(session, client):
+    now = datetime.now(UTC)
+    _seed_agent_output(session, subject_id=1, updated_at=now - timedelta(hours=1))
+    _seed_agent_output(session, subject_id=2, updated_at=now)  # daha yeni
+    r = client.get("/admin/agent-outputs")
+    body = r.json()
+    assert [x["subject_id"] for x in body] == [2, 1]
+
+
+def test_agent_outputs_filter_by_agent_and_subject(session, client):
+    _seed_agent_output(session, agent_name="a1", subject_id=1)
+    _seed_agent_output(session, agent_name="a2", subject_id=2)
+    _seed_agent_output(session, agent_name="a1", subject_id=3, subject_type="team")
+    r1 = client.get("/admin/agent-outputs?agent_name=a1")
+    assert len(r1.json()) == 2
+    r2 = client.get("/admin/agent-outputs?agent_name=a1&subject_type=match")
+    assert len(r2.json()) == 1
+    r3 = client.get("/admin/agent-outputs?subject_id=2")
+    assert len(r3.json()) == 1
+
+
+def test_agent_outputs_includes_parsed_output_json(session, client):
+    import json as _json
+    _seed_agent_output(
+        session, subject_id=42,
+        output_json=_json.dumps({"forms": [1, 2, 3], "brief": "test"}),
+    )
+    r = client.get("/admin/agent-outputs")
+    body = r.json()
+    assert body[0]["output"] == {"forms": [1, 2, 3], "brief": "test"}
+
+
 def _seed_prediction(
     session, *, match_id: int, prob_home: float, prob_draw: float, prob_away: float,
     actual_outcome: str, engine_version: str = "2",
