@@ -1,14 +1,22 @@
 """Fikstür zorluğu — bir takımın önündeki rakiplerin gücü.
 
-`engine.schedule` "kaç maç var" der; bu engine "ne kadar zor" der. Rakip
+`engine.schedule` "kaç maç" der; bu engine "ne kadar zor" der. Rakip
 rating'lerini önceden hesaplanmış bir dict olarak alır (engine pure —
 DB/HTTP yok, rakip rating'i üst katman besler).
+
+**v1 → v2:** Side-aware rating. Bir rakip evimize gelirken (deplasman
+sıfatıyla) ve evinde oynarken farklı profil sergileyebilir; PR #18'in
+`engine.rating` ev/dep ayrımı bunu mümkün kıldı. Engine her upcoming
+maçta rakibin O MAÇTAKİ tarafa göre rating'ini seçer:
+- Rakip ev sahibi → `opponent.home_rating`
+- Rakip deplasman → `opponent.away_rating`
+- Side-specific yoksa fallback `opponent.overall_rating`
 
 Zaman ağırlığı: yakın maç daha kritik, uzak maç daha az. Lineer decay:
     w_i = max(MIN_WEIGHT, 1 - days_until_i / DECAY_HORIZON)
 
 Çıktılar rotasyon kararına şu soruları çözer:
-- Önümüzdeki maçlar ortalama ne kadar zorlu?
+- Önümüzdeki maçlar ortalama ne kadar zorlu (side-aware)?
 - En zor ve en kolay rakip kim?
 - Zaman ağırlıklı zorluk (yakın yüksek ağırlık)?
 - Bilinmeyen rating'li rakip var mı (kapsam eksiği)?
@@ -25,11 +33,31 @@ from app.engine._protocols import MatchLike
 from app.sports import football
 
 ENGINE_NAME = "engine.fixture_difficulty"
-ENGINE_VERSION = "1"
+ENGINE_VERSION = "2"  # v1 → v2: side-aware rating (OpponentRating)
 
 # Zaman ağırlığı parametreleri
 _DECAY_HORIZON_DAYS = 28.0  # 28 günden uzak → minimum ağırlık
 _MIN_WEIGHT = 0.2  # uzak maç bile %20 sayar
+
+
+@dataclass(frozen=True)
+class OpponentRating:
+    """Bir rakip için side-aware rating + overall fallback.
+
+    Side-specific (`home_rating`, `away_rating`) varsa rakip O TARAFTA
+    oynarken kullanılır; yoksa `overall_rating` fallback'i devreye girer.
+    Üçü de None ise rakip "rating'i bilinmiyor" sayılır.
+    """
+    home_rating: float | None = None
+    away_rating: float | None = None
+    overall_rating: float | None = None
+
+    def for_side(self, opponent_is_home: bool) -> float | None:
+        """Rakip ev sahibiyse home_rating; değilse away_rating; yoksa overall."""
+        side_specific = self.home_rating if opponent_is_home else self.away_rating
+        if side_specific is not None:
+            return side_specific
+        return self.overall_rating
 
 
 @dataclass(frozen=True)
@@ -57,6 +85,11 @@ def _opponent_id(m: MatchLike, team_id: int) -> int:
     return m.away_team_external_id if m.home_team_external_id == team_id else m.home_team_external_id
 
 
+def _opponent_is_home(m: MatchLike, team_id: int) -> bool:
+    """Rakip o maçta ev sahibi mi? (yani biz deplasmandayız mı?)"""
+    return m.away_team_external_id == team_id
+
+
 def _time_weight(days_until: float) -> float:
     return max(_MIN_WEIGHT, 1.0 - days_until / _DECAY_HORIZON_DAYS)
 
@@ -64,15 +97,16 @@ def _time_weight(days_until: float) -> float:
 def compute_fixture_difficulty(
     team_external_id: int,
     matches: Iterable[MatchLike],
-    opponent_ratings: dict[int, float],
+    opponent_ratings: dict[int, OpponentRating],
     *,
     now: datetime | None = None,
 ) -> EngineResult[FixtureDifficultyReport]:
-    """Bir takımın upcoming maçlarındaki rakip zorluğu.
+    """Bir takımın upcoming maçlarındaki rakip zorluğu (side-aware).
 
     `matches` HER maçı içerebilir — fonksiyon upcoming + team-içeren olanları
-    filtreler. `opponent_ratings`: external_id → rating. Eksik rakip
-    `matches_unknown_opponent`'a sayılır; düz/ağırlıklı ortalamaya dahil olmaz.
+    filtreler. `opponent_ratings`: external_id → `OpponentRating`. Her maçta
+    rakibin o maçtaki tarafına göre uygun rating seçilir. Hiçbir rating
+    bulunamazsa `matches_unknown_opponent`'a sayılır.
     """
     ref_now = now or datetime.now(UTC)
 
@@ -87,11 +121,15 @@ def compute_fixture_difficulty(
     home_count = sum(1 for m in upcoming if m.home_team_external_id == team_external_id)
     away_count = len(upcoming) - home_count
 
-    rated_entries: list[tuple[int, float, float]] = []  # (opponent_id, rating, weight)
+    rated_entries: list[tuple[int, float, float]] = []  # (opp_id, rating, weight)
     unknown_count = 0
     for m in upcoming:
         opp = _opponent_id(m, team_external_id)
-        rating = opponent_ratings.get(opp)
+        opp_rating = opponent_ratings.get(opp)
+        if opp_rating is None:
+            unknown_count += 1
+            continue
+        rating = opp_rating.for_side(_opponent_is_home(m, team_external_id))
         if rating is None:
             unknown_count += 1
             continue
@@ -145,7 +183,9 @@ def compute_fixture_difficulty(
         formula=(
             "weighted = Σ(rating_i · w_i) / Σ(w_i); "
             f"w_i = max({_MIN_WEIGHT}, 1 - days_until_i/{_DECAY_HORIZON_DAYS}); "
-            "avg = düz ortalama (ağırlıksız)"
+            "avg = düz ortalama (ağırlıksız); "
+            "rating_i = opp.home_rating (rakip ev sahibi) ya da "
+            "opp.away_rating (rakip dep); side-specific yoksa overall fallback"
         ),
     )
     return EngineResult(value=report, audit=audit)

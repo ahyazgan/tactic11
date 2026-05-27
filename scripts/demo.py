@@ -46,7 +46,7 @@ from app.ai import AnthropicClient, ClaudeCommentator  # noqa: E402
 from app.data.ingest import sync_league  # noqa: E402
 from app.data.sources.api_football import APIFootball  # noqa: E402
 from app.db.session import SessionLocal  # noqa: E402
-from app.engine.fixture_difficulty import compute_fixture_difficulty  # noqa: E402
+from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty  # noqa: E402
 from app.engine.form import compute_form  # noqa: E402
 from app.engine.matchup import compute_matchup  # noqa: E402
 from app.engine.opponent import compute_head_to_head  # noqa: E402
@@ -483,14 +483,19 @@ def _show_fixture_difficulty(team_id: int, *, com: ClaudeCommentator | None) -> 
             if m.kickoff > now and m.kickoff <= horizon
             and m.status not in football.FINISHED_STATUSES
         }
-        ratings: dict[int, float] = {}
+        ratings: dict[int, OpponentRating] = {}
         for opp in upcoming_opps:
             opp_matches = _team_matches(s, opp)
             if not opp_matches:
                 continue
             rr = compute_team_rating(opp, opp_matches, last_n=10).value
-            if rr.matches_considered > 0:
-                ratings[opp] = rr.rating
+            if rr.matches_considered == 0:
+                continue
+            ratings[opp] = OpponentRating(
+                home_rating=rr.home_rating if rr.home_matches > 0 else None,
+                away_rating=rr.away_rating if rr.away_matches > 0 else None,
+                overall_rating=rr.rating,
+            )
 
     horizon_matches = [m for m in matches if m.kickoff <= horizon]
     result = compute_fixture_difficulty(team_id, horizon_matches, ratings, now=now)
