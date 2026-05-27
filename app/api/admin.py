@@ -682,6 +682,22 @@ def scout_watchlist_remove(
 
 
 # --------------------------------------------------------------------------- #
+# Prompt 2 — xG model status
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/xg-model-status",
+    tags=["admin"],
+    summary="xG modeli artifact durumu (trained/untrained + metrikler)",
+)
+def xg_model_status() -> dict[str, Any]:
+    from app.engine.xg.model_loader import get_model_status
+
+    return get_model_status()
+
+
+# --------------------------------------------------------------------------- #
 # Prompt 3 — Daily decision brief manual trigger + notifications
 # --------------------------------------------------------------------------- #
 

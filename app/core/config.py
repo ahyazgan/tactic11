@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     # LLM provider seçimi — şu an "anthropic" (default), "openai"/"gemini" iskelet
     llm_provider: str = Field(default="anthropic", alias="LLM_PROVIDER")
 
+    # xG modeli (Prompt 2) — trained artifact path; boş ise models/xg_v1.pkl
+    xg_model_path: str = Field(default="", alias="XG_MODEL_PATH")
+
     # Kota koruması
     api_football_daily_limit: int = Field(default=100, alias="API_FOOTBALL_DAILY_LIMIT")
     api_football_monthly_limit: int = Field(default=2000, alias="API_FOOTBALL_MONTHLY_LIMIT")
