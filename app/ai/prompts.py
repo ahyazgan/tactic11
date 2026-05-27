@@ -49,15 +49,30 @@ Kurallar:
 
 def _build_form_prompt(v: dict[str, Any], a: AuditRecord) -> str:
     last = " ".join(v["last_results"]) if v["last_results"] else "—"
+    # v2 alanlarına geriye uyumlu erişim — eski cache satırı için fallback.
+    clean = v.get("clean_sheets", 0)
+    gpm = v.get("goals_for_per_match", 0.0)
+    cpm = v.get("goals_against_per_match", 0.0)
+    momentum = v.get("momentum", 0.0)
+    streak = v.get("current_streak", 0)
+    streak_text = (
+        f"{streak} galibiyet serisi" if streak > 0
+        else f"{abs(streak)} mağlubiyet serisi" if streak < 0
+        else "seride yok (son maç beraberlik veya seri kırıldı)"
+    )
     return (
         f"Takım {a.subject_id} son {v['matches_played']} tamamlanmış maçta: "
         f"{v['wins']} galibiyet, {v['draws']} beraberlik, {v['losses']} mağlubiyet. "
-        f"Goller {v['goals_for']}-{v['goals_against']} (averaj {v['goal_diff']:+d}). "
+        f"Goller {v['goals_for']}-{v['goals_against']} "
+        f"(averaj {v['goal_diff']:+d}; maç başı atılan {gpm}, yenilen {cpm}). "
         f"Maç başı puan: {v['points_per_game']}. "
+        f"Clean sheet: {clean}. "
         f"Ev: {v['home_wins']}G-{v['home_draws']}B-{v['home_losses']}M, "
         f"deplasman: {v['away_wins']}G-{v['away_draws']}B-{v['away_losses']}M. "
-        f"Son sonuçlar (yeniden eskiye): {last}.\n\n"
-        "Bu form raporunu kısa bir yorumla özetle."
+        f"Son sonuçlar (yeniden eskiye): {last}. "
+        f"Momentum: {momentum:+} (yakın geçmiş ppg ile eskinin farkı). "
+        f"Şu an: {streak_text}.\n\n"
+        "Bu form raporunu kısa bir yorumla özetle; yön/momentum varsa not düş."
     )
 
 
@@ -78,10 +93,28 @@ def _build_h2h_prompt(v: dict[str, Any], a: AuditRecord) -> str:
             f"Takım {v['team_a_id']} ile {v['team_b_id']} arasında tamamlanmış maç yok. "
             "Bunu açıkça söyle, veri yetersiz."
         )
+    extras = ""
+    a_clean = v.get("team_a_clean_sheets")
+    b_clean = v.get("team_b_clean_sheets")
+    a_home_w = v.get("team_a_home_wins")
+    a_away_w = v.get("team_a_away_wins")
+    last_kickoff = v.get("last_meeting_kickoff")
+    if a_clean is not None and b_clean is not None:
+        extras += (
+            f" {v['team_a_id']} clean sheet: {a_clean}, {v['team_b_id']} clean sheet: {b_clean}."
+        )
+    if a_home_w is not None and a_away_w is not None and v["team_a_wins"] > 0:
+        extras += (
+            f" {v['team_a_id']} galibiyetlerinin {a_home_w}'i evde, {a_away_w}'i deplasmanda."
+        )
+    if last_kickoff:
+        extras += f" Son karşılaşma: {last_kickoff} ({v.get('last_meeting_result', '?')})."
     return (
         f"Takım {v['team_a_id']} ile {v['team_b_id']} arasında {v['matches_played']} maç: "
         f"{v['team_a_id']} → {v['team_a_wins']} galibiyet, {v['draws']} beraberlik, "
-        f"{v['team_b_id']} → {v['team_b_wins']} galibiyet. "
+        f"{v['team_b_id']} → {v['team_b_wins']} galibiyet."
+        f"{extras}"
+        f" "
         f"Goller: {v['team_a_id']} {v['team_a_goals']} - {v['team_b_goals']} {v['team_b_id']}.\n\n"
         "Bu head-to-head özetini kısa yorumla."
     )

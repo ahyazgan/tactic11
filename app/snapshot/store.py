@@ -8,6 +8,7 @@ tahmin kalibrasyonuna yakıt olur.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
@@ -108,7 +109,7 @@ def get_snapshot_at_or_before(
 
 def diff_snapshots(
     earlier: models.Snapshot, later: models.Snapshot
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """İki snapshot arasındaki delta — "ne değişti" özeti."""
     return {
         "from": {

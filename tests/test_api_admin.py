@@ -127,7 +127,7 @@ def test_snapshots_filter_by_scope(session, client):
 
 
 def test_snapshots_diff_endpoint(session, client):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     scope = "league:203:season:2024"
     session.add_all([
         models.Snapshot(
@@ -162,7 +162,7 @@ def test_snapshots_diff_404_when_scope_empty(client):
 
 def test_snapshots_diff_handles_no_baseline(session, client):
     """Çok geriye gidildiyse baseline yok — note dön, hata değil."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     session.add(models.Snapshot(
         sport=football.SPORT_NAME, scope="league:203:season:2024",
         created_at=now, leagues_count=1, teams_count=20, matches_count=140,
