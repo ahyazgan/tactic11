@@ -188,6 +188,42 @@ class PlayerAppearance(Base):
     kickoff: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
+class AgentOutput(Base):
+    """Bir agent çalıştırmasının kalıcı sonucu.
+
+    Idempotency: aynı (agent_name, agent_version, subject_type, subject_id)
+    yeniden çalıştırılırsa yeni satır oluşmaz; output_json + summary +
+    updated_at refresh edilir.
+
+    Engine'lerin AuditRecord-bazlı sonuçlarından farklı: agent'lar AI'yi de
+    kullanır ve "human-readable summary" üretir; dashboard direkt buradan
+    okuyabilir.
+    """
+
+    __tablename__ = "agent_outputs"
+    __table_args__ = (
+        UniqueConstraint(
+            "agent_name", "agent_version", "subject_type", "subject_id",
+            name="uq_agent_outputs_request",
+        ),
+        Index(
+            "ix_agent_outputs_agent_subject",
+            "agent_name", "subject_type", "subject_id",
+        ),
+        Index("ix_agent_outputs_updated", "updated_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    agent_name: Mapped[str] = mapped_column(String(64))
+    agent_version: Mapped[str] = mapped_column(String(16))
+    subject_type: Mapped[str] = mapped_column(String(16))  # "match"|"team"|"player"
+    subject_id: Mapped[int] = mapped_column(Integer)
+    output_json: Mapped[str] = mapped_column(Text)  # serialized AgentResult.output_json
+    summary: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class Prediction(Base):
     """Bir engine'in bir maç için yaptığı tahmin (kalibrasyon için kalıcı).
 
