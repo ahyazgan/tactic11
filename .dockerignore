@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+.github
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env / secrets — ASLA image'a girmesin
+.env
+.env.local
+.env.*.local
+
+# Yerel artefakt
+*.db
+*.sqlite3
+*.log
+logs/
+.cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Docs/markdown — image'a gerek yok
+*.md
+docs/
