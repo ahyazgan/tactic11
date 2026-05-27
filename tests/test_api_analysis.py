@@ -76,6 +76,20 @@ def test_team_form_returns_engine_value_and_audit(session, client):
     assert body["audit"]["subject_id"] == 611
 
 
+def test_team_form_time_decay_affects_per_match_averages(session, client):
+    """rate=0 vs rate>0 → goals_for_per_match farkı görülmeli (W/D/L aynı)."""
+    _seed_matches(session, datetime.now(UTC))
+    r0 = client.get("/teams/611/form?last_n=10&time_decay_rate=0").json()
+    r1 = client.get("/teams/611/form?last_n=10&time_decay_rate=0.1").json()
+    # W/D/L değişmez
+    assert r0["value"]["wins"] == r1["value"]["wins"]
+    assert r0["value"]["losses"] == r1["value"]["losses"]
+    # per_match floats farklı (matches farklı tarihlerde, decay etkili)
+    assert r0["value"]["goals_for_per_match"] != r1["value"]["goals_for_per_match"]
+    # Audit inputs'da kayıt
+    assert r1["audit"]["inputs"]["time_decay_rate"] == 0.1
+
+
 def test_team_rating_endpoint(session, client):
     _seed_matches(session, datetime.now(UTC))
     r = client.get("/teams/611/rating?last_n=5")

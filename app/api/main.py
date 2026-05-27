@@ -151,13 +151,19 @@ def matches_for_team(
 def team_form(
     team_id: int,
     last_n: int = Query(5, ge=1, le=50),
+    time_decay_rate: float = Query(
+        0.0,
+        ge=0.0,
+        le=1.0,
+        description="0 = uniform; 0.0077 ≈ 90g half-life; 0.023 ≈ 30g; 0.069 ≈ 10g",
+    ),
     explain: bool = False,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     matches = _team_matches(session, team_id)
     if not matches:
         raise HTTPException(status_code=404, detail=f"team {team_id} için maç yok")
-    result = compute_form(team_id, matches, last_n=last_n)
+    result = compute_form(team_id, matches, last_n=last_n, time_decay_rate=time_decay_rate)
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
