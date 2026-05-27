@@ -264,13 +264,21 @@ def team_form(
 def team_rating(
     team_id: int,
     last_n: int = Query(10, ge=1, le=50),
+    time_decay_rate: float = Query(
+        0.0,
+        ge=0.0,
+        le=1.0,
+        description="0 = uniform; 0.0077 ≈ 90g half-life; 0.023 ≈ 30g",
+    ),
     explain: bool = False,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     matches = _team_matches(session, team_id)
     if not matches:
         raise HTTPException(status_code=404, detail=f"team {team_id} için maç yok")
-    result = compute_team_rating(team_id, matches, last_n=last_n)
+    result = compute_team_rating(
+        team_id, matches, last_n=last_n, time_decay_rate=time_decay_rate
+    )
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
@@ -454,6 +462,10 @@ _SHADOW_RHOS: tuple[float, ...] = (0.0, -0.18)
 def match_predict(
     match_id: int,
     last_n: int = Query(5, ge=1, le=50),
+    time_decay_rate: float = Query(
+        0.0, ge=0.0, le=1.0,
+        description="Form gf/ga için zaman ağırlığı; engine.predict λ'yı bu form'dan alır",
+    ),
     explain: bool = False,
     shadow: bool = Query(
         False,
@@ -466,6 +478,9 @@ def match_predict(
     Form, maçın kickoff'undan ÖNCEKİ maçlardan hesaplanır (leakage yok); bu
     sayede tahmin hem NS maçlar için "pre-game" hem FT maçlar için
     "backtest" anlamı taşır.
+
+    `time_decay_rate>0` ise form'un goals_for/against per-match averages
+    zaman-ağırlıklı (engine.form v4); λ değerleri buna göre değişir.
 
     `shadow=true` ise birincil tahminin yanına ρ=0 (saf Poisson) ve
     ρ=-0.18 (agresif DC) shadow tahminleri de saklanır (rapor B3'te
@@ -482,14 +497,16 @@ def match_predict(
 
     home_id = match.home_team_external_id
     away_id = match.away_team_external_id
-    params = {"last_n": last_n}
+    params = {"last_n": last_n, "time_decay_rate": time_decay_rate}
 
     def _forms():
         home_form = compute_form(
-            home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n
+            home_id, _team_matches(session, home_id, before=match.kickoff),
+            last_n=last_n, time_decay_rate=time_decay_rate,
         )
         away_form = compute_form(
-            away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n
+            away_id, _team_matches(session, away_id, before=match.kickoff),
+            last_n=last_n, time_decay_rate=time_decay_rate,
         )
         return home_form, away_form
 
@@ -542,7 +559,10 @@ def match_predict(
     payload, _was_cached = engine_cached(
         session,
         sport=football.SPORT_NAME,
-        key_parts=("predict", match_id, "last_n", last_n, "shadow", int(shadow)),
+        key_parts=(
+            "predict", match_id, "last_n", last_n,
+            "decay", str(time_decay_rate), "shadow", int(shadow),
+        ),
         compute_fn=_compute,
     )
     return payload
@@ -552,6 +572,7 @@ def match_predict(
 def match_preview(
     match_id: int,
     last_n: int = Query(5, ge=1, le=50),
+    time_decay_rate: float = Query(0.0, ge=0.0, le=1.0),
     explain: bool = False,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
@@ -559,6 +580,7 @@ def match_preview(
 
     Form hesabı maçın kickoff zamanından ÖNCEKİ tamamlanmış maçlar üzerinden
     yapılmalı (sızıntı olmasın); aksi halde maçın sonucu da girer.
+    `time_decay_rate>0` ise form gf/ga per_match zaman-ağırlıklı.
     """
     match = session.execute(
         select(models.Match).where(
@@ -572,8 +594,14 @@ def match_preview(
     home_id = match.home_team_external_id
     away_id = match.away_team_external_id
 
-    home_form = compute_form(home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n)
-    away_form = compute_form(away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n)
+    home_form = compute_form(
+        home_id, _team_matches(session, home_id, before=match.kickoff),
+        last_n=last_n, time_decay_rate=time_decay_rate,
+    )
+    away_form = compute_form(
+        away_id, _team_matches(session, away_id, before=match.kickoff),
+        last_n=last_n, time_decay_rate=time_decay_rate,
+    )
 
     h2h_matches = list(
         session.execute(
