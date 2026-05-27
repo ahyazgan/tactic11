@@ -20,6 +20,7 @@ from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
 from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
+from app.data.cache import engine_cached
 from app.db import models
 from app.db.session import get_session
 from app.engine.fixture_difficulty import compute_fixture_difficulty
@@ -334,20 +335,42 @@ def match_predict(
     home_id = match.home_team_external_id
     away_id = match.away_team_external_id
 
-    home_form = compute_form(
-        home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n
-    )
-    away_form = compute_form(
-        away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n
-    )
+    # `explain=True` Claude'a hit eder (kendi cache'i AI commentator'da); engine
+    # sonucunu yine de tek seferde üret, payload + audit ikisini de elde tut.
+    if explain:
+        home_form = compute_form(
+            home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n
+        )
+        away_form = compute_form(
+            away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n
+        )
+        result = compute_predict(
+            home_form.value, away_form.value,
+            home_team_id=home_id, away_team_id=away_id,
+        )
+        return _maybe_explain(engine_result_to_dict(result), result, explain=True)
 
-    result = compute_predict(
-        home_form.value,
-        away_form.value,
-        home_team_id=home_id,
-        away_team_id=away_id,
+    # explain yoksa snapshot-keyed cache devreye girer
+    def _compute() -> dict[str, Any]:
+        home_form = compute_form(
+            home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n
+        )
+        away_form = compute_form(
+            away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n
+        )
+        result = compute_predict(
+            home_form.value, away_form.value,
+            home_team_id=home_id, away_team_id=away_id,
+        )
+        return engine_result_to_dict(result)
+
+    payload, _was_cached = engine_cached(
+        session,
+        sport=football.SPORT_NAME,
+        key_parts=("predict", match_id, "last_n", last_n),
+        compute_fn=_compute,
     )
-    return _maybe_explain(engine_result_to_dict(result), result, explain)
+    return payload
 
 
 @protected.get("/matches/{match_id}/preview")
