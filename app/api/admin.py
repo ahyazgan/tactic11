@@ -13,12 +13,14 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.session import get_session
+from app.snapshot import diff_snapshots, get_latest_snapshot, get_snapshot_at_or_before
+from app.sports import football
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -120,6 +122,59 @@ def snapshots(
         }
         for s in rows
     ]
+
+
+@router.get("/snapshots/diff")
+def snapshot_diff(
+    scope: str = Query(..., description="örn: league:203:season:2024"),
+    days: int = Query(7, ge=1, le=365, description="kaç gün öncesiyle karşılaştır"),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """En son snapshot vs `days` gün öncesindeki snapshot — ne değişti.
+
+    "Geçen hafta vs şimdi": tahmin yakıtı spec'inin ilk somut kullanımı.
+    Sport şimdilik sabit (football); ileride scope'tan parse edilir.
+    """
+    latest = get_latest_snapshot(session, sport=football.SPORT_NAME, scope=scope)
+    if latest is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"scope '{scope}' için snapshot yok",
+        )
+    baseline_ts = latest.created_at - timedelta(days=days)
+    earlier = get_snapshot_at_or_before(
+        session, sport=football.SPORT_NAME, scope=scope, ts=baseline_ts
+    )
+    if earlier is None:
+        return {
+            "scope": scope,
+            "requested_days_back": days,
+            "note": (
+                f"baseline ({days} gün öncesi) bulunamadı — kayıtlı en eski "
+                f"snapshot {latest.created_at.isoformat()}"
+            ),
+            "latest": {
+                "id": latest.id,
+                "created_at": latest.created_at.isoformat(),
+                "leagues_count": latest.leagues_count,
+                "teams_count": latest.teams_count,
+                "matches_count": latest.matches_count,
+            },
+        }
+    if earlier.id == latest.id:
+        return {
+            "scope": scope,
+            "requested_days_back": days,
+            "note": "baseline ve latest aynı snapshot — diff yok",
+            "snapshot": {
+                "id": latest.id,
+                "created_at": latest.created_at.isoformat(),
+                "leagues_count": latest.leagues_count,
+                "teams_count": latest.teams_count,
+                "matches_count": latest.matches_count,
+            },
+        }
+    return {"scope": scope, **diff_snapshots(earlier, latest)}
 
 
 @router.get("/db-stats")
