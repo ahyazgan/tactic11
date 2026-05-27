@@ -89,6 +89,91 @@ docker compose down            # container'ları durdur, volume kalır
 docker compose down -v         # volume da silinir — veri kaybı!
 ```
 
+## Multi-tenant migration (0011 + 0012) — production rollout
+
+Tek-kulüp deploy'dan multi-tenant'a geçiş **2 aşamalı, zero-downtime** path:
+
+### Önce: backup
+```bash
+DATABASE_URL=$DATABASE_URL ./scripts/backup_db.sh /var/backups/manager2-pre-multitenant
+# → manager2-pre-multitenant-YYYY-MM-DD-HHMMSS.sql.gz
+```
+Roll-back için bu yedek kritik. Multi-tenant migration zorlu downgrade içerir.
+
+### Aşama 1: alembic 0011 (NULLABLE + backfill)
+```bash
+# DB'ye tenants/users/refresh_tokens tabloları + tenant_id NULLABLE + default tenant seed
+alembic upgrade 0011_tenants_and_tenant_id_nullable
+```
+Bu noktada:
+- Eski uygulama hâlâ çalışır (tenant_id NULLABLE, app tenant filter kapalı)
+- Yeni uygulama deploy edilebilir (session.info["tenant_id"] yazıyor)
+
+### Yeni app deploy
+```bash
+# JWT_SECRET_KEY üret + .env'e yaz
+python -c "import secrets; print(secrets.token_hex(32))"
+# BACKWARD_COMPAT_API_KEY = eski API_AUTH_KEY değeri (kırılma yok)
+systemctl restart manager2-api  # yeni binary, JWT auth aktif
+```
+
+### İlk admin user'ı yarat (default tenant'a)
+```bash
+python -c "
+from app.db.session import SessionLocal
+from app.db.tenant_context import DEFAULT_TENANT_ID
+from app.auth.service import create_user
+with SessionLocal() as s:
+    u = create_user(s, tenant_id=DEFAULT_TENANT_ID,
+                    email='admin@firma.com', password='YYYstrong-...',
+                    role='admin')
+    s.commit()
+    print('user_id:', u.id)
+"
+```
+
+### Aşama 2: alembic 0012 (NOT NULL + scoped uniques)
+```bash
+# Tüm satırlar tenant'a backfill'lendi, kod tenant_id yazıyor → NOT NULL güvenli
+alembic upgrade 0012_tenant_id_not_null_and_scoped_uniques
+```
+Bu migration aynı external_id'nin farklı tenant'larda yaşamasını sağlar
+(uq_teams_sport_extid → sport+external_id+tenant_id).
+
+### Yeni tenant ekleme (Konyaspor + Antalyaspor pilot)
+```bash
+python -c "
+from datetime import datetime, UTC
+import uuid
+from app.db.session import SessionLocal
+from app.db import models
+from app.auth.service import create_user
+with SessionLocal() as s:
+    for slug, name in [('konyaspor','Konyaspor'),('antalyaspor','Antalyaspor')]:
+        t = models.Tenant(id=str(uuid.uuid4()), slug=slug, name=name,
+                          settings_json='{}', active=True,
+                          created_at=datetime.now(UTC))
+        s.add(t); s.flush()
+        create_user(s, tenant_id=t.id, email=f'admin@{slug}.com',
+                    password='change-me-' + slug, role='admin')
+    s.commit()
+"
+```
+
+### Sync per-tenant
+```bash
+# Tenant context'i set ederek sync — her tenant kendi verisini çeker
+# (Sync job tenant_id'yi context'e yazmalı; bu otomatize edilecek — Prompt 3)
+```
+
+### Roll-back (0011'e dön)
+```bash
+alembic downgrade 0011_tenants_and_tenant_id_nullable
+# Sonra eski app version'a geri dön → tenant_id NULLABLE, eski davranış
+```
+0011'in altına (`0010`) dönmek tenants tablosunu DROP eder — sadece backup'tan
+restore mümkün, normal downgrade VERİ KAYBI riski içerir.
+
 ## Production VPS (systemd + cron + Postgres)
 
 Compose dışı, daha klasik kurulum.

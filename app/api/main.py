@@ -22,10 +22,11 @@ from app.ai import ClaudeCommentator
 from app.api.admin import router as admin_router
 from app.api.auth import (
     require_api_key,
+)
+from app.api.auth import (
     router as auth_router,
 )
 from app.api.errors import register_exception_handlers
-from app.db.tenant_filter import install_tenant_filter
 from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
@@ -41,6 +42,7 @@ from app.data.cache import engine_cached
 from app.data.predictions import save_prediction
 from app.db import models
 from app.db.session import get_session
+from app.db.tenant_filter import install_tenant_filter
 from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty
 from app.engine.form import compute_form
 from app.engine.load import compute_player_load

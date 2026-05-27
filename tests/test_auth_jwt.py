@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import time
 from datetime import UTC, datetime, timedelta
 
 import jwt as jwt_lib

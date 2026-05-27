@@ -11,6 +11,8 @@ from fastapi.testclient import TestClient
 from app.api.auth import (
     get_current_user,
     require_role,
+)
+from app.api.auth import (
     router as auth_router,
 )
 from app.auth.service import create_user

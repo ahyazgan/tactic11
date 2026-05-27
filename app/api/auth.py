@@ -21,22 +21,28 @@ Dependencies:
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 import jwt
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.auth.jwt_tokens import decode_access_token
 from app.auth.service import (
     InvalidCredentials,
     TokenExpired,
+)
+from app.auth.service import (
     login as svc_login,
+)
+from app.auth.service import (
     logout as svc_logout,
+)
+from app.auth.service import (
     refresh_access as svc_refresh,
 )
-from app.auth.jwt_tokens import decode_access_token
 from app.core.config import get_settings
 from app.core.logging import get_logger
 from app.db import models
@@ -106,7 +112,7 @@ def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="invalid credentials",
-        )
+        ) from None
     return TokenPairResponse(
         access_token=pair.access_token,
         refresh_token=pair.refresh_token,
@@ -131,12 +137,12 @@ def refresh(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e) or "refresh token invalid",
-        )
+        ) from e
     except InvalidCredentials as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(e) or "invalid credentials",
-        )
+        ) from e
     return TokenPairResponse(
         access_token=pair.access_token,
         refresh_token=pair.refresh_token,
@@ -169,16 +175,16 @@ def _user_from_jwt(
     token = authorization[7:].strip()
     try:
         claims = decode_access_token(token)
-    except jwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="access token expired",
-        )
+        ) from e
     except jwt.PyJWTError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"invalid access token: {type(e).__name__}",
-        )
+        ) from e
     user = session.get(models.User, claims.sub)
     if user is None or not user.active:
         raise HTTPException(
@@ -251,10 +257,10 @@ def get_current_user(
         _apply_user_context(request, session, user)
         return user
     if x_api_key:
-        user = _user_from_legacy_api_key(x_api_key, session)
-        if user is not None:
-            _apply_user_context(request, session, user)
-            return user
+        legacy_user = _user_from_legacy_api_key(x_api_key, session)
+        if legacy_user is not None:
+            _apply_user_context(request, session, legacy_user)
+            return legacy_user
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="authentication required",

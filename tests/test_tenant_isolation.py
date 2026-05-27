@@ -21,12 +21,10 @@ from app.sports import football
 # Bu importlar henüz yazılmadığı için ilk commit'te ImportError fırlatır.
 # TDD RED → modüller eklenince GREEN.
 try:
-    from app.auth.passwords import hash_password
-    from app.auth.service import create_user, login
+    from app.auth.service import create_user
     from app.db.tenant_context import (
         DEFAULT_TENANT_ID,
         current_tenant_id,
-        set_current_tenant_id,
     )
     _AUTH_AVAILABLE = True
 except ImportError:

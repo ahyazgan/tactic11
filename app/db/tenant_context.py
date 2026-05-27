@@ -9,9 +9,9 @@ endpoint'lerinde (örn. /admin/db-stats global sayım) explicit kullanılır.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import Iterator
 
 # Migration 0011'deki sabit. App code'da DEFAULT_TENANT_ID kullanılabilir.
 DEFAULT_TENANT_ID = "00000000-0000-0000-0000-000000000001"
