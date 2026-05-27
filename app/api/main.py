@@ -6,6 +6,7 @@ Engine pure kalsın diye serileştirme `serialize.py` üzerinden.
 
 from __future__ import annotations
 
+from datetime import datetime  # noqa: F401  type hint only
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
@@ -42,19 +43,30 @@ protected = APIRouter(dependencies=[Depends(require_api_key)])
 # ---- yardımcı sorgular ------------------------------------------------------
 
 
-def _team_matches(session: Session, team_id: int) -> list[models.Match]:
-    return list(
-        session.execute(
-            select(models.Match)
-            .where(
-                models.Match.sport == football.SPORT_NAME,
-                or_(
-                    models.Match.home_team_external_id == team_id,
-                    models.Match.away_team_external_id == team_id,
-                ),
-            )
-            .order_by(models.Match.kickoff.desc())
-        ).scalars()
+def _team_matches(
+    session: Session,
+    team_id: int,
+    *,
+    before: "datetime | None" = None,
+) -> list[models.Match]:
+    """Bir takımın maçları, kickoff desc; `before` verildiyse o tarihten önceki."""
+    stmt = select(models.Match).where(
+        models.Match.sport == football.SPORT_NAME,
+        or_(
+            models.Match.home_team_external_id == team_id,
+            models.Match.away_team_external_id == team_id,
+        ),
+    )
+    if before is not None:
+        stmt = stmt.where(models.Match.kickoff < before)
+    return list(session.execute(stmt.order_by(models.Match.kickoff.desc())).scalars())
+
+
+def _match_pair_filter(a: int, b: int):
+    """SQL: (home==a AND away==b) OR (home==b AND away==a)."""
+    return or_(
+        (models.Match.home_team_external_id == a) & (models.Match.away_team_external_id == b),
+        (models.Match.home_team_external_id == b) & (models.Match.away_team_external_id == a),
     )
 
 
@@ -171,12 +183,7 @@ def head_to_head(
         session.execute(
             select(models.Match).where(
                 models.Match.sport == football.SPORT_NAME,
-                or_(
-                    (models.Match.home_team_external_id == a)
-                    & (models.Match.away_team_external_id == b),
-                    (models.Match.home_team_external_id == b)
-                    & (models.Match.away_team_external_id == a),
-                ),
+                _match_pair_filter(a, b),
             )
         ).scalars()
     )
@@ -207,36 +214,15 @@ def match_preview(
     home_id = match.home_team_external_id
     away_id = match.away_team_external_id
 
-    def _prior(team_id: int) -> list[models.Match]:
-        return list(
-            session.execute(
-                select(models.Match)
-                .where(
-                    models.Match.sport == football.SPORT_NAME,
-                    models.Match.kickoff < match.kickoff,
-                    or_(
-                        models.Match.home_team_external_id == team_id,
-                        models.Match.away_team_external_id == team_id,
-                    ),
-                )
-                .order_by(models.Match.kickoff.desc())
-            ).scalars()
-        )
-
-    home_form = compute_form(home_id, _prior(home_id), last_n=last_n)
-    away_form = compute_form(away_id, _prior(away_id), last_n=last_n)
+    home_form = compute_form(home_id, _team_matches(session, home_id, before=match.kickoff), last_n=last_n)
+    away_form = compute_form(away_id, _team_matches(session, away_id, before=match.kickoff), last_n=last_n)
 
     h2h_matches = list(
         session.execute(
             select(models.Match).where(
                 models.Match.sport == football.SPORT_NAME,
                 models.Match.kickoff < match.kickoff,
-                or_(
-                    (models.Match.home_team_external_id == home_id)
-                    & (models.Match.away_team_external_id == away_id),
-                    (models.Match.home_team_external_id == away_id)
-                    & (models.Match.away_team_external_id == home_id),
-                ),
+                _match_pair_filter(home_id, away_id),
             )
         ).scalars()
     )
