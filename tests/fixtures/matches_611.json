@@ -1,0 +1,27 @@
+{
+  "get": "fixtures",
+  "parameters": {"team": "611", "last": "10"},
+  "errors": [],
+  "results": 3,
+  "paging": {"current": 1, "total": 1},
+  "response": [
+    {
+      "fixture": {"id": 1234001, "date": "2024-09-15T18:00:00+00:00", "status": {"short": "FT", "long": "Match Finished"}},
+      "league": {"id": 203, "season": 2024, "round": "Regular Season - 4"},
+      "teams": {"home": {"id": 611, "name": "Galatasaray"}, "away": {"id": 607, "name": "Fenerbahce"}},
+      "goals": {"home": 2, "away": 1}
+    },
+    {
+      "fixture": {"id": 1234002, "date": "2024-09-22T18:00:00+00:00", "status": {"short": "FT", "long": "Match Finished"}},
+      "league": {"id": 203, "season": 2024, "round": "Regular Season - 5"},
+      "teams": {"home": {"id": 614, "name": "Besiktas"}, "away": {"id": 611, "name": "Galatasaray"}},
+      "goals": {"home": 1, "away": 3}
+    },
+    {
+      "fixture": {"id": 1234003, "date": "2024-09-29T18:00:00+00:00", "status": {"short": "NS", "long": "Not Started"}},
+      "league": {"id": 203, "season": 2024, "round": "Regular Season - 6"},
+      "teams": {"home": {"id": 611, "name": "Galatasaray"}, "away": {"id": 998, "name": "Trabzonspor"}},
+      "goals": {"home": null, "away": null}
+    }
+  ]
+}
