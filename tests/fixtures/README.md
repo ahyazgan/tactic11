@@ -9,12 +9,16 @@ Gerçek API yanıtlarından alınmış örnek JSON veri setleri.
 **Fixture modu:** `.env` içinde `USE_FIXTURES=true` → `data/sources/api_football.py`
 gerçek HTTP yerine bu klasördeki dosyaları döndürür.
 
-**Veri:**
+**Veri (2 lig):**
 
-- `leagues.json` — Süper Lig (203) + Premier League (39, top-level kayıt)
-- `teams_203.json` — Süper Lig'in 10 takımı
+- `leagues.json` — Süper Lig (203) + Premier League (39)
+- `teams_203.json` — Süper Lig'in 10 takımı (Galatasaray, Fenerbahce, vb.)
+- `teams_39.json` — Premier League'in 10 takımı (Man City, Arsenal, vb.)
 - `matches_<team_id>.json` — her takım için son N maç (7 FT round + 2 NS round
   düşey döngüde dağıtılır; her takım 9 maçta görünür)
+
+Fixture ID alanı ligler arası çakışmasın diye Süper Lig 1234100+, Premier
+League 1234300+ ile başlar.
 
 **Üretim:**
 

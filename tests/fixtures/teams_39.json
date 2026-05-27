@@ -1,0 +1,115 @@
+{
+  "get": "teams",
+  "parameters": {
+    "league": "39",
+    "season": "2024"
+  },
+  "errors": [],
+  "results": 10,
+  "paging": {
+    "current": 1,
+    "total": 1
+  },
+  "response": [
+    {
+      "team": {
+        "id": 50,
+        "name": "Manchester City",
+        "country": "England",
+        "founded": 1880,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 42,
+        "name": "Arsenal",
+        "country": "England",
+        "founded": 1886,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 40,
+        "name": "Liverpool",
+        "country": "England",
+        "founded": 1892,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 49,
+        "name": "Chelsea",
+        "country": "England",
+        "founded": 1905,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 47,
+        "name": "Tottenham",
+        "country": "England",
+        "founded": 1882,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 33,
+        "name": "Manchester United",
+        "country": "England",
+        "founded": 1878,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 34,
+        "name": "Newcastle",
+        "country": "England",
+        "founded": 1892,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 35,
+        "name": "Everton",
+        "country": "England",
+        "founded": 1878,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 36,
+        "name": "Fulham",
+        "country": "England",
+        "founded": 1879,
+        "national": false
+      },
+      "venue": {}
+    },
+    {
+      "team": {
+        "id": 41,
+        "name": "Southampton",
+        "country": "England",
+        "founded": 1885,
+        "national": false
+      },
+      "venue": {}
+    }
+  ]
+}
