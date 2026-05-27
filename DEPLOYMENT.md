@@ -101,7 +101,62 @@ Nginx önünde reverse proxy + TLS önerilir (`proxy_pass http://127.0.0.1:8000`
 - [ ] Cron çalıştığını ilk çağrıdan sonra `job_runs` tablosundan doğrula:
       `SELECT job_name, status, attempts, started_at FROM job_runs ORDER BY started_at DESC LIMIT 5;`
 - [ ] `/health` endpoint'i 200 dönüyor; load balancer probe'a uygun
-- [ ] DB yedeği zamanlı (örn. günlük pg_dump)
+- [ ] DB yedeği zamanlı (`scripts/backup_db.sh` cron'da, günlük; aylık restore drill — bkz. Backup & Recovery bölümü)
+
+## Backup & Recovery
+
+Postgres üretiminde günlük yedek + aylık restore drill önerilir. Repo'da
+hazır script'ler var:
+
+### Manuel yedek
+```bash
+DATABASE_URL=$DATABASE_URL ./scripts/backup_db.sh /var/backups/manager2
+# → /var/backups/manager2/manager2-2026-05-27-030000.sql.gz
+```
+
+Plain SQL dump + gzip; `--no-owner --no-privileges` ile restore'da
+owner uyumsuzluğu önlenir.
+
+### Cron (günlük 03:00 UTC)
+```cron
+0 3 * * * cd /opt/manager2 && DATABASE_URL=$(grep ^DATABASE_URL .env | cut -d= -f2-) ./scripts/backup_db.sh /var/backups/manager2 >> /var/log/manager2-backup.log 2>&1
+```
+
+### Restore drill (ayrı bir DB üzerinde, ayda bir)
+```bash
+# Test DB oluştur
+createdb manager2_restore_test
+
+# Restore
+DATABASE_URL=postgresql://user:pw@localhost/manager2_restore_test \
+  ./scripts/restore_db.sh /var/backups/manager2/manager2-2026-05-27-030000.sql.gz
+
+# Doğrula
+psql manager2_restore_test -c "SELECT version_num FROM alembic_version;"
+psql manager2_restore_test -c "SELECT COUNT(*) FROM matches;"
+
+# Bitince temizle
+dropdb manager2_restore_test
+```
+
+### Eski yedekleri temizle
+`backup_db.sh`'in altındaki `find ... -mtime +30 -delete` satırını yorum dışına
+al (default opt-in; veri retention politikanız net oluncaya kadar saklamak
+daha güvenli).
+
+### S3 / external storage (opsiyonel)
+```cron
+# Her sabah yedek aldıktan sonra S3'e yükle
+5 3 * * * aws s3 sync /var/backups/manager2 s3://my-bucket/manager2-backups/ --no-progress
+```
+Yerel disk yangını riskini azaltır; AWS region farkı (multi-region) için S3
+Cross-Region Replication kullan.
+
+### RTO / RPO
+- **RPO** (Recovery Point Objective): 24 saat — günlük yedek penceresi
+- **RTO** (Recovery Time Objective): ~15 dk (küçük DB, ~50MB)
+- Daha sıkı RPO için Postgres WAL archiving + Point-in-Time-Recovery (PITR)
+  ayrı bir RFC; bu repo'nun kapsamı dışında
 
 ## Sağlık kontrolü
 
