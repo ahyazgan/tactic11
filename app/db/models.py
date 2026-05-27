@@ -350,6 +350,31 @@ class ChatConversation(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
+class ScoutWatchlist(Base):
+    """Scout şefi izleme listesi.
+
+    Bir kullanıcı (user_id şu an "default" — multi-tenant geldikten sonra
+    gerçekleşecek) bir oyuncuyu işaretler; notes opsiyonel. Scheduler haftalık
+    bu watchlist'i tarayıp performans alert'leri üretir.
+    """
+
+    __tablename__ = "scout_watchlist"
+    __table_args__ = (
+        UniqueConstraint(
+            "user_id", "player_external_id",
+            name="uq_scout_watchlist_user_player",
+        ),
+        Index("ix_scout_watchlist_user", "user_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String(64), default="default")
+    player_external_id: Mapped[int] = mapped_column(Integer)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class ChatMessage(Base):
     """Konuşma içindeki bir mesaj (user veya assistant).
 

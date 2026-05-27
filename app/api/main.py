@@ -530,6 +530,48 @@ def player_load(
 
 
 @protected.get(
+    "/players/{player_id}/form",
+    tags=["team-analysis"],
+    summary="Oyuncu form snapshot — Z-score baseline'la (engine.player_form)",
+)
+def player_form(
+    player_id: int,
+    recent_n: int = Query(5, ge=1, le=20),
+    baseline_window_days: int = Query(365, ge=30, le=730),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Son N maç oyuncu formu vs son 1 yılın baseline'ı.
+
+    Z-score ≥ 1.0 → "belirgin yüksek dakika", "rising" trend → form yükseliyor.
+    Veri kaynağı player_appearances; lineup adapter zenginleştiğinde (key_passes,
+    shot_accuracy v.b.) engine sözleşmesi aynı, snapshot alanları artar.
+    """
+    from app.engine.player_form import compute_player_form
+
+    appearances = list(
+        session.execute(
+            select(models.PlayerAppearance).where(
+                models.PlayerAppearance.sport == football.SPORT_NAME,
+                models.PlayerAppearance.player_external_id == player_id,
+            )
+        ).scalars()
+    )
+    if not appearances:
+        raise HTTPException(
+            status_code=404, detail=f"player {player_id} için appearance yok"
+        )
+    ref_tz = appearances[0].kickoff.tzinfo
+    now = datetime.now(ref_tz)
+    result = compute_player_form(
+        player_id, appearances,
+        recent_n=recent_n,
+        baseline_window_days=baseline_window_days,
+        now=now,
+    )
+    return engine_result_to_dict(result)
+
+
+@protected.get(
     "/teams/{team_id}/schedule",
     tags=["team-analysis"],
     summary="Fikstür yoğunluğu — ufuk içi maç sayımı (engine.schedule)",
