@@ -65,6 +65,27 @@ def _token_sum(session: Session, source: str, since: datetime) -> int:
     ) or 0
 
 
+def consume_quota(
+    session: Session,
+    *,
+    source: str,
+    endpoint: str,
+    tokens: int = 0,
+) -> None:
+    """Atomik: guard_quota + record_call tek transaction'da.
+
+    Akış: önce mevcut sayıma karşı `guard_quota` çağrılır (henüz bu kaydı
+    saymadan), geçtiyse `record_call` ile satır eklenir. İkisi tek transaction
+    içinde olduğu için "ayrı `with SessionLocal()` blokları arasında pencere"
+    yarışı kapanır.
+
+    Çoklu-süreç tam atomicity için Postgres SERIALIZABLE isolation önerilir
+    (SQLite zaten tek-yazıcı). Cron tek-süreçli kullanım için yeterli.
+    """
+    guard_quota(session, source)
+    record_call(session, source=source, endpoint=endpoint, tokens=tokens)
+
+
 def guard_quota(session: Session, source: str) -> None:
     s = get_settings()
     now = datetime.now(timezone.utc)

@@ -16,7 +16,7 @@ from app.ai.base import Commentator
 from app.ai.prompts import SYSTEM_PROMPT, build_user_prompt, stub_response
 from app.audit import EngineResult
 from app.core.logging import get_logger
-from app.core.usage import guard_quota, record_call
+from app.core.usage import consume_quota
 from app.db.session import SessionLocal
 
 log = get_logger(__name__)
@@ -35,14 +35,18 @@ class ClaudeCommentator(Commentator):
 
         user_prompt = build_user_prompt(engine_output)
 
+        # Çağrı öncesi 0 tokenli ön rezervasyon: limit zaten doluysa HTTP yapmadan
+        # QuotaExceeded fırlat. Gerçek token sayımı için ayrıca aşağıda kayıt eklenir.
         with SessionLocal() as session:
-            guard_quota(session, _SOURCE)
+            consume_quota(session, source=_SOURCE, endpoint=_ENDPOINT, tokens=0)
             session.commit()
 
         result = self._client.message(system=SYSTEM_PROMPT, user=user_prompt)
 
         with SessionLocal() as session:
-            record_call(
+            # Gerçek tüketimi tokens ile kaydet; ön rezervasyondaki 0 değerini
+            # düzeltmek yerine ek satır olarak ekliyoruz (audit log doğal).
+            consume_quota(
                 session,
                 source=_SOURCE,
                 endpoint=_ENDPOINT,

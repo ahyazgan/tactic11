@@ -17,7 +17,7 @@ import httpx
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
-from app.core.usage import guard_quota, record_call
+from app.core.usage import consume_quota
 from app.data.cache import cache_get, cache_set
 from app.data.sources.base import DataSource
 from app.db.session import SessionLocal
@@ -83,12 +83,13 @@ class APIFootball(DataSource):
 
         with SessionLocal() as session:
             cached = cache_get(session, source=_SOURCE_NAME, key=cache_key)
-        if cached is not None:
-            log.info("api_football cache hit: %s", cache_key)
-            return cached
-
-        with SessionLocal() as session:
-            guard_quota(session, _SOURCE_NAME)
+            if cached is not None:
+                log.info("api_football cache hit: %s", cache_key)
+                return cached
+            # Atomik: önce kaydet+sayıp limitin altında olduğumuzu doğrula, sonra HTTP.
+            # Bu pessimistic sayım — HTTP başarısız olsa bile kota düşülmüş kalır
+            # (real-world rate limiter normu; sürpriz fatura önler).
+            consume_quota(session, source=_SOURCE_NAME, endpoint=path)
             session.commit()
 
         url = f"{self._base_url}/{path}"
@@ -100,7 +101,6 @@ class APIFootball(DataSource):
 
         ttl = _TTL_SECONDS.get(path, _DEFAULT_TTL)
         with SessionLocal() as session:
-            record_call(session, source=_SOURCE_NAME, endpoint=path)
             cache_set(session, source=_SOURCE_NAME, key=cache_key, value=data, ttl_seconds=ttl)
             session.commit()
         return data

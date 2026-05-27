@@ -103,11 +103,15 @@ def test_commentator_records_usage_and_returns_text(monkeypatch, session):
 
     from sqlalchemy import select, func
     from app.db import models
+    # consume_quota iki kez çağrılır: HTTP öncesi rezervasyon (tokens=0) +
+    # HTTP sonrası gerçek tüketim. Toplam tokens doğrudur, satır sayısı 2'dir.
     n = session.scalar(select(func.count()).select_from(models.UsageEvent))
-    assert n == 1
-    row = session.execute(select(models.UsageEvent)).scalar_one()
-    assert row.source == "anthropic"
-    assert row.tokens == 150
+    assert n == 2
+    rows = session.execute(
+        select(models.UsageEvent).order_by(models.UsageEvent.id)
+    ).scalars().all()
+    assert all(r.source == "anthropic" for r in rows)
+    assert sum(r.tokens for r in rows) == 150
 
 
 def test_system_prompt_is_stable_string():
