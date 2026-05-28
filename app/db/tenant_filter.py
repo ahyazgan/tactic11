@@ -39,6 +39,10 @@ def install_tenant_filter() -> None:
 
     Bypass: `session.info["tenant_bypass"] = True` veya `is_bypassed()` ContextVar.
 
+    Ayrıca `before_flush` ile INSERT'lerde tenant_id'yi auto-fill eder
+    (session.info'da set'liyse) — sync_league gibi tenant-agnostic kod
+    çalışmaya devam etsin diye.
+
     İdempotent: tekrar çağrılırsa zaten kayıtlı listener'a dokunmaz.
     """
     if getattr(install_tenant_filter, "_installed", False):
@@ -65,6 +69,19 @@ def install_tenant_filter() -> None:
                     include_aliases=True,
                 ),
             )
+
+    @event.listens_for(Session, "before_flush")
+    def _autofill_tenant_id(session, flush_context, instances):
+        """INSERT'te tenant_id boşsa session.info veya ContextVar'dan doldur."""
+        if session.info.get("tenant_bypass") or is_bypassed():
+            return
+        tid = session.info.get("tenant_id") or current_tenant_id()
+        if tid is None:
+            return
+        tenant_model_set = set(_TENANT_MODELS)
+        for obj in session.new:
+            if type(obj) in tenant_model_set and getattr(obj, "tenant_id", None) is None:
+                obj.tenant_id = tid
 
     install_tenant_filter._installed = True  # type: ignore[attr-defined]
 
