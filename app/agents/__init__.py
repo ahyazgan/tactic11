@@ -1,4 +1,5 @@
 from app.agents.base import Agent, AgentResult
+from app.agents.halftime_analysis import HalftimeAnalysisAgent
 from app.agents.injury_load import InjuryLoadAgent
 from app.agents.lineup_recommendation import LineupRecommendationAgent
 from app.agents.media_brief import MediaBriefAgent
@@ -15,6 +16,7 @@ from app.agents.weekly_digest import WeeklyDigestAgent
 __all__ = [
     "Agent",
     "AgentResult",
+    "HalftimeAnalysisAgent",
     "InjuryLoadAgent",
     "LineupRecommendationAgent",
     "MediaBriefAgent",

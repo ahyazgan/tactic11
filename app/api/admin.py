@@ -1201,6 +1201,33 @@ def player_tactical_profile(
     }
 
 
+@router.get(
+    "/matches/{match_id}/halftime-brief",
+    tags=["admin"],
+    summary="Devre arası analiz brief (1. yarı event'leri üzerinde 7 engine + AI)",
+)
+def match_halftime_brief(
+    match_id: int,
+    my_team_id: int = Query(..., description="Brief'in hangi takım için olacağı"),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Devre arası bilgi paneli — 1. yarı event'lerinden 7+ engine + AI brief."""
+    from app.agents import HalftimeAnalysisAgent
+
+    agent = HalftimeAnalysisAgent()
+    try:
+        result = agent.run(
+            session,
+            context={
+                "match_external_id": match_id,
+                "my_team_external_id": my_team_id,
+            },
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    return result.output_json
+
+
 @router.post(
     "/vaep/train",
     tags=["admin"],

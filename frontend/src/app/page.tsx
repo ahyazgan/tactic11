@@ -8,6 +8,8 @@ const ROUTES = [
     desc: "30 engine: PPDA, pres, hat, kompakt, tempo, vs." },
   { href: "/players/6120/tactical", label: "Taktiksel (oyuncu)",
     desc: "xT + xA + VAEP + overperformance + progressive" },
+  { href: "/matches/16029/halftime?my_team_id=217", label: "Devre Arası Brief",
+    desc: "1. yarı sayılar + zayıf kanal + yorgun oyuncu + AI 2. yarı önerileri" },
   { href: "/chat", label: "Asistan", desc: "Manager co-pilot chat" },
 ];
 
