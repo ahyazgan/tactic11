@@ -4,7 +4,14 @@ Bir scout şefi için: watchlist'teki oyuncuların son form snapshot'larını
 toplayıp "bu hafta neler oldu" briefi üretir. AI sentez: "Aksiyon önerisi:
 oyuncu X 3 hafta üst üste yüksek dakika → scout gönder" tarzı.
 
-Context: {"user_id": str = "default", "recent_n": int = 5}
+v2: engine.player_similarity entegre — yüksek Z-score oyuncular için
+benzer profilde "alternatif" listesi (transfer hedefi öneri).
+
+Context: {
+  "user_id": str = "default",
+  "recent_n": int = 5,
+  "include_similarity": bool = True,
+}
 """
 
 from __future__ import annotations
@@ -19,6 +26,7 @@ from app.agents.base import Agent, AgentResult
 from app.ai import AnthropicClient, ClaudeCommentator
 from app.db import models
 from app.engine.player_form import compute_player_form
+from app.engine.player_similarity import compute_similar_players
 from app.scout import list_watchlist
 from app.sports import football
 
@@ -27,7 +35,7 @@ class ScoutWatchlistDigestAgent(Agent):
     """Haftalık scout watchlist özet."""
 
     name = "scout_watchlist_digest"
-    version = "1"
+    version = "2"  # v1 → v2: engine.player_similarity entegre (similar suggestions)
 
     def __init__(self, *, commentator: ClaudeCommentator | None = None):
         self._commentator = commentator or ClaudeCommentator(AnthropicClient())
@@ -84,9 +92,18 @@ class ScoutWatchlistDigestAgent(Agent):
                     f"({r.recent_minutes_per_match:.0f} dk/maç)"
                 )
 
+        # v2: player_similarity — high-z player için benzer alternatif öner
+        # (örnek: "izlediğin oyuncu pahalı, ama X/Y benzer profilde + ucuz")
+        similar_suggestions: list[dict[str, Any]] = []
+        if context.get("include_similarity", True):
+            similar_suggestions = _compute_similarity_suggestions(
+                session, snapshots, top_n=3,
+            )
+
         ai_brief = _build_digest_brief(
             commentator=self._commentator,
             user_id=user_id, snapshots=snapshots, alerts=alerts,
+            similar_suggestions=similar_suggestions,
         )
 
         output = {
@@ -94,6 +111,7 @@ class ScoutWatchlistDigestAgent(Agent):
             "player_count": len(watch),
             "snapshots": snapshots,
             "alerts": alerts,
+            "similar_suggestions": similar_suggestions,
             "ai_brief": ai_brief,
         }
         summary = (
@@ -109,11 +127,13 @@ class ScoutWatchlistDigestAgent(Agent):
 def _build_digest_brief(
     *, commentator: ClaudeCommentator, user_id: str,
     snapshots: list[dict], alerts: list[str],
+    similar_suggestions: list[dict[str, Any]] | None = None,
 ) -> str:
     if commentator._client.is_stub():
+        sim_n = sum(len(s.get("similar", [])) for s in (similar_suggestions or []))
         return (
             f"[stub:scout_digest] user={user_id} {len(snapshots)} oyuncu, "
-            f"{len(alerts)} alert. ANTHROPIC_API_KEY yok."
+            f"{len(alerts)} alert, {sim_n} benzer öneri. ANTHROPIC_API_KEY yok."
         )
     if not alerts and not snapshots:
         return "Watchlist'te aksiyon gerektiren oyuncu yok."
@@ -136,3 +156,70 @@ def _build_digest_brief(
         )
     )
     return commentator._call(system, user, max_tokens=400)
+
+
+def _compute_similarity_suggestions(
+    session: Session,
+    snapshots: list[dict[str, Any]],
+    *,
+    top_n: int = 3,
+) -> list[dict[str, Any]]:
+    """High-Z watchlist oyuncuları için player_similarity ile benzer
+    profilde N oyuncu öner.
+
+    Aday havuzu: appearance'ı olan tüm oyuncular (current tenant — loader
+    criteria aktif). High-Z (z_score >= 1.0) oyunculara öncelik.
+    """
+    # High-Z watchlist player'larını sırala
+    targets = [
+        s for s in snapshots
+        if s.get("z_score") is not None and s["z_score"] >= 1.0
+    ]
+    if not targets:
+        # high-Z yoksa en yüksek z'leri al
+        targets = sorted(
+            [s for s in snapshots if s.get("z_score") is not None],
+            key=lambda x: x["z_score"], reverse=True,
+        )[:2]
+    if not targets:
+        return []
+
+    # Aday havuzu: appearance'ı olan tüm oyuncular
+    all_apps = list(
+        session.execute(
+            select(models.PlayerAppearance).where(
+                models.PlayerAppearance.sport == football.SPORT_NAME,
+            )
+        ).scalars()
+    )
+    if not all_apps:
+        return []
+    by_pid: dict[int, list] = {}
+    for a in all_apps:
+        by_pid.setdefault(a.player_external_id, []).append(a)
+
+    suggestions: list[dict[str, Any]] = []
+    for target in targets[:3]:  # max 3 target × top_n öneri
+        pid = target["player_id"]
+        target_apps = by_pid.get(pid, [])
+        if not target_apps:
+            continue
+        candidates = {p: apps for p, apps in by_pid.items() if p != pid}
+        result = compute_similar_players(
+            pid, target_apps, candidates, top_n=top_n, min_minutes=180,
+        )
+        if not result.value.top_matches:
+            continue
+        suggestions.append({
+            "target_player_id": pid,
+            "target_z_score": target["z_score"],
+            "similar": [
+                {
+                    "player_id": m.player_external_id,
+                    "similarity": m.similarity,
+                    "minutes": m.total_minutes,
+                }
+                for m in result.value.top_matches
+            ],
+        })
+    return suggestions
