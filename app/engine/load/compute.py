@@ -1,8 +1,12 @@
 """Oyuncu yük/rotasyon analizi.
 
 Bir pencere içindeki dakika toplamı + maç sıklığı. Veri girişi
-`PlayerAppearance` listesi; ingest henüz doldurmuyor (lineup adapter Faz 6'da
-gelecek). Engine yine de bugün saf hâlde çalışıyor ve test ediliyor.
+`PlayerAppearance` listesi (api_football lineup adapter besler).
+
+Eşik (`HIGH_LOAD_MINUTES_PER_WEEK`) artık caller tarafından override
+edilebilir; default `DEFAULT_HIGH_LOAD_MINUTES_PER_WEEK` sabiti
+`app/sports/football.py`'da yaşar. Lig/pozisyon/yaş bazlı override
+üst katmana (endpoint/agent) bırakılmıştır.
 """
 
 from __future__ import annotations
@@ -15,10 +19,19 @@ from app.audit import AuditRecord, EngineResult
 from app.engine._protocols import PlayerAppearanceLike
 from app.sports import football
 
-ENGINE_NAME = "engine.load"
-ENGINE_VERSION = "2"  # v1 → v2: risk_level + back_to_back_count eklendi
+# Backward-compatible re-export: `from app.engine.load.compute import
+# HIGH_LOAD_MINUTES_PER_WEEK` çağrılarının kırılmaması için. Yeni kod
+# `football.DEFAULT_HIGH_LOAD_MINUTES_PER_WEEK` ya da `compute_player_load`
+# `threshold_minutes_per_week` keyword arg'ını kullanmalı.
+from app.sports.football import (
+    DEFAULT_HIGH_LOAD_MINUTES_PER_WEEK as HIGH_LOAD_MINUTES_PER_WEEK,
+)
 
-HIGH_LOAD_MINUTES_PER_WEEK = 270  # ~3 maçlık yük
+ENGINE_NAME = "engine.load"
+# v2 davranışı korunur (pure-additive opt-in keyword arg; default
+# threshold_minutes_per_week=None ile bit-için-bit eski sonuç). Version
+# bump gerekmez.
+ENGINE_VERSION = "2"
 
 # Sakatlık risk eşikleri — heuristic (ML yerine):
 # Gerçek ML 2+ sezon load data ister; bu eşikler literatür (Gabbett 2016
@@ -75,9 +88,22 @@ def compute_player_load(
     *,
     window_days: int = 14,
     now: datetime | None = None,
+    threshold_minutes_per_week: int | None = None,
 ) -> EngineResult[PlayerLoad]:
+    """Oyuncunun pencere içi yük raporu.
+
+    `threshold_minutes_per_week` verilmezse `football.DEFAULT_HIGH_LOAD_
+    MINUTES_PER_WEEK` (270) kullanılır. Caller (endpoint/agent) lig veya
+    pozisyon bazlı override yapabilir.
+    """
     if window_days <= 0:
         raise ValueError("window_days > 0 olmalı")
+
+    effective_threshold = (
+        threshold_minutes_per_week
+        if threshold_minutes_per_week is not None
+        else HIGH_LOAD_MINUTES_PER_WEEK
+    )
 
     cutoff = (now or datetime.now(UTC)) - timedelta(days=window_days)
     window = [
@@ -92,7 +118,7 @@ def compute_player_load(
     matches = len(window)
     minutes_per_match = round(minutes_total / matches, 2) if matches else 0.0
     minutes_per_week = round(minutes_total / window_days * 7, 2)
-    high_load = minutes_per_week >= HIGH_LOAD_MINUTES_PER_WEEK
+    high_load = minutes_per_week >= effective_threshold
     back_to_back = _max_window_match_count(
         [a.kickoff for a in window], BACK_TO_BACK_DAYS,
     )
@@ -118,7 +144,9 @@ def compute_player_load(
         inputs={
             "window_days": window_days,
             "considered_match_ids": [a.match_external_id for a in window],
-            "high_load_threshold_minutes_per_week": HIGH_LOAD_MINUTES_PER_WEEK,
+            "high_load_threshold_minutes_per_week": effective_threshold,
+            "default_threshold_minutes_per_week": HIGH_LOAD_MINUTES_PER_WEEK,
+            "threshold_overridden": threshold_minutes_per_week is not None,
             "risk_thresholds_min_per_week": RISK_THRESHOLDS_MIN_PER_WEEK,
             "back_to_back_window_days": BACK_TO_BACK_DAYS,
         },

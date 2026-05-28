@@ -20,7 +20,6 @@ from sqlalchemy.orm import Session
 
 from app.ai import ClaudeCommentator
 from app.api.admin import router as admin_router
-from app.api.live import router as live_router
 from app.api.auth import (
     require_api_key,
 )
@@ -28,6 +27,7 @@ from app.api.auth import (
     router as auth_router,
 )
 from app.api.errors import register_exception_handlers
+from app.api.live import router as live_router
 from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
@@ -543,14 +543,22 @@ def head_to_head(
 def player_load(
     player_id: int,
     window_days: int = Query(14, ge=1, le=90),
+    threshold_minutes_per_week: int | None = Query(
+        default=None, ge=60, le=900,
+        description=(
+            "Yük eşiği (dk/hafta). Verilmezse "
+            "football.DEFAULT_HIGH_LOAD_MINUTES_PER_WEEK (270) kullanılır. "
+            "Lig/pozisyon/yaş bazlı override için caller burada geçer."
+        ),
+    ),
     explain: bool = False,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Oyuncu yük raporu — son N gündeki dakika + maç sıklığı.
 
-    Veri kaynağı `player_appearances` tablosu (lineup adapter Faz 6'da
-    dolduracak; şimdilik boş — endpoint 404 döner). high_load eşiği
-    haftalık 270 dakika (~3 maçlık yük).
+    Veri kaynağı `player_appearances` tablosu (api_football lineup adapter
+    besler). Default high_load eşiği haftalık 270 dakika (~3 maçlık yük);
+    `threshold_minutes_per_week` ile override edilebilir.
     """
     appearances = list(
         session.execute(
@@ -569,7 +577,9 @@ def player_load(
     ref_tz = appearances[0].kickoff.tzinfo
     now = datetime.now(ref_tz)
     result = compute_player_load(
-        player_id, appearances, window_days=window_days, now=now
+        player_id, appearances,
+        window_days=window_days, now=now,
+        threshold_minutes_per_week=threshold_minutes_per_week,
     )
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 

@@ -36,10 +36,12 @@ görünür → `GET /teams/203` boş değil.
       Veri akışı uçtan uca BAĞLANDI: `PlayerAppearance` tablosu (alembic
       0005 + 0013), `APIFootball.get_fixture_player_stats`,
       `ingest_appearances_for_match` (idempotent + quota-guard),
-      `GET /players/{id}/load?window_days=N&explain=bool` endpoint, 22 test.
-      Eşik (`HIGH_LOAD_MINUTES_PER_WEEK=270`) şu an `engine/load/compute.py`
-      içinde hardcode — bkz. PROMPT_BACKEND_LOAD_THRESHOLD.md (lig/pozisyon
-      bazlı parametrikleşme planı).
+      `GET /players/{id}/load?window_days=N&threshold_minutes_per_week=N&explain=bool`
+      endpoint, 22 + 7 = 29 test.
+      Eşik artık parametrik: default `football.DEFAULT_HIGH_LOAD_MINUTES_PER_WEEK`
+      (270 dk/hafta), caller `threshold_minutes_per_week` ile override eder
+      (PROMPT_BACKEND_LOAD_THRESHOLD.md kapandı). Lig/pozisyon bazlı default
+      seçimi caller (agent/scheduler) sorumluluğunda.
 - [x] `engine/rating/` — ppg+gd_per_match kompoziti, açıklanabilir
 - [x] `engine/opponent/` — head-to-head özet
 - [x] `audit/record.py` — `AuditRecord` + `EngineResult[T]` (engine sonuç +

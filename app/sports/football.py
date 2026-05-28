@@ -27,3 +27,8 @@ FINISHED_STATUSES: frozenset[str] = frozenset({"FT", "AET", "PEN"})
 
 # Normal süre (dakika)
 REGULAR_DURATION_MIN: int = 90
+
+# Yük analizi (engine.load) default eşiği — dk/hafta.
+# 270 ~ 3 tam maç/hafta. Caller (endpoint/agent/scheduler) override
+# edebilir; lig/pozisyon/yaş bazlı override üst katmana bırakılır.
+DEFAULT_HIGH_LOAD_MINUTES_PER_WEEK: int = 270
