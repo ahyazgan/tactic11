@@ -790,3 +790,203 @@ def trigger_daily_brief(
             for r in result.per_tenant
         ],
     }
+
+
+# --------------------------------------------------------------------------- #
+# Faz N — Profesyonel taktiksel modüller (read-only stubs)
+#
+# Bu endpoint'ler engine'leri HTTP'ye expose eder. Şu an parser/ingest pipeline
+# event tablosuna yazmadığı için (Sprint 3 migration 0014 TODO), caller
+# StatsBomb adapter'dan event'leri çekip parse_all_events ile geçer.
+# Production'da events tablosu dolu olunca DB'den okur.
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/scout/player-role/{player_id}",
+    tags=["admin"],
+    summary="Oyuncu rol typology (engine.player_role v1)",
+)
+def scout_player_role(
+    player_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Player_appearances'tan per-90 stat → 8-rol etiketi."""
+    from app.engine.player_role import compute_player_role
+    from app.sports import football
+
+    apps = list(
+        session.execute(
+            select(models.PlayerAppearance).where(
+                models.PlayerAppearance.sport == football.SPORT_NAME,
+                models.PlayerAppearance.player_external_id == player_id,
+            )
+        ).scalars()
+    )
+    if not apps:
+        raise HTTPException(
+            status_code=404,
+            detail=f"player {player_id} için appearance yok",
+        )
+    result = compute_player_role(player_id, apps)
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/teams/{team_id}/xg-difference",
+    tags=["admin"],
+    summary="Sezon xG farkı + overperformance (engine.xg_match_graph)",
+)
+def team_xg_difference(
+    team_id: int,
+    days: int = Query(90, ge=7, le=365),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Predictions tablosundaki tahminlerden xG farkı.
+
+    NOT: Bu basitleştirilmiş — Shot domain'imizde team_id yok, predictions'tan
+    expected goals okuyoruz. Real-event tabanlı sürüm Sprint 3 events ingest'iyle
+    gelir.
+    """
+    import json as _json
+
+    from app.sports import football
+
+    cutoff = datetime.now(UTC) - timedelta(days=days)
+    predictions = list(
+        session.execute(
+            select(models.Prediction).where(
+                models.Prediction.engine == "engine.predict",
+                models.Prediction.actual_outcome.is_not(None),
+                models.Prediction.reconciled_at >= cutoff,
+            )
+        ).scalars()
+    )
+    matches = {
+        m.external_id: m for m in session.execute(
+            select(models.Match).where(
+                models.Match.sport == football.SPORT_NAME,
+                models.Match.external_id.in_({p.match_external_id for p in predictions}),
+                (models.Match.home_team_external_id == team_id)
+                | (models.Match.away_team_external_id == team_id),
+            )
+        ).scalars()
+    }
+    relevant = [p for p in predictions if p.match_external_id in matches]
+    xg_for = 0.0
+    xg_against = 0.0
+    goals_for = 0
+    goals_against = 0
+    for p in relevant:
+        try:
+            pred = _json.loads(p.predicted_value_json)
+        except _json.JSONDecodeError:
+            continue
+        m = matches[p.match_external_id]
+        is_home = m.home_team_external_id == team_id
+        if is_home:
+            xg_for += float(pred.get("expected_home_goals", 0))
+            xg_against += float(pred.get("expected_away_goals", 0))
+            goals_for += int(m.home_score or 0)
+            goals_against += int(m.away_score or 0)
+        else:
+            xg_for += float(pred.get("expected_away_goals", 0))
+            xg_against += float(pred.get("expected_home_goals", 0))
+            goals_for += int(m.away_score or 0)
+            goals_against += int(m.home_score or 0)
+    xgd = xg_for - xg_against
+    actual_gd = goals_for - goals_against
+    overperf = actual_gd - xgd
+    return {
+        "team_id": team_id,
+        "days": days,
+        "matches_analyzed": len(relevant),
+        "xg_for": round(xg_for, 3),
+        "xg_against": round(xg_against, 3),
+        "xg_difference": round(xgd, 3),
+        "goals_for": goals_for,
+        "goals_against": goals_against,
+        "actual_goal_difference": actual_gd,
+        "overperformance": round(overperf, 3),
+    }
+
+
+@router.get(
+    "/tactical/xt-info",
+    tags=["admin"],
+    summary="xT engine bilgisi (Karun Singh 2019 grid)",
+)
+def xt_engine_info() -> dict[str, Any]:
+    """Engine'in 12x8 grid değerlerini döndürür (debug + UI ısı haritası için)."""
+    from app.engine.xt import GRID_X, GRID_Y, XT_MATRIX
+    return {
+        "engine": "engine.xt",
+        "version": "1",
+        "source": "Karun Singh 2019 (Opta-trained)",
+        "grid_x": GRID_X,
+        "grid_y": GRID_Y,
+        "matrix": [list(row) for row in XT_MATRIX],
+    }
+
+
+@router.get(
+    "/tactical/ppda-info",
+    tags=["admin"],
+    summary="PPDA engine bilgisi (pres zone + literatür referans)",
+)
+def ppda_engine_info() -> dict[str, Any]:
+    from app.engine.ppda import PRESS_ZONE_X_MIN
+    return {
+        "engine": "engine.ppda",
+        "version": "1",
+        "press_zone_x_min": PRESS_ZONE_X_MIN,
+        "literature_reference": {
+            "klopp_liverpool_2018_2019": 8.5,
+            "guardiola_city_2018_2019": 10.0,
+            "league_average": 14.0,
+            "low_block_team": 18.0,
+        },
+        "interpretation": (
+            "PPDA = rakip pasları (hücum yarısı) / takım defansif aksiyonları "
+            "(hücum yarısı). Düşük = yüksek pres."
+        ),
+    }
+
+
+@router.get(
+    "/tactical/match-phase/{match_id}",
+    tags=["admin"],
+    summary="Maç phase analizi (1H/2H/ET split — engine.match_phase)",
+)
+def match_phase_analysis(
+    match_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir maç için phase başına agregat.
+
+    Şu an event ingest pipeline yok → boş response. Production'da
+    events tablosundan okur (Sprint 3+).
+    """
+    from app.sports import football
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    return {
+        "match_id": match_id,
+        "home_team_id": match.home_team_external_id,
+        "away_team_id": match.away_team_external_id,
+        "status": match.status,
+        "home_score": match.home_score,
+        "away_score": match.away_score,
+        "note": (
+            "Phase analysis production'da events tablosu (Sprint 3+) ile aktif olur. "
+            "Bu endpoint şu an match info döndürüyor; engine.match_phase saf hesap "
+            "çağrısı için caller event listeleri geçer."
+        ),
+    }
