@@ -4,6 +4,12 @@ Spor zekası platformu — futbol teknik ekiplerine veriyle karar desteği veren
 Bugün: futbol verisi (API-Football) çek, doğrula, depola, sun.
 Yarın: tracking, tahmin, otomasyon. Sonra: diğer sporlar.
 
+> **Production state:**
+> [`PILOT_ENGINES.md`](PILOT_ENGINES.md) — **19 production-grade engine**
+> gerçek La Liga 2018/19 (34 maç, 85k event) ile sinyal/gürültü auditten geçti.
+> 36 engine niche/spesifik kullanım için. VAEP 68k event üzerinde tabular
+> trained.
+
 > **Frontend yol haritası:**
 > [`DESIGN.md`](DESIGN.md) — tasarım sistemi (FM 2010-15 koyu tema, token, komponent spec).
 > [`PROMPT_FRONTEND_FAZ2.md`](PROMPT_FRONTEND_FAZ2.md) ✅ **tamamlandı** (commit `ad69e2b`) — layout shell + 4 komponent + 4 sayfa.

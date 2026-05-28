@@ -47,12 +47,12 @@
     },
     "transition": {
       "n_samples": 68,
-      "mean": 1.0,
-      "stdev": 0.0,
-      "cv": 0.0,
-      "team_spread": 0.0,
+      "mean": 0.1755,
+      "stdev": 0.0771,
+      "cv": 0.4392,
+      "team_spread": 0.2148,
       "n_teams": 20,
-      "verdict": "NO_SIGNAL"
+      "verdict": "STRONG_SIGNAL"
     },
     "counter_press_triggers": {
       "n_samples": 68,

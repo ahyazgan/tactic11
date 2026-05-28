@@ -14,6 +14,7 @@ La Liga 2018/19 üzerinde 34 maç ingest + 22 team-level engine audit.
 | `pressing_trigger` | **STRONG_SIGNAL** | 0.537 | 68 | 0.264 | 0.141 |
 | `field_tilt` | **STRONG_SIGNAL** | 0.485 | 68 | 0.556 | 0.500 |
 | `cross_effectiveness` | **STRONG_SIGNAL** | 0.476 | 68 | 21.500 | 10.353 |
+| `transition` | **STRONG_SIGNAL** | 0.439 | 68 | 0.215 | 0.175 |
 | `recovery_zone_heat` | **STRONG_SIGNAL** | 0.430 | 68 | 0.348 | 0.198 |
 | `tempo` | **STRONG_SIGNAL** | 0.348 | 68 | 5.053 | 6.104 |
 | `possession_quality` | **STRONG_SIGNAL** | 0.343 | 68 | 3.660 | 5.297 |
@@ -25,7 +26,6 @@ La Liga 2018/19 üzerinde 34 maç ingest + 22 team-level engine audit.
 | `direct_play` | **STRONG_SIGNAL** | 0.155 | 68 | 0.171 | 0.352 |
 | `press_resistance` | **STRONG_SIGNAL** | 0.103 | 68 | 0.331 | 0.865 |
 | `compactness` | **MODERATE** | 0.052 | 68 | 3.800 | 23.408 |
-| `transition` | **NO_SIGNAL** | 0.000 | 68 | 0.000 | 1.000 |
 
 ## Barca Sanity Check
 

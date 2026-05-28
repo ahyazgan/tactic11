@@ -20,7 +20,10 @@ from app.audit import AuditRecord, EngineResult
 from app.domain import DefensiveAction, Shot
 
 ENGINE_NAME = "engine.transition"
-ENGINE_VERSION = "1"
+# v1 → v2: full_season_audit fast_counter_ratio = 1.0 sabit kaldığını gösterdi.
+# Yeni ana metrik: recovery_to_shot_conversion (kazanımların % kaçı şutla
+# sonuçlanıyor) — La Liga'da %1-5 doğal varyans.
+ENGINE_VERSION = "2"
 
 # Pencere üst sınırı: 15 saniye = 0.25 dakika (Bielsa "transition window")
 TRANSITION_WINDOW_MIN = 0.25
@@ -35,19 +38,26 @@ TRANSITION_TRIGGERS = ("ball_recovery", "tackle", "interception")
 class TransitionReport:
     team_external_id: int
     matches_analyzed: int
+    total_recoveries: int           # tüm takım recovery aksiyonu
     recoveries_with_shot: int       # kazanım sonrası şuta giden top sayısı
+    recovery_to_shot_conversion: float  # ana metrik: rec_w_shot / total_rec
     avg_time_to_shot_min: float     # ortalama recovery→shot süresi
     fast_counter_attacks: int       # < FAST_COUNTER_MAX_MIN olanlar
-    fast_counter_ratio: float       # fast / total
+    fast_counter_ratio: float       # fast / total (v1 backward compat)
+    transitions_per_match: float    # rec_w_shot / matches_analyzed
     style_label: str                # "counter_attacking" | "balanced" | "possession"
 
 
-def _label(fast_ratio: float, recoveries: int) -> str:
-    if recoveries < 3:
+def _label(conversion: float, recoveries: int) -> str:
+    """v2: recovery_to_shot_conversion'a göre sınıflandır.
+
+    La Liga 2018/19 audit: %1-2 normal, %3+ counter-attacking takım.
+    """
+    if recoveries < 5:
         return "insufficient_data"
-    if fast_ratio >= 0.30:
+    if conversion >= 0.03:
         return "counter_attacking"
-    if fast_ratio >= 0.15:
+    if conversion >= 0.015:
         return "balanced"
     return "possession"
 
@@ -91,26 +101,35 @@ def compute_transition(
                 times_to_shot.append(gap)
                 break  # ilk şutu eşle, döngüden çık
 
-    recoveries = len(times_to_shot)
-    avg = sum(times_to_shot) / recoveries if recoveries > 0 else 0.0
+    rec_with_shot = len(times_to_shot)
+    total_recoveries = len(triggers)
+    avg = sum(times_to_shot) / rec_with_shot if rec_with_shot > 0 else 0.0
     fast = sum(1 for g in times_to_shot if g <= FAST_COUNTER_MAX_MIN)
-    fast_ratio = fast / recoveries if recoveries > 0 else 0.0
+    fast_ratio = fast / rec_with_shot if rec_with_shot > 0 else 0.0
+    conversion = rec_with_shot / total_recoveries if total_recoveries > 0 else 0.0
+    per_match = rec_with_shot / matches_analyzed if matches_analyzed > 0 else 0.0
 
     report = TransitionReport(
         team_external_id=team_external_id,
         matches_analyzed=matches_analyzed,
-        recoveries_with_shot=recoveries,
+        total_recoveries=total_recoveries,
+        recoveries_with_shot=rec_with_shot,
+        recovery_to_shot_conversion=round(conversion, 4),
         avg_time_to_shot_min=round(avg, 3),
         fast_counter_attacks=fast,
         fast_counter_ratio=round(fast_ratio, 3),
-        style_label=_label(fast_ratio, recoveries),
+        transitions_per_match=round(per_match, 2),
+        style_label=_label(conversion, total_recoveries),
     )
     audit = AuditRecord(
         engine=ENGINE_NAME, engine_version=ENGINE_VERSION,
         subject_type="team", subject_id=team_external_id,
         metric="transition_speed",
         value={
-            "recoveries_with_shot": recoveries,
+            "total_recoveries": total_recoveries,
+            "recoveries_with_shot": rec_with_shot,
+            "recovery_to_shot_conversion": report.recovery_to_shot_conversion,
+            "transitions_per_match": report.transitions_per_match,
             "avg_time_to_shot_min": report.avg_time_to_shot_min,
             "fast_counter_ratio": report.fast_counter_ratio,
             "style_label": report.style_label,
@@ -120,6 +139,9 @@ def compute_transition(
             "fast_counter_max_min": FAST_COUNTER_MAX_MIN,
             "matches_analyzed": matches_analyzed,
         },
-        formula="mean(time from recovery to next shot within window)",
+        formula=(
+            "v2: recovery_to_shot_conversion = rec_w_shot / total_recoveries; "
+            "style: ≥3% counter_attacking, ≥1.5% balanced, < possession"
+        ),
     )
     return EngineResult(value=report, audit=audit)

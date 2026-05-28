@@ -76,7 +76,7 @@ TEAM_ENGINES: list[dict[str, Any]] = [
     {"name": "recovery_zone_heat", "metric": "attacking_share"},
     {"name": "defensive_line", "metric": "avg_x"},
     {"name": "compactness", "metric": "overall_stdev"},
-    {"name": "transition", "metric": "fast_counter_ratio"},
+    {"name": "transition", "metric": "recovery_to_shot_conversion"},
     {"name": "counter_press_triggers", "metric": "pressure_responses"},
     {"name": "direct_play", "metric": "avg_directness"},
     {"name": "tempo", "metric": "passes_per_minute"},
