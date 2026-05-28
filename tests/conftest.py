@@ -14,6 +14,23 @@ from app.db.base import Base
 from app.db.tenant_context import DEFAULT_TENANT_ID, set_current_tenant_id
 
 
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter():
+    """Her test öncesinde rate limiter buckets'ı temizle.
+
+    Module-level singleton (`app.api.main._rate_limiter`) testler arasında
+    state taşır; 120 req/dk eşiğine ulaşınca sonraki test 429 alır.
+    Bu fixture autouse=True ile her test öncesi reset eder.
+    """
+    try:
+        from app.api.main import _rate_limiter
+        with _rate_limiter._lock:
+            _rate_limiter._window.clear()
+    except (ImportError, AttributeError):
+        pass
+    yield
+
+
 @pytest.fixture()
 def session() -> Session:
     # StaticPool + check_same_thread=False: TestClient farklı thread'den de

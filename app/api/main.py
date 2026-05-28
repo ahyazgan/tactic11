@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.ai import ClaudeCommentator
 from app.api.admin import router as admin_router
+from app.api.live import router as live_router
 from app.api.auth import (
     require_api_key,
 )
@@ -1237,3 +1238,6 @@ app.include_router(auth_router)
 
 protected.include_router(admin_router)
 app.include_router(protected)
+# WebSocket router — auth FastAPI WebSocket'ta header bazlı; pilot demo
+# için public route (production'da Cookie/Header-based auth eklenir).
+app.include_router(live_router)

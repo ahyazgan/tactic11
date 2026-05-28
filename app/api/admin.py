@@ -1372,6 +1372,77 @@ def team_tactical_trend(
 
 
 @router.get(
+    "/teams/{team_id}/set-piece-pattern-history",
+    tags=["admin"],
+    summary="Rakibin geçmiş set-piece pattern'leri (canlı maç alert için)",
+)
+def team_set_piece_pattern_history(
+    team_id: int,
+    last_n: int = Query(default=5, ge=1, le=20),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir takımın (genelde rakip) son N maçındaki set-piece şutlarını
+    pattern olarak özetler. Canlı maçta rakip korner kazandığında bu
+    alert_text'i gösterir."""
+    from app.data.loaders import load_team_events
+    from app.engine.set_piece_pattern_history import (
+        compute_set_piece_pattern_history,
+    )
+    loaded = load_team_events(session, team_id, last_n=last_n)
+    if loaded.total == 0:
+        return {
+            "team_id": team_id, "last_n": last_n, "events_loaded": 0,
+            "note": "events tablosunda kayıt yok",
+        }
+    result = compute_set_piece_pattern_history(
+        team_id, loaded.shots, matches_analyzed=len(loaded.match_ids),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/matches/{match_id}/live-sub-recommendation",
+    tags=["admin"],
+    summary="Canlı maç oyuncu değişikliği önerisi (retrospective demo da)",
+)
+def match_live_sub_recommendation(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Belirli bir maç dakikasında top 3 sub önerisi (fatigue + skor + dakika)."""
+    from app.data.loaders import load_match_events
+    from app.engine.live_sub_recommendation import compute_live_sub_recommendation
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Bu maç için event ingest yapılmamış"}
+
+    home_id = match.home_team_external_id
+    my_score = match.home_score if my_team_id == home_id else match.away_score
+    opp_score = match.away_score if my_team_id == home_id else match.home_score
+    passes = [p for p in loaded.passes if p.minute <= current_minute]
+    defs = [d for d in loaded.defensive_actions if d.minute <= current_minute]
+    result = compute_live_sub_recommendation(
+        my_team_id, passes, defs,
+        current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
     "/players/{player_id}/tactical-trend",
     tags=["admin"],
     summary="Oyuncu sezon-boyu trend (xT, xA, VAEP, prog_passes, press_resistance)",
