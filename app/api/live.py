@@ -123,6 +123,47 @@ def _compute_live_snapshot(
             opp_id, passes_so_far, current_minute=current_minute,
         )
         snapshot["opponent_shape_drift"] = engine_result_to_dict(shape)["value"]
+
+        # Faz 6: maç-içi karar mekanizması
+        from app.engine.momentum_tracker import compute_momentum
+        from app.engine.sub_timing import compute_sub_timing
+        mom = compute_momentum(
+            my_team_id, opp_id, passes_so_far, defs_so_far, shots_so_far,
+            current_minute=current_minute,
+        ).value
+        snapshot["momentum"] = {
+            "score": mom.momentum_score, "holder": mom.momentum_holder,
+            "press_breaking": mom.press_breaking,
+            "xg_swing_alert": mom.xg_swing_alert,
+            "alert_text": mom.alert_text,
+        }
+        timing = compute_sub_timing(
+            my_team_id, passes_so_far, defs_so_far,
+            current_minute=current_minute, my_score=my_score,
+            opponent_score=opp_score,
+        ).value
+        snapshot["sub_timing"] = {
+            "package": list(timing.package_recommendation),
+            "rationale": timing.package_rationale,
+            "advices": [
+                {"player_id": a.player_external_id, "verdict": a.timing_verdict,
+                 "impact": a.impact_estimate}
+                for a in timing.advices[:3]
+            ],
+        }
+        from app.engine.live_tactical_trigger import (
+            compute_live_tactical_trigger,
+        )
+        trig = compute_live_tactical_trigger(
+            my_team_id, current_minute=current_minute,
+            my_score=my_score, opponent_score=opp_score,
+            momentum_score=mom.momentum_score,
+        ).value
+        snapshot["tactical_triggers"] = [
+            {"type": t.trigger_type, "urgency": t.urgency,
+             "recommendation": t.recommendation}
+            for t in trig.triggers if t.fired
+        ]
     except (ValueError, ZeroDivisionError, KeyError, TypeError) as e:
         snapshot["error"] = str(e)
     return snapshot
