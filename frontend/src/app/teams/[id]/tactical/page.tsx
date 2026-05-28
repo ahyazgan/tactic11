@@ -234,7 +234,7 @@ export default function TacticalProfilePage() {
           />
         )}
         {tp.coaching_identity && !("error" in tp.coaching_identity)
-          && tp.coaching_identity.value.vector && (
+          && Boolean(tp.coaching_identity.value.vector) && (
           <CoachingIdentityRadar
             vector={tp.coaching_identity.value.vector as never}
             archetype={String(tp.coaching_identity.value.archetype || "")}

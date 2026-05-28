@@ -7,7 +7,7 @@
 import * as React from "react";
 import { cn } from "@/lib/cn";
 
-export interface PanelProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface PanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
   title?: React.ReactNode;
   actions?: React.ReactNode;
 }

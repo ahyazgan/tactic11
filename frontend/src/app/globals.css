@@ -4,22 +4,26 @@
 
 :root { color-scheme: dark; }
 
-html, body { background: theme('colors.bg'); color: theme('colors.fg'); }
+html, body { background: theme('colors.bg'); color: theme('colors.text'); }
 
 body {
   font-family: theme('fontFamily.sans');
   -webkit-font-smoothing: antialiased;
 }
 
+/* DESIGN.md legacy — eski sayfalar refactor edilene kadar */
 .card {
-  background: theme('colors.panel');
+  background: theme('colors.surface');
   border: 1px solid theme('colors.border');
   border-radius: 0.5rem;
   padding: 1rem;
 }
 
-/* Mobile / touch-line tablet: 44px minimum touch target (Apple HIG / WCAG) */
-button, input[type="submit"], select {
+/* Touch-line tablet (live/halftime/decisions): 44px touch target.
+   Sadece data-touch="true" işaretli butonlarda uygulanır; FM-tarz dense
+   tablo butonları (sort, action chip) küçük kalmalı. */
+button[data-touch="true"],
+input[type="submit"][data-touch="true"] {
   min-height: 44px;
 }
 
