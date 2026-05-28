@@ -98,11 +98,21 @@ export default function LiveMatchPage() {
   const tenantId = search.get("tenant_id") ?? "t-default";
 
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  const [connected, setConnected] = useState(false);
+  // Faz 3: 4 state — connecting | open | reconnecting | closed
+  const [wsState, setWsState] = useState<
+    "connecting" | "open" | "reconnecting" | "closed"
+  >("connecting");
+  const [reconnectCountdown, setReconnectCountdown] = useState<number | null>(null);
   const [ended, setEnded] = useState(false);
   const [history, setHistory] = useState<Snapshot[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
   const notifiedPlayersRef = useRef<Set<number>>(new Set());
+  const reconnectAttemptsRef = useRef<number>(0);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intentionalCloseRef = useRef<boolean>(false);
+  const [manualReconnectTrigger, setManualReconnectTrigger] = useState(0);
+
+  const connected = wsState === "open";
 
   // İlk render'da push notification izni iste
   useEffect(() => {
@@ -113,26 +123,33 @@ export default function LiveMatchPage() {
   }, []);
 
   useEffect(() => {
-    if (!myTeam) return;
+    if (!myTeam || ended) return;
     const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
     const url =
       `${proto}//${host}/api/ws/matches/${matchId}/live` +
       `?my_team_id=${myTeam}&interval_seconds=${interval}` +
       `&max_minute=${maxMinute}&tenant_id=${tenantId}`;
+
+    intentionalCloseRef.current = false;
+    setWsState("connecting");
     const ws = new WebSocket(url);
     wsRef.current = ws;
-    ws.onopen = () => setConnected(true);
+    ws.onopen = () => {
+      setWsState("open");
+      reconnectAttemptsRef.current = 0;
+      setReconnectCountdown(null);
+    };
     ws.onmessage = (ev) => {
       try {
         const data = JSON.parse(ev.data) as Snapshot;
         if (data.type === "match_ended") {
           setEnded(true);
+          intentionalCloseRef.current = true;
           return;
         }
         setSnapshot(data);
         setHistory((h) => [...h.slice(-19), data]);
-        // Push notification: high urgency yeni gelen
         const recs = data.live_sub_recommendation?.recommendations ?? [];
         for (const rec of recs) {
           if (rec.urgency_label === "high"
@@ -145,9 +162,44 @@ export default function LiveMatchPage() {
         // ignore
       }
     };
-    ws.onclose = () => setConnected(false);
-    return () => ws.close();
-  }, [matchId, myTeam, interval, maxMinute, tenantId]);
+    ws.onclose = () => {
+      if (intentionalCloseRef.current || ended) {
+        setWsState("closed");
+        return;
+      }
+      // Exponential backoff: 2, 4, 8, 16, max 30 sn; max 10 deneme
+      const attempts = reconnectAttemptsRef.current;
+      if (attempts >= 10) {
+        setWsState("closed");
+        return;
+      }
+      const delay = Math.min(30_000, 2_000 * Math.pow(2, attempts));
+      reconnectAttemptsRef.current = attempts + 1;
+      setWsState("reconnecting");
+      setReconnectCountdown(Math.ceil(delay / 1000));
+
+      // Geri sayım
+      const countdownInterval = setInterval(() => {
+        setReconnectCountdown((c) => (c !== null && c > 0 ? c - 1 : c));
+      }, 1000);
+      reconnectTimerRef.current = setTimeout(() => {
+        clearInterval(countdownInterval);
+        setReconnectCountdown(null);
+        // Bağlantıyı yeniden kur — manual trigger ile useEffect tetikle
+        setManualReconnectTrigger((x) => x + 1);
+      }, delay);
+    };
+    return () => {
+      intentionalCloseRef.current = true;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      ws.close();
+    };
+  }, [matchId, myTeam, interval, maxMinute, tenantId, ended, manualReconnectTrigger]);
+
+  const handleManualReconnect = () => {
+    reconnectAttemptsRef.current = 0;
+    setManualReconnectTrigger((x) => x + 1);
+  };
 
   if (!myTeam) {
     return (
@@ -168,16 +220,38 @@ export default function LiveMatchPage() {
         <h1 className="text-2xl font-bold">
           Canlı — Maç #{matchId}
         </h1>
-        <div className="text-xs uppercase">
-          {ended ? (
-            <span className="px-2 py-0.5 rounded bg-muted/30">Maç bitti</span>
-          ) : connected ? (
-            <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-400">
+        <div className="text-xs uppercase flex items-center gap-2">
+          {ended && (
+            <span className="px-2 py-0.5 rounded bg-textmut/30">Maç bitti</span>
+          )}
+          {!ended && wsState === "open" && (
+            <span className="px-2 py-0.5 rounded bg-win/15 text-win">
               ● Canlı
             </span>
-          ) : (
-            <span className="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400">
+          )}
+          {!ended && wsState === "connecting" && (
+            <span className="px-2 py-0.5 rounded bg-warn/15 text-warn">
               Bağlanıyor...
+            </span>
+          )}
+          {!ended && wsState === "reconnecting" && (
+            <span className="px-2 py-0.5 rounded bg-warn/15 text-warn">
+              Yeniden bağlanıyor
+              {reconnectCountdown !== null && ` (${reconnectCountdown}sn)`}
+            </span>
+          )}
+          {!ended && wsState === "closed" && (
+            <span className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded bg-danger/15 text-danger">
+                Bağlantı koptu
+              </span>
+              <button
+                type="button"
+                onClick={handleManualReconnect}
+                className="text-[11px] uppercase px-2 py-1 rounded border border-borderlt text-accent hover:bg-surface2"
+              >
+                Yeniden bağlan
+              </button>
             </span>
           )}
         </div>

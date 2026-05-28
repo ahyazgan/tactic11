@@ -1,19 +1,21 @@
 /**
- * Sidebar — DESIGN.md §3. w-56, dikey nav, aktif item border-l-2 accent.
- * Admin nav sadece role==='admin'.
+ * Sidebar — DESIGN.md §3 + Faz 3:
+ * w-56, dikey nav, aktif border-l-2 accent, admin role guard.
+ * Footer: last-sync timestamp + build SHA.
  */
 "use client";
 
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import useSWR from "swr";
 import { cn } from "@/lib/cn";
+import { apiFetch } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
 
 interface NavItem {
   href: string;
   label: string;
-  /** Hangi rollere görünür (boşsa hepsi). */
   roles?: ("admin" | "analyst" | "coach" | "viewer")[];
 }
 
@@ -28,6 +30,21 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Admin", roles: ["admin"] },
 ];
 
+interface JobRow {
+  job_name: string;
+  status: string;
+  ended_at: string | null;
+}
+
+function relativeTime(iso: string): string {
+  const then = new Date(iso).getTime();
+  const diff = Date.now() - then;
+  if (diff < 60_000) return "az önce";
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} dk önce`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} sa önce`;
+  return `${Math.floor(diff / 86_400_000)} g önce`;
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useCurrentUser();
@@ -35,6 +52,17 @@ export function Sidebar() {
 
   const visibleItems = NAV_ITEMS.filter(
     (item) => !item.roles || item.roles.includes(role),
+  );
+
+  const shouldFetchJobs =
+    user?.role === "admin" || user?.role === "analyst";
+  const { data: jobs } = useSWR<JobRow[]>(
+    shouldFetchJobs ? "/admin/jobs" : null,
+    apiFetch,
+    { refreshInterval: 5 * 60_000 },
+  );
+  const lastSync = jobs?.find(
+    (j) => j.job_name.startsWith("sync") && j.status === "success" && j.ended_at,
   );
 
   return (
@@ -59,18 +87,27 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <SidebarFooter />
+      <SidebarFooter lastSyncIso={lastSync?.ended_at ?? null} />
     </aside>
   );
 }
 
-function SidebarFooter() {
+function SidebarFooter({ lastSyncIso }: { lastSyncIso: string | null }) {
   const buildSha = process.env.NEXT_PUBLIC_BUILD_SHA ?? "dev";
   const buildLabel = buildSha.slice(0, 7);
   return (
-    <footer className="px-4 py-2 border-t border-border text-[10px] text-textdim">
+    <footer className="px-4 py-2 border-t border-border text-[10px] text-textdim space-y-0.5">
+      {lastSyncIso && (
+        <Link
+          href="/admin"
+          className="block hover:text-text transition-colors"
+          title={new Date(lastSyncIso).toLocaleString("tr-TR")}
+        >
+          Son sync: {relativeTime(lastSyncIso)}
+        </Link>
+      )}
       <div>DESIGN.md • v1</div>
-      <div className="mt-0.5 font-mono">build {buildLabel}</div>
+      <div className="font-mono">build {buildLabel}</div>
     </footer>
   );
 }
