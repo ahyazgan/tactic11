@@ -22,6 +22,7 @@ from app.api.observability import METRICS, PROCESS_STARTED_AT
 from app.api.pagination import build_next_cursor, decode_cursor
 from app.api.serialize import engine_result_to_dict
 from app.core.config import get_settings
+from app.data.cache.store import cache_get, cache_set
 from app.db import models
 from app.db.session import get_session
 from app.engine.calibration import compute_calibration
@@ -29,6 +30,11 @@ from app.snapshot import diff_snapshots, get_latest_snapshot, get_snapshot_at_or
 from app.sports import football
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+# Tactical profile/trend cache: 1 saat TTL (event ingest sonrası
+# /admin/tactical-cache/clear ile manuel invalidate)
+TACTICAL_CACHE_SOURCE = "tactical_profile"
+TACTICAL_CACHE_TTL_SECONDS = 3600
 
 
 @router.get("/jobs")
@@ -1007,13 +1013,22 @@ def team_tactical_profile(
     last_n: int = Query(default=10, ge=1, le=50),
     opponent_id: int | None = Query(default=None,
         description="Field tilt / coaching identity için rakip referansı"),
+    use_cache: bool = Query(default=True),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Bir takımın son N maçındaki olaylardan 20+ engine'in batch çıktısı.
 
     Events tablosu boşsa `events_loaded=0` döner ve ana metrikler `null` olur —
     ingest pipeline çalıştırılması beklenir.
+    `use_cache=true` (default): 1 saat TTL; geçersiz kıl
+    `/admin/tactical-cache/clear`.
     """
+    cache_key = f"team_profile:{team_id}:{last_n}:{opponent_id or 'none'}"
+    if use_cache:
+        cached = cache_get(session, source=TACTICAL_CACHE_SOURCE, key=cache_key)
+        if cached is not None:
+            cached["_cached"] = True
+            return cached
     from app.data.loaders import load_team_events
     from app.engine.build_up_pattern import compute_build_up_pattern
     from app.engine.channel_preference import compute_channel_preference
@@ -1110,7 +1125,7 @@ def team_tactical_profile(
         profile["coaching_identity"] = _safe(lambda: compute_coaching_identity(
             team_id, opponent_id, p, d, s, matches_analyzed=matches_n))
 
-    return {
+    response = {
         "team_id": team_id,
         "last_n": last_n,
         "matches_analyzed": loaded.match_ids,
@@ -1120,7 +1135,37 @@ def team_tactical_profile(
             "defensive_actions": len(d), "shots": len(s),
         },
         "tactical_profile": profile,
+        "_cached": False,
     }
+    if use_cache:
+        cache_set(
+            session, source=TACTICAL_CACHE_SOURCE, key=cache_key,
+            value=response, ttl_seconds=TACTICAL_CACHE_TTL_SECONDS,
+        )
+        session.commit()
+    return response
+
+
+@router.post(
+    "/tactical-cache/clear",
+    tags=["admin"],
+    summary="Tactical profile/trend cache temizle (event ingest sonrası)",
+)
+def tactical_cache_clear(
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """tactical_profile source'lu tüm cache satırlarını sil."""
+    rows = session.execute(
+        select(models.CacheEntry).where(
+            models.CacheEntry.source == TACTICAL_CACHE_SOURCE,
+        )
+    ).scalars().all()
+    n = 0
+    for r in rows:
+        session.delete(r)
+        n += 1
+    session.commit()
+    return {"deleted": n}
 
 
 @router.get(
@@ -1327,6 +1372,120 @@ def team_tactical_trend(
 
 
 @router.get(
+    "/players/{player_id}/tactical-trend",
+    tags=["admin"],
+    summary="Oyuncu sezon-boyu trend (xT, xA, VAEP, prog_passes, press_resistance)",
+)
+def player_tactical_trend(
+    player_id: int,
+    last_n: int = Query(default=10, ge=2, le=50),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir oyuncunun son N maçındaki 5 metric zaman serisi + trend."""
+    from app.data.loaders import load_match_events
+    from app.engine.press_resistance import compute_press_resistance
+    from app.engine.progressive_passes import compute_progressive_passes
+    from app.engine.tactical_trend import compute_tactical_trend
+    from app.engine.vaep import compute_vaep
+    from app.engine.xa import compute_player_xa
+    from app.engine.xt import compute_player_xt
+
+    # PlayerAppearance üzerinden son N maçı al (kronolojik için tersine çevir)
+    appearances = list(session.execute(
+        select(models.PlayerAppearance).where(
+            models.PlayerAppearance.sport == football.SPORT_NAME,
+            models.PlayerAppearance.player_external_id == player_id,
+        ).order_by(models.PlayerAppearance.kickoff.desc()).limit(last_n)
+    ).scalars())
+    if not appearances:
+        return {
+            "player_id": player_id, "last_n": last_n,
+            "matches_analyzed": 0,
+            "note": "Bu oyuncu için PlayerAppearance yok",
+        }
+    appearances.reverse()  # kronolojik
+
+    series: dict[str, list[float]] = {
+        "xt_added": [], "xa_total": [], "vaep_per_90": [],
+        "progressive_per_90": [], "press_resistance": [],
+    }
+    match_meta: list[dict[str, Any]] = []
+    for a in appearances:
+        loaded = load_match_events(session, a.match_external_id)
+        if loaded.total == 0:
+            continue
+        try:
+            xt = compute_player_xt(player_id, loaded.passes, loaded.carries).value
+            xa = compute_player_xa(
+                player_id, loaded.passes, loaded.shots,
+                minutes_played=a.minutes or 90,
+            ).value
+            vaep = compute_vaep(
+                player_external_id=player_id, all_passes=loaded.passes,
+                all_carries=loaded.carries, all_shots=loaded.shots,
+                minutes_played=float(a.minutes or 90),
+            ).value
+            prog = compute_progressive_passes(
+                player_external_id=player_id, all_passes=loaded.passes,
+                player_minutes_played=float(a.minutes or 90),
+            ).value
+            press = compute_press_resistance(
+                player_external_id=player_id, all_passes=loaded.passes,
+                all_def_actions=loaded.defensive_actions,
+            ).value
+        except (ValueError, ZeroDivisionError, KeyError, TypeError):
+            continue
+        series["xt_added"].append(xt.xt_per_90)
+        series["xa_total"].append(xa.xa_per_90)
+        series["vaep_per_90"].append(vaep.vaep_per_90 or 0.0)
+        series["progressive_per_90"].append(prog.progressive_per_90 or 0.0)
+        series["press_resistance"].append(press.completion_rate_under_press)
+        match_meta.append({
+            "match_id": a.match_external_id,
+            "kickoff": a.kickoff.isoformat() if a.kickoff else None,
+            "minutes": a.minutes,
+        })
+
+    if not match_meta:
+        return {
+            "player_id": player_id, "last_n": last_n,
+            "matches_analyzed": 0,
+            "note": "Hiçbir maç için event ingest yapılmamış",
+        }
+
+    higher_better = {
+        "xt_added": True, "xa_total": True, "vaep_per_90": True,
+        "progressive_per_90": True, "press_resistance": True,
+    }
+    trends: dict[str, dict[str, Any]] = {}
+    for metric, vals in series.items():
+        trend = compute_tactical_trend(
+            metric, vals,
+            higher_is_better=higher_better[metric],
+            subject_type="player", subject_id=player_id,
+        ).value
+        trends[metric] = {
+            "series": list(trend.series),
+            "mean": trend.mean,
+            "slope": trend.slope,
+            "direction": trend.direction,
+            "biggest_shift": trend.biggest_match_to_match_shift,
+            "biggest_shift_match_idx": trend.biggest_shift_match_idx,
+            "biggest_shift_match_id": (
+                match_meta[trend.biggest_shift_match_idx]["match_id"]
+                if trend.biggest_shift_match_idx < len(match_meta) else None
+            ),
+        }
+
+    return {
+        "player_id": player_id, "last_n": last_n,
+        "matches_analyzed": len(match_meta),
+        "matches": match_meta,
+        "trends": trends,
+    }
+
+
+@router.get(
     "/matches/{match_id}/halftime-brief",
     tags=["admin"],
     summary="Devre arası analiz brief (1. yarı event'leri üzerinde 7 engine + AI)",
@@ -1334,10 +1493,17 @@ def team_tactical_trend(
 def match_halftime_brief(
     match_id: int,
     my_team_id: int = Query(..., description="Brief'in hangi takım için olacağı"),
+    persist: bool = Query(default=True, description="agent_outputs'a kaydet"),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    """Devre arası bilgi paneli — 1. yarı event'lerinden 7+ engine + AI brief."""
+    """Devre arası bilgi paneli — 1. yarı event'lerinden 7+ engine + AI brief.
+
+    `persist=true` (default): sonucu agent_outputs tablosuna idempotent yaz
+    (aynı match + team için tekrar çağırılırsa update). History endpoint
+    `/admin/halftime-brief-history` aynı satırları döner.
+    """
     from app.agents import HalftimeAnalysisAgent
+    from app.agents.store import save_agent_output
 
     agent = HalftimeAnalysisAgent()
     try:
@@ -1350,7 +1516,48 @@ def match_halftime_brief(
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if persist:
+        # my_team_id'yi agent_version'a encode et — iki takım için ayrı satır
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name,
+            agent_version=f"{agent.version}-team{my_team_id}",
+        )
+        session.commit()
+
     return result.output_json
+
+
+@router.get(
+    "/halftime-brief-history",
+    tags=["admin"],
+    summary="Kaydedilmiş devre arası brief'lerin listesi",
+)
+def halftime_brief_history(
+    limit: int = Query(default=20, ge=1, le=100),
+    match_id: int | None = Query(default=None),
+    session: Session = Depends(get_session),
+) -> list[dict[str, Any]]:
+    """agent_outputs'tan halftime_analysis tipindeki kayıtları döner."""
+    stmt = select(models.AgentOutput).where(
+        models.AgentOutput.agent_name == "halftime_analysis",
+    )
+    if match_id is not None:
+        stmt = stmt.where(models.AgentOutput.subject_id == match_id)
+    stmt = stmt.order_by(desc(models.AgentOutput.updated_at)).limit(limit)
+    rows = list(session.execute(stmt).scalars())
+    return [
+        {
+            "id": r.id,
+            "agent_version": r.agent_version,
+            "match_id": r.subject_id,
+            "summary": r.summary,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+        }
+        for r in rows
+    ]
 
 
 @router.post(
