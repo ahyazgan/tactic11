@@ -23,10 +23,15 @@ from sqlalchemy.orm import Session
 from app.agents.base import Agent, AgentResult
 from app.ai import AnthropicClient, ClaudeCommentator
 from app.api.serialize import engine_result_to_dict
+from app.data.loaders import load_team_events
 from app.db import models
+from app.engine.coaching_identity import compute_coaching_identity
 from app.engine.form import compute_form
 from app.engine.opponent import compute_head_to_head
+from app.engine.ppda import compute_ppda
+from app.engine.pressing_trigger import compute_pressing_trigger
 from app.engine.rating import compute_team_rating
+from app.engine.recovery_zone_heat import compute_recovery_zone_heat
 from app.sports import football
 
 
@@ -38,7 +43,7 @@ class OpponentScoutAgent(Agent):
     """Sıradaki rakibe odaklı scout raporu."""
 
     name = "opponent_scout"
-    version = "1"
+    version = "3"  # v3: events-based taktiksel signals (PPDA + pres + recovery + identity)
 
     def __init__(self, *, commentator: ClaudeCommentator | None = None, last_n: int = 5):
         self._commentator = commentator or ClaudeCommentator(AnthropicClient())
@@ -109,11 +114,40 @@ class OpponentScoutAgent(Agent):
         ]
         h2h = compute_head_to_head(team_id, opponent_id, h2h_prior)
 
+        # v3: events tablosu varsa rakibin taktiksel kimliğini çıkar
+        opp_events = load_team_events(session, opponent_id, last_n=self._last_n)
+        tactical_signals: dict[str, Any] = {}
+        if opp_events.total > 0:
+            try:
+                ppda = compute_ppda(opponent_id, opp_events.passes,
+                                    opp_events.defensive_actions,
+                                    matches_analyzed=len(opp_events.match_ids))
+                ptrig = compute_pressing_trigger(opponent_id, opp_events.passes,
+                                                  opp_events.defensive_actions,
+                                                  matches_analyzed=len(opp_events.match_ids))
+                rzh = compute_recovery_zone_heat(opponent_id,
+                                                  opp_events.defensive_actions,
+                                                  matches_analyzed=len(opp_events.match_ids))
+                identity = compute_coaching_identity(
+                    opponent_id, team_id,
+                    opp_events.passes, opp_events.defensive_actions, opp_events.shots,
+                    matches_analyzed=len(opp_events.match_ids),
+                )
+                tactical_signals = {
+                    "ppda": engine_result_to_dict(ppda),
+                    "pressing_trigger": engine_result_to_dict(ptrig),
+                    "recovery_zone_heat": engine_result_to_dict(rzh),
+                    "coaching_identity": engine_result_to_dict(identity),
+                }
+            except (ValueError, ZeroDivisionError, KeyError, TypeError):
+                tactical_signals = {}
+
         ai_brief = _build_scout_brief(
             commentator=self._commentator,
             my_team_id=team_id, opponent_id=opponent_id,
             is_home_for_me=is_home,
             opp_form=opp_form, opp_rating=opp_rating, h2h=h2h,
+            tactical_signals=tactical_signals,
             kickoff_iso=next_match.kickoff.isoformat(),
         )
 
@@ -128,6 +162,7 @@ class OpponentScoutAgent(Agent):
             "opponent_form": engine_result_to_dict(opp_form),
             "opponent_rating": engine_result_to_dict(opp_rating),
             "h2h": engine_result_to_dict(h2h),
+            "tactical_signals": tactical_signals,
             "ai_brief": ai_brief,
         }
         of = opp_form.value
@@ -146,23 +181,27 @@ class OpponentScoutAgent(Agent):
 def _build_scout_brief(
     *, commentator: ClaudeCommentator,
     my_team_id: int, opponent_id: int, is_home_for_me: bool,
-    opp_form, opp_rating, h2h, kickoff_iso: str,
+    opp_form, opp_rating, h2h,
+    tactical_signals: dict[str, Any], kickoff_iso: str,
 ) -> str:
     of = opp_form.value
     or_ = opp_rating.value
     hv = h2h.value
+    tac_summary = _summarize_tactical(tactical_signals)
     if commentator._client.is_stub():
         return (
             f"[stub:opponent_scout] benim takım {my_team_id} vs rakip {opponent_id} "
             f"({'ev' if is_home_for_me else 'dep'}): rakip form "
             f"{of.wins}-{of.draws}-{of.losses}, rating {or_.rating}, "
-            f"H2H {hv.team_a_wins}-{hv.draws}-{hv.team_b_wins}. ANTHROPIC_API_KEY yok."
+            f"H2H {hv.team_a_wins}-{hv.draws}-{hv.team_b_wins}. "
+            f"{tac_summary or 'ANTHROPIC_API_KEY yok.'}"
         )
     system = (
         "Sen futbol teknik direktörüne rakip scout raporu sunan analiz asistanısın. "
         "150-200 kelime. Yapı: (1) rakibin son form trendi + en güçlü yön, "
         "(2) hangi durumda zorlandığı (ev/dep/gol yedi/gol attı), "
-        "(3) bizimle önceki maç paterni, (4) somut maç planı önerisi (1-2 madde)."
+        "(3) bizimle önceki maç paterni, (4) taktiksel parmak izi (pres + hat + "
+        "kazanım bölgesi), (5) somut maç planı önerisi (1-2 madde)."
     )
     user = (
         f"Benim takım: {my_team_id} ({'ev' if is_home_for_me else 'dep'} oynayacağız)\n"
@@ -176,4 +215,30 @@ def _build_scout_brief(
         f"benim={hv.team_a_wins} beraberlik={hv.draws} rakip={hv.team_b_wins}, "
         f"goller benim={hv.team_a_goals} rakip={hv.team_b_goals}\n"
     )
+    if tac_summary:
+        user += f"\nTaktiksel parmak izi: {tac_summary}\n"
     return commentator._call(system, user, max_tokens=500)
+
+
+def _summarize_tactical(signals: dict[str, Any]) -> str:
+    """tactical_signals JSON → kısa Türkçe özet."""
+    if not signals:
+        return ""
+    parts: list[str] = []
+    if "ppda" in signals:
+        v = signals["ppda"].get("value", {})
+        if "ppda" in v:
+            parts.append(f"PPDA {v['ppda']}")
+    if "pressing_trigger" in signals:
+        v = signals["pressing_trigger"].get("value", {})
+        if "style_label" in v:
+            parts.append(f"pres tarzı={v['style_label']}")
+    if "recovery_zone_heat" in signals:
+        v = signals["recovery_zone_heat"].get("value", {})
+        if "style_label" in v:
+            parts.append(f"kazanım tarzı={v['style_label']}")
+    if "coaching_identity" in signals:
+        v = signals["coaching_identity"].get("value", {})
+        if "archetype" in v:
+            parts.append(f"koç arketipi={v['archetype']}")
+    return "; ".join(parts)

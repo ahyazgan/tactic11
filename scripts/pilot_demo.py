@@ -302,6 +302,38 @@ def _predict_summary(tenant_id: str) -> dict | None:
         }
 
 
+def _tactical_inventory() -> dict:
+    """30 engine'in canlı listesi (Faz N + Wave 2 + Wave 3)."""
+    faz_n = [
+        "xt", "xa", "ppda", "field_tilt",
+        "player_role", "xg_match_graph",
+        "build_up_pattern", "match_phase",
+    ]
+    wave_2 = [
+        "pressing_trigger", "defensive_line", "compactness",
+        "transition", "channel_preference", "press_resistance",
+        "set_piece_zones",
+    ]
+    wave_3 = [
+        "cross_effectiveness", "cutback_frequency", "off_ball_runs",
+        "final_third_entries", "defensive_duels", "recovery_zone_heat",
+        "counter_press_triggers", "direct_play", "possession_quality",
+        "tempo", "overperformance", "progressive_passes",
+        "carries_into_final_third",
+    ]
+    composite = ["match_dominance", "coaching_identity"]
+    vaep = ["vaep"]  # KU Leuven Possession Value, heuristic baseline
+    return {
+        "faz_n": f"{len(faz_n)} modül ({', '.join(faz_n[:3])}, ...)",
+        "wave_2": f"{len(wave_2)} modül",
+        "wave_3": f"{len(wave_3)} modül",
+        "composite": f"{len(composite)} modül (match_dominance, coaching_identity)",
+        "vaep": f"{len(vaep)} modül (Possession Value heuristic baseline)",
+        "total_engines": (len(faz_n) + len(wave_2) + len(wave_3)
+                          + len(composite) + len(vaep)),
+    }
+
+
 def _assistant_chat_demo(tenant_id: str) -> str:
     """Basit assistant chat — stub mode'da bile çıktı verir."""
     from app.assistant import chat as assistant_chat
@@ -466,7 +498,7 @@ def main() -> int:
     _row("status", xg["status"])
     _row("mode", xg["mode_in_use"])
 
-    _step("7/8 Tahmin örneği (engine.predict + Dixon-Coles)")
+    _step("7/9 Tahmin örneği (engine.predict + Dixon-Coles)")
     predict = _predict_summary(tenant_id)
     if predict:
         _row("match", f"{predict['home_team_id']} vs {predict['away_team_id']}")
@@ -475,7 +507,16 @@ def main() -> int:
                     f"{predict['prob_away_win']*100:.0f}%")
         _row("most likely", predict["most_likely_score"])
 
-    _step("8/8 Asistan örneği (Claude tool_use)")
+    _step("8/9 Taktiksel modüller (Faz N + Wave 2 + 3 — 30 engine envanteri)")
+    tactical = _tactical_inventory()
+    _row("toplam engine", tactical["total_engines"])
+    _row("Faz N (Sprint 1-3)", tactical["faz_n"])
+    _row("Wave 2 (savunma stili)", tactical["wave_2"])
+    _row("Wave 3 (Opta-tarz)", tactical["wave_3"])
+    _row("composite + identity", tactical["composite"])
+    _info("Production'da /admin/teams/{id}/tactical-profile batch endpoint çağır")
+
+    _step("9/9 Asistan örneği (Claude tool_use)")
     chat = _assistant_chat_demo(tenant_id)
     print(f"    \033[2m{chat[:200]}...\033[0m")
 
@@ -490,6 +531,7 @@ def main() -> int:
         "agents": agents,
         "xg_status": xg,
         "predict": predict,
+        "tactical": tactical,
         "chat": chat,
     }
     _render(report, output=args.output)

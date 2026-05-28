@@ -24,9 +24,12 @@ from sqlalchemy.orm import Session
 
 from app.agents.base import Agent, AgentResult
 from app.ai import AnthropicClient, ClaudeCommentator
+from app.data.loaders import load_player_events
 from app.db import models
+from app.engine.overperformance import compute_overperformance
 from app.engine.player_form import compute_player_form
 from app.engine.player_similarity import compute_similar_players
+from app.engine.progressive_passes import compute_progressive_passes
 from app.scout import list_watchlist
 from app.sports import football
 
@@ -35,7 +38,7 @@ class ScoutWatchlistDigestAgent(Agent):
     """Haftalık scout watchlist özet."""
 
     name = "scout_watchlist_digest"
-    version = "2"  # v1 → v2: engine.player_similarity entegre (similar suggestions)
+    version = "3"  # v3: events varsa overperformance + progressive_passes ekler
 
     def __init__(self, *, commentator: ClaudeCommentator | None = None):
         self._commentator = commentator or ClaudeCommentator(AnthropicClient())
@@ -72,14 +75,45 @@ class ScoutWatchlistDigestAgent(Agent):
                 entry.player_external_id, apps,
                 recent_n=recent_n, now=now,
             ).value
-            snapshots.append({
+            snap: dict[str, Any] = {
                 "player_id": entry.player_external_id,
                 "notes": entry.notes,
                 "recent_matches": r.recent_matches,
                 "recent_minutes_per_match": r.recent_minutes_per_match,
                 "z_score": r.z_score,
                 "trend": r.trend,
-            })
+            }
+            # v3: events varsa overperformance + progressive_passes ekle
+            try:
+                loaded, meta = load_player_events(
+                    session, entry.player_external_id, last_n=recent_n,
+                )
+                if loaded.total > 0:
+                    minutes = meta.get("minutes_played", 0.0)
+                    op = compute_overperformance(
+                        player_external_id=entry.player_external_id,
+                        all_passes=loaded.passes, all_shots=loaded.shots,
+                        matches_analyzed=meta.get("matches_analyzed", 1),
+                    ).value
+                    pp = compute_progressive_passes(
+                        player_external_id=entry.player_external_id,
+                        all_passes=loaded.passes,
+                        player_minutes_played=minutes,
+                        matches_analyzed=meta.get("matches_analyzed", 1),
+                    ).value
+                    snap["tactical"] = {
+                        "overperformance_total": op.total_overperformance,
+                        "overperformance_label": op.label,
+                        "progressive_per_90": pp.progressive_per_90,
+                    }
+                    if op.label == "clinical":
+                        alerts.append(
+                            f"Player {entry.player_external_id}: clinical finisher "
+                            f"(G+A − xG−xA = +{op.total_overperformance})"
+                        )
+            except (ValueError, ZeroDivisionError, KeyError, TypeError):
+                pass
+            snapshots.append(snap)
             # Alert kuralları:
             if r.z_score is not None and r.z_score >= 1.0:
                 alerts.append(

@@ -27,10 +27,13 @@ from app.agents.base import Agent, AgentResult
 from app.ai import AnthropicClient, ClaudeCommentator
 from app.api.serialize import engine_result_to_dict
 from app.data.cache.store import cache_get
+from app.data.loaders import load_match_events
 from app.data.sources.fixture_tracking import FixtureTrackingSource
 from app.db import models
 from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty
 from app.engine.form import compute_form
+from app.engine.match_dominance import compute_match_dominance
+from app.engine.match_phase import compute_match_phases
 from app.engine.opponent import compute_head_to_head
 from app.engine.predict import compute_predict
 from app.engine.predict_ml import CACHE_KEY as ML_CACHE_KEY
@@ -45,7 +48,7 @@ class MegaMatchAgent(Agent):
     """Kapsamlı maç analizi — birden çok engine sentezi + tracking opsiyonel."""
 
     name = "mega_match"
-    version = "1"
+    version = "2"  # v2: events tablosu varsa match_dominance + match_phase ekler
 
     def __init__(self, *, commentator: ClaudeCommentator | None = None, last_n: int = 5):
         self._commentator = commentator or ClaudeCommentator(AnthropicClient())
@@ -141,6 +144,37 @@ class MegaMatchAgent(Agent):
             frames = list(tracking_src.get_match_frames(match_id))
             tracking_result = compute_ball_zone_distribution(frames)
 
+        # v2: events tablosu varsa match_dominance + match_phase
+        events_signals: dict[str, Any] = {}
+        loaded = load_match_events(session, match_id)
+        if loaded.total > 0:
+            try:
+                from app.data.loaders import shots_by_team
+                home_s = shots_by_team(loaded.shots, home_id)
+                away_s = shots_by_team(loaded.shots, away_id)
+                dom = compute_match_dominance(
+                    team_external_id=home_id, opponent_team_external_id=away_id,
+                    team_shots=home_s, opponent_shots=away_s,
+                    all_passes=loaded.passes, team_carries=loaded.carries,
+                    opponent_carries=loaded.carries,
+                )
+                home_pass = [p for p in loaded.passes if p.team_external_id == home_id]
+                away_pass = [p for p in loaded.passes if p.team_external_id == away_id]
+                home_def = [d for d in loaded.defensive_actions if d.team_external_id == home_id]
+                away_def = [d for d in loaded.defensive_actions if d.team_external_id == away_id]
+                phases = compute_match_phases(
+                    match_id, home_id, away_id,
+                    home_s, away_s,
+                    home_pass, away_pass, home_def, away_def,
+                )
+                events_signals = {
+                    "match_dominance": engine_result_to_dict(dom),
+                    "match_phases": engine_result_to_dict(phases),
+                    "events_loaded": loaded.total,
+                }
+            except (ValueError, ZeroDivisionError, KeyError, TypeError):
+                events_signals = {}
+
         # Watch-out factors
         watch_outs: list[str] = []
         if home_form.value.matches_played < 3:
@@ -161,6 +195,7 @@ class MegaMatchAgent(Agent):
             home_rating=home_rating, away_rating=away_rating,
             h2h=h2h, predict=predict, schedule=schedule, difficulty=difficulty,
             tracking_result=tracking_result, ml_status=ml_status,
+            events_signals=events_signals,
             watch_outs=watch_outs,
             kickoff_iso=match.kickoff.isoformat(),
         )
@@ -192,6 +227,7 @@ class MegaMatchAgent(Agent):
                 "tracking_insight": (
                     engine_result_to_dict(tracking_result) if tracking_result else None
                 ),
+                "events_insight": events_signals if events_signals else None,
                 "watch_out_factors": watch_outs,
             },
             "ai_brief": ai_brief,
@@ -213,7 +249,7 @@ def _build_mega_brief(
     *, commentator: ClaudeCommentator, home_id: int, away_id: int,
     home_form, away_form, home_rating, away_rating, h2h, predict,
     schedule, difficulty, tracking_result, ml_status: str,
-    watch_outs: list[str], kickoff_iso: str,
+    events_signals: dict[str, Any], watch_outs: list[str], kickoff_iso: str,
 ) -> str:
     if commentator._client.is_stub():
         pv = predict.value
@@ -247,6 +283,15 @@ def _build_mega_brief(
             f"orta %{int(tv.middle_third_fraction*100)} / "
             f"hücum %{int(tv.attacking_third_fraction*100)}"
         )
+    events_line = ""
+    if events_signals:
+        dom_v = events_signals.get("match_dominance", {}).get("value", {})
+        if "dominance_score" in dom_v:
+            events_line = (
+                f"\nMaç dominance score (ev'in lehine): {dom_v['dominance_score']}, "
+                f"label={dom_v.get('label')}; "
+                f"xG farkı={dom_v.get('xg_diff')}, possession {dom_v.get('possession_share')}"
+            )
     user = (
         f"Maç: {home_id} (ev) vs {away_id} (dep) @ {kickoff_iso}\n\n"
         f"EV: form {hf.wins}-{hf.draws}-{hf.losses} (ppg {hf.points_per_game}), "
@@ -260,7 +305,7 @@ def _build_mega_brief(
         f"en olası skor {pv.most_likely_score}; ML durumu {ml_status}\n"
         f"Ev programı: 30g'de {sv.upcoming_count} maç, dense={sv.dense_schedule}; "
         f"fikstür zorluğu={dv.weighted_difficulty}\n"
-        + tracking_line +
+        + tracking_line + events_line +
         f"\nUyarılar: {', '.join(watch_outs) if watch_outs else 'yok'}"
     )
     return commentator._call(system, user, max_tokens=900)

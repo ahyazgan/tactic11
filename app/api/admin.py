@@ -22,6 +22,7 @@ from app.api.observability import METRICS, PROCESS_STARTED_AT
 from app.api.pagination import build_next_cursor, decode_cursor
 from app.api.serialize import engine_result_to_dict
 from app.core.config import get_settings
+from app.data.cache.store import cache_get, cache_set
 from app.db import models
 from app.db.session import get_session
 from app.engine.calibration import compute_calibration
@@ -29,6 +30,11 @@ from app.snapshot import diff_snapshots, get_latest_snapshot, get_snapshot_at_or
 from app.sports import football
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+# Tactical profile/trend cache: 1 saat TTL (event ingest sonrası
+# /admin/tactical-cache/clear ile manuel invalidate)
+TACTICAL_CACHE_SOURCE = "tactical_profile"
+TACTICAL_CACHE_TTL_SECONDS = 3600
 
 
 @router.get("/jobs")
@@ -990,3 +996,1117 @@ def match_phase_analysis(
             "çağrısı için caller event listeleri geçer."
         ),
     }
+
+
+# --------------------------------------------------------------------------- #
+# Tactical Profile — events tablosu üstünde 30 engine'in batch çağırımı
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/teams/{team_id}/tactical-profile",
+    tags=["admin"],
+    summary="Takım taktiksel profil (20+ engine birleşik)",
+)
+def team_tactical_profile(
+    team_id: int,
+    last_n: int = Query(default=10, ge=1, le=50),
+    opponent_id: int | None = Query(default=None,
+        description="Field tilt / coaching identity için rakip referansı"),
+    use_cache: bool = Query(default=True),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir takımın son N maçındaki olaylardan 20+ engine'in batch çıktısı.
+
+    Events tablosu boşsa `events_loaded=0` döner ve ana metrikler `null` olur —
+    ingest pipeline çalıştırılması beklenir.
+    `use_cache=true` (default): 1 saat TTL; geçersiz kıl
+    `/admin/tactical-cache/clear`.
+    """
+    cache_key = f"team_profile:{team_id}:{last_n}:{opponent_id or 'none'}"
+    if use_cache:
+        cached = cache_get(session, source=TACTICAL_CACHE_SOURCE, key=cache_key)
+        if cached is not None:
+            cached["_cached"] = True
+            return cached
+    from app.data.loaders import load_team_events
+    from app.engine.build_up_pattern import compute_build_up_pattern
+    from app.engine.channel_preference import compute_channel_preference
+    from app.engine.coaching_identity import compute_coaching_identity
+    from app.engine.compactness import compute_compactness
+    from app.engine.counter_press_triggers import compute_counter_press_triggers
+    from app.engine.cross_effectiveness import compute_cross_effectiveness
+    from app.engine.cutback_frequency import compute_cutback_frequency
+    from app.engine.defensive_duels import compute_defensive_duels
+    from app.engine.defensive_line import compute_defensive_line
+    from app.engine.direct_play import compute_direct_play
+    from app.engine.field_tilt import compute_field_tilt
+    from app.engine.final_third_entries import compute_final_third_entries
+    from app.engine.possession_quality import compute_possession_quality
+    from app.engine.ppda import compute_ppda
+    from app.engine.press_resistance import compute_press_resistance
+    from app.engine.pressing_trigger import compute_pressing_trigger
+    from app.engine.recovery_zone_heat import compute_recovery_zone_heat
+    from app.engine.set_piece_zones import compute_set_piece_zones
+    from app.engine.tempo import compute_tempo
+    from app.engine.transition import compute_transition
+    from app.engine.xt import compute_team_xt
+
+    loaded = load_team_events(session, team_id, last_n=last_n)
+    if loaded.total == 0:
+        return {
+            "team_id": team_id,
+            "last_n": last_n,
+            "events_loaded": 0,
+            "matches_analyzed": [],
+            "note": "events tablosunda bu takım için kayıt yok; ingest pipeline çağırın.",
+        }
+
+    matches_n = len(loaded.match_ids)
+    p = loaded.passes
+    c = loaded.carries
+    d = loaded.defensive_actions
+    s = loaded.shots
+    # Şutu takım filtre etmek gerekiyor — Shot.team yok; bu metriklerde
+    # caller event teamlerini varsayıyor: aynı maçtaki tüm şutları gönderiyoruz,
+    # set_piece için takım-spesifik filtreyi pas sahibiyle yapamayız → tüm şut.
+    # Konservatif: takım filtresiz pass'ı tüm passes; team_xt için sadece
+    # bizim takım pasları zaten içeride filtre ediliyor.
+
+    def _safe(fn):
+        try:
+            return engine_result_to_dict(fn())
+        except (ValueError, ZeroDivisionError, IndexError, KeyError, TypeError) as e:
+            return {"error": str(e)}
+
+    profile = {
+        "ppda": _safe(lambda: compute_ppda(team_id, p, d, matches_analyzed=matches_n)),
+        "pressing_trigger": _safe(lambda: compute_pressing_trigger(
+            team_id, p, d, matches_analyzed=matches_n)),
+        "defensive_line": _safe(lambda: compute_defensive_line(
+            team_id, d, matches_analyzed=matches_n)),
+        "compactness": _safe(lambda: compute_compactness(
+            team_id, p, d, matches_analyzed=matches_n)),
+        "transition": _safe(lambda: compute_transition(
+            team_id, d, s, matches_analyzed=matches_n)),
+        "recovery_zone_heat": _safe(lambda: compute_recovery_zone_heat(
+            team_id, d, matches_analyzed=matches_n)),
+        "counter_press_triggers": _safe(lambda: compute_counter_press_triggers(
+            team_id, p, d, matches_analyzed=matches_n)),
+        "direct_play": _safe(lambda: compute_direct_play(
+            team_id, p, matches_analyzed=matches_n)),
+        "tempo": _safe(lambda: compute_tempo(
+            team_id, p, matches_analyzed=matches_n)),
+        "possession_quality": _safe(lambda: compute_possession_quality(
+            team_id, p, s, matches_analyzed=matches_n)),
+        "channel_preference": _safe(lambda: compute_channel_preference(
+            team_id, p, matches_analyzed=matches_n)),
+        "final_third_entries": _safe(lambda: compute_final_third_entries(
+            team_id, p, c, matches_analyzed=matches_n)),
+        "cross_effectiveness": _safe(lambda: compute_cross_effectiveness(
+            team_id, p, s, matches_analyzed=matches_n)),
+        "cutback_frequency": _safe(lambda: compute_cutback_frequency(
+            team_id, p, s, matches_analyzed=matches_n)),
+        "defensive_duels": _safe(lambda: compute_defensive_duels(
+            team_external_id=team_id, all_def_actions=d, matches_analyzed=matches_n)),
+        "press_resistance": _safe(lambda: compute_press_resistance(
+            team_external_id=team_id, all_passes=p, all_def_actions=d,
+            matches_analyzed=matches_n)),
+        "set_piece_zones": _safe(lambda: compute_set_piece_zones(
+            team_id, s, matches_analyzed=matches_n)),
+        "build_up_pattern": _safe(lambda: compute_build_up_pattern(
+            team_id, p, s, matches_analyzed=matches_n)),
+        "team_xt": _safe(lambda: compute_team_xt(team_id, p, c)),
+    }
+
+    # Field tilt + coaching identity rakip gerektirir
+    if opponent_id is not None:
+        profile["field_tilt"] = _safe(lambda: compute_field_tilt(team_id, opponent_id, p))
+        profile["coaching_identity"] = _safe(lambda: compute_coaching_identity(
+            team_id, opponent_id, p, d, s, matches_analyzed=matches_n))
+
+    response = {
+        "team_id": team_id,
+        "last_n": last_n,
+        "matches_analyzed": loaded.match_ids,
+        "events_loaded": loaded.total,
+        "event_counts": {
+            "passes": len(p), "carries": len(c),
+            "defensive_actions": len(d), "shots": len(s),
+        },
+        "tactical_profile": profile,
+        "_cached": False,
+    }
+    if use_cache:
+        cache_set(
+            session, source=TACTICAL_CACHE_SOURCE, key=cache_key,
+            value=response, ttl_seconds=TACTICAL_CACHE_TTL_SECONDS,
+        )
+        session.commit()
+    return response
+
+
+@router.post(
+    "/tactical-cache/clear",
+    tags=["admin"],
+    summary="Tactical profile/trend cache temizle (event ingest sonrası)",
+)
+def tactical_cache_clear(
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """tactical_profile source'lu tüm cache satırlarını sil."""
+    rows = session.execute(
+        select(models.CacheEntry).where(
+            models.CacheEntry.source == TACTICAL_CACHE_SOURCE,
+        )
+    ).scalars().all()
+    n = 0
+    for r in rows:
+        session.delete(r)
+        n += 1
+    session.commit()
+    return {"deleted": n}
+
+
+@router.get(
+    "/players/{player_id}/tactical-profile",
+    tags=["admin"],
+    summary="Oyuncu taktiksel profil (8 engine birleşik)",
+)
+def player_tactical_profile(
+    player_id: int,
+    last_n: int = Query(default=10, ge=1, le=50),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir oyuncunun son N maçındaki engine'leri batchle."""
+    from app.data.loaders import load_player_events
+    from app.engine.carries_into_final_third import compute_carries_into_final_third
+    from app.engine.off_ball_runs import compute_off_ball_runs
+    from app.engine.overperformance import compute_overperformance
+    from app.engine.press_resistance import compute_press_resistance
+    from app.engine.progressive_passes import compute_progressive_passes
+    from app.engine.vaep import compute_vaep
+    from app.engine.xa import compute_player_xa
+    from app.engine.xt import compute_player_xt
+
+    loaded, meta = load_player_events(session, player_id, last_n=last_n)
+    if loaded.total == 0:
+        return {
+            "player_id": player_id,
+            "events_loaded": 0,
+            "meta": meta,
+            "note": "events tablosunda bu oyuncu için kayıt yok.",
+        }
+
+    p = loaded.passes
+    c = loaded.carries
+    d = loaded.defensive_actions
+    s = loaded.shots
+    minutes = meta.get("minutes_played", 0.0)
+    team_id = meta.get("team_external_id")
+    matches_n = meta.get("matches_analyzed", 1)
+
+    def _safe(fn):
+        try:
+            return engine_result_to_dict(fn())
+        except (ValueError, ZeroDivisionError, IndexError, KeyError, TypeError) as e:
+            return {"error": str(e)}
+
+    profile = {
+        "player_xt": _safe(lambda: compute_player_xt(player_id, p, c)),
+        "player_xa": _safe(lambda: compute_player_xa(
+            player_id, p, s, minutes_played=int(minutes))),
+        "press_resistance": _safe(lambda: compute_press_resistance(
+            player_external_id=player_id, all_passes=p, all_def_actions=d,
+            matches_analyzed=matches_n)),
+        "overperformance": _safe(lambda: compute_overperformance(
+            player_external_id=player_id, all_passes=p, all_shots=s,
+            matches_analyzed=matches_n)),
+        "progressive_passes": _safe(lambda: compute_progressive_passes(
+            player_external_id=player_id, all_passes=p,
+            player_minutes_played=minutes, matches_analyzed=matches_n)),
+        "carries_into_final_third": _safe(lambda: compute_carries_into_final_third(
+            player_external_id=player_id, all_carries=c,
+            player_minutes_played=minutes, matches_analyzed=matches_n)),
+        "vaep": _safe(lambda: compute_vaep(
+            player_external_id=player_id, all_passes=p, all_carries=c, all_shots=s,
+            minutes_played=minutes, matches_analyzed=matches_n)),
+    }
+    if team_id is not None:
+        profile["off_ball_runs"] = _safe(lambda: compute_off_ball_runs(
+            player_external_id=player_id, team_external_id=team_id,
+            all_carries=c, all_passes=p,
+            player_minutes_played=minutes, matches_analyzed=matches_n))
+
+    return {
+        "player_id": player_id,
+        "meta": meta,
+        "events_loaded": loaded.total,
+        "tactical_profile": profile,
+    }
+
+
+@router.get(
+    "/teams/{team_id}/tactical-trend",
+    tags=["admin"],
+    summary="Takım sezon-boyu trend (PPDA, field_tilt, dominance, xT, possession)",
+)
+def team_tactical_trend(
+    team_id: int,
+    last_n: int = Query(default=10, ge=2, le=50),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir takımın son N maçındaki 5 ana metriğin maç-başı zaman serisi + trend.
+
+    Tek-maç tactical-profile'den farklı: aynı engine'i her maça ayrı uygulayıp
+    çıkan değerleri zaman serisi olarak gösterir + linear regression slope.
+
+    Metrikler:
+    - PPDA            (lower is better — düşük = yoğun pres)
+    - Field tilt %     (higher is better için biz, opponent yokken 0.5 baseline)
+    - xT total        (higher is better)
+    - Possession %     (higher is better)
+    - Match dominance score (higher is better)
+    """
+    from app.data.loaders import load_match_events
+    from app.engine.field_tilt import compute_field_tilt
+    from app.engine.match_dominance import compute_match_dominance
+    from app.engine.ppda import compute_ppda
+    from app.engine.tactical_trend import compute_tactical_trend
+    from app.engine.xt import compute_team_xt
+
+    # Son N maçı al (FINISHED), kronolojik sıralı (eski → yeni)
+    matches = list(session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            (models.Match.home_team_external_id == team_id)
+            | (models.Match.away_team_external_id == team_id),
+            models.Match.status.in_(football.FINISHED_STATUSES),
+        ).order_by(models.Match.kickoff.desc()).limit(last_n)
+    ).scalars())
+    if not matches:
+        return {
+            "team_id": team_id, "last_n": last_n,
+            "matches_analyzed": 0,
+            "note": "Bu takımın FINISHED maçı yok",
+        }
+    matches.reverse()  # kronolojik
+
+    series: dict[str, list[float]] = {
+        "ppda": [], "field_tilt": [], "team_xt": [],
+        "possession_share": [], "dominance_score": [],
+    }
+    match_meta: list[dict[str, Any]] = []
+    for m in matches:
+        loaded = load_match_events(session, m.external_id)
+        if loaded.total == 0:
+            continue
+        opp_id = (
+            m.away_team_external_id if m.home_team_external_id == team_id
+            else m.home_team_external_id
+        )
+        try:
+            ppda = compute_ppda(team_id, loaded.passes, loaded.defensive_actions).value
+            tilt = compute_field_tilt(team_id, opp_id, loaded.passes).value
+            xt = compute_team_xt(team_id, loaded.passes, loaded.carries).value
+            team_pass = sum(1 for p in loaded.passes if p.team_external_id == team_id)
+            opp_pass = sum(1 for p in loaded.passes if p.team_external_id == opp_id)
+            poss = team_pass / (team_pass + opp_pass) if (team_pass + opp_pass) else 0.5
+            from app.data.loaders import shots_by_team
+            team_s = shots_by_team(loaded.shots, team_id)
+            opp_s = shots_by_team(loaded.shots, opp_id)
+            dom = compute_match_dominance(
+                team_external_id=team_id, opponent_team_external_id=opp_id,
+                team_shots=team_s, opponent_shots=opp_s,
+                all_passes=loaded.passes, team_carries=loaded.carries,
+                opponent_carries=loaded.carries,
+            ).value
+        except (ValueError, ZeroDivisionError, KeyError, TypeError):
+            continue
+        series["ppda"].append(ppda.ppda)
+        series["field_tilt"].append(tilt.team_a_tilt)
+        series["team_xt"].append(xt.total_xt)
+        series["possession_share"].append(round(poss, 3))
+        series["dominance_score"].append(dom.dominance_score)
+        match_meta.append({
+            "match_id": m.external_id,
+            "kickoff": m.kickoff.isoformat() if m.kickoff else None,
+            "opp_id": opp_id,
+            "score": f"{m.home_score}-{m.away_score}",
+        })
+
+    if not match_meta:
+        return {
+            "team_id": team_id, "last_n": last_n,
+            "matches_analyzed": 0,
+            "note": "Hiçbir maç için event ingest yapılmamış",
+        }
+
+    higher_better = {
+        "ppda": False, "field_tilt": True, "team_xt": True,
+        "possession_share": True, "dominance_score": True,
+    }
+    trends: dict[str, dict[str, Any]] = {}
+    for metric, vals in series.items():
+        trend = compute_tactical_trend(
+            metric, vals,
+            higher_is_better=higher_better[metric],
+            subject_type="team", subject_id=team_id,
+        ).value
+        trends[metric] = {
+            "series": list(trend.series),
+            "mean": trend.mean,
+            "slope": trend.slope,
+            "direction": trend.direction,
+            "biggest_shift": trend.biggest_match_to_match_shift,
+            "biggest_shift_match_idx": trend.biggest_shift_match_idx,
+            "biggest_shift_match_id": (
+                match_meta[trend.biggest_shift_match_idx]["match_id"]
+                if trend.biggest_shift_match_idx < len(match_meta) else None
+            ),
+        }
+
+    return {
+        "team_id": team_id, "last_n": last_n,
+        "matches_analyzed": len(match_meta),
+        "matches": match_meta,
+        "trends": trends,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Decision Audit Log — TD'nin maç-içi hamleleri (Faz P)
+# --------------------------------------------------------------------------- #
+
+
+@router.post(
+    "/matches/{match_id}/decisions",
+    tags=["admin"],
+    summary="TD hamlesi kaydet (substitution / formation_change / tactical_instruction)",
+)
+def create_decision(
+    match_id: int,
+    payload: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir kararı audit log'a yaz.
+
+    Beklenen payload:
+    {
+        "team_external_id": int,
+        "minute": float,
+        "period": int (default 1),
+        "decision_type": "substitution" | "formation_change" | "tactical_instruction" | "other",
+        "subject_player_external_id": int | null,
+        "related_player_external_id": int | null,
+        "notes": str (optional),
+        "payload_json": dict (optional)
+    }
+    """
+    import json as _json
+    from datetime import UTC
+    from datetime import datetime as _datetime
+
+    required = ("team_external_id", "minute", "decision_type")
+    missing = [k for k in required if k not in payload]
+    if missing:
+        raise HTTPException(
+            status_code=400, detail=f"eksik alan: {missing}",
+        )
+    allowed_types = {"substitution", "formation_change",
+                     "tactical_instruction", "other"}
+    if payload["decision_type"] not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"decision_type {allowed_types} içinde olmalı",
+        )
+
+    row = models.Decision(
+        sport=football.SPORT_NAME,
+        match_external_id=match_id,
+        team_external_id=int(payload["team_external_id"]),
+        minute=float(payload["minute"]),
+        period=int(payload.get("period", 1)),
+        decision_type=payload["decision_type"],
+        subject_player_external_id=payload.get("subject_player_external_id"),
+        related_player_external_id=payload.get("related_player_external_id"),
+        notes=payload.get("notes"),
+        payload_json=_json.dumps(payload.get("payload_json"))
+            if payload.get("payload_json") else None,
+        by_user_id=payload.get("by_user_id"),
+        created_at=_datetime.now(UTC),
+    )
+    session.add(row)
+    session.commit()
+    return {
+        "id": row.id, "match_id": match_id,
+        "decision_type": row.decision_type, "minute": row.minute,
+        "created_at": row.created_at.isoformat(),
+    }
+
+
+@router.get(
+    "/matches/{match_id}/decisions",
+    tags=["admin"],
+    summary="Bir maçtaki kayıtlı TD kararlarını listele",
+)
+def list_decisions(
+    match_id: int,
+    session: Session = Depends(get_session),
+) -> list[dict[str, Any]]:
+    rows = list(session.execute(
+        select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.match_external_id == match_id,
+        ).order_by(models.Decision.minute)
+    ).scalars())
+    return [
+        {
+            "id": r.id,
+            "team_id": r.team_external_id,
+            "minute": r.minute,
+            "period": r.period,
+            "decision_type": r.decision_type,
+            "subject_player_id": r.subject_player_external_id,
+            "related_player_id": r.related_player_external_id,
+            "notes": r.notes,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in rows
+    ]
+
+
+@router.get(
+    "/matches/{match_id}/decisions/learning",
+    tags=["admin"],
+    summary="Post-match learning: TD kararının sonuca etkisi (causal proxy)",
+)
+def decisions_learning(
+    match_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir maçtaki tüm kararlardan sonra ne oldu? Basit causal proxy:
+    karar dakikasından sonra takımın xT, possession, dominance score'u
+    nasıl değişti.
+
+    Algoritma: her karar için pre-window (karar-15dk..karar) vs
+    post-window (karar..karar+15dk) takım metric'leri karşılaştır.
+    """
+    from app.data.loaders import load_match_events
+    from app.engine.match_dominance import compute_match_dominance
+    from app.engine.xt import compute_team_xt
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Event ingest yapılmamış"}
+
+    decisions = list(session.execute(
+        select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.match_external_id == match_id,
+        ).order_by(models.Decision.minute)
+    ).scalars())
+    if not decisions:
+        return {"match_id": match_id, "decisions": 0,
+                "note": "Bu maç için decision log yok"}
+
+    WIN = 15.0
+    impacts = []
+    for d in decisions:
+        team_id = d.team_external_id
+        opp_id = (match.away_team_external_id if team_id == match.home_team_external_id
+                  else match.home_team_external_id)
+        pre_passes = [p for p in loaded.passes
+                       if d.minute - WIN <= p.minute < d.minute]
+        post_passes = [p for p in loaded.passes
+                        if d.minute <= p.minute < d.minute + WIN]
+        pre_carries = [c for c in loaded.carries
+                        if d.minute - WIN <= c.minute < d.minute]
+        post_carries = [c for c in loaded.carries
+                         if d.minute <= c.minute < d.minute + WIN]
+        pre_shots = [s for s in loaded.shots
+                      if d.minute - WIN <= s.minute < d.minute]
+        post_shots = [s for s in loaded.shots
+                       if d.minute <= s.minute < d.minute + WIN]
+        try:
+            pre_xt = compute_team_xt(team_id, pre_passes, pre_carries).value.total_xt
+            post_xt = compute_team_xt(team_id, post_passes, post_carries).value.total_xt
+            pre_dom = compute_match_dominance(
+                team_external_id=team_id, opponent_team_external_id=opp_id,
+                team_shots=pre_shots, opponent_shots=pre_shots,
+                all_passes=pre_passes, team_carries=pre_carries,
+                opponent_carries=pre_carries,
+            ).value.dominance_score
+            post_dom = compute_match_dominance(
+                team_external_id=team_id, opponent_team_external_id=opp_id,
+                team_shots=post_shots, opponent_shots=post_shots,
+                all_passes=post_passes, team_carries=post_carries,
+                opponent_carries=post_carries,
+            ).value.dominance_score
+        except (ValueError, ZeroDivisionError, KeyError, TypeError):
+            continue
+        impacts.append({
+            "decision_id": d.id,
+            "minute": d.minute,
+            "decision_type": d.decision_type,
+            "pre_xt": round(pre_xt, 3),
+            "post_xt": round(post_xt, 3),
+            "xt_delta": round(post_xt - pre_xt, 3),
+            "pre_dominance": pre_dom,
+            "post_dominance": post_dom,
+            "dominance_delta": round(post_dom - pre_dom, 2),
+            "verdict": (
+                "positive" if post_xt - pre_xt > 0.1 and post_dom - pre_dom > 0
+                else "negative" if post_xt - pre_xt < -0.1 and post_dom - pre_dom < 0
+                else "neutral"
+            ),
+        })
+    return {
+        "match_id": match_id,
+        "decisions_analyzed": len(impacts),
+        "window_minutes": WIN,
+        "impacts": impacts,
+    }
+
+
+@router.get(
+    "/teams/{team_id}/set-piece-pattern-history",
+    tags=["admin"],
+    summary="Rakibin geçmiş set-piece pattern'leri (canlı maç alert için)",
+)
+def team_set_piece_pattern_history(
+    team_id: int,
+    last_n: int = Query(default=5, ge=1, le=20),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir takımın (genelde rakip) son N maçındaki set-piece şutlarını
+    pattern olarak özetler. Canlı maçta rakip korner kazandığında bu
+    alert_text'i gösterir."""
+    from app.data.loaders import load_team_events
+    from app.engine.set_piece_pattern_history import (
+        compute_set_piece_pattern_history,
+    )
+    loaded = load_team_events(session, team_id, last_n=last_n)
+    if loaded.total == 0:
+        return {
+            "team_id": team_id, "last_n": last_n, "events_loaded": 0,
+            "note": "events tablosunda kayıt yok",
+        }
+    result = compute_set_piece_pattern_history(
+        team_id, loaded.shots, matches_analyzed=len(loaded.match_ids),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/matches/{match_id}/live-sub-recommendation",
+    tags=["admin"],
+    summary="Canlı maç oyuncu değişikliği önerisi (retrospective demo da)",
+)
+def match_live_sub_recommendation(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Belirli bir maç dakikasında top 3 sub önerisi (fatigue + skor + dakika)."""
+    from app.data.loaders import load_match_events
+    from app.engine.live_sub_recommendation import compute_live_sub_recommendation
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Bu maç için event ingest yapılmamış"}
+
+    home_id = match.home_team_external_id
+    my_score = match.home_score if my_team_id == home_id else match.away_score
+    opp_score = match.away_score if my_team_id == home_id else match.home_score
+    passes = [p for p in loaded.passes if p.minute <= current_minute]
+    defs = [d for d in loaded.defensive_actions if d.minute <= current_minute]
+    result = compute_live_sub_recommendation(
+        my_team_id, passes, defs,
+        current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/players/{player_id}/tactical-trend",
+    tags=["admin"],
+    summary="Oyuncu sezon-boyu trend (xT, xA, VAEP, prog_passes, press_resistance)",
+)
+def player_tactical_trend(
+    player_id: int,
+    last_n: int = Query(default=10, ge=2, le=50),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir oyuncunun son N maçındaki 5 metric zaman serisi + trend."""
+    from app.data.loaders import load_match_events
+    from app.engine.press_resistance import compute_press_resistance
+    from app.engine.progressive_passes import compute_progressive_passes
+    from app.engine.tactical_trend import compute_tactical_trend
+    from app.engine.vaep import compute_vaep
+    from app.engine.xa import compute_player_xa
+    from app.engine.xt import compute_player_xt
+
+    # PlayerAppearance üzerinden son N maçı al (kronolojik için tersine çevir)
+    appearances = list(session.execute(
+        select(models.PlayerAppearance).where(
+            models.PlayerAppearance.sport == football.SPORT_NAME,
+            models.PlayerAppearance.player_external_id == player_id,
+        ).order_by(models.PlayerAppearance.kickoff.desc()).limit(last_n)
+    ).scalars())
+    if not appearances:
+        return {
+            "player_id": player_id, "last_n": last_n,
+            "matches_analyzed": 0,
+            "note": "Bu oyuncu için PlayerAppearance yok",
+        }
+    appearances.reverse()  # kronolojik
+
+    series: dict[str, list[float]] = {
+        "xt_added": [], "xa_total": [], "vaep_per_90": [],
+        "progressive_per_90": [], "press_resistance": [],
+    }
+    match_meta: list[dict[str, Any]] = []
+    for a in appearances:
+        loaded = load_match_events(session, a.match_external_id)
+        if loaded.total == 0:
+            continue
+        try:
+            xt = compute_player_xt(player_id, loaded.passes, loaded.carries).value
+            xa = compute_player_xa(
+                player_id, loaded.passes, loaded.shots,
+                minutes_played=a.minutes or 90,
+            ).value
+            vaep = compute_vaep(
+                player_external_id=player_id, all_passes=loaded.passes,
+                all_carries=loaded.carries, all_shots=loaded.shots,
+                minutes_played=float(a.minutes or 90),
+            ).value
+            prog = compute_progressive_passes(
+                player_external_id=player_id, all_passes=loaded.passes,
+                player_minutes_played=float(a.minutes or 90),
+            ).value
+            press = compute_press_resistance(
+                player_external_id=player_id, all_passes=loaded.passes,
+                all_def_actions=loaded.defensive_actions,
+            ).value
+        except (ValueError, ZeroDivisionError, KeyError, TypeError):
+            continue
+        series["xt_added"].append(xt.xt_per_90)
+        series["xa_total"].append(xa.xa_per_90)
+        series["vaep_per_90"].append(vaep.vaep_per_90 or 0.0)
+        series["progressive_per_90"].append(prog.progressive_per_90 or 0.0)
+        series["press_resistance"].append(press.completion_rate_under_press)
+        match_meta.append({
+            "match_id": a.match_external_id,
+            "kickoff": a.kickoff.isoformat() if a.kickoff else None,
+            "minutes": a.minutes,
+        })
+
+    if not match_meta:
+        return {
+            "player_id": player_id, "last_n": last_n,
+            "matches_analyzed": 0,
+            "note": "Hiçbir maç için event ingest yapılmamış",
+        }
+
+    higher_better = {
+        "xt_added": True, "xa_total": True, "vaep_per_90": True,
+        "progressive_per_90": True, "press_resistance": True,
+    }
+    trends: dict[str, dict[str, Any]] = {}
+    for metric, vals in series.items():
+        trend = compute_tactical_trend(
+            metric, vals,
+            higher_is_better=higher_better[metric],
+            subject_type="player", subject_id=player_id,
+        ).value
+        trends[metric] = {
+            "series": list(trend.series),
+            "mean": trend.mean,
+            "slope": trend.slope,
+            "direction": trend.direction,
+            "biggest_shift": trend.biggest_match_to_match_shift,
+            "biggest_shift_match_idx": trend.biggest_shift_match_idx,
+            "biggest_shift_match_id": (
+                match_meta[trend.biggest_shift_match_idx]["match_id"]
+                if trend.biggest_shift_match_idx < len(match_meta) else None
+            ),
+        }
+
+    return {
+        "player_id": player_id, "last_n": last_n,
+        "matches_analyzed": len(match_meta),
+        "matches": match_meta,
+        "trends": trends,
+    }
+
+
+@router.get(
+    "/matches/{match_id}/halftime-brief",
+    tags=["admin"],
+    summary="Devre arası analiz brief (1. yarı event'leri üzerinde 7 engine + AI)",
+)
+def match_halftime_brief(
+    match_id: int,
+    my_team_id: int = Query(..., description="Brief'in hangi takım için olacağı"),
+    persist: bool = Query(default=True, description="agent_outputs'a kaydet"),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Devre arası bilgi paneli — 1. yarı event'lerinden 7+ engine + AI brief.
+
+    `persist=true` (default): sonucu agent_outputs tablosuna idempotent yaz
+    (aynı match + team için tekrar çağırılırsa update). History endpoint
+    `/admin/halftime-brief-history` aynı satırları döner.
+    """
+    from app.agents import HalftimeAnalysisAgent
+    from app.agents.store import save_agent_output
+
+    agent = HalftimeAnalysisAgent()
+    try:
+        result = agent.run(
+            session,
+            context={
+                "match_external_id": match_id,
+                "my_team_external_id": my_team_id,
+            },
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if persist:
+        # my_team_id'yi agent_version'a encode et — iki takım için ayrı satır
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name,
+            agent_version=f"{agent.version}-team{my_team_id}",
+        )
+        session.commit()
+
+    return result.output_json
+
+
+@router.get(
+    "/halftime-brief-history",
+    tags=["admin"],
+    summary="Kaydedilmiş devre arası brief'lerin listesi",
+)
+def halftime_brief_history(
+    limit: int = Query(default=20, ge=1, le=100),
+    match_id: int | None = Query(default=None),
+    session: Session = Depends(get_session),
+) -> list[dict[str, Any]]:
+    """agent_outputs'tan halftime_analysis tipindeki kayıtları döner."""
+    stmt = select(models.AgentOutput).where(
+        models.AgentOutput.agent_name == "halftime_analysis",
+    )
+    if match_id is not None:
+        stmt = stmt.where(models.AgentOutput.subject_id == match_id)
+    stmt = stmt.order_by(desc(models.AgentOutput.updated_at)).limit(limit)
+    rows = list(session.execute(stmt).scalars())
+    return [
+        {
+            "id": r.id,
+            "agent_version": r.agent_version,
+            "match_id": r.subject_id,
+            "summary": r.summary,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+        }
+        for r in rows
+    ]
+
+
+@router.post(
+    "/vaep/train",
+    tags=["admin"],
+    summary="VAEP tabular model train (events tablosundan zone-bin lookup öğren)",
+)
+def vaep_train(
+    min_samples: int = Query(default=100, ge=10),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """VAEP v2-tabular modelini train et + cache'e yaz."""
+    from app.engine.vaep import NotEnoughTrainingData, train_vaep_model
+
+    tenant_id = session.info.get("tenant_id")
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="tenant_id session.info'da yok")
+    try:
+        report = train_vaep_model(
+            session, tenant_id=tenant_id, min_samples=min_samples,
+        )
+    except NotEnoughTrainingData as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+    session.commit()
+    return {
+        "sample_count": report.sample_count,
+        "matches_used": report.matches_used,
+        "zones": report.zones,
+        "cache_written": report.cache_written,
+        "score_lookup_top3": sorted(
+            report.score_lookup.items(), key=lambda x: -x[1],
+        )[:3],
+        "concede_lookup_top3": sorted(
+            report.concede_lookup.items(), key=lambda x: -x[1],
+        )[:3],
+    }
+
+
+@router.get(
+    "/matches/{match_id}/dominance",
+    tags=["admin"],
+    summary="Tek maç dominance + match_phase (composite + split)",
+)
+def match_dominance_endpoint(
+    match_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir maç için composite dominance skoru + 1H/2H phase split."""
+    from app.data.loaders import load_match_events
+    from app.engine.match_dominance import compute_match_dominance
+    from app.engine.match_phase import compute_match_phases
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {
+            "match_id": match_id,
+            "events_loaded": 0,
+            "note": "events tablosunda bu maç için kayıt yok.",
+        }
+
+    home_id = match.home_team_external_id
+    away_id = match.away_team_external_id
+    # Shot domain'inde team yok — minute'a göre yakın pas'ın takımıyla yaklaşık
+    # eşleştirmedense burada tüm şutları her iki tarafa da gönderiyoruz; bu
+    # şutsuz takım için xg=0 anlamına gelir, çünkü mesafe etkisi azalmaz.
+    # Pragmatik: home_shots = all shots; away_shots = all shots — caller bunu bilir.
+    def _safe(fn):
+        try:
+            return engine_result_to_dict(fn())
+        except (ValueError, ZeroDivisionError, IndexError, KeyError, TypeError) as e:
+            return {"error": str(e)}
+
+    from app.data.loaders import shots_by_team
+    home_s = shots_by_team(loaded.shots, home_id)
+    away_s = shots_by_team(loaded.shots, away_id)
+    dominance = _safe(lambda: compute_match_dominance(
+        team_external_id=home_id, opponent_team_external_id=away_id,
+        team_shots=home_s, opponent_shots=away_s,
+        all_passes=loaded.passes, team_carries=loaded.carries,
+        opponent_carries=loaded.carries,
+    ))
+    home_pass = [pp for pp in loaded.passes if pp.team_external_id == home_id]
+    away_pass = [pp for pp in loaded.passes if pp.team_external_id == away_id]
+    home_def = [dd for dd in loaded.defensive_actions if dd.team_external_id == home_id]
+    away_def = [dd for dd in loaded.defensive_actions if dd.team_external_id == away_id]
+    phases = _safe(lambda: compute_match_phases(
+        match_id, home_id, away_id,
+        home_s, away_s,
+        home_pass, away_pass,
+        home_def, away_def,
+    ))
+
+    return {
+        "match_id": match_id,
+        "home_team_id": home_id,
+        "away_team_id": away_id,
+        "events_loaded": loaded.total,
+        "match_dominance": dominance,
+        "match_phases": phases,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Saha-içi uygulanabilir özellikler (Faz Q)
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/matches/{match_id}/players/{player_id}/feedback",
+    tags=["admin"],
+    summary="Bireysel oyuncu maç-sonu coach feedback (sınıf 2)",
+)
+def player_feedback_endpoint(
+    match_id: int,
+    player_id: int,
+    persist: bool = Query(default=True),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir oyuncunun bir maçtaki performansı için 200 kelime kişisel feedback +
+    top 3 alt-optimal pas örneği (frame koordinatlarıyla)."""
+    from app.agents import PlayerFeedbackAgent
+    from app.agents.store import save_agent_output
+
+    agent = PlayerFeedbackAgent()
+    try:
+        result = agent.run(
+            session,
+            context={
+                "match_external_id": match_id,
+                "player_external_id": player_id,
+            },
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if persist:
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name,
+            agent_version=f"{agent.version}-match{match_id}",
+        )
+        session.commit()
+    return result.output_json
+
+
+@router.get(
+    "/teams/{team_id}/training-plan",
+    tags=["admin"],
+    summary="Haftalık antrenman planı — rakip profilinden (sınıf 3)",
+)
+def training_plan_endpoint(
+    team_id: int,
+    opponent_id: int = Query(...),
+    persist: bool = Query(default=True),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Rakibin son 5 maç profilinden (PPDA + pres + arketip + kanal) drill
+    önerileri + 200-250 kelime hafta planı."""
+    from app.agents import TrainingPlanAgent
+    from app.agents.store import save_agent_output
+
+    agent = TrainingPlanAgent()
+    try:
+        result = agent.run(
+            session,
+            context={
+                "my_team_external_id": team_id,
+                "opponent_external_id": opponent_id,
+            },
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if persist:
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name,
+            agent_version=f"{agent.version}-vs{opponent_id}",
+        )
+        session.commit()
+    return result.output_json
+
+
+@router.get(
+    "/matches/{match_id}/substitution-chess",
+    tags=["admin"],
+    summary="Sub kombinasyonları forward projection (sınıf 1)",
+)
+def substitution_chess_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    match_total_minutes: float = Query(default=90.0, ge=45, le=120),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Mevcut maç dakikasında top 3 sub senaryosu + projeksiyon."""
+    from app.data.loaders import load_match_events
+    from app.engine.substitution_chess import compute_substitution_chess
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Event ingest yok"}
+
+    home_id = match.home_team_external_id
+    my_score = match.home_score if my_team_id == home_id else match.away_score
+    opp_score = match.away_score if my_team_id == home_id else match.home_score
+    passes = [p for p in loaded.passes if p.minute <= current_minute]
+    defs = [d for d in loaded.defensive_actions if d.minute <= current_minute]
+
+    result = compute_substitution_chess(
+        my_team_id, passes, defs,
+        current_minute=current_minute,
+        match_total_minutes=match_total_minutes,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/teams/{team_id}/set-piece-routine",
+    tags=["admin"],
+    summary="Set-piece routine builder — rakibin zayıf zone'una göre (sınıf 4)",
+)
+def set_piece_routine_endpoint(
+    team_id: int,
+    opponent_id: int = Query(...),
+    last_n: int = Query(default=5, ge=1, le=20),
+    set_piece_type: str = Query(default="all"),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bizim ofansif + rakip defansif + rakip ofansif set-piece pattern
+    kesişiminden top 3 zone + technique önerisi."""
+    from app.data.loaders import load_team_events
+    from app.engine.set_piece_routine import compute_set_piece_routine
+
+    my_events = load_team_events(session, team_id, last_n=last_n)
+    opp_events = load_team_events(session, opponent_id, last_n=last_n)
+    if my_events.total == 0 or opp_events.total == 0:
+        return {
+            "team_id": team_id, "opponent_id": opponent_id,
+            "my_events": my_events.total,
+            "opp_events": opp_events.total,
+            "note": "Yeterli event yok (iki takım için ingest gerekli)",
+        }
+
+    result = compute_set_piece_routine(
+        my_team_external_id=team_id,
+        opponent_team_external_id=opponent_id,
+        my_offensive_shots=my_events.shots,
+        opponent_defensive_shots=opp_events.shots,
+        opponent_offensive_shots=opp_events.shots,
+        set_piece_type=set_piece_type,
+        matches_analyzed=min(len(my_events.match_ids), len(opp_events.match_ids)),
+    )
+    return engine_result_to_dict(result)

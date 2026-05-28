@@ -552,3 +552,84 @@ class RefreshToken(Base):
     ip: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
+
+class EventRow(Base):
+    """Bir maçta yer alan tüm event'ler (shot/pass/carry/defansif aksiyon).
+
+    Faz N — xT/xA/PPDA/build_up engine'leri bu tablodan okur. Yüksek hacim:
+    tipik maç ~3K event; 380 maç × 10 lig × 1 sezon ≈ 11M satır.
+
+    Idempotency: (tenant_id, sport, source, source_event_id) unique —
+    adapter'ın verdiği unique event_id ile çift insert engellenir.
+    """
+
+    __tablename__ = "events"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id", "sport", "source", "source_event_id",
+            name="uq_events_source_event_id",
+        ),
+        Index("ix_events_match", "sport", "tenant_id", "match_external_id"),
+        Index("ix_events_player_period", "player_external_id", "period"),
+        Index("ix_events_possession", "match_external_id", "possession_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"),
+    )
+    source: Mapped[str] = mapped_column(String(32), default="statsbomb_open")
+    source_event_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    event_type: Mapped[str] = mapped_column(String(32))  # shot|pass|carry|defensive_action
+    minute: Mapped[float] = mapped_column(Float)
+    period: Mapped[int] = mapped_column(Integer, default=1)
+    start_x: Mapped[float | None] = mapped_column(Float, nullable=True)
+    start_y: Mapped[float | None] = mapped_column(Float, nullable=True)
+    end_x: Mapped[float | None] = mapped_column(Float, nullable=True)
+    end_y: Mapped[float | None] = mapped_column(Float, nullable=True)
+    outcome: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    body_part: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    pattern: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    possession_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_goal: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    key_pass: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    raw_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+
+class Decision(Base):
+    """TD'nin maç-içi hamleleri için audit log.
+
+    Faz P: post-match learning + pilot kulüpte koçun kararlarının
+    veri-destekli yansıması.
+    """
+
+    __tablename__ = "decisions"
+    __table_args__ = (
+        Index("ix_decisions_match_minute", "sport", "tenant_id",
+              "match_external_id", "minute"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"),
+    )
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    team_external_id: Mapped[int] = mapped_column(Integer)
+    minute: Mapped[float] = mapped_column(Float)
+    period: Mapped[int] = mapped_column(Integer, default=1)
+    decision_type: Mapped[str] = mapped_column(String(32))
+    # subject = ana özne (sub'ta çıkan oyuncu)
+    subject_player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # related = ilişkili oyuncu (sub'ta giren)
+    related_player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    by_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

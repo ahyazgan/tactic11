@@ -4,6 +4,19 @@ Spor zekası platformu — futbol teknik ekiplerine veriyle karar desteği veren
 Bugün: futbol verisi (API-Football) çek, doğrula, depola, sun.
 Yarın: tracking, tahmin, otomasyon. Sonra: diğer sporlar.
 
+> **Production state:**
+> [`PILOT_ENGINES.md`](PILOT_ENGINES.md) — **19 production-grade engine**
+> gerçek La Liga 2018/19 (34 maç, 85k event) ile sinyal/gürültü auditten geçti.
+> 36 engine niche/spesifik kullanım için. VAEP 68k event üzerinde tabular
+> trained.
+
+> **Frontend yol haritası:**
+> [`DESIGN.md`](DESIGN.md) — tasarım sistemi (FM 2010-15 koyu tema, token, komponent spec).
+> [`PROMPT_FRONTEND_FAZ2.md`](PROMPT_FRONTEND_FAZ2.md) ✅ **tamamlandı** (commit `ad69e2b`) — layout shell + 4 komponent + 4 sayfa.
+> [`PROMPT_FRONTEND_FAZ3.md`](PROMPT_FRONTEND_FAZ3.md) ✅ **tamamlandı** (commit `9b34166`) — auth refresh + WS reconnect + observability + E2E.
+> [`PROMPT_FRONTEND_FAZ4.md`](PROMPT_FRONTEND_FAZ4.md) ✅ **tamamlandı** (commit `b8f01b9`) — 4 saha-içi sayfa + MiniPitch + SetPieceZoneMap.
+> [`PROMPT_BACKEND_LOAD_THRESHOLD.md`](PROMPT_BACKEND_LOAD_THRESHOLD.md) ✅ **tamamlandı** (commit `2fa05a8`) — engine.load eşik parametrikleşmesi.
+
 ## Mimari prensipler
 - **Gevşek bağlı katmanlar.** Bağımlılık tek yönlü: `api → ai → engine → domain`.
   `engine/` saf hesap; API/DB/LLM bilmez.
@@ -130,6 +143,109 @@ python scripts/run_job.py sync_league --league 203 --season 2024
 pytest -q
 ```
 Testler in-memory SQLite ile çalışır; gerçek DB veya API anahtarı gerekmez.
+
+## Taktiksel Engine Envanteri (47 modül)
+
+Saf-Python pure-compute engine'ler, hepsi multi-tenant + audit'li.
+Tükettiği veri: `events` tablosu (PassEvent, Carry, DefensiveAction, Shot).
+
+**Form/predict (16 modül — pre-Faz N):**
+form, rating, opponent, predict, predict_ml, schedule, matchup,
+fixture_difficulty, load, tracking, calibration, formation_matcher,
+set_piece, xg, player_form, player_similarity.
+
+**Faz N — temel taktiksel (8 modül):**
+xt (Karun Singh 12×8), xa, ppda, field_tilt, player_role (8-rol typoloji),
+xg_match_graph, build_up_pattern, match_phase + score_state_effects.
+
+**Wave 2 — derinleştirme (7 modül):**
+pressing_trigger, defensive_line, compactness, transition,
+channel_preference, press_resistance, set_piece_zones.
+
+**Wave 3 — Opta-tarz profesyonel (13 modül):**
+cross_effectiveness, cutback_frequency, off_ball_runs, final_third_entries,
+defensive_duels, recovery_zone_heat, counter_press_triggers, direct_play,
+possession_quality, tempo, overperformance, progressive_passes,
+carries_into_final_third.
+
+**Composite (2 modül):**
+match_dominance (5-bileşen tek skor), coaching_identity (8-boyut + 5 arketip).
+
+**VAEP — possession value (1 modül, swap-edilebilir):**
+v1-baseline (xT heuristic) + v2-tabular (events tablosundan train edilmiş
+zone-bin lookup). `POST /admin/vaep/train` çağrısıyla v2'ye geç.
+
+## Batch Tactical Endpoints
+
+```
+GET /admin/teams/{id}/tactical-profile?last_n=10[&opponent_id=22]
+    → 19+ engine birleşik (PPDA, pres, hat, kompakt, transition, kanal,
+      xT, build_up, vs.) + opponent_id varsa field_tilt + coaching_identity
+
+GET /admin/players/{id}/tactical-profile?last_n=10
+    → 8 engine (xT, xA, press_resistance, overperformance, prog_passes,
+      carries, off_ball_runs, vaep)
+
+GET /admin/matches/{id}/dominance
+    → match_dominance + match_phases (home/away ayrı)
+
+POST /admin/vaep/train?min_samples=100
+    → events tablosundan tabular model train + cache'e yaz
+
+GET /admin/teams/{id}/tactical-trend?last_n=10
+    → 5 metric × N maç zaman serisi + slope + biggest_shift
+
+GET /admin/players/{id}/tactical-trend?last_n=10
+    → 5 oyuncu metriği zaman serisi (xT/90, xA/90, VAEP/90, prog/90, press_res)
+
+GET /admin/matches/{id}/halftime-brief?my_team_id=N
+    → Devre arası: PPDA, dominance, opponent_weakness, fatigue_alerts,
+      set_piece_pattern, sub_recommendations, AI brief (200-220 kelime)
+
+GET /admin/halftime-brief-history?match_id=N
+    → Kayıtlı brief'lerin listesi (agent_outputs)
+
+GET /admin/teams/{id}/set-piece-pattern-history?last_n=5
+    → Canlı maç alert: "Son 5 maçta 8 set-piece şutunun 5'i kale ağzına gitti"
+
+GET /admin/matches/{id}/live-sub-recommendation?my_team_id=N&current_minute=70
+    → Top 3 sub önerisi (fatigue + skor + dakika), Türkçe nedenler
+
+POST /admin/tactical-cache/clear
+    → tactical_profile cache temizle (event ingest sonrası)
+```
+
+## Canlı Maç (WebSocket)
+
+```
+ws://host/ws/matches/{id}/live?my_team_id=N&interval_seconds=10&max_minute=90
+    → Her N saniyede tactical snapshot push:
+      PPDA + dominance + sub_recommendation + opponent_shape_drift
+    → match_ended mesajıyla kapanır
+
+GET /ws/active-connections
+    → Aktif WebSocket sayısı (observability)
+```
+
+Frontend: `/matches/{id}/live?my_team_id=N` — touch-line tablet için
+canlı dashboard. WebSocket'i kullanır; 5sn'de bir güncellenir.
+
+## Production Event Ingest (StatsBomb Open)
+
+```bash
+# Tek maç — Barcelona vs Sevilla, La Liga 2018/19
+python -m scripts.ingest_statsbomb_events --tenant t-default --match 16029
+
+# Bir takımın son 10 maçı
+python -m scripts.ingest_statsbomb_events --tenant t-default --team 611 --limit 10
+
+# Uçtan uca demo (gerçek match ingest + 14 engine analizi)
+DATABASE_URL="sqlite:///demo.db" python -m scripts.demo_real_statsbomb
+```
+
+Çıktı: `events` tablosu dolu, `/admin/teams/{id}/tactical-profile` artık
+gerçek sayılar döner. Frontend `/teams/{id}/tactical` sayfasında 20+ metric
++ 3 recharts grafik (kanal tercihi, recovery zone, coaching identity radar).
 
 ## Deployment
 Docker Compose + Postgres ya da bare-metal systemd + cron kurulumu için

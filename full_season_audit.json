@@ -1,0 +1,262 @@
+{
+  "audit": {
+    "ppda": {
+      "n_samples": 68,
+      "mean": 3.1041,
+      "stdev": 1.9326,
+      "cv": 0.6226,
+      "team_spread": 6.52,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "pressing_trigger": {
+      "n_samples": 68,
+      "mean": 0.1408,
+      "stdev": 0.0756,
+      "cv": 0.5373,
+      "team_spread": 0.2635,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "recovery_zone_heat": {
+      "n_samples": 68,
+      "mean": 0.1975,
+      "stdev": 0.085,
+      "cv": 0.4304,
+      "team_spread": 0.348,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "defensive_line": {
+      "n_samples": 68,
+      "mean": 35.6725,
+      "stdev": 7.1315,
+      "cv": 0.1999,
+      "team_spread": 22.545,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "compactness": {
+      "n_samples": 68,
+      "mean": 23.4084,
+      "stdev": 1.2115,
+      "cv": 0.0518,
+      "team_spread": 3.8,
+      "n_teams": 20,
+      "verdict": "MODERATE"
+    },
+    "transition": {
+      "n_samples": 68,
+      "mean": 0.1755,
+      "stdev": 0.0771,
+      "cv": 0.4392,
+      "team_spread": 0.2148,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "counter_press_triggers": {
+      "n_samples": 68,
+      "mean": 46.0294,
+      "stdev": 12.0122,
+      "cv": 0.261,
+      "team_spread": 45.5,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "direct_play": {
+      "n_samples": 68,
+      "mean": 0.3517,
+      "stdev": 0.0546,
+      "cv": 0.1552,
+      "team_spread": 0.1709,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "tempo": {
+      "n_samples": 68,
+      "mean": 6.1041,
+      "stdev": 2.1237,
+      "cv": 0.3479,
+      "team_spread": 5.0529,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "possession_quality": {
+      "n_samples": 68,
+      "mean": 5.2974,
+      "stdev": 1.8184,
+      "cv": 0.3433,
+      "team_spread": 3.66,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "channel_preference": {
+      "n_samples": 68,
+      "mean": 0.4009,
+      "stdev": 0.0886,
+      "cv": 0.2211,
+      "team_spread": 0.2775,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "final_third_entries": {
+      "n_samples": 68,
+      "mean": 69.8676,
+      "stdev": 23.4219,
+      "cv": 0.3352,
+      "team_spread": 51.6765,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "cross_effectiveness": {
+      "n_samples": 68,
+      "mean": 10.3529,
+      "stdev": 4.9282,
+      "cv": 0.476,
+      "team_spread": 21.5,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "cutback_frequency": {
+      "n_samples": 68,
+      "mean": 4.6176,
+      "stdev": 2.7495,
+      "cv": 0.5954,
+      "team_spread": 13.5,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "defensive_duels": {
+      "n_samples": 68,
+      "mean": 0.9706,
+      "stdev": 0.169,
+      "cv": 0.1741,
+      "team_spread": 0.5,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "press_resistance": {
+      "n_samples": 68,
+      "mean": 0.8652,
+      "stdev": 0.0888,
+      "cv": 0.1026,
+      "team_spread": 0.3305,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "set_piece_zones": {
+      "n_samples": 68,
+      "mean": 2.75,
+      "stdev": 2.0678,
+      "cv": 0.7519,
+      "team_spread": 4.0,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "team_xt": {
+      "n_samples": 68,
+      "mean": 0.6732,
+      "stdev": 1.394,
+      "cv": 2.0708,
+      "team_spread": 2.55,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "field_tilt": {
+      "n_samples": 68,
+      "mean": 0.5,
+      "stdev": 0.2427,
+      "cv": 0.4853,
+      "team_spread": 0.5563,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    },
+    "match_dominance": {
+      "n_samples": 68,
+      "mean": 0.0,
+      "stdev": 4.7609,
+      "cv": Infinity,
+      "team_spread": 11.7465,
+      "n_teams": 20,
+      "verdict": "STRONG_SIGNAL"
+    }
+  },
+  "barca_validation": {
+    "field_tilt": "OK (mean 0.69 >= 0.6)",
+    "direct_play": "OK (mean 0.31 < 0.5)",
+    "tempo": "OK (mean 7.86 >= 6.0)",
+    "team_xt": "MISS (mean 1.35 < 1.5)",
+    "match_dominance": "OK (mean 3.42 >= 1.5)"
+  },
+  "archetype_counts": {
+    "210": {
+      "low_block_counter": 2
+    },
+    "217": {
+      "high_press_possession": 26,
+      "low_block_counter": 4,
+      "balanced_pragmatic": 4
+    },
+    "205": {
+      "low_block_counter": 2
+    },
+    "213": {
+      "balanced_pragmatic": 1,
+      "low_block_counter": 1
+    },
+    "212": {
+      "low_block_counter": 2
+    },
+    "214": {
+      "balanced_pragmatic": 1,
+      "low_block_counter": 1
+    },
+    "209": {
+      "balanced_pragmatic": 1
+    },
+    "216": {
+      "low_block_counter": 1,
+      "direct_vertical": 1
+    },
+    "901": {
+      "low_block_counter": 2
+    },
+    "218": {
+      "high_press_possession": 1,
+      "low_block_counter": 1
+    },
+    "215": {
+      "low_block_counter": 2
+    },
+    "206": {
+      "low_block_counter": 2
+    },
+    "207": {
+      "low_block_counter": 2
+    },
+    "221": {
+      "low_block_counter": 1,
+      "balanced_pragmatic": 1
+    },
+    "222": {
+      "low_block_counter": 2
+    },
+    "211": {
+      "balanced_pragmatic": 1,
+      "low_block_counter": 1
+    },
+    "902": {
+      "low_block_counter": 1
+    },
+    "322": {
+      "balanced_pragmatic": 2
+    },
+    "360": {
+      "low_block_counter": 1
+    },
+    "220": {
+      "balanced_pragmatic": 1
+    }
+  },
+  "n_matches_analyzed": 34
+}

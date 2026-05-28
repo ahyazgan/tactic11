@@ -1,29 +1,73 @@
-import Link from "next/link";
+"use client";
 
-const ROUTES = [
-  { href: "/matches", label: "Maçlar", desc: "Bu haftaki maçlar + tahmin" },
-  { href: "/calibration", label: "Kalibrasyon", desc: "Brier + log loss + ECE grafikleri" },
-  { href: "/decisions", label: "Kararlar", desc: "Lineup + sub + tactical öneriler" },
-  { href: "/chat", label: "Asistan", desc: "Manager co-pilot chat" },
-  { href: "/settings", label: "Ayarlar", desc: "Branding + webhook + ML model" },
+import Link from "next/link";
+import { Panel } from "@/components/ui";
+import { useCurrentUser } from "@/lib/auth";
+
+const QUICK_LINKS: { href: string; label: string; desc: string }[] = [
+  { href: "/leagues", label: "Ligler",
+    desc: "Lig listesi ve takım tabloları" },
+  { href: "/h2h", label: "Head-to-head",
+    desc: "İki takımı yan yana karşılaştır" },
+  { href: "/matches/16029/halftime?my_team_id=217", label: "Devre Arası",
+    desc: "1. yarı sayılar + AI brief" },
+  { href: "/matches/16029/live?my_team_id=217&interval_seconds=5&max_minute=90",
+    label: "Canlı Maç (Replay)",
+    desc: "WebSocket push + sub önerisi" },
+  { href: "/teams/217/tactical", label: "Takım Taktiksel",
+    desc: "30 engine batch çıktısı" },
+  { href: "/teams/217/trend", label: "Sezon Trendi",
+    desc: "PPDA/tilt/xT slope + biggest shift" },
+  { href: "/training", label: "Antrenman Planı",
+    desc: "Rakip profilinden drill önerileri" },
+  { href: "/matches/16029/sub-chess?my_team_id=217&current_minute=60",
+    label: "Sub Chess",
+    desc: "Top 3 sub senaryosu forward projection" },
+  { href: "/teams/217/set-piece-routine?opponent_id=22",
+    label: "Set-piece Routine",
+    desc: "Rakibin zayıf zone'una göre rutin öneri" },
+  { href: "/matches/16029/players/5503/feedback",
+    label: "Oyuncu Feedback",
+    desc: "Frame-by-frame pas alternatifleri (Messi örnek)" },
 ];
 
 export default function HomePage() {
+  const { user, isLoading } = useCurrentUser();
+
   return (
-    <main className="max-w-5xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-2">manager2</h1>
-      <p className="text-muted mb-8">Football Manager için veri-tabanlı co-pilot.</p>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {ROUTES.map((r) => (
-          <Link key={r.href} href={r.href} className="card hover:border-accent">
-            <h2 className="text-lg font-semibold mb-1">{r.label}</h2>
-            <p className="text-sm text-muted">{r.desc}</p>
+    <div className="max-w-6xl">
+      <div className="flex items-baseline justify-between mb-4">
+        <div>
+          <h1 className="text-lg font-semibold text-text">Gösterge tablosu</h1>
+          <p className="text-[12px] text-textmut mt-0.5">
+            Veriyle karar destek — kulüp analiz şefi için co-pilot.
+          </p>
+        </div>
+        {!isLoading && !user && (
+          <Link
+            href="/login"
+            className="text-[11px] uppercase tracking-wide px-2 py-1 rounded border border-borderlt text-accent hover:bg-surface2"
+          >
+            Giriş yap
+          </Link>
+        )}
+      </div>
+
+      <h2 className="text-sm font-semibold text-text mb-2 mt-4">
+        Hızlı erişim
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {QUICK_LINKS.map((r) => (
+          <Link
+            key={r.href}
+            href={r.href}
+            className="block bg-surface border border-border rounded-md p-3 hover:border-accent transition-colors"
+          >
+            <div className="text-sm font-semibold text-text">{r.label}</div>
+            <div className="text-[12px] text-textmut mt-1">{r.desc}</div>
           </Link>
         ))}
       </div>
-      <p className="text-sm text-muted mt-12">
-        Giriş yapmadıysan: <Link href="/login" className="text-accent">/login</Link>
-      </p>
-    </main>
+    </div>
   );
 }
