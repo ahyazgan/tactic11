@@ -26,7 +26,8 @@ from app.domain import Carry, PassEvent, Shot
 from app.engine.xt import xt_value_at
 
 ENGINE_NAME = "engine.vaep"
-ENGINE_VERSION = "1-baseline"  # _baseline = heuristic; v2 = ML-trained
+ENGINE_VERSION_BASELINE = "1-baseline"  # heuristic xT grid
+ENGINE_VERSION_ML = "2-tabular"          # cache_entries'ten zone bin lookup
 
 # Heuristic baseline:
 # - Pas/carry value = ΔxT (xT(end) − xT(start)); negatif olabilir (geri pas)
@@ -60,13 +61,33 @@ def _shot_xg_proxy(s: Shot) -> float:
     return 0.01
 
 
-def _pass_value(p: PassEvent) -> tuple[float, float]:
+def _zone_id_ml(x: float, y: float, x_bins: int = 4, y_bins: int = 3) -> int:
+    xb = min(int(x / (100.0 / x_bins)), x_bins - 1)
+    yb = min(int(y / (100.0 / y_bins)), y_bins - 1)
+    return xb * y_bins + yb
+
+
+def _pass_value(p: PassEvent, model: dict | None = None) -> tuple[float, float]:
     """(score_value, concede_value) — pas için.
 
-    Heuristic:
-    - Tamamlanmış: ΔxT (full); concede=0 (rakipte değil)
-    - Tamamlanmamış: ΔxT × 0.5 (yarı kredit); concede = xT(start) × 0.30
+    model: dict varsa (cache'den) tabular ML lookup; yoksa heuristic.
     """
+    if model:
+        zs = model["score_lookup"]
+        zc = model["concede_lookup"]
+        xb = model.get("zone_x_bins", 4)
+        yb = model.get("zone_y_bins", 3)
+        start_z = str(_zone_id_ml(p.start_x, p.start_y, xb, yb))
+        end_z = str(_zone_id_ml(p.end_x, p.end_y, xb, yb))
+        # ΔP(score) - ΔP(concede)
+        d_score = zs.get(end_z, 0.0) - zs.get(start_z, 0.0)
+        d_concede = zc.get(end_z, 0.0) - zc.get(start_z, 0.0)
+        if not p.completed:
+            return d_score * INCOMPLETE_PASS_SCORE_PENALTY, \
+                   zc.get(start_z, 0.0) * INCOMPLETE_PASS_CONCEDE_RATIO
+        return d_score, max(0.0, -d_concede)  # negatif concede = iyi
+
+    # Heuristic fallback
     xt_start = xt_value_at(p.start_x, p.start_y)
     xt_end = xt_value_at(p.end_x, p.end_y)
     delta = xt_end - xt_start
@@ -75,8 +96,15 @@ def _pass_value(p: PassEvent) -> tuple[float, float]:
     return delta * INCOMPLETE_PASS_SCORE_PENALTY, xt_start * INCOMPLETE_PASS_CONCEDE_RATIO
 
 
-def _carry_value(c: Carry) -> float:
+def _carry_value(c: Carry, model: dict | None = None) -> float:
     """Carry tamamı tamamlanmış kabul (oyuncu topla mesafe aldı)."""
+    if model:
+        zs = model["score_lookup"]
+        xb = model.get("zone_x_bins", 4)
+        yb = model.get("zone_y_bins", 3)
+        start_z = str(_zone_id_ml(c.start_x, c.start_y, xb, yb))
+        end_z = str(_zone_id_ml(c.end_x, c.end_y, xb, yb))
+        return zs.get(end_z, 0.0) - zs.get(start_z, 0.0)
     return xt_value_at(c.end_x, c.end_y) - xt_value_at(c.start_x, c.start_y)
 
 
@@ -111,11 +139,12 @@ def compute_vaep(
     all_shots: Iterable[Shot],
     minutes_played: float | None = None,
     matches_analyzed: int = 1,
+    trained_model: dict | None = None,
 ) -> EngineResult[VAEPReport]:
     """Bir takım VEYA oyuncu için VAEP toplam değeri.
 
-    Heuristic baseline (model_version="1-baseline"); v2'de ML.
-    Tüm pas + carry + şutu döner; subject filtre yapar.
+    `trained_model` verilirse v2-tabular (events'ten öğrenilmiş zone bin
+    lookup); yoksa heuristic baseline (1-baseline) xT grid'i kullanır.
     """
     if team_external_id is None and player_external_id is None:
         raise ValueError("team_external_id veya player_external_id verilmeli")
@@ -147,12 +176,12 @@ def compute_vaep(
     shot_total = 0.0
 
     for p in passes:
-        sv, cv = _pass_value(p)
+        sv, cv = _pass_value(p, trained_model)
         sum_score += sv
         sum_concede += cv
         pass_total += sv - cv
     for c in carries:
-        v = _carry_value(c)
+        v = _carry_value(c, trained_model)
         sum_score += v
         carry_total += v
     for s in shots:
@@ -163,6 +192,7 @@ def compute_vaep(
 
     total = len(passes) + len(carries) + len(shots)
     vaep = sum_score - sum_concede
+    model_v = ENGINE_VERSION_ML if trained_model else ENGINE_VERSION_BASELINE
     per_90: float | None = None
     score_per_90: float | None = None
     concede_per_90: float | None = None
@@ -183,7 +213,7 @@ def compute_vaep(
         vaep_per_90=per_90,
         score_per_90=score_per_90,
         concede_per_90=concede_per_90,
-        model_version=ENGINE_VERSION,
+        model_version=model_v,
         by_action={
             "passes": round(pass_total, 4),
             "carries": round(carry_total, 4),
@@ -191,21 +221,22 @@ def compute_vaep(
         },
     )
     audit = AuditRecord(
-        engine=ENGINE_NAME, engine_version=ENGINE_VERSION,
+        engine=ENGINE_NAME, engine_version=model_v,
         subject_type="player" if player_external_id else "team",
         subject_id=player_external_id or team_external_id or 0,
         metric="vaep",
         value={
             "vaep_value": report.vaep_value,
             "vaep_per_90": per_90,
-            "model_version": ENGINE_VERSION,
+            "model_version": model_v,
             "total_actions": total,
         },
         inputs={
             "incomplete_pass_score_penalty": INCOMPLETE_PASS_SCORE_PENALTY,
             "incomplete_pass_concede_ratio": INCOMPLETE_PASS_CONCEDE_RATIO,
             "matches_analyzed": matches_analyzed,
-            "model_type": "heuristic_baseline_xt_grid",
+            "model_type": ("tabular_zone_bin_v1" if trained_model
+                           else "heuristic_baseline_xt_grid"),
         },
         formula=(
             "VAEP = Σ ΔP(score) − Σ ΔP(concede); "

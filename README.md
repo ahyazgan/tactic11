@@ -131,6 +131,72 @@ pytest -q
 ```
 Testler in-memory SQLite ile çalışır; gerçek DB veya API anahtarı gerekmez.
 
+## Taktiksel Engine Envanteri (47 modül)
+
+Saf-Python pure-compute engine'ler, hepsi multi-tenant + audit'li.
+Tükettiği veri: `events` tablosu (PassEvent, Carry, DefensiveAction, Shot).
+
+**Form/predict (16 modül — pre-Faz N):**
+form, rating, opponent, predict, predict_ml, schedule, matchup,
+fixture_difficulty, load, tracking, calibration, formation_matcher,
+set_piece, xg, player_form, player_similarity.
+
+**Faz N — temel taktiksel (8 modül):**
+xt (Karun Singh 12×8), xa, ppda, field_tilt, player_role (8-rol typoloji),
+xg_match_graph, build_up_pattern, match_phase + score_state_effects.
+
+**Wave 2 — derinleştirme (7 modül):**
+pressing_trigger, defensive_line, compactness, transition,
+channel_preference, press_resistance, set_piece_zones.
+
+**Wave 3 — Opta-tarz profesyonel (13 modül):**
+cross_effectiveness, cutback_frequency, off_ball_runs, final_third_entries,
+defensive_duels, recovery_zone_heat, counter_press_triggers, direct_play,
+possession_quality, tempo, overperformance, progressive_passes,
+carries_into_final_third.
+
+**Composite (2 modül):**
+match_dominance (5-bileşen tek skor), coaching_identity (8-boyut + 5 arketip).
+
+**VAEP — possession value (1 modül, swap-edilebilir):**
+v1-baseline (xT heuristic) + v2-tabular (events tablosundan train edilmiş
+zone-bin lookup). `POST /admin/vaep/train` çağrısıyla v2'ye geç.
+
+## Batch Tactical Endpoints
+
+```
+GET /admin/teams/{id}/tactical-profile?last_n=10[&opponent_id=22]
+    → 19+ engine birleşik (PPDA, pres, hat, kompakt, transition, kanal,
+      xT, build_up, vs.) + opponent_id varsa field_tilt + coaching_identity
+
+GET /admin/players/{id}/tactical-profile?last_n=10
+    → 8 engine (xT, xA, press_resistance, overperformance, prog_passes,
+      carries, off_ball_runs, vaep)
+
+GET /admin/matches/{id}/dominance
+    → match_dominance + match_phases (home/away ayrı)
+
+POST /admin/vaep/train?min_samples=100
+    → events tablosundan tabular model train + cache'e yaz
+```
+
+## Production Event Ingest (StatsBomb Open)
+
+```bash
+# Tek maç — Barcelona vs Sevilla, La Liga 2018/19
+python -m scripts.ingest_statsbomb_events --tenant t-default --match 16029
+
+# Bir takımın son 10 maçı
+python -m scripts.ingest_statsbomb_events --tenant t-default --team 611 --limit 10
+
+# Uçtan uca demo (gerçek match ingest + 14 engine analizi)
+DATABASE_URL="sqlite:///demo.db" python -m scripts.demo_real_statsbomb
+```
+
+Çıktı: `events` tablosu dolu, `/admin/teams/{id}/tactical-profile` artık
+gerçek sayılar döner. Frontend `/teams/{id}/tactical` sayfasında 20+ metric
++ 3 recharts grafik (kanal tercihi, recovery zone, coaching identity radar).
+
 ## Deployment
 Docker Compose + Postgres ya da bare-metal systemd + cron kurulumu için
 [DEPLOYMENT.md](DEPLOYMENT.md).

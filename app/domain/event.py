@@ -17,7 +17,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-PassType = Literal["regular", "long_ball", "through_ball", "cross", "switch", "lay_off", "corner", "free_kick", "throw_in", "goal_kick"]
+PassType = Literal["regular", "long_ball", "through_ball", "cross", "switch", "lay_off", "corner", "free_kick", "throw_in", "goal_kick", "interception", "kick_off", "recovery"]
 PassTechnique = Literal["regular", "inswinger", "outswinger", "straight", "through_ball"]
 DefensiveActionType = Literal["tackle", "interception", "block", "ball_recovery", "clearance", "pressure", "duel_won"]
 

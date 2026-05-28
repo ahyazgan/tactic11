@@ -3,6 +3,9 @@
 import { useParams, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { ChannelPreferenceBar } from "@/components/charts/ChannelPreferenceBar";
+import { CoachingIdentityRadar } from "@/components/charts/CoachingIdentityRadar";
+import { RecoveryZoneStacked } from "@/components/charts/RecoveryZoneStacked";
 
 interface EngineValue {
   value: Record<string, unknown>;
@@ -211,6 +214,31 @@ export default function TacticalProfilePage() {
           <MetricCard title="Coaching Identity"
             metric={tp.coaching_identity} primary="archetype"
             secondary="top_features" />
+        )}
+      </div>
+
+      <h2 className="text-lg font-semibold mt-6 mb-3">Görsel Analiz</h2>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+        {tp.channel_preference && !("error" in tp.channel_preference) && (
+          <ChannelPreferenceBar
+            left={Number(tp.channel_preference.value.left_share) || 0}
+            central={Number(tp.channel_preference.value.central_share) || 0}
+            right={Number(tp.channel_preference.value.right_share) || 0}
+          />
+        )}
+        {tp.recovery_zone_heat && !("error" in tp.recovery_zone_heat) && (
+          <RecoveryZoneStacked
+            defensive={Number(tp.recovery_zone_heat.value.defensive_share) || 0}
+            middle={Number(tp.recovery_zone_heat.value.middle_share) || 0}
+            attacking={Number(tp.recovery_zone_heat.value.attacking_share) || 0}
+          />
+        )}
+        {tp.coaching_identity && !("error" in tp.coaching_identity)
+          && tp.coaching_identity.value.vector && (
+          <CoachingIdentityRadar
+            vector={tp.coaching_identity.value.vector as never}
+            archetype={String(tp.coaching_identity.value.archetype || "")}
+          />
         )}
       </div>
 

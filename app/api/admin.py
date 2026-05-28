@@ -1201,6 +1201,42 @@ def player_tactical_profile(
     }
 
 
+@router.post(
+    "/vaep/train",
+    tags=["admin"],
+    summary="VAEP tabular model train (events tablosundan zone-bin lookup öğren)",
+)
+def vaep_train(
+    min_samples: int = Query(default=100, ge=10),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """VAEP v2-tabular modelini train et + cache'e yaz."""
+    from app.engine.vaep import NotEnoughTrainingData, train_vaep_model
+
+    tenant_id = session.info.get("tenant_id")
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="tenant_id session.info'da yok")
+    try:
+        report = train_vaep_model(
+            session, tenant_id=tenant_id, min_samples=min_samples,
+        )
+    except NotEnoughTrainingData as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+    session.commit()
+    return {
+        "sample_count": report.sample_count,
+        "matches_used": report.matches_used,
+        "zones": report.zones,
+        "cache_written": report.cache_written,
+        "score_lookup_top3": sorted(
+            report.score_lookup.items(), key=lambda x: -x[1],
+        )[:3],
+        "concede_lookup_top3": sorted(
+            report.concede_lookup.items(), key=lambda x: -x[1],
+        )[:3],
+    }
+
+
 @router.get(
     "/matches/{match_id}/dominance",
     tags=["admin"],
