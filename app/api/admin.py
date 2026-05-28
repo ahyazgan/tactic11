@@ -990,3 +990,280 @@ def match_phase_analysis(
             "çağrısı için caller event listeleri geçer."
         ),
     }
+
+
+# --------------------------------------------------------------------------- #
+# Tactical Profile — events tablosu üstünde 30 engine'in batch çağırımı
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/teams/{team_id}/tactical-profile",
+    tags=["admin"],
+    summary="Takım taktiksel profil (20+ engine birleşik)",
+)
+def team_tactical_profile(
+    team_id: int,
+    last_n: int = Query(default=10, ge=1, le=50),
+    opponent_id: int | None = Query(default=None,
+        description="Field tilt / coaching identity için rakip referansı"),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir takımın son N maçındaki olaylardan 20+ engine'in batch çıktısı.
+
+    Events tablosu boşsa `events_loaded=0` döner ve ana metrikler `null` olur —
+    ingest pipeline çalıştırılması beklenir.
+    """
+    from app.data.loaders import load_team_events
+    from app.engine.build_up_pattern import compute_build_up_pattern
+    from app.engine.channel_preference import compute_channel_preference
+    from app.engine.coaching_identity import compute_coaching_identity
+    from app.engine.compactness import compute_compactness
+    from app.engine.counter_press_triggers import compute_counter_press_triggers
+    from app.engine.cross_effectiveness import compute_cross_effectiveness
+    from app.engine.cutback_frequency import compute_cutback_frequency
+    from app.engine.defensive_duels import compute_defensive_duels
+    from app.engine.defensive_line import compute_defensive_line
+    from app.engine.direct_play import compute_direct_play
+    from app.engine.field_tilt import compute_field_tilt
+    from app.engine.final_third_entries import compute_final_third_entries
+    from app.engine.possession_quality import compute_possession_quality
+    from app.engine.ppda import compute_ppda
+    from app.engine.press_resistance import compute_press_resistance
+    from app.engine.pressing_trigger import compute_pressing_trigger
+    from app.engine.recovery_zone_heat import compute_recovery_zone_heat
+    from app.engine.set_piece_zones import compute_set_piece_zones
+    from app.engine.tempo import compute_tempo
+    from app.engine.transition import compute_transition
+    from app.engine.xt import compute_team_xt
+
+    loaded = load_team_events(session, team_id, last_n=last_n)
+    if loaded.total == 0:
+        return {
+            "team_id": team_id,
+            "last_n": last_n,
+            "events_loaded": 0,
+            "matches_analyzed": [],
+            "note": "events tablosunda bu takım için kayıt yok; ingest pipeline çağırın.",
+        }
+
+    matches_n = len(loaded.match_ids)
+    p = loaded.passes
+    c = loaded.carries
+    d = loaded.defensive_actions
+    s = loaded.shots
+    # Şutu takım filtre etmek gerekiyor — Shot.team yok; bu metriklerde
+    # caller event teamlerini varsayıyor: aynı maçtaki tüm şutları gönderiyoruz,
+    # set_piece için takım-spesifik filtreyi pas sahibiyle yapamayız → tüm şut.
+    # Konservatif: takım filtresiz pass'ı tüm passes; team_xt için sadece
+    # bizim takım pasları zaten içeride filtre ediliyor.
+
+    def _safe(fn):
+        try:
+            return engine_result_to_dict(fn())
+        except (ValueError, ZeroDivisionError, IndexError, KeyError, TypeError) as e:
+            return {"error": str(e)}
+
+    profile = {
+        "ppda": _safe(lambda: compute_ppda(team_id, p, d, matches_analyzed=matches_n)),
+        "pressing_trigger": _safe(lambda: compute_pressing_trigger(
+            team_id, p, d, matches_analyzed=matches_n)),
+        "defensive_line": _safe(lambda: compute_defensive_line(
+            team_id, d, matches_analyzed=matches_n)),
+        "compactness": _safe(lambda: compute_compactness(
+            team_id, p, d, matches_analyzed=matches_n)),
+        "transition": _safe(lambda: compute_transition(
+            team_id, d, s, matches_analyzed=matches_n)),
+        "recovery_zone_heat": _safe(lambda: compute_recovery_zone_heat(
+            team_id, d, matches_analyzed=matches_n)),
+        "counter_press_triggers": _safe(lambda: compute_counter_press_triggers(
+            team_id, p, d, matches_analyzed=matches_n)),
+        "direct_play": _safe(lambda: compute_direct_play(
+            team_id, p, matches_analyzed=matches_n)),
+        "tempo": _safe(lambda: compute_tempo(
+            team_id, p, matches_analyzed=matches_n)),
+        "possession_quality": _safe(lambda: compute_possession_quality(
+            team_id, p, s, matches_analyzed=matches_n)),
+        "channel_preference": _safe(lambda: compute_channel_preference(
+            team_id, p, matches_analyzed=matches_n)),
+        "final_third_entries": _safe(lambda: compute_final_third_entries(
+            team_id, p, c, matches_analyzed=matches_n)),
+        "cross_effectiveness": _safe(lambda: compute_cross_effectiveness(
+            team_id, p, s, matches_analyzed=matches_n)),
+        "cutback_frequency": _safe(lambda: compute_cutback_frequency(
+            team_id, p, s, matches_analyzed=matches_n)),
+        "defensive_duels": _safe(lambda: compute_defensive_duels(
+            team_external_id=team_id, all_def_actions=d, matches_analyzed=matches_n)),
+        "press_resistance": _safe(lambda: compute_press_resistance(
+            team_external_id=team_id, all_passes=p, all_def_actions=d,
+            matches_analyzed=matches_n)),
+        "set_piece_zones": _safe(lambda: compute_set_piece_zones(
+            team_id, s, matches_analyzed=matches_n)),
+        "build_up_pattern": _safe(lambda: compute_build_up_pattern(
+            team_id, p, s, matches_analyzed=matches_n)),
+        "team_xt": _safe(lambda: compute_team_xt(team_id, p, c)),
+    }
+
+    # Field tilt + coaching identity rakip gerektirir
+    if opponent_id is not None:
+        profile["field_tilt"] = _safe(lambda: compute_field_tilt(team_id, opponent_id, p))
+        profile["coaching_identity"] = _safe(lambda: compute_coaching_identity(
+            team_id, opponent_id, p, d, s, matches_analyzed=matches_n))
+
+    return {
+        "team_id": team_id,
+        "last_n": last_n,
+        "matches_analyzed": loaded.match_ids,
+        "events_loaded": loaded.total,
+        "event_counts": {
+            "passes": len(p), "carries": len(c),
+            "defensive_actions": len(d), "shots": len(s),
+        },
+        "tactical_profile": profile,
+    }
+
+
+@router.get(
+    "/players/{player_id}/tactical-profile",
+    tags=["admin"],
+    summary="Oyuncu taktiksel profil (8 engine birleşik)",
+)
+def player_tactical_profile(
+    player_id: int,
+    last_n: int = Query(default=10, ge=1, le=50),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir oyuncunun son N maçındaki engine'leri batchle."""
+    from app.data.loaders import load_player_events
+    from app.engine.carries_into_final_third import compute_carries_into_final_third
+    from app.engine.off_ball_runs import compute_off_ball_runs
+    from app.engine.overperformance import compute_overperformance
+    from app.engine.press_resistance import compute_press_resistance
+    from app.engine.progressive_passes import compute_progressive_passes
+    from app.engine.xa import compute_player_xa
+    from app.engine.xt import compute_player_xt
+
+    loaded, meta = load_player_events(session, player_id, last_n=last_n)
+    if loaded.total == 0:
+        return {
+            "player_id": player_id,
+            "events_loaded": 0,
+            "meta": meta,
+            "note": "events tablosunda bu oyuncu için kayıt yok.",
+        }
+
+    p = loaded.passes
+    c = loaded.carries
+    d = loaded.defensive_actions
+    s = loaded.shots
+    minutes = meta.get("minutes_played", 0.0)
+    team_id = meta.get("team_external_id")
+    matches_n = meta.get("matches_analyzed", 1)
+
+    def _safe(fn):
+        try:
+            return engine_result_to_dict(fn())
+        except (ValueError, ZeroDivisionError, IndexError, KeyError, TypeError) as e:
+            return {"error": str(e)}
+
+    profile = {
+        "player_xt": _safe(lambda: compute_player_xt(player_id, p, c)),
+        "player_xa": _safe(lambda: compute_player_xa(
+            player_id, p, s, minutes_played=int(minutes))),
+        "press_resistance": _safe(lambda: compute_press_resistance(
+            player_external_id=player_id, all_passes=p, all_def_actions=d,
+            matches_analyzed=matches_n)),
+        "overperformance": _safe(lambda: compute_overperformance(
+            player_external_id=player_id, all_passes=p, all_shots=s,
+            matches_analyzed=matches_n)),
+        "progressive_passes": _safe(lambda: compute_progressive_passes(
+            player_external_id=player_id, all_passes=p,
+            player_minutes_played=minutes, matches_analyzed=matches_n)),
+        "carries_into_final_third": _safe(lambda: compute_carries_into_final_third(
+            player_external_id=player_id, all_carries=c,
+            player_minutes_played=minutes, matches_analyzed=matches_n)),
+    }
+    if team_id is not None:
+        profile["off_ball_runs"] = _safe(lambda: compute_off_ball_runs(
+            player_external_id=player_id, team_external_id=team_id,
+            all_carries=c, all_passes=p,
+            player_minutes_played=minutes, matches_analyzed=matches_n))
+
+    return {
+        "player_id": player_id,
+        "meta": meta,
+        "events_loaded": loaded.total,
+        "tactical_profile": profile,
+    }
+
+
+@router.get(
+    "/matches/{match_id}/dominance",
+    tags=["admin"],
+    summary="Tek maç dominance + match_phase (composite + split)",
+)
+def match_dominance_endpoint(
+    match_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir maç için composite dominance skoru + 1H/2H phase split."""
+    from app.data.loaders import load_match_events
+    from app.engine.match_dominance import compute_match_dominance
+    from app.engine.match_phase import compute_match_phases
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {
+            "match_id": match_id,
+            "events_loaded": 0,
+            "note": "events tablosunda bu maç için kayıt yok.",
+        }
+
+    home_id = match.home_team_external_id
+    away_id = match.away_team_external_id
+    # Shot domain'inde team yok — minute'a göre yakın pas'ın takımıyla yaklaşık
+    # eşleştirmedense burada tüm şutları her iki tarafa da gönderiyoruz; bu
+    # şutsuz takım için xg=0 anlamına gelir, çünkü mesafe etkisi azalmaz.
+    # Pragmatik: home_shots = all shots; away_shots = all shots — caller bunu bilir.
+    def _safe(fn):
+        try:
+            return engine_result_to_dict(fn())
+        except (ValueError, ZeroDivisionError, IndexError, KeyError, TypeError) as e:
+            return {"error": str(e)}
+
+    dominance = _safe(lambda: compute_match_dominance(
+        team_external_id=home_id, opponent_team_external_id=away_id,
+        team_shots=loaded.shots, opponent_shots=loaded.shots,
+        all_passes=loaded.passes, team_carries=loaded.carries,
+        opponent_carries=loaded.carries,
+    ))
+    # match_phases home/away ayrımı bekliyor — pas team_id'ye göre böl
+    home_pass = [pp for pp in loaded.passes if pp.team_external_id == home_id]
+    away_pass = [pp for pp in loaded.passes if pp.team_external_id == away_id]
+    home_def = [dd for dd in loaded.defensive_actions if dd.team_external_id == home_id]
+    away_def = [dd for dd in loaded.defensive_actions if dd.team_external_id == away_id]
+    # Shot domain'inde team yok → tüm şutları her iki tarafa ver (yaklaşık)
+    phases = _safe(lambda: compute_match_phases(
+        match_id, home_id, away_id,
+        loaded.shots, loaded.shots,
+        home_pass, away_pass,
+        home_def, away_def,
+    ))
+
+    return {
+        "match_id": match_id,
+        "home_team_id": home_id,
+        "away_team_id": away_id,
+        "events_loaded": loaded.total,
+        "match_dominance": dominance,
+        "match_phases": phases,
+    }
