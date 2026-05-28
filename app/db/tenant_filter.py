@@ -26,6 +26,7 @@ _TENANT_MODELS = (
     models.PlayerAppearance, models.AgentOutput, models.Prediction,
     models.TrackingFrameRow, models.AssistantMemory,
     models.ChatConversation, models.ChatMessage, models.ScoutWatchlist,
+    models.EventRow,
 )
 
 
