@@ -2248,7 +2248,9 @@ def proactive_alerts_endpoint(
         )
     ).scalars())
     player_ids = {a.player_external_id for a in apps}
-    now = datetime.now(UTC)
+    # SQLite tz-strip: now'u appearance tzinfo'suna göre türet
+    _ref_tz = apps[0].kickoff.tzinfo if apps else None
+    now = datetime.now(_ref_tz) if _ref_tz else datetime.now(UTC).replace(tzinfo=None)
     player_loads: list[dict[str, Any]] = []
     for pid in player_ids:
         try:
@@ -2366,3 +2368,288 @@ def _daily_todo(role: str, sections: dict[str, Any]) -> list[str]:
     else:  # viewer
         todo.append("Takım form ve sıralama özetini gör")
     return todo
+
+
+# --------------------------------------------------------------------------- #
+# Faz 5 Sprint 3-5 — sezon / kadro / sağlık
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/players/{player_id}/injury-risk",
+    tags=["admin"],
+    summary="Sakatlık risk skoru (yük + yaş + sıklık) — Faz 5 #42",
+)
+def injury_risk_endpoint(
+    player_id: int,
+    age: int | None = Query(default=None, ge=15, le=45),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Oyuncunun load raporundan + yaştan sakatlık risk skoru."""
+    from datetime import UTC, datetime
+
+    from app.engine.injury_risk import compute_injury_risk
+    from app.engine.load import compute_player_load
+
+    apps = list(session.execute(
+        select(models.PlayerAppearance).where(
+            models.PlayerAppearance.sport == football.SPORT_NAME,
+            models.PlayerAppearance.player_external_id == player_id,
+        )
+    ).scalars())
+    if not apps:
+        raise HTTPException(
+            status_code=404, detail=f"player {player_id} için appearance yok",
+        )
+    # SQLite tz-strip: now'u appearance tzinfo'suna göre türet
+    ref_tz = apps[0].kickoff.tzinfo
+    now = datetime.now(ref_tz) if ref_tz else datetime.now(UTC).replace(tzinfo=None)
+    pl = compute_player_load(player_id, apps, now=now).value
+    result = compute_injury_risk(
+        player_id,
+        minutes_per_week=pl.minutes_per_week,
+        back_to_back_count=pl.back_to_back_count,
+        age=age,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/teams/{team_id}/squad-depth",
+    tags=["admin"],
+    summary="Pozisyon bazlı kadro derinliği + yaşlanma — Faz 5 #33",
+)
+def squad_depth_endpoint(
+    team_id: int,
+    payload: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """payload: {"squad": [{player_id, position, age?}]}"""
+    from app.engine.squad_depth import compute_squad_depth
+
+    squad = payload.get("squad", [])
+    if not squad:
+        raise HTTPException(status_code=400, detail="squad listesi boş")
+    result = compute_squad_depth(team_id, squad)
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/teams/{team_id}/rotation-plan",
+    tags=["admin"],
+    summary="Yük periyotlama / rotasyon önerisi — Faz 5 #31",
+)
+def rotation_plan_endpoint(
+    team_id: int,
+    horizon_days: int = Query(default=14, ge=1, le=60),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Takım yük raporları + fikstür yoğunluğundan rotasyon önerisi."""
+    from datetime import UTC, datetime
+
+    from app.engine.load import compute_player_load
+    from app.engine.rotation_plan import compute_rotation_plan
+    from app.engine.schedule import compute_schedule
+
+    apps = list(session.execute(
+        select(models.PlayerAppearance).where(
+            models.PlayerAppearance.sport == football.SPORT_NAME,
+            models.PlayerAppearance.team_external_id == team_id,
+        )
+    ).scalars())
+    _ref_tz = apps[0].kickoff.tzinfo if apps else None
+    now = datetime.now(_ref_tz) if _ref_tz else datetime.now(UTC).replace(tzinfo=None)
+    player_loads: list[dict[str, Any]] = []
+    for pid in {a.player_external_id for a in apps}:
+        try:
+            pl = compute_player_load(pid, apps, now=now).value
+        except (ValueError, ZeroDivisionError):
+            continue
+        player_loads.append({
+            "player_external_id": pid, "risk_level": pl.risk_level,
+            "minutes_per_week": pl.minutes_per_week,
+            "back_to_back_count": pl.back_to_back_count,
+        })
+
+    upcoming, dense = 0, False
+    team_matches = list(session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            (models.Match.home_team_external_id == team_id)
+            | (models.Match.away_team_external_id == team_id),
+        )
+    ).scalars())
+    if team_matches:
+        tz = team_matches[0].kickoff.tzinfo
+        sched = compute_schedule(
+            team_id, team_matches,
+            now=datetime.now(tz) if tz else now, horizon_days=horizon_days,
+        ).value
+        upcoming, dense = sched.upcoming_count, sched.dense_schedule
+
+    result = compute_rotation_plan(
+        team_id, player_loads,
+        upcoming_matches=upcoming, dense_schedule=dense,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/teams/{team_id}/season-calendar",
+    tags=["admin"],
+    summary="Sezon takvimi + fikstür zorluğu — Faz 5 #30",
+)
+def season_calendar_endpoint(
+    team_id: int,
+    horizon_days: int = Query(default=60, ge=7, le=180),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Sıradaki maçlar + her birinin zorluk değerlendirmesi."""
+    from datetime import UTC, datetime
+
+    from app.engine.fixture_difficulty import (
+        OpponentRating,
+        compute_fixture_difficulty,
+    )
+    from app.engine.rating import compute_team_rating
+    from app.engine.schedule import compute_schedule
+
+    team_matches = list(session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            (models.Match.home_team_external_id == team_id)
+            | (models.Match.away_team_external_id == team_id),
+        )
+    ).scalars())
+    if not team_matches:
+        return {"team_id": team_id, "note": "Bu takımın maçı yok"}
+
+    tz = team_matches[0].kickoff.tzinfo
+    now = datetime.now(tz) if tz else datetime.now(UTC).replace(tzinfo=None)
+
+    # Rakip rating'leri (fixture difficulty için)
+    from datetime import timedelta
+    horizon = now + timedelta(days=horizon_days)
+    scoped = [m for m in team_matches if m.kickoff <= horizon]
+    # Tüm rakiplerin rating'i
+    ratings: dict[int, OpponentRating] = {}
+    opp_ids = set()
+    for m in scoped:
+        opp = (m.away_team_external_id if m.home_team_external_id == team_id
+               else m.home_team_external_id)
+        opp_ids.add(opp)
+    for opp in opp_ids:
+        opp_matches = [
+            m for m in team_matches
+            if m.home_team_external_id == opp or m.away_team_external_id == opp
+        ]
+        rr = compute_team_rating(opp, opp_matches, last_n=10).value
+        if rr.matches_considered:
+            ratings[opp] = OpponentRating(
+                home_rating=rr.home_rating if rr.home_matches else None,
+                away_rating=rr.away_rating if rr.away_matches else None,
+                overall_rating=rr.rating,
+            )
+    difficulty = compute_fixture_difficulty(team_id, scoped, ratings, now=now)
+    return {
+        "team_id": team_id,
+        "horizon_days": horizon_days,
+        "schedule": engine_result_to_dict(
+            compute_schedule(team_id, team_matches, now=now, horizon_days=horizon_days)
+        )["value"],
+        "fixture_difficulty": engine_result_to_dict(difficulty)["value"],
+    }
+
+
+@router.get(
+    "/players/{player_id}/transfer-targets",
+    tags=["admin"],
+    summary="Benzer profilde transfer hedefleri — Faz 5 #35",
+)
+def transfer_targets_endpoint(
+    player_id: int,
+    top_n: int = Query(default=5, ge=1, le=20),
+    min_minutes: int = Query(default=180, ge=0),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Hedef oyuncuya benzer profilde adaylar (tüm appearance havuzundan)."""
+    from app.engine.player_similarity import compute_similar_players
+
+    all_apps = list(session.execute(
+        select(models.PlayerAppearance).where(
+            models.PlayerAppearance.sport == football.SPORT_NAME,
+        )
+    ).scalars())
+    by_pid: dict[int, list] = {}
+    for a in all_apps:
+        by_pid.setdefault(a.player_external_id, []).append(a)
+    target_apps = by_pid.get(player_id, [])
+    if not target_apps:
+        raise HTTPException(
+            status_code=404, detail=f"player {player_id} için appearance yok",
+        )
+    candidates = {p: apps for p, apps in by_pid.items() if p != player_id}
+    if not candidates:
+        return {"player_id": player_id, "targets": [], "note": "aday havuzu boş"}
+    result = compute_similar_players(
+        player_id, target_apps, candidates,
+        top_n=top_n, min_minutes=min_minutes,
+    )
+    return {
+        "player_id": player_id,
+        "targets": [
+            {"player_id": m.player_external_id, "similarity": m.similarity,
+             "minutes": m.total_minutes}
+            for m in result.value.top_matches
+        ],
+    }
+
+
+@router.get(
+    "/teams/{team_id}/decision-dashboard",
+    tags=["admin"],
+    summary="Karar geçmişi + isabet özeti (tüm maçlar) — Faz 5 #39",
+)
+def decision_dashboard_endpoint(
+    team_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir takımın tüm maçlarındaki kararların verdict dağılımı + isabet."""
+    # Takımın maçlarındaki tüm decision'ları topla
+    team_matches = list(session.execute(
+        select(models.Match.external_id).where(
+            models.Match.sport == football.SPORT_NAME,
+            (models.Match.home_team_external_id == team_id)
+            | (models.Match.away_team_external_id == team_id),
+        )
+    ).scalars())
+    if not team_matches:
+        return {"team_id": team_id, "note": "maç yok"}
+
+    decisions = list(session.execute(
+        select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.team_external_id == team_id,
+            models.Decision.match_external_id.in_(team_matches),
+        ).order_by(models.Decision.match_external_id, models.Decision.minute)
+    ).scalars())
+
+    by_type: dict[str, int] = {}
+    for d in decisions:
+        by_type[d.decision_type] = by_type.get(d.decision_type, 0) + 1
+
+    return {
+        "team_id": team_id,
+        "total_decisions": len(decisions),
+        "by_type": by_type,
+        "matches_with_decisions": len({d.match_external_id for d in decisions}),
+        "recent": [
+            {
+                "match_id": d.match_external_id, "minute": d.minute,
+                "type": d.decision_type,
+                "subject_player": d.subject_player_external_id,
+                "notes": d.notes,
+            }
+            for d in decisions[-20:]
+        ],
+    }
