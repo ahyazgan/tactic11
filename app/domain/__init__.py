@@ -1,4 +1,13 @@
 from app.domain.appearance import PlayerAppearance
+from app.domain.event import (
+    Carry,
+    DefensiveAction,
+    DefensiveActionType,
+    PassEvent,
+    PassTechnique,
+    PassType,
+    PossessionSequence,
+)
 from app.domain.league import League
 from app.domain.lineup import LineupEntry, PlayerMatchStats
 from app.domain.match import Match
@@ -9,13 +18,20 @@ from app.domain.tracking import PlayerPosition, TrackingFrame
 
 __all__ = [
     "BodyPart",
+    "Carry",
+    "DefensiveAction",
+    "DefensiveActionType",
     "League",
     "LineupEntry",
     "Match",
+    "PassEvent",
+    "PassTechnique",
+    "PassType",
     "Player",
     "PlayerAppearance",
     "PlayerMatchStats",
     "PlayerPosition",
+    "PossessionSequence",
     "Shot",
     "ShotPattern",
     "Team",
