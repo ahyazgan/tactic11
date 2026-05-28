@@ -4,8 +4,11 @@ const ROUTES = [
   { href: "/matches", label: "Maçlar", desc: "Bu haftaki maçlar + tahmin" },
   { href: "/calibration", label: "Kalibrasyon", desc: "Brier + log loss + ECE grafikleri" },
   { href: "/decisions", label: "Kararlar", desc: "Lineup + sub + tactical öneriler" },
+  { href: "/teams/611/tactical", label: "Taktiksel (takım)",
+    desc: "30 engine: PPDA, pres, hat, kompakt, tempo, vs." },
+  { href: "/players/6120/tactical", label: "Taktiksel (oyuncu)",
+    desc: "xT + xA + VAEP + overperformance + progressive" },
   { href: "/chat", label: "Asistan", desc: "Manager co-pilot chat" },
-  { href: "/settings", label: "Ayarlar", desc: "Branding + webhook + ML model" },
 ];
 
 export default function HomePage() {

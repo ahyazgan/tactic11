@@ -322,12 +322,15 @@ def _tactical_inventory() -> dict:
         "carries_into_final_third",
     ]
     composite = ["match_dominance", "coaching_identity"]
+    vaep = ["vaep"]  # KU Leuven Possession Value, heuristic baseline
     return {
         "faz_n": f"{len(faz_n)} modül ({', '.join(faz_n[:3])}, ...)",
         "wave_2": f"{len(wave_2)} modül",
         "wave_3": f"{len(wave_3)} modül",
         "composite": f"{len(composite)} modül (match_dominance, coaching_identity)",
-        "total_engines": len(faz_n) + len(wave_2) + len(wave_3) + len(composite),
+        "vaep": f"{len(vaep)} modül (Possession Value heuristic baseline)",
+        "total_engines": (len(faz_n) + len(wave_2) + len(wave_3)
+                          + len(composite) + len(vaep)),
     }
 
 

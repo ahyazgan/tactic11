@@ -1140,6 +1140,7 @@ def player_tactical_profile(
     from app.engine.overperformance import compute_overperformance
     from app.engine.press_resistance import compute_press_resistance
     from app.engine.progressive_passes import compute_progressive_passes
+    from app.engine.vaep import compute_vaep
     from app.engine.xa import compute_player_xa
     from app.engine.xt import compute_player_xt
 
@@ -1182,6 +1183,9 @@ def player_tactical_profile(
         "carries_into_final_third": _safe(lambda: compute_carries_into_final_third(
             player_external_id=player_id, all_carries=c,
             player_minutes_played=minutes, matches_analyzed=matches_n)),
+        "vaep": _safe(lambda: compute_vaep(
+            player_external_id=player_id, all_passes=p, all_carries=c, all_shots=s,
+            minutes_played=minutes, matches_analyzed=matches_n)),
     }
     if team_id is not None:
         profile["off_ball_runs"] = _safe(lambda: compute_off_ball_runs(

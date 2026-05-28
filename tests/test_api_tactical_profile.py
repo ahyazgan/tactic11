@@ -144,7 +144,7 @@ def test_player_tactical_profile_with_appearance(session, client):
     prof = body["tactical_profile"]
     for key in ("player_xt", "player_xa", "press_resistance",
                 "overperformance", "progressive_passes",
-                "carries_into_final_third", "off_ball_runs"):
+                "carries_into_final_third", "off_ball_runs", "vaep"):
         assert key in prof
 
 
