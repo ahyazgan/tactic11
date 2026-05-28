@@ -2653,3 +2653,161 @@ def decision_dashboard_endpoint(
             for d in decisions[-20:]
         ],
     }
+
+
+# --------------------------------------------------------------------------- #
+# Faz 6 — maç-içi karar mekanizması (live decision)
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/matches/{match_id}/live-decision",
+    tags=["admin"],
+    summary="Maç-içi karar paneli (momentum + sub timing + tactical + risk) — Faz 6",
+)
+def live_decision_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir maç dakikasında tam karar paneli: momentum + sub timing +
+    tactical trigger + risk monitor (5 engine birleşik)."""
+    from app.data.loaders import load_match_events
+    from app.engine.live_risk_monitor import compute_live_risk_monitor
+    from app.engine.live_tactical_trigger import compute_live_tactical_trigger
+    from app.engine.momentum_tracker import compute_momentum
+    from app.engine.sub_timing import compute_sub_timing
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Event ingest yok"}
+
+    home_id = match.home_team_external_id
+    opp_id = (match.away_team_external_id if my_team_id == home_id
+              else home_id)
+    my_score = match.home_score if my_team_id == home_id else match.away_score
+    opp_score = match.away_score if my_team_id == home_id else match.home_score
+
+    p = [x for x in loaded.passes if x.minute <= current_minute]
+    d = [x for x in loaded.defensive_actions if x.minute <= current_minute]
+    s = [x for x in loaded.shots if x.minute <= current_minute]
+
+    out: dict[str, Any] = {
+        "match_id": match_id, "my_team_id": my_team_id,
+        "current_minute": current_minute,
+        "score": f"{match.home_score}-{match.away_score}",
+    }
+
+    def _safe(key: str, fn):
+        try:
+            out[key] = engine_result_to_dict(fn())["value"]
+        except (ValueError, ZeroDivisionError, KeyError, TypeError) as e:
+            out[key] = {"error": str(e)[:80]}
+
+    mom_result = compute_momentum(
+        my_team_id, opp_id, p, d, s, current_minute=current_minute,
+    )
+    out["momentum"] = engine_result_to_dict(mom_result)["value"]
+    momentum_score = mom_result.value.momentum_score
+
+    _safe("sub_timing", lambda: compute_sub_timing(
+        my_team_id, p, d, current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+    ))
+    _safe("tactical_triggers", lambda: compute_live_tactical_trigger(
+        my_team_id, current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+        momentum_score=momentum_score,
+    ))
+    # Risk monitor — player states event'lerden türetilemez (sarı/düello yok);
+    # boş liste ile zaman yönetimi reçetesi yine de döner
+    _safe("risk_monitor", lambda: compute_live_risk_monitor(
+        my_team_id, [], current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+    ))
+    return out
+
+
+@router.post(
+    "/matches/{match_id}/opponent-reaction",
+    tags=["admin"],
+    summary="Rakip sub okuma + momentum kırma önerisi — Faz 6 #13/#14",
+)
+def opponent_reaction_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    payload: dict[str, Any] | None = None,
+    current_minute: float = Query(..., ge=0, le=120),
+    momentum_score: float = Query(default=0.0, ge=-1.0, le=1.0),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Rakip değişikliklerini yorumla.
+
+    payload: {"opponent_subs": [{position_in, minute}]}
+    """
+    from app.engine.opponent_reaction import compute_opponent_reaction
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    home_id = match.home_team_external_id
+    opp_id = (match.away_team_external_id if my_team_id == home_id else home_id)
+    subs = (payload or {}).get("opponent_subs", [])
+    result = compute_opponent_reaction(
+        my_team_id, opp_id, subs,
+        current_minute=current_minute, momentum_score=momentum_score,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/matches/{match_id}/live-risk",
+    tags=["admin"],
+    summary="Canlı kart/sakatlık/zaman riski — Faz 6 #10/#11/#12",
+)
+def live_risk_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    payload: dict[str, Any] | None = None,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Oyuncu durum listesinden kart + sakatlık + zaman yönetimi.
+
+    payload: {"player_states": [{player_id, yellow_card?, duel_count?, fatigue?}]}
+    """
+    from app.engine.live_risk_monitor import compute_live_risk_monitor
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    home_id = match.home_team_external_id
+    my_score = match.home_score if my_team_id == home_id else match.away_score
+    opp_score = match.away_score if my_team_id == home_id else match.home_score
+    states = (payload or {}).get("player_states", [])
+    result = compute_live_risk_monitor(
+        my_team_id, states, current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+    )
+    return engine_result_to_dict(result)
