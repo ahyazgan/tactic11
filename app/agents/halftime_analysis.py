@@ -26,14 +26,16 @@ from sqlalchemy.orm import Session
 from app.agents.base import Agent, AgentResult
 from app.ai import AnthropicClient, ClaudeCommentator
 from app.api.serialize import engine_result_to_dict
-from app.data.loaders import load_match_events
+from app.data.loaders import load_match_events, load_team_events
 from app.db import models
 from app.engine.fatigue_signal import compute_fatigue_signal
 from app.engine.field_tilt import compute_field_tilt
+from app.engine.live_sub_recommendation import compute_live_sub_recommendation
 from app.engine.match_dominance import compute_match_dominance
 from app.engine.opponent_weakness import compute_opponent_weakness
 from app.engine.ppda import compute_ppda
 from app.engine.pressing_trigger import compute_pressing_trigger
+from app.engine.set_piece_pattern_history import compute_set_piece_pattern_history
 from app.engine.xt import compute_team_xt
 from app.sports import football
 
@@ -47,7 +49,7 @@ class HalftimeAnalysisAgent(Agent):
     """Devre arası analiz — 1. yarı event'leri üzerinde 30+ engine."""
 
     name = "halftime_analysis"
-    version = "1"
+    version = "2"  # v2: set-piece pattern + sub_recommendation eklendi
 
     def __init__(self, *, commentator: ClaudeCommentator | None = None):
         self._commentator = commentator or ClaudeCommentator(AnthropicClient())
@@ -127,6 +129,31 @@ class HalftimeAnalysisAgent(Agent):
             all_def_actions=first_half_defs,
         ).value
 
+        # Rakibin set-piece pattern'i (geçmiş 5 maçtan)
+        opp_history = load_team_events(session, opponent_id, last_n=5)
+        set_piece_pattern: dict[str, Any] | None = None
+        if opp_history.total > 0:
+            try:
+                sp = compute_set_piece_pattern_history(
+                    opponent_id, opp_history.shots,
+                    matches_analyzed=len(opp_history.match_ids),
+                )
+                set_piece_pattern = engine_result_to_dict(sp)["value"]
+            except (ValueError, ZeroDivisionError, TypeError, KeyError):
+                pass
+
+        # Sub recommendation @ 45. dk
+        try:
+            sub_rec = compute_live_sub_recommendation(
+                my_team_id, first_half_passes, first_half_defs,
+                current_minute=HALFTIME_MAX_MINUTE,
+                my_score=(match.home_score if is_home else match.away_score) or 0,
+                opponent_score=(match.away_score if is_home else match.home_score) or 0,
+            )
+            sub_recommendations = engine_result_to_dict(sub_rec)["value"]
+        except (ValueError, ZeroDivisionError, TypeError, KeyError):
+            sub_recommendations = None
+
         # Fatigue per player (sadece bizim oyuncular)
         my_player_ids = {
             p.player_external_id for p in first_half_passes
@@ -193,6 +220,8 @@ class HalftimeAnalysisAgent(Agent):
                 ],
             },
             "fatigue_alerts": fatigue_alerts,
+            "opponent_set_piece_pattern": set_piece_pattern,
+            "sub_recommendations": sub_recommendations,
             "ai_brief": ai_brief,
             "audit": {
                 "ppda": engine_result_to_dict(

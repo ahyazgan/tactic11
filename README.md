@@ -178,7 +178,44 @@ GET /admin/matches/{id}/dominance
 
 POST /admin/vaep/train?min_samples=100
     → events tablosundan tabular model train + cache'e yaz
+
+GET /admin/teams/{id}/tactical-trend?last_n=10
+    → 5 metric × N maç zaman serisi + slope + biggest_shift
+
+GET /admin/players/{id}/tactical-trend?last_n=10
+    → 5 oyuncu metriği zaman serisi (xT/90, xA/90, VAEP/90, prog/90, press_res)
+
+GET /admin/matches/{id}/halftime-brief?my_team_id=N
+    → Devre arası: PPDA, dominance, opponent_weakness, fatigue_alerts,
+      set_piece_pattern, sub_recommendations, AI brief (200-220 kelime)
+
+GET /admin/halftime-brief-history?match_id=N
+    → Kayıtlı brief'lerin listesi (agent_outputs)
+
+GET /admin/teams/{id}/set-piece-pattern-history?last_n=5
+    → Canlı maç alert: "Son 5 maçta 8 set-piece şutunun 5'i kale ağzına gitti"
+
+GET /admin/matches/{id}/live-sub-recommendation?my_team_id=N&current_minute=70
+    → Top 3 sub önerisi (fatigue + skor + dakika), Türkçe nedenler
+
+POST /admin/tactical-cache/clear
+    → tactical_profile cache temizle (event ingest sonrası)
 ```
+
+## Canlı Maç (WebSocket)
+
+```
+ws://host/ws/matches/{id}/live?my_team_id=N&interval_seconds=10&max_minute=90
+    → Her N saniyede tactical snapshot push:
+      PPDA + dominance + sub_recommendation + opponent_shape_drift
+    → match_ended mesajıyla kapanır
+
+GET /ws/active-connections
+    → Aktif WebSocket sayısı (observability)
+```
+
+Frontend: `/matches/{id}/live?my_team_id=N` — touch-line tablet için
+canlı dashboard. WebSocket'i kullanır; 5sn'de bir güncellenir.
 
 ## Production Event Ingest (StatsBomb Open)
 

@@ -36,6 +36,21 @@ interface HalftimeBrief {
     recommendation: string;
     pass_completion_drop: number;
   }[];
+  opponent_set_piece_pattern?: {
+    most_frequent_zone?: string;
+    most_dangerous_zone?: string;
+    alert_text?: string;
+    total_shots?: number;
+  };
+  sub_recommendations?: {
+    recommendations: {
+      player_external_id: number;
+      urgency_score: number;
+      urgency_label: string;
+      reasons: string[];
+    }[];
+    score_state?: string;
+  };
   ai_brief?: string;
   note?: string;
 }
@@ -191,6 +206,75 @@ export default function HalftimePage() {
                     %{Math.round(f.pass_completion_drop * 100)}
                   </span>
                 </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {data.opponent_set_piece_pattern
+        && (data.opponent_set_piece_pattern.total_shots ?? 0) > 0 && (
+        <>
+          <h2 className="text-lg font-semibold mb-2">Rakip Set-Piece Pattern</h2>
+          <div className="card mb-6">
+            <div className="text-sm mb-2">
+              {data.opponent_set_piece_pattern.alert_text}
+            </div>
+            <div className="text-xs text-muted">
+              Toplam set-piece şutu:{" "}
+              <span className="font-mono">
+                {data.opponent_set_piece_pattern.total_shots}
+              </span>{" "}
+              · En sık:{" "}
+              <span className="font-mono">
+                {data.opponent_set_piece_pattern.most_frequent_zone}
+              </span>{" "}
+              · En tehlikeli:{" "}
+              <span className="font-mono">
+                {data.opponent_set_piece_pattern.most_dangerous_zone}
+              </span>
+            </div>
+          </div>
+        </>
+      )}
+
+      {data.sub_recommendations
+        && data.sub_recommendations.recommendations.length > 0 && (
+        <>
+          <h2 className="text-lg font-semibold mb-2">
+            45. dk Oyuncu Değişikliği Önerileri
+          </h2>
+          <div className="grid md:grid-cols-3 gap-3 mb-6">
+            {data.sub_recommendations.recommendations.map((rec) => (
+              <div
+                key={rec.player_external_id}
+                className={`card border-l-2 ${
+                  rec.urgency_label === "high"
+                    ? "border-red-500/50"
+                    : rec.urgency_label === "medium"
+                    ? "border-yellow-500/50"
+                    : "border-muted"
+                }`}
+              >
+                <div className="flex items-baseline justify-between mb-1">
+                  <span className="font-mono">
+                    Player #{rec.player_external_id}
+                  </span>
+                  <span className="text-xs uppercase px-2 py-0.5 rounded bg-accent/20">
+                    {rec.urgency_label}
+                  </span>
+                </div>
+                <div className="text-xs text-muted mb-2">
+                  Aciliyet{" "}
+                  <span className="font-mono">{rec.urgency_score.toFixed(2)}</span>
+                </div>
+                <ul className="text-xs space-y-1">
+                  {rec.reasons.slice(0, 3).map((r, i) => (
+                    <li key={i} className="text-muted">
+                      · {r}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
