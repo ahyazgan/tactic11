@@ -1941,3 +1941,168 @@ def match_dominance_endpoint(
         "match_dominance": dominance,
         "match_phases": phases,
     }
+
+
+# --------------------------------------------------------------------------- #
+# Saha-içi uygulanabilir özellikler (Faz Q)
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/matches/{match_id}/players/{player_id}/feedback",
+    tags=["admin"],
+    summary="Bireysel oyuncu maç-sonu coach feedback (sınıf 2)",
+)
+def player_feedback_endpoint(
+    match_id: int,
+    player_id: int,
+    persist: bool = Query(default=True),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir oyuncunun bir maçtaki performansı için 200 kelime kişisel feedback +
+    top 3 alt-optimal pas örneği (frame koordinatlarıyla)."""
+    from app.agents import PlayerFeedbackAgent
+    from app.agents.store import save_agent_output
+
+    agent = PlayerFeedbackAgent()
+    try:
+        result = agent.run(
+            session,
+            context={
+                "match_external_id": match_id,
+                "player_external_id": player_id,
+            },
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if persist:
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name,
+            agent_version=f"{agent.version}-match{match_id}",
+        )
+        session.commit()
+    return result.output_json
+
+
+@router.get(
+    "/teams/{team_id}/training-plan",
+    tags=["admin"],
+    summary="Haftalık antrenman planı — rakip profilinden (sınıf 3)",
+)
+def training_plan_endpoint(
+    team_id: int,
+    opponent_id: int = Query(...),
+    persist: bool = Query(default=True),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Rakibin son 5 maç profilinden (PPDA + pres + arketip + kanal) drill
+    önerileri + 200-250 kelime hafta planı."""
+    from app.agents import TrainingPlanAgent
+    from app.agents.store import save_agent_output
+
+    agent = TrainingPlanAgent()
+    try:
+        result = agent.run(
+            session,
+            context={
+                "my_team_external_id": team_id,
+                "opponent_external_id": opponent_id,
+            },
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if persist:
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name,
+            agent_version=f"{agent.version}-vs{opponent_id}",
+        )
+        session.commit()
+    return result.output_json
+
+
+@router.get(
+    "/matches/{match_id}/substitution-chess",
+    tags=["admin"],
+    summary="Sub kombinasyonları forward projection (sınıf 1)",
+)
+def substitution_chess_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    match_total_minutes: float = Query(default=90.0, ge=45, le=120),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Mevcut maç dakikasında top 3 sub senaryosu + projeksiyon."""
+    from app.data.loaders import load_match_events
+    from app.engine.substitution_chess import compute_substitution_chess
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Event ingest yok"}
+
+    home_id = match.home_team_external_id
+    my_score = match.home_score if my_team_id == home_id else match.away_score
+    opp_score = match.away_score if my_team_id == home_id else match.home_score
+    passes = [p for p in loaded.passes if p.minute <= current_minute]
+    defs = [d for d in loaded.defensive_actions if d.minute <= current_minute]
+
+    result = compute_substitution_chess(
+        my_team_id, passes, defs,
+        current_minute=current_minute,
+        match_total_minutes=match_total_minutes,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/teams/{team_id}/set-piece-routine",
+    tags=["admin"],
+    summary="Set-piece routine builder — rakibin zayıf zone'una göre (sınıf 4)",
+)
+def set_piece_routine_endpoint(
+    team_id: int,
+    opponent_id: int = Query(...),
+    last_n: int = Query(default=5, ge=1, le=20),
+    set_piece_type: str = Query(default="all"),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bizim ofansif + rakip defansif + rakip ofansif set-piece pattern
+    kesişiminden top 3 zone + technique önerisi."""
+    from app.data.loaders import load_team_events
+    from app.engine.set_piece_routine import compute_set_piece_routine
+
+    my_events = load_team_events(session, team_id, last_n=last_n)
+    opp_events = load_team_events(session, opponent_id, last_n=last_n)
+    if my_events.total == 0 or opp_events.total == 0:
+        return {
+            "team_id": team_id, "opponent_id": opponent_id,
+            "my_events": my_events.total,
+            "opp_events": opp_events.total,
+            "note": "Yeterli event yok (iki takım için ingest gerekli)",
+        }
+
+    result = compute_set_piece_routine(
+        my_team_external_id=team_id,
+        opponent_team_external_id=opponent_id,
+        my_offensive_shots=my_events.shots,
+        opponent_defensive_shots=opp_events.shots,
+        opponent_offensive_shots=opp_events.shots,
+        set_piece_type=set_piece_type,
+        matches_analyzed=min(len(my_events.match_ids), len(opp_events.match_ids)),
+    )
+    return engine_result_to_dict(result)
