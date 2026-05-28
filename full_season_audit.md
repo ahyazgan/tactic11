@@ -6,10 +6,11 @@ La Liga 2018/19 üzerinde 34 maç ingest + 22 team-level engine audit.
 
 | Engine | Verdict | CV | n | Team Spread | Mean |
 |---|---|---|---|---|---|
+| `match_dominance` | **STRONG_SIGNAL** | inf | 68 | 11.746 | 0.000 |
 | `team_xt` | **STRONG_SIGNAL** | 2.071 | 68 | 2.550 | 0.673 |
+| `set_piece_zones` | **STRONG_SIGNAL** | 0.752 | 68 | 4.000 | 2.750 |
 | `ppda` | **STRONG_SIGNAL** | 0.623 | 68 | 6.520 | 3.104 |
 | `cutback_frequency` | **STRONG_SIGNAL** | 0.595 | 68 | 13.500 | 4.618 |
-| `set_piece_zones` | **STRONG_SIGNAL** | 0.555 | 68 | 7.500 | 5.500 |
 | `pressing_trigger` | **STRONG_SIGNAL** | 0.537 | 68 | 0.264 | 0.141 |
 | `field_tilt` | **STRONG_SIGNAL** | 0.485 | 68 | 0.556 | 0.500 |
 | `cross_effectiveness` | **STRONG_SIGNAL** | 0.476 | 68 | 21.500 | 10.353 |
@@ -25,7 +26,6 @@ La Liga 2018/19 üzerinde 34 maç ingest + 22 team-level engine audit.
 | `press_resistance` | **STRONG_SIGNAL** | 0.103 | 68 | 0.331 | 0.865 |
 | `compactness` | **MODERATE** | 0.052 | 68 | 3.800 | 23.408 |
 | `transition` | **NO_SIGNAL** | 0.000 | 68 | 0.000 | 1.000 |
-| `match_dominance` | **NO_SIGNAL** | 0.000 | 68 | 6.397 | 0.000 |
 
 ## Barca Sanity Check
 
@@ -33,7 +33,7 @@ La Liga 2018/19 üzerinde 34 maç ingest + 22 team-level engine audit.
 - `direct_play`: OK (mean 0.31 < 0.5)
 - `tempo`: OK (mean 7.86 >= 6.0)
 - `team_xt`: MISS (mean 1.35 < 1.5)
-- `match_dominance`: OK (mean 2.07 >= 1.5)
+- `match_dominance`: OK (mean 3.42 >= 1.5)
 
 ## Barca Coaching Archetype Distribution
 

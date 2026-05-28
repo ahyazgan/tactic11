@@ -113,6 +113,7 @@ def _row_to_shot(row: models.EventRow) -> Shot | None:
             body_part=body_part,  # type: ignore[arg-type]
             pattern=pattern,  # type: ignore[arg-type]
             is_goal=bool(row.is_goal),
+            team_external_id=row.team_external_id,
         )
     except (ValueError, TypeError):
         return None
@@ -225,3 +226,19 @@ def load_player_events(
         "minutes_played": total_minutes,
         "matches_analyzed": len(match_ids),
     }
+
+
+def shots_by_team(shots, team_external_id: int) -> list:
+    """Şutları team_external_id'ye göre filtrele.
+
+    Eski ingest'lenen veya Shot domain'de team_id None ise: o şutu DAHİL et
+    (backward compat — eski test'ler kırılmasın). Yeni ingest sonrası tüm
+    şutlarda team_id var; filter doğru çalışır.
+
+    Bu fix `engine.match_dominance` ve `engine.transition`'ın
+    NO_SIGNAL bug'ını kapatır (full_season_audit findings).
+    """
+    return [
+        s for s in shots
+        if s.team_external_id is None or s.team_external_id == team_external_id
+    ]

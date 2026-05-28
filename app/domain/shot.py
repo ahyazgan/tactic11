@@ -27,6 +27,10 @@ class Shot(BaseModel):
 
     `x`, `y` saha-normalize 0-100; goal at (100, 50). Caller adapter
     sağlayıcının kendi koordinatından bu formata çevirir.
+
+    `team_external_id` Optional — eski kodlar Shot'u team_id'siz oluşturuyor;
+    backward-compat default None. Yeni engine'ler (match_dominance,
+    transition) bu field'ı gerektirir; team filtreleme için.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -40,3 +44,4 @@ class Shot(BaseModel):
     body_part: BodyPart = "right_foot"
     pattern: ShotPattern = "open_play"
     is_goal: bool = False  # gerçek sonuç (training/calibration için)
+    team_external_id: int | None = None  # opt-in (backward compat)

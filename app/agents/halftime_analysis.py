@@ -116,9 +116,12 @@ class HalftimeAnalysisAgent(Agent):
         ).value
         tilt = compute_field_tilt(my_team_id, opponent_id, first_half_passes).value
         my_xt = compute_team_xt(my_team_id, first_half_passes, first_half_carries).value
+        from app.data.loaders import shots_by_team
+        my_first_half_shots = shots_by_team(first_half_shots, my_team_id)
+        opp_first_half_shots = shots_by_team(first_half_shots, opponent_id)
         dominance = compute_match_dominance(
             team_external_id=my_team_id, opponent_team_external_id=opponent_id,
-            team_shots=first_half_shots, opponent_shots=first_half_shots,
+            team_shots=my_first_half_shots, opponent_shots=opp_first_half_shots,
             all_passes=first_half_passes, team_carries=first_half_carries,
             opponent_carries=first_half_carries,
         ).value
@@ -231,7 +234,8 @@ class HalftimeAnalysisAgent(Agent):
                     compute_match_dominance(
                         team_external_id=my_team_id,
                         opponent_team_external_id=opponent_id,
-                        team_shots=first_half_shots, opponent_shots=first_half_shots,
+                        team_shots=my_first_half_shots,
+                        opponent_shots=opp_first_half_shots,
                         all_passes=first_half_passes, team_carries=first_half_carries,
                         opponent_carries=first_half_carries,
                     )

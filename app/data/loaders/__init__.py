@@ -4,6 +4,7 @@ from app.data.loaders.events import (
     load_player_events,
     load_team_events,
     rows_to_domain,
+    shots_by_team,
 )
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     "load_player_events",
     "load_team_events",
     "rows_to_domain",
+    "shots_by_team",
 ]

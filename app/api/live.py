@@ -100,9 +100,12 @@ def _compute_live_snapshot(
         snapshot["ppda"] = engine_result_to_dict(ppda)["value"]
         tilt = compute_field_tilt(my_team_id, opp_id, passes_so_far)
         snapshot["field_tilt"] = engine_result_to_dict(tilt)["value"]
+        from app.data.loaders import shots_by_team
+        my_shots_so_far = shots_by_team(shots_so_far, my_team_id)
+        opp_shots_so_far = shots_by_team(shots_so_far, opp_id)
         dom = compute_match_dominance(
             team_external_id=my_team_id, opponent_team_external_id=opp_id,
-            team_shots=shots_so_far, opponent_shots=shots_so_far,
+            team_shots=my_shots_so_far, opponent_shots=opp_shots_so_far,
             all_passes=passes_so_far, team_carries=carries_so_far,
             opponent_carries=carries_so_far,
         )

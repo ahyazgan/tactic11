@@ -156,6 +156,8 @@ def _event_to_shot(event: dict[str, Any], *, match_id: int) -> Shot | None:
 
         minute = float(event.get("minute", 0))
 
+        team_block = event.get("team") or {}
+        team_id = int(team_block.get("id", 0)) or None
         return Shot(
             sport="football",
             match_external_id=int(match_id),
@@ -166,6 +168,7 @@ def _event_to_shot(event: dict[str, Any], *, match_id: int) -> Shot | None:
             body_part=body_part,
             pattern=pattern,
             is_goal=is_goal,
+            team_external_id=team_id,
         )
     except (KeyError, ValueError, TypeError) as e:
         log.warning("statsbomb shot parse fail: %s", e)

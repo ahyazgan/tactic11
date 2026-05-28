@@ -149,10 +149,12 @@ class MegaMatchAgent(Agent):
         loaded = load_match_events(session, match_id)
         if loaded.total > 0:
             try:
-                # Shot.team yok → tüm şutları her iki tarafa veriyoruz
+                from app.data.loaders import shots_by_team
+                home_s = shots_by_team(loaded.shots, home_id)
+                away_s = shots_by_team(loaded.shots, away_id)
                 dom = compute_match_dominance(
                     team_external_id=home_id, opponent_team_external_id=away_id,
-                    team_shots=loaded.shots, opponent_shots=loaded.shots,
+                    team_shots=home_s, opponent_shots=away_s,
                     all_passes=loaded.passes, team_carries=loaded.carries,
                     opponent_carries=loaded.carries,
                 )
@@ -162,7 +164,7 @@ class MegaMatchAgent(Agent):
                 away_def = [d for d in loaded.defensive_actions if d.team_external_id == away_id]
                 phases = compute_match_phases(
                     match_id, home_id, away_id,
-                    loaded.shots, loaded.shots,
+                    home_s, away_s,
                     home_pass, away_pass, home_def, away_def,
                 )
                 events_signals = {

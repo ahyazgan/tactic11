@@ -146,10 +146,10 @@
     },
     "set_piece_zones": {
       "n_samples": 68,
-      "mean": 5.5,
-      "stdev": 3.051,
-      "cv": 0.5547,
-      "team_spread": 7.5,
+      "mean": 2.75,
+      "stdev": 2.0678,
+      "cv": 0.7519,
+      "team_spread": 4.0,
       "n_teams": 20,
       "verdict": "STRONG_SIGNAL"
     },
@@ -174,11 +174,11 @@
     "match_dominance": {
       "n_samples": 68,
       "mean": 0.0,
-      "stdev": 2.4348,
-      "cv": 0.0,
-      "team_spread": 6.3974,
+      "stdev": 4.7609,
+      "cv": Infinity,
+      "team_spread": 11.7465,
       "n_teams": 20,
-      "verdict": "NO_SIGNAL"
+      "verdict": "STRONG_SIGNAL"
     }
   },
   "barca_validation": {
@@ -186,7 +186,7 @@
     "direct_play": "OK (mean 0.31 < 0.5)",
     "tempo": "OK (mean 7.86 >= 6.0)",
     "team_xt": "MISS (mean 1.35 < 1.5)",
-    "match_dominance": "OK (mean 2.07 >= 1.5)"
+    "match_dominance": "OK (mean 3.42 >= 1.5)"
   },
   "archetype_counts": {
     "210": {

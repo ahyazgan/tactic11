@@ -133,6 +133,7 @@ def _team_engines_for_match(
     session, match_external_id: int, team_id: int, opponent_id: int,
 ) -> dict[str, dict[str, Any]]:
     """Bir maçta bir takım için 22 engine'i çalıştır + metric path'i çıkar."""
+    from app.data.loaders import shots_by_team
     loaded = load_match_events(session, match_external_id)
     if loaded.total == 0:
         return {}
@@ -140,6 +141,9 @@ def _team_engines_for_match(
     c = loaded.carries
     d = loaded.defensive_actions
     s = loaded.shots
+    # Shot.team_external_id fix sonrası: team-filtered shots
+    team_s = shots_by_team(s, team_id)
+    opp_s = shots_by_team(s, opponent_id)
     results: dict[str, dict[str, Any]] = {}
 
     def _try(name: str, fn):
@@ -158,7 +162,7 @@ def _team_engines_for_match(
     _try("recovery_zone_heat", lambda: compute_recovery_zone_heat(team_id, d))
     _try("defensive_line", lambda: compute_defensive_line(team_id, d))
     _try("compactness", lambda: compute_compactness(team_id, p, d))
-    _try("transition", lambda: compute_transition(team_id, d, s))
+    _try("transition", lambda: compute_transition(team_id, d, team_s))
     _try("counter_press_triggers", lambda: compute_counter_press_triggers(team_id, p, d))
     _try("direct_play", lambda: compute_direct_play(team_id, p))
     _try("tempo", lambda: compute_tempo(team_id, p))
@@ -172,13 +176,13 @@ def _team_engines_for_match(
     _try("press_resistance",
          lambda: compute_press_resistance(
              team_external_id=team_id, all_passes=p, all_def_actions=d))
-    _try("set_piece_zones", lambda: compute_set_piece_zones(team_id, s))
+    _try("set_piece_zones", lambda: compute_set_piece_zones(team_id, team_s))
     _try("build_up_pattern", lambda: compute_build_up_pattern(team_id, p, s))
     _try("team_xt", lambda: compute_team_xt(team_id, p, c))
     _try("field_tilt", lambda: compute_field_tilt(team_id, opponent_id, p))
     _try("match_dominance", lambda: compute_match_dominance(
         team_external_id=team_id, opponent_team_external_id=opponent_id,
-        team_shots=s, opponent_shots=s, all_passes=p, team_carries=c,
+        team_shots=team_s, opponent_shots=opp_s, all_passes=p, team_carries=c,
         opponent_carries=c,
     ))
     _try("coaching_identity_archetype", lambda: compute_coaching_identity(
@@ -257,23 +261,28 @@ def signal_audit(by_team_engine: dict[int, dict[str, list[float]]]) -> dict[str,
             continue
         mean = statistics.mean(samples)
         stdev = statistics.pstdev(samples) if len(samples) > 1 else 0.0
-        cv = (stdev / abs(mean)) if mean != 0 else 0.0
+        # CV (coefficient of variation): mean≈0 ise tanımsız
+        cv = (stdev / abs(mean)) if abs(mean) > 1e-6 else float("inf")
         team_means = engine_by_team.get(eng, {})
         team_spread = (
             (max(team_means.values()) - min(team_means.values()))
             if len(team_means) > 1 else 0.0
         )
-        # Verdict heuristic:
-        # - Sample sayısı az → INSUFFICIENT
-        # - CV < 0.05 ve team_spread / |mean| < 0.10 → NO_SIGNAL (gürültü)
-        # - CV > 0.30 veya team_spread anlamlı → STRONG_SIGNAL
-        # - Aksi → MODERATE
+        # Verdict heuristic (mean≈0 case'inde stdev'i direkt kullan):
+        # - n < 20 → INSUFFICIENT
+        # - mean≈0 ise: spread büyükse STRONG, küçükse NO_SIGNAL
+        # - mean≠0 ise: CV ≥ 0.30 veya spread/|mean| ≥ 0.30 → STRONG
+        # - CV < 0.05 ve spread/|mean| < 0.10 → NO_SIGNAL
         n = len(samples)
         if n < 20:
             verdict = "INSUFFICIENT_DATA"
-        elif cv < 0.05 and (team_spread / abs(mean) if mean != 0 else 0) < 0.10:
+        elif abs(mean) < 1e-6:
+            # mean ≈ 0 (örn. zero-sum metrikler: dominance ev+ - dep- = 0)
+            # → stdev/spread mutlak değerine bak
+            verdict = "STRONG_SIGNAL" if stdev > 0.5 or team_spread > 1.0 else "NO_SIGNAL"
+        elif cv < 0.05 and (team_spread / abs(mean)) < 0.10:
             verdict = "NO_SIGNAL"
-        elif cv >= 0.30 or (team_spread / abs(mean) if mean != 0 else 0) >= 0.30:
+        elif cv >= 0.30 or (team_spread / abs(mean)) >= 0.30:
             verdict = "STRONG_SIGNAL"
         else:
             verdict = "MODERATE"

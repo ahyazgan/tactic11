@@ -1312,9 +1312,12 @@ def team_tactical_trend(
             team_pass = sum(1 for p in loaded.passes if p.team_external_id == team_id)
             opp_pass = sum(1 for p in loaded.passes if p.team_external_id == opp_id)
             poss = team_pass / (team_pass + opp_pass) if (team_pass + opp_pass) else 0.5
+            from app.data.loaders import shots_by_team
+            team_s = shots_by_team(loaded.shots, team_id)
+            opp_s = shots_by_team(loaded.shots, opp_id)
             dom = compute_match_dominance(
                 team_external_id=team_id, opponent_team_external_id=opp_id,
-                team_shots=loaded.shots, opponent_shots=loaded.shots,
+                team_shots=team_s, opponent_shots=opp_s,
                 all_passes=loaded.passes, team_carries=loaded.carries,
                 opponent_carries=loaded.carries,
             ).value
@@ -1914,21 +1917,22 @@ def match_dominance_endpoint(
         except (ValueError, ZeroDivisionError, IndexError, KeyError, TypeError) as e:
             return {"error": str(e)}
 
+    from app.data.loaders import shots_by_team
+    home_s = shots_by_team(loaded.shots, home_id)
+    away_s = shots_by_team(loaded.shots, away_id)
     dominance = _safe(lambda: compute_match_dominance(
         team_external_id=home_id, opponent_team_external_id=away_id,
-        team_shots=loaded.shots, opponent_shots=loaded.shots,
+        team_shots=home_s, opponent_shots=away_s,
         all_passes=loaded.passes, team_carries=loaded.carries,
         opponent_carries=loaded.carries,
     ))
-    # match_phases home/away ayrımı bekliyor — pas team_id'ye göre böl
     home_pass = [pp for pp in loaded.passes if pp.team_external_id == home_id]
     away_pass = [pp for pp in loaded.passes if pp.team_external_id == away_id]
     home_def = [dd for dd in loaded.defensive_actions if dd.team_external_id == home_id]
     away_def = [dd for dd in loaded.defensive_actions if dd.team_external_id == away_id]
-    # Shot domain'inde team yok → tüm şutları her iki tarafa ver (yaklaşık)
     phases = _safe(lambda: compute_match_phases(
         match_id, home_id, away_id,
-        loaded.shots, loaded.shots,
+        home_s, away_s,
         home_pass, away_pass,
         home_def, away_def,
     ))
