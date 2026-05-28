@@ -600,3 +600,36 @@ class EventRow(Base):
     raw_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
+
+
+class Decision(Base):
+    """TD'nin maç-içi hamleleri için audit log.
+
+    Faz P: post-match learning + pilot kulüpte koçun kararlarının
+    veri-destekli yansıması.
+    """
+
+    __tablename__ = "decisions"
+    __table_args__ = (
+        Index("ix_decisions_match_minute", "sport", "tenant_id",
+              "match_external_id", "minute"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"),
+    )
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    team_external_id: Mapped[int] = mapped_column(Integer)
+    minute: Mapped[float] = mapped_column(Float)
+    period: Mapped[int] = mapped_column(Integer, default=1)
+    decision_type: Mapped[str] = mapped_column(String(32))
+    # subject = ana özne (sub'ta çıkan oyuncu)
+    subject_player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # related = ilişkili oyuncu (sub'ta giren)
+    related_player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    by_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

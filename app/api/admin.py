@@ -1371,6 +1371,210 @@ def team_tactical_trend(
     }
 
 
+# --------------------------------------------------------------------------- #
+# Decision Audit Log — TD'nin maç-içi hamleleri (Faz P)
+# --------------------------------------------------------------------------- #
+
+
+@router.post(
+    "/matches/{match_id}/decisions",
+    tags=["admin"],
+    summary="TD hamlesi kaydet (substitution / formation_change / tactical_instruction)",
+)
+def create_decision(
+    match_id: int,
+    payload: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir kararı audit log'a yaz.
+
+    Beklenen payload:
+    {
+        "team_external_id": int,
+        "minute": float,
+        "period": int (default 1),
+        "decision_type": "substitution" | "formation_change" | "tactical_instruction" | "other",
+        "subject_player_external_id": int | null,
+        "related_player_external_id": int | null,
+        "notes": str (optional),
+        "payload_json": dict (optional)
+    }
+    """
+    import json as _json
+    from datetime import UTC
+    from datetime import datetime as _datetime
+
+    required = ("team_external_id", "minute", "decision_type")
+    missing = [k for k in required if k not in payload]
+    if missing:
+        raise HTTPException(
+            status_code=400, detail=f"eksik alan: {missing}",
+        )
+    allowed_types = {"substitution", "formation_change",
+                     "tactical_instruction", "other"}
+    if payload["decision_type"] not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=f"decision_type {allowed_types} içinde olmalı",
+        )
+
+    row = models.Decision(
+        sport=football.SPORT_NAME,
+        match_external_id=match_id,
+        team_external_id=int(payload["team_external_id"]),
+        minute=float(payload["minute"]),
+        period=int(payload.get("period", 1)),
+        decision_type=payload["decision_type"],
+        subject_player_external_id=payload.get("subject_player_external_id"),
+        related_player_external_id=payload.get("related_player_external_id"),
+        notes=payload.get("notes"),
+        payload_json=_json.dumps(payload.get("payload_json"))
+            if payload.get("payload_json") else None,
+        by_user_id=payload.get("by_user_id"),
+        created_at=_datetime.now(UTC),
+    )
+    session.add(row)
+    session.commit()
+    return {
+        "id": row.id, "match_id": match_id,
+        "decision_type": row.decision_type, "minute": row.minute,
+        "created_at": row.created_at.isoformat(),
+    }
+
+
+@router.get(
+    "/matches/{match_id}/decisions",
+    tags=["admin"],
+    summary="Bir maçtaki kayıtlı TD kararlarını listele",
+)
+def list_decisions(
+    match_id: int,
+    session: Session = Depends(get_session),
+) -> list[dict[str, Any]]:
+    rows = list(session.execute(
+        select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.match_external_id == match_id,
+        ).order_by(models.Decision.minute)
+    ).scalars())
+    return [
+        {
+            "id": r.id,
+            "team_id": r.team_external_id,
+            "minute": r.minute,
+            "period": r.period,
+            "decision_type": r.decision_type,
+            "subject_player_id": r.subject_player_external_id,
+            "related_player_id": r.related_player_external_id,
+            "notes": r.notes,
+            "created_at": r.created_at.isoformat(),
+        }
+        for r in rows
+    ]
+
+
+@router.get(
+    "/matches/{match_id}/decisions/learning",
+    tags=["admin"],
+    summary="Post-match learning: TD kararının sonuca etkisi (causal proxy)",
+)
+def decisions_learning(
+    match_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir maçtaki tüm kararlardan sonra ne oldu? Basit causal proxy:
+    karar dakikasından sonra takımın xT, possession, dominance score'u
+    nasıl değişti.
+
+    Algoritma: her karar için pre-window (karar-15dk..karar) vs
+    post-window (karar..karar+15dk) takım metric'leri karşılaştır.
+    """
+    from app.data.loaders import load_match_events
+    from app.engine.match_dominance import compute_match_dominance
+    from app.engine.xt import compute_team_xt
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Event ingest yapılmamış"}
+
+    decisions = list(session.execute(
+        select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.match_external_id == match_id,
+        ).order_by(models.Decision.minute)
+    ).scalars())
+    if not decisions:
+        return {"match_id": match_id, "decisions": 0,
+                "note": "Bu maç için decision log yok"}
+
+    WIN = 15.0
+    impacts = []
+    for d in decisions:
+        team_id = d.team_external_id
+        opp_id = (match.away_team_external_id if team_id == match.home_team_external_id
+                  else match.home_team_external_id)
+        pre_passes = [p for p in loaded.passes
+                       if d.minute - WIN <= p.minute < d.minute]
+        post_passes = [p for p in loaded.passes
+                        if d.minute <= p.minute < d.minute + WIN]
+        pre_carries = [c for c in loaded.carries
+                        if d.minute - WIN <= c.minute < d.minute]
+        post_carries = [c for c in loaded.carries
+                         if d.minute <= c.minute < d.minute + WIN]
+        pre_shots = [s for s in loaded.shots
+                      if d.minute - WIN <= s.minute < d.minute]
+        post_shots = [s for s in loaded.shots
+                       if d.minute <= s.minute < d.minute + WIN]
+        try:
+            pre_xt = compute_team_xt(team_id, pre_passes, pre_carries).value.total_xt
+            post_xt = compute_team_xt(team_id, post_passes, post_carries).value.total_xt
+            pre_dom = compute_match_dominance(
+                team_external_id=team_id, opponent_team_external_id=opp_id,
+                team_shots=pre_shots, opponent_shots=pre_shots,
+                all_passes=pre_passes, team_carries=pre_carries,
+                opponent_carries=pre_carries,
+            ).value.dominance_score
+            post_dom = compute_match_dominance(
+                team_external_id=team_id, opponent_team_external_id=opp_id,
+                team_shots=post_shots, opponent_shots=post_shots,
+                all_passes=post_passes, team_carries=post_carries,
+                opponent_carries=post_carries,
+            ).value.dominance_score
+        except (ValueError, ZeroDivisionError, KeyError, TypeError):
+            continue
+        impacts.append({
+            "decision_id": d.id,
+            "minute": d.minute,
+            "decision_type": d.decision_type,
+            "pre_xt": round(pre_xt, 3),
+            "post_xt": round(post_xt, 3),
+            "xt_delta": round(post_xt - pre_xt, 3),
+            "pre_dominance": pre_dom,
+            "post_dominance": post_dom,
+            "dominance_delta": round(post_dom - pre_dom, 2),
+            "verdict": (
+                "positive" if post_xt - pre_xt > 0.1 and post_dom - pre_dom > 0
+                else "negative" if post_xt - pre_xt < -0.1 and post_dom - pre_dom < 0
+                else "neutral"
+            ),
+        })
+    return {
+        "match_id": match_id,
+        "decisions_analyzed": len(impacts),
+        "window_minutes": WIN,
+        "impacts": impacts,
+    }
+
+
 @router.get(
     "/teams/{team_id}/set-piece-pattern-history",
     tags=["admin"],

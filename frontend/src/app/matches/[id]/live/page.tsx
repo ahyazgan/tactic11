@@ -3,6 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 
+// Push notification: tarayıcı izin verir + ürettiği high urgency sub için
+function notifyHighUrgency(playerId: number, score: number) {
+  if (typeof window === "undefined") return;
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+  try {
+    new Notification("Yüksek aciliyetli sub önerisi", {
+      body: `Player #${playerId} — aciliyet ${score.toFixed(2)}. Şu an düşün.`,
+      tag: `sub-${playerId}`,
+      requireInteraction: false,
+    });
+  } catch {
+    // ignore
+  }
+}
+
 interface SubRecommendation {
   player_external_id: number;
   urgency_score: number;
@@ -86,6 +102,15 @@ export default function LiveMatchPage() {
   const [ended, setEnded] = useState(false);
   const [history, setHistory] = useState<Snapshot[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
+  const notifiedPlayersRef = useRef<Set<number>>(new Set());
+
+  // İlk render'da push notification izni iste
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window
+      && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
 
   useEffect(() => {
     if (!myTeam) return;
@@ -107,6 +132,15 @@ export default function LiveMatchPage() {
         }
         setSnapshot(data);
         setHistory((h) => [...h.slice(-19), data]);
+        // Push notification: high urgency yeni gelen
+        const recs = data.live_sub_recommendation?.recommendations ?? [];
+        for (const rec of recs) {
+          if (rec.urgency_label === "high"
+            && !notifiedPlayersRef.current.has(rec.player_external_id)) {
+            notifyHighUrgency(rec.player_external_id, rec.urgency_score);
+            notifiedPlayersRef.current.add(rec.player_external_id);
+          }
+        }
       } catch {
         // ignore
       }
@@ -269,11 +303,115 @@ export default function LiveMatchPage() {
             </>
           )}
 
+          <DecisionPanel
+            matchId={Number(matchId)}
+            teamId={Number(myTeam)}
+            currentMinute={snapshot.current_minute ?? 0}
+          />
+
           <div className="text-xs text-muted">
             Snapshot geçmişi: {history.length} kayıt · Interval {interval}sn
           </div>
         </>
       )}
     </main>
+  );
+}
+
+
+function DecisionPanel({
+  matchId, teamId, currentMinute,
+}: {
+  matchId: number;
+  teamId: number;
+  currentMinute: number;
+}) {
+  const [type, setType] = useState<"substitution" | "formation_change" | "tactical_instruction">("substitution");
+  const [subjectPid, setSubjectPid] = useState("");
+  const [relatedPid, setRelatedPid] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saved, setSaved] = useState<{ id: number; minute: number }[]>([]);
+  const [error, setError] = useState("");
+
+  async function submit() {
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/matches/${matchId}/decisions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          team_external_id: teamId,
+          minute: currentMinute,
+          period: currentMinute > 45 ? 2 : 1,
+          decision_type: type,
+          subject_player_external_id: subjectPid ? Number(subjectPid) : null,
+          related_player_external_id: relatedPid ? Number(relatedPid) : null,
+          notes: notes || null,
+        }),
+      });
+      if (!res.ok) {
+        setError(`HTTP ${res.status}`);
+        return;
+      }
+      const body = await res.json();
+      setSaved((s) => [...s, { id: body.id, minute: body.minute }]);
+      setSubjectPid("");
+      setRelatedPid("");
+      setNotes("");
+    } catch (e) {
+      setError(String(e));
+    }
+  }
+
+  return (
+    <>
+      <h2 className="text-sm uppercase text-muted mb-3 mt-6">
+        Karar Logu (TD hamlesi kaydet)
+      </h2>
+      <div className="card mb-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value as typeof type)}
+            className="bg-transparent border border-muted/30 rounded px-2 py-1 text-sm"
+          >
+            <option value="substitution">Substitution</option>
+            <option value="formation_change">Formation change</option>
+            <option value="tactical_instruction">Tactical instruction</option>
+          </select>
+          <input
+            placeholder="Çıkan oyuncu ID (sub)"
+            value={subjectPid}
+            onChange={(e) => setSubjectPid(e.target.value)}
+            className="bg-transparent border border-muted/30 rounded px-2 py-1 text-sm"
+          />
+          <input
+            placeholder="Giren oyuncu ID (sub)"
+            value={relatedPid}
+            onChange={(e) => setRelatedPid(e.target.value)}
+            className="bg-transparent border border-muted/30 rounded px-2 py-1 text-sm"
+          />
+          <button
+            onClick={submit}
+            className="bg-accent/30 hover:bg-accent/50 rounded px-3 py-1 text-sm"
+          >
+            Kaydet @ {currentMinute.toFixed(0)}.dk
+          </button>
+        </div>
+        <input
+          placeholder="Not (opsiyonel)"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="w-full bg-transparent border border-muted/30 rounded px-2 py-1 text-sm"
+        />
+        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+        {saved.length > 0 && (
+          <p className="text-xs text-muted mt-2">
+            Bu oturumda {saved.length} karar kaydedildi:{" "}
+            {saved.map((s) => `#${s.id}@${s.minute.toFixed(0)}'`).join(", ")}
+          </p>
+        )}
+      </div>
+    </>
   );
 }
