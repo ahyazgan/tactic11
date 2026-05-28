@@ -2110,3 +2110,259 @@ def set_piece_routine_endpoint(
         matches_analyzed=min(len(my_events.match_ids), len(opp_events.match_ids)),
     )
     return engine_result_to_dict(result)
+
+
+# --------------------------------------------------------------------------- #
+# Faz 5 Sprint 2 — maç hazırlık / game-plan / proaktif uyarı
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/teams/{team_id}/matchup-grid",
+    tags=["admin"],
+    summary="Rakip zaaf × bizim güç eşleştirme (3 kanal) — Faz 5 #21",
+)
+def matchup_grid_endpoint(
+    team_id: int,
+    opponent_id: int = Query(...),
+    last_n: int = Query(default=5, ge=1, le=20),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bizim son N maç atak gücü × rakip son N maç savunma zayıflığı."""
+    from app.data.loaders import load_team_events
+    from app.engine.matchup_grid import compute_matchup_grid
+
+    my_events = load_team_events(session, team_id, last_n=last_n)
+    opp_events = load_team_events(session, opponent_id, last_n=last_n)
+    if my_events.total == 0 or opp_events.total == 0:
+        return {
+            "team_id": team_id, "opponent_id": opponent_id,
+            "my_events": my_events.total, "opp_events": opp_events.total,
+            "note": "Yeterli event yok (iki takım için ingest gerekli)",
+        }
+    result = compute_matchup_grid(
+        my_team_external_id=team_id,
+        opponent_team_external_id=opponent_id,
+        our_passes=my_events.passes,
+        our_carries=my_events.carries,
+        opponent_def_actions=opp_events.defensive_actions,
+        matches_analyzed=len(my_events.match_ids),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/teams/{team_id}/game-plan",
+    tags=["admin"],
+    summary="Birleşik maç-hazırlık game-plan dokümanı — Faz 5 #22/#25/#27/#29",
+)
+def game_plan_endpoint(
+    team_id: int,
+    payload: dict[str, Any],
+    persist: bool = Query(default=True),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Matchup grid + set-piece routine + senaryo planı + müsait kadro + AI.
+
+    Beklenen payload:
+    {
+        "opponent_external_id": int,
+        "match_external_id"?: int,
+        "squad"?: [{player_id, injured?, suspended?, risk_level?}]
+    }
+    """
+    from app.agents import GamePlanAgent
+    from app.agents.store import save_agent_output
+
+    opp = payload.get("opponent_external_id")
+    if opp is None:
+        raise HTTPException(status_code=400, detail="opponent_external_id zorunlu")
+
+    agent = GamePlanAgent()
+    try:
+        result = agent.run(session, context={
+            "my_team_external_id": team_id,
+            "opponent_external_id": int(opp),
+            "match_external_id": payload.get("match_external_id"),
+            "squad": payload.get("squad", []),
+        })
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if persist:
+        save_agent_output(
+            session, result=result,
+            agent_name=agent.name,
+            agent_version=f"{agent.version}-vs{opp}",
+        )
+        session.commit()
+    return result.output_json
+
+
+@router.post(
+    "/teams/{team_id}/available-squad",
+    tags=["admin"],
+    summary="Müsait kadro ön-filtre (sakat/cezalı/yük) — Faz 5 #23",
+)
+def available_squad_endpoint(
+    team_id: int,
+    payload: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Squad listesinden müsaitlik raporu.
+
+    payload: {"squad": [{player_id, position?, injured?, suspended?, risk_level?}]}
+    """
+    from app.engine.available_squad import compute_available_squad
+
+    squad = payload.get("squad", [])
+    if not squad:
+        raise HTTPException(status_code=400, detail="squad listesi boş")
+    result = compute_available_squad(team_id, squad)
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/teams/{team_id}/proactive-alerts",
+    tags=["admin"],
+    summary="Yük/risk/fikstür uyarı listesi — Faz 5 #14",
+)
+def proactive_alerts_endpoint(
+    team_id: int,
+    last_n: int = Query(default=5, ge=1, le=20),
+    horizon_days: int = Query(default=14, ge=1, le=60),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Takımın oyuncu yük raporlarından + fikstür yoğunluğundan uyarı listesi."""
+    from datetime import UTC, datetime
+
+    from app.engine.load import compute_player_load
+    from app.engine.proactive_alerts import compute_proactive_alerts
+    from app.engine.schedule import compute_schedule
+
+    # Takımın oyuncularını + appearance'larını çek
+    apps = list(session.execute(
+        select(models.PlayerAppearance).where(
+            models.PlayerAppearance.sport == football.SPORT_NAME,
+            models.PlayerAppearance.team_external_id == team_id,
+        )
+    ).scalars())
+    player_ids = {a.player_external_id for a in apps}
+    now = datetime.now(UTC)
+    player_loads: list[dict[str, Any]] = []
+    for pid in player_ids:
+        try:
+            pl = compute_player_load(pid, apps, now=now).value
+        except (ValueError, ZeroDivisionError):
+            continue
+        player_loads.append({
+            "player_external_id": pid,
+            "risk_level": pl.risk_level,
+            "minutes_per_week": pl.minutes_per_week,
+            "back_to_back_count": pl.back_to_back_count,
+        })
+
+    # Fikstür yoğunluğu
+    upcoming_count = 0
+    dense = False
+    team_matches = list(session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            (models.Match.home_team_external_id == team_id)
+            | (models.Match.away_team_external_id == team_id),
+        )
+    ).scalars())
+    if team_matches:
+        ref_tz = team_matches[0].kickoff.tzinfo
+        sched = compute_schedule(
+            team_id, team_matches,
+            now=datetime.now(ref_tz) if ref_tz else now,
+            horizon_days=horizon_days,
+        ).value
+        upcoming_count = sched.upcoming_count
+        dense = sched.dense_schedule
+
+    result = compute_proactive_alerts(
+        team_id,
+        player_loads=player_loads,
+        upcoming_count=upcoming_count,
+        dense_schedule=dense,
+        horizon_days=horizon_days,
+        contract_warnings=[],  # caller ileride sözleşme verisi ekler
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/daily-briefing",
+    tags=["admin"],
+    summary="Rol bazlı 'bugün ne yapmalıyım' özeti — Faz 5 #15",
+)
+def daily_briefing_endpoint(
+    team_id: int = Query(...),
+    role: str = Query(default="coach"),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Role göre günün öncelik listesini compose eder.
+
+    coach → proaktif uyarı + sıradaki rakip + müsait kadro özeti
+    analyst → tactical trend + son maç + scout digest
+    admin → job durumu + kota + db stats özeti
+    """
+    sections: dict[str, Any] = {"team_id": team_id, "role": role}
+
+    if role in ("coach", "admin"):
+        # Proaktif uyarılar (en kritik 5)
+        try:
+            alerts_resp = proactive_alerts_endpoint(team_id, session=session)
+            sections["alerts"] = {
+                "critical_count": alerts_resp.get("value", {}).get("critical_count", 0),
+                "warning_count": alerts_resp.get("value", {}).get("warning_count", 0),
+                "top": alerts_resp.get("value", {}).get("alerts", [])[:5],
+            }
+        except Exception as e:  # noqa: BLE001
+            sections["alerts"] = {"error": str(e)[:80]}
+
+    if role == "admin":
+        # Job + kota özeti
+        n_jobs = session.scalar(
+            select(func.count()).select_from(models.JobRun)
+        ) or 0
+        sections["ops"] = {"total_jobs": int(n_jobs)}
+
+    if role == "analyst":
+        # Son ingest edilen maç sayısı
+        n_events_matches = session.scalar(
+            select(func.count(func.distinct(models.EventRow.match_external_id)))
+            .where(models.EventRow.sport == football.SPORT_NAME)
+        ) or 0
+        sections["data"] = {"matches_with_events": int(n_events_matches)}
+
+    sections["todo"] = _daily_todo(role, sections)
+    return sections
+
+
+def _daily_todo(role: str, sections: dict[str, Any]) -> list[str]:
+    """Role göre yapılacaklar listesi (heuristic)."""
+    todo: list[str] = []
+    alerts = sections.get("alerts", {})
+    crit = alerts.get("critical_count", 0)
+    warn = alerts.get("warning_count", 0)
+    if role == "coach":
+        if crit:
+            todo.append(f"{crit} kritik uyarı var — yük/sakatlık kararı ver")
+        if warn:
+            todo.append(f"{warn} uyarı izlemede — antrenman yükünü ayarla")
+        todo.append("Sıradaki rakip için game-plan oluştur")
+        todo.append("Müsait kadroyu kontrol et")
+    elif role == "analyst":
+        todo.append("Son maç tactical-trend incele")
+        todo.append("Scout watchlist digest güncelle")
+        todo.append("Rakip set-piece pattern hazırla")
+    elif role == "admin":
+        todo.append("Job durumlarını kontrol et")
+        todo.append("API kota kullanımını izle")
+        todo.append("Eksik maç event'lerini ingest et")
+    else:  # viewer
+        todo.append("Takım form ve sıralama özetini gör")
+    return todo
