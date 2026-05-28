@@ -10,6 +10,8 @@ const ROUTES = [
     desc: "xT + xA + VAEP + overperformance + progressive" },
   { href: "/matches/16029/halftime?my_team_id=217", label: "Devre Arası Brief",
     desc: "1. yarı sayılar + zayıf kanal + yorgun oyuncu + AI 2. yarı önerileri" },
+  { href: "/teams/217/trend", label: "Sezon Trendi",
+    desc: "PPDA, tilt, xT, possession, dominance — maç başına slope + biggest shift" },
   { href: "/chat", label: "Asistan", desc: "Manager co-pilot chat" },
 ];
 

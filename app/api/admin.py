@@ -1202,6 +1202,131 @@ def player_tactical_profile(
 
 
 @router.get(
+    "/teams/{team_id}/tactical-trend",
+    tags=["admin"],
+    summary="Takım sezon-boyu trend (PPDA, field_tilt, dominance, xT, possession)",
+)
+def team_tactical_trend(
+    team_id: int,
+    last_n: int = Query(default=10, ge=2, le=50),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir takımın son N maçındaki 5 ana metriğin maç-başı zaman serisi + trend.
+
+    Tek-maç tactical-profile'den farklı: aynı engine'i her maça ayrı uygulayıp
+    çıkan değerleri zaman serisi olarak gösterir + linear regression slope.
+
+    Metrikler:
+    - PPDA            (lower is better — düşük = yoğun pres)
+    - Field tilt %     (higher is better için biz, opponent yokken 0.5 baseline)
+    - xT total        (higher is better)
+    - Possession %     (higher is better)
+    - Match dominance score (higher is better)
+    """
+    from app.data.loaders import load_match_events
+    from app.engine.field_tilt import compute_field_tilt
+    from app.engine.match_dominance import compute_match_dominance
+    from app.engine.ppda import compute_ppda
+    from app.engine.tactical_trend import compute_tactical_trend
+    from app.engine.xt import compute_team_xt
+
+    # Son N maçı al (FINISHED), kronolojik sıralı (eski → yeni)
+    matches = list(session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            (models.Match.home_team_external_id == team_id)
+            | (models.Match.away_team_external_id == team_id),
+            models.Match.status.in_(football.FINISHED_STATUSES),
+        ).order_by(models.Match.kickoff.desc()).limit(last_n)
+    ).scalars())
+    if not matches:
+        return {
+            "team_id": team_id, "last_n": last_n,
+            "matches_analyzed": 0,
+            "note": "Bu takımın FINISHED maçı yok",
+        }
+    matches.reverse()  # kronolojik
+
+    series: dict[str, list[float]] = {
+        "ppda": [], "field_tilt": [], "team_xt": [],
+        "possession_share": [], "dominance_score": [],
+    }
+    match_meta: list[dict[str, Any]] = []
+    for m in matches:
+        loaded = load_match_events(session, m.external_id)
+        if loaded.total == 0:
+            continue
+        opp_id = (
+            m.away_team_external_id if m.home_team_external_id == team_id
+            else m.home_team_external_id
+        )
+        try:
+            ppda = compute_ppda(team_id, loaded.passes, loaded.defensive_actions).value
+            tilt = compute_field_tilt(team_id, opp_id, loaded.passes).value
+            xt = compute_team_xt(team_id, loaded.passes, loaded.carries).value
+            team_pass = sum(1 for p in loaded.passes if p.team_external_id == team_id)
+            opp_pass = sum(1 for p in loaded.passes if p.team_external_id == opp_id)
+            poss = team_pass / (team_pass + opp_pass) if (team_pass + opp_pass) else 0.5
+            dom = compute_match_dominance(
+                team_external_id=team_id, opponent_team_external_id=opp_id,
+                team_shots=loaded.shots, opponent_shots=loaded.shots,
+                all_passes=loaded.passes, team_carries=loaded.carries,
+                opponent_carries=loaded.carries,
+            ).value
+        except (ValueError, ZeroDivisionError, KeyError, TypeError):
+            continue
+        series["ppda"].append(ppda.ppda)
+        series["field_tilt"].append(tilt.team_a_tilt)
+        series["team_xt"].append(xt.total_xt)
+        series["possession_share"].append(round(poss, 3))
+        series["dominance_score"].append(dom.dominance_score)
+        match_meta.append({
+            "match_id": m.external_id,
+            "kickoff": m.kickoff.isoformat() if m.kickoff else None,
+            "opp_id": opp_id,
+            "score": f"{m.home_score}-{m.away_score}",
+        })
+
+    if not match_meta:
+        return {
+            "team_id": team_id, "last_n": last_n,
+            "matches_analyzed": 0,
+            "note": "Hiçbir maç için event ingest yapılmamış",
+        }
+
+    higher_better = {
+        "ppda": False, "field_tilt": True, "team_xt": True,
+        "possession_share": True, "dominance_score": True,
+    }
+    trends: dict[str, dict[str, Any]] = {}
+    for metric, vals in series.items():
+        trend = compute_tactical_trend(
+            metric, vals,
+            higher_is_better=higher_better[metric],
+            subject_type="team", subject_id=team_id,
+        ).value
+        trends[metric] = {
+            "series": list(trend.series),
+            "mean": trend.mean,
+            "slope": trend.slope,
+            "direction": trend.direction,
+            "biggest_shift": trend.biggest_match_to_match_shift,
+            "biggest_shift_match_idx": trend.biggest_shift_match_idx,
+            "biggest_shift_match_id": (
+                match_meta[trend.biggest_shift_match_idx]["match_id"]
+                if trend.biggest_shift_match_idx < len(match_meta) else None
+            ),
+        }
+
+    return {
+        "team_id": team_id, "last_n": last_n,
+        "matches_analyzed": len(match_meta),
+        "matches": match_meta,
+        "trends": trends,
+    }
+
+
+@router.get(
     "/matches/{match_id}/halftime-brief",
     tags=["admin"],
     summary="Devre arası analiz brief (1. yarı event'leri üzerinde 7 engine + AI)",
