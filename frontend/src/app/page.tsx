@@ -18,6 +18,17 @@ const QUICK_LINKS: { href: string; label: string; desc: string }[] = [
     desc: "30 engine batch çıktısı" },
   { href: "/teams/217/trend", label: "Sezon Trendi",
     desc: "PPDA/tilt/xT slope + biggest shift" },
+  { href: "/training", label: "Antrenman Planı",
+    desc: "Rakip profilinden drill önerileri" },
+  { href: "/matches/16029/sub-chess?my_team_id=217&current_minute=60",
+    label: "Sub Chess",
+    desc: "Top 3 sub senaryosu forward projection" },
+  { href: "/teams/217/set-piece-routine?opponent_id=22",
+    label: "Set-piece Routine",
+    desc: "Rakibin zayıf zone'una göre rutin öneri" },
+  { href: "/matches/16029/players/5503/feedback",
+    label: "Oyuncu Feedback",
+    desc: "Frame-by-frame pas alternatifleri (Messi örnek)" },
 ];
 
 export default function HomePage() {
