@@ -8,7 +8,7 @@ Yarın: tracking, tahmin, otomasyon. Sonra: diğer sporlar.
 > [`DESIGN.md`](DESIGN.md) — tasarım sistemi (FM 2010-15 koyu tema, token, komponent spec).
 > [`PROMPT_FRONTEND_FAZ2.md`](PROMPT_FRONTEND_FAZ2.md) ✅ **tamamlandı** (commit `ad69e2b`) — layout shell + 4 komponent + 4 sayfa.
 > [`PROMPT_FRONTEND_FAZ3.md`](PROMPT_FRONTEND_FAZ3.md) ✅ **tamamlandı** (commit `9b34166`) — auth refresh + WS reconnect + observability + E2E.
-> [`PROMPT_FRONTEND_FAZ4.md`](PROMPT_FRONTEND_FAZ4.md) — agent talimatı: 4 saha-içi sayfa (player_feedback + training_plan + sub_chess + set_piece_routine) + MiniPitch komponenti.
+> [`PROMPT_FRONTEND_FAZ4.md`](PROMPT_FRONTEND_FAZ4.md) ✅ **tamamlandı** (commit `b8f01b9`) — 4 saha-içi sayfa + MiniPitch + SetPieceZoneMap.
 > [`PROMPT_BACKEND_LOAD_THRESHOLD.md`](PROMPT_BACKEND_LOAD_THRESHOLD.md) ✅ **tamamlandı** (commit `2fa05a8`) — engine.load eşik parametrikleşmesi.
 
 ## Mimari prensipler
