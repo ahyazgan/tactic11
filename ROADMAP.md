@@ -83,7 +83,48 @@ dışarı hesap. DB/API/LLM bilmez.
 
 ---
 
-## Faz 6 — Tracking entegrasyonu
+## Maç-içi karar mekanizması — Faz 6 ✓
+Canlı maç-içi 14 karar özelliği, 5 engine (event-window proxy; gerçek feed
+gelince adapter swap):
+- [x] `engine/momentum_tracker/` — momentum meter + pres kırılma + xG swing (#1/2/3)
+- [x] `engine/sub_timing/` — optimal timing + etki + paket (#4/5/6)
+- [x] `engine/live_tactical_trigger/` — formation switch + press height + kanal (#7/8/9)
+- [x] `engine/live_risk_monitor/` — kart + sakatlık + zaman yönetimi (#10/11/12)
+- [x] `engine/opponent_reaction/` — rakip sub tepkisi + momentum kırma (#13/14)
+- [x] `GET /admin/matches/{id}/live-decision` (birleşik panel) + 2 POST endpoint
+- [x] WebSocket live snapshot'a 3 canlı sinyal eklendi
+- PR #68 (`4a1415f`)
+
+## Maç-içi karar mekanizması — Faz 7 ✓
+Mekânsal/bireysel/bağlam katmanı, 14 özellik, 6 engine (F–K grupları):
+- [x] `engine/spatial_control/` — boşluk haritası + sayısal üstünlük + genişlik (F)
+- [x] `engine/live_matchup/` — düello kaybeden + sıcak el + yıldız besle (G)
+- [x] `engine/set_piece_timing/` — köşe/faul fırsat rutini + penaltı atıcı (H)
+- [x] `engine/game_friction/` — faul biriktirme + ofsayt tuzağı (I)
+- [x] `engine/referee_context/` — hakem eğilimi + avantaj penceresi (J)
+- [x] `engine/score_time_matrix/` — kapanış reçetesi + risk/getiri eşiği (K)
+- [x] `live-decision` 8-engine birleşik'e genişledi + 3 POST endpoint (set-piece,
+      game-friction, referee-context)
+- [x] WebSocket live snapshot'a 3 Faz 7 sinyali eklendi
+- PR #69 (`ea497e8`)
+
+## Bağlam & güven katmanı — Faz 8 ✓ (orkestra şefi)
+Her engine ayrı sinyal veriyordu; kullanıcı 5 ayrı uyarı görüp hangisine
+bakacağını bilemiyordu. Bu faz sinyalleri tek karara indirger:
+- [x] `engine/context_engine/` — tüm aktif sinyalleri okuyup tek "şimdi şunu
+      yap" önceliği üretir (#1, en kritik)
+- [x] `engine/confidence/` — her öneriye 0-1 güven skoru + "neden?" sürücüleri (#2)
+- [x] `engine/match_memory/` — maç-içi hafıza: momentum dönüşü + kanat düşüşü +
+      rakip değişimi bağlantısı; sistemi reaktiften proaktife geçirir (#3)
+- [x] `engine/signal_quality/` — gürültü/yetersiz-örnek/ısınma filtresi; yanlış
+      alarmı context'ten önce eler (#5)
+- [x] Karar audit trail (#4): `decisions` tablosu outcome/confidence/recommended
+      + `match_snapshots` tablosu (hafıza kalıcılığı) — migration 0016
+- [x] `live-decision` + WebSocket'e `context` başlığı; `POST /decisions/{id}/outcome`
+      + `GET /teams/{id}/decisions/feedback` (feedback loop → güven kalibrasyonu)
+- [x] `app/api/context_pipeline.py` — pipeline orkestrasyonu (engine'ler saf kalır)
+
+## Tracking entegrasyonu (ertelendi — gerçek tracking feed bekliyor)
 - `data/sources/tracking.py` — kulüp tracking adapter'ı (`DataSource`'a uyar)
 - `engine/tracking/` — yerleşim, pres, yük çıkarımı
 

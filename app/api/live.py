@@ -164,6 +164,102 @@ def _compute_live_snapshot(
              "recommendation": t.recommendation}
             for t in trig.triggers if t.fired
         ]
+
+        # Faz 7: mekânsal kontrol + bireysel eşleşme + skor-zaman reçetesi
+        from app.engine.live_matchup import compute_live_matchup
+        from app.engine.score_time_matrix import compute_score_time_matrix
+        from app.engine.spatial_control import compute_spatial_control
+        spat = compute_spatial_control(
+            my_team_id, opp_id, passes_so_far, defs_so_far,
+            current_minute=current_minute,
+        ).value
+        snapshot["spatial_control"] = {
+            "gap_between_lines": spat.gap_between_lines,
+            "superiority_flank": spat.superiority_flank,
+            "shape_state": spat.shape_state,
+            "alerts": list(spat.alerts),
+        }
+        match_up = compute_live_matchup(
+            my_team_id, opp_id, passes_so_far, defs_so_far,
+            current_minute=current_minute,
+        ).value
+        snapshot["live_matchup"] = {
+            "struggling_defender": (
+                match_up.struggling_defender.player_external_id
+                if match_up.struggling_defender else None
+            ),
+            "hot_opponent": (
+                match_up.hot_opponent.player_external_id
+                if match_up.hot_opponent else None
+            ),
+            "alerts": list(match_up.alerts),
+        }
+        stm = compute_score_time_matrix(
+            my_team_id, current_minute=current_minute,
+            my_score=my_score, opponent_score=opp_score,
+        ).value
+        snapshot["score_time_matrix"] = {
+            "score_state": stm.score_state,
+            "posture": stm.posture,
+            "closing_recipe": stm.closing_recipe,
+            "alerts": list(stm.alerts),
+        }
+
+        # Faz 8: bağlam motoru (orkestra şefi) — tek "şimdi şunu yap" başlığı
+        from app.api.context_pipeline import context_only
+        lo = current_minute - 15.0
+        win = {
+            "passes": sum(1 for x in passes_so_far if lo <= x.minute <= current_minute),
+            "defs": sum(1 for x in defs_so_far if lo <= x.minute <= current_minute),
+            "shots": sum(1 for x in shots_so_far if lo <= x.minute <= current_minute),
+        }
+        out_like = {
+            "momentum": {
+                "momentum_score": mom.momentum_score,
+                "momentum_holder": mom.momentum_holder,
+                "press_breaking": mom.press_breaking,
+                "xg_swing_alert": mom.xg_swing_alert,
+                "alert_text": mom.alert_text,
+            },
+            "sub_timing": {
+                "package_recommendation": list(timing.package_recommendation),
+                "package_rationale": timing.package_rationale,
+                "advices": [
+                    {"player_external_id": a.player_external_id,
+                     "timing_verdict": a.timing_verdict,
+                     "impact_estimate": a.impact_estimate}
+                    for a in timing.advices
+                ],
+            },
+            "tactical_triggers": {
+                "triggers": [
+                    {"trigger_type": t.trigger_type, "fired": t.fired,
+                     "recommendation": t.recommendation, "urgency": t.urgency}
+                    for t in trig.triggers
+                ],
+            },
+            "spatial_control": {
+                "alerts": list(spat.alerts),
+                "flank_balance": [
+                    {"flank": fb.flank, "our_count": fb.our_count}
+                    for fb in spat.flank_balance
+                ],
+            },
+            "live_matchup": {"alerts": list(match_up.alerts)},
+            "score_time_matrix": {
+                "in_closing_phase": stm.in_closing_phase,
+                "posture": stm.posture, "closing_recipe": stm.closing_recipe,
+            },
+        }
+        ctx = context_only(
+            out_like, current_minute=current_minute,
+            my_score=my_score, opp_score=opp_score, win=win,
+        )
+        snapshot["context"] = {
+            "one_liner": ctx.get("one_liner"),
+            "primary": ctx.get("primary"),
+            "secondary": ctx.get("secondary", []),
+        }
     except (ValueError, ZeroDivisionError, KeyError, TypeError) as e:
         snapshot["error"] = str(e)
     return snapshot
