@@ -41,6 +41,40 @@ def test_health_returns_db_status_and_uptime(client):
     assert body["uptime_seconds"] >= 0
 
 
+def test_healthz_liveness_no_db(client):
+    """Liveness DB'ye dokunmaz — her zaman 200."""
+    r = client.get("/healthz")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "ok"
+    assert "uptime_seconds" in body
+
+
+def test_readyz_readiness_ok_with_db(client):
+    r = client.get("/readyz")
+    assert r.status_code == 200
+    assert r.json()["status"] == "ready"
+    assert r.json()["db"] == "ok"
+
+
+def test_security_headers_present(client):
+    r = client.get("/healthz")
+    assert r.headers["X-Content-Type-Options"] == "nosniff"
+    assert r.headers["X-Frame-Options"] == "DENY"
+    assert "Referrer-Policy" in r.headers
+
+
+def test_login_has_stricter_rate_limit(client):
+    """/auth/login IP başına ayrı sıkı limitle 429'a düşer."""
+    api_main._login_rate_limiter.reset()
+    limit = api_main.get_settings().login_rate_limit_per_minute
+    statuses = [
+        client.post("/auth/login", json={"email": "x@y.z", "password": "w"}).status_code
+        for _ in range(limit + 1)
+    ]
+    assert 429 in statuses  # limit aşılınca login limiter devreye girer
+
+
 def test_health_reports_degraded_when_db_fails(monkeypatch):
     """get_session override yok → gerçek DATABASE_URL'a bağlanır (psql lokalde yok) → 503."""
     # Override'ı kaldır — gerçek DB'ye git

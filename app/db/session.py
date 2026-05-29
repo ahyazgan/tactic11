@@ -9,7 +9,18 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
 
-engine = create_engine(get_settings().database_url, pool_pre_ping=True, future=True)
+_settings = get_settings()
+# Pool ayarları yük altında bağlantı yetmezliğini ve kopuk uzun bağlantıları
+# önler. SQLite (test/dev) QueuePool kullanmaz → pool_size vb. uygulanmaz.
+_engine_kwargs: dict = {"pool_pre_ping": True, "future": True}
+if not _settings.database_url.startswith("sqlite"):
+    _engine_kwargs.update(
+        pool_size=_settings.db_pool_size,
+        max_overflow=_settings.db_max_overflow,
+        pool_recycle=_settings.db_pool_recycle_seconds,
+    )
+
+engine = create_engine(_settings.database_url, **_engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autoflush=True, expire_on_commit=False, future=True)
 
 # Tenant filter — global Session listener (loader_criteria + before_flush
