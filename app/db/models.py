@@ -703,10 +703,7 @@ class PlayerContract(Base):
 
 
 class PlayerRehabilitation(Base):
-    """Sakatlık → rehab → dönüş izi (Faz 5 #43).
-
-    status: "active" | "recovering" | "cleared".
-    """
+    """Sakatlık → rehab → dönüş izi (Faz 5 #43)."""
 
     __tablename__ = "player_rehabilitations"
     __table_args__ = (
@@ -733,11 +730,7 @@ class PlayerRehabilitation(Base):
 
 
 class PlayerGoal(Base):
-    """Bireysel gelişim hedefi (Faz 5 #38).
-
-    Oyuncu başına çoklu hedef; status: open | in_progress | achieved | missed.
-    metric + target_value opsiyonel (ölçülebilir hedef), yoksa serbest metin.
-    """
+    """Bireysel gelişim hedefi (Faz 5 #38)."""
 
     __tablename__ = "player_goals"
     __table_args__ = (
@@ -753,6 +746,31 @@ class PlayerGoal(Base):
         String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
     )
     player_external_id: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(255))
+    metric: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    target_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="open")
+    notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class TeamGoal(Base):
+    """Sezonluk takım hedefi (Faz 5 #32)."""
+
+    __tablename__ = "team_goals"
+    __table_args__ = (
+        Index("ix_team_goals_team_season", "team_external_id", "season"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    team_external_id: Mapped[int] = mapped_column(Integer)
+    season: Mapped[int] = mapped_column(Integer)
     title: Mapped[str] = mapped_column(String(255))
     metric: Mapped[str | None] = mapped_column(String(64), nullable=True)
     target_value: Mapped[float | None] = mapped_column(Float, nullable=True)
