@@ -1,9 +1,10 @@
-"""HTML görünüm endpoint'leri (Faz 5 #15, #29).
+"""HTML görünüm endpoint'leri (Faz 5 #15, #26, #29).
 
 Sunucu tarafından render edilen tek-HTML sayfaları. JS sayfa içinde mevcut
 JSON endpoint'lerini fetch eder; X-API-Key localStorage'tan gelir.
 
 - GET /matches/{match_id}/game-plan — birleşik game-plan ekranı (#29)
+- GET /matches/{match_id}/warmup    — kickoff -60 dk checklist (#26)
 - GET /teams/{team_id}/dashboard    — takım merkezli landing (#15)
 
 Template'ler `app/api/templates/` altında, dashboard.html ile aynı stil.
@@ -19,6 +20,7 @@ router = APIRouter(tags=["html-views"])
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 _MATCH_GAME_PLAN_HTML = _TEMPLATES_DIR / "match_game_plan.html"
+_MATCH_WARMUP_HTML = _TEMPLATES_DIR / "match_warmup.html"
 _TEAM_DASHBOARD_HTML = _TEMPLATES_DIR / "team_dashboard.html"
 
 
@@ -65,6 +67,33 @@ def match_game_plan_view(match_id: int) -> HTMLResponse:
         raise HTTPException(
             status_code=500,
             detail="template eksik: match_game_plan.html",
+        ) from e
+    html = _inject_js_constant(html, "MATCH_ID", match_id)
+    return HTMLResponse(html)
+
+
+@router.get(
+    "/matches/{match_id}/warmup",
+    response_class=HTMLResponse,
+    summary="Kickoff -60 dk hazırlık checklist (Faz 5 #26)",
+)
+def match_warmup_view(match_id: int) -> HTMLResponse:
+    """Maç-öncesi 5-bölümlü hazırlık checklist'i.
+
+    - T-60 hazırlık (tesis), T-30 saha ısınma, T-15 taktiksel brief,
+      T-5 saha çıkışı, maç-içi kontrol.
+    - Kickoff sayacı: kullanıcı manuel girer veya `/admin/matches/{id}`
+      başarılı ise otomatik çekilir.
+    - İlerleme + işaret zamanı localStorage'a kaydedilir (cihaz başına).
+    """
+    if match_id <= 0:
+        raise HTTPException(status_code=400, detail="match_id > 0 olmalı")
+    try:
+        html = _MATCH_WARMUP_HTML.read_text(encoding="utf-8")
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="template eksik: match_warmup.html",
         ) from e
     html = _inject_js_constant(html, "MATCH_ID", match_id)
     return HTMLResponse(html)

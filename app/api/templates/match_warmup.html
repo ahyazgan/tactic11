@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>manager2 — Isınma & Son Kontrol</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --good: #3fb950; --warn: #d29922; --bad: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  header a { color: var(--accent); text-decoration: none; }
+  main { padding: 24px; max-width: 800px; margin: 0 auto; }
+  .countdown-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; text-align: center; }
+  .countdown-card .countdown { font-size: 40px; font-weight: 700; letter-spacing: 1px; }
+  .countdown-card .countdown.urgent { color: var(--bad); }
+  .countdown-card .countdown.warn { color: var(--warn); }
+  .countdown-card .countdown.ok { color: var(--good); }
+  .countdown-card .label { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .progress-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  .progress-card .track { height: 18px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .progress-card .bar { height: 100%; background: var(--accent); transition: width 0.3s; }
+  .progress-card .summary { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+  .progress-card .summary strong { font-size: 16px; }
+  .section { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  .section h2 { margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .checklist { list-style: none; padding: 0; margin: 0; }
+  .checklist li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist input[type="checkbox"] { margin-top: 3px; cursor: pointer; flex-shrink: 0; width: 18px; height: 18px; accent-color: var(--accent); }
+  .checklist label { flex: 1; cursor: pointer; }
+  .checklist li.done label { text-decoration: line-through; color: var(--muted); }
+  .check-time { color: var(--muted); font-size: 11px; margin-left: 6px; }
+  .auth { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .auth label { color: var(--muted); font-size: 12px; }
+  .auth input { background: var(--bg); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px; }
+  .auth input.api { flex: 1; min-width: 180px; }
+  .auth button { background: var(--accent); color: #fff; border: 0; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .auth button.reset { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+  .footer { padding: 16px 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Isınma & Son Kontrol</h1>
+    <div class="meta" id="meta">Maç #<span id="meta-match">—</span></div>
+  </div>
+  <div>
+    <a href="/dashboard">← Ops Dashboard</a> ·
+    <a id="game-plan-link" href="#">Game Plan →</a>
+  </div>
+</header>
+
+<main>
+  <div class="auth">
+    <label>X-API-Key</label>
+    <input id="apikey" class="api" placeholder="API key (opsiyonel)" autocomplete="off" />
+    <label>Kickoff (UTC)</label>
+    <input id="kickoff" type="datetime-local" />
+    <button id="save-ko">Kaydet</button>
+    <button id="reset" class="reset">Listeyi sıfırla</button>
+  </div>
+
+  <div class="countdown-card">
+    <div class="countdown" id="countdown">—</div>
+    <div class="label" id="countdown-label">Kickoff'a kalan</div>
+  </div>
+
+  <div class="progress-card">
+    <div class="summary">
+      <div>İlerleme</div>
+      <div><strong id="progress-text">0 / 0</strong></div>
+    </div>
+    <div class="track"><div class="bar" id="progress-bar" style="width: 0%"></div></div>
+  </div>
+
+  <div class="section">
+    <h2>T-60 dk — Hazırlık (tesis)</h2>
+    <ul class="checklist" data-section="prep">
+      <li><input type="checkbox" id="c-p1" /><label for="c-p1">Kadro listesi resmi sisteme bildirildi (lig kuralı)</label></li>
+      <li><input type="checkbox" id="c-p2" /><label for="c-p2">Sakat / cezalı oyuncu listesi son hali ile teyit edildi</label></li>
+      <li><input type="checkbox" id="c-p3" /><label for="c-p3">Hakem ekibi ve VAR bilgisi konfirme</label></li>
+      <li><input type="checkbox" id="c-p4" /><label for="c-p4">Soyunma odası taktiksel poster + tahta hazır</label></li>
+      <li><input type="checkbox" id="c-p5" /><label for="c-p5">Saha durumu (zemin, hava, rüzgar) son raporu alındı</label></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>T-30 dk — Saha ısınma (kondisyon ekibi)</h2>
+    <ul class="checklist" data-section="warmup">
+      <li><input type="checkbox" id="c-w1" /><label for="c-w1">Aktif ısınma rutini başlatıldı (joging + dinamik streç)</label></li>
+      <li><input type="checkbox" id="c-w2" /><label for="c-w2">Pozisyona özel teknik drill (savunma / orta saha / forvet)</label></li>
+      <li><input type="checkbox" id="c-w2b" /><label for="c-w2b">Kalecilerin ayrı ısınma rutini (reflex + saha çıkışı)</label></li>
+      <li><input type="checkbox" id="c-w3" /><label for="c-w3">Hidrasyon noktası açık, izotonik içecek dağıtıldı</label></li>
+      <li><input type="checkbox" id="c-w4" /><label for="c-w4">Yüksek-risk yük seviyesi (extreme) işaretli oyuncular gözetimde</label></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>T-15 dk — Taktiksel brief (TD)</h2>
+    <ul class="checklist" data-section="tactical">
+      <li><input type="checkbox" id="c-t1" /><label for="c-t1">İlk 11 + dizilim teyit (özellikle son dakika yer değişiklikleri)</label></li>
+      <li><input type="checkbox" id="c-t2" /><label for="c-t2">Game plan ana mesaj (matchup en iyi kanal + senaryo)</label></li>
+      <li><input type="checkbox" id="c-t3" /><label for="c-t3">Duran top sorumlulukları (köşe, faul atışı + savunması)</label></li>
+      <li><input type="checkbox" id="c-t4" /><label for="c-t4">Pres tetikleyici sözleşmesi (kim ne zaman baskıya çıkıyor)</label></li>
+      <li><input type="checkbox" id="c-t5" /><label for="c-t5">Senaryo planı hatırlatıldı (önde/berabere/geride reçeteleri)</label></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>T-5 dk — Saha çıkışı (kaptan / TD)</h2>
+    <ul class="checklist" data-section="kickoff">
+      <li><input type="checkbox" id="c-k1" /><label for="c-k1">Kaptan banta resmi listeyi imzaladı</label></li>
+      <li><input type="checkbox" id="c-k2" /><label for="c-k2">Eldiven / kramponlar son kontrol</label></li>
+      <li><input type="checkbox" id="c-k3" /><label for="c-k3">Yedek kulübesinde su + havlu + analiz tableti hazır</label></li>
+      <li><input type="checkbox" id="c-k4" /><label for="c-k4">İletişim hattı (saha-kulübe) çalışıyor</label></li>
+      <li><input type="checkbox" id="c-k5" /><label for="c-k5">Maç kayıt / analiz canlı feed başlatıldı</label></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Maç-içi (kulübe)</h2>
+    <ul class="checklist" data-section="match">
+      <li><input type="checkbox" id="c-m1" /><label for="c-m1">Live dashboard (PPDA / momentum / spatial) ekranı açık</label></li>
+      <li><input type="checkbox" id="c-m2" /><label for="c-m2">Karar log (sub timing, kart riski) kayda alınıyor</label></li>
+      <li><input type="checkbox" id="c-m3" /><label for="c-m3">İlk 4 dk gözlemi yapıldı (rakip dizilim + pres yüksekliği)</label></li>
+    </ul>
+  </div>
+</main>
+
+<div class="footer">
+  manager2 · kickoff -60 dk checklist · ilerleme + saat localStorage'a kayıtlı (cihaz başına)
+</div>
+
+<script>
+const MATCH_ID = parseInt(window.MATCH_ID, 10);
+document.getElementById('meta-match').textContent = MATCH_ID;
+document.getElementById('game-plan-link').href = `/matches/${MATCH_ID}/game-plan`;
+
+const STORAGE_API = 'manager2_apikey';
+const STORAGE_KO = 'manager2_warmup_kickoff_' + MATCH_ID;
+const STORAGE_CHECKS = 'manager2_warmup_checks_' + MATCH_ID;
+
+const apikeyInput = document.getElementById('apikey');
+const kickoffInput = document.getElementById('kickoff');
+apikeyInput.value = localStorage.getItem(STORAGE_API) || '';
+
+// Load saved kickoff
+const savedKO = localStorage.getItem(STORAGE_KO);
+if (savedKO) kickoffInput.value = savedKO;
+
+document.getElementById('save-ko').addEventListener('click', () => {
+  localStorage.setItem(STORAGE_API, apikeyInput.value);
+  localStorage.setItem(STORAGE_KO, kickoffInput.value);
+  tickCountdown();
+});
+
+document.getElementById('reset').addEventListener('click', () => {
+  if (!confirm('Tüm işaretler silinecek. Emin misin?')) return;
+  localStorage.removeItem(STORAGE_CHECKS);
+  document.querySelectorAll('.checklist input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('li').classList.remove('done');
+    const tm = cb.parentElement.querySelector('.check-time');
+    if (tm) tm.remove();
+  });
+  updateProgress();
+});
+
+// ---- Try to auto-fetch kickoff from match info if API key present ----
+async function tryAutoFetchKickoff() {
+  if (kickoffInput.value || !apikeyInput.value) return;
+  try {
+    const r = await fetch(`/admin/matches/${MATCH_ID}`, {
+      headers: { 'X-API-Key': apikeyInput.value },
+    });
+    if (!r.ok) return;
+    const d = await r.json();
+    const ko = d.kickoff || (d.match && d.match.kickoff);
+    if (ko) {
+      // Convert ISO to datetime-local format (strip TZ)
+      const dt = new Date(ko);
+      const iso = dt.toISOString().slice(0, 16);
+      kickoffInput.value = iso;
+      localStorage.setItem(STORAGE_KO, iso);
+    }
+  } catch (e) { /* swallow */ }
+}
+
+// ---- Countdown ----
+function tickCountdown() {
+  const ko = kickoffInput.value;
+  const cd = document.getElementById('countdown');
+  const lbl = document.getElementById('countdown-label');
+  if (!ko) {
+    cd.textContent = '—';
+    cd.className = 'countdown';
+    lbl.textContent = 'Kickoff saatini gir → sayaç başlasın';
+    return;
+  }
+  const target = new Date(ko + 'Z').getTime();
+  const now = Date.now();
+  const diff = target - now;
+  if (diff > 0) {
+    const totalMin = Math.floor(diff / 60000);
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    cd.textContent = h > 0 ? `${h}sa ${m}dk` : `${m}dk`;
+    cd.className = 'countdown ' + (totalMin <= 15 ? 'urgent' : totalMin <= 60 ? 'warn' : 'ok');
+    lbl.textContent = "Kickoff'a kalan";
+  } else {
+    const elapsedMin = Math.floor(-diff / 60000);
+    cd.textContent = elapsedMin < 120 ? `+${elapsedMin}dk` : 'Maç bitmiş';
+    cd.className = 'countdown ' + (elapsedMin < 50 ? 'urgent' : elapsedMin < 100 ? 'warn' : '');
+    lbl.textContent = 'Kickoff geçti';
+  }
+}
+setInterval(tickCountdown, 30000);
+tickCountdown();
+
+// ---- Checklist persistence ----
+function loadChecks() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_CHECKS) || '{}');
+  } catch { return {}; }
+}
+
+function saveChecks(state) {
+  localStorage.setItem(STORAGE_CHECKS, JSON.stringify(state));
+}
+
+function updateProgress() {
+  const all = document.querySelectorAll('.checklist input[type="checkbox"]');
+  const done = document.querySelectorAll('.checklist input[type="checkbox"]:checked').length;
+  const pct = all.length > 0 ? Math.round((done / all.length) * 100) : 0;
+  document.getElementById('progress-text').textContent = `${done} / ${all.length}`;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function initChecklist() {
+  const state = loadChecks();
+  document.querySelectorAll('.checklist input[type="checkbox"]').forEach(cb => {
+    const saved = state[cb.id];
+    if (saved) {
+      cb.checked = true;
+      cb.closest('li').classList.add('done');
+      const tm = document.createElement('span');
+      tm.className = 'check-time';
+      tm.textContent = '· ' + saved;
+      cb.parentElement.appendChild(tm);
+    }
+    cb.addEventListener('change', () => {
+      const li = cb.closest('li');
+      const fresh = loadChecks();
+      // Remove old time tag
+      const existing = cb.parentElement.querySelector('.check-time');
+      if (existing) existing.remove();
+      if (cb.checked) {
+        const t = new Date().toLocaleTimeString().slice(0, 5);
+        fresh[cb.id] = t;
+        li.classList.add('done');
+        const tm = document.createElement('span');
+        tm.className = 'check-time';
+        tm.textContent = '· ' + t;
+        cb.parentElement.appendChild(tm);
+      } else {
+        delete fresh[cb.id];
+        li.classList.remove('done');
+      }
+      saveChecks(fresh);
+      updateProgress();
+    });
+  });
+  updateProgress();
+}
+
+initChecklist();
+tryAutoFetchKickoff();
+</script>
+</body>
+</html>
