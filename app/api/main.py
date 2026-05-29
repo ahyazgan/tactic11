@@ -34,6 +34,7 @@ from app.api.auth import (
 )
 from app.api.errors import register_exception_handlers
 from app.api.live import router as live_router
+from app.api.sprint5 import router as sprint5_router
 from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
@@ -1343,6 +1344,7 @@ def simulate_match(
 app.include_router(auth_router)
 
 protected.include_router(admin_router)
+protected.include_router(sprint5_router)
 app.include_router(protected)
 # WebSocket router — auth FastAPI WebSocket'ta header bazlı; pilot demo
 # için public route (production'da Cookie/Header-based auth eklenir).

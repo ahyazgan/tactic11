@@ -674,3 +674,32 @@ class MatchSnapshot(Base):
     opponent_formation: Mapped[str | None] = mapped_column(String(16), nullable=True)
     frame_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class TeamGoal(Base):
+    """Sezonluk takım hedefi (Faz 5 #32).
+
+    Takım × sezon birden çok hedef tutabilir. status: open | in_progress |
+    achieved | missed. metric + target_value opsiyonel (örn: "points"=60).
+    """
+
+    __tablename__ = "team_goals"
+    __table_args__ = (
+        Index("ix_team_goals_team_season", "team_external_id", "season"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    team_external_id: Mapped[int] = mapped_column(Integer)
+    season: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(255))
+    metric: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    target_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="open")
+    notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
