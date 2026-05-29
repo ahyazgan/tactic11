@@ -108,6 +108,22 @@ Mekânsal/bireysel/bağlam katmanı, 14 özellik, 6 engine (F–K grupları):
 - [x] WebSocket live snapshot'a 3 Faz 7 sinyali eklendi
 - PR #69 (`ea497e8`)
 
+## Bağlam & güven katmanı — Faz 8 ✓ (orkestra şefi)
+Her engine ayrı sinyal veriyordu; kullanıcı 5 ayrı uyarı görüp hangisine
+bakacağını bilemiyordu. Bu faz sinyalleri tek karara indirger:
+- [x] `engine/context_engine/` — tüm aktif sinyalleri okuyup tek "şimdi şunu
+      yap" önceliği üretir (#1, en kritik)
+- [x] `engine/confidence/` — her öneriye 0-1 güven skoru + "neden?" sürücüleri (#2)
+- [x] `engine/match_memory/` — maç-içi hafıza: momentum dönüşü + kanat düşüşü +
+      rakip değişimi bağlantısı; sistemi reaktiften proaktife geçirir (#3)
+- [x] `engine/signal_quality/` — gürültü/yetersiz-örnek/ısınma filtresi; yanlış
+      alarmı context'ten önce eler (#5)
+- [x] Karar audit trail (#4): `decisions` tablosu outcome/confidence/recommended
+      + `match_snapshots` tablosu (hafıza kalıcılığı) — migration 0016
+- [x] `live-decision` + WebSocket'e `context` başlığı; `POST /decisions/{id}/outcome`
+      + `GET /teams/{id}/decisions/feedback` (feedback loop → güven kalibrasyonu)
+- [x] `app/api/context_pipeline.py` — pipeline orkestrasyonu (engine'ler saf kalır)
+
 ## Tracking entegrasyonu (ertelendi — gerçek tracking feed bekliyor)
 - `data/sources/tracking.py` — kulüp tracking adapter'ı (`DataSource`'a uyar)
 - `engine/tracking/` — yerleşim, pres, yük çıkarımı

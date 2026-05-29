@@ -633,3 +633,44 @@ class Decision(Base):
     notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
     by_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    # Faz 8 #4 — audit trail: öneri kaynaklı mıydı + güven + bağlam + sonuç
+    recommended: Mapped[bool] = mapped_column(Boolean, default=False)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    context_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # outcome: pending|positive|negative|neutral — uygulandıktan sonra ölçülür
+    outcome: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    outcome_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    outcome_notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    outcome_recorded_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+    )
+
+
+class MatchSnapshot(Base):
+    """Faz 8 #3 — maç-içi hafıza için tick-tick canlı snapshot kaydı.
+
+    live-decision/WebSocket her hesaplamada bir satır yazar; match_memory
+    engine'i bu diziyi okuyup zaman-bağlantıları kurar (momentum flip, kanat
+    düşüşü, rakip değişimi). Maç başına ~50-90 satır (10sn interval).
+    """
+
+    __tablename__ = "match_snapshots"
+    __table_args__ = (
+        Index("ix_match_snapshots_match_minute", "sport", "tenant_id",
+              "match_external_id", "team_external_id", "minute"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"),
+    )
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    team_external_id: Mapped[int] = mapped_column(Integer)
+    minute: Mapped[float] = mapped_column(Float)
+    period: Mapped[int] = mapped_column(Integer, default=1)
+    # momentum + kanat verimliliği + rakip formasyon — match_memory girdisi
+    momentum_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    opponent_formation: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    frame_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

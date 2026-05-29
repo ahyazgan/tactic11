@@ -144,7 +144,7 @@ pytest -q
 ```
 Testler in-memory SQLite ile çalışır; gerçek DB veya API anahtarı gerekmez.
 
-## Taktiksel Engine Envanteri (73 modül)
+## Taktiksel Engine Envanteri (77 modül)
 
 Saf-Python pure-compute engine'ler, hepsi multi-tenant + audit'li.
 Tükettiği veri: `events` tablosu (PassEvent, Carry, DefensiveAction, Shot).
@@ -197,6 +197,17 @@ score_time_matrix (kapanış reçetesi + risk/getiri eşiği).
 
 > Faz 6+7 engine'leri event-window proxy ile çalışır (replay modu); gerçek
 > canlı feed gelince adapter swap edilir, engine kodu değişmez.
+
+**Faz 8 — bağlam & güven katmanı / orkestra şefi (4 modül):**
+context_engine (tüm sinyalleri tek "şimdi şunu yap" önceliğine indirger),
+confidence (her öneriye 0-1 güven skoru + "neden?" sürücüleri), signal_quality
+(gürültü/yetersiz-örnek/ısınma filtresi — yanlış alarmı eler), match_memory
+(maç-içi hafıza: momentum dönüşü + kanat düşüşü + rakip değişimi bağlantısı).
+Karar audit trail `decisions` tablosunda outcome + feedback loop ile kapanır.
+
+> **Pipeline:** 8 ham sinyal → signal_quality süz → confidence skorla →
+> match_memory zaman-bağlamı → context_engine tek karar → decision outcome
+> geri besleme. `live-decision` ve WebSocket artık tek `context` başlığı döner.
 
 ## Batch Tactical Endpoints
 
@@ -267,6 +278,20 @@ POST /admin/matches/{id}/referee-context?my_team_id=N&current_minute=50
       payload: {"cards_per_game", "fouls_per_game", "opponent_card_edge_players"}
 ```
 
+**Bağlam & feedback (Faz 8):**
+```
+GET /admin/matches/{id}/live-decision...
+    → yanıta "context" eklendi: tek karar (primary + secondary + suppressed
+      + güven skoru + birleşik gerekçe) ve "match_memory" (aktif thread'ler)
+
+POST /admin/decisions/{decision_id}/outcome
+    → Kararın sonucunu işle (positive|negative|neutral) — feedback loop
+      payload: {"outcome", "outcome_value"?, "outcome_notes"?}
+
+GET /admin/teams/{id}/decisions/feedback
+    → decision_type bazlı geçmiş isabet oranı → güven skorunu kalibre eder
+```
+
 ## Canlı Maç (WebSocket)
 
 ```
@@ -275,6 +300,7 @@ ws://host/ws/matches/{id}/live?my_team_id=N&interval_seconds=10&max_minute=90
       PPDA + dominance + sub_recommendation + opponent_shape_drift
       + Faz 6: momentum + sub_timing + tactical_triggers
       + Faz 7: spatial_control + live_matchup + score_time_matrix
+      + Faz 8: context (orkestra şefi — tek "şimdi şunu yap" başlığı)
     → match_ended mesajıyla kapanır
 
 GET /ws/active-connections
