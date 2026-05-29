@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>manager2 — Karar İsabet</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --good: #3fb950; --warn: #d29922; --bad: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  header a { color: var(--accent); text-decoration: none; }
+  main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .auth { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .auth label { color: var(--muted); font-size: 12px; }
+  .auth input { background: var(--bg); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px; }
+  .auth input.api { flex: 1; min-width: 200px; }
+  .auth input.id { width: 130px; }
+  .auth button { background: var(--accent); color: #fff; border: 0; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card.wide { grid-column: 1 / -1; }
+  .card h2 { margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .num { font-size: 28px; font-weight: 600; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .status-ok { color: var(--good); }
+  .status-warn { color: var(--warn); }
+  .status-bad { color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td.r { text-align: right; }
+  td.c { text-align: center; }
+  .pill { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .pill.positive { background: rgba(63, 185, 80, 0.2); color: var(--good); }
+  .pill.negative { background: rgba(248, 81, 73, 0.2); color: var(--bad); }
+  .pill.neutral { background: rgba(139, 148, 158, 0.2); color: var(--muted); }
+  .pill.pending { background: rgba(210, 153, 34, 0.2); color: var(--warn); }
+  select { background: var(--bg); border: 1px solid var(--border); color: var(--fg); padding: 4px 8px; border-radius: 4px; font-size: 11px; }
+  select:disabled { opacity: 0.5; cursor: not-allowed; }
+  .empty { color: var(--muted); font-style: italic; }
+  .footer { padding: 16px 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 id="team-title">Karar İsabet Dashboard</h1>
+    <div class="meta" id="meta">—</div>
+  </div>
+  <a href="/dashboard">← Ops Dashboard</a>
+</header>
+
+<main>
+  <div class="auth">
+    <label>X-API-Key</label>
+    <input id="apikey" class="api" placeholder="API key" autocomplete="off" />
+    <label>Match ID</label>
+    <input id="match-id" class="id" type="number" placeholder="örn. 9100" />
+    <button id="load-feedback">Özet</button>
+    <button id="load-match">Maç decisions</button>
+  </div>
+
+  <div id="error-box" style="display:none; padding:14px; background:var(--panel); border:1px solid var(--bad); border-radius:8px; color:var(--bad); margin-bottom:16px;"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Toplam değerlendirilmiş</h2>
+      <div class="num" id="eval-count">—</div>
+      <div class="sub" id="eval-detail">positive + negative outcomes</div>
+    </div>
+    <div class="card">
+      <h2>Genel isabet</h2>
+      <div class="num" id="hit-rate">—</div>
+      <div class="sub" id="hit-detail">overall hit_rate</div>
+    </div>
+    <div class="card">
+      <h2>En iyi karar tipi</h2>
+      <div class="num" id="best-type" style="font-size: 18px;">—</div>
+      <div class="sub" id="best-detail">en yüksek hit_rate</div>
+    </div>
+
+    <div class="card wide">
+      <h2>Karar tipi bazlı isabet</h2>
+      <div id="by-type"><span class="empty">"Özet" butonuna basın</span></div>
+    </div>
+
+    <div class="card wide">
+      <h2 id="match-decisions-title">Maç decisions <span style="color:var(--muted); font-weight: 400; text-transform:none;">(Match ID girip "Maç decisions" butonuna basın)</span></h2>
+      <div id="match-decisions"><span class="empty">—</span></div>
+    </div>
+  </div>
+</main>
+
+<div class="footer">
+  manager2 · Faz 8 #4 karar audit trail · outcome feedback güven skorunu kalibre eder
+</div>
+
+<script>
+const TEAM_ID = parseInt(window.TEAM_ID, 10);
+const apikeyInput = document.getElementById('apikey');
+const matchInput = document.getElementById('match-id');
+const STORAGE_KEY_API = 'manager2_apikey';
+const STORAGE_KEY_MATCH = 'manager2_decisions_match_' + TEAM_ID;
+
+apikeyInput.value = localStorage.getItem(STORAGE_KEY_API) || '';
+matchInput.value = localStorage.getItem(STORAGE_KEY_MATCH) || '';
+
+document.getElementById('load-feedback').addEventListener('click', () => {
+  localStorage.setItem(STORAGE_KEY_API, apikeyInput.value);
+  loadFeedback();
+});
+
+document.getElementById('load-match').addEventListener('click', () => {
+  localStorage.setItem(STORAGE_KEY_API, apikeyInput.value);
+  localStorage.setItem(STORAGE_KEY_MATCH, matchInput.value);
+  loadMatchDecisions();
+});
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.style.display = 'block';
+  box.textContent = msg;
+  setTimeout(() => { box.style.display = 'none'; }, 6000);
+}
+
+function setText(id, text, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  if (cls) el.className = el.className.split(' ').filter(c => !c.startsWith('status-')).join(' ') + ' ' + cls;
+}
+
+async function fetchJSON(path, options = {}) {
+  const headers = options.headers || {};
+  if (apikeyInput.value) headers['X-API-Key'] = apikeyInput.value;
+  const r = await fetch(path, { ...options, headers });
+  if (!r.ok) return { __error: true, status: r.status, body: await r.text() };
+  return r.json();
+}
+
+async function loadFeedback() {
+  document.getElementById('meta').textContent = 'Yenilendi: ' + new Date().toLocaleTimeString();
+  const d = await fetchJSON(`/admin/teams/${TEAM_ID}/decisions/feedback`);
+  if (d.__error) {
+    showError(`Özet çekilemedi (HTTP ${d.status})`);
+    return;
+  }
+  setText('eval-count', d.evaluated ?? 0);
+  setText('eval-detail', `team #${d.team_id}`);
+
+  const byType = d.by_decision_type || {};
+  const types = Object.entries(byType);
+  if (!types.length) {
+    setText('hit-rate', '—'); setText('hit-detail', 'henüz outcome yok');
+    setText('best-type', '—'); setText('best-detail', '—');
+    document.getElementById('by-type').innerHTML = '<span class="empty">değerlendirilmiş outcome yok</span>';
+    return;
+  }
+
+  // Overall hit rate: weighted avg by n
+  let totalN = 0, totalHits = 0;
+  types.forEach(([_, b]) => {
+    totalN += b.n;
+    totalHits += b.n * b.hit_rate;
+  });
+  const overall = totalN > 0 ? totalHits / totalN : 0;
+  const cls = overall >= 0.6 ? 'status-ok' : overall >= 0.4 ? 'status-warn' : 'status-bad';
+  setText('hit-rate', `${(overall * 100).toFixed(1)}%`, cls);
+  setText('hit-detail', `${totalN} değerlendirilmiş`);
+
+  // En iyi karar tipi
+  types.sort((a, b) => b[1].hit_rate - a[1].hit_rate);
+  const [bestType, bestStats] = types[0];
+  setText('best-type', bestType);
+  setText('best-detail', `${(bestStats.hit_rate * 100).toFixed(1)}% (n=${bestStats.n})`);
+
+  // Tablo
+  let html = '<table><thead><tr><th>decision_type</th><th class="r">n</th><th class="r">hit_rate</th><th>bar</th></tr></thead><tbody>';
+  types.forEach(([t, b]) => {
+    const pct = (b.hit_rate * 100).toFixed(1);
+    const barCls = b.hit_rate >= 0.6 ? 'positive' : b.hit_rate >= 0.4 ? 'pending' : 'negative';
+    html += `<tr><td>${t}</td><td class="r">${b.n}</td><td class="r">${pct}%</td>
+      <td><div style="width:${b.hit_rate * 200}px; max-width:300px; height:10px; background:var(--accent); opacity:0.5; border-radius:3px;"></div></td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('by-type').innerHTML = html;
+}
+
+const OUTCOME_OPTIONS = ['pending', 'positive', 'negative', 'neutral'];
+
+function renderDecisions(rows) {
+  const el = document.getElementById('match-decisions');
+  if (!rows.length) { el.innerHTML = '<span class="empty">bu maçta kayıtlı karar yok</span>'; return; }
+  let html = '<table><thead><tr><th>id</th><th class="c">dk</th><th>tip</th><th>oyuncu</th><th>not</th><th>outcome</th><th class="c">güven</th></tr></thead><tbody>';
+  rows.forEach(d => {
+    const outcome = d.outcome || 'pending';
+    let options = '';
+    OUTCOME_OPTIONS.forEach(opt => {
+      options += `<option value="${opt}" ${opt === outcome ? 'selected' : ''}>${opt}</option>`;
+    });
+    const player = d.subject_player_id ?? '—';
+    const note = (d.notes || '').slice(0, 40);
+    const conf = d.confidence !== null && d.confidence !== undefined ? d.confidence.toFixed(2) : '—';
+    html += `<tr>
+      <td>${d.id}</td>
+      <td class="c">${d.minute}'</td>
+      <td>${d.decision_type}</td>
+      <td>#${player}</td>
+      <td>${note}</td>
+      <td>
+        <select onchange="updateOutcome(${d.id}, this.value, this)">
+          ${options}
+        </select>
+        <span class="pill ${outcome}" id="pill-${d.id}">${outcome}</span>
+      </td>
+      <td class="c">${conf}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+async function loadMatchDecisions() {
+  const mid = parseInt(matchInput.value, 10);
+  if (!mid) { showError('Match ID girin.'); return; }
+  document.getElementById('match-decisions-title').innerHTML = `Maç decisions <span style="color:var(--muted); font-weight:400; text-transform:none;">#${mid}</span>`;
+  const d = await fetchJSON(`/admin/matches/${mid}/decisions`);
+  if (d.__error) {
+    showError(`Decisions çekilemedi (HTTP ${d.status})`);
+    return;
+  }
+  const rows = (Array.isArray(d) ? d : (d.items || []))
+                .filter(r => r.team_id === TEAM_ID);
+  renderDecisions(rows);
+}
+
+async function updateOutcome(decisionId, outcome, selectEl) {
+  selectEl.disabled = true;
+  const r = await fetchJSON(`/admin/decisions/${decisionId}/outcome`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ outcome }),
+  });
+  selectEl.disabled = false;
+  if (r.__error) {
+    showError(`Outcome güncellenemedi (HTTP ${r.status})`);
+    return;
+  }
+  const pill = document.getElementById(`pill-${decisionId}`);
+  if (pill) {
+    pill.textContent = outcome;
+    pill.className = `pill ${outcome}`;
+  }
+}
+
+document.getElementById('team-title').textContent = `Karar İsabet · Takım #${TEAM_ID}`;
+
+if (apikeyInput.value) {
+  loadFeedback();
+  if (matchInput.value) loadMatchDecisions();
+}
+</script>
+</body>
+</html>

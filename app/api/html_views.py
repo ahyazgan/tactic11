@@ -1,10 +1,11 @@
-"""HTML görünüm endpoint'leri (Faz 5 #15, #29).
+"""HTML görünüm endpoint'leri (Faz 5 #15, #29, #39).
 
 Sunucu tarafından render edilen tek-HTML sayfaları. JS sayfa içinde mevcut
 JSON endpoint'lerini fetch eder; X-API-Key localStorage'tan gelir.
 
-- GET /matches/{match_id}/game-plan — birleşik game-plan ekranı (#29)
-- GET /teams/{team_id}/dashboard    — takım merkezli landing (#15)
+- GET /matches/{match_id}/game-plan         — birleşik game-plan ekranı (#29)
+- GET /teams/{team_id}/dashboard            — takım merkezli landing (#15)
+- GET /teams/{team_id}/decisions-dashboard  — karar isabet + outcome girişi (#39)
 
 Template'ler `app/api/templates/` altında, dashboard.html ile aynı stil.
 """
@@ -20,6 +21,7 @@ router = APIRouter(tags=["html-views"])
 _TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 _MATCH_GAME_PLAN_HTML = _TEMPLATES_DIR / "match_game_plan.html"
 _TEAM_DASHBOARD_HTML = _TEMPLATES_DIR / "team_dashboard.html"
+_TEAM_DECISIONS_HTML = _TEMPLATES_DIR / "team_decisions_dashboard.html"
 
 
 def _inject_js_constant(html: str, name: str, value: int | str) -> str:
@@ -90,6 +92,32 @@ def team_dashboard_view(team_id: int) -> HTMLResponse:
         raise HTTPException(
             status_code=500,
             detail="template eksik: team_dashboard.html",
+        ) from e
+    html = _inject_js_constant(html, "TEAM_ID", team_id)
+    return HTMLResponse(html)
+
+
+@router.get(
+    "/teams/{team_id}/decisions-dashboard",
+    response_class=HTMLResponse,
+    summary="Karar geçmişi + isabet dashboard'u (Faz 5 #39, Faz 8 #4)",
+)
+def team_decisions_dashboard_view(team_id: int) -> HTMLResponse:
+    """Takım için decision feedback özeti + maç-bazlı listing + outcome girişi.
+
+    Sayfa içindeki JS şu endpoint'leri tüketir:
+    `/admin/teams/{id}/decisions/feedback` (özet hit_rate by_decision_type),
+    `/admin/matches/{id}/decisions` (maç-bazlı liste),
+    `/admin/decisions/{id}/outcome` (POST — outcome güncelle).
+    """
+    if team_id <= 0:
+        raise HTTPException(status_code=400, detail="team_id > 0 olmalı")
+    try:
+        html = _TEAM_DECISIONS_HTML.read_text(encoding="utf-8")
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="template eksik: team_decisions_dashboard.html",
         ) from e
     html = _inject_js_constant(html, "TEAM_ID", team_id)
     return HTMLResponse(html)
