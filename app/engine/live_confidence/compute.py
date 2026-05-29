@@ -47,22 +47,26 @@ def live_signal_confidence(
     events_so_far: int,
     current_minute: float,
     corroborating_signals: int = 0,
+    data_quality: float | None = None,
 ) -> ConfidenceScore:
     """Canlı bir sinyalin güven skoru.
 
-    - magnitude = maç ilerleme × veri yoğunluğu (min): erken dakika VEYA az
-      event → düşük; ikisi de yüksekse → yüksek.
-    - data_quality = saf veri yoğunluğu (events/DENSE_EVENTS).
+    - magnitude = maç ilerleme × veri kalitesi (min): erken dakika VEYA zayıf
+      veri → düşük; ikisi de yüksekse → yüksek.
+    - data_quality: `engine.data_quality.compute_data_quality(...).quality_score`
+      verilirse onu kullan (dropout/bayat/eksik-tip de içerir, salt yoğunluktan
+      zengin); verilmezse salt yoğunluk proxy'sine (events/DENSE_EVENTS) düş.
     - corroboration = aynı yönü işaret eden diğer sinyal sayısı.
     """
     minute_term = _clamp01(current_minute / MATURE_MINUTE)
     density_term = _clamp01(events_so_far / DENSE_EVENTS)
-    magnitude = round(min(minute_term, density_term), 3)
+    quality = _clamp01(data_quality) if data_quality is not None else density_term
+    magnitude = round(min(minute_term, density_term, quality), 3)
     return score_confidence(
         sample_size=events_so_far,
         magnitude=magnitude,
         corroboration=corroborating_signals,
-        data_quality=round(density_term, 3),
+        data_quality=round(quality, 3),
     )
 
 
