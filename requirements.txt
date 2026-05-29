@@ -12,6 +12,10 @@ anthropic
 bcrypt>=4.0
 PyJWT>=2.7
 
+# observability — opsiyonel: kütüphane yoksa kod graceful no-op çalışır
+sentry-sdk>=2.0
+prometheus-client>=0.20
+
 # ML — xG real training (Prompt 2, Faz N)
 # scikit-learn for LogisticRegression, joblib for model artifact serialize
 scikit-learn>=1.4

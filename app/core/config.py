@@ -94,6 +94,13 @@ class Settings(BaseSettings):
     http_breaker_cooldown_seconds: float = Field(
         default=30.0, alias="HTTP_BREAKER_COOLDOWN_SECONDS"
     )
+    # Hata izleme (Sentry) — DSN boşsa devre dışı (no-op). Opsiyonel.
+    sentry_dsn: str = Field(default="", alias="SENTRY_DSN")
+    sentry_traces_sample_rate: float = Field(
+        default=0.0, ge=0.0, le=1.0, alias="SENTRY_TRACES_SAMPLE_RATE"
+    )
+    # Prometheus /metrics — prometheus-client kuruluysa aktif.
+    prometheus_enabled: bool = Field(default=True, alias="PROMETHEUS_ENABLED")
     # Kota uyarı eşiği (0..1) — bu fraksiyona ulaşınca WARNING log
     # Default 0.8 = %80. 0.6 → daha erken uyarı; 0.9 → daha geç.
     quota_warn_fraction: float = Field(

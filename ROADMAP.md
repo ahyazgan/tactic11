@@ -143,12 +143,13 @@ Yapıldı:
       (SQLite dışı backend'lerde; settings'ten).
 - [x] **#11 Graceful shutdown** — FastAPI `lifespan`; SIGTERM/deploy'da
       `engine.dispose()` ile havuz temiz kapanır.
+- [x] **#3 Sentry** — `core/monitoring.init_sentry()` opsiyonel/graceful
+      (`SENTRY_DSN` boş ya da lib yoksa no-op); requirements'a eklendi.
+- [x] **#4 Prometheus `/metrics`** — `observability.py` guarded Counter/Histogram
+      (method+status, düşük kardinalite) + `/metrics` endpoint; lib yoksa no-op.
 
-Ertelendi (harici bağımlılık/altyapı gerektirir, sandbox'ta test edilemez):
-- [ ] **#3 Sentry** — merkezi exception takibi (`sentry-sdk`; opsiyonel init,
-      `SENTRY_DSN` set ise). requirements + env flag.
-- [ ] **#4 Prometheus `/metrics`** — `prometheus-client`; latency/engine
-      süresi/LLM token. Mevcut in-memory METRICS arayüzü stabil, backend swap.
+Ertelendi (gerçek altyapı gerektirir — Redis sunucusu / çok-replica DB,
+sandbox'ta doğrulanamaz):
 - [ ] **#7 Kota aşımında graceful degradation** — `QuotaExceeded`'de stale
       cache'ten "degraded" servis. Cache katmanına `cache_get_stale` (TTL
       yoksay) eklemeyi gerektirir; davranış riski → ayrı PR.

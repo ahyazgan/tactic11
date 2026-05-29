@@ -75,6 +75,19 @@ def test_login_has_stricter_rate_limit(client):
     assert 429 in statuses  # limit aşılınca login limiter devreye girer
 
 
+def test_metrics_endpoint_responds(client):
+    """/metrics 200 döner: prometheus kuruluysa exposition, değilse açıklama."""
+    r = client.get("/metrics")
+    assert r.status_code == 200
+    assert len(r.text) > 0
+
+
+def test_sentry_noop_without_dsn():
+    """SENTRY_DSN boşken init_sentry False döner (kütüphane gerekmeden no-op)."""
+    from app.core.monitoring import init_sentry
+    assert init_sentry() is False
+
+
 def test_health_reports_degraded_when_db_fails(monkeypatch):
     """get_session override yok → gerçek DATABASE_URL'a bağlanır (psql lokalde yok) → 503."""
     # Override'ı kaldır — gerçek DB'ye git

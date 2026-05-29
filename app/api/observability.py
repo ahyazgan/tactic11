@@ -19,9 +19,53 @@ from dataclasses import dataclass
 # Modül yüklendiğinde process başlangıcı — /health uptime'ı için referans.
 PROCESS_STARTED_AT = time.time()
 
+# --- Prometheus (opsiyonel) -------------------------------------------------
+# prometheus-client kuruluysa /metrics aktif; değilse no-op. Label kardinalitesi
+# düşük tutuldu (method + status; path YOK — id'li path'ler kardinaliteyi patlatır).
+try:
+    from prometheus_client import (
+        CONTENT_TYPE_LATEST,
+        Counter,
+        Histogram,
+        generate_latest,
+    )
+
+    _PROM_REQUESTS = Counter(
+        "http_requests_total", "Toplam HTTP istek sayısı", ["method", "status"]
+    )
+    _PROM_LATENCY = Histogram(
+        "http_request_duration_seconds", "HTTP istek süresi (s)", ["method"]
+    )
+    _PROM_AVAILABLE = True
+except ImportError:  # pragma: no cover — kütüphane yoksa
+    _PROM_AVAILABLE = False
+    CONTENT_TYPE_LATEST = "text/plain"
+
+
+def _record_prometheus(method: str, status: int, duration_seconds: float) -> None:
+    """Best-effort prometheus kaydı — hiçbir koşulda istek yolunu kırmaz."""
+    if not _PROM_AVAILABLE:
+        return
+    try:
+        _PROM_REQUESTS.labels(method=method, status=str(status)).inc()
+        _PROM_LATENCY.labels(method=method).observe(duration_seconds)
+    except Exception:  # noqa: BLE001 — metrik kaydı asla request'i bozmasın
+        pass
+
+
+def prometheus_available() -> bool:
+    return _PROM_AVAILABLE
+
+
+def prometheus_text() -> tuple[bytes, str] | None:
+    """(payload, content_type) ya da kütüphane yoksa None."""
+    if not _PROM_AVAILABLE:
+        return None
+    return generate_latest(), CONTENT_TYPE_LATEST
+
 # Rate limit bypass'i: yalnız /health (k8s/load balancer liveness probe).
 _RATE_LIMIT_BYPASS_PATHS: frozenset[str] = frozenset(
-    {"/health", "/healthz", "/readyz"}
+    {"/health", "/healthz", "/readyz", "/metrics"}
 )
 # Endpoint başına saklanan latency örneği sayısı (p50 hesabı için yeterli).
 _LATENCY_SAMPLE_LIMIT = 100
@@ -51,6 +95,8 @@ class RequestMetrics:
             self._counts[f"{key}:{status}"] += 1
             self._latencies[key].append(duration_seconds)
             self._total += 1
+        # Prometheus'a da yaz (kuruluysa; değilse no-op).
+        _record_prometheus(method, status, duration_seconds)
 
     def snapshot(self) -> MetricsSnapshot:
         with self._lock:

@@ -14,7 +14,12 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+    Response,
+)
 from sqlalchemy import or_, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -33,12 +38,14 @@ from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
     SlidingWindowRateLimiter,
+    prometheus_text,
     should_bypass_rate_limit,
 )
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
 from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
+from app.core.monitoring import init_sentry
 from app.core.request_context import clear_request_id, set_request_id
 from app.data.cache import engine_cached
 from app.data.predictions import save_prediction
@@ -56,6 +63,9 @@ from app.engine.schedule import compute_schedule
 from app.sports import football
 
 setup_logging()
+
+# Hata izleme — SENTRY_DSN set + sentry-sdk kuruluysa aktive olur, yoksa no-op.
+init_sentry()
 
 # Multi-tenant filter — global SQLAlchemy event listener
 install_tenant_filter()
@@ -294,6 +304,19 @@ def dashboard() -> HTMLResponse:
     Bu endpoint sadece HTML'i static olarak servis eder.
     """
     return HTMLResponse(_DASHBOARD_HTML_PATH.read_text(encoding="utf-8"))
+
+
+@app.get("/metrics", tags=["ops"], summary="Prometheus metrics (opsiyonel)")
+def metrics() -> Response:
+    """Prometheus exposition. prometheus-client kuruluysa text/plain metrikler;
+    değilse 200 + açıklama (scraper kırılmasın)."""
+    payload = prometheus_text()
+    if payload is None:
+        return PlainTextResponse(
+            "prometheus-client kurulu değil — /admin/metrics (in-memory) kullanın\n"
+        )
+    body, content_type = payload
+    return Response(content=body, media_type=content_type)
 
 
 @app.get("/healthz", tags=["ops"], summary="Liveness probe (DB'siz)")
