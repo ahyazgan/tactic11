@@ -28,24 +28,60 @@ from app.engine.available_squad import compute_available_squad
 from app.engine.matchup_grid import compute_matchup_grid
 from app.engine.set_piece_routine import compute_set_piece_routine
 
-# Senaryo planı — skor durumuna göre taktiksel reçete (heuristic)
+# Senaryo planı — skor durumuna göre taktiksel reçete (heuristic).
+# `formation_hint` statik (yaygın TR/EU pratiği); `dynamic_focus`
+# matchup_grid sonucundan runtime'da `enrich_scenarios()` ile eklenir.
 SCENARIOS = {
     "leading": {
         "label": "Öndeyiz",
         "approach": "Kontrollü blok + hızlı geçiş; pres yüksekliğini düşür",
         "risk": "Çok geri çekilme → momentum kaybı",
+        "formation_hint": "5-3-2 veya 4-4-2 (kompakt)",
     },
     "level": {
         "label": "Beraberlik",
         "approach": "Plan A devam; en iyi eşleşme kanadını zorla",
         "risk": "Sabırsızlaşıp dengeyi bozma",
+        "formation_hint": "4-3-3 dengeli",
     },
     "trailing": {
         "label": "Geride",
         "approach": "Hat yükselt + ekstra hücum oyuncusu + duran top yoğunluğu",
         "risk": "Arkada açık alan → kontra yeme",
+        "formation_hint": "4-2-4 veya 3-4-3 (hücum yoğunluğu)",
     },
 }
+
+
+def enrich_scenarios(
+    base: dict[str, dict[str, Any]],
+    *,
+    matchup: dict[str, Any] | None,
+) -> dict[str, dict[str, Any]]:
+    """Senaryoları matchup_grid'den çıkan kanal bilgisi ile zenginleştir.
+
+    Backward-compat: yeni alanlar eklenir (`dynamic_focus`); mevcut anahtarlar
+    aynı kalır. matchup yoksa base'i kopyalar.
+    """
+    enriched: dict[str, dict[str, Any]] = {k: dict(v) for k, v in base.items()}
+    if not matchup:
+        return enriched
+    best = matchup.get("best_channel")
+    worst = matchup.get("worst_channel")
+    if best:
+        enriched["level"]["dynamic_focus"] = (
+            f"En iyi eşleşme {best} kanadından zorla — matchup tavsiyesi"
+        )
+        enriched["trailing"]["dynamic_focus"] = (
+            f"Hücum kütlesini {best} kanadına kaydır; o tarafta sayısal üstünlük kur"
+        )
+    if worst:
+        enriched["leading"]["dynamic_focus"] = (
+            f"Rakip {worst} kanadında güçlü — top kaybetme, top dolaşımı orta-{best or 'kanat'}"
+            if best else
+            f"Rakip {worst} kanadında güçlü — top dolaşımını oradan kaçır"
+        )
+    return enriched
 
 
 class GamePlanAgent(Agent):
@@ -136,8 +172,8 @@ class GamePlanAgent(Agent):
                 ],
             }
 
-        # 4. Senaryo planı (her zaman üretilir — heuristic)
-        scenario_plan = dict(SCENARIOS)
+        # 4. Senaryo planı — base heuristic + matchup_grid runtime enrich
+        scenario_plan = enrich_scenarios(SCENARIOS, matchup=matchup)
 
         ai_brief = _build_game_plan_brief(
             commentator=self._commentator,
