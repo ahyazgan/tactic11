@@ -320,6 +320,24 @@ def _compute_live_snapshot(
             snapshot["context"]["confidence_note"] = (
                 "sinyal zayıf — teyit bekle"
             )
+
+        # Veri kalitesi: event akışının güvenilirliği (dropout/seyrek/bayat feed).
+        from app.engine.data_quality import EventStamp, compute_data_quality
+        _stamps = (
+            [EventStamp(p.minute, "pass") for p in passes_so_far]
+            + [EventStamp(d.minute, "defensive_action") for d in defs_so_far]
+            + [EventStamp(s.minute, "shot") for s in shots_so_far]
+            + [EventStamp(c.minute, "carry") for c in carries_so_far]
+        )
+        dq = compute_data_quality(_stamps, current_minute=current_minute)
+        snapshot["data_quality"] = {
+            "score": dq.quality_score, "status": dq.status,
+            "density_per_min": dq.density_per_min,
+            "largest_gap_min": dq.largest_gap_min,
+            "freshness_min": dq.freshness_min,
+            "missing_types": list(dq.missing_types),
+            "flags": list(dq.flags),
+        }
     except (ValueError, ZeroDivisionError, KeyError, TypeError) as e:
         snapshot["error"] = str(e)
     return snapshot
