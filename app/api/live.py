@@ -297,31 +297,8 @@ def _compute_live_snapshot(
             "secondary": ctx.get("secondary", []),
         }
 
-        # Canlı güven: en kritik 3 sinyale veri-yeterliliği skoru ekle.
-        # Aynı events_so_far/dakika + teyit sayısı paylaşılır; erken/seyrek
-        # veride "düşük" döner (sahte kesinlik üretmez).
-        from app.engine.live_confidence import live_signal_confidence
-        corroboration = _count_corroborating_signals(snapshot)
-
-        def _conf(cs) -> dict[str, Any]:
-            return {"score": cs.score, "label": cs.label, "drivers": list(cs.drivers)}
-
-        ctx_conf = live_signal_confidence(
-            events_so_far=snapshot["events_so_far"],
-            current_minute=current_minute, corroborating_signals=corroboration,
-        )
-        snapshot["confidence"] = {
-            "context": _conf(ctx_conf),
-            "live_sub_recommendation": _conf(ctx_conf),
-            "momentum": _conf(ctx_conf),
-        }
-        # Güven düşükse one_liner'ı KORU, ayrı bir saha-güvenliği notu ekle.
-        if ctx_conf.label == "düşük":
-            snapshot["context"]["confidence_note"] = (
-                "sinyal zayıf — teyit bekle"
-            )
-
         # Veri kalitesi: event akışının güvenilirliği (dropout/seyrek/bayat feed).
+        # Önce hesaplanır ki güven skoru gerçek feed kalitesini kullanabilsin.
         from app.engine.data_quality import EventStamp, compute_data_quality
         _stamps = (
             [EventStamp(p.minute, "pass") for p in passes_so_far]
@@ -338,6 +315,31 @@ def _compute_live_snapshot(
             "missing_types": list(dq.missing_types),
             "flags": list(dq.flags),
         }
+
+        # Canlı güven: en kritik 3 sinyale veri-yeterliliği skoru ekle. Gerçek
+        # veri-kalite skoru (dropout/bayat dahil) güvene beslenir; erken/seyrek/
+        # bozuk feed → "düşük" (sahte kesinlik üretmez).
+        from app.engine.live_confidence import live_signal_confidence
+        corroboration = _count_corroborating_signals(snapshot)
+
+        def _conf(cs) -> dict[str, Any]:
+            return {"score": cs.score, "label": cs.label, "drivers": list(cs.drivers)}
+
+        ctx_conf = live_signal_confidence(
+            events_so_far=snapshot["events_so_far"],
+            current_minute=current_minute, corroborating_signals=corroboration,
+            data_quality=dq.quality_score,
+        )
+        snapshot["confidence"] = {
+            "context": _conf(ctx_conf),
+            "live_sub_recommendation": _conf(ctx_conf),
+            "momentum": _conf(ctx_conf),
+        }
+        # Güven düşükse one_liner'ı KORU, ayrı bir saha-güvenliği notu ekle.
+        if ctx_conf.label == "düşük":
+            snapshot["context"]["confidence_note"] = (
+                "sinyal zayıf — teyit bekle"
+            )
     except (ValueError, ZeroDivisionError, KeyError, TypeError) as e:
         snapshot["error"] = str(e)
     return snapshot

@@ -32,6 +32,26 @@ def test_score_monotonic_in_events():
     assert high.score > low.score
 
 
+def test_data_quality_override_lowers_confidence():
+    """Gerçek veri-kalite skoru düşükse (dropout/bayat) güven düşer."""
+    good = live_signal_confidence(
+        events_so_far=400, current_minute=70.0, data_quality=1.0,
+    )
+    poor = live_signal_confidence(
+        events_so_far=400, current_minute=70.0, data_quality=0.2,
+    )
+    assert poor.score < good.score
+
+
+def test_data_quality_none_falls_back_to_density():
+    """data_quality verilmezse eski davranış (yoğunluk proxy'si) korunur."""
+    a = live_signal_confidence(events_so_far=400, current_minute=70.0)
+    b = live_signal_confidence(
+        events_so_far=400, current_minute=70.0, data_quality=None,
+    )
+    assert a.score == b.score
+
+
 def test_zero_events_not_crash_and_low():
     c = live_signal_confidence(events_so_far=0, current_minute=1.0)
     assert 0.0 <= c.score <= 1.0
