@@ -16,6 +16,9 @@ PyJWT>=2.7
 sentry-sdk>=2.0
 prometheus-client>=0.20
 
+# PDF rapor üretici (Faz 5 #16) — opsiyonel: yoksa endpoint 503 verir
+reportlab>=4.0
+
 # ML — xG real training (Prompt 2, Faz N)
 # scikit-learn for LogisticRegression, joblib for model artifact serialize
 scikit-learn>=1.4
