@@ -158,26 +158,39 @@ sandbox'ta doğrulanamaz):
 - [ ] **#10 Dağıtık lock / leader election** — çok-replica scheduler için
       Postgres advisory lock; job çift-tetiklenmesini önler.
 
+## Faz 10 — canlı güven + zeka + proaktif uyarı ✓
+Saf, lokalde doğrulanabilir engine'ler (altyapısız):
+- [x] `engine/live_confidence/` — canlı sinyal güven skoru + `summarize_trend`
+      zamansal yön; live snapshot'a `confidence`/`trend` anahtarları.
+- [x] `engine/data_quality/` — event-akışı kalite skoru (D); snapshot `data_quality`.
+- [x] `engine/what_if/` — karşı-olgu simülatörü (A).
+- [x] `engine/backtest/` — olasılıksal motor değerlendirme harness'ı (B).
+- [x] `engine/anomaly/` — z-skor aykırı + form kırılması (C).
+- [x] `engine/development_curve/` — gelişim eğimi + projeksiyon (E).
+- [x] `engine/live_alerts/` — maç-içi proaktif uyarı (J); snapshot `live_alerts`.
+- [x] `confidence` 5 motora bağlandı (form/rating/predict/matchup/opponent_weakness).
+
 ## Zeka derinleştirme & ürün backlog (A–K)
-**A. Karar/senaryo:** what-if karşı-olgu simülatörü, canlı karar önerisi
-(`live_tactical_trigger` üstüne — Faz 6/7 ile kısmen), sezon rotasyon/load opt.
-**B. Güven/açıklanabilirlik:** kalibrasyon izleme, motor güven skoru (✓ Faz 8 —
-çekirdek + ürüne yayım), backtest harness'ı (geçmiş sezonda yeni motor testi).
-**C. Karşılaştırmalı/benchmark:** benzerlik motoru (var: `player_similarity`),
-lig yüzdelik benchmark, anomali/kırılma tespiti.
-**D. Veri kalitesi:** eksik/tutarsız event tespiti, çapraz-kaynak doğrulama,
-veri tazeliği skoru.
-**E. Zaman/trend:** uzun-dönem gelişim eğrileri, sezon-içi momentum tahmini,
-sakatlık sonrası dönüş takibi.
-**F. Çıktı/teslim:** otomatik PDF/rapor, e-posta/webhook push (var: `daily_brief`
-+ `_deliver_webhook` — format güçlendir), paylaşılabilir link.
-**G. i18n:** motor açıklama string'leri + UI İngilizce (şu an Türkçe).
-**H. Rol derinliği:** baş antrenör/analist/scout görünümleri, kaydedilen
-görünümler, not/yorum işbirliği.
-**I. Mobil/saha-içi:** tablet-öncelikli maç günü görünümü.
-**J. Proaktif uyarı:** load/risk eşiği aşımında push/e-posta (pasiften aktife).
-**K. Performans/hız:** analiz latency, ağır motorlarda (VAEP 68k event)
-senkron/asenkron, caching stratejisi (#9 Redis ile bağlantılı).
+**A. Karar/senaryo:** ✓ what-if simülatörü (`engine/what_if/`); canlı karar
+(Faz 6/7/8); sezon rotasyon/load opt — kısmi.
+**B. Güven/açıklanabilirlik:** ✓ motor güven skoru (Faz 8 + ürüne yayım) + ✓
+backtest harness'ı (`engine/backtest/`); kalibrasyon izleme — backtest ile mümkün.
+**C. Karşılaştırmalı/benchmark:** benzerlik motoru (var: `player_similarity`) +
+✓ anomali/kırılma (`engine/anomaly/`); lig yüzdelik benchmark — bekliyor.
+**D. Veri kalitesi:** ✓ event-akışı kalite skoru (`engine/data_quality/`);
+çapraz-kaynak doğrulama — bekliyor.
+**E. Zaman/trend:** ✓ gelişim eğrisi + momentum projeksiyonu
+(`engine/development_curve/`); sakatlık sonrası dönüş — bekliyor.
+**F. Çıktı/teslim:** otomatik PDF/rapor, paylaşılabilir link — bekliyor (frontend/infra).
+**G. i18n:** UI İngilizce — bekliyor (frontend).
+**H. Rol derinliği:** rol-bazlı görünümler, not/yorum — bekliyor.
+**I. Mobil/saha-içi:** tablet görünümü — bekliyor (frontend).
+**J. Proaktif uyarı:** ✓ maç-içi uyarı motoru (`engine/live_alerts/`);
+push/e-posta GÖNDERİMİ — bekliyor (infra).
+**K. Performans/hız:** caching/asenkron — bekliyor (#9 Redis ile bağlantılı).
+
+> Kalan (F/G/H/I/K + #7/#9/#10) gerçek altyapı (Redis/Postgres-replica) ya da
+> frontend build/render ortamı gerektirir; deps-kurulu ortamda yapılmalı.
 
 > Not: Auth (refresh sha256 + rotation, bcrypt 12-round) audit'te sağlam
 > bulundu — tekrar ele alınmayacak.
