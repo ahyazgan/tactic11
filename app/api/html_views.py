@@ -19,6 +19,7 @@ router = APIRouter(tags=["html-views"])
 
 _TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 _MATCH_GAME_PLAN_HTML = _TEMPLATES_DIR / "match_game_plan.html"
+_MATCH_VOICE_NOTES_HTML = _TEMPLATES_DIR / "match_voice_notes.html"
 _TEAM_DASHBOARD_HTML = _TEMPLATES_DIR / "team_dashboard.html"
 
 
@@ -65,6 +66,34 @@ def match_game_plan_view(match_id: int) -> HTMLResponse:
         raise HTTPException(
             status_code=500,
             detail="template eksik: match_game_plan.html",
+        ) from e
+    html = _inject_js_constant(html, "MATCH_ID", match_id)
+    return HTMLResponse(html)
+
+
+@router.get(
+    "/matches/{match_id}/voice-notes",
+    response_class=HTMLResponse,
+    summary="Maç-içi sesli not + hızlı tag (Faz 5 #20)",
+)
+def match_voice_notes_view(match_id: int) -> HTMLResponse:
+    """MediaRecorder API + localStorage tabanlı sesli not + tag sayfası.
+
+    Backend kaydı yok — kayıtlar tarayıcıda kalır, JSON ile dışa aktarılabilir.
+    İleride POST endpoint eklenirse aynı pattern kullanılır; bu sürüm
+    credential gerektirmez (mikrofon izni hariç).
+
+    Klavye kısayolları: Boşluk = REC start/stop, ESC = iptal, S/F/O/T/I/N
+    = hızlı tag.
+    """
+    if match_id <= 0:
+        raise HTTPException(status_code=400, detail="match_id > 0 olmalı")
+    try:
+        html = _MATCH_VOICE_NOTES_HTML.read_text(encoding="utf-8")
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="template eksik: match_voice_notes.html",
         ) from e
     html = _inject_js_constant(html, "MATCH_ID", match_id)
     return HTMLResponse(html)
