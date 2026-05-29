@@ -54,6 +54,42 @@ MAX_INTERVAL_SECONDS = 60
 SIMULATION_START_MINUTE = 0.0
 
 
+def _count_corroborating_signals(snapshot: dict[str, Any]) -> int:
+    """Aynı anda 'dolu' kaç kritik sinyal var — güven için teyit sayısı.
+
+    momentum dengesiz (bir tarafa baskı) + en az bir tactical trigger fired +
+    spatial alert dolu → 3. Okunur, snapshot anahtarlarından türetilir.
+    """
+    n = 0
+    mom = snapshot.get("momentum") or {}
+    if mom.get("holder") not in (None, "balanced"):
+        n += 1
+    if snapshot.get("tactical_triggers"):  # fired trigger listesi dolu
+        n += 1
+    spatial = snapshot.get("spatial_control") or {}
+    if spatial.get("alerts"):
+        n += 1
+    return n
+
+
+# Bağlantı-başına tutulan trend geçmişi üst sınırı (summarize_trend son 5'i alır).
+TREND_HISTORY_LIMIT = 8
+
+
+def _trend_frame(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Bir snapshot'tan trend için minimal skaler özet (hata-toleranslı)."""
+    mom = snapshot.get("momentum") or {}
+    tilt = snapshot.get("field_tilt") or {}
+    dom = snapshot.get("match_dominance") or {}
+    primary = (snapshot.get("context") or {}).get("primary") or {}
+    return {
+        "momentum_score": mom.get("score") if isinstance(mom, dict) else None,
+        "field_tilt": tilt.get("team_a_tilt") if isinstance(tilt, dict) else None,
+        "dominance": dom.get("dominance_score") if isinstance(dom, dict) else None,
+        "primary": primary.get("headline") if isinstance(primary, dict) else None,
+    }
+
+
 def _compute_live_snapshot(
     session, match_id: int, my_team_id: int, current_minute: float,
 ) -> dict[str, Any]:
@@ -260,6 +296,30 @@ def _compute_live_snapshot(
             "primary": ctx.get("primary"),
             "secondary": ctx.get("secondary", []),
         }
+
+        # Canlı güven: en kritik 3 sinyale veri-yeterliliği skoru ekle.
+        # Aynı events_so_far/dakika + teyit sayısı paylaşılır; erken/seyrek
+        # veride "düşük" döner (sahte kesinlik üretmez).
+        from app.engine.live_confidence import live_signal_confidence
+        corroboration = _count_corroborating_signals(snapshot)
+
+        def _conf(cs) -> dict[str, Any]:
+            return {"score": cs.score, "label": cs.label, "drivers": list(cs.drivers)}
+
+        ctx_conf = live_signal_confidence(
+            events_so_far=snapshot["events_so_far"],
+            current_minute=current_minute, corroborating_signals=corroboration,
+        )
+        snapshot["confidence"] = {
+            "context": _conf(ctx_conf),
+            "live_sub_recommendation": _conf(ctx_conf),
+            "momentum": _conf(ctx_conf),
+        }
+        # Güven düşükse one_liner'ı KORU, ayrı bir saha-güvenliği notu ekle.
+        if ctx_conf.label == "düşük":
+            snapshot["context"]["confidence_note"] = (
+                "sinyal zayıf — teyit bekle"
+            )
     except (ValueError, ZeroDivisionError, KeyError, TypeError) as e:
         snapshot["error"] = str(e)
     return snapshot
@@ -290,6 +350,9 @@ async def matches_live(
     )
     session.info["tenant_id"] = tenant_id
     start_wall = time.monotonic()
+    # Bağlantı-başına trend state (global DEĞİL) — son N snapshot özeti.
+    from app.engine.live_confidence import summarize_trend
+    trend_history: list[dict[str, Any]] = []
     try:
         while True:
             elapsed_wall = time.monotonic() - start_wall
@@ -299,6 +362,10 @@ async def matches_live(
             snapshot = _compute_live_snapshot(
                 session, match_id, my_team_id, current_minute,
             )
+            # Zamansal trend: snapshot'tan küçük bir özet biriktir, yön türet.
+            trend_history.append(_trend_frame(snapshot))
+            del trend_history[:-TREND_HISTORY_LIMIT]
+            snapshot["trend"] = summarize_trend(trend_history)
             await websocket.send_text(json.dumps(snapshot, default=str))
             if current_minute >= max_minute:
                 await websocket.send_text(json.dumps({
