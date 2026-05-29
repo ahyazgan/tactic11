@@ -369,6 +369,7 @@ async def matches_live(
     session.info["tenant_id"] = tenant_id
     start_wall = time.monotonic()
     # Bağlantı-başına trend state (global DEĞİL) — son N snapshot özeti.
+    from app.engine.live_alerts import compute_live_alerts
     from app.engine.live_confidence import summarize_trend
     trend_history: list[dict[str, Any]] = []
     try:
@@ -384,6 +385,22 @@ async def matches_live(
             trend_history.append(_trend_frame(snapshot))
             del trend_history[:-TREND_HISTORY_LIMIT]
             snapshot["trend"] = summarize_trend(trend_history)
+            # Proaktif uyarılar (J): trend + veri kalitesinden eşik-aşımı uyarısı.
+            _alerts = compute_live_alerts(
+                current_minute=current_minute,
+                momentum_trend=snapshot.get("trend"),
+                data_quality_status=(snapshot.get("data_quality") or {}).get("status"),
+            )
+            snapshot["live_alerts"] = {
+                "total": _alerts.total, "critical": _alerts.critical,
+                "warning": _alerts.warning, "info": _alerts.info,
+                "alerts": [
+                    {"type": a.alert_type, "severity": a.severity,
+                     "message": a.message, "dedup_key": a.dedup_key,
+                     "player_id": a.player_external_id}
+                    for a in _alerts.alerts
+                ],
+            }
             await websocket.send_text(json.dumps(snapshot, default=str))
             if current_minute >= max_minute:
                 await websocket.send_text(json.dumps({
