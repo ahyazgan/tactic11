@@ -144,6 +144,39 @@ register(
 )
 
 
+def morning_brief_handler(*, horizon_days: int = 1) -> None:
+    """Sabah otomatik brief (Faz 5 #18).
+
+    Operasyonel kabuk: `run_pre_match_reports`'u 1 günlük kısa horizon ile
+    çağırır + bugün maçı olan takımlar için (varsa) tek seferlik
+    PreMatchReportAgent çıktısı yeniler.
+
+    Cron ile günde bir kez (örn. 06:00 lokal) çalışacak şekilde tasarlandı:
+
+        0 6 * * * cd /opt/manager2 && \\
+            venv/bin/python scripts/run_job.py morning_brief
+
+    `horizon_days=1` default; daha geniş pencere istersen üst seviye job'u
+    (`run_pre_match_reports`) kullan. Idempotent — aynı maç için ikinci
+    çağrı `save_agent_output` upsert ile mevcut satırı tazeler.
+    """
+    log.info("morning_brief: starting with horizon_days=%d", horizon_days)
+    run_pre_match_reports_handler(horizon_days=horizon_days)
+    log.info("morning_brief: done")
+
+
+register(
+    JobSpec(
+        name="morning_brief",
+        handler=morning_brief_handler,
+        description=(
+            "Sabah otomatik brief — bugün maçı olan takımlar için pre-match "
+            "rapor refresh. Cron (örn. 06:00) ile günde bir çalıştırın."
+        ),
+    )
+)
+
+
 def train_predict_ml_handler(*, min_samples: int = 20) -> None:
     """engine.predict_ml — predictions tablosundan best ρ öğren.
 
