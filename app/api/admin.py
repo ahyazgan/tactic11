@@ -2663,16 +2663,20 @@ def decision_dashboard_endpoint(
 @router.get(
     "/matches/{match_id}/live-decision",
     tags=["admin"],
-    summary="Maç-içi karar paneli (momentum + sub timing + tactical + risk) — Faz 6",
+    summary="Maç-içi karar paneli (momentum/sub/tactical/risk + spatial/matchup/score-time) — Faz 6+7",
 )
 def live_decision_endpoint(
     match_id: int,
     my_team_id: int = Query(...),
     current_minute: float = Query(..., ge=0, le=120),
+    star_player_id: int | None = Query(default=None),
+    draw_is_enough: bool = Query(default=False),
+    must_win: bool = Query(default=False),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Bir maç dakikasında tam karar paneli: momentum + sub timing +
-    tactical trigger + risk monitor (5 engine birleşik)."""
+    tactical trigger + risk monitor (Faz 6) + spatial control + live matchup +
+    score-time matrix (Faz 7) — 8 engine birleşik."""
     from app.data.loaders import load_match_events
     from app.engine.live_risk_monitor import compute_live_risk_monitor
     from app.engine.live_tactical_trigger import compute_live_tactical_trigger
@@ -2735,6 +2739,25 @@ def live_decision_endpoint(
     _safe("risk_monitor", lambda: compute_live_risk_monitor(
         my_team_id, [], current_minute=current_minute,
         my_score=my_score or 0, opponent_score=opp_score or 0,
+    ))
+
+    # Faz 7: event/pure türetilebilen sinyaller (F spatial, G matchup, K score-time)
+    from app.engine.live_matchup import compute_live_matchup
+    from app.engine.score_time_matrix import compute_score_time_matrix
+    from app.engine.spatial_control import compute_spatial_control
+
+    star_id = int(star_player_id) if star_player_id is not None else None
+    _safe("spatial_control", lambda: compute_spatial_control(
+        my_team_id, opp_id, p, d, current_minute=current_minute,
+    ))
+    _safe("live_matchup", lambda: compute_live_matchup(
+        my_team_id, opp_id, p, d, current_minute=current_minute,
+        star_player_id=star_id,
+    ))
+    _safe("score_time_matrix", lambda: compute_score_time_matrix(
+        my_team_id, current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+        draw_is_enough=draw_is_enough, must_win=must_win,
     ))
     return out
 
@@ -2809,5 +2832,105 @@ def live_risk_endpoint(
     result = compute_live_risk_monitor(
         my_team_id, states, current_minute=current_minute,
         my_score=my_score or 0, opponent_score=opp_score or 0,
+    )
+    return engine_result_to_dict(result)
+
+
+# --------------------------------------------------------------------------- #
+# Faz 7 — payload-reçete endpoint'leri (set-piece / friction / referee)
+# --------------------------------------------------------------------------- #
+
+
+def _require_match(session: Session, match_id: int) -> models.Match:
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    return match
+
+
+@router.post(
+    "/matches/{match_id}/set-piece",
+    tags=["admin"],
+    summary="Duran top fırsatı + penaltı atıcı durumu — Faz 7 #7/#8",
+)
+def set_piece_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    payload: dict[str, Any] | None = None,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """payload: {"set_piece_won": "corner"|"free_kick",
+    "opponent_weak_zones": ["far_post"], "penalty_taker": {player_id, fatigue, recent_accuracy}}"""
+    from app.engine.set_piece_timing import compute_set_piece_timing
+
+    _require_match(session, match_id)
+    pl = payload or {}
+    result = compute_set_piece_timing(
+        my_team_id, current_minute=current_minute,
+        set_piece_won=pl.get("set_piece_won"),
+        opponent_weak_zones=pl.get("opponent_weak_zones"),
+        penalty_taker=pl.get("penalty_taker"),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/matches/{match_id}/game-friction",
+    tags=["admin"],
+    summary="Faul biriktirme + ofsayt tuzağı — Faz 7 #9/#10",
+)
+def game_friction_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    payload: dict[str, Any] | None = None,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """payload: {"opponent_foul_zones": ["left_wing", ...]}.
+    Ofsayt tuzağı rakip defansif aksiyon event'lerinden türetilir."""
+    from app.data.loaders import load_match_events
+    from app.engine.game_friction import compute_game_friction
+
+    match = _require_match(session, match_id)
+    home_id = match.home_team_external_id
+    opp_id = match.away_team_external_id if my_team_id == home_id else home_id
+    loaded = load_match_events(session, match_id)
+    defs = [d for d in loaded.defensive_actions if d.minute <= current_minute]
+    result = compute_game_friction(
+        my_team_id, opp_id, defs, current_minute=current_minute,
+        opponent_foul_zones=(payload or {}).get("opponent_foul_zones"),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/matches/{match_id}/referee-context",
+    tags=["admin"],
+    summary="Hakem eğilimi + avantaj penceresi — Faz 7 #11/#12",
+)
+def referee_context_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    payload: dict[str, Any] | None = None,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """payload: {"cards_per_game": 5.0, "fouls_per_game": 27.0,
+    "opponent_card_edge_players": [{player_id, position_zone}]}"""
+    from app.engine.referee_context import compute_referee_context
+
+    _require_match(session, match_id)
+    pl = payload or {}
+    result = compute_referee_context(
+        my_team_id, current_minute=current_minute,
+        cards_per_game=float(pl.get("cards_per_game", 0.0)),
+        fouls_per_game=float(pl.get("fouls_per_game", 0.0)),
+        opponent_card_edge_players=pl.get("opponent_card_edge_players"),
     )
     return engine_result_to_dict(result)
