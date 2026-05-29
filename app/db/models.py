@@ -674,3 +674,66 @@ class MatchSnapshot(Base):
     opponent_formation: Mapped[str | None] = mapped_column(String(16), nullable=True)
     frame_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PlayerContract(Base):
+    """Oyuncu sözleşme bitiş tarihi takibi (Faz 5 #34).
+
+    Tek aktif satır (player, tenant) eşsiz; yenileme güncelleme.
+    contract_alerts engine bu satırlardan horizon_days içinde bitenleri
+    uyarı olarak işaretler.
+    """
+
+    __tablename__ = "player_contracts"
+    __table_args__ = (
+        UniqueConstraint(
+            "sport", "player_external_id", "tenant_id",
+            name="uq_player_contracts_player",
+        ),
+        Index("ix_player_contracts_end", "contract_end"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    player_external_id: Mapped[int] = mapped_column(Integer)
+    team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    contract_end: Mapped[date] = mapped_column(Date)
+    annual_salary_eur: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PlayerRehabilitation(Base):
+    """Sakatlık → rehab → dönüş izi (Faz 5 #43).
+
+    status: "active" (yaralı), "recovering" (antrenman karışmış), "cleared"
+    (maç hazır). available_squad engine bu tablodan injured/doubtful etiketi
+    türetir; bir oyuncuda birden çok geçmiş kayıt olabilir.
+    """
+
+    __tablename__ = "player_rehabilitations"
+    __table_args__ = (
+        Index(
+            "ix_player_rehabilitations_player_status",
+            "player_external_id", "status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    player_external_id: Mapped[int] = mapped_column(Integer)
+    injury_type: Mapped[str] = mapped_column(String(128))
+    injury_start: Mapped[date] = mapped_column(Date)
+    expected_return: Mapped[date | None] = mapped_column(Date, nullable=True)
+    actual_return: Mapped[date | None] = mapped_column(Date, nullable=True)
+    status: Mapped[str] = mapped_column(String(16))
+    notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

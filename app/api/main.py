@@ -35,6 +35,7 @@ from app.api.auth import (
 from app.api.errors import register_exception_handlers
 from app.api.live import router as live_router
 from app.api.plan import router as plan_router
+from app.api.sprint3 import router as sprint3_router
 from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
@@ -1345,6 +1346,7 @@ app.include_router(auth_router)
 
 protected.include_router(admin_router)
 protected.include_router(plan_router)
+protected.include_router(sprint3_router)
 app.include_router(protected)
 # WebSocket router — auth FastAPI WebSocket'ta header bazlı; pilot demo
 # için public route (production'da Cookie/Header-based auth eklenir).
