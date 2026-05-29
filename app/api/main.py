@@ -33,6 +33,7 @@ from app.api.auth import (
     router as auth_router,
 )
 from app.api.errors import register_exception_handlers
+from app.api.html_views import router as html_views_router
 from app.api.live import router as live_router
 from app.api.notes import router as notes_router
 from app.api.plan import router as plan_router
@@ -1357,3 +1358,6 @@ app.include_router(protected)
 # WebSocket router — auth FastAPI WebSocket'ta header bazlı; pilot demo
 # için public route (production'da Cookie/Header-based auth eklenir).
 app.include_router(live_router)
+# HTML görünüm sayfaları — /dashboard ile aynı tarz, sayfa public, JS protected
+# JSON endpoint'lerine X-API-Key ile fetch eder.
+app.include_router(html_views_router)

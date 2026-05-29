@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>manager2 — Takım Dashboard</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --good: #3fb950; --warn: #d29922; --bad: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  header a { color: var(--accent); text-decoration: none; margin-left: 12px; }
+  main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .auth { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+  .auth label { color: var(--muted); font-size: 12px; }
+  .auth input { background: var(--bg); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px; flex: 1; }
+  .auth button { background: var(--accent); color: #fff; border: 0; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card.wide { grid-column: 1 / -1; }
+  .card h2 { margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .num { font-size: 28px; font-weight: 600; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .status-ok { color: var(--good); }
+  .status-warn { color: var(--warn); }
+  .status-bad { color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td.r { text-align: right; }
+  td.c { text-align: center; }
+  .pill { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .pill.win { background: rgba(63, 185, 80, 0.2); color: var(--good); }
+  .pill.draw { background: rgba(210, 153, 34, 0.2); color: var(--warn); }
+  .pill.loss { background: rgba(248, 81, 73, 0.2); color: var(--bad); }
+  .pill.up { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+  .empty { color: var(--muted); font-style: italic; }
+  .footer { padding: 16px 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 id="team-title">Takım Dashboard</h1>
+    <div class="meta" id="meta">—</div>
+  </div>
+  <div>
+    <a href="/dashboard">← Ops Dashboard</a>
+  </div>
+</header>
+
+<main>
+  <div class="auth">
+    <label>X-API-Key</label>
+    <input id="apikey" placeholder="API key" autocomplete="off" />
+    <button id="reload">Yükle</button>
+  </div>
+
+  <div id="error-box" style="display:none; padding:14px; background:var(--panel); border:1px solid var(--bad); border-radius:8px; color:var(--bad); margin-bottom:16px;"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Son form</h2>
+      <div class="num" id="form-ppg">—</div>
+      <div class="sub" id="form-detail">son N maç</div>
+    </div>
+    <div class="card">
+      <h2>Rating</h2>
+      <div class="num" id="rating-num">—</div>
+      <div class="sub" id="rating-detail">overall / ev / dep</div>
+    </div>
+    <div class="card">
+      <h2>Sıradaki maç</h2>
+      <div class="num" id="next-match" style="font-size: 18px;">—</div>
+      <div class="sub" id="next-match-meta">—</div>
+    </div>
+
+    <div class="card wide">
+      <h2>Son maçlar</h2>
+      <div id="recent-matches"><span class="empty">yükleniyor…</span></div>
+    </div>
+
+    <div class="card wide">
+      <h2>Yaklaşan maçlar</h2>
+      <div id="upcoming-matches"><span class="empty">yükleniyor…</span></div>
+    </div>
+
+    <div class="card wide">
+      <h2>Bu takıma ait son agent çıktıları</h2>
+      <div id="agent-outputs"><span class="empty">yükleniyor…</span></div>
+    </div>
+  </div>
+</main>
+
+<div class="footer">
+  manager2 · takım merkezli görünüm — sıradaki maç, form, rating, agent çıktıları
+</div>
+
+<script>
+const TEAM_ID = parseInt(window.TEAM_ID, 10);
+const apikeyInput = document.getElementById('apikey');
+const reloadBtn = document.getElementById('reload');
+const STORAGE_KEY = 'manager2_apikey';
+
+apikeyInput.value = localStorage.getItem(STORAGE_KEY) || '';
+
+reloadBtn.addEventListener('click', () => {
+  localStorage.setItem(STORAGE_KEY, apikeyInput.value);
+  loadAll();
+});
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.style.display = 'block';
+  box.textContent = msg;
+}
+
+function hideError() {
+  document.getElementById('error-box').style.display = 'none';
+}
+
+function setText(id, text, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  if (cls) el.className = el.className.split(' ').filter(c => !c.startsWith('status-')).join(' ') + ' ' + cls;
+}
+
+async function fetchJSON(path) {
+  const headers = {};
+  if (apikeyInput.value) headers['X-API-Key'] = apikeyInput.value;
+  const r = await fetch(path, { headers });
+  if (!r.ok) return { __error: true, status: r.status, body: await r.text() };
+  return r.json();
+}
+
+async function loadForm() {
+  const d = await fetchJSON(`/teams/${TEAM_ID}/form?last_n=5`);
+  if (d.__error) { setText('form-ppg', '—'); setText('form-detail', `HTTP ${d.status}`); return; }
+  const v = d.value || d;
+  const ppg = v.points_per_game ?? v.ppg ?? 0;
+  const cls = ppg >= 2 ? 'status-ok' : ppg >= 1 ? 'status-warn' : 'status-bad';
+  setText('form-ppg', ppg.toFixed(2) + ' ppm', cls);
+  setText('form-detail', `${v.wins ?? 0}G ${v.draws ?? 0}B ${v.losses ?? 0}M · ${v.goals_for ?? 0}–${v.goals_against ?? 0}`);
+}
+
+async function loadRating() {
+  const d = await fetchJSON(`/teams/${TEAM_ID}/rating`);
+  if (d.__error) { setText('rating-num', '—'); setText('rating-detail', `HTTP ${d.status}`); return; }
+  const v = d.value || d;
+  setText('rating-num', (v.rating ?? 0).toFixed(1));
+  const h = v.home_rating?.toFixed(1) ?? '—';
+  const a = v.away_rating?.toFixed(1) ?? '—';
+  setText('rating-detail', `ev ${h} · dep ${a} · ${v.matches_considered ?? '—'} maç`);
+}
+
+function resultPill(home, away, isHome) {
+  if (home === null || home === undefined || away === null || away === undefined) {
+    return '<span class="pill up">—</span>';
+  }
+  const my = isHome ? home : away;
+  const opp = isHome ? away : home;
+  if (my > opp) return '<span class="pill win">G</span>';
+  if (my < opp) return '<span class="pill loss">M</span>';
+  return '<span class="pill draw">B</span>';
+}
+
+async function loadMatches() {
+  const d = await fetchJSON(`/teams/${TEAM_ID}/matches?last_n=10`);
+  const recent = document.getElementById('recent-matches');
+  const upcoming = document.getElementById('upcoming-matches');
+  if (d.__error) {
+    recent.innerHTML = `<span class="empty">HTTP ${d.status}</span>`;
+    upcoming.innerHTML = recent.innerHTML;
+    return;
+  }
+  const matches = Array.isArray(d) ? d : (d.items || []);
+  if (!matches.length) {
+    recent.innerHTML = '<span class="empty">maç yok</span>';
+    upcoming.innerHTML = recent.innerHTML;
+    setText('next-match', '—'); setText('next-match-meta', 'fikstür boş');
+    return;
+  }
+
+  const now = Date.now();
+  const past = matches.filter(m => new Date(m.kickoff).getTime() < now)
+                      .sort((a, b) => new Date(b.kickoff) - new Date(a.kickoff));
+  const future = matches.filter(m => new Date(m.kickoff).getTime() >= now)
+                        .sort((a, b) => new Date(a.kickoff) - new Date(b.kickoff));
+
+  // Sıradaki maç kartı
+  if (future.length) {
+    const m = future[0];
+    const isHome = m.home_team_external_id === TEAM_ID;
+    const opp = isHome ? m.away_team_external_id : m.home_team_external_id;
+    setText('next-match', `vs #${opp}`);
+    const when = new Date(m.kickoff).toLocaleString();
+    setText('next-match-meta', `${when} · ${isHome ? 'ev sahibi' : 'deplasman'}`);
+  } else {
+    setText('next-match', '—'); setText('next-match-meta', 'gelecek maç yok');
+  }
+
+  function renderTable(rows, isPast) {
+    if (!rows.length) return '<span class="empty">—</span>';
+    let html = '<table><thead><tr><th>tarih</th><th>rakip</th><th>ev/dep</th>'
+             + (isPast ? '<th>skor</th><th>sonuç</th>' : '<th class="r">match_id</th>')
+             + '</tr></thead><tbody>';
+    rows.slice(0, 10).forEach(m => {
+      const isHome = m.home_team_external_id === TEAM_ID;
+      const opp = isHome ? m.away_team_external_id : m.home_team_external_id;
+      const date = new Date(m.kickoff).toLocaleDateString();
+      const side = isHome ? 'ev' : 'dep';
+      let extra;
+      if (isPast) {
+        const score = (m.home_score !== null && m.home_score !== undefined)
+                      ? `${m.home_score}–${m.away_score}` : '—';
+        extra = `<td class="c">${score}</td><td class="c">${resultPill(m.home_score, m.away_score, isHome)}</td>`;
+      } else {
+        extra = `<td class="r"><a href="/matches/${m.external_id}/game-plan" style="color:var(--accent);">${m.external_id}</a></td>`;
+      }
+      html += `<tr><td>${date}</td><td>#${opp}</td><td>${side}</td>${extra}</tr>`;
+    });
+    html += '</tbody></table>';
+    return html;
+  }
+
+  recent.innerHTML = renderTable(past, true);
+  upcoming.innerHTML = renderTable(future, false);
+}
+
+async function loadAgentOutputs() {
+  const d = await fetchJSON(`/admin/agent-outputs?limit=20&subject_type=team&subject_id=${TEAM_ID}`);
+  const el = document.getElementById('agent-outputs');
+  if (d.__error) {
+    // Filtered endpoint yoksa genel listeyi al + client-side filtrele
+    const fallback = await fetchJSON('/admin/agent-outputs?limit=50');
+    if (fallback.__error) { el.innerHTML = `<span class="empty">HTTP ${d.status}</span>`; return; }
+    const items = (Array.isArray(fallback) ? fallback : fallback.items || [])
+                   .filter(o => o.subject_type === 'team' && o.subject_id === TEAM_ID);
+    renderAgents(items, el);
+    return;
+  }
+  const items = Array.isArray(d) ? d : (d.items || []);
+  renderAgents(items, el);
+}
+
+function renderAgents(items, el) {
+  if (!items.length) { el.innerHTML = '<span class="empty">bu takım için agent çıktısı yok</span>'; return; }
+  let html = '<table><thead><tr><th>agent</th><th>v</th><th>güncellendi</th><th>özet</th></tr></thead><tbody>';
+  items.forEach(o => {
+    const s = (o.summary || '').slice(0, 90);
+    const upd = o.updated_at?.slice(0, 16) ?? '—';
+    html += `<tr><td>${o.agent_name}</td><td>v${o.agent_version}</td><td>${upd}</td><td>${s}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+async function loadAll() {
+  hideError();
+  document.getElementById('team-title').textContent = `Takım #${TEAM_ID}`;
+  document.getElementById('meta').textContent = 'Yenilendi: ' + new Date().toLocaleTimeString();
+  await Promise.all([
+    loadForm(),
+    loadRating(),
+    loadMatches(),
+    loadAgentOutputs(),
+  ]);
+}
+
+if (apikeyInput.value) {
+  loadAll();
+} else {
+  document.getElementById('meta').textContent = `Takım #${TEAM_ID} · API key girin`;
+  document.getElementById('team-title').textContent = `Takım #${TEAM_ID}`;
+}
+</script>
+</body>
+</html>
