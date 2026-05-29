@@ -8,7 +8,6 @@
  * Renk DESIGN.md token'larıyla (yeni renk uydurulmadı):
  *   yüksek/high → good · orta/medium → warn · düşük → bad · low → neutral (legacy)
  */
-import * as React from "react";
 import { cn } from "@/lib/cn";
 
 export interface ConfidenceBadgeProps {
