@@ -37,6 +37,7 @@ from app.api.live import router as live_router
 from app.api.notes import router as notes_router
 from app.api.plan import router as plan_router
 from app.api.reports import router as reports_router
+from app.api.shared import router as shared_router
 from app.api.sprint3 import router as sprint3_router
 from app.api.sprint4 import router as sprint4_router
 from app.api.sprint5 import router as sprint5_router
@@ -1359,3 +1360,5 @@ app.include_router(protected)
 # WebSocket router — auth FastAPI WebSocket'ta header bazlı; pilot demo
 # için public route (production'da Cookie/Header-based auth eklenir).
 app.include_router(live_router)
+# Public share endpoint — auth'suz, imzalı token ile PDF açar (Faz 5 #40).
+app.include_router(shared_router)

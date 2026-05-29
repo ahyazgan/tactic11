@@ -1,25 +1,33 @@
-"""PDF rapor endpoint'leri (Faz 5 #16).
+"""PDF rapor endpoint'leri (Faz 5 #16, #40).
 
-`GET /reports/agent-outputs/{id}/pdf` — bir AgentOutput'tan PDF üretir.
-`GET /reports/agents/{name}/{subject_type}/{subject_id}/pdf` — alternatif:
-agent + subject ile son output'u bulup PDF'e dön.
+- GET /reports/agent-outputs/{id}/pdf — bir AgentOutput'tan PDF üretir
+- GET /reports/agents/{name}/{type}/{id}/pdf — agent + subject ile son output
+- POST /reports/agent-outputs/{id}/share — paylaşılabilir kısa token (#40)
 
-reportlab kurulu değilse 503 + "pip install reportlab>=4.0" mesajı.
+reportlab yoksa PDF endpoint'leri 503; share endpoint ek olarak
+JWT_SECRET_KEY ister.
 """
 from __future__ import annotations
 
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.db import models
 from app.db.session import get_session
 from app.reports.pdf import (
     REPORTLAB_AVAILABLE,
     ReportlabNotInstalled,
     build_agent_output_pdf,
+)
+from app.reports.share import (
+    DEFAULT_TTL_HOURS,
+    MAX_TTL_HOURS,
+    ShareTokenError,
+    encode_share_token,
 )
 
 router = APIRouter(tags=["reports"])
@@ -117,3 +125,48 @@ def latest_agent_output_pdf(
             ),
         )
     return _build_pdf_response(row)
+
+
+@router.post("/reports/agent-outputs/{output_id}/share")
+def create_share_link(
+    output_id: int,
+    request: Request,
+    ttl_hours: int = Query(DEFAULT_TTL_HOURS, ge=1, le=MAX_TTL_HOURS),
+    session: Session = Depends(get_session),
+) -> dict:
+    """Bir AgentOutput PDF'i için paylaşılabilir kısa token üret.
+
+    Token public `/shared/reports/{token}` üzerinden auth'suz okunur;
+    `ttl_hours` (1..720, default 24) içinde geçerli. Imza HMAC-SHA256;
+    server-side secret JWT_SECRET_KEY.
+    """
+    secret = get_settings().jwt_secret_key
+    if not secret:
+        raise HTTPException(
+            status_code=503,
+            detail="Share devre dışı — JWT_SECRET_KEY set'lenmemiş",
+        )
+
+    row = session.execute(
+        select(models.AgentOutput).where(models.AgentOutput.id == output_id)
+    ).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"agent_output {output_id} bulunamadı",
+        )
+
+    try:
+        token = encode_share_token(
+            output_id, secret=secret, ttl_hours=ttl_hours,
+        )
+    except ShareTokenError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    base = str(request.base_url).rstrip("/")
+    return {
+        "output_id": output_id,
+        "token": token,
+        "url": f"{base}/shared/reports/{token}",
+        "ttl_hours": ttl_hours,
+    }
