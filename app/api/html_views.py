@@ -1,10 +1,11 @@
-"""HTML görünüm endpoint'leri (Faz 5 #15, #29).
+"""HTML görünüm endpoint'leri (Faz 5 #15, #17, #29).
 
 Sunucu tarafından render edilen tek-HTML sayfaları. JS sayfa içinde mevcut
 JSON endpoint'lerini fetch eder; X-API-Key localStorage'tan gelir.
 
-- GET /matches/{match_id}/game-plan — birleşik game-plan ekranı (#29)
-- GET /teams/{team_id}/dashboard    — takım merkezli landing (#15)
+- GET /matches/{match_id}/game-plan     — birleşik game-plan ekranı (#29)
+- GET /teams/{team_id}/dashboard        — takım merkezli landing (#15)
+- GET /roles/{role}/dashboard           — rol bazlı landing composer (#17)
 
 Template'ler `app/api/templates/` altında, dashboard.html ile aynı stil.
 """
@@ -20,6 +21,9 @@ router = APIRouter(tags=["html-views"])
 _TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 _MATCH_GAME_PLAN_HTML = _TEMPLATES_DIR / "match_game_plan.html"
 _TEAM_DASHBOARD_HTML = _TEMPLATES_DIR / "team_dashboard.html"
+_ROLE_DASHBOARD_HTML = _TEMPLATES_DIR / "role_dashboard.html"
+
+VALID_ROLES = ("tactical", "analyst", "conditioning", "scout")
 
 
 def _inject_js_constant(html: str, name: str, value: int | str) -> str:
@@ -92,4 +96,32 @@ def team_dashboard_view(team_id: int) -> HTMLResponse:
             detail="template eksik: team_dashboard.html",
         ) from e
     html = _inject_js_constant(html, "TEAM_ID", team_id)
+    return HTMLResponse(html)
+
+
+@router.get(
+    "/roles/{role}/dashboard",
+    response_class=HTMLResponse,
+    summary="Rol bazlı landing dashboard composer (Faz 5 #17)",
+)
+def role_dashboard_view(role: str) -> HTMLResponse:
+    """Rol bazlı kart kümesi: TD, analist, kondisyon, scout.
+
+    Sayfa içindeki JS role parametresine göre farklı endpoint setlerini
+    fetch'ler ve role-specific kartlar render eder. team_id ve player_id
+    input olarak kullanıcıdan alınır; rolün gereksinimi yoksa boş bırakılır.
+    """
+    if role not in VALID_ROLES:
+        raise HTTPException(
+            status_code=404,
+            detail=f"role '{role}' geçersiz — {VALID_ROLES}",
+        )
+    try:
+        html = _ROLE_DASHBOARD_HTML.read_text(encoding="utf-8")
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="template eksik: role_dashboard.html",
+        ) from e
+    html = _inject_js_constant(html, "ROLE", role)
     return HTMLResponse(html)
