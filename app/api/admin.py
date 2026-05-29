@@ -3027,3 +3027,101 @@ def referee_context_endpoint(
         opponent_card_edge_players=pl.get("opponent_card_edge_players"),
     )
     return engine_result_to_dict(result)
+
+
+# --------------------------------------------------------------------------- #
+# Faz 10 — saf analiz engine'leri API'ye açılır (what-if / backtest / anomaly /
+# development-curve). Hepsi DB'siz: payload → engine → sonuç.
+# --------------------------------------------------------------------------- #
+
+
+@router.post(
+    "/analysis/what-if",
+    tags=["admin"],
+    summary="Karşı-olgu: oyuncu çıkarınca takım metriği nasıl değişir (A)",
+)
+def analysis_what_if(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {"baseline_team_metric": float, "contributions": [{player_id,
+    contribution}], "remove_player_id": int (ops), "replacement_contribution": float (ops)}.
+    remove_player_id yoksa tüm oyuncular için sıralama döner."""
+    from dataclasses import asdict
+
+    from app.engine.what_if import (
+        PlayerContribution,
+        rank_removals,
+        simulate_removal,
+    )
+
+    baseline = float(payload.get("baseline_team_metric", 0.0))
+    contribs = [
+        PlayerContribution(int(c["player_id"]), float(c["contribution"]))
+        for c in payload.get("contributions", [])
+    ]
+    replacement = float(payload.get("replacement_contribution", 0.0))
+    remove_id = payload.get("remove_player_id")
+    if remove_id is None:
+        return asdict(rank_removals(
+            baseline_team_metric=baseline, contributions=contribs,
+            replacement_contribution=replacement,
+        ))
+    return asdict(simulate_removal(
+        baseline_team_metric=baseline, contributions=contribs,
+        remove_player_id=int(remove_id), replacement_contribution=replacement,
+    ))
+
+
+@router.post(
+    "/analysis/backtest",
+    tags=["admin"],
+    summary="Olasılıksal motor değerlendirme: hit-rate + Brier + kalibrasyon (B)",
+)
+def analysis_backtest(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {"samples": [[predicted_prob, actual_bool], ...],
+    "decision_threshold": float (ops), "n_bins": int (ops)}."""
+    from dataclasses import asdict
+
+    from app.engine.backtest import backtest
+
+    samples = [(float(p), bool(a)) for p, a in payload.get("samples", [])]
+    report = backtest(
+        samples,
+        decision_threshold=float(payload.get("decision_threshold", 0.5)),
+        n_bins=int(payload.get("n_bins", 5)),
+    )
+    return asdict(report)
+
+
+@router.post(
+    "/analysis/anomaly",
+    tags=["admin"],
+    summary="Metrik serisinde aykırı değer + form kırılması (C)",
+)
+def analysis_anomaly(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {"series": [float, ...], "z_threshold": float (ops)}."""
+    from dataclasses import asdict
+
+    from app.engine.anomaly import detect_anomalies
+
+    series = [float(x) for x in payload.get("series", [])]
+    report = detect_anomalies(
+        series, z_threshold=float(payload.get("z_threshold", 2.0)),
+    )
+    return asdict(report)
+
+
+@router.post(
+    "/analysis/development-curve",
+    tags=["admin"],
+    summary="Gelişim eğimi + oynaklık + projeksiyon (E)",
+)
+def analysis_development_curve(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {"values": [float, ...], "recent_window": int (ops)}."""
+    from dataclasses import asdict
+
+    from app.engine.development_curve import development_curve
+
+    values = [float(x) for x in payload.get("values", [])]
+    report = development_curve(
+        values, recent_window=int(payload.get("recent_window", 3)),
+    )
+    return asdict(report)
