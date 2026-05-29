@@ -83,9 +83,8 @@ def _maybe_reset(reset: bool) -> None:
 
 def _alembic_check() -> None:
     """Migrasyonların güncel olduğunu doğrula; değilse upgrade et."""
+    import alembic.command as command
     from alembic.config import Config
-
-    from alembic import command
 
     cfg = Config(str(_PROJECT_ROOT / "alembic.ini"))
     cfg.set_main_option("script_location", str(_PROJECT_ROOT / "alembic"))
