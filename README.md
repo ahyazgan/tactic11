@@ -144,7 +144,7 @@ pytest -q
 ```
 Testler in-memory SQLite ile çalışır; gerçek DB veya API anahtarı gerekmez.
 
-## Taktiksel Engine Envanteri (77 modül)
+## Taktiksel Engine Envanteri (84 modül)
 
 Saf-Python pure-compute engine'ler, hepsi multi-tenant + audit'li.
 Tükettiği veri: `events` tablosu (PassEvent, Carry, DefensiveAction, Shot).
@@ -208,6 +208,21 @@ Karar audit trail `decisions` tablosunda outcome + feedback loop ile kapanır.
 > **Pipeline:** 8 ham sinyal → signal_quality süz → confidence skorla →
 > match_memory zaman-bağlamı → context_engine tek karar → decision outcome
 > geri besleme. `live-decision` ve WebSocket artık tek `context` başlığı döner.
+
+**Faz 10 — canlı güven + zeka + proaktif uyarı (7 modül):**
+live_confidence (canlı sinyal güven skoru + `summarize_trend` zamansal yön),
+data_quality (event-akışı kalite skoru: dropout/seyrek/bayat/eksik-tip),
+what_if (karşı-olgu: oyuncu çıkarınca metrik + en güvenli/maliyetli sıralama),
+backtest (olasılıksal motor değerlendirme: hit-rate + Brier + kalibrasyon),
+anomaly (z-skor aykırı değer + form kırılması), development_curve (gelişim
+eğimi + oynaklık + projeksiyon), live_alerts (maç-içi proaktif uyarı:
+momentum kırılması/yük/kart/veri-kalitesi + dedup).
+Ayrıca `confidence` 5 yüksek-görünürlüklü motora bağlandı (form, rating,
+predict, matchup, opponent_weakness) → API yanıtlarında `confidence`.
+
+> **Canlı snapshot anahtarları (Faz 8+10):** `context` (+`confidence_note`),
+> `confidence`, `trend`, `data_quality`, `live_alerts` — hepsi additive,
+> geriye uyumlu.
 
 ## Batch Tactical Endpoints
 
@@ -301,6 +316,7 @@ ws://host/ws/matches/{id}/live?my_team_id=N&interval_seconds=10&max_minute=90
       + Faz 6: momentum + sub_timing + tactical_triggers
       + Faz 7: spatial_control + live_matchup + score_time_matrix
       + Faz 8: context (orkestra şefi — tek "şimdi şunu yap" başlığı)
+      + Faz 10: confidence + trend + data_quality + live_alerts
     → match_ended mesajıyla kapanır
 
 GET /ws/active-connections
