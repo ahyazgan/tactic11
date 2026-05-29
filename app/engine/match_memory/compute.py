@@ -73,8 +73,11 @@ def _opponent_changes(frames: list[MemoryFrame]) -> list[tuple[float, str, str]]
 
 def _flank_decline(frames: list[MemoryFrame], flank: str) -> tuple[float, float, float] | None:
     """Bir kanatta sürekli düşüş varsa (since_minute, baseline, current) döner."""
-    series = [(f.minute, f.flank_xt.get(flank)) for f in frames
-              if f.flank_xt.get(flank) is not None]
+    series: list[tuple[float, float]] = []
+    for f in frames:
+        v = f.flank_xt.get(flank)
+        if v is not None:
+            series.append((f.minute, float(v)))
     if len(series) < FLANK_MIN_FRAMES + 1:
         return None
     # En yüksek noktadan bu yana düşüyor mu

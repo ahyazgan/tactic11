@@ -12,7 +12,7 @@ from __future__ import annotations
 import json as _json
 from dataclasses import asdict
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, TypeGuard
 
 from sqlalchemy import select
 
@@ -48,7 +48,7 @@ def build_candidates(
     cands: list[CandidateSignal] = []
     ev = win["passes"] + win["defs"]
 
-    def _is_dict(x: Any) -> bool:
+    def _is_dict(x: object) -> TypeGuard[dict[str, Any]]:
         return isinstance(x, dict) and "error" not in x
 
     # momentum (tactical)

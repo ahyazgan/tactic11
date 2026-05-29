@@ -170,17 +170,17 @@ def compute_context(
     # ikincil: farklı temadaki sonraki sinyaller (her temadan en güçlü bir tane)
     secondary_actions: list[PrioritizedAction] = []
     seen_themes = {top_theme}
-    for s in others:
-        th = _theme(s.candidate)
+    for sc in others:
+        th = _theme(sc.candidate)
         if th in seen_themes:
             continue
         seen_themes.add(th)
         secondary_actions.append(PrioritizedAction(
-            headline=s.candidate.headline, theme=th, theme_label=THEME_LABEL[th],
-            urgency=round(s.candidate.urgency, 3), confidence=s.confidence,
-            confidence_label=s.confidence_label, priority=s.priority,
-            rationale=s.candidate.headline, drivers=s.confidence_drivers,
-            supporting_keys=(s.candidate.key,),
+            headline=sc.candidate.headline, theme=th, theme_label=THEME_LABEL[th],
+            urgency=round(sc.candidate.urgency, 3), confidence=sc.confidence,
+            confidence_label=sc.confidence_label, priority=sc.priority,
+            rationale=sc.candidate.headline, drivers=sc.confidence_drivers,
+            supporting_keys=(sc.candidate.key,),
         ))
 
     one_liner = (
