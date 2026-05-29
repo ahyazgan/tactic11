@@ -677,12 +677,7 @@ class MatchSnapshot(Base):
 
 
 class PlayerContract(Base):
-    """Oyuncu sözleşme bitiş tarihi takibi (Faz 5 #34).
-
-    Tek aktif satır (player, tenant) eşsiz; yenileme güncelleme.
-    contract_alerts engine bu satırlardan horizon_days içinde bitenleri
-    uyarı olarak işaretler.
-    """
+    """Oyuncu sözleşme bitiş tarihi takibi (Faz 5 #34)."""
 
     __tablename__ = "player_contracts"
     __table_args__ = (
@@ -710,9 +705,7 @@ class PlayerContract(Base):
 class PlayerRehabilitation(Base):
     """Sakatlık → rehab → dönüş izi (Faz 5 #43).
 
-    status: "active" (yaralı), "recovering" (antrenman karışmış), "cleared"
-    (maç hazır). available_squad engine bu tablodan injured/doubtful etiketi
-    türetir; bir oyuncuda birden çok geçmiş kayıt olabilir.
+    status: "active" | "recovering" | "cleared".
     """
 
     __tablename__ = "player_rehabilitations"
@@ -734,6 +727,37 @@ class PlayerRehabilitation(Base):
     expected_return: Mapped[date | None] = mapped_column(Date, nullable=True)
     actual_return: Mapped[date | None] = mapped_column(Date, nullable=True)
     status: Mapped[str] = mapped_column(String(16))
+    notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PlayerGoal(Base):
+    """Bireysel gelişim hedefi (Faz 5 #38).
+
+    Oyuncu başına çoklu hedef; status: open | in_progress | achieved | missed.
+    metric + target_value opsiyonel (ölçülebilir hedef), yoksa serbest metin.
+    """
+
+    __tablename__ = "player_goals"
+    __table_args__ = (
+        Index(
+            "ix_player_goals_player_status",
+            "player_external_id", "status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    player_external_id: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(255))
+    metric: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    target_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="open")
     notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
