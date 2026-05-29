@@ -14,3 +14,5 @@ export type { Column, DataTableProps } from "./table";
 export { Sparkline } from "./sparkline";
 export { StatTile } from "./stat-tile";
 export { ExplainPanel, ExplainButton } from "./explain-panel";
+export { ConfidenceBadge } from "./ConfidenceBadge";
+export type { ConfidenceBadgeProps } from "./ConfidenceBadge";

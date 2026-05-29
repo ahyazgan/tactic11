@@ -4,7 +4,7 @@ import * as React from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel, Pill, StatTile } from "@/components/ui";
+import { ConfidenceBadge, Panel, StatTile } from "@/components/ui";
 
 interface Scenario {
   out_player_id: number;
@@ -28,12 +28,6 @@ interface SubChessResponse {
   };
   events_loaded?: number;
   note?: string;
-}
-
-function confidencePill(c: string) {
-  if (c === "high") return <Pill variant="win">{c}</Pill>;
-  if (c === "medium") return <Pill variant="warn">{c}</Pill>;
-  return <Pill variant="neutral">{c}</Pill>;
 }
 
 export default function SubChessPage() {
@@ -127,7 +121,7 @@ export default function SubChessPage() {
                     <span className="text-sm font-semibold text-text">
                       Senaryo {i + 1}
                     </span>
-                    {confidencePill(s.confidence)}
+                    <ConfidenceBadge label={s.confidence} />
                   </div>
                   <div className="text-[13px] text-text mb-2">
                     Player #{s.out_player_id} →{" "}

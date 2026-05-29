@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { ConfidenceBadge } from "@/components/ui";
 
 interface PredictResponse {
   value: {
@@ -14,6 +15,7 @@ interface PredictResponse {
     most_likely_score: [number, number];
   };
   audit: any;
+  confidence: { score: number; label: string; drivers: string[] } | null;
 }
 
 interface MatchInfo {
@@ -69,7 +71,16 @@ export default function MatchDetailPage() {
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Sol: tahmin + brief */}
         <div className="card">
-          <h2 className="text-sm uppercase text-muted mb-3">Tahmin (engine.predict_ml)</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm uppercase text-muted">Tahmin (engine.predict_ml)</h2>
+            {predict?.confidence && (
+              <ConfidenceBadge
+                score={predict.confidence.score}
+                label={predict.confidence.label}
+                drivers={predict.confidence.drivers}
+              />
+            )}
+          </div>
           {predict ? (
             <>
               <ProbBar label="Ev galibiyet" value={predict.value.prob_home_win} color="var(--good, #3fb950)" />

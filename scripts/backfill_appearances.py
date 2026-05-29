@@ -99,7 +99,7 @@ def backfill(
     force: bool = False,
     dry_run: bool = False,
     quota_stop_fraction: float = DEFAULT_QUOTA_FRACTION_STOP,
-) -> dict[str, int]:
+) -> dict[str, float]:
     """Backfill çalıştır + raporla."""
     from app.core.config import get_settings
     settings = get_settings()

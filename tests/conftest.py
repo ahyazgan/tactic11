@@ -23,9 +23,11 @@ def _reset_rate_limiter():
     Bu fixture autouse=True ile her test öncesi reset eder.
     """
     try:
-        from app.api.main import _rate_limiter
+        from app.api.main import _login_rate_limiter, _rate_limiter
         with _rate_limiter._lock:
             _rate_limiter._window.clear()
+        with _login_rate_limiter._lock:
+            _login_rate_limiter._window.clear()
     except (ImportError, AttributeError):
         pass
     yield

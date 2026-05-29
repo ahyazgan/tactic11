@@ -79,6 +79,28 @@ class Settings(BaseSettings):
 
     # Production hardening
     rate_limit_per_minute: int = Field(default=120, alias="RATE_LIMIT_PER_MINUTE")
+    # /auth/login için ayrı sıkı limit (brute-force yüzeyi daralt). IP başına/dk.
+    login_rate_limit_per_minute: int = Field(
+        default=10, alias="LOGIN_RATE_LIMIT_PER_MINUTE"
+    )
+    # DB connection pool (SQLite dışı backend'lerde uygulanır)
+    db_pool_size: int = Field(default=5, alias="DB_POOL_SIZE")
+    db_max_overflow: int = Field(default=10, alias="DB_MAX_OVERFLOW")
+    db_pool_recycle_seconds: int = Field(default=1800, alias="DB_POOL_RECYCLE_SECONDS")
+    # Dış HTTP (API-Football) retry + circuit breaker
+    http_timeout_seconds: float = Field(default=10.0, alias="HTTP_TIMEOUT_SECONDS")
+    http_retry_attempts: int = Field(default=3, alias="HTTP_RETRY_ATTEMPTS")
+    http_breaker_threshold: int = Field(default=5, alias="HTTP_BREAKER_THRESHOLD")
+    http_breaker_cooldown_seconds: float = Field(
+        default=30.0, alias="HTTP_BREAKER_COOLDOWN_SECONDS"
+    )
+    # Hata izleme (Sentry) — DSN boşsa devre dışı (no-op). Opsiyonel.
+    sentry_dsn: str = Field(default="", alias="SENTRY_DSN")
+    sentry_traces_sample_rate: float = Field(
+        default=0.0, ge=0.0, le=1.0, alias="SENTRY_TRACES_SAMPLE_RATE"
+    )
+    # Prometheus /metrics — prometheus-client kuruluysa aktif.
+    prometheus_enabled: bool = Field(default=True, alias="PROMETHEUS_ENABLED")
     # Kota uyarı eşiği (0..1) — bu fraksiyona ulaşınca WARNING log
     # Default 0.8 = %80. 0.6 → daha erken uyarı; 0.9 → daha geç.
     quota_warn_fraction: float = Field(

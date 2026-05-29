@@ -124,6 +124,64 @@ bakacağını bilemiyordu. Bu faz sinyalleri tek karara indirger:
       + `GET /teams/{id}/decisions/feedback` (feedback loop → güven kalibrasyonu)
 - [x] `app/api/context_pipeline.py` — pipeline orkestrasyonu (engine'ler saf kalır)
 
+## Faz 9 — Dayanıklılık & ölçek (kısmen ✓)
+Sistem dayanıklılık eksiklerinin kapatılması. Şimdi yapılanlar additive +
+bağımlılıksız; kalanlar harici bağımlılık/altyapı gerektirdiği için ertelendi.
+
+Yapıldı:
+- [x] **#1 Retry + circuit breaker** — `data/sources/_resilience.py`
+      (`CircuitBreaker` + `call_with_retry`); `api_football._http_get` geçici
+      hata/timeout/5xx'te backoff ile retry, eşik aşılınca fail-fast.
+- [x] **#2 Liveness/readiness ayrımı** — `/healthz` (DB'siz liveness) +
+      `/readyz` (DB ping readiness, 503); `/health` legacy birleşik kaldı.
+- [x] **#5 Güvenlik header'ları** — middleware: X-Content-Type-Options,
+      X-Frame-Options, Referrer-Policy, Permissions-Policy + prod'da HSTS.
+      (CSP hariç — `/dashboard` inline JS kullanıyor; ayrı ele alınacak.)
+- [x] **#6 Login'e özel rate limit** — `/auth/login` IP başına ayrı sıkı
+      limiter (`LOGIN_RATE_LIMIT_PER_MINUTE`, default 10).
+- [x] **#8 DB pool ayarları** — `pool_size`/`max_overflow`/`pool_recycle`
+      (SQLite dışı backend'lerde; settings'ten).
+- [x] **#11 Graceful shutdown** — FastAPI `lifespan`; SIGTERM/deploy'da
+      `engine.dispose()` ile havuz temiz kapanır.
+- [x] **#3 Sentry** — `core/monitoring.init_sentry()` opsiyonel/graceful
+      (`SENTRY_DSN` boş ya da lib yoksa no-op); requirements'a eklendi.
+- [x] **#4 Prometheus `/metrics`** — `observability.py` guarded Counter/Histogram
+      (method+status, düşük kardinalite) + `/metrics` endpoint; lib yoksa no-op.
+
+Ertelendi (gerçek altyapı gerektirir — Redis sunucusu / çok-replica DB,
+sandbox'ta doğrulanamaz):
+- [ ] **#7 Kota aşımında graceful degradation** — `QuotaExceeded`'de stale
+      cache'ten "degraded" servis. Cache katmanına `cache_get_stale` (TTL
+      yoksay) eklemeyi gerektirir; davranış riski → ayrı PR.
+- [ ] **#9 Redis cache** — DB-destekli TTL cache yerine; ölçekte. Cache
+      arayüzü (`cache_get/cache_set`) stabil, backend swap.
+- [ ] **#10 Dağıtık lock / leader election** — çok-replica scheduler için
+      Postgres advisory lock; job çift-tetiklenmesini önler.
+
+## Zeka derinleştirme & ürün backlog (A–K)
+**A. Karar/senaryo:** what-if karşı-olgu simülatörü, canlı karar önerisi
+(`live_tactical_trigger` üstüne — Faz 6/7 ile kısmen), sezon rotasyon/load opt.
+**B. Güven/açıklanabilirlik:** kalibrasyon izleme, motor güven skoru (✓ Faz 8 —
+çekirdek + ürüne yayım), backtest harness'ı (geçmiş sezonda yeni motor testi).
+**C. Karşılaştırmalı/benchmark:** benzerlik motoru (var: `player_similarity`),
+lig yüzdelik benchmark, anomali/kırılma tespiti.
+**D. Veri kalitesi:** eksik/tutarsız event tespiti, çapraz-kaynak doğrulama,
+veri tazeliği skoru.
+**E. Zaman/trend:** uzun-dönem gelişim eğrileri, sezon-içi momentum tahmini,
+sakatlık sonrası dönüş takibi.
+**F. Çıktı/teslim:** otomatik PDF/rapor, e-posta/webhook push (var: `daily_brief`
++ `_deliver_webhook` — format güçlendir), paylaşılabilir link.
+**G. i18n:** motor açıklama string'leri + UI İngilizce (şu an Türkçe).
+**H. Rol derinliği:** baş antrenör/analist/scout görünümleri, kaydedilen
+görünümler, not/yorum işbirliği.
+**I. Mobil/saha-içi:** tablet-öncelikli maç günü görünümü.
+**J. Proaktif uyarı:** load/risk eşiği aşımında push/e-posta (pasiften aktife).
+**K. Performans/hız:** analiz latency, ağır motorlarda (VAEP 68k event)
+senkron/asenkron, caching stratejisi (#9 Redis ile bağlantılı).
+
+> Not: Auth (refresh sha256 + rotation, bcrypt 12-round) audit'te sağlam
+> bulundu — tekrar ele alınmayacak.
+
 ## Tracking entegrasyonu (ertelendi — gerçek tracking feed bekliyor)
 - `data/sources/tracking.py` — kulüp tracking adapter'ı (`DataSource`'a uyar)
 - `engine/tracking/` — yerleşim, pres, yük çıkarımı

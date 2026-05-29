@@ -8,12 +8,18 @@ from __future__ import annotations
 
 import time
 import uuid
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+    Response,
+)
 from sqlalchemy import or_, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -32,17 +38,19 @@ from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
     SlidingWindowRateLimiter,
+    prometheus_text,
     should_bypass_rate_limit,
 )
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
 from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
+from app.core.monitoring import init_sentry
 from app.core.request_context import clear_request_id, set_request_id
 from app.data.cache import engine_cached
 from app.data.predictions import save_prediction
 from app.db import models
-from app.db.session import get_session
+from app.db.session import engine, get_session
 from app.db.tenant_filter import install_tenant_filter
 from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty
 from app.engine.form import compute_form
@@ -55,6 +63,9 @@ from app.engine.schedule import compute_schedule
 from app.sports import football
 
 setup_logging()
+
+# Hata izleme — SENTRY_DSN set + sentry-sdk kuruluysa aktive olur, yoksa no-op.
+init_sentry()
 
 # Multi-tenant filter — global SQLAlchemy event listener
 install_tenant_filter()
@@ -106,16 +117,27 @@ _TAGS_METADATA = [
     },
 ]
 
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    """Graceful shutdown: SIGTERM/deploy'da DB havuzunu temiz kapat.
+
+    Uvicorn/gunicorn SIGTERM'i devam eden istekleri bitirip lifespan'i
+    sonlandırır; burada connection pool dispose edilir (kopuk bağlantı yok)."""
+    yield
+    engine.dispose()
+
+
 app = FastAPI(
     title="football-intelligence",
     version=APP_VERSION,
     description=(
         "Süper Lig odaklı futbol zekası API'si. Tüm uçlar X-API-Key header'ı "
-        "ister (/health hariç). Tepkiler ErrorResponse şemasıyla "
-        "yapılandırılmış; istekler X-Request-ID ile trace edilir; "
-        "rate limit dakika başına (default 120)."
+        "ister (/healthz, /readyz, /health hariç). Tepkiler ErrorResponse "
+        "şemasıyla yapılandırılmış; istekler X-Request-ID ile trace edilir; "
+        "rate limit dakika başına (default 120), /auth/login için ayrı sıkı limit."
     ),
     openapi_tags=_TAGS_METADATA,
+    lifespan=_lifespan,
 )
 register_exception_handlers(app)  # HTTPException → ErrorResponse şeması
 
@@ -134,6 +156,26 @@ if _cors_origins:
 
 # Rate limiter — settings'ten okur, tek instance.
 _rate_limiter = SlidingWindowRateLimiter(get_settings().rate_limit_per_minute)
+# /auth/login için ayrı, daha sıkı limiter (brute-force yüzeyi).
+_login_rate_limiter = SlidingWindowRateLimiter(
+    get_settings().login_rate_limit_per_minute
+)
+_LOGIN_PATH = "/auth/login"
+
+# HSTS sadece prod'da (HTTPS varsayımı); diğer güvenlik header'ları her ortamda.
+_HSTS_ENABLED = get_settings().app_env == "prod"
+
+
+def _apply_security_headers(response) -> None:
+    """OWASP temel güvenlik header'ları (CSP hariç — /dashboard inline JS kullanır)."""
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+    if _HSTS_ENABLED:
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+        )
 
 
 _REQUEST_ID_HEADER = "x-request-id"
@@ -150,22 +192,37 @@ async def observability_middleware(request: Request, call_next):
 
     path = request.url.path
     try:
-        # Rate limit (sadece /health bypass)
+        client_ip = request.client.host if request.client else "unknown"
+
+        # /auth/login için ayrı sıkı limit (IP başına) — brute-force koruması.
+        if path == _LOGIN_PATH and not _login_rate_limiter.allow(f"login:{client_ip}"):
+            METRICS.record(
+                method=request.method, path=path, status=429, duration_seconds=0.0
+            )
+            resp = JSONResponse(
+                {"detail": "login rate limit exceeded"},
+                status_code=429,
+                headers={"Retry-After": "60", "X-Request-ID": rid},
+            )
+            _apply_security_headers(resp)
+            return resp
+
+        # Rate limit (/healthz, /readyz, /health bypass)
         if not should_bypass_rate_limit(path):
             # Key: API key varsa onu, yoksa client IP. Auth disabled olsa bile
             # rate limit IP üzerinden devam eder (DoS koruması).
-            key = request.headers.get("x-api-key") or (
-                request.client.host if request.client else "unknown"
-            )
+            key = request.headers.get("x-api-key") or client_ip
             if not _rate_limiter.allow(key):
                 METRICS.record(
                     method=request.method, path=path, status=429, duration_seconds=0.0
                 )
-                return JSONResponse(
+                resp = JSONResponse(
                     {"detail": "rate limit exceeded (per minute)"},
                     status_code=429,
                     headers={"Retry-After": "60", "X-Request-ID": rid},
                 )
+                _apply_security_headers(resp)
+                return resp
 
         start = time.perf_counter()
         response = await call_next(request)
@@ -177,6 +234,7 @@ async def observability_middleware(request: Request, call_next):
             duration_seconds=duration,
         )
         response.headers["X-Request-ID"] = rid
+        _apply_security_headers(response)
         return response
     finally:
         clear_request_id()
@@ -248,7 +306,45 @@ def dashboard() -> HTMLResponse:
     return HTMLResponse(_DASHBOARD_HTML_PATH.read_text(encoding="utf-8"))
 
 
-@app.get("/health", tags=["ops"], summary="Liveness + readiness check")
+@app.get("/metrics", tags=["ops"], summary="Prometheus metrics (opsiyonel)")
+def metrics() -> Response:
+    """Prometheus exposition. prometheus-client kuruluysa text/plain metrikler;
+    değilse 200 + açıklama (scraper kırılmasın)."""
+    payload = prometheus_text()
+    if payload is None:
+        return PlainTextResponse(
+            "prometheus-client kurulu değil — /admin/metrics (in-memory) kullanın\n"
+        )
+    body, content_type = payload
+    return Response(content=body, media_type=content_type)
+
+
+@app.get("/healthz", tags=["ops"], summary="Liveness probe (DB'siz)")
+def healthz() -> JSONResponse:
+    """Liveness: process ayakta mı. DB'ye DOKUNMAZ — DB anlık düşse bile
+    orkestratör pod'u öldürmesin (yalnız hard kill için). 200 sabit."""
+    return JSONResponse({
+        "status": "ok",
+        "version": APP_VERSION,
+        "uptime_seconds": round(time.time() - PROCESS_STARTED_AT, 2),
+    })
+
+
+@app.get("/readyz", tags=["ops"], summary="Readiness probe (DB ping)")
+def readyz(session: Session = Depends(get_session)) -> JSONResponse:
+    """Readiness: trafiğe hazır mı. DB ping başarısızsa 503 → load balancer
+    bu pod'a istek yönlendirmez ama liveness ayrı olduğu için pod ölmez."""
+    try:
+        session.execute(text("SELECT 1"))
+    except SQLAlchemyError as e:  # noqa: BLE001
+        return JSONResponse(
+            {"status": "not_ready", "db": "error", "db_error": type(e).__name__},
+            status_code=503,
+        )
+    return JSONResponse({"status": "ready", "db": "ok"})
+
+
+@app.get("/health", tags=["ops"], summary="Liveness + readiness (legacy birleşik)")
 def health(session: Session = Depends(get_session)) -> JSONResponse:
     """Liveness + readiness check.
 

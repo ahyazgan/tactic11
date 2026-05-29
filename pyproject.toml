@@ -50,3 +50,7 @@ no_implicit_optional = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 ignore_errors = true  # test ergonomics > strict typing
+
+[[tool.mypy.overrides]]
+module = "scripts.*"
+ignore_errors = true  # operasyonel/demo scriptler — app/ strict, scripts gevşek

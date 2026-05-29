@@ -107,7 +107,7 @@ def _seed_match_from_statsbomb(
                     models.Match.__table__.select().where(
                         models.Match.external_id == match_id,
                     )
-                ).one()  # type: ignore[return-value]
+                ).one()
     raise RuntimeError(f"match {match_id} bulunamadı")
 
 
@@ -151,13 +151,13 @@ def run_demo(match_id: int = DEFAULT_MATCH_ID, tenant_id: str = "t-demo") -> dic
                 models.Match.external_id == match_id,
             )
         ).one()
-        home_id = match.home_team_external_id  # type: ignore[attr-defined]
-        away_id = match.away_team_external_id  # type: ignore[attr-defined]
+        home_id = match.home_team_external_id
+        away_id = match.away_team_external_id
         print(f"    Ev ID: {home_id}, Dep ID: {away_id}, "
-              f"Skor: {match.home_score}-{match.away_score}")  # type: ignore[attr-defined]
+              f"Skor: {match.home_score}-{match.away_score}")
         report["home_team_id"] = home_id
         report["away_team_id"] = away_id
-        report["score"] = f"{match.home_score}-{match.away_score}"  # type: ignore[attr-defined]
+        report["score"] = f"{match.home_score}-{match.away_score}"
 
         print("\n[2/4] Event ingest (StatsBomb Open → events tablosu)...")
         ingest_report = ingest_events_for_match(
