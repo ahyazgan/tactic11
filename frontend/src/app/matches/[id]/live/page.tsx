@@ -2,6 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import { ConfidenceBadge } from "@/components/ui";
+
+interface Confidence {
+  score: number;
+  label: string;
+  drivers: string[];
+}
 
 // Push notification: tarayıcı izin verir + ürettiği high urgency sub için
 function notifyHighUrgency(playerId: number, score: number) {
@@ -56,10 +63,38 @@ interface Snapshot {
     alert_text: string;
     player_shifts?: PlayerShift[];
   };
+  momentum?: {
+    score?: number;
+    holder?: string;
+    alert_text?: string;
+  };
+  context?: {
+    one_liner?: string | null;
+    primary?: { headline?: string } | null;
+    confidence_note?: string;
+  };
+  confidence?: {
+    context?: Confidence | null;
+    live_sub_recommendation?: Confidence | null;
+    momentum?: Confidence | null;
+  };
+  trend?: {
+    status?: string;
+    momentum?: { direction?: string; sustained_snapshots?: number; delta?: number };
+    field_tilt?: string;
+    dominance?: string;
+    stability?: { primary?: string | null; repeats?: number; stable?: boolean };
+  };
   type?: string;
   error?: string;
   note?: string;
 }
+
+const TREND_DIR_TONE: Record<string, string> = {
+  "bize doğru": "text-good",
+  "rakibe doğru": "text-bad",
+  "dengeli": "text-muted",
+};
 
 function StatCard({
   label, value, badge, accent = "default",
@@ -288,6 +323,64 @@ export default function LiveMatchPage() {
                   : "default"
               } />
           </div>
+
+          {snapshot.context?.one_liner && (
+            <>
+              <h2 className="text-sm uppercase text-muted mb-3">
+                Bağlam & Güven (Orkestra Şefi)
+              </h2>
+              <div className="card mb-6">
+                <div className="flex items-start justify-between gap-3 mb-1">
+                  <span className="text-sm">{snapshot.context.one_liner}</span>
+                  {snapshot.confidence?.context && (
+                    <ConfidenceBadge
+                      score={snapshot.confidence.context.score}
+                      label={snapshot.confidence.context.label}
+                      drivers={snapshot.confidence.context.drivers}
+                    />
+                  )}
+                </div>
+                {snapshot.context.confidence_note && (
+                  <div className="text-xs text-warn mb-1">
+                    ⚠ {snapshot.context.confidence_note}
+                  </div>
+                )}
+                {snapshot.momentum?.alert_text && (
+                  <div className="flex items-center justify-between gap-3 mt-2 pt-2 border-t border-borderlt">
+                    <span className="text-xs text-muted">
+                      {snapshot.momentum.alert_text}
+                    </span>
+                    {snapshot.confidence?.momentum && (
+                      <ConfidenceBadge
+                        score={snapshot.confidence.momentum.score}
+                        label={snapshot.confidence.momentum.label}
+                        drivers={snapshot.confidence.momentum.drivers}
+                      />
+                    )}
+                  </div>
+                )}
+                {snapshot.trend?.status === "ok" && snapshot.trend.momentum && (
+                  <div className="text-xs mt-2 pt-2 border-t border-borderlt">
+                    Trend: momentum{" "}
+                    <span
+                      className={
+                        TREND_DIR_TONE[snapshot.trend.momentum.direction ?? ""]
+                          ?? "text-muted"
+                      }
+                    >
+                      {snapshot.trend.momentum.direction}
+                    </span>
+                    {(snapshot.trend.momentum.sustained_snapshots ?? 0) >= 2 && (
+                      <> · {snapshot.trend.momentum.sustained_snapshots} snapshot'tır</>
+                    )}
+                    {snapshot.trend.stability?.stable && (
+                      <span className="text-good"> · sinyal istikrarlı</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
           <div className="grid md:grid-cols-3 gap-3 mb-6">
             <StatCard label="PPDA"
