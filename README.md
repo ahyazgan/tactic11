@@ -144,7 +144,7 @@ pytest -q
 ```
 Testler in-memory SQLite ile çalışır; gerçek DB veya API anahtarı gerekmez.
 
-## Taktiksel Engine Envanteri (47 modül)
+## Taktiksel Engine Envanteri (73 modül)
 
 Saf-Python pure-compute engine'ler, hepsi multi-tenant + audit'li.
 Tükettiği veri: `events` tablosu (PassEvent, Carry, DefensiveAction, Shot).
@@ -174,6 +174,29 @@ match_dominance (5-bileşen tek skor), coaching_identity (8-boyut + 5 arketip).
 **VAEP — possession value (1 modül, swap-edilebilir):**
 v1-baseline (xT heuristic) + v2-tabular (events tablosundan train edilmiş
 zone-bin lookup). `POST /admin/vaep/train` çağrısıyla v2'ye geç.
+
+**Faz 5 Sprint — kadro + karar destek (15 modül):**
+available_squad, squad_depth, rotation_plan, injury_risk, fatigue_signal,
+matchup_grid, opponent_weakness, pass_alternatives, proactive_alerts,
+set_piece_pattern_history, set_piece_routine, substitution_chess,
+tactical_trend, live_shape_drift, live_sub_recommendation.
+
+**Faz 6 — maç-içi karar (5 modül):**
+momentum_tracker (momentum meter + pres kırılma + xG swing),
+sub_timing (optimal timing + etki + paket), live_tactical_trigger
+(formation switch + press height + kanal kayması), live_risk_monitor
+(kart + sakatlık + zaman yönetimi), opponent_reaction (rakip sub tepkisi +
+momentum kırma).
+
+**Faz 7 — mekânsal/bireysel/bağlam (6 modül):**
+spatial_control (boşluk haritası + sayısal üstünlük + genişlik/darlık),
+live_matchup (düello kaybeden + sıcak el + yıldız besle), set_piece_timing
+(köşe/faul fırsat + penaltı atıcı durumu), game_friction (faul biriktirme +
+ofsayt tuzağı), referee_context (hakem eğilimi + avantaj penceresi),
+score_time_matrix (kapanış reçetesi + risk/getiri eşiği).
+
+> Faz 6+7 engine'leri event-window proxy ile çalışır (replay modu); gerçek
+> canlı feed gelince adapter swap edilir, engine kodu değişmez.
 
 ## Batch Tactical Endpoints
 
@@ -215,12 +238,43 @@ POST /admin/tactical-cache/clear
     → tactical_profile cache temizle (event ingest sonrası)
 ```
 
+**Maç-içi karar paneli (Faz 6+7):**
+```
+GET /admin/matches/{id}/live-decision?my_team_id=N&current_minute=70
+    [&star_player_id=N&draw_is_enough=bool&must_win=bool]
+    → 8 engine birleşik tek panel: momentum + sub_timing + tactical_triggers
+      + risk_monitor (Faz 6) + spatial_control + live_matchup +
+      score_time_matrix (Faz 7)
+
+POST /admin/matches/{id}/opponent-reaction?my_team_id=N&current_minute=70&momentum_score=-0.5
+    → Rakip sub okuma + momentum kırma önerisi (#13/#14)
+      payload: {"opponent_subs": [{position_in, minute}]}
+
+POST /admin/matches/{id}/live-risk?my_team_id=N&current_minute=80
+    → Kart + sakatlık flag + zaman yönetimi (#10/#11/#12)
+      payload: {"player_states": [{player_id, yellow_card?, duel_count?, fatigue?}]}
+
+POST /admin/matches/{id}/set-piece?my_team_id=N&current_minute=70
+    → Duran top fırsat rutini + penaltı atıcı durumu (Faz 7 #7/#8)
+      payload: {"set_piece_won", "opponent_weak_zones", "penalty_taker"}
+
+POST /admin/matches/{id}/game-friction?my_team_id=N&current_minute=70
+    → Faul biriktirme bölgesi + ofsayt tuzağı riski (Faz 7 #9/#10)
+      payload: {"opponent_foul_zones": [...]}
+
+POST /admin/matches/{id}/referee-context?my_team_id=N&current_minute=50
+    → Hakem eğilimi + avantaj penceresi (Faz 7 #11/#12)
+      payload: {"cards_per_game", "fouls_per_game", "opponent_card_edge_players"}
+```
+
 ## Canlı Maç (WebSocket)
 
 ```
 ws://host/ws/matches/{id}/live?my_team_id=N&interval_seconds=10&max_minute=90
     → Her N saniyede tactical snapshot push:
       PPDA + dominance + sub_recommendation + opponent_shape_drift
+      + Faz 6: momentum + sub_timing + tactical_triggers
+      + Faz 7: spatial_control + live_matchup + score_time_matrix
     → match_ended mesajıyla kapanır
 
 GET /ws/active-connections
