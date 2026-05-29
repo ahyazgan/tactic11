@@ -9,7 +9,7 @@ from __future__ import annotations
 import time
 import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
@@ -684,6 +684,44 @@ def player_load(
         threshold_minutes_per_week=threshold_minutes_per_week,
     )
     return _maybe_explain(engine_result_to_dict(result), result, explain)
+
+
+@protected.get(
+    "/players/{player_id}/info",
+    tags=["team-analysis"],
+    summary="Oyuncu temel bilgileri (name + position + birth_date + nationality)",
+)
+def player_info(
+    player_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Players tablosundan temel bilgi — dashboard sayfaları için."""
+    player = session.execute(
+        select(models.Player).where(
+            models.Player.sport == football.SPORT_NAME,
+            models.Player.external_id == player_id,
+        )
+    ).scalar_one_or_none()
+    if player is None:
+        raise HTTPException(
+            status_code=404, detail=f"player {player_id} bulunamadı",
+        )
+    age: int | None = None
+    if player.birth_date is not None:
+        today = datetime.now(timezone.utc).date()
+        age = today.year - player.birth_date.year - (
+            1 if (today.month, today.day) <
+                 (player.birth_date.month, player.birth_date.day)
+            else 0
+        )
+    return {
+        "player_external_id": player.external_id,
+        "name": player.name,
+        "position": player.position,
+        "birth_date": player.birth_date.isoformat() if player.birth_date else None,
+        "age": age,
+        "nationality": player.nationality,
+    }
 
 
 @protected.get(
