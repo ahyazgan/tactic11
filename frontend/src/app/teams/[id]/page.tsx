@@ -3,6 +3,13 @@
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { ConfidenceBadge } from "@/components/ui";
+
+interface Confidence {
+  score: number;
+  label: string;
+  drivers: string[];
+}
 
 interface FormResponse {
   value: {
@@ -15,6 +22,7 @@ interface FormResponse {
     points_per_game: number;
     last_results: ("W" | "D" | "L")[];
   };
+  confidence: Confidence | null;
 }
 
 interface RatingResponse {
@@ -24,6 +32,7 @@ interface RatingResponse {
     away_rating: number | null;
     matches_considered: number;
   };
+  confidence: Confidence | null;
 }
 
 function ResultDot({ r }: { r: "W" | "D" | "L" }) {
@@ -48,7 +57,16 @@ export default function TeamDetailPage() {
 
       <div className="grid md:grid-cols-2 gap-4">
         <div className="card">
-          <h2 className="text-sm uppercase text-muted mb-3">Son form</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm uppercase text-muted">Son form</h2>
+            {form?.confidence && (
+              <ConfidenceBadge
+                score={form.confidence.score}
+                label={form.confidence.label}
+                drivers={form.confidence.drivers}
+              />
+            )}
+          </div>
           {form ? (
             <>
               <div className="text-3xl font-mono mb-2">
@@ -70,7 +88,16 @@ export default function TeamDetailPage() {
         </div>
 
         <div className="card">
-          <h2 className="text-sm uppercase text-muted mb-3">Rating</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm uppercase text-muted">Rating</h2>
+            {rating?.confidence && (
+              <ConfidenceBadge
+                score={rating.confidence.score}
+                label={rating.confidence.label}
+                drivers={rating.confidence.drivers}
+              />
+            )}
+          </div>
           {rating ? (
             <>
               <div className="text-3xl font-mono mb-2">{rating.value.rating.toFixed(2)}</div>

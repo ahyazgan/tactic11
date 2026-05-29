@@ -20,8 +20,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 
-from app.audit import AuditRecord, EngineResult
+from app.audit import AuditRecord, ConfidenceInfo, EngineResult
 from app.engine._protocols import MatchLike
+from app.engine.confidence import score_confidence
 from app.engine.form import FormReport, compute_form
 
 ENGINE_NAME = "engine.rating"
@@ -128,4 +129,12 @@ def compute_team_rating(
             "subsetlerine uygulanmasıyla; boş subset → 0.0"
         ),
     )
-    return EngineResult(value=rating, audit=audit)
+    # Güven: sample_size = değerlendirilen maç; magnitude = rating gücü (ppg/3).
+    conf = score_confidence(
+        sample_size=rating.matches_considered,
+        magnitude=min(1.0, ppg_overall / 3.0),
+    )
+    return EngineResult(
+        value=rating, audit=audit,
+        confidence=ConfidenceInfo(conf.score, conf.label, conf.drivers),
+    )

@@ -22,8 +22,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 
-from app.audit import AuditRecord, EngineResult
+from app.audit import AuditRecord, ConfidenceInfo, EngineResult
 from app.domain import Carry, DefensiveAction, PassEvent
+from app.engine.confidence import score_confidence
 
 ENGINE_NAME = "engine.opponent_weakness"
 ENGINE_VERSION = "1"
@@ -148,4 +149,14 @@ def compute_opponent_weakness(
         },
         formula="vulnerability = (our_attacks+1) / (opp_def_actions+1) per channel",
     )
-    return EngineResult(value=report, audit=audit)
+    # Güven: sample_size = final-third atak + rakip def aksiyon toplamı;
+    # magnitude = en zayıf kanalın 1.0 nötrden sapması (|score-1|).
+    _vuln_top = sorted_v[0].vulnerability_score if sorted_v else 1.0
+    conf = score_confidence(
+        sample_size=sum(c.our_attacks + c.opp_def_actions for c in by_channel),
+        magnitude=min(1.0, abs(_vuln_top - 1.0)),
+    )
+    return EngineResult(
+        value=report, audit=audit,
+        confidence=ConfidenceInfo(conf.score, conf.label, conf.drivers),
+    )

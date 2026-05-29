@@ -136,3 +136,12 @@ def test_predict_zero_goals_doesnt_crash():
     # Ev sahibi 0 gol atıyor → kazanma şansı çok düşük (ancak 0-0 = beraberlik)
     assert p.prob_home_win == pytest.approx(0.0, abs=0.001)
     assert p.prob_away_win > 0.5  # dep favori
+
+
+def test_predict_carries_confidence():
+    home_f = _form_for(611, scoring_avg=1.5)
+    away_f = _form_for(607, scoring_avg=1.0)
+    res = compute_predict(home_f, away_f, home_team_id=611, away_team_id=607)
+    assert res.confidence is not None
+    assert 0.0 <= res.confidence.score <= 1.0
+    assert res.confidence.label in ("yüksek", "orta", "düşük")

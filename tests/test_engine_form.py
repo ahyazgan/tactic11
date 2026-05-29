@@ -227,3 +227,16 @@ def test_form_time_decay_rejects_negative_rate():
     matches = [_match(1, home=611, away=607, home_score=1, away_score=0, days_ago=1)]
     with pytest.raises(ValueError, match="time_decay_rate"):
         compute_form(611, matches, time_decay_rate=-0.01)
+
+
+def test_form_carries_confidence():
+    matches = [
+        _match(1, home=611, away=607, home_score=2, away_score=1, days_ago=10),
+        _match(2, home=614, away=611, home_score=1, away_score=3, days_ago=7),
+        _match(3, home=611, away=998, home_score=0, away_score=0, days_ago=3),
+        _match(4, home=998, away=611, home_score=2, away_score=0, days_ago=1),
+    ]
+    res = compute_form(611, matches, last_n=10)
+    assert res.confidence is not None
+    assert 0.0 <= res.confidence.score <= 1.0
+    assert res.confidence.label in ("yüksek", "orta", "düşük")

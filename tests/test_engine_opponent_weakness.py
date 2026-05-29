@@ -97,3 +97,15 @@ def test_own_team_defs_ignored():
     ).value
     left = next(c for c in r.by_channel if c.channel == "left")
     assert left.opp_def_actions == 0
+
+
+def test_opponent_weakness_carries_confidence():
+    passes = [_p(11, sx=50, ex=80, ey=15)] * 10
+    defs = [_d(22, y=15)]
+    res = compute_opponent_weakness(
+        my_team_external_id=11, opponent_team_external_id=22,
+        all_passes=passes, all_carries=[], all_def_actions=defs,
+    )
+    assert res.confidence is not None
+    assert 0.0 <= res.confidence.score <= 1.0
+    assert res.confidence.label in ("yüksek", "orta", "düşük")

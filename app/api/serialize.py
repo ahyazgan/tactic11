@@ -26,4 +26,11 @@ def engine_result_to_dict(result: EngineResult) -> dict[str, Any]:
             "formula": result.audit.formula,
             "inputs": result.audit.inputs,
         },
+        # Güven skoru (Faz 8) — bağlanan motorlarda dolu, diğerlerinde None.
+        "confidence": (
+            {"score": result.confidence.score,
+             "label": result.confidence.label,
+             "drivers": list(result.confidence.drivers)}
+            if result.confidence is not None else None
+        ),
     }
