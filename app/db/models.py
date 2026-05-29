@@ -674,3 +674,34 @@ class MatchSnapshot(Base):
     opponent_formation: Mapped[str | None] = mapped_column(String(16), nullable=True)
     frame_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class Note(Base):
+    """Çoklu kullanıcı not/yorum (Faz 5 #41).
+
+    Herhangi bir konuya (team/player/match/decision/agent_output) iliştirilir.
+    parent_note_id ile threaded zincir. author_user_id NULL ise yazarın
+    hesabı silinmiş demektir (FK ondelete=SET NULL).
+    """
+
+    __tablename__ = "notes"
+    __table_args__ = (
+        Index("ix_notes_subject", "subject_type", "subject_id"),
+        Index("ix_notes_parent", "parent_note_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    author_user_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True,
+    )
+    subject_type: Mapped[str] = mapped_column(String(32))
+    subject_id: Mapped[int] = mapped_column(Integer)
+    parent_note_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("notes.id", ondelete="CASCADE"), nullable=True,
+    )
+    body: Mapped[str] = mapped_column(String(4096))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
