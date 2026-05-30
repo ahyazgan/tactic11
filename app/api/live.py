@@ -90,6 +90,85 @@ def _trend_frame(snapshot: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _compute_live_vaep(
+    *,
+    my_team_id: int,
+    opp_team_id: int,
+    passes: list[Any],
+    carries: list[Any],
+    shots: list[Any],
+    current_minute: float,
+    top_n: int = 5,
+) -> dict[str, Any]:
+    """My + opp takım toplam VAEP + top-N my_team oyuncusu (Faz 5 #47).
+
+    Saf orchestrator: engine.vaep.compute_vaep'i takım ve oyuncu için çağırır;
+    DB/HTTP bilmez. WebSocket snapshot'ına gömülür ve REST test'lerinde de
+    bağımsız çağrılabilir. minutes_played = current_minute (basit varsayım —
+    her oyuncu için aynı; sub/lineup verisi henüz live'da yok).
+    """
+    from app.engine.vaep.compute import compute_vaep
+
+    try:
+        my_team = compute_vaep(
+            team_external_id=my_team_id,
+            all_passes=passes, all_carries=carries, all_shots=shots,
+            minutes_played=current_minute,
+        ).value
+        opp_team = compute_vaep(
+            team_external_id=opp_team_id,
+            all_passes=passes, all_carries=carries, all_shots=shots,
+            minutes_played=current_minute,
+        ).value
+    except (ValueError, ZeroDivisionError) as e:
+        return {"error": str(e)}
+
+    # Player-level (sadece my_team oyuncuları, pass + carry'den unique pid)
+    my_team_player_ids: set[int] = set()
+    for p in passes:
+        if getattr(p, "team_external_id", None) == my_team_id:
+            pid = getattr(p, "player_external_id", None)
+            if pid is not None:
+                my_team_player_ids.add(int(pid))
+    for c in carries:
+        if getattr(c, "team_external_id", None) == my_team_id:
+            pid = getattr(c, "player_external_id", None)
+            if pid is not None:
+                my_team_player_ids.add(int(pid))
+
+    player_results: list[dict[str, Any]] = []
+    for pid in my_team_player_ids:
+        try:
+            r = compute_vaep(
+                player_external_id=pid,
+                all_passes=passes, all_carries=carries, all_shots=shots,
+                minutes_played=current_minute,
+            ).value
+        except (ValueError, ZeroDivisionError):
+            continue
+        if r.total_actions == 0:
+            continue
+        player_results.append({
+            "player_id": pid,
+            "vaep_value": round(r.vaep_value, 4),
+            "total_actions": r.total_actions,
+            "vaep_per_90": (
+                round(r.vaep_per_90, 4) if r.vaep_per_90 is not None else None
+            ),
+        })
+    player_results.sort(key=lambda x: x["vaep_value"], reverse=True)
+
+    return {
+        "my_team_total": round(my_team.vaep_value, 4),
+        "opp_team_total": round(opp_team.vaep_value, 4),
+        "my_team_actions": my_team.total_actions,
+        "opp_team_actions": opp_team.total_actions,
+        "model_version": my_team.model_version,
+        "current_minute": current_minute,
+        "top_players": player_results[:top_n],
+    }
+
+
 def _compute_live_snapshot(
     session, match_id: int, my_team_id: int, current_minute: float,
 ) -> dict[str, Any]:
@@ -240,6 +319,13 @@ def _compute_live_snapshot(
             "closing_recipe": stm.closing_recipe,
             "alerts": list(stm.alerts),
         }
+
+        # Faz 5 #47: VAEP canlı momentum (player-level streaming)
+        snapshot["vaep"] = _compute_live_vaep(
+            my_team_id=my_team_id, opp_team_id=opp_id,
+            passes=passes_so_far, carries=carries_so_far, shots=shots_so_far,
+            current_minute=current_minute,
+        )
 
         # Faz 8: bağlam motoru (orkestra şefi) — tek "şimdi şunu yap" başlığı
         from app.api.context_pipeline import context_only
