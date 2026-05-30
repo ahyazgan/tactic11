@@ -223,10 +223,35 @@ Nginx önünde reverse proxy + TLS önerilir (`proxy_pass http://127.0.0.1:8000`
 
 ### 4) Cron (`crontab -e` — manager2 kullanıcısı)
 ```cron
-# Her sabah 06:00 UTC — Süper Lig sync
+# 06:00 UTC — Süper Lig sync (1. iş — veri tazele)
 0 6 * * * cd /opt/manager2 && venv/bin/python scripts/run_job.py sync_league --league 203 --season 2024 >> /var/log/manager2-cron.log 2>&1
+
+# 06:15 UTC — Morning brief (Faz 5 #18): bugün maçı olan takımların
+# PreMatchReportAgent çıktıları tazelenir. sync_league'ten 15 dk sonra
+# tetiklenmeli — fresh verilerle çalışsın.
+15 6 * * * cd /opt/manager2 && venv/bin/python scripts/run_job.py morning_brief >> /var/log/manager2-cron.log 2>&1
+
+# 03:00 UTC — Geçen günkü maçların tahmin sonuçlarını uzlaştır (kalibrasyon)
+0 3 * * * cd /opt/manager2 && venv/bin/python scripts/run_job.py reconcile_predictions >> /var/log/manager2-cron.log 2>&1
+
+# Pazartesi 04:00 UTC — predict_ml haftalık retrain
+0 4 * * 1 cd /opt/manager2 && venv/bin/python scripts/run_job.py train_predict_ml >> /var/log/manager2-cron.log 2>&1
 ```
 `run_job.py` başarısızsa exit 1 döner — cron MAILTO ile uyarı gönderir.
+
+#### Cron zinciri mantığı
+- **sync_league (06:00)** → API-Football'dan günün maç + sonuç verisi.
+- **morning_brief (06:15)** → fresh veriler üstünden bugün maçı olan
+  takımlar için PreMatchReportAgent çıktısı; `run_pre_match_reports`
+  job'unu `horizon_days=1` ile çağıran kabuk. Idempotent: aynı maçın
+  output'u tazelenir (`save_agent_output` upsert).
+- **reconcile_predictions (03:00 gece)** → dünkü maçların actual sonucunu
+  predictions tablosuna yazar; ML retrain için lazım.
+- **train_predict_ml (Pzt 04:00)** → haftalık best ρ retrain; cache_entries
+  içine 30 gün TTL ile yazar.
+
+Saat dilimi: cron expression'ları **UTC** kabul edilir (server timezone).
+Lokal saatte istersen crontab'in başına `TZ=Europe/Istanbul` ekle.
 
 ## Production checklist
 
