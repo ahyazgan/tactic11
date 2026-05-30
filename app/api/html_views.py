@@ -1,10 +1,12 @@
-"""HTML görünüm endpoint'leri (Faz 5 #15, #17, #26, #29, #36, #39).
+"""HTML görünüm endpoint'leri (Faz 5 #15, #17, #26, #29, #36, #39 + live).
 
 Sunucu tarafından render edilen tek-HTML sayfaları. JS sayfa içinde mevcut
-JSON endpoint'lerini fetch eder; X-API-Key localStorage'tan gelir.
+JSON endpoint'lerini ya da WebSocket'i tüketir; X-API-Key localStorage'tan
+gelir.
 
 - GET /matches/{match_id}/game-plan         — birleşik game-plan ekranı (#29)
 - GET /matches/{match_id}/warmup            — kickoff -60 dk checklist (#26)
+- GET /matches/{match_id}/live              — canlı WebSocket izleyici
 - GET /teams/{team_id}/dashboard            — takım merkezli landing (#15)
 - GET /players/{player_id}/dashboard        — oyuncu gelişim trendi (#36)
 - GET /teams/{team_id}/decisions-dashboard  — karar isabet + outcome (#39)
@@ -24,6 +26,7 @@ router = APIRouter(tags=["html-views"])
 _TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 _MATCH_GAME_PLAN_HTML = _TEMPLATES_DIR / "match_game_plan.html"
 _MATCH_WARMUP_HTML = _TEMPLATES_DIR / "match_warmup.html"
+_MATCH_LIVE_HTML = _TEMPLATES_DIR / "match_live_watcher.html"
 _TEAM_DASHBOARD_HTML = _TEMPLATES_DIR / "team_dashboard.html"
 _PLAYER_DASHBOARD_HTML = _TEMPLATES_DIR / "player_dashboard.html"
 _TEAM_DECISIONS_HTML = _TEMPLATES_DIR / "team_decisions_dashboard.html"
@@ -88,6 +91,32 @@ def match_warmup_view(match_id: int) -> HTMLResponse:
     if match_id <= 0:
         raise HTTPException(status_code=400, detail="match_id > 0 olmalı")
     return _render_template(_MATCH_WARMUP_HTML, "MATCH_ID", match_id)
+
+
+@router.get(
+    "/matches/{match_id}/live",
+    response_class=HTMLResponse,
+    summary="Canlı maç izleyici (WebSocket-tüketici sayfa)",
+)
+def match_live_watcher_view(match_id: int) -> HTMLResponse:
+    """WebSocket `/ws/matches/{id}/live` snapshot'larını gerçek-zamanlı render et.
+
+    Skor tablosu + dakika + primary context banner (urgent/warn renkli) +
+    momentum gauge (sol/sağ yarıçap) + PPDA + field_tilt + match_dominance +
+    tactical_triggers + spatial+matchup alarmları + sub_timing + VAEP top
+    oyuncular + score_time recipe. Reconnect manuel.
+    """
+    if match_id <= 0:
+        raise HTTPException(status_code=400, detail="match_id > 0 olmalı")
+    try:
+        html = _MATCH_LIVE_HTML.read_text(encoding="utf-8")
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="template eksik: match_live_watcher.html",
+        ) from e
+    html = _inject_js_constant(html, "MATCH_ID", match_id)
+    return HTMLResponse(html)
 
 
 @router.get(

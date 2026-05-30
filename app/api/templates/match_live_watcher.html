@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>manager2 — Canlı Maç</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --good: #3fb950; --warn: #d29922; --bad: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  header a { color: var(--accent); text-decoration: none; margin-left: 12px; }
+  main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .auth { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .auth label { color: var(--muted); font-size: 12px; }
+  .auth input { background: var(--bg); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px; }
+  .auth input.id { width: 100px; }
+  .auth button { background: var(--accent); color: #fff; border: 0; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .auth button.danger { background: var(--bad); }
+  .status-bar { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
+  .status-dot.connected { background: var(--good); animation: pulse 2s infinite; }
+  .status-dot.error { background: var(--bad); }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .scoreboard { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; text-align: center; }
+  .scoreboard .score { font-size: 48px; font-weight: 700; letter-spacing: 2px; }
+  .scoreboard .minute { color: var(--muted); margin-top: 6px; font-size: 14px; }
+  .scoreboard .teams { color: var(--accent); font-size: 14px; margin-top: 6px; }
+
+  .primary-alert { background: var(--panel); border: 2px solid var(--accent); border-radius: 8px; padding: 16px; margin-bottom: 16px; display: none; }
+  .primary-alert.active { display: block; }
+  .primary-alert .label { color: var(--accent); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .primary-alert .head { font-size: 18px; font-weight: 600; margin: 4px 0; }
+  .primary-alert .detail { color: var(--muted); font-size: 13px; }
+  .primary-alert.urgent { border-color: var(--bad); }
+  .primary-alert.urgent .label { color: var(--bad); }
+  .primary-alert.warn { border-color: var(--warn); }
+  .primary-alert.warn .label { color: var(--warn); }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card.wide { grid-column: 1 / -1; }
+  .card h2 { margin: 0 0 12px 0; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .num { font-size: 32px; font-weight: 600; }
+  .sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .status-ok { color: var(--good); }
+  .status-warn { color: var(--warn); }
+  .status-bad { color: var(--bad); }
+  .status-accent { color: var(--accent); }
+
+  /* Momentum gauge */
+  .momentum-bar { height: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; position: relative; margin-top: 8px; }
+  .momentum-bar .fill { position: absolute; top: 0; bottom: 0; transition: all 0.5s; }
+  .momentum-bar .center-line { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--muted); }
+  .momentum-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td.r { text-align: right; }
+  td.c { text-align: center; }
+  .pill { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .pill.fired { background: rgba(248, 81, 73, 0.2); color: var(--bad); }
+  .pill.idle { background: rgba(139, 148, 158, 0.2); color: var(--muted); }
+  .alert-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-item .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px; background: var(--bad); color: #fff; }
+  .empty { color: var(--muted); font-style: italic; font-size: 13px; }
+
+  .footer { padding: 16px 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Canlı Maç İzleyici</h1>
+    <div class="meta" id="meta">Maç #<span id="meta-match">—</span></div>
+  </div>
+  <div>
+    <a id="game-plan-link" href="#">Game Plan</a>
+    <a id="warmup-link" href="#">Checklist</a>
+    <a href="/dashboard">Ops →</a>
+  </div>
+</header>
+
+<main>
+  <div class="auth">
+    <label>X-API-Key (opsiyonel)</label>
+    <input id="apikey" placeholder="API key" autocomplete="off" />
+    <label>my_team_id</label>
+    <input id="my-team-id" class="id" type="number" placeholder="örn. 549" />
+    <label>interval (sn)</label>
+    <input id="interval" class="id" type="number" min="5" max="60" value="10" />
+    <button id="connect">Bağlan</button>
+    <button id="disconnect" class="danger" disabled>Kes</button>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="status-dot"></div>
+    <div id="status-text">bağlantı yok</div>
+    <div style="margin-left: auto; color: var(--muted);" id="last-update">—</div>
+  </div>
+
+  <div class="scoreboard" id="scoreboard">
+    <div class="score" id="score">— — —</div>
+    <div class="minute" id="minute">—</div>
+    <div class="teams" id="teams">Bağlanın → canlı feed başlasın</div>
+  </div>
+
+  <div class="primary-alert" id="primary-alert">
+    <div class="label" id="primary-label">CONTEXT</div>
+    <div class="head" id="primary-head">—</div>
+    <div class="detail" id="primary-detail">—</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Momentum</h2>
+      <div class="num" id="momentum-score">—</div>
+      <div class="sub" id="momentum-holder">holder</div>
+      <div class="momentum-bar">
+        <div class="fill" id="momentum-fill"></div>
+        <div class="center-line"></div>
+      </div>
+      <div class="momentum-labels"><span id="opp-label">rakip</span><span id="us-label">biz</span></div>
+    </div>
+
+    <div class="card">
+      <h2>PPDA</h2>
+      <div class="num" id="ppda">—</div>
+      <div class="sub">paslar/savunma aksiyon</div>
+    </div>
+
+    <div class="card">
+      <h2>Field tilt</h2>
+      <div class="num" id="tilt">—</div>
+      <div class="sub">bizim saha payımız</div>
+    </div>
+
+    <div class="card">
+      <h2>Match dominance</h2>
+      <div class="num" id="dominance">—</div>
+      <div class="sub" id="dominance-detail">—</div>
+    </div>
+
+    <div class="card wide">
+      <h2>Tactical triggers (fired)</h2>
+      <div id="triggers"><span class="empty">—</span></div>
+    </div>
+
+    <div class="card wide">
+      <h2>Spatial alerts + live matchup</h2>
+      <div id="spatial-alerts"><span class="empty">—</span></div>
+    </div>
+
+    <div class="card wide">
+      <h2>Sub timing önerileri</h2>
+      <div id="sub-timing"><span class="empty">—</span></div>
+    </div>
+
+    <div class="card wide">
+      <h2>VAEP top oyuncular</h2>
+      <div id="vaep"><span class="empty">VAEP feed bekleniyor — Sprint stream PR'ından sonra</span></div>
+    </div>
+
+    <div class="card wide">
+      <h2>Score-time recipe</h2>
+      <div id="stm"><span class="empty">—</span></div>
+    </div>
+  </div>
+</main>
+
+<div class="footer">
+  manager2 · canlı maç izleyici · WebSocket <code>/ws/matches/{id}/live</code>
+</div>
+
+<script>
+const MATCH_ID = parseInt(window.MATCH_ID, 10);
+document.getElementById('meta-match').textContent = MATCH_ID;
+document.getElementById('game-plan-link').href = `/matches/${MATCH_ID}/game-plan`;
+document.getElementById('warmup-link').href = `/matches/${MATCH_ID}/warmup`;
+
+const STORAGE_API = 'manager2_apikey';
+const STORAGE_TEAM = 'manager2_live_team_' + MATCH_ID;
+const STORAGE_INT = 'manager2_live_interval';
+
+const apikeyInput = document.getElementById('apikey');
+const teamInput = document.getElementById('my-team-id');
+const intervalInput = document.getElementById('interval');
+const connectBtn = document.getElementById('connect');
+const disconnectBtn = document.getElementById('disconnect');
+
+apikeyInput.value = localStorage.getItem(STORAGE_API) || '';
+teamInput.value = localStorage.getItem(STORAGE_TEAM) || '';
+intervalInput.value = localStorage.getItem(STORAGE_INT) || '10';
+
+let ws = null;
+let lastSnapshotAt = null;
+
+function setStatus(text, cls) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot ' + (cls || '');
+  document.getElementById('status-text').textContent = text;
+}
+
+function tickLastUpdate() {
+  if (!lastSnapshotAt) return;
+  const sec = Math.round((Date.now() - lastSnapshotAt) / 1000);
+  document.getElementById('last-update').textContent = `son snapshot ${sec}sn önce`;
+}
+setInterval(tickLastUpdate, 1000);
+
+connectBtn.addEventListener('click', () => {
+  const teamId = parseInt(teamInput.value, 10);
+  const interval = parseInt(intervalInput.value, 10);
+  if (!teamId) { alert('my_team_id girin.'); return; }
+  if (!interval || interval < 5 || interval > 60) { alert('interval 5..60 sn'); return; }
+  localStorage.setItem(STORAGE_API, apikeyInput.value);
+  localStorage.setItem(STORAGE_TEAM, teamInput.value);
+  localStorage.setItem(STORAGE_INT, intervalInput.value);
+  connect(teamId, interval);
+});
+
+disconnectBtn.addEventListener('click', () => {
+  if (ws) { ws.close(); }
+});
+
+function connect(teamId, intervalSec) {
+  if (ws) { ws.close(); }
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const url = `${proto}//${window.location.host}/ws/matches/${MATCH_ID}/live`
+            + `?my_team_id=${teamId}&interval_seconds=${intervalSec}`;
+  setStatus('bağlanıyor…', '');
+  connectBtn.disabled = true;
+  disconnectBtn.disabled = false;
+
+  ws = new WebSocket(url);
+  ws.onopen = () => setStatus('bağlı', 'connected');
+  ws.onmessage = (ev) => {
+    try { render(JSON.parse(ev.data)); } catch (e) { console.error(e); }
+  };
+  ws.onerror = () => setStatus('hata', 'error');
+  ws.onclose = (ev) => {
+    setStatus(`kapalı (${ev.code || '?'})`, '');
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
+    ws = null;
+  };
+}
+
+function fmt(n, digits = 2) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toFixed(digits);
+}
+
+function setText(id, text, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  if (cls) el.className = el.className.split(' ').filter(c => !c.startsWith('status-')).join(' ') + ' ' + cls;
+}
+
+function render(snap) {
+  lastSnapshotAt = Date.now();
+  if (snap.error) {
+    setStatus(`hata: ${snap.error}`, 'error');
+    return;
+  }
+  if (snap.note) {
+    document.getElementById('teams').textContent = snap.note;
+    return;
+  }
+
+  // Scoreboard
+  document.getElementById('score').textContent = snap.score || '— —';
+  document.getElementById('minute').textContent = snap.current_minute != null
+    ? `Dakika ${Math.round(snap.current_minute)}` : '—';
+  document.getElementById('teams').textContent = `Bizim #${snap.my_team_id} · Rakip #${snap.opponent_id}`;
+  document.getElementById('opp-label').textContent = `Rakip #${snap.opponent_id}`;
+  document.getElementById('us-label').textContent = `Biz #${snap.my_team_id}`;
+
+  // Primary context alert
+  const ctx = snap.context || {};
+  const primary = ctx.primary || {};
+  const banner = document.getElementById('primary-alert');
+  if (primary.headline || primary.recommendation) {
+    banner.classList.add('active');
+    const urg = (primary.urgency || '').toLowerCase();
+    banner.classList.remove('urgent', 'warn');
+    if (urg === 'high' || urg === 'urgent') banner.classList.add('urgent');
+    else if (urg === 'medium' || urg === 'warn') banner.classList.add('warn');
+    setText('primary-label', (primary.kind || 'context').toUpperCase());
+    setText('primary-head', primary.headline || '—');
+    setText('primary-detail', primary.recommendation || '');
+  } else {
+    banner.classList.remove('active');
+  }
+
+  // Momentum
+  const m = snap.momentum || {};
+  setText('momentum-score', fmt(m.score, 2));
+  setText('momentum-holder', `holder: ${m.holder || '—'}`);
+  const fill = document.getElementById('momentum-fill');
+  const score = m.score || 0;
+  // -1..+1 → 0..100% width
+  const pct = Math.max(-1, Math.min(1, score));
+  if (pct >= 0) {
+    fill.style.left = '50%';
+    fill.style.right = `${50 - pct * 50}%`;
+    fill.style.background = 'var(--good)';
+  } else {
+    fill.style.right = '50%';
+    fill.style.left = `${50 + pct * 50}%`;
+    fill.style.background = 'var(--bad)';
+  }
+
+  // PPDA
+  const ppda = snap.ppda;
+  setText('ppda', ppda?.ppda != null ? fmt(ppda.ppda, 2) : '—');
+
+  // Field tilt
+  const tilt = snap.field_tilt;
+  setText('tilt', tilt?.team_a_tilt != null ? `${(tilt.team_a_tilt * 100).toFixed(0)}%` : '—');
+
+  // Dominance
+  const dom = snap.match_dominance || {};
+  const ds = dom.dominance_score;
+  setText('dominance', ds != null ? fmt(ds, 2) : '—');
+  const verdict = dom.verdict || dom.label;
+  setText('dominance-detail', verdict || '—');
+
+  // Tactical triggers
+  const triggers = snap.tactical_triggers || [];
+  const triggersEl = document.getElementById('triggers');
+  if (!triggers.length) {
+    triggersEl.innerHTML = '<span class="empty">aktif trigger yok</span>';
+  } else {
+    let html = '<table><thead><tr><th>tip</th><th>urgency</th><th>tavsiye</th></tr></thead><tbody>';
+    triggers.forEach(t => {
+      html += `<tr><td><span class="pill fired">${t.type}</span></td>
+        <td>${t.urgency || '—'}</td><td>${t.recommendation || '—'}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    triggersEl.innerHTML = html;
+  }
+
+  // Spatial + live matchup
+  const sp = snap.spatial_control || {};
+  const lm = snap.live_matchup || {};
+  const allAlerts = (sp.alerts || []).map(a => ({src: 'spatial', text: a}))
+                    .concat((lm.alerts || []).map(a => ({src: 'matchup', text: a})));
+  const spEl = document.getElementById('spatial-alerts');
+  if (!allAlerts.length) {
+    spEl.innerHTML = '<span class="empty">alarm yok</span>';
+  } else {
+    spEl.innerHTML = allAlerts.map(a =>
+      `<div class="alert-item"><span class="badge">${a.src}</span>${a.text}</div>`
+    ).join('');
+  }
+
+  // Sub timing
+  const st = snap.sub_timing || {};
+  const stEl = document.getElementById('sub-timing');
+  if (!st.advices?.length && !st.package?.length) {
+    stEl.innerHTML = '<span class="empty">değişiklik önerisi yok</span>';
+  } else {
+    let html = '';
+    if (st.package?.length) {
+      html += `<div style="margin-bottom:8px"><strong>Paket:</strong> ${st.package.join(', ')} <span class="sub">${st.rationale || ''}</span></div>`;
+    }
+    if (st.advices?.length) {
+      html += '<table><thead><tr><th>oyuncu</th><th>verdict</th><th class="r">impact</th></tr></thead><tbody>';
+      st.advices.forEach(a => {
+        html += `<tr><td>#${a.player_id}</td><td>${a.verdict || '—'}</td><td class="r">${fmt(a.impact, 2)}</td></tr>`;
+      });
+      html += '</tbody></table>';
+    }
+    stEl.innerHTML = html;
+  }
+
+  // VAEP (sprint #47 PR'ı merge edilirse dolacak)
+  const vaep = snap.vaep || {};
+  const vaepEl = document.getElementById('vaep');
+  if (vaep.error || !vaep.top_players?.length) {
+    vaepEl.innerHTML = '<span class="empty">VAEP feed yok ya da event eksik</span>';
+  } else {
+    let html = `<div style="margin-bottom:8px">Toplam: <strong>${fmt(vaep.my_team_total, 3)}</strong>
+      vs rakip ${fmt(vaep.opp_team_total, 3)} (${vaep.model_version})</div>`;
+    html += '<table><thead><tr><th>oyuncu</th><th class="r">vaep</th><th class="r">action</th></tr></thead><tbody>';
+    vaep.top_players.slice(0, 5).forEach(p => {
+      html += `<tr><td>#${p.player_id}</td><td class="r status-accent">${fmt(p.vaep_value, 3)}</td><td class="r">${p.total_actions}</td></tr>`;
+    });
+    html += '</tbody></table>';
+    vaepEl.innerHTML = html;
+  }
+
+  // Score-time matrix
+  const stm = snap.score_time_matrix || {};
+  const stmEl = document.getElementById('stm');
+  if (!stm.posture && !stm.closing_recipe) {
+    stmEl.innerHTML = '<span class="empty">—</span>';
+  } else {
+    stmEl.innerHTML = `<div><strong>${stm.score_state || '—'}</strong> · posture: ${stm.posture || '—'}</div>
+      <div class="sub" style="margin-top:6px">${stm.closing_recipe || ''}</div>`;
+  }
+}
+
+setStatus('bağlantı yok', '');
+</script>
+</body>
+</html>
