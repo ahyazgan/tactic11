@@ -1,10 +1,11 @@
-"""HTML görünüm endpoint'leri (Faz 5 #15, #29).
+"""HTML görünüm endpoint'leri (Faz 5 #15, #29, #36).
 
 Sunucu tarafından render edilen tek-HTML sayfaları. JS sayfa içinde mevcut
 JSON endpoint'lerini fetch eder; X-API-Key localStorage'tan gelir.
 
-- GET /matches/{match_id}/game-plan — birleşik game-plan ekranı (#29)
-- GET /teams/{team_id}/dashboard    — takım merkezli landing (#15)
+- GET /matches/{match_id}/game-plan   — birleşik game-plan ekranı (#29)
+- GET /teams/{team_id}/dashboard      — takım merkezli landing (#15)
+- GET /players/{player_id}/dashboard  — oyuncu gelişim trendi (#36)
 
 Template'ler `app/api/templates/` altında, dashboard.html ile aynı stil.
 """
@@ -20,6 +21,7 @@ router = APIRouter(tags=["html-views"])
 _TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 _MATCH_GAME_PLAN_HTML = _TEMPLATES_DIR / "match_game_plan.html"
 _TEAM_DASHBOARD_HTML = _TEMPLATES_DIR / "team_dashboard.html"
+_PLAYER_DASHBOARD_HTML = _TEMPLATES_DIR / "player_dashboard.html"
 
 
 def _inject_js_constant(html: str, name: str, value: int | str) -> str:
@@ -92,4 +94,29 @@ def team_dashboard_view(team_id: int) -> HTMLResponse:
             detail="template eksik: team_dashboard.html",
         ) from e
     html = _inject_js_constant(html, "TEAM_ID", team_id)
+    return HTMLResponse(html)
+
+
+@router.get(
+    "/players/{player_id}/dashboard",
+    response_class=HTMLResponse,
+    summary="Oyuncu gelişim trendi sayfası (Faz 5 #36)",
+)
+def player_dashboard_view(player_id: int) -> HTMLResponse:
+    """Bir oyuncu için info + load + form + appearance trendi sayfası.
+
+    Sayfa içindeki JS şu endpoint'leri fetch eder:
+    `/players/{id}/info` (bu PR), `/players/{id}/load`, `/players/{id}/form`,
+    `/admin/player-appearances`.
+    """
+    if player_id <= 0:
+        raise HTTPException(status_code=400, detail="player_id > 0 olmalı")
+    try:
+        html = _PLAYER_DASHBOARD_HTML.read_text(encoding="utf-8")
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="template eksik: player_dashboard.html",
+        ) from e
+    html = _inject_js_constant(html, "PLAYER_ID", player_id)
     return HTMLResponse(html)
