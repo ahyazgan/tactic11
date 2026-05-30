@@ -37,6 +37,7 @@ from app.api.html_views import router as html_views_router
 from app.api.live import router as live_router
 from app.api.live_vaep import router as live_vaep_router
 from app.api.notes import router as notes_router
+from app.api.notifications import router as notifications_router
 from app.api.plan import router as plan_router
 from app.api.reports import router as reports_router
 from app.api.shared import router as shared_router
@@ -1395,6 +1396,7 @@ protected.include_router(sprint3_router)
 protected.include_router(sprint4_router)
 protected.include_router(sprint5_router)
 protected.include_router(live_vaep_router)
+protected.include_router(notifications_router)
 protected.include_router(notes_router)
 protected.include_router(reports_router)
 app.include_router(protected)

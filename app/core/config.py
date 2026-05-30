@@ -72,6 +72,14 @@ class Settings(BaseSettings):
         default="", alias="BACKWARD_COMPAT_API_KEY",
     )
 
+    # Notifications (Faz 5 #19) — boşsa kanal stub modda çalışır.
+    telegram_bot_token: str = Field(default="", alias="TELEGRAM_BOT_TOKEN")
+    telegram_chat_id: str = Field(default="", alias="TELEGRAM_CHAT_ID")
+    twilio_account_sid: str = Field(default="", alias="TWILIO_ACCOUNT_SID")
+    twilio_auth_token: str = Field(default="", alias="TWILIO_AUTH_TOKEN")
+    whatsapp_from: str = Field(default="", alias="WHATSAPP_FROM")
+    whatsapp_to: str = Field(default="", alias="WHATSAPP_TO")
+
     # Geliştirme/test
     use_fixtures: bool = Field(default=False, alias="USE_FIXTURES")
     log_level: LogLevel = Field(default="INFO", alias="LOG_LEVEL")
