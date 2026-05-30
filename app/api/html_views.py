@@ -1,4 +1,4 @@
-"""HTML görünüm endpoint'leri (Faz 5 #15, #26, #29, #36, #39).
+"""HTML görünüm endpoint'leri (Faz 5 #15, #17, #26, #29, #36, #39).
 
 Sunucu tarafından render edilen tek-HTML sayfaları. JS sayfa içinde mevcut
 JSON endpoint'lerini fetch eder; X-API-Key localStorage'tan gelir.
@@ -8,6 +8,7 @@ JSON endpoint'lerini fetch eder; X-API-Key localStorage'tan gelir.
 - GET /teams/{team_id}/dashboard            — takım merkezli landing (#15)
 - GET /players/{player_id}/dashboard        — oyuncu gelişim trendi (#36)
 - GET /teams/{team_id}/decisions-dashboard  — karar isabet + outcome (#39)
+- GET /roles/{role}/dashboard               — rol bazlı landing composer (#17)
 
 Template'ler `app/api/templates/` altında, dashboard.html ile aynı stil.
 """
@@ -26,6 +27,9 @@ _MATCH_WARMUP_HTML = _TEMPLATES_DIR / "match_warmup.html"
 _TEAM_DASHBOARD_HTML = _TEMPLATES_DIR / "team_dashboard.html"
 _PLAYER_DASHBOARD_HTML = _TEMPLATES_DIR / "player_dashboard.html"
 _TEAM_DECISIONS_HTML = _TEMPLATES_DIR / "team_decisions_dashboard.html"
+_ROLE_DASHBOARD_HTML = _TEMPLATES_DIR / "role_dashboard.html"
+
+VALID_ROLES = ("tactical", "analyst", "conditioning", "scout")
 
 
 def _inject_js_constant(html: str, name: str, value: int | str) -> str:
@@ -51,29 +55,27 @@ def _inject_js_constant(html: str, name: str, value: int | str) -> str:
     return html.replace(marker, marker + "\n" + snippet, 1)
 
 
+def _render_template(path: Path, var_name: str, var_value: int | str) -> HTMLResponse:
+    try:
+        html = path.read_text(encoding="utf-8")
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=500, detail=f"template eksik: {path.name}",
+        ) from e
+    html = _inject_js_constant(html, var_name, var_value)
+    return HTMLResponse(html)
+
+
 @router.get(
     "/matches/{match_id}/game-plan",
     response_class=HTMLResponse,
     summary="Birleşik game-plan ekranı (Faz 5 #29)",
 )
 def match_game_plan_view(match_id: int) -> HTMLResponse:
-    """Bir maç için game-plan + canlı eşleştirme HTML sayfası.
-
-    Sayfa içindeki JS `GET /matches/{id}/plan/vs-live?my_team_id=N`
-    endpoint'ini fetch eder; my_team_id kullanıcıdan input olarak alınır
-    (localStorage'a yazılır).
-    """
+    """Maç game-plan + canlı eşleştirme sayfası."""
     if match_id <= 0:
         raise HTTPException(status_code=400, detail="match_id > 0 olmalı")
-    try:
-        html = _MATCH_GAME_PLAN_HTML.read_text(encoding="utf-8")
-    except FileNotFoundError as e:
-        raise HTTPException(
-            status_code=500,
-            detail="template eksik: match_game_plan.html",
-        ) from e
-    html = _inject_js_constant(html, "MATCH_ID", match_id)
-    return HTMLResponse(html)
+    return _render_template(_MATCH_GAME_PLAN_HTML, "MATCH_ID", match_id)
 
 
 @router.get(
@@ -82,25 +84,10 @@ def match_game_plan_view(match_id: int) -> HTMLResponse:
     summary="Kickoff -60 dk hazırlık checklist (Faz 5 #26)",
 )
 def match_warmup_view(match_id: int) -> HTMLResponse:
-    """Maç-öncesi 5-bölümlü hazırlık checklist'i.
-
-    - T-60 hazırlık (tesis), T-30 saha ısınma, T-15 taktiksel brief,
-      T-5 saha çıkışı, maç-içi kontrol.
-    - Kickoff sayacı: kullanıcı manuel girer veya `/admin/matches/{id}`
-      başarılı ise otomatik çekilir.
-    - İlerleme + işaret zamanı localStorage'a kaydedilir (cihaz başına).
-    """
+    """5 bölümlü kickoff -60 dk checklist."""
     if match_id <= 0:
         raise HTTPException(status_code=400, detail="match_id > 0 olmalı")
-    try:
-        html = _MATCH_WARMUP_HTML.read_text(encoding="utf-8")
-    except FileNotFoundError as e:
-        raise HTTPException(
-            status_code=500,
-            detail="template eksik: match_warmup.html",
-        ) from e
-    html = _inject_js_constant(html, "MATCH_ID", match_id)
-    return HTMLResponse(html)
+    return _render_template(_MATCH_WARMUP_HTML, "MATCH_ID", match_id)
 
 
 @router.get(
@@ -109,23 +96,10 @@ def match_warmup_view(match_id: int) -> HTMLResponse:
     summary="Takım merkezli landing sayfası (Faz 5 #15)",
 )
 def team_dashboard_view(team_id: int) -> HTMLResponse:
-    """Bir takım için form + rating + maç fikstürü + agent çıktıları sayfası.
-
-    Sayfa içindeki JS mevcut JSON endpoint'lerini fetch eder:
-    `/teams/{id}/form`, `/teams/{id}/rating`, `/teams/{id}/matches`,
-    `/admin/agent-outputs`.
-    """
+    """Takım için form + rating + maç fikstürü + agent çıktıları."""
     if team_id <= 0:
         raise HTTPException(status_code=400, detail="team_id > 0 olmalı")
-    try:
-        html = _TEAM_DASHBOARD_HTML.read_text(encoding="utf-8")
-    except FileNotFoundError as e:
-        raise HTTPException(
-            status_code=500,
-            detail="template eksik: team_dashboard.html",
-        ) from e
-    html = _inject_js_constant(html, "TEAM_ID", team_id)
-    return HTMLResponse(html)
+    return _render_template(_TEAM_DASHBOARD_HTML, "TEAM_ID", team_id)
 
 
 @router.get(
@@ -134,23 +108,10 @@ def team_dashboard_view(team_id: int) -> HTMLResponse:
     summary="Oyuncu gelişim trendi sayfası (Faz 5 #36)",
 )
 def player_dashboard_view(player_id: int) -> HTMLResponse:
-    """Bir oyuncu için info + load + form + appearance trendi sayfası.
-
-    Sayfa içindeki JS şu endpoint'leri fetch eder:
-    `/players/{id}/info` (bu PR), `/players/{id}/load`, `/players/{id}/form`,
-    `/admin/player-appearances`.
-    """
+    """Oyuncu için info + load + form + appearance trendi."""
     if player_id <= 0:
         raise HTTPException(status_code=400, detail="player_id > 0 olmalı")
-    try:
-        html = _PLAYER_DASHBOARD_HTML.read_text(encoding="utf-8")
-    except FileNotFoundError as e:
-        raise HTTPException(
-            status_code=500,
-            detail="template eksik: player_dashboard.html",
-        ) from e
-    html = _inject_js_constant(html, "PLAYER_ID", player_id)
-    return HTMLResponse(html)
+    return _render_template(_PLAYER_DASHBOARD_HTML, "PLAYER_ID", player_id)
 
 
 @router.get(
@@ -159,21 +120,22 @@ def player_dashboard_view(player_id: int) -> HTMLResponse:
     summary="Karar geçmişi + isabet dashboard'u (Faz 5 #39, Faz 8 #4)",
 )
 def team_decisions_dashboard_view(team_id: int) -> HTMLResponse:
-    """Takım için decision feedback özeti + maç-bazlı listing + outcome girişi.
-
-    Sayfa içindeki JS şu endpoint'leri tüketir:
-    `/admin/teams/{id}/decisions/feedback` (özet hit_rate by_decision_type),
-    `/admin/matches/{id}/decisions` (maç-bazlı liste),
-    `/admin/decisions/{id}/outcome` (POST — outcome güncelle).
-    """
+    """Takım için decision feedback özeti + maç-bazlı outcome girişi."""
     if team_id <= 0:
         raise HTTPException(status_code=400, detail="team_id > 0 olmalı")
-    try:
-        html = _TEAM_DECISIONS_HTML.read_text(encoding="utf-8")
-    except FileNotFoundError as e:
+    return _render_template(_TEAM_DECISIONS_HTML, "TEAM_ID", team_id)
+
+
+@router.get(
+    "/roles/{role}/dashboard",
+    response_class=HTMLResponse,
+    summary="Rol bazlı landing dashboard composer (Faz 5 #17)",
+)
+def role_dashboard_view(role: str) -> HTMLResponse:
+    """Rol bazlı kart kümesi: TD, analist, kondisyon, scout."""
+    if role not in VALID_ROLES:
         raise HTTPException(
-            status_code=500,
-            detail="template eksik: team_decisions_dashboard.html",
-        ) from e
-    html = _inject_js_constant(html, "TEAM_ID", team_id)
-    return HTMLResponse(html)
+            status_code=404,
+            detail=f"role '{role}' geçersiz — {VALID_ROLES}",
+        )
+    return _render_template(_ROLE_DASHBOARD_HTML, "ROLE", role)
