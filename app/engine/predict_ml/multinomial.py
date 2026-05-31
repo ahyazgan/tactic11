@@ -21,17 +21,22 @@ from typing import Any
 
 try:
     import joblib
+    from sklearn.ensemble import GradientBoostingClassifier  # type: ignore
     from sklearn.linear_model import LogisticRegression  # type: ignore
     from sklearn.preprocessing import LabelEncoder  # type: ignore
     SKLEARN_AVAILABLE = True
 except ImportError:  # pragma: no cover — opsiyonel paketler
     SKLEARN_AVAILABLE = False
     LogisticRegression = None  # type: ignore[misc, assignment]
+    GradientBoostingClassifier = None  # type: ignore[misc, assignment]
     LabelEncoder = None  # type: ignore[misc, assignment]
     joblib = None  # type: ignore[assignment]
 
 
 MODEL_VERSION = "multinomial_v1"
+# Desteklenen model tipleri (Faz 9 #44): logistic (baseline) + gbm (gradient
+# boosting — non-lineer etkileşimleri yakalar, küçük-orta veride üstün).
+MODEL_TYPES = ("logistic", "gbm")
 CLASSES = ("home", "draw", "away")
 MIN_SAMPLES = 30
 # Feature whitelist — train + predict'in aynı sırayla çağırması için.
@@ -70,6 +75,7 @@ class MultinomialReport:
     feature_keys: tuple[str, ...]
     train_log_loss: float
     class_counts: dict[str, int]
+    model_type: str = "logistic"
     model_version: str = MODEL_VERSION
 
 
@@ -82,8 +88,9 @@ class MultinomialModel:
     """
 
     feature_keys: tuple[str, ...]
-    clf: Any = field(repr=False)  # sklearn LogisticRegression
+    clf: Any = field(repr=False)  # sklearn LogisticRegression | GradientBoostingClassifier
     label_encoder: Any = field(repr=False)  # sklearn LabelEncoder
+    model_type: str = "logistic"
     model_version: str = MODEL_VERSION
 
 
@@ -94,15 +101,40 @@ def _require_sklearn() -> None:
         )
 
 
+def _build_classifier(model_type: str, random_state: int):
+    """model_type → sklearn classifier (logistic | gbm)."""
+    if model_type == "logistic":
+        return LogisticRegression(
+            max_iter=1000, C=1.0, solver="lbfgs", random_state=random_state,
+        )
+    if model_type == "gbm":
+        # GBM: non-lineer etkileşim (form × h2h × λ) yakalar. Küçük-orta veri
+        # için sığ ağaçlar + ılımlı learning rate (overfit'i sınırla).
+        return GradientBoostingClassifier(
+            n_estimators=150, learning_rate=0.05, max_depth=3,
+            subsample=0.9, random_state=random_state,
+        )
+    raise ValueError(f"bilinmeyen model_type: {model_type!r} (beklenen: {MODEL_TYPES})")
+
+
 def train_multinomial(
     samples: list[MultinomialSample],
     *,
     feature_keys: tuple[str, ...] = DEFAULT_FEATURE_KEYS,
     min_samples: int = MIN_SAMPLES,
     random_state: int = 42,
+    model_type: str = "logistic",
 ) -> tuple[MultinomialModel, MultinomialReport]:
-    """sklearn LogisticRegression(multinomial) eğit."""
+    """sklearn 1X2 classifier eğit. `model_type`: "logistic" (baseline) | "gbm".
+
+    GBM aynı feature matrix'i kullanır; non-lineer etkileşimleri yakaladığı
+    için yeterli veri biriktiğinde log loss'u düşürmesi beklenir. Az veride
+    (MIN_SAMPLES civarı) logistic daha güvenli olabilir — ikisi de A/B
+    karşılaştırması için saklanabilir.
+    """
     _require_sklearn()
+    if model_type not in MODEL_TYPES:
+        raise ValueError(f"bilinmeyen model_type: {model_type!r} (beklenen: {MODEL_TYPES})")
     if len(samples) < min_samples:
         raise NotEnoughMultinomialSamples(
             f"{len(samples)} < {min_samples} sample — train atlandı",
@@ -114,12 +146,7 @@ def train_multinomial(
     le = LabelEncoder()
     y_enc = le.fit_transform(y)
 
-    clf = LogisticRegression(
-        max_iter=1000,
-        C=1.0,
-        solver="lbfgs",
-        random_state=random_state,
-    )
+    clf = _build_classifier(model_type, random_state)
     clf.fit(X, y_enc)
 
     # Train-set log loss (üstün uyum/underfit bir bakışta görünsün)
@@ -132,14 +159,20 @@ def train_multinomial(
     train_ll = total_ll / len(samples)
 
     class_counts = {c: y.count(c) for c in CLASSES}
+    # Geriye uyumluluk: logistic → "multinomial_v1" (mevcut artifact'ler);
+    # gbm → "gbm_v1".
+    model_version = MODEL_VERSION if model_type == "logistic" else f"{model_type}_v1"
     report = MultinomialReport(
         sample_count=len(samples),
         feature_keys=feature_keys,
         train_log_loss=round(train_ll, 6),
         class_counts=class_counts,
+        model_type=model_type,
+        model_version=model_version,
     )
     model = MultinomialModel(
         feature_keys=feature_keys, clf=clf, label_encoder=le,
+        model_type=model_type, model_version=model_version,
     )
     return model, report
 
@@ -176,6 +209,7 @@ def save_model(model: MultinomialModel, path: str | Path) -> None:
         json.dumps({
             "feature_keys": list(model.feature_keys),
             "model_version": model.model_version,
+            "model_type": model.model_type,
         }, indent=2),
         encoding="utf-8",
     )
@@ -196,5 +230,6 @@ def load_model(path: str | Path) -> MultinomialModel:
         feature_keys=tuple(meta["feature_keys"]),
         clf=payload["clf"],
         label_encoder=payload["le"],
+        model_type=meta.get("model_type", "logistic"),
         model_version=meta.get("model_version", MODEL_VERSION),
     )

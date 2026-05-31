@@ -67,7 +67,10 @@ def _render_template(path: Path, var_name: str, var_value: int | str) -> HTMLRes
             status_code=500, detail=f"template eksik: {path.name}",
         ) from e
     html = _inject_js_constant(html, var_name, var_value)
-    return HTMLResponse(html)
+    # Önce JS sabiti enjekte edildi (marker "<script>" aranıyor); sonra nonce
+    # eklenip CSP header'ı kurulur — sıra kritik (nonce marker'ı değiştirir).
+    from app.api.csp import render_html_with_csp
+    return render_html_with_csp(html)
 
 
 @router.get(

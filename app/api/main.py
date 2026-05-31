@@ -32,6 +32,7 @@ from app.api.auth import (
 from app.api.auth import (
     router as auth_router,
 )
+from app.api.csp import STRICT_API_CSP, render_html_with_csp
 from app.api.errors import register_exception_handlers
 from app.api.html_views import router as html_views_router
 from app.api.live import router as live_router
@@ -70,6 +71,12 @@ from app.engine.opponent import compute_head_to_head
 from app.engine.predict import compute_predict
 from app.engine.rating import compute_team_rating
 from app.engine.schedule import compute_schedule
+from app.engine.score_prediction import compute_score_prediction
+from app.engine.season_projection import (
+    MatchOutcomeProb,
+    compute_points_target,
+    compute_season_projection,
+)
 from app.sports import football
 
 setup_logging()
@@ -182,6 +189,13 @@ def _apply_security_headers(response) -> None:
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+    # CSP: sunucu-render sayfalar kendi nonce'lu CSP'sini set eder
+    # (render_html_with_csp). Burada yalnız HTML OLMAYAN yanıtlara (JSON/PDF)
+    # katı default uygulanır. /docs, /redoc (Swagger, harici CDN) text/html
+    # olduğundan dokunulmaz — kırılmaz.
+    ctype = response.headers.get("content-type", "")
+    if "text/html" not in ctype:
+        response.headers.setdefault("Content-Security-Policy", STRICT_API_CSP)
     if _HSTS_ENABLED:
         response.headers.setdefault(
             "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
@@ -313,7 +327,7 @@ def dashboard() -> HTMLResponse:
     İçeriği `/health`, `/admin/*`, `/leagues` uçlarından fetch'le çeker;
     Bu endpoint sadece HTML'i static olarak servis eder.
     """
-    return HTMLResponse(_DASHBOARD_HTML_PATH.read_text(encoding="utf-8"))
+    return render_html_with_csp(_DASHBOARD_HTML_PATH.read_text(encoding="utf-8"))
 
 
 @app.get("/metrics", tags=["ops"], summary="Prometheus metrics (opsiyonel)")
@@ -853,6 +867,108 @@ def team_fixture_difficulty(
     return _maybe_explain(engine_result_to_dict(result), result, explain)
 
 
+def _team_points_and_remaining(
+    session: Session, team_id: int, *, last_n: int, horizon_days: int | None,
+) -> tuple[int, int, list[MatchOutcomeProb]]:
+    """Bir takımın bitmiş maçlarından puanı + kalan maçların W/D/L olasılıkları.
+
+    Kalan maçlar `engine.predict` ile (kickoff'tan önceki form, leakage yok)
+    takım perspektifine çevrilir.
+    """
+    matches = _team_matches(session, team_id)
+    if not matches:
+        return 0, 0, []
+    ref_tz = matches[0].kickoff.tzinfo
+    now = datetime.now(ref_tz)
+    horizon_cut = now + timedelta(days=horizon_days) if horizon_days else None
+
+    points = 0
+    played = 0
+    remaining: list[MatchOutcomeProb] = []
+    for m in matches:
+        is_home = m.home_team_external_id == team_id
+        finished = m.status in football.FINISHED_STATUSES
+        if finished and m.home_score is not None and m.away_score is not None:
+            gf = m.home_score if is_home else m.away_score
+            ga = m.away_score if is_home else m.home_score
+            points += 3 if gf > ga else (1 if gf == ga else 0)
+            played += 1
+        elif m.kickoff > now and (horizon_cut is None or m.kickoff <= horizon_cut):
+            home_id = m.home_team_external_id
+            away_id = m.away_team_external_id
+            home_form = compute_form(
+                home_id, _team_matches(session, home_id, before=m.kickoff), last_n=last_n,
+            )
+            away_form = compute_form(
+                away_id, _team_matches(session, away_id, before=m.kickoff), last_n=last_n,
+            )
+            pred = compute_predict(
+                home_form.value, away_form.value,
+                home_team_id=home_id, away_team_id=away_id,
+            ).value
+            if is_home:
+                remaining.append(MatchOutcomeProb(
+                    prob_win=pred.prob_home_win, prob_draw=pred.prob_draw,
+                    prob_loss=pred.prob_away_win,
+                ))
+            else:
+                remaining.append(MatchOutcomeProb(
+                    prob_win=pred.prob_away_win, prob_draw=pred.prob_draw,
+                    prob_loss=pred.prob_home_win,
+                ))
+    return points, played, remaining
+
+
+@protected.get(
+    "/teams/{team_id}/season-projection",
+    tags=["team-analysis"],
+    summary="Sezon sonu puan projeksiyonu + (opsiyonel) puan hedefi olasılığı",
+)
+def team_season_projection(
+    team_id: int,
+    last_n: int = Query(5, ge=1, le=50),
+    horizon_days: int | None = Query(
+        None, ge=1, le=400,
+        description="Sadece bu ufuk içindeki kalan maçları say (boş = tüm kalanlar)",
+    ),
+    target_points: int | None = Query(
+        None, ge=0, le=200,
+        description="Verilirse final puanın bu hedefe ulaşma olasılığı da döner",
+    ),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Takımın kalan maçlarından sezon sonu puan dağılımı projeksiyonu.
+
+    Bitmiş maçlardan mevcut puan, kalan maçlardan `engine.predict` ile W/D/L
+    olasılıkları çıkarılır; DP konvolüsyonu ile beklenen puan + p10/p50/p90
+    aralığı hesaplanır. `target_points` verilirse hedefe ulaşma olasılığı
+    eklenir.
+    """
+    team = session.execute(
+        select(models.Team).where(
+            models.Team.sport == football.SPORT_NAME,
+            models.Team.external_id == team_id,
+        )
+    ).scalar_one_or_none()
+    if team is None:
+        raise HTTPException(status_code=404, detail=f"team {team_id} bulunamadı")
+
+    points, played, remaining = _team_points_and_remaining(
+        session, team_id, last_n=last_n, horizon_days=horizon_days,
+    )
+    projection = compute_season_projection(
+        team_id, current_points=points, matches_played=played, remaining=remaining,
+    )
+    payload: dict[str, Any] = engine_result_to_dict(projection)
+    if target_points is not None:
+        target = compute_points_target(
+            team_id, current_points=points, matches_played=played,
+            remaining=remaining, target_points=target_points,
+        )
+        payload["points_target"] = engine_result_to_dict(target)
+    return payload
+
+
 @protected.get(
     "/matchup/{home}/{away}",
     tags=["match-analysis"],
@@ -1014,6 +1130,50 @@ def match_predict(
         compute_fn=_compute,
     )
     return payload
+
+
+@protected.get(
+    "/matches/{match_id}/score-prediction",
+    tags=["match-analysis"],
+    summary="Kesin-skor dağılımı + market olasılıkları (BTTS, over/under, clean sheet)",
+)
+def match_score_prediction(
+    match_id: int,
+    last_n: int = Query(5, ge=1, le=50),
+    time_decay_rate: float = Query(0.0, ge=0.0, le=1.0),
+    top_n: int = Query(5, ge=1, le=20, description="Kaç kesin skor döndürülsün"),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Maç için kesin-skor dağılımı + medya/bahis market türevleri.
+
+    `engine.predict` ile aynı Poisson+Dixon-Coles matrisini kullanır; form
+    maçın kickoff'undan ÖNCEKİ maçlardan hesaplanır (leakage yok). En olası
+    N skor + BTTS + over/under (1.5/2.5/3.5) + clean sheet olasılıkları döner.
+    """
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} bulunamadı")
+
+    home_id = match.home_team_external_id
+    away_id = match.away_team_external_id
+    home_form = compute_form(
+        home_id, _team_matches(session, home_id, before=match.kickoff),
+        last_n=last_n, time_decay_rate=time_decay_rate,
+    )
+    away_form = compute_form(
+        away_id, _team_matches(session, away_id, before=match.kickoff),
+        last_n=last_n, time_decay_rate=time_decay_rate,
+    )
+    result = compute_score_prediction(
+        home_form.value, away_form.value,
+        home_team_id=home_id, away_team_id=away_id, top_n=top_n,
+    )
+    return engine_result_to_dict(result)
 
 
 @protected.get(

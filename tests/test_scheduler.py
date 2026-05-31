@@ -108,6 +108,50 @@ def test_args_serialized_to_json_in_audit(session, monkeypatch):
     assert '"season": 2024' in row.args
 
 
+def test_job_skipped_when_lock_not_acquired(session, monkeypatch):
+    """Başka replica lock'u tutuyorsa job çalışmaz, 'skipped' satırı yazılır."""
+    from contextlib import contextmanager
+
+    calls = []
+
+    def handler():
+        calls.append(1)
+
+    _register_once("test_locked", handler)
+    _patch_session(monkeypatch, session)
+
+    @contextmanager
+    def _no_lock(_name):
+        yield False  # lock alınamadı
+
+    monkeypatch.setattr(runner_module, "_job_lock", _no_lock)
+
+    result = runner_module.run_job("test_locked")
+    assert result.status == "skipped"
+    assert result.attempts == 0
+    assert "lock" in result.error.lower()
+    assert calls == []  # handler hiç çağrılmadı
+
+
+def test_advisory_key_is_deterministic():
+    """Aynı job adı tüm süreçlerde aynı 64-bit anahtarı üretmeli."""
+    k1 = runner_module._advisory_key("sync_league")
+    k2 = runner_module._advisory_key("sync_league")
+    assert k1 == k2
+    assert -(2**63) <= k1 < 2**63
+    assert runner_module._advisory_key("other") != k1
+
+
+def test_sqlite_lock_is_noop_and_runs(session, monkeypatch):
+    """SQLite (postgresql değil) → _job_lock no-op True; job normal çalışır."""
+    calls = []
+    _register_once("test_noop_lock", lambda: calls.append(1))
+    _patch_session(monkeypatch, session)
+    result = runner_module.run_job("test_noop_lock")
+    assert result.status == "success"
+    assert calls == [1]
+
+
 def test_base_exception_still_writes_audit(session, monkeypatch):
     # KeyboardInterrupt / SystemExit gibi BaseException atılırsa JobRun satırı
     # 'running' kalmasın; exception reraise edilsin.

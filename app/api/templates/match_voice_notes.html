@@ -352,7 +352,7 @@ function render() {
       <span class="${tagPillClass(n.tag)}">${tagLabel(n.tag)}</span>
       ${audioPlayer}
       <span class="text">${n.durationSec > 0 ? n.durationSec + 's' : ''}</span>
-      <button class="danger" onclick="deleteNote(${n.id})">×</button>
+      <button class="danger" data-del="${n.id}">×</button>
     </div>`;
   });
   container.innerHTML = html;
@@ -361,6 +361,12 @@ function render() {
 function deleteNote(id) {
   saveNotes(loadNotes().filter((n) => n.id !== id));
 }
+
+// Event delegation (CSP uyumlu — inline onclick yok): dinamik silme butonları
+document.getElementById('notes-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-del]');
+  if (btn) deleteNote(Number(btn.dataset.del));
+});
 
 document.getElementById('clear-all').addEventListener('click', () => {
   if (loadNotes().length === 0) return;

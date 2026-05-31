@@ -67,6 +67,25 @@ def test_prod_fails_when_api_football_key_missing():
         s.validate_for_production()
 
 
+def test_prod_fails_when_backward_compat_api_key_set():
+    s = _make(BACKWARD_COMPAT_API_KEY="legacy-key")
+    with pytest.raises(ConfigError, match="BACKWARD_COMPAT_API_KEY"):
+        s.validate_for_production()
+
+
+def test_prod_allows_backward_compat_when_explicitly_enabled():
+    s = _make(
+        BACKWARD_COMPAT_API_KEY="legacy-key",
+        ALLOW_BACKWARD_COMPAT_API_KEY=True,
+    )
+    s.validate_for_production()  # bilinçli açıldı → raise yok
+
+
+def test_dev_mode_ignores_backward_compat_api_key():
+    s = Settings(APP_ENV="dev", BACKWARD_COMPAT_API_KEY="legacy-key")
+    s.validate_for_production()  # dev → kontrol yok
+
+
 def test_prod_reports_all_issues_at_once():
     """Birden çok eksik varsa hepsi tek mesajda görünmeli."""
     s = _make(API_AUTH_KEY="", DATABASE_URL="sqlite:///x.db", USE_FIXTURES=True)

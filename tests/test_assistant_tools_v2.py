@@ -63,6 +63,40 @@ def test_execute_tool_routes_v2(session):
     assert "info" in out or "top_recommendations" in out
 
 
+def test_score_prediction_tool_registered_and_routes(session):
+    """Yeni v1 tool get_score_prediction schema'da var ve execute_tool yönlendirir."""
+    import json
+
+    names = {s["name"] for s in get_tool_schemas()}
+    assert "get_score_prediction" in names
+
+    _seed_tenant_match(session, match_id=9200)
+    out = json.loads(execute_tool(
+        session, "get_score_prediction", {"match_external_id": 9200, "top_n": 3},
+    ))
+    assert out.get("match_id") == 9200
+    assert "prob_btts" in out
+    assert "top_scores" in out
+    assert len(out["top_scores"]) <= 3
+
+
+def test_season_projection_tool_registered_and_routes(session):
+    """get_season_projection schema'da var ve execute_tool yönlendirir."""
+    import json
+
+    names = {s["name"] for s in get_tool_schemas()}
+    assert "get_season_projection" in names
+
+    _seed_tenant_match(session, match_id=9300)  # team 11 ev sahibi, FT 1-0 → 3 puan
+    out = json.loads(execute_tool(
+        session, "get_season_projection", {"team_external_id": 11, "target_points": 5},
+    ))
+    assert out.get("team_id") == 11
+    assert out["current_points"] == 3
+    assert "expected_final_points" in out
+    assert out["points_target"]["target_points"] == 5
+
+
 # --------------------------------------------------------------------------- #
 # Tool davranışları (events yok / stub paths)
 # --------------------------------------------------------------------------- #

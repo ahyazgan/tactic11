@@ -180,3 +180,53 @@ def test_load_missing_meta_raises(tmp_path) -> None:
     meta_path.unlink()
     with pytest.raises(FileNotFoundError):
         load_model(p)
+
+
+# --------------------------------------------------------------------------- #
+# GBM model_type (Faz 9 #44) — gradient boosting varyantı
+# --------------------------------------------------------------------------- #
+
+
+def test_gbm_trains_and_reports_model_type() -> None:
+    samples = _make_samples(n=120)
+    model, report = train_multinomial(samples, model_type="gbm")
+    assert model.model_type == "gbm"
+    assert report.model_type == "gbm"
+    assert report.model_version == "gbm_v1"
+    assert 0.0 <= report.train_log_loss < 5.0
+
+
+def test_default_is_logistic_backward_compatible() -> None:
+    _, report = train_multinomial(_make_samples(n=80))
+    assert report.model_type == "logistic"
+    assert report.model_version == MODEL_VERSION  # "multinomial_v1" korunur
+
+
+def test_unknown_model_type_raises() -> None:
+    with pytest.raises(ValueError, match="model_type"):
+        train_multinomial(_make_samples(n=80), model_type="xgboost")
+
+
+def test_gbm_predict_extreme_home_picks_home() -> None:
+    samples = _make_samples(n=160)
+    model, _ = train_multinomial(samples, model_type="gbm")
+    extreme_home = {
+        "lam_home": 3.5, "lam_away": 0.5, "lam_diff": 3.0,
+        "home_form_ppg": 2.8, "away_form_ppg": 0.5,
+        "h2h_home_rate": 0.9, "h2h_draw_rate": 0.05,
+    }
+    probs = predict_multinomial(model, extreme_home)
+    assert probs["home"] > probs["away"]
+
+
+def test_gbm_save_load_round_trip(tmp_path) -> None:
+    samples = _make_samples(n=120)
+    model, _ = train_multinomial(samples, model_type="gbm")
+    p = tmp_path / "gbm.pkl"
+    save_model(model, p)
+    loaded = load_model(p)
+    assert loaded.model_type == "gbm"
+    feats = samples[0].features
+    p1, p2 = predict_multinomial(model, feats), predict_multinomial(loaded, feats)
+    for c in CLASSES:
+        assert abs(p1[c] - p2[c]) < 1e-9

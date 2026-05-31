@@ -17,9 +17,13 @@ import httpx
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
-from app.core.usage import consume_quota
-from app.data.cache import cache_get, cache_set
-from app.data.sources._resilience import CircuitBreaker, call_with_retry
+from app.core.usage import QuotaExceeded, consume_quota
+from app.data.cache import cache_get, cache_get_stale, cache_set
+from app.data.sources._resilience import (
+    CircuitBreaker,
+    CircuitOpenError,
+    call_with_retry,
+)
 from app.data.sources.base import DataSource
 from app.db.session import SessionLocal
 from app.domain import League, LineupEntry, Match, PlayerMatchStats, Team
@@ -216,8 +220,23 @@ class APIFootball(DataSource):
             # Atomik: önce kaydet+sayıp limitin altında olduğumuzu doğrula, sonra HTTP.
             # Bu pessimistic sayım — HTTP başarısız olsa bile kota düşülmüş kalır
             # (real-world rate limiter normu; sürpriz fatura önler).
-            consume_quota(session, source=_SOURCE_NAME, endpoint=path)
-            session.commit()
+            #
+            # Kota aşıldıysa 500 vermek yerine "degraded" mod: TTL'i geçmiş de
+            # olsa son bilinen yanıtı dön (Faz 9 #7). Hiç cache yoksa kotayı
+            # yükselt (gerçekten veri yok).
+            try:
+                consume_quota(session, source=_SOURCE_NAME, endpoint=path)
+                session.commit()
+            except QuotaExceeded:
+                session.rollback()
+                stale = cache_get_stale(session, source=_SOURCE_NAME, key=cache_key)
+                if stale is not None:
+                    log.warning(
+                        "api_football kota aşıldı — stale (bayat) cache döndürülüyor: %s",
+                        cache_key,
+                    )
+                    return stale
+                raise
 
         url = f"{self._base_url}/{path}"
         log.info("api_football GET %s params=%s", path, params)
@@ -232,12 +251,25 @@ class APIFootball(DataSource):
                 return r.json()
 
         # Geçici hata/timeout'ta retry + devre kesici (kaynak düşükse fail-fast).
-        data = call_with_retry(
-            _do_request,
-            attempts=settings.http_retry_attempts,
-            breaker=_BREAKER,
-            is_retryable=_is_retryable,
-        )
+        try:
+            data = call_with_retry(
+                _do_request,
+                attempts=settings.http_retry_attempts,
+                breaker=_BREAKER,
+                is_retryable=_is_retryable,
+            )
+        except (httpx.HTTPError, CircuitOpenError) as e:
+            # Kaynak düştü/timeout/devre açık — kota zaten düşüldü. Son bilinen
+            # yanıtı (stale) dönerek degraded çalışmaya devam et; yoksa yükselt.
+            with SessionLocal() as session:
+                stale = cache_get_stale(session, source=_SOURCE_NAME, key=cache_key)
+            if stale is not None:
+                log.warning(
+                    "api_football istek hatası (%s) — stale cache döndürülüyor: %s",
+                    type(e).__name__, cache_key,
+                )
+                return stale
+            raise
 
         ttl = _TTL_SECONDS.get(path, _DEFAULT_TTL)
         with SessionLocal() as session:

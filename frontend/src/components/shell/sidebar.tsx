@@ -12,23 +12,24 @@ import useSWR from "swr";
 import { cn } from "@/lib/cn";
 import { apiFetch } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 
 interface NavItem {
   href: string;
-  label: string;
+  labelKey: string;
   roles?: ("admin" | "analyst" | "coach" | "viewer")[];
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/leagues", label: "Ligler" },
-  { href: "/teams", label: "Takımlar" },
-  { href: "/h2h", label: "H2H" },
-  { href: "/matches", label: "Maçlar" },
-  { href: "/training", label: "Antrenman", roles: ["admin", "coach", "analyst"] },
-  { href: "/decisions", label: "Kararlar", roles: ["admin", "coach", "analyst"] },
-  { href: "/calibration", label: "Kalibrasyon" },
-  { href: "/chat", label: "Asistan" },
-  { href: "/admin", label: "Admin", roles: ["admin"] },
+  { href: "/leagues", labelKey: "nav.leagues" },
+  { href: "/teams", labelKey: "nav.teams" },
+  { href: "/h2h", labelKey: "nav.h2h" },
+  { href: "/matches", labelKey: "nav.matches" },
+  { href: "/training", labelKey: "nav.training", roles: ["admin", "coach", "analyst"] },
+  { href: "/decisions", labelKey: "nav.decisions", roles: ["admin", "coach", "analyst"] },
+  { href: "/calibration", labelKey: "nav.calibration" },
+  { href: "/chat", labelKey: "nav.chat" },
+  { href: "/admin", labelKey: "nav.admin", roles: ["admin"] },
 ];
 
 interface JobRow {
@@ -46,9 +47,13 @@ function relativeTime(iso: string): string {
   return `${Math.floor(diff / 86_400_000)} g önce`;
 }
 
-export function Sidebar() {
+export function Sidebar({
+  mobileOpen = false,
+  onClose,
+}: { mobileOpen?: boolean; onClose?: () => void } = {}) {
   const pathname = usePathname();
   const { user } = useCurrentUser();
+  const { t } = useI18n();
   const role = user?.role ?? "viewer";
 
   const visibleItems = NAV_ITEMS.filter(
@@ -67,33 +72,51 @@ export function Sidebar() {
   );
 
   return (
-    <aside className="fixed left-0 top-12 bottom-0 w-56 bg-surface border-r border-border flex flex-col">
-      <nav className="flex-1 overflow-y-auto py-2">
-        {visibleItems.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "block px-4 py-2 text-[13px] border-l-2 transition-colors",
-                isActive
-                  ? "bg-surface2 text-text border-accent font-medium"
-                  : "border-transparent text-textmut hover:text-text hover:bg-surface2",
-              )}
-            >
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
-      <SidebarFooter lastSyncIso={lastSync?.ended_at ?? null} />
-    </aside>
+    <>
+      {/* Mobil overlay — drawer açıkken arka planı karart + tıklayınca kapat */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 top-12 z-20 bg-black/50 md:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+      <aside
+        className={cn(
+          "fixed left-0 top-12 bottom-0 w-56 bg-surface border-r border-border flex flex-col z-30",
+          "transition-transform duration-200 md:translate-x-0",
+          mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+        )}
+      >
+        <nav className="flex-1 overflow-y-auto py-2">
+          {visibleItems.map((item) => {
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + "/");
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={cn(
+                  "block px-4 py-2 text-[13px] border-l-2 transition-colors",
+                  isActive
+                    ? "bg-surface2 text-text border-accent font-medium"
+                    : "border-transparent text-textmut hover:text-text hover:bg-surface2",
+                )}
+              >
+                {t(item.labelKey)}
+              </Link>
+            );
+          })}
+        </nav>
+        <SidebarFooter lastSyncIso={lastSync?.ended_at ?? null} />
+      </aside>
+    </>
   );
 }
 
 function SidebarFooter({ lastSyncIso }: { lastSyncIso: string | null }) {
+  const { t, locale } = useI18n();
   const buildSha = process.env.NEXT_PUBLIC_BUILD_SHA ?? "dev";
   const buildLabel = buildSha.slice(0, 7);
   return (
@@ -102,9 +125,9 @@ function SidebarFooter({ lastSyncIso }: { lastSyncIso: string | null }) {
         <Link
           href="/admin"
           className="block hover:text-text transition-colors"
-          title={new Date(lastSyncIso).toLocaleString("tr-TR")}
+          title={new Date(lastSyncIso).toLocaleString(locale === "en" ? "en-GB" : "tr-TR")}
         >
-          Son sync: {relativeTime(lastSyncIso)}
+          {t("sidebar.lastSync")}: {relativeTime(lastSyncIso)}
         </Link>
       )}
       <div>DESIGN.md • v1</div>

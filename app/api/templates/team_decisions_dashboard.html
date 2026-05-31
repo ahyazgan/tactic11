@@ -216,7 +216,7 @@ function renderDecisions(rows) {
       <td>#${player}</td>
       <td>${note}</td>
       <td>
-        <select onchange="updateOutcome(${d.id}, this.value, this)">
+        <select data-decision-id="${d.id}">
           ${options}
         </select>
         <span class="pill ${outcome}" id="pill-${d.id}">${outcome}</span>
@@ -227,6 +227,12 @@ function renderDecisions(rows) {
   html += '</tbody></table>';
   el.innerHTML = html;
 }
+
+// Event delegation (CSP uyumlu — inline onchange yok): outcome select'leri
+document.getElementById('match-decisions').addEventListener('change', (e) => {
+  const sel = e.target.closest('select[data-decision-id]');
+  if (sel) updateOutcome(Number(sel.dataset.decisionId), sel.value, sel);
+});
 
 async function loadMatchDecisions() {
   const mid = parseInt(matchInput.value, 10);

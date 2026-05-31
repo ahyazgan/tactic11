@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import or_, select
@@ -197,6 +197,72 @@ def tool_get_match_prediction(
     }
 
 
+def tool_get_score_prediction(
+    session: Session, *, match_external_id: int, top_n: int = 5,
+) -> dict:
+    """Kesin-skor dağılımı + market olasılıkları (BTTS, over/under, clean sheet)."""
+    from app.engine.score_prediction import compute_score_prediction
+
+    m = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == int(match_external_id),
+        )
+    ).scalar_one_or_none()
+    if m is None:
+        return {"error": f"match {match_external_id}: yok"}
+
+    home_prior = list(
+        session.execute(
+            select(models.Match).where(
+                models.Match.sport == football.SPORT_NAME,
+                models.Match.kickoff < m.kickoff,
+                or_(
+                    models.Match.home_team_external_id == m.home_team_external_id,
+                    models.Match.away_team_external_id == m.home_team_external_id,
+                ),
+            )
+        ).scalars()
+    )
+    away_prior = list(
+        session.execute(
+            select(models.Match).where(
+                models.Match.sport == football.SPORT_NAME,
+                models.Match.kickoff < m.kickoff,
+                or_(
+                    models.Match.home_team_external_id == m.away_team_external_id,
+                    models.Match.away_team_external_id == m.away_team_external_id,
+                ),
+            )
+        ).scalars()
+    )
+    home_form = compute_form(m.home_team_external_id, home_prior, last_n=5).value
+    away_form = compute_form(m.away_team_external_id, away_prior, last_n=5).value
+    p = compute_score_prediction(
+        home_form, away_form,
+        home_team_id=m.home_team_external_id,
+        away_team_id=m.away_team_external_id,
+        top_n=int(top_n),
+    ).value
+    return {
+        "match_id": int(match_external_id),
+        "expected_home_goals": p.expected_home_goals,
+        "expected_away_goals": p.expected_away_goals,
+        "expected_total_goals": p.expected_total_goals,
+        "top_scores": [
+            {"home": h, "away": a, "prob": prob} for h, a, prob in p.top_scores
+        ],
+        "prob_btts": p.prob_btts,
+        "prob_over_1_5": p.prob_over_1_5,
+        "prob_over_2_5": p.prob_over_2_5,
+        "prob_over_3_5": p.prob_over_3_5,
+        "prob_under_2_5": p.prob_under_2_5,
+        "prob_home_clean_sheet": p.prob_home_clean_sheet,
+        "prob_away_clean_sheet": p.prob_away_clean_sheet,
+        "low_confidence": p.low_confidence,
+    }
+
+
 def tool_get_upcoming_matches(
     session: Session, *, team_external_id: int, days: int = 14,
 ) -> dict:
@@ -240,6 +306,181 @@ def tool_get_upcoming_matches(
             }
             for r in rows
         ],
+    }
+
+
+def tool_get_season_projection(
+    session: Session, *, team_external_id: int, target_points: int | None = None,
+) -> dict:
+    """Sezon sonu puan projeksiyonu + (opsiyonel) puan hedefi olasılığı.
+
+    Bitmiş maçlardan mevcut puan, kalan maçlardan Poisson tahmini ile
+    W/D/L olasılıkları çıkarır; final puan dağılımını döner.
+    """
+    from app.engine.season_projection import (
+        MatchOutcomeProb,
+        compute_points_target,
+        compute_season_projection,
+    )
+
+    tid = int(team_external_id)
+    matches = _team_matches(session, tid)
+    if not matches:
+        return {"error": f"team {team_external_id}: hiç maç yok"}
+    now = datetime.now(matches[0].kickoff.tzinfo)
+
+    def _prior(team_id: int, before):
+        return list(session.execute(
+            select(models.Match).where(
+                models.Match.sport == football.SPORT_NAME,
+                models.Match.kickoff < before,
+                or_(
+                    models.Match.home_team_external_id == team_id,
+                    models.Match.away_team_external_id == team_id,
+                ),
+            )
+        ).scalars())
+
+    points = played = 0
+    remaining: list = []
+    for m in matches:
+        is_home = m.home_team_external_id == tid
+        if m.status in football.FINISHED_STATUSES and m.home_score is not None and m.away_score is not None:
+            gf = m.home_score if is_home else m.away_score
+            ga = m.away_score if is_home else m.home_score
+            points += 3 if gf > ga else (1 if gf == ga else 0)
+            played += 1
+        elif m.kickoff > now:
+            hf = compute_form(m.home_team_external_id, _prior(m.home_team_external_id, m.kickoff), last_n=5).value
+            af = compute_form(m.away_team_external_id, _prior(m.away_team_external_id, m.kickoff), last_n=5).value
+            pr = compute_predict(
+                hf, af, home_team_id=m.home_team_external_id,
+                away_team_id=m.away_team_external_id,
+            ).value
+            if is_home:
+                remaining.append(MatchOutcomeProb(pr.prob_home_win, pr.prob_draw, pr.prob_away_win))
+            else:
+                remaining.append(MatchOutcomeProb(pr.prob_away_win, pr.prob_draw, pr.prob_home_win))
+
+    proj = compute_season_projection(
+        tid, current_points=points, matches_played=played, remaining=remaining,
+    ).value
+    out: dict = {
+        "team_id": tid,
+        "current_points": proj.current_points,
+        "matches_played": proj.matches_played,
+        "remaining_matches": proj.remaining_matches,
+        "expected_final_points": proj.expected_final_points,
+        "points_p10": proj.points_p10,
+        "points_p50": proj.points_p50,
+        "points_p90": proj.points_p90,
+        "max_possible_points": proj.max_possible_points,
+        "low_confidence": proj.low_confidence,
+    }
+    if target_points is not None:
+        t = compute_points_target(
+            tid, current_points=points, matches_played=played,
+            remaining=remaining, target_points=int(target_points),
+        ).value
+        out["points_target"] = {
+            "target_points": t.target_points,
+            "prob_reach_target": t.prob_reach_target,
+            "points_needed": t.points_needed,
+            "achievable": t.achievable,
+        }
+    return out
+
+
+def _player_age(session: Session, player_external_id: int) -> int | None:
+    """Players.birth_date'ten yaş (yoksa None)."""
+    p = session.execute(
+        select(models.Player).where(
+            models.Player.sport == football.SPORT_NAME,
+            models.Player.external_id == int(player_external_id),
+        )
+    ).scalar_one_or_none()
+    if p is None or p.birth_date is None:
+        return None
+    today = datetime.now(UTC).date()
+    return today.year - p.birth_date.year - (
+        1 if (today.month, today.day) < (p.birth_date.month, p.birth_date.day) else 0
+    )
+
+
+def _player_value_inputs(session: Session, player_external_id: int) -> dict | None:
+    """Appearance'lardan rating_avg + minutes + matches (değerleme girdisi)."""
+    apps = list(session.execute(
+        select(models.PlayerAppearance).where(
+            models.PlayerAppearance.sport == football.SPORT_NAME,
+            models.PlayerAppearance.player_external_id == int(player_external_id),
+        )
+    ).scalars())
+    if not apps:
+        return None
+    minutes = sum(int(a.minutes or 0) for a in apps)
+    played = sum(1 for a in apps if (a.minutes or 0) > 0)
+    ratings = [a.rating_apifootball for a in apps if a.rating_apifootball is not None]
+    rating_avg = sum(ratings) / len(ratings) if ratings else 6.5
+    return {"rating_avg": rating_avg, "minutes_played": minutes, "matches_played": played}
+
+
+def tool_get_transfer_value(session: Session, *, player_external_id: int) -> dict:
+    """Oyuncunun göreli transfer değer skoru (performans + yaş + süreklilik).
+
+    NOT: gerçek € ücreti değil, performans-temelli göreli proxy.
+    """
+    from app.engine.transfer import compute_transfer_value
+
+    inp = _player_value_inputs(session, player_external_id)
+    if inp is None:
+        return {"info": f"player {player_external_id} için appearance yok"}
+    age = _player_age(session, player_external_id)
+    v = compute_transfer_value(int(player_external_id), age=age, **inp).value
+    return {
+        "player_id": int(player_external_id),
+        "value_score": v.value_score,
+        "tier": v.tier,
+        "age": v.age,
+        "rating_avg": v.rating_avg,
+        "minutes_played": v.minutes_played,
+        "low_confidence": v.low_confidence,
+        "note": v.note,
+    }
+
+
+def tool_get_contract_risk(session: Session, *, player_external_id: int) -> dict:
+    """Oyuncunun kontrat riski + tavsiye (kontrat bitişi + değer + yaş)."""
+    from app.engine.transfer import compute_contract_risk, compute_transfer_value
+
+    contract = session.execute(
+        select(models.PlayerContract).where(
+            models.PlayerContract.sport == football.SPORT_NAME,
+            models.PlayerContract.player_external_id == int(player_external_id),
+        ).order_by(models.PlayerContract.contract_end.desc())
+    ).scalars().first()
+    if contract is None:
+        return {"info": f"player {player_external_id} için kontrat kaydı yok"}
+    days_remaining = (contract.contract_end - datetime.now(UTC).date()).days
+    age = _player_age(session, player_external_id)
+    inp = _player_value_inputs(session, player_external_id)
+    value_score = (
+        compute_transfer_value(int(player_external_id), age=age, **inp).value.value_score
+        if inp else 50.0
+    )
+    r = compute_contract_risk(
+        int(player_external_id), days_remaining=days_remaining,
+        value_score=value_score, age=age,
+        minutes_played=inp["minutes_played"] if inp else 0,
+    ).value
+    return {
+        "player_id": int(player_external_id),
+        "contract_end": contract.contract_end.isoformat(),
+        "days_remaining": r.days_remaining,
+        "value_score": r.value_score,
+        "risk_level": r.risk_level,
+        "risk_score": r.risk_score,
+        "recommendation": r.recommendation,
+        "rationale": r.rationale,
     }
 
 
@@ -417,6 +658,67 @@ _TOOL_SCHEMAS: list[dict[str, Any]] = [
         },
     },
     {
+        "name": "get_score_prediction",
+        "description": (
+            "Maç için kesin-skor dağılımı + market olasılıkları: en olası N "
+            "skor, BTTS (karşılıklı gol), over/under 1.5/2.5/3.5, clean sheet. "
+            "'Kaç kaç biter', 'gol olur mu', 'üst/alt' sorularında kullan."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "match_external_id": {"type": "integer"},
+                "top_n": {"type": "integer", "default": 5},
+            },
+            "required": ["match_external_id"],
+        },
+    },
+    {
+        "name": "get_transfer_value",
+        "description": (
+            "Oyuncunun göreli transfer DEĞER skoru (0-100) + tier "
+            "(elite/high/solid/squad/fringe). Performans + yaş eğrisi + "
+            "süreklilikten. NOT: gerçek € ücreti değil, performans proxy'si. "
+            "'Bu oyuncunun değeri ne', 'satılır mı' sorularında kullan."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"player_external_id": {"type": "integer"}},
+            "required": ["player_external_id"],
+        },
+    },
+    {
+        "name": "get_contract_risk",
+        "description": (
+            "Oyuncunun kontrat riski + tavsiye (renew_now / sell_to_recoup / "
+            "monitor / let_expire). Kontrat bitişi + değer + yaştan bedava "
+            "kaybetme riskini hesaplar. 'Kontratı bitiyor mu', 'yenileyelim "
+            "mi' sorularında kullan."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {"player_external_id": {"type": "integer"}},
+            "required": ["player_external_id"],
+        },
+    },
+    {
+        "name": "get_season_projection",
+        "description": (
+            "Sezon sonu puan projeksiyonu: bitmiş maçlardan mevcut puan, kalan "
+            "maçlardan beklenen puan + p10/p50/p90 aralığı. target_points "
+            "verilirse o hedefe ulaşma olasılığı. 'Kaç puan toplarız', "
+            "'Avrupa'ya kalır mıyız', 'şampiyonluk şansı' sorularında kullan."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "team_external_id": {"type": "integer"},
+                "target_points": {"type": "integer"},
+            },
+            "required": ["team_external_id"],
+        },
+    },
+    {
         "name": "get_upcoming_matches",
         "description": "Takımın önümüzdeki N gündeki maçları (sıralı).",
         "input_schema": {
@@ -484,6 +786,10 @@ _TOOL_HANDLERS: dict[str, Callable[..., dict[str, Any]]] = {
     "get_head_to_head": tool_get_head_to_head,
     "get_match_info": tool_get_match_info,
     "get_match_prediction": tool_get_match_prediction,
+    "get_score_prediction": tool_get_score_prediction,
+    "get_season_projection": tool_get_season_projection,
+    "get_transfer_value": tool_get_transfer_value,
+    "get_contract_risk": tool_get_contract_risk,
     "get_upcoming_matches": tool_get_upcoming_matches,
     "get_player_load": tool_get_player_load,
     "get_team_schedule": tool_get_team_schedule,

@@ -7,7 +7,7 @@ import pytest
 
 # Job spec registry side-effect import
 from app.scheduler import jobs as jobs_module  # noqa: F401
-from app.scheduler.registry import resolve
+from app.scheduler.registry import get as resolve
 
 
 def test_morning_brief_registered() -> None:

@@ -125,6 +125,56 @@ def test_match_predict_propagates_time_decay(session, client):
     assert len(rows) == 2
 
 
+def test_score_prediction_endpoint_returns_markets(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/matches/99/score-prediction?top_n=4")
+    assert r.status_code == 200
+    body = r.json()
+    v = body["value"] if "value" in body else body
+    assert len(v["top_scores"]) == 4
+    assert 0.0 <= v["prob_btts"] <= 1.0
+    assert v["prob_over_2_5"] + v["prob_under_2_5"] == pytest.approx(1.0, abs=1e-6)
+    assert "expected_total_goals" in v
+
+
+def test_score_prediction_404_for_unknown_match(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/matches/123456/score-prediction")
+    assert r.status_code == 404
+
+
+def test_season_projection_endpoint(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/teams/611/season-projection")
+    assert r.status_code == 200
+    v = r.json()
+    v = v["value"] if "value" in v else v
+    # 611 üç bitmiş maç oynadı (2-1 G, 1-3 G, 0-0 B) → 3+3+1 = 7 puan
+    assert v["current_points"] == 7
+    assert v["matches_played"] == 3
+    assert v["remaining_matches"] == 1  # match 99 (NS, gelecek)
+    assert v["min_possible_points"] == 7
+    assert v["max_possible_points"] == 10
+
+
+def test_season_projection_with_target(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/teams/611/season-projection?target_points=9")
+    assert r.status_code == 200
+    body = r.json()
+    assert "points_target" in body
+    pt = body["points_target"]
+    pt = pt["value"] if "value" in pt else pt
+    assert pt["target_points"] == 9
+    assert 0.0 <= pt["prob_reach_target"] <= 1.0
+
+
+def test_season_projection_404_unknown_team(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    r = client.get("/teams/999999/season-projection")
+    assert r.status_code == 404
+
+
 def test_match_preview_propagates_time_decay(session, client):
     _seed_matches(session, datetime.now(UTC))
     r = client.get("/matches/99/preview?time_decay_rate=0.05")

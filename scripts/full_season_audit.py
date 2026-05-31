@@ -255,46 +255,23 @@ def signal_audit(by_team_engine: dict[int, dict[str, list[float]]]) -> dict[str,
                     statistics.mean(vals)
                 )
 
+    # Verdict mantığı app.engine.audit_quality.classify_signal'da (saf + test'li).
+    from app.engine.audit_quality import classify_signal
+
     audit: dict[str, dict[str, Any]] = {}
     for eng, samples in engine_samples.items():
         if not samples:
             audit[eng] = {"verdict": "DEAD", "reason": "no samples"}
             continue
-        mean = statistics.mean(samples)
-        stdev = statistics.pstdev(samples) if len(samples) > 1 else 0.0
-        # CV (coefficient of variation): mean≈0 ise tanımsız
-        cv = (stdev / abs(mean)) if abs(mean) > 1e-6 else float("inf")
-        team_means = engine_by_team.get(eng, {})
-        team_spread = (
-            (max(team_means.values()) - min(team_means.values()))
-            if len(team_means) > 1 else 0.0
-        )
-        # Verdict heuristic (mean≈0 case'inde stdev'i direkt kullan):
-        # - n < 20 → INSUFFICIENT
-        # - mean≈0 ise: spread büyükse STRONG, küçükse NO_SIGNAL
-        # - mean≠0 ise: CV ≥ 0.30 veya spread/|mean| ≥ 0.30 → STRONG
-        # - CV < 0.05 ve spread/|mean| < 0.10 → NO_SIGNAL
-        n = len(samples)
-        if n < 20:
-            verdict = "INSUFFICIENT_DATA"
-        elif abs(mean) < 1e-6:
-            # mean ≈ 0 (örn. zero-sum metrikler: dominance ev+ - dep- = 0)
-            # → stdev/spread mutlak değerine bak
-            verdict = "STRONG_SIGNAL" if stdev > 0.5 or team_spread > 1.0 else "NO_SIGNAL"
-        elif cv < 0.05 and (team_spread / abs(mean)) < 0.10:
-            verdict = "NO_SIGNAL"
-        elif cv >= 0.30 or (team_spread / abs(mean)) >= 0.30:
-            verdict = "STRONG_SIGNAL"
-        else:
-            verdict = "MODERATE"
+        v = classify_signal(samples, engine_by_team.get(eng, {}))
         audit[eng] = {
-            "n_samples": n,
-            "mean": round(mean, 4),
-            "stdev": round(stdev, 4),
-            "cv": round(cv, 4),
-            "team_spread": round(team_spread, 4),
-            "n_teams": len(team_means),
-            "verdict": verdict,
+            "n_samples": v.n_samples,
+            "mean": v.mean,
+            "stdev": v.stdev,
+            "cv": v.cv,
+            "team_spread": v.team_spread,
+            "n_teams": v.n_teams,
+            "verdict": v.verdict,
         }
     return audit
 

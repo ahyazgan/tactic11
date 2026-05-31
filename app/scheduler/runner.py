@@ -11,10 +11,15 @@ Bir job çağrısı = bir satır. Retry'lar attempt sayısına yansır, ayrı sa
 
 from __future__ import annotations
 
+import hashlib
 import json
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from typing import Any
+
+from sqlalchemy import text
 
 from app.core.logging import get_logger
 from app.db import models
@@ -36,6 +41,65 @@ def _backoff(attempt: int) -> float:
     return DEFAULT_BACKOFF_SECONDS * (2 ** (attempt - 1))
 
 
+def _advisory_key(name: str) -> int:
+    """Job adından deterministik 64-bit signed int (pg advisory lock anahtarı).
+
+    Python `hash()` PYTHONHASHSEED ile değişir → süreçler arası tutarsız.
+    SHA-256'nın ilk 8 byte'ı tüm replica'larda aynı anahtarı üretir.
+    """
+    digest = hashlib.sha256(name.encode("utf-8")).digest()[:8]
+    return int.from_bytes(digest, "big", signed=True)
+
+
+@contextmanager
+def _job_lock(name: str) -> Iterator[bool]:
+    """Çoklu-replica çift tetiklemeyi önle: Postgres session-level advisory lock.
+
+    Birden fazla pod/worker aynı cron job'u aynı anda çalıştırırsa (örn. K8s
+    replica veya birden çok scheduler süreci) `pg_try_advisory_lock` yalnızca
+    birinin almasına izin verir; diğerleri `acquired=False` alır ve job'u
+    atlar. Lock bu fonksiyonun açtığı bağlantıda iş bitene kadar tutulur.
+
+    Postgres dışı backend'lerde (SQLite test/dev — tek yazıcı) kilit anlamsız;
+    no-op olarak her zaman `True` döner.
+    """
+    with SessionLocal() as session:
+        if session.get_bind().dialect.name != "postgresql":
+            yield True
+            return
+        key = _advisory_key(name)
+        acquired = bool(
+            session.execute(
+                text("SELECT pg_try_advisory_lock(:k)"), {"k": key}
+            ).scalar()
+        )
+        try:
+            yield acquired
+        finally:
+            if acquired:
+                session.execute(text("SELECT pg_advisory_unlock(:k)"), {"k": key})
+                session.commit()
+
+
+def _record_skipped(name: str, args_json: str) -> models.JobRun:
+    """Lock alınamadığında audit'e 'skipped' satırı yaz (çift-tetik kanıtı)."""
+    now = datetime.now(UTC)
+    with SessionLocal() as session:
+        row = models.JobRun(
+            job_name=name,
+            args=args_json,
+            started_at=now,
+            ended_at=now,
+            status="skipped",
+            attempts=0,
+            error="advisory lock alınamadı — başka bir replica çalışıyor",
+        )
+        session.add(row)
+        session.commit()
+        session.refresh(row)
+        return row
+
+
 def run_job(
     name: str,
     *,
@@ -45,6 +109,20 @@ def run_job(
     spec = get_spec(name)
     args_json = json.dumps(kwargs, sort_keys=True, default=str)
 
+    with _job_lock(name) as acquired:
+        if not acquired:
+            log.warning("job %s atlandı — advisory lock başka replica'da", name)
+            return _record_skipped(name, args_json)
+        return _run_job_locked(name, spec, args_json, max_attempts, kwargs)
+
+
+def _run_job_locked(
+    name: str,
+    spec: Any,
+    args_json: str,
+    max_attempts: int,
+    kwargs: dict[str, Any],
+) -> models.JobRun:
     with SessionLocal() as session:
         row = models.JobRun(
             job_name=name,

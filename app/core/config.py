@@ -71,6 +71,22 @@ class Settings(BaseSettings):
     backward_compat_api_key: str = Field(
         default="", alias="BACKWARD_COMPAT_API_KEY",
     )
+    # Güvenlik: legacy X-API-Key prod'da cross-tenant sızma yüzeyidir; default
+    # olarak prod'da `backward_compat_api_key` set'liyse boot reddedilir.
+    # Geçiş döneminde bilinçli olarak açmak için bu bayrağı True yapın.
+    allow_backward_compat_api_key: bool = Field(
+        default=False, alias="ALLOW_BACKWARD_COMPAT_API_KEY",
+    )
+
+    # Redis cache backend (Faz 9 #9) — boşsa DB-destekli cache kullanılır.
+    # Set'liyse (örn. redis://localhost:6379/0) adapter cache'i Redis'e gider;
+    # Redis erişilemezse otomatik DB'ye fallback (graceful degradation).
+    redis_url: str = Field(default="", alias="REDIS_URL")
+    # Redis stale retention çarpanı — değer logical TTL'in bu katı kadar
+    # Redis'te tutulur (kota aşımında stale fallback için). Min 1 gün.
+    redis_stale_retention_seconds: int = Field(
+        default=604_800, alias="REDIS_STALE_RETENTION_SECONDS",  # 7 gün
+    )
 
     # Notifications (Faz 5 #19) — boşsa kanal stub modda çalışır.
     telegram_bot_token: str = Field(default="", alias="TELEGRAM_BOT_TOKEN")
@@ -156,6 +172,12 @@ class Settings(BaseSettings):
         if not self.jwt_secret_key:
             errors.append(
                 "JWT_SECRET_KEY boş — prod'da auth için zorunlu (32+ byte random)"
+            )
+        if self.backward_compat_api_key and not self.allow_backward_compat_api_key:
+            errors.append(
+                "BACKWARD_COMPAT_API_KEY prod'da devre dışı olmalı (legacy "
+                "X-API-Key cross-tenant sızma riski). Geçiş için bilinçli açmak "
+                "isterseniz ALLOW_BACKWARD_COMPAT_API_KEY=true verin."
             )
         if errors:
             joined = "\n  - ".join(errors)
