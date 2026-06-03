@@ -165,8 +165,8 @@ def _event_to_shot(event: dict[str, Any], *, match_id: int) -> Shot | None:
             minute=minute,
             x=round(x_100, 2),
             y=round(y_100, 2),
-            body_part=body_part,
-            pattern=pattern,
+            body_part=body_part,  # type: ignore[arg-type]
+            pattern=pattern,  # type: ignore[arg-type]
             is_goal=is_goal,
             team_external_id=team_id,
         )

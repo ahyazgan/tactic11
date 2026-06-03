@@ -142,8 +142,8 @@ class AnthropicClient:
                 "type": "text", "text": system,
                 "cache_control": {"type": "ephemeral"},
             }],
-            tools=tools,
-            messages=messages,
+            tools=tools,  # type: ignore[arg-type]
+            messages=messages,  # type: ignore[arg-type]
         )
 
         text_parts: list[str] = []

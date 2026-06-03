@@ -1551,7 +1551,8 @@ def decisions_feedback(
     by_type: dict[str, dict[str, int]] = {}
     for r in rows:
         b = by_type.setdefault(r.decision_type, {"positive": 0, "negative": 0})
-        b[r.outcome] += 1
+        if r.outcome in ("positive", "negative"):
+            b[r.outcome] += 1
     summary = {
         dtype: {
             "n": b["positive"] + b["negative"],
