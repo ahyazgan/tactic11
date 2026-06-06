@@ -21,6 +21,15 @@ log = get_logger(__name__)
 
 
 def cache_get(session: Session, *, source: str, key: str) -> dict[str, Any] | None:
+    # Hızlı yol: Redis yapılandırılmışsa önce oraya bak (yoksa None → DB).
+    from app.data.cache.redis_backend import get_redis_cache
+
+    backend = get_redis_cache()
+    if backend is not None:
+        hit = backend.get(source, key)
+        if hit is not None:
+            return hit
+
     row = session.execute(
         select(models.CacheEntry).where(
             models.CacheEntry.source == source,
@@ -52,6 +61,14 @@ def cache_set(
 ) -> None:
     expires = datetime.now(UTC) + timedelta(seconds=ttl_seconds)
     serialized = json.dumps(value)
+
+    # Write-through: Redis varsa oraya da yaz (TTL Redis tarafında yönetilir).
+    from app.data.cache.redis_backend import get_redis_cache
+
+    backend = get_redis_cache()
+    if backend is not None:
+        backend.set(source, key, value, ttl_seconds)
+
     row = session.execute(
         select(models.CacheEntry).where(
             models.CacheEntry.source == source,
