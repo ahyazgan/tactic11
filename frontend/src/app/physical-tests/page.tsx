@@ -13,6 +13,7 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
@@ -145,6 +146,7 @@ export default function PhysicalPanelPage() {
     <div className="pp-root">
       <div className="topbar">
         <div className="brand">
+          <Link href="/" className="pp-back" title="Uygulamaya dön">←</Link>
           <div className="mark">m2</div>
           <h1>manager2 <span>/ Performans Modülü</span></h1>
         </div>
@@ -349,6 +351,13 @@ export default function PhysicalPanelPage() {
           position:sticky;top:0;z-index:20;
         }
         .pp-root .brand{display:flex;align-items:center;gap:14px}
+        .pp-root .pp-back{
+          display:flex;align-items:center;justify-content:center;
+          width:30px;height:30px;border-radius:8px;border:1px solid var(--line);
+          color:var(--muted);text-decoration:none;font-size:16px;font-weight:700;
+          background:var(--panel2);transition:all .15s
+        }
+        .pp-root .pp-back:hover{color:var(--ink);border-color:var(--muted)}
         .pp-root .brand .mark{
           width:38px;height:38px;border-radius:9px;
           background:linear-gradient(135deg,#fff,#bdbdc7);
