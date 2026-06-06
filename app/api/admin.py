@@ -1551,7 +1551,8 @@ def decisions_feedback(
     by_type: dict[str, dict[str, int]] = {}
     for r in rows:
         b = by_type.setdefault(r.decision_type, {"positive": 0, "negative": 0})
-        b[r.outcome] += 1
+        if r.outcome in ("positive", "negative"):
+            b[r.outcome] += 1
     summary = {
         dtype: {
             "n": b["positive"] + b["negative"],
@@ -3123,5 +3124,87 @@ def analysis_development_curve(payload: dict[str, Any]) -> dict[str, Any]:
     values = [float(x) for x in payload.get("values", [])]
     report = development_curve(
         values, recent_window=int(payload.get("recent_window", 3)),
+    )
+    return asdict(report)
+
+
+# --------------------------------------------------------------------------- #
+# Sports Science — performans testi modülü: protokol oku / skorla / yorumla.
+# Saf engine, DB'siz payload endpoint'leri (mevcut analiz kalıbı).
+# --------------------------------------------------------------------------- #
+
+
+@router.get(
+    "/performance/protocols",
+    tags=["admin"],
+    summary="Performans test protokol kütüphanesi (nasıl yapılır + normlar)",
+)
+def performance_protocols() -> dict[str, Any]:
+    """Tester'ın okuyabileceği protokol tanımları."""
+    from dataclasses import asdict
+
+    from app.engine.performance_test import PROTOCOLS
+
+    return {"protocols": [asdict(p) for p in PROTOCOLS.values()]}
+
+
+@router.post(
+    "/performance/score",
+    tags=["admin"],
+    summary="Tek test sonucunu norm + kadro yüzdeliğiyle skorla",
+)
+def performance_score(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {"protocol_key": str, "raw_value": float,
+    "reference_values": [float] (ops kadro)}."""
+    from dataclasses import asdict
+
+    from app.engine.performance_test import score_test
+
+    refs = payload.get("reference_values")
+    score = score_test(
+        str(payload["protocol_key"]), float(payload["raw_value"]),
+        reference_values=[float(x) for x in refs] if refs else None,
+    )
+    return asdict(score)
+
+
+@router.post(
+    "/performance/battery",
+    tags=["admin"],
+    summary="Bir test gününün tüm sonuçları → atlet profili (güçlü/zayıf)",
+)
+def performance_battery(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {"player_id": int, "results": [[protocol_key, raw], ...],
+    "squad_references": {protocol_key: [float]} (ops)}."""
+    from dataclasses import asdict
+
+    from app.engine.performance_test import evaluate_battery
+
+    results = [(str(k), float(v)) for k, v in payload.get("results", [])]
+    refs = {
+        str(k): [float(x) for x in v]
+        for k, v in (payload.get("squad_references") or {}).items()
+    }
+    report = evaluate_battery(
+        int(payload.get("player_id", 0)), results,
+        squad_references=refs or None,
+    )
+    return asdict(report)
+
+
+@router.post(
+    "/performance/progression",
+    tags=["admin"],
+    summary="Bir protokolün tarihsel serisi → gelişim + regresyon uyarısı",
+)
+def performance_progression(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {"protocol_key": str, "values": [float, ...]} (eski→yeni)."""
+    from dataclasses import asdict
+
+    from app.engine.performance_test import interpret_progression
+
+    report = interpret_progression(
+        str(payload["protocol_key"]),
+        [float(x) for x in payload.get("values", [])],
     )
     return asdict(report)

@@ -215,6 +215,8 @@ def _quick_accuracy(session: Session, *, days: int) -> dict[str, Any]:
             p = _json.loads(r.predicted_value_json)
         except _json.JSONDecodeError:
             continue
+        if r.actual_outcome is None:
+            continue  # gerçek sonuç yoksa Brier hesaplanamaz
         prob_actual = {
             "home": float(p.get("prob_home_win", 0.0)),
             "draw": float(p.get("prob_draw", 0.0)),

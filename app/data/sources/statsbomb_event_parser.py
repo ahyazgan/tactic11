@@ -158,8 +158,8 @@ def event_to_pass(
             start_y=round(start[1], 2),
             end_x=round(end[0], 2),
             end_y=round(end[1], 2),
-            pass_type=pass_type,
-            technique=technique,
+            pass_type=pass_type,  # type: ignore[arg-type]
+            technique=technique,  # type: ignore[arg-type]
             completed=completed,
             key_pass=bool(pass_block.get("shot_assist")),
             assist=bool(pass_block.get("goal_assist")),
@@ -238,7 +238,7 @@ def event_to_defensive_action(
             period=int(event.get("period", 1)),
             x=round(loc[0], 2),
             y=round(loc[1], 2),
-            action_type=action_type,
+            action_type=action_type,  # type: ignore[arg-type]
             successful=successful,
             possession_id=event.get("possession"),
         )
