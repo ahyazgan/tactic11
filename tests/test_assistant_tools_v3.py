@@ -149,6 +149,7 @@ def test_execute_tool_routes_v3_rotation_plan_with_appearances(
         "dense_schedule": True,
     })
     payload = json.loads(raw)
+    assert "team_external_id" in payload, f"beklenmeyen payload: {payload}"
     assert payload["team_external_id"] == 11
     assert "candidates" in payload
     assert payload["upcoming_matches"] == 3
