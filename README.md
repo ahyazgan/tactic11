@@ -144,7 +144,7 @@ pytest -q
 ```
 Testler in-memory SQLite ile çalışır; gerçek DB veya API anahtarı gerekmez.
 
-## Taktiksel Engine Envanteri (86 modül)
+## Taktiksel Engine Envanteri (88 modül)
 
 Saf-Python pure-compute engine'ler, hepsi multi-tenant + audit'li.
 Tükettiği veri: `events` tablosu (PassEvent, Carry, DefensiveAction, Shot).
@@ -221,8 +221,8 @@ momentum kırılması/yük/kart/veri-kalitesi + dedup).
 **Sports Science — performans testi (1 modül):**
 performance_test (CMJ/30m sprint/YoYo IR1/T-test/RSA protokol kütüphanesi +
 norm-rating + kadro yüzdeliği + gelişim/regresyon yorumu + **SWC/bireysel
-baseline** ölçüm-gürültüsü filtresi), workload (**ACWR** sakatlık riski +
-monotony/strain). API: `/admin/performance/{protocols,score,battery,
+baseline** ölçüm-gürültüsü filtresi), workload (**ACWR** sakatlık riski + monotony/strain), gps_load (GPS/wearable
+seans → iç-yük AU, ACWR'ye beslenir), wellness (subjektif anket → readiness). API: `/admin/performance/{protocols,score,battery,
 progression,workload,assess-change}`.
 Ayrıca `confidence` 5 yüksek-görünürlüklü motora bağlandı (form, rating,
 predict, matchup, opponent_weakness) → API yanıtlarında `confidence`.
