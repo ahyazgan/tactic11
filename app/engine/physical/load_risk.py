@@ -141,3 +141,73 @@ def compute_load_risk(
         summary=summary,
         recommendations=recs,
     )
+
+
+# Risk label'ları (compute_load_risk ile tutarlı) — bildirim eşiği için.
+CRITICAL_LABEL = "Kritik"
+
+
+def format_critical_alert(report: LoadRiskReport) -> str:
+    """Kritik risk için kısa, telefona uygun uyarı metni (saf)."""
+    lines = [
+        f"⚠️ Kritik fiziksel risk — {report.player_name}",
+        report.summary,
+    ]
+    for f in report.flags[:5]:
+        lines.append(f"• {f['message']}")
+    if report.recommendations:
+        lines.append("Öneri: " + report.recommendations[0])
+    return "\n".join(lines)
+
+
+@dataclass
+class ProtocolTrend:
+    protocol: str
+    points: list[dict]       # [{"test_date": str, "value": float}] kronolojik
+    direction: str           # "improving" | "worsening" | "stable" | "insufficient"
+    slope: float             # ölçüm başına değişim (en küçük kareler eğimi)
+    lower_is_better: bool
+
+
+def compute_protocol_trend(
+    protocol: str,
+    points: list[dict[str, Any]],   # [{"test_date", "value"}], kronolojik artan
+) -> ProtocolTrend:
+    """Bir protokolün zaman serisinden basit eğim + yön çıkar (saf).
+
+    Yön, protokolün 'düşük mü iyi' (lower_is_better) bilgisine göre yorumlanır:
+    sprint süresi düşüyorsa 'improving', YoYo seviyesi düşüyorsa 'worsening'.
+    """
+    ref = REFERENCE.get(protocol)
+    lib = bool(cast(bool, ref["lower_is_better"])) if ref is not None else False
+
+    ordered = [
+        {"test_date": str(p.get("test_date", "")), "value": float(p["value"])}
+        for p in points
+    ]
+    vals = [float(p["value"]) for p in ordered]
+
+    if len(vals) < 2:
+        return ProtocolTrend(protocol, ordered, "insufficient", 0.0, lib)
+
+    n = len(vals)
+    xs = list(range(n))
+    mean_x = sum(xs) / n
+    mean_y = sum(vals) / n
+    denom = sum((x - mean_x) ** 2 for x in xs)
+    slope = (
+        sum((xs[i] - mean_x) * (vals[i] - mean_y) for i in range(n)) / denom
+        if denom
+        else 0.0
+    )
+
+    # "Önemsiz" eğimi stable say (ortalamanın %1'i eşiği).
+    eps = abs(mean_y) * 0.01
+    if abs(slope) <= eps:
+        direction = "stable"
+    else:
+        rising = slope > 0
+        improving = (rising and not lib) or (not rising and lib)
+        direction = "improving" if improving else "worsening"
+
+    return ProtocolTrend(protocol, ordered, direction, round(slope, 4), lib)
