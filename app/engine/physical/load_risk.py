@@ -7,7 +7,7 @@ saf Python; api → ai → engine → domain bağımlılık yönüne uygun).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 # Protokol başına referans aralıkları (elit Süper Lig düzeyi).
 REFERENCE = {
@@ -52,8 +52,10 @@ def _score_single(protocol: str, value: float) -> tuple[float, str | None]:
     if not ref:
         return 0.0, None
 
-    low = ref["low"]
-    lib = ref["lower_is_better"]
+    # REFERENCE değerleri heterojen (float/str/bool) → mypy `object` görür;
+    # sayısal/bool alanları açıkça daralt.
+    low = cast(float, ref["low"])
+    lib = cast(bool, ref["lower_is_better"])
 
     if lib:
         # düşük değer iyi — sprint süresi, vücut yağı
