@@ -17,7 +17,6 @@ from app.reports.share import (
     encode_share_token,
 )
 
-
 SECRET = "test-secret-32-byte-random-abcdefgh"
 
 
@@ -107,6 +106,7 @@ if not REPORTLAB_AVAILABLE:
 def session():
     from sqlalchemy import create_engine
     from sqlalchemy.orm import Session as _Session
+
     from app.db.base import Base
     engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
@@ -155,6 +155,7 @@ def test_create_share_link_returns_token_and_url(session) -> None:
 
 def test_create_share_link_503_without_secret(session) -> None:
     from fastapi import HTTPException
+
     from app.api.reports import create_share_link
     out_id = _seed_output(session)
     fake_request = type("R", (), {"base_url": "http://test/"})()
@@ -169,6 +170,7 @@ def test_create_share_link_503_without_secret(session) -> None:
 
 def test_create_share_link_404_unknown(session) -> None:
     from fastapi import HTTPException
+
     from app.api.reports import create_share_link
     fake_request = type("R", (), {"base_url": "http://test/"})()
     with patch("app.api.reports.get_settings", return_value=_stub_settings(SECRET)):
@@ -193,6 +195,7 @@ def test_shared_report_pdf_round_trip(session) -> None:
 
 def test_shared_report_pdf_403_tampered(session) -> None:
     from fastapi import HTTPException
+
     from app.api.shared import shared_report_pdf
     out_id = _seed_output(session)
     token = encode_share_token(out_id, secret=SECRET)
@@ -205,6 +208,7 @@ def test_shared_report_pdf_403_tampered(session) -> None:
 
 def test_shared_report_pdf_410_expired(session) -> None:
     from fastapi import HTTPException
+
     from app.api.shared import shared_report_pdf
     out_id = _seed_output(session)
     past = datetime.now(UTC) - timedelta(hours=2)
@@ -217,6 +221,7 @@ def test_shared_report_pdf_410_expired(session) -> None:
 
 def test_shared_report_pdf_503_without_secret(session) -> None:
     from fastapi import HTTPException
+
     from app.api.shared import shared_report_pdf
     with patch("app.api.shared.get_settings", return_value=_stub_settings("")):
         with pytest.raises(HTTPException) as exc:
@@ -226,6 +231,7 @@ def test_shared_report_pdf_503_without_secret(session) -> None:
 
 def test_shared_report_pdf_404_after_output_deleted(session) -> None:
     from fastapi import HTTPException
+
     from app.api.shared import shared_report_pdf
     out_id = _seed_output(session)
     token = encode_share_token(out_id, secret=SECRET)

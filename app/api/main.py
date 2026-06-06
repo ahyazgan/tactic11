@@ -9,7 +9,7 @@ from __future__ import annotations
 import time
 import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
@@ -38,12 +38,6 @@ from app.api.live import router as live_router
 from app.api.live_vaep import router as live_vaep_router
 from app.api.notes import router as notes_router
 from app.api.notifications import router as notifications_router
-from app.api.plan import router as plan_router
-from app.api.reports import router as reports_router
-from app.api.shared import router as shared_router
-from app.api.sprint3 import router as sprint3_router
-from app.api.sprint4 import router as sprint4_router
-from app.api.sprint5 import router as sprint5_router
 from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
@@ -51,8 +45,14 @@ from app.api.observability import (
     prometheus_text,
     should_bypass_rate_limit,
 )
+from app.api.plan import router as plan_router
+from app.api.reports import router as reports_router
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
+from app.api.shared import router as shared_router
+from app.api.sprint3 import router as sprint3_router
+from app.api.sprint4 import router as sprint4_router
+from app.api.sprint5 import router as sprint5_router
 from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
 from app.core.monitoring import init_sentry
@@ -712,7 +712,7 @@ def player_info(
         )
     age: int | None = None
     if player.birth_date is not None:
-        today = datetime.now(timezone.utc).date()
+        today = datetime.now(UTC).date()
         age = today.year - player.birth_date.year - (
             1 if (today.month, today.day) <
                  (player.birth_date.month, player.birth_date.day)

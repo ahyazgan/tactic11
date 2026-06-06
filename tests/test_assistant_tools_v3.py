@@ -10,10 +10,9 @@ from sqlalchemy.orm import Session
 
 from app.assistant.tools import execute_tool, get_tool_schemas
 from app.assistant.tools_v3 import V3_TOOL_HANDLERS, V3_TOOL_SCHEMAS
-from app.db.base import Base
 from app.db import models
+from app.db.base import Base
 from app.sports import football
-
 
 # --------------------------------------------------------------------------- #
 # Register doğrulama
@@ -135,7 +134,7 @@ def test_execute_tool_routes_v3_rotation_plan_with_appearances(
 ) -> None:
     # 1 oyuncu, yüksek yük (270+ dk/hafta) → extreme/high
     now = datetime.now(UTC)
-    for i, m_id in enumerate([100, 101, 102, 103, 104]):
+    for _i, m_id in enumerate([100, 101, 102, 103, 104]):
         _seed_appearance(
             session, player_id=7, team_id=11, match_id=m_id,
             minutes=90, kickoff=now,

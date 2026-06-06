@@ -30,7 +30,6 @@ from app.engine.predict_ml.multinomial import (  # noqa: E402
     train_multinomial,
 )
 
-
 # --------------------------------------------------------------------------- #
 # Sample generator — deterministic synthetic data
 # --------------------------------------------------------------------------- #

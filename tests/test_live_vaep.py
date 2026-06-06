@@ -14,11 +14,10 @@ from sqlalchemy.orm import Session
 
 from app.api.live import _compute_live_vaep
 from app.api.live_vaep import live_vaep_snapshot
-from app.db.base import Base
 from app.db import models
-from app.domain import BodyPart, Carry, PassEvent, Shot, ShotPattern
+from app.db.base import Base
+from app.domain import Carry, PassEvent
 from app.sports import football
-
 
 # --------------------------------------------------------------------------- #
 # Saf helper testleri (event-list input, DB yok)

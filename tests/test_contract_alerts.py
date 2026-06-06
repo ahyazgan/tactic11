@@ -4,15 +4,13 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from app.db.base import Base
 from app.db import models
+from app.db.base import Base
 from app.engine.contract_alerts import compute_contract_alerts
 from app.sports import football
-
 
 # --------------------------------------------------------------------------- #
 # Engine (saf)

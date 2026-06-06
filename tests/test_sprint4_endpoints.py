@@ -17,8 +17,8 @@ from app.api.sprint4 import (
     list_youth_players,
     update_goal,
 )
-from app.db.base import Base
 from app.db import models
+from app.db.base import Base
 from app.sports import football
 
 

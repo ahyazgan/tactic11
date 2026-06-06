@@ -1,8 +1,6 @@
 """Notification channels + dispatcher + endpoint testleri (Faz 5 #19)."""
 from __future__ import annotations
 
-from unittest.mock import patch
-
 import httpx
 import pytest
 
@@ -14,7 +12,6 @@ from app.notifications import (
     WhatsAppChannel,
     build_default_notifier,
 )
-
 
 # --------------------------------------------------------------------------- #
 # Base ABC + NotificationResult
