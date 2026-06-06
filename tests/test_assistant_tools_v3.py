@@ -12,6 +12,7 @@ from app.assistant.tools import execute_tool, get_tool_schemas
 from app.assistant.tools_v3 import V3_TOOL_HANDLERS, V3_TOOL_SCHEMAS
 from app.db import models
 from app.db.base import Base
+from app.db.tenant_context import DEFAULT_TENANT_ID
 from app.sports import football
 
 # --------------------------------------------------------------------------- #
@@ -132,6 +133,9 @@ def test_execute_tool_routes_v3_available_squad_with_squad(session: Session) -> 
 def test_execute_tool_routes_v3_rotation_plan_with_appearances(
     session: Session,
 ) -> None:
+    # Tenant tutarlılığı: insert auto-fill + query filtresi aynı tenant'ı
+    # kullansın (yoksa appearance'lar bulunamaz → loads boş).
+    session.info["tenant_id"] = DEFAULT_TENANT_ID
     # 1 oyuncu, yüksek yük (270+ dk/hafta) → extreme/high
     now = datetime.now(UTC)
     for _i, m_id in enumerate([100, 101, 102, 103, 104]):
