@@ -106,12 +106,17 @@ def compute_player_load(
     )
 
     cutoff = (now or datetime.now(UTC)) - timedelta(days=window_days)
+    # Naive kickoff'ları (örn. SQLite tz'i atar) UTC-aware say → naive/aware
+    # karşılaştırma TypeError'ını önle (Postgres'te zaten aware gelir).
+    def _aware(dt: datetime) -> datetime:
+        return dt if dt.tzinfo is not None else dt.replace(tzinfo=UTC)
+
     window = [
         a
         for a in appearances
         if a.sport == football.SPORT_NAME
         and a.player_external_id == player_external_id
-        and a.kickoff >= cutoff
+        and _aware(a.kickoff) >= cutoff
     ]
 
     minutes_total = sum(a.minutes for a in window)
@@ -120,7 +125,7 @@ def compute_player_load(
     minutes_per_week = round(minutes_total / window_days * 7, 2)
     high_load = minutes_per_week >= effective_threshold
     back_to_back = _max_window_match_count(
-        [a.kickoff for a in window], BACK_TO_BACK_DAYS,
+        [_aware(a.kickoff) for a in window], BACK_TO_BACK_DAYS,
     )
     risk_level = _classify_risk(minutes_per_week, back_to_back)
 
