@@ -194,8 +194,8 @@ def transfer_targets(
         )
     ).scalars())
     by_pid: dict[int, list[Any]] = {}
-    for a in cand_apps:
-        by_pid.setdefault(a.player_external_id, []).append(a)
+    for app in cand_apps:
+        by_pid.setdefault(app.player_external_id, []).append(app)
 
     sim = compute_similar_players(
         target_player_id, target_apps, by_pid,
@@ -206,13 +206,13 @@ def transfer_targets(
     meta = {p.external_id: p for p in pool_filtered}
     out_matches: list[TransferTargetOut] = []
     for m in sim.top_matches:
-        p = meta.get(m.player_external_id)
+        pl = meta.get(m.player_external_id)
         out_matches.append(TransferTargetOut(
             player_external_id=m.player_external_id,
             similarity=m.similarity,
             total_minutes=m.total_minutes,
-            position=p.position if p else None,
-            age=_age_from_birth(p.birth_date, today) if p else None,
+            position=pl.position if pl else None,
+            age=_age_from_birth(pl.birth_date, today) if pl else None,
         ))
 
     return TransferTargetsOut(

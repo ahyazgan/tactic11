@@ -35,7 +35,7 @@ try:
     REPORTLAB_AVAILABLE = True
 except ImportError:  # pragma: no cover — opsiyonel paket
     REPORTLAB_AVAILABLE = False
-    A4 = None  # type: ignore[assignment]
+    A4 = None
 
 
 # JSON key-value tablosunda gösterilecek max satır (gürültü engelleme)

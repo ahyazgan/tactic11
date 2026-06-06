@@ -37,6 +37,7 @@ def _pass(
         team_external_id=team_id,
         player_external_id=player_id,
         minute=minute,
+        period=1 if minute < 45 else 2,
         start_x=sx, start_y=sy, end_x=ex, end_y=ey,
         completed=True,
     )
@@ -55,6 +56,7 @@ def _carry(
         team_external_id=team_id,
         player_external_id=player_id,
         minute=minute,
+        period=1 if minute < 45 else 2,
         start_x=sx, start_y=sy, end_x=ex, end_y=ey,
     )
 
