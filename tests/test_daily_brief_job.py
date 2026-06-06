@@ -10,7 +10,10 @@ from typing import Any
 
 from app.db import models
 from app.scheduler.daily_brief import (
+    DailyBriefRunResult,
+    TenantBriefResult,
     _deliver_webhook,
+    format_daily_brief_digest,
     run_brief_for_tenant,
     run_daily_brief,
 )
@@ -224,3 +227,24 @@ def test_daily_decision_brief_job_registered():
     spec = get("daily_decision_brief")
     assert spec.name == "daily_decision_brief"
     assert callable(spec.handler)
+
+
+def test_format_daily_brief_digest():
+    result = DailyBriefRunResult(
+        run_at=datetime(2026, 6, 6, 8, 0, tzinfo=UTC),
+        tenants_processed=2,
+        tenants_skipped=0,
+        per_tenant=[
+            TenantBriefResult("t1", "besiktas", 3, 2, 0, []),
+            TenantBriefResult("t2", "galatasaray", 1, 0, 0, []),
+        ],
+        total_succeeded=2,
+        total_failed=1,
+    )
+    text = format_daily_brief_digest(result)
+    assert "Günlük brief" in text
+    assert "2 kulüp işlendi" in text
+    assert "1 hata" in text
+    assert "besiktas: 3 maç, 2 rapor" in text
+    # rapor üretmeyen tenant satırı yok
+    assert "galatasaray" not in text

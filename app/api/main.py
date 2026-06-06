@@ -383,6 +383,69 @@ def health(session: Session = Depends(get_session)) -> JSONResponse:
     return JSONResponse(payload, status_code=status_code)
 
 
+@app.get(
+    "/health/deep",
+    tags=["ops"],
+    summary="Derin sağlık — DB + migration + cache backend + bildirim kanalları",
+)
+def health_deep(session: Session = Depends(get_session)) -> JSONResponse:
+    """Bileşen-bazlı sağlık raporu (readiness probe + operasyonel görünürlük).
+
+    DB erişimi kritik → düşükse 503. Diğer bileşenler (cache backend, bildirim
+    kanalları, migration head) bilgilendirme amaçlı — degrade etmez ama
+    operatör 'Redis aktif mi, hangi kanal yapılandırılmış, hangi migration'
+    sorusunu tek uçtan görür.
+    """
+    components: dict[str, Any] = {}
+    db_ok = True
+    try:
+        session.execute(text("SELECT 1"))
+        components["db"] = {"status": "ok"}
+    except SQLAlchemyError as e:  # noqa: BLE001
+        components["db"] = {"status": "error", "error": type(e).__name__}
+        db_ok = False
+
+    # DB'nin uyguladığı migration revizyonu (alembic_version tablosu).
+    try:
+        rev = session.execute(
+            text("SELECT version_num FROM alembic_version")
+        ).scalar_one_or_none()
+        components["migration"] = {"current": rev}
+    except SQLAlchemyError:
+        components["migration"] = {"current": None}
+
+    # Cache backend — Redis yapılandırılmış+erişilebilir mi, yoksa DB cache.
+    try:
+        from app.data.cache.redis_backend import REDIS_AVAILABLE, get_redis_cache
+        backend = get_redis_cache()
+        components["cache"] = {
+            "backend": "redis" if backend is not None else "db",
+            "redis_lib": REDIS_AVAILABLE,
+        }
+    except Exception as e:  # noqa: BLE001 — sağlık ucu hiçbir şeye düşmemeli
+        components["cache"] = {"backend": "db", "error": type(e).__name__}
+
+    # Bildirim kanalları — hangileri gerçek (configured) modda.
+    try:
+        from app.notifications import build_default_notifier
+        active = build_default_notifier().active_channel_names()
+        components["notifications"] = {
+            "active_channels": active, "configured": bool(active),
+        }
+    except Exception as e:  # noqa: BLE001
+        components["notifications"] = {
+            "active_channels": [], "error": type(e).__name__,
+        }
+
+    payload: dict[str, Any] = {
+        "status": "ok" if db_ok else "degraded",
+        "version": APP_VERSION,
+        "uptime_seconds": round(time.time() - PROCESS_STARTED_AT, 2),
+        "components": components,
+    }
+    return JSONResponse(payload, status_code=200 if db_ok else 503)
+
+
 @protected.get(
     "/teams",
     response_model=list[TeamOut],

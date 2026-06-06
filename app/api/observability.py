@@ -65,7 +65,7 @@ def prometheus_text() -> tuple[bytes, str] | None:
 
 # Rate limit bypass'i: yalnız /health (k8s/load balancer liveness probe).
 _RATE_LIMIT_BYPASS_PATHS: frozenset[str] = frozenset(
-    {"/health", "/healthz", "/readyz", "/metrics"}
+    {"/health", "/health/deep", "/healthz", "/readyz", "/metrics"}
 )
 # Endpoint başına saklanan latency örneği sayısı (p50 hesabı için yeterli).
 _LATENCY_SAMPLE_LIMIT = 100

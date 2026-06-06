@@ -41,6 +41,20 @@ def test_health_returns_db_status_and_uptime(client):
     assert body["uptime_seconds"] >= 0
 
 
+def test_health_deep_reports_components(client):
+    r = client.get("/health/deep")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "ok"
+    comp = body["components"]
+    assert comp["db"]["status"] == "ok"
+    # cache backend: redis yapılandırılmadıysa "db"
+    assert comp["cache"]["backend"] in ("db", "redis")
+    # bildirim: env yokken hiç active kanal yok
+    assert comp["notifications"]["active_channels"] == []
+    assert "migration" in comp
+
+
 def test_healthz_liveness_no_db(client):
     """Liveness DB'ye dokunmaz — her zaman 200."""
     r = client.get("/healthz")
