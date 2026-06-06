@@ -1,5 +1,14 @@
-"""Fiziksel test modülü unit testleri — saf engine (DB/API gerekmez)."""
+"""Fiziksel test modülü testleri — saf engine + endpoint (in-memory SQLite)."""
 
+import types
+
+import pytest
+from fastapi.testclient import TestClient
+
+import app.db.physical_test  # noqa: F401 — PhysicalTest tablosunu metadata'ya kaydet
+from app.api.auth import get_current_user
+from app.api.main import app
+from app.db.session import get_session
 from app.engine.physical.load_risk import (
     compute_load_risk,
     compute_protocol_trend,
@@ -85,3 +94,94 @@ def test_format_critical_alert_contains_player_and_flags():
     assert "Kritik" in msg
     assert "Yorgun" in msg
     assert "•" in msg
+
+
+# --------------------------------------------------------------------------- #
+# Endpoint testleri — JWT + tenant izolasyonu (sahte get_current_user override)
+# --------------------------------------------------------------------------- #
+
+_SPRINT_OK = {
+    "player_id": "12345", "player_name": "Rafa Silva",
+    "test_date": "2026-06-06", "protocol": "sprint_10m", "value": 1.78,
+}
+
+
+@pytest.fixture()
+def client(session):
+    """TestClient + override edilmiş DB session ve current_user.
+
+    `state["tenant_id"]` değiştirilerek cross-tenant senaryosu kurulur."""
+    state = {"tenant_id": "t1", "email": "coach@besiktas.com"}
+
+    def _fake_user():
+        return types.SimpleNamespace(
+            id="u1", tenant_id=state["tenant_id"], email=state["email"],
+        )
+
+    def _override_session():
+        yield session
+
+    app.dependency_overrides[get_session] = _override_session
+    app.dependency_overrides[get_current_user] = _fake_user
+    try:
+        yield TestClient(app), state
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_post_returns_201_autofills_unit_and_recorded_by(client):
+    c, _ = client
+    r = c.post("/physical-tests/", json=_SPRINT_OK)
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["protocol"] == "sprint_10m"
+    assert body["unit"] == "sn"                       # protokolden otomatik
+    assert body["recorded_by"] == "coach@besiktas.com"  # current_user.email
+    assert body["player_id"] == "12345"
+
+
+def test_post_ignores_tenant_from_body(client):
+    """tenant_id gövdeden gelse bile current_user'dan alınır (sızıntı yok)."""
+    c, state = client
+    payload = {**_SPRINT_OK, "tenant_id": "baska-kulup"}
+    r = c.post("/physical-tests/", json=payload)
+    assert r.status_code == 201
+    # t2 olarak bakınca görünmemeli → tenant t1'e yazılmış demektir
+    state["tenant_id"] = "t2"
+    assert c.get("/physical-tests/12345").json() == []
+
+
+def test_get_risk_schema(client):
+    c, _ = client
+    c.post("/physical-tests/", json=_SPRINT_OK)
+    r = c.get("/physical-tests/12345/risk")
+    assert r.status_code == 200
+    body = r.json()
+    for key in (
+        "player_id", "player_name", "risk_score",
+        "risk_label", "flags", "summary", "recommendations",
+    ):
+        assert key in body
+
+
+def test_get_risk_404_when_no_data(client):
+    c, _ = client
+    assert c.get("/physical-tests/99999/risk").status_code == 404
+
+
+def test_cross_tenant_isolation(client):
+    c, state = client
+    r = c.post("/physical-tests/", json=_SPRINT_OK)
+    assert r.status_code == 201
+    test_id = r.json()["id"]
+
+    # Başka kulüp (t2) ne listeyi, ne riski, ne silmeyi yapabilmeli.
+    state["tenant_id"] = "t2"
+    assert c.get("/physical-tests/12345").json() == []
+    assert c.get("/physical-tests/12345/risk").status_code == 404
+    assert c.delete(f"/physical-tests/{test_id}").status_code == 404
+
+    # Sahibi (t1) silebilmeli.
+    state["tenant_id"] = "t1"
+    assert c.delete(f"/physical-tests/{test_id}").status_code == 204
+    assert c.get("/physical-tests/12345").json() == []
