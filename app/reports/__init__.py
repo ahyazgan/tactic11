@@ -1,4 +1,8 @@
-from app.reports.pdf import REPORTLAB_AVAILABLE, build_agent_output_pdf
+from app.reports.pdf import (
+    REPORTLAB_AVAILABLE,
+    build_agent_output_pdf,
+    build_performance_report_pdf,
+)
 from app.reports.share import (
     ShareTokenError,
     ShareTokenExpired,
@@ -10,6 +14,7 @@ from app.reports.share import (
 
 __all__ = [
     "REPORTLAB_AVAILABLE",
+    "build_performance_report_pdf",
     "ShareTokenError",
     "ShareTokenExpired",
     "ShareTokenInvalid",
