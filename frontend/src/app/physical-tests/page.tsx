@@ -1,431 +1,523 @@
 "use client";
 
 /**
- * Fiziksel Performans Testi — yük/risk modülü UI.
+ * Fiziksel Performans Paneli — saha/tablet için tam-ekran (shell bypass).
  *
- * Oyuncu seç → test gir → geçmiş + renk kodlu yük riski + protokol trend grafiği.
- * Backend (physical_tests router):
- *   POST /physical-tests/                  — test kaydı
- *   GET  /physical-tests/{player_id}       — geçmiş
- *   GET  /physical-tests/{player_id}/risk  — yük riski raporu
- *   GET  /physical-tests/{player_id}/trend?protocol=... — zaman serisi
+ * Tasarım birebir korunur (koyu tema + Beşiktaş kırmızısı + risk halkası);
+ * statik veri yerine gerçek API'ye bağlı:
+ *   GET  /physical-tests/players          — kadro (özet + risk)
+ *   GET  /physical-tests/{id}             — test geçmişi
+ *   GET  /physical-tests/{id}/risk        — yük riski (halka + flags + öneriler)
+ *   POST /physical-tests/                 — yeni test → 201 → yeniden fetch
+ * Risk hesabı backend'de; frontend yalnız gösterir.
  */
 
 import * as React from "react";
 import useSWR from "swr";
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { apiFetch } from "@/lib/api";
-import { Panel } from "@/components/ui";
+import { useCurrentUser } from "@/lib/auth";
 
+interface PlayerSummary {
+  player_id: string;
+  player_name: string;
+  test_count: number;
+  latest_test_date: string | null;
+  risk_label: string;
+  risk_score: number;
+}
 interface PhysicalTest {
   id: number;
   player_id: string;
-  player_name: string;
   test_date: string;
   protocol: string;
   value: number;
   unit: string | null;
-  notes: string | null;
-  recorded_by: string | null;
 }
-
 interface RiskReport {
   player_id: string;
   player_name: string;
   risk_score: number;
   risk_label: string;
-  flags: { protocol: string; message: string }[];
+  flags: { protocol: string; value: number; unit: string; message: string }[];
   summary: string;
   recommendations: string[];
 }
 
-interface TrendReport {
-  player_id: string;
-  protocol: string;
-  direction: string;
-  slope: number;
-  lower_is_better: boolean;
-  points: { test_date: string; value: number }[];
-}
-
-const PROTOCOLS: { key: string; label: string; unit: string }[] = [
-  { key: "sprint_10m", label: "10m Sprint", unit: "sn" },
-  { key: "sprint_30m", label: "30m Sprint", unit: "sn" },
-  { key: "yoyo_irl1", label: "YoYo IR1", unit: "seviye" },
-  { key: "yoyo_irl2", label: "YoYo IR2", unit: "seviye" },
-  { key: "cmj", label: "CMJ (Sıçrama)", unit: "cm" },
-  { key: "sj", label: "Squat Jump", unit: "cm" },
-  { key: "isokinetic_quad", label: "İzokinetik Quad", unit: "Nm/kg" },
-  { key: "isokinetic_ham", label: "İzokinetik Ham", unit: "Nm/kg" },
-  { key: "vo2max", label: "VO2max", unit: "ml/kg/min" },
-  { key: "gps_total_dist", label: "GPS Toplam Mesafe", unit: "m" },
-  { key: "gps_hir_dist", label: "GPS Yüksek Şiddet", unit: "m" },
-  { key: "gps_acc_count", label: "GPS Atak Sayısı", unit: "adet" },
-  { key: "body_fat_pct", label: "Vücut Yağı", unit: "%" },
-  { key: "custom", label: "Serbest", unit: "" },
+const PROTO: { value: string; label: string; name: string; unit: string }[] = [
+  { value: "sprint_10m", label: "Sprint 10m (sn)", name: "SPRINT 10M", unit: "sn" },
+  { value: "sprint_30m", label: "Sprint 30m (sn)", name: "SPRINT 30M", unit: "sn" },
+  { value: "yoyo_irl1", label: "YoYo IRL1 (seviye)", name: "YOYO IRL1", unit: "sv" },
+  { value: "cmj", label: "CMJ — Sıçrama (cm)", name: "CMJ", unit: "cm" },
+  { value: "isokinetic_quad", label: "İzokinetik Quad (Nm/kg)", name: "İZOKİN. Q", unit: "Nm/kg" },
+  { value: "isokinetic_ham", label: "İzokinetik Ham (Nm/kg)", name: "İZOKİN. H", unit: "Nm/kg" },
+  { value: "vo2max", label: "VO2max (ml/kg/dk)", name: "VO2MAX", unit: "ml" },
+  { value: "gps_total_dist", label: "GPS Toplam Mesafe (m)", name: "GPS MESAFE", unit: "m" },
+  { value: "body_fat_pct", label: "Vücut Yağı (%)", name: "VÜCUT YAĞI", unit: "%" },
 ];
+const protoName = (k: string) => PROTO.find((p) => p.value === k)?.name ?? k.toUpperCase();
+const protoUnit = (k: string) => PROTO.find((p) => p.value === k)?.unit ?? "";
 
-const RISK_COLORS: Record<string, string> = {
-  Düşük: "bg-ok/20 text-ok border-ok/40",
-  Orta: "bg-warn/20 text-warn border-warn/40",
-  Yüksek: "bg-orange-500/20 text-orange-400 border-orange-500/40",
-  Kritik: "bg-danger/20 text-danger border-danger/40",
-  "Veri Yok": "bg-surface2 text-textmut border-border",
-};
-
-const DIRECTION_LABEL: Record<string, string> = {
-  improving: "İyileşiyor ↗",
-  worsening: "Kötüleşiyor ↘",
-  stable: "Sabit →",
-  insufficient: "Yetersiz veri",
-};
-
-function protocolLabel(key: string): string {
-  return PROTOCOLS.find((p) => p.key === key)?.label ?? key;
+function riskVar(label: string): string {
+  switch (label) {
+    case "Düşük": return "var(--low)";
+    case "Orta": return "var(--mid)";
+    case "Yüksek": return "var(--high)";
+    case "Kritik": return "var(--crit)";
+    default: return "var(--dim)";
+  }
 }
 
-export default function PhysicalTestsPage() {
-  // Arama: hangi oyuncu görüntüleniyor
-  const [query, setQuery] = React.useState<string>("");
-  const [searchInput, setSearchInput] = React.useState<string>("");
+export default function PhysicalPanelPage() {
+  const { user } = useCurrentUser();
+  const [activeId, setActiveId] = React.useState<string | null>(null);
+  const [toast, setToast] = React.useState(false);
 
-  // Test giriş formu
+  // Form
   const [playerId, setPlayerId] = React.useState("");
   const [playerName, setPlayerName] = React.useState("");
-  const [testDate, setTestDate] = React.useState(
-    () => new Date().toISOString().slice(0, 10),
-  );
-  const [protocol, setProtocol] = React.useState("sprint_10m");
-  const [value, setValue] = React.useState("");
-  const [recordedBy, setRecordedBy] = React.useState("");
+  const [proto, setProto] = React.useState("sprint_10m");
+  const [val, setVal] = React.useState("");
+  const [by, setBy] = React.useState("");
+  const [date, setDate] = React.useState(() => new Date().toISOString().slice(0, 10));
   const [busy, setBusy] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const [err, setErr] = React.useState<string | null>(null);
 
-  // Trend protokol seçimi
-  const [trendProtocol, setTrendProtocol] = React.useState("sprint_10m");
+  const players = useSWR<PlayerSummary[]>("/physical-tests/players", apiFetch);
+  const list = players.data ?? [];
+
+  // İlk yükte ilk oyuncuyu seç
+  React.useEffect(() => {
+    if (activeId === null && list.length > 0) setActiveId(list[0].player_id);
+  }, [list, activeId]);
+
+  const active = list.find((p) => p.player_id === activeId) ?? null;
+
+  // Seçili oyuncu değişince formu ön-doldur
+  React.useEffect(() => {
+    if (active) {
+      setPlayerId(active.player_id);
+      setPlayerName(active.player_name);
+    }
+  }, [active]);
 
   const history = useSWR<PhysicalTest[]>(
-    query ? `/physical-tests/${query}` : null,
-    apiFetch,
+    activeId ? `/physical-tests/${activeId}` : null, apiFetch,
   );
-  const hasData = (history.data?.length ?? 0) > 0;
-
   const risk = useSWR<RiskReport>(
-    query && hasData ? `/physical-tests/${query}/risk` : null,
-    apiFetch,
+    activeId ? `/physical-tests/${activeId}/risk` : null, apiFetch,
     { shouldRetryOnError: false },
   );
 
-  const trend = useSWR<TrendReport>(
-    query && hasData ? `/physical-tests/${query}/trend?protocol=${trendProtocol}` : null,
-    apiFetch,
-    { shouldRetryOnError: false },
-  );
-
-  async function submitTest(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
+  async function addTest() {
+    const v = parseFloat(val);
+    if (!playerId.trim() || !playerName.trim() || Number.isNaN(v)) {
+      setErr("Oyuncu ID, ad ve geçerli bir değer gerekli.");
+      return;
+    }
+    setErr(null);
     setBusy(true);
     try {
       await apiFetch("/physical-tests/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          player_id: playerId,
-          player_name: playerName,
-          test_date: testDate,
-          protocol,
-          value: Number(value),
-          recorded_by: recordedBy || null,
+          player_id: playerId.trim(), player_name: playerName.trim(),
+          test_date: date, protocol: proto, value: v,
+          recorded_by: by.trim() || null,
         }),
       });
-      setValue("");
-      // Girilen oyuncuyu görüntüle + listeleri tazele
-      setQuery(playerId);
-      setSearchInput(playerId);
-      history.mutate();
-      risk.mutate();
-      trend.mutate();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Kayıt başarısız");
+      setVal("");
+      setActiveId(playerId.trim());
+      await Promise.all([players.mutate(), history.mutate(), risk.mutate()]);
+      setToast(true);
+      window.setTimeout(() => setToast(false), 2200);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Kayıt başarısız");
     } finally {
       setBusy(false);
     }
   }
 
+  const score = risk.data ? Math.round(risk.data.risk_score * 100) : 0;
+  const ringColor = risk.data ? riskVar(risk.data.risk_label) : "var(--dim)";
+
   return (
-    <div className="max-w-6xl space-y-4">
-      <div>
-        <h1 className="text-lg font-semibold text-text">Fiziksel Performans Testi</h1>
-        <p className="text-[12px] text-textmut mt-0.5">
-          Saha test sonuçları + yükleme riski + protokol trendi. Veriler KVKK
-          kapsamında özel nitelikli — erişim denetim loguna işlenir.
-        </p>
+    <div className="pp-root">
+      <div className="topbar">
+        <div className="brand">
+          <div className="mark">m2</div>
+          <h1>manager2 <span>/ Performans Modülü</span></h1>
+        </div>
+        <div className="club-pill">
+          <span className="dot" />
+          <b>{user?.tenant_slug?.toUpperCase() ?? user?.tenant_id ?? "KULÜP"}</b>
+          <span className="role">· {user?.email ?? ""}</span>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Test giriş formu */}
-        <Panel title="Yeni test kaydı">
-          <form onSubmit={submitTest} className="space-y-2 text-[13px]">
-            <div className="grid grid-cols-2 gap-2">
-              <Field label="Oyuncu ID">
-                <input
-                  required
-                  value={playerId}
-                  onChange={(e) => setPlayerId(e.target.value)}
-                  className={inputCls}
-                  placeholder="API-Football id"
-                />
-              </Field>
-              <Field label="Oyuncu adı">
-                <input
-                  required
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  className={inputCls}
-                />
-              </Field>
-              <Field label="Tarih">
-                <input
-                  type="date"
-                  required
-                  value={testDate}
-                  onChange={(e) => setTestDate(e.target.value)}
-                  className={inputCls}
-                />
-              </Field>
-              <Field label="Protokol">
-                <select
-                  value={protocol}
-                  onChange={(e) => setProtocol(e.target.value)}
-                  className={inputCls}
-                >
-                  {PROTOCOLS.map((p) => (
-                    <option key={p.key} value={p.key}>
-                      {p.label} {p.unit ? `(${p.unit})` : ""}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Değer">
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  value={value}
-                  onChange={(e) => setValue(e.target.value)}
-                  className={inputCls}
-                />
-              </Field>
-              <Field label="Kaydeden">
-                <input
-                  value={recordedBy}
-                  onChange={(e) => setRecordedBy(e.target.value)}
-                  className={inputCls}
-                  placeholder="opsiyonel"
-                />
-              </Field>
-            </div>
-            {error && <div className="text-[12px] text-danger">{error}</div>}
-            <button
-              type="submit"
-              disabled={busy}
-              className="w-full mt-1 py-2 rounded bg-accent text-bg font-medium text-[13px] disabled:opacity-50"
-            >
-              {busy ? "Kaydediliyor…" : "Kaydet"}
-            </button>
-          </form>
-        </Panel>
-
-        {/* Risk kartı */}
-        <Panel title="Yükleme riski">
-          {!query && (
-            <p className="text-[12px] text-textmut">
-              Oyuncu ID gir veya aşağıdan ara.
-            </p>
-          )}
-          {query && !hasData && (
-            <p className="text-[12px] text-textmut">
-              Bu oyuncu için test kaydı yok.
-            </p>
-          )}
-          {risk.data && (
-            <div className="space-y-2">
+      <div className="wrap">
+        <aside className="roster">
+          <div className="lbl">Kadro · {list.length} oyuncu</div>
+          <div id="roster">
+            {players.isLoading && <div className="empty">Yükleniyor…</div>}
+            {!players.isLoading && list.length === 0 && (
+              <div className="empty">Henüz test kaydı yok. Sağdaki formla ilk testi gir.</div>
+            )}
+            {list.map((p) => (
               <div
-                className={`inline-block px-2 py-1 rounded border text-[12px] font-semibold ${
-                  RISK_COLORS[risk.data.risk_label] ?? RISK_COLORS["Veri Yok"]
-                }`}
+                key={p.player_id}
+                className={`player ${p.player_id === activeId ? "active" : ""}`}
+                onClick={() => setActiveId(p.player_id)}
               >
-                {risk.data.risk_label} · skor {risk.data.risk_score}
-              </div>
-              <p className="text-[13px] text-text">{risk.data.summary}</p>
-              {risk.data.flags.length > 0 && (
-                <ul className="text-[12px] text-textmut list-disc pl-4 space-y-0.5">
-                  {risk.data.flags.map((f, i) => (
-                    <li key={i}>{f.message}</li>
-                  ))}
-                </ul>
-              )}
-              {risk.data.recommendations.length > 0 && (
-                <div className="text-[12px] text-text">
-                  <div className="font-semibold mt-1">Öneriler</div>
-                  <ul className="list-disc pl-4 space-y-0.5">
-                    {risk.data.recommendations.map((r, i) => (
-                      <li key={i}>{r}</li>
-                    ))}
-                  </ul>
+                <div className="topline">
+                  <span className="num">{p.test_count}</span>
+                  <span
+                    className="pdot"
+                    style={{ background: riskVar(p.risk_label), boxShadow: `0 0 8px ${riskVar(p.risk_label)}` }}
+                  />
                 </div>
-              )}
+                <div className="pinfo">
+                  <div className="pname">{p.player_name}</div>
+                  <div className="ppos">{p.test_count} test · {p.risk_label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        <main className="main">
+          <div className="phead">
+            <div>
+              <div className="crumb">Oyuncu Profili</div>
+              <h2 id="pname">{active ? active.player_name : "—"}</h2>
+              <div className="meta">
+                {active
+                  ? <>#{active.player_id} · <b>{active.test_count}</b> test kaydı{active.latest_test_date ? ` · son ${active.latest_test_date}` : ""}</>
+                  : "Soldan oyuncu seç veya yeni test gir."}
+              </div>
             </div>
-          )}
-        </Panel>
+            <span className="endpoint">GET /physical-tests/&#123;id&#125;/risk</span>
+          </div>
+
+          <div className="grid">
+            {/* Risk */}
+            <section className="card riskcard">
+              <div className="ctitle">Yükleme Riski Analizi</div>
+              <div className="gauge">
+                <div
+                  className="ring"
+                  style={{ "--p": score, "--ringc": ringColor } as unknown as React.CSSProperties}
+                >
+                  <div className="val">
+                    <div className="num">{score}</div>
+                    <div className="of">/ 100</div>
+                  </div>
+                </div>
+                <div className="risklabel">
+                  <span
+                    className="tag"
+                    style={{
+                      background: ringColor,
+                      color: risk.data?.risk_label === "Orta" ? "#1a1500" : "#0a0a0c",
+                    }}
+                  >
+                    {risk.data?.risk_label ?? (active ? "Veri Yok" : "—")}
+                  </span>
+                  <div className="summary">
+                    {risk.data?.summary
+                      ?? (active ? "Bu oyuncu için risk verisi yok." : "Oyuncu seçin.")}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flags">
+                {risk.data && risk.data.flags.length > 0
+                  ? risk.data.flags.map((f, i) => (
+                    <div className="flag" key={i}>
+                      <span className="ficon" style={{ background: ringColor }} />
+                      <span className="fname">{protoName(f.protocol)}</span>
+                      <span className="fmsg">{f.message}</span>
+                      <span className="fval" style={{ color: ringColor }}>
+                        {f.value} {f.unit || protoUnit(f.protocol)}
+                      </span>
+                    </div>
+                  ))
+                  : (
+                    <div className="flag">
+                      <span className="ficon" style={{ background: "var(--low)" }} />
+                      <span className="fmsg">
+                        {risk.data ? "Tüm parametreler referans aralığında." : "—"}
+                      </span>
+                    </div>
+                  )}
+              </div>
+
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid var(--line)" }}>
+                <div className="ctitle" style={{ marginBottom: 12 }}>Öneriler</div>
+                <ul className="recs">
+                  {(risk.data?.recommendations ?? []).map((x, i) => <li key={i}>{x}</li>)}
+                </ul>
+              </div>
+            </section>
+
+            {/* Giriş + geçmiş */}
+            <section className="card">
+              <div className="ctitle">Saha Testi Veri Girişi</div>
+              <div className="row">
+                <div className="field">
+                  <label>Oyuncu ID</label>
+                  <input value={playerId} onChange={(e) => setPlayerId(e.target.value)} placeholder="API-Football id" />
+                </div>
+                <div className="field">
+                  <label>Oyuncu Adı</label>
+                  <input value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Ad Soyad" />
+                </div>
+              </div>
+              <div className="row">
+                <div className="field">
+                  <label>Test Protokolü</label>
+                  <select value={proto} onChange={(e) => setProto(e.target.value)}>
+                    {PROTO.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+                  </select>
+                </div>
+                <div className="field" style={{ maxWidth: 110 }}>
+                  <label>Değer</label>
+                  <input type="number" step="0.01" value={val} onChange={(e) => setVal(e.target.value)} placeholder="0.00" />
+                </div>
+              </div>
+              <div className="row">
+                <div className="field">
+                  <label>Kaydeden</label>
+                  <input value={by} onChange={(e) => setBy(e.target.value)} placeholder="Kondisyoner" />
+                </div>
+                <div className="field" style={{ maxWidth: 140 }}>
+                  <label>Tarih</label>
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                </div>
+              </div>
+              {err && <div style={{ color: "var(--crit)", fontSize: 13, marginBottom: 8 }}>{err}</div>}
+              <button className="addbtn" onClick={addTest} disabled={busy}>
+                {busy ? "Kaydediliyor…" : "+ Testi Kaydet → analiz et"}
+              </button>
+
+              <div className="tests">
+                <div className="ctitle" style={{ marginBottom: 10 }}>Test Geçmişi</div>
+                <div id="history">
+                  {(history.data ?? []).map((t) => (
+                    <div className="testrow" key={t.id}>
+                      <span className="tn">{protoName(t.protocol)}</span>
+                      <span className="tv">{t.value} {t.unit || protoUnit(t.protocol)}</span>
+                      <span className="td">{t.test_date}</span>
+                    </div>
+                  ))}
+                  {activeId && (history.data?.length ?? 0) === 0 && !history.isLoading && (
+                    <div className="empty">Kayıt yok.</div>
+                  )}
+                </div>
+              </div>
+            </section>
+          </div>
+        </main>
       </div>
 
-      {/* Geçmiş + arama */}
-      <Panel
-        title="Test geçmişi"
-        actions={
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setQuery(searchInput.trim());
-            }}
-            className="flex items-center gap-2"
-          >
-            <input
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Oyuncu ID"
-              className={`${inputCls} h-7 w-32`}
-            />
-            <button
-              type="submit"
-              className="text-[11px] uppercase px-2 py-1 rounded border border-borderlt text-textmut hover:text-text"
-            >
-              Getir
-            </button>
-          </form>
-        }
-      >
-        {!hasData && (
-          <p className="text-[12px] text-textmut">Kayıt yok.</p>
-        )}
-        {hasData && (
-          <table className="w-full text-[12px]">
-            <thead>
-              <tr className="text-textmut text-left border-b border-border">
-                <th className="py-1 pr-2">Tarih</th>
-                <th className="py-1 pr-2">Protokol</th>
-                <th className="py-1 pr-2 text-right">Değer</th>
-                <th className="py-1 pr-2">Birim</th>
-                <th className="py-1">Kaydeden</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.data?.map((t) => (
-                <tr key={t.id} className="border-b border-border/50">
-                  <td className="py-1 pr-2">{t.test_date}</td>
-                  <td className="py-1 pr-2">{protocolLabel(t.protocol)}</td>
-                  <td className="py-1 pr-2 text-right tabular-nums">{t.value}</td>
-                  <td className="py-1 pr-2 text-textmut">{t.unit ?? "—"}</td>
-                  <td className="py-1 text-textmut">{t.recorded_by ?? "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Panel>
+      <div className={`toast ${toast ? "show" : ""}`}>
+        ✓ Kayıt eklendi <span className="code">201 Created</span>
+      </div>
 
-      {/* Trend grafiği */}
-      <Panel
-        title="Protokol trendi"
-        actions={
-          <select
-            value={trendProtocol}
-            onChange={(e) => setTrendProtocol(e.target.value)}
-            className={`${inputCls} h-7`}
-          >
-            {PROTOCOLS.map((p) => (
-              <option key={p.key} value={p.key}>
-                {p.label}
-              </option>
-            ))}
-          </select>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Narrow:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        @property --p { syntax:'<number>'; inherits:false; initial-value:0 }
+        @keyframes pp-slidein { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:none} }
+
+        .pp-root{
+          --bg:#0a0a0c; --panel:#131318; --panel2:#1a1a21; --line:#26262f;
+          --ink:#f4f4f6; --muted:#8a8a96; --dim:#5a5a66; --accent:#ffffff;
+          --low:#3ddc84; --mid:#ffd23f; --high:#ff8c42; --crit:#ff4d4d; --besiktas:#e30613;
+          background:var(--bg); color:var(--ink); font-family:'Archivo',sans-serif;
+          min-height:100vh; margin:0;
+          background-image:
+            radial-gradient(circle at 15% 10%, rgba(255,255,255,0.03), transparent 40%),
+            radial-gradient(circle at 85% 90%, rgba(227,6,19,0.05), transparent 45%);
         }
-      >
-        {!hasData && (
-          <p className="text-[12px] text-textmut">Önce bir oyuncu getirin.</p>
-        )}
-        {hasData && trend.error && (
-          <p className="text-[12px] text-textmut">
-            {protocolLabel(trendProtocol)} için ölçüm yok.
-          </p>
-        )}
-        {trend.data && trend.data.points.length > 0 && (
-          <div>
-            <div className="text-[12px] text-textmut mb-2">
-              {protocolLabel(trend.data.protocol)} ·{" "}
-              <span className="text-text">
-                {DIRECTION_LABEL[trend.data.direction] ?? trend.data.direction}
-              </span>{" "}
-              (eğim {trend.data.slope})
-            </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart
-                data={trend.data.points.map((p) => ({
-                  label: p.test_date,
-                  value: p.value,
-                }))}
-                margin={{ top: 8, right: 16, bottom: 8, left: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#888" }} />
-                <YAxis tick={{ fontSize: 11, fill: "#888" }} domain={["auto", "auto"]} />
-                <Tooltip
-                  contentStyle={{
-                    background: "#1a1a1a",
-                    border: "1px solid #333",
-                    fontSize: 12,
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke={
-                    trend.data.direction === "improving"
-                      ? "#22c55e"
-                      : trend.data.direction === "worsening"
-                      ? "#ef4444"
-                      : "#3b82f6"
-                  }
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </Panel>
+        .pp-root *{margin:0;padding:0;box-sizing:border-box}
+        .pp-root .empty{color:var(--dim);font-size:13px;padding:8px 24px}
+
+        .pp-root .topbar{
+          display:flex;align-items:center;justify-content:space-between;
+          padding:18px 34px;border-bottom:1px solid var(--line);
+          background:rgba(10,10,12,0.8);backdrop-filter:blur(12px);
+          position:sticky;top:0;z-index:20;
+        }
+        .pp-root .brand{display:flex;align-items:center;gap:14px}
+        .pp-root .brand .mark{
+          width:38px;height:38px;border-radius:9px;
+          background:linear-gradient(135deg,#fff,#bdbdc7);
+          display:flex;align-items:center;justify-content:center;
+          font-weight:900;color:#0a0a0c;font-size:19px;letter-spacing:-1px;
+        }
+        .pp-root .brand h1{font-size:17px;font-weight:800;letter-spacing:-0.4px}
+        .pp-root .brand h1 span{color:var(--dim);font-weight:500}
+        .pp-root .club-pill{
+          display:flex;align-items:center;gap:9px;background:var(--panel);
+          border:1px solid var(--line);padding:7px 14px;border-radius:999px;font-size:13px;
+        }
+        .pp-root .club-pill .dot{width:9px;height:9px;border-radius:50%;background:var(--besiktas);box-shadow:0 0 10px var(--besiktas)}
+        .pp-root .club-pill b{font-weight:700;letter-spacing:0.3px}
+        .pp-root .club-pill .role{color:var(--dim);font-size:12px}
+
+        .pp-root .wrap{display:grid;grid-template-columns:300px 1fr;gap:0;min-height:calc(100vh - 75px)}
+
+        .pp-root .roster{border-right:1px solid var(--line);padding:24px 0;background:var(--panel)}
+        .pp-root .roster .lbl{
+          font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:2px;
+          font-size:11px;color:var(--dim);padding:0 24px;margin-bottom:14px;font-weight:600
+        }
+        .pp-root .player{
+          display:flex;align-items:center;gap:13px;padding:13px 24px;cursor:pointer;
+          border-left:3px solid transparent;transition:all .15s
+        }
+        .pp-root .player:hover{background:var(--panel2)}
+        .pp-root .player.active{background:var(--panel2);border-left-color:var(--besiktas)}
+        .pp-root .player .num{font-family:'JetBrains Mono';font-size:13px;color:var(--dim);width:24px;font-weight:700}
+        .pp-root .player .topline{display:contents}
+        .pp-root .player .pinfo{flex:1}
+        .pp-root .player .pname{font-size:14px;font-weight:600;letter-spacing:-0.2px}
+        .pp-root .player .ppos{font-size:11px;color:var(--muted);font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:1px}
+        .pp-root .player .pdot{width:8px;height:8px;border-radius:50%}
+
+        .pp-root .main{padding:30px 36px;overflow-y:auto}
+        .pp-root .crumb{font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:2px;font-size:11px;color:var(--dim);margin-bottom:6px}
+        .pp-root .phead{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px}
+        .pp-root .phead h2{font-size:34px;font-weight:900;letter-spacing:-1px}
+        .pp-root .phead .meta{color:var(--muted);font-size:13px;margin-top:4px}
+        .pp-root .phead .meta b{color:var(--ink)}
+
+        .pp-root .grid{display:grid;grid-template-columns:1.15fr 1fr;gap:22px}
+
+        .pp-root .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
+        .pp-root .card .ctitle{
+          font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:2px;
+          font-size:12px;color:var(--muted);margin-bottom:18px;font-weight:600;
+          display:flex;align-items:center;gap:8px
+        }
+        .pp-root .card .ctitle::before{content:'';width:14px;height:2px;background:var(--besiktas)}
+
+        .pp-root .riskcard{position:relative;overflow:hidden}
+        .pp-root .gauge{display:flex;align-items:center;gap:26px;margin-bottom:8px}
+        .pp-root .ring{
+          --p:0;width:128px;height:128px;border-radius:50%;flex-shrink:0;position:relative;
+          background:conic-gradient(var(--ringc) calc(var(--p)*1%), var(--panel2) 0);
+          display:flex;align-items:center;justify-content:center;transition:--p 1.1s ease;
+        }
+        .pp-root .ring::before{content:'';position:absolute;inset:11px;border-radius:50%;background:var(--panel)}
+        .pp-root .ring .val{position:relative;text-align:center}
+        .pp-root .ring .val .num{font-size:32px;font-weight:900;font-family:'JetBrains Mono';line-height:1}
+        .pp-root .ring .val .of{font-size:11px;color:var(--dim);font-family:'JetBrains Mono'}
+        .pp-root .risklabel{flex:1}
+        .pp-root .risklabel .tag{
+          display:inline-block;padding:6px 15px;border-radius:8px;font-size:13px;font-weight:800;
+          letter-spacing:1px;text-transform:uppercase;font-family:'Archivo Narrow';margin-bottom:10px
+        }
+        .pp-root .risklabel .summary{font-size:14.5px;line-height:1.55;color:var(--ink)}
+
+        .pp-root .flags{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+        .pp-root .flag{
+          display:flex;align-items:center;gap:12px;padding:10px 0;font-size:13px;
+          border-bottom:1px solid rgba(38,38,47,0.5)
+        }
+        .pp-root .flag:last-child{border:0}
+        .pp-root .flag .ficon{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+        .pp-root .flag .fname{font-family:'JetBrains Mono';font-size:12px;color:var(--muted);width:120px;flex-shrink:0}
+        .pp-root .flag .fmsg{flex:1;color:var(--ink)}
+        .pp-root .flag .fval{font-family:'JetBrains Mono';font-weight:700;font-size:13px}
+
+        .pp-root .recs li{
+          list-style:none;padding:11px 0 11px 26px;position:relative;font-size:13.5px;
+          line-height:1.5;border-bottom:1px solid rgba(38,38,47,0.5)
+        }
+        .pp-root .recs li:last-child{border:0}
+        .pp-root .recs li::before{content:'→';position:absolute;left:0;color:var(--besiktas);font-weight:800}
+
+        .pp-root .row{display:flex;gap:12px;margin-bottom:13px}
+        .pp-root .field{flex:1}
+        .pp-root .field label{
+          display:block;font-family:'Archivo Narrow';text-transform:uppercase;
+          letter-spacing:1.5px;font-size:10.5px;color:var(--dim);margin-bottom:6px;font-weight:600
+        }
+        .pp-root .field select,.pp-root .field input{
+          width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+          padding:11px 13px;border-radius:9px;font-size:14px;font-family:'Archivo';outline:none;transition:border .15s
+        }
+        .pp-root .field select:focus,.pp-root .field input:focus{border-color:var(--muted)}
+        .pp-root .field input::placeholder{color:var(--dim)}
+        .pp-root .addbtn{
+          width:100%;margin-top:6px;background:var(--ink);color:#0a0a0c;border:0;
+          padding:13px;border-radius:10px;font-size:14px;font-weight:800;font-family:'Archivo';
+          cursor:pointer;letter-spacing:0.3px;transition:transform .1s,box-shadow .2s
+        }
+        .pp-root .addbtn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,255,255,0.12)}
+        .pp-root .addbtn:active{transform:translateY(0)}
+        .pp-root .addbtn:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none}
+
+        .pp-root .tests{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+        .pp-root .testrow{
+          display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;
+          padding:9px 0;font-size:13px;border-bottom:1px solid rgba(38,38,47,0.5);
+          animation:pp-slidein .35s ease
+        }
+        .pp-root .testrow .tn{font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;font-size:12px}
+        .pp-root .testrow .tv{font-family:'JetBrains Mono';font-weight:700;text-align:right}
+        .pp-root .testrow .td{font-family:'JetBrains Mono';color:var(--dim);font-size:11px;text-align:right}
+
+        .pp-root .toast{
+          position:fixed;bottom:28px;right:28px;background:var(--low);color:#04140a;
+          padding:14px 22px;border-radius:11px;font-weight:800;font-size:14px;
+          transform:translateY(120px);transition:transform .35s cubic-bezier(.2,.9,.3,1.2);
+          box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:50;display:flex;align-items:center;gap:10px
+        }
+        .pp-root .toast.show{transform:translateY(0)}
+        .pp-root .toast .code{font-family:'JetBrains Mono';background:rgba(0,0,0,.15);padding:2px 8px;border-radius:6px;font-size:12px}
+
+        .pp-root .endpoint{
+          font-family:'JetBrains Mono';font-size:11px;color:var(--dim);
+          background:var(--panel2);padding:4px 10px;border-radius:6px;border:1px solid var(--line)
+        }
+
+        @media (max-width:820px){
+          .pp-root .topbar{padding:14px 18px;flex-wrap:wrap;gap:10px}
+          .pp-root .brand h1{font-size:15px}
+          .pp-root .club-pill{font-size:12px;padding:6px 12px}
+          .pp-root .club-pill .role{display:none}
+          .pp-root .wrap{display:block}
+          .pp-root .roster{border-right:0;border-bottom:1px solid var(--line);padding:16px 0 6px}
+          .pp-root .roster .lbl{padding:0 18px;margin-bottom:10px}
+          .pp-root #roster{display:flex;gap:10px;overflow-x:auto;padding:0 18px 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+          .pp-root #roster::-webkit-scrollbar{display:none}
+          .pp-root .player{
+            flex-direction:column;align-items:flex-start;gap:8px;min-width:140px;padding:14px;
+            border-left:0;border:1px solid var(--line);border-radius:12px;border-top:3px solid transparent
+          }
+          .pp-root .player.active{border-top-color:var(--besiktas)}
+          .pp-root .player .topline{display:flex;align-items:center;justify-content:space-between;width:100%}
+          .pp-root .player .num{width:auto;font-size:15px}
+          .pp-root .main{padding:20px 18px 40px}
+          .pp-root .phead{flex-direction:column;align-items:flex-start;gap:12px}
+          .pp-root .phead h2{font-size:27px}
+          .pp-root .phead .endpoint{font-size:10px;align-self:flex-start}
+          .pp-root .grid{grid-template-columns:1fr;gap:16px}
+          .pp-root .card{padding:18px;border-radius:14px}
+          .pp-root .gauge{flex-direction:column;text-align:center;gap:18px}
+          .pp-root .ring{width:120px;height:120px}
+          .pp-root .risklabel{width:100%}
+          .pp-root .flag{flex-wrap:wrap;gap:6px 10px}
+          .pp-root .flag .fname{width:auto}
+          .pp-root .flag .fmsg{flex-basis:100%;order:3;color:var(--muted);font-size:12px}
+          .pp-root .row{flex-direction:column;gap:13px}
+          .pp-root .field select,.pp-root .field input{padding:13px;font-size:16px}
+          .pp-root .addbtn{padding:15px;font-size:15px}
+          .pp-root .toast{left:18px;right:18px;bottom:18px;justify-content:center}
+        }
+      ` }} />
     </div>
-  );
-}
-
-const inputCls =
-  "w-full bg-surface2 border border-border text-text text-[13px] px-2 py-1.5 rounded";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="block text-[11px] text-textmut mb-0.5">{label}</span>
-      {children}
-    </label>
   );
 }
