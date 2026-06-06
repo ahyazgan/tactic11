@@ -3355,7 +3355,7 @@ def record_data_access(
     *,
     subject_id: int,
     data_category: str,
-    user_id: int | None = None,
+    user_id: str | None = None,
     subject_type: str = "player",
     action: str = "read",
     endpoint: str | None = None,
@@ -3444,7 +3444,7 @@ def compliance_audit(
     ).scalars())
     events = [
         AccessEvent(
-            user_id=r.user_id or 0, subject_id=r.subject_id,
+            user_id=r.user_id, subject_id=r.subject_id,
             data_category=r.data_category,
             minute=r.created_at.timestamp() / 60.0 if r.created_at else 0.0,
         )

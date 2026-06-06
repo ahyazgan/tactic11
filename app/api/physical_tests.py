@@ -99,9 +99,11 @@ class TrendOut(BaseModel):
 
 def _log_access(
     session: Session, *, player_id: str, action: str, endpoint: str,
+    user_id: str | None = None,
 ) -> None:
     """KVKK denetim izi — fiziksel test 'özel nitelikli kişisel veri'.
 
+    Hangi oyuncu (subject_id) + HANGI kullanıcı (user_id) erişti kaydedilir.
     subject_id Integer beklediğinden yalnız sayısal player_id'lerde loglanır
     (API-Football id'leri sayısaldır). Hata-toleranslı (record_data_access)."""
     if not player_id.isdigit():
@@ -109,7 +111,7 @@ def _log_access(
     try:
         from app.api.admin import record_data_access
         record_data_access(
-            session, subject_id=int(player_id),
+            session, subject_id=int(player_id), user_id=user_id,
             data_category="performance_test", action=action, endpoint=endpoint,
         )
     except Exception as e:  # noqa: BLE001 — denetim logu asıl isteği bozmamalı
@@ -201,7 +203,7 @@ def create_test(
     session.refresh(record)
     _log_access(
         session, player_id=record.player_id, action="create",
-        endpoint="/physical-tests/",
+        endpoint="/physical-tests/", user_id=user.id,
     )
     # Yeni ölçüm oyuncuyu kritik riske taşıdıysa uyar (event-driven).
     report = _player_risk(
@@ -268,7 +270,7 @@ def list_tests(
     if rows:
         _log_access(
             session, player_id=player_id, action="read",
-            endpoint="/physical-tests/{player_id}",
+            endpoint="/physical-tests/{player_id}", user_id=user.id,
         )
     return rows
 
@@ -288,7 +290,7 @@ def get_risk(
         )
     _log_access(
         session, player_id=player_id, action="read",
-        endpoint="/physical-tests/{player_id}/risk",
+        endpoint="/physical-tests/{player_id}/risk", user_id=user.id,
     )
 
     return LoadRiskOut(
@@ -328,7 +330,7 @@ def get_trend(
         )
     _log_access(
         session, player_id=player_id, action="read",
-        endpoint="/physical-tests/{player_id}/trend",
+        endpoint="/physical-tests/{player_id}/trend", user_id=user.id,
     )
     points = [{"test_date": r.test_date, "value": r.value} for r in rows]
     trend = compute_protocol_trend(protocol.value, points)
@@ -362,5 +364,5 @@ def delete_test(
     session.commit()
     _log_access(
         session, player_id=player_id, action="delete",
-        endpoint="/physical-tests/{test_id}",
+        endpoint="/physical-tests/{test_id}", user_id=user.id,
     )
