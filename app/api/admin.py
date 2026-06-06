@@ -3251,3 +3251,54 @@ def performance_assess_change(payload: dict[str, Any]) -> dict[str, Any]:
         higher_is_better=bool(payload.get("higher_is_better", True)),
     )
     return asdict(report)
+
+
+@router.post(
+    "/performance/gps-load",
+    tags=["admin"],
+    summary="GPS/wearable seansı → iç-yük (AU, ACWR'ye beslenir) — sports science",
+)
+def performance_gps_load(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {duration_min, total_distance_m, hsr_distance_m?, sprint_distance_m?,
+    accelerations?, decelerations?, player_load?, rpe?}."""
+    from dataclasses import asdict
+
+    from app.engine.gps_load import GpsSession, compute_gps_load
+
+    s = GpsSession(
+        duration_min=float(payload["duration_min"]),
+        total_distance_m=float(payload["total_distance_m"]),
+        hsr_distance_m=float(payload.get("hsr_distance_m", 0.0)),
+        sprint_distance_m=float(payload.get("sprint_distance_m", 0.0)),
+        accelerations=int(payload.get("accelerations", 0)),
+        decelerations=int(payload.get("decelerations", 0)),
+        player_load=(float(payload["player_load"])
+                     if payload.get("player_load") is not None else None),
+        rpe=float(payload["rpe"]) if payload.get("rpe") is not None else None,
+    )
+    return asdict(compute_gps_load(s))
+
+
+@router.post(
+    "/performance/wellness",
+    tags=["admin"],
+    summary="Subjektif wellness anketi → readiness skoru — sports science",
+)
+def performance_wellness(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {sleep_quality, fatigue, muscle_soreness, stress, mood (her biri
+    1-7, yüksek=iyi), baseline_totals?: [int]}."""
+    from dataclasses import asdict
+
+    from app.engine.wellness import WellnessInput, compute_wellness
+
+    w = WellnessInput(
+        sleep_quality=int(payload["sleep_quality"]),
+        fatigue=int(payload["fatigue"]),
+        muscle_soreness=int(payload["muscle_soreness"]),
+        stress=int(payload["stress"]),
+        mood=int(payload["mood"]),
+    )
+    bt = payload.get("baseline_totals")
+    return asdict(compute_wellness(
+        w, baseline_totals=[int(x) for x in bt] if bt else None,
+    ))
