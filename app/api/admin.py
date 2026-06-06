@@ -3177,6 +3177,7 @@ def analysis_development_curve(payload: dict[str, Any]) -> dict[str, Any]:
 
 @router.get(
     "/performance/protocols",
+    deprecated=True,  # → /physical-tests (B) ile birleştirildi
     tags=["admin"],
     summary="Performans test protokol kütüphanesi (nasıl yapılır + normlar)",
 )
@@ -3191,6 +3192,7 @@ def performance_protocols() -> dict[str, Any]:
 
 @router.post(
     "/performance/score",
+    deprecated=True,  # → /physical-tests (B) ile birleştirildi
     tags=["admin"],
     summary="Tek test sonucunu norm + kadro yüzdeliğiyle skorla",
 )
@@ -3214,6 +3216,7 @@ def performance_score(payload: dict[str, Any]) -> dict[str, Any]:
 
 @router.post(
     "/performance/battery",
+    deprecated=True,  # → /physical-tests (B) ile birleştirildi
     tags=["admin"],
     summary="Bir test gününün tüm sonuçları → atlet profili (güçlü/zayıf)",
 )
@@ -3241,6 +3244,7 @@ def performance_battery(payload: dict[str, Any]) -> dict[str, Any]:
 
 @router.post(
     "/performance/progression",
+    deprecated=True,  # → /physical-tests (B) ile birleştirildi
     tags=["admin"],
     summary="Bir protokolün tarihsel serisi → gelişim + regresyon uyarısı",
 )
@@ -3262,6 +3266,7 @@ def performance_progression(payload: dict[str, Any]) -> dict[str, Any]:
 
 @router.post(
     "/performance/workload",
+    deprecated=True,  # → /physical-tests (B) ile birleştirildi
     tags=["admin"],
     summary="ACWR (sakatlık riski) + monotony/strain — günlük yük serisinden",
 )
