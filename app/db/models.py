@@ -830,8 +830,8 @@ class DataAccessLog(Base):
     tenant_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
     )
-    user_id: Mapped[int | None] = mapped_column(
-        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True,
+    user_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True,
     )
     subject_type: Mapped[str] = mapped_column(String(32))   # "player" | ...
     subject_id: Mapped[int] = mapped_column(Integer)

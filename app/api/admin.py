@@ -3355,7 +3355,7 @@ def record_data_access(
     *,
     subject_id: int,
     data_category: str,
-    user_id: int | None = None,
+    user_id: str | None = None,
     subject_type: str = "player",
     action: str = "read",
     endpoint: str | None = None,

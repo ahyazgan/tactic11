@@ -4,10 +4,12 @@ import types
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
 import app.db.physical_test  # noqa: F401 — PhysicalTest tablosunu metadata'ya kaydet
 from app.api.auth import get_current_user
 from app.api.main import app
+from app.db import models
 from app.db.session import get_session
 from app.engine.physical.load_risk import (
     compute_load_risk,
@@ -212,3 +214,16 @@ def test_list_players_cross_tenant_empty(client):
     c.post("/physical-tests/", json=_SPRINT_OK)
     state["tenant_id"] = "t2"
     assert c.get("/physical-tests/players").json() == []
+
+
+def test_kvkk_access_log_captures_user_and_subject(client, session):
+    """KVKK: erişim DataAccessLog'a 'kim' (user_id) + 'hangi oyuncu' ile düşer."""
+    c, _ = client
+    c.post("/physical-tests/", json=_SPRINT_OK)  # player_id=12345 (sayısal)
+    c.get("/physical-tests/12345/risk")
+    rows = session.execute(select(models.DataAccessLog)).scalars().all()
+    perf = [r for r in rows if r.data_category == "performance_test"]
+    assert perf, "performance_test erişimi loglanmadı"
+    assert all(r.user_id == "u1" for r in perf)        # kim erişti (str user.id)
+    assert all(r.subject_id == 12345 for r in perf)    # hangi oyuncu
+    assert {r.action for r in perf} >= {"create", "read"}
