@@ -809,3 +809,34 @@ class Note(Base):
     body: Mapped[str] = mapped_column(String(4096))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class DataAccessLog(Base):
+    """KVKK denetim izi — kim, hangi öznenin hangi kategorideki verisine erişti.
+
+    Sağlık/performans verisi özel nitelikli kişisel veri; erişim loglanmalı ki
+    veri sorumlusu (DPO) 'kim ne zaman gördü' sorusunu cevaplayabilsin ve
+    olağandışı toplu erişim (olası sızıntı) tespit edilebilsin.
+    """
+
+    __tablename__ = "data_access_log"
+    __table_args__ = (
+        Index("ix_data_access_subject", "tenant_id", "subject_type",
+              "subject_id", "created_at"),
+        Index("ix_data_access_user", "tenant_id", "user_id", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    user_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True,
+    )
+    subject_type: Mapped[str] = mapped_column(String(32))   # "player" | ...
+    subject_id: Mapped[int] = mapped_column(Integer)
+    data_category: Mapped[str] = mapped_column(String(48))  # health/performance_test/...
+    sensitivity: Mapped[str] = mapped_column(String(16))    # ozel_nitelikli/kisisel/genel
+    action: Mapped[str] = mapped_column(String(16), default="read")  # read|export
+    endpoint: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
