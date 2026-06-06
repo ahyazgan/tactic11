@@ -223,7 +223,24 @@ performance_test (CMJ/30m sprint/YoYo IR1/T-test/RSA protokol kütüphanesi +
 norm-rating + kadro yüzdeliği + gelişim/regresyon yorumu + **SWC/bireysel
 baseline** ölçüm-gürültüsü filtresi), workload (**ACWR** sakatlık riski + monotony/strain), gps_load (GPS/wearable
 seans → iç-yük AU, ACWR'ye beslenir), wellness (subjektif anket → readiness). API: `/admin/performance/{protocols,score,battery,
-progression,workload,assess-change}`.
+progression,workload,assess-change,gps-load}`.
+
+**KVKK / hassas veri uyumu (1 modül):**
+Oyuncu sağlık/performans/GPS/wellness verisi KVKK'da **özel nitelikli kişisel
+veri**. `engine/compliance` (saf): `classify_sensitivity`
+(ozel_nitelikli/kisisel/genel) + `detect_access_anomalies` (sliding-window;
+kısa pencerede çok sayıda özneye toplu erişim → olası sızıntı). Persistans:
+`DataAccessLog` tablosu (multi-tenant, auto-fill) + `record_data_access`
+helper. API: `/admin/compliance/{access-log,audit}` (DPO denetimi).
+
+**Teslim — PDF rapor + tablet veri-girişi:**
+`reports/build_performance_report_pdf` → `POST /reports/performance/pdf`:
+batarya skorları (renk-kodlu norm), güçlü/zayıf alan, gelişim eğilimi +
+regresyon uyarısı, KVKK dipnotu (reportlab yoksa 503; export erişim loguna
+`action=export_pdf` ile yazılır). Frontend `/performance`: saha/lab için büyük
+dokunma hedefli veri-giriş ekranı — protokol seçimi + nasıl-yapılır, anlık
+değerlendirme, tek dokunuşla PDF indir.
+
 Ayrıca `confidence` 5 yüksek-görünürlüklü motora bağlandı (form, rating,
 predict, matchup, opponent_weakness) → API yanıtlarında `confidence`.
 
