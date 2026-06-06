@@ -265,12 +265,13 @@ def test_notifier_add_channel() -> None:
 
 
 def test_build_default_notifier_creates_telegram_and_whatsapp() -> None:
-    """Settings'ten 2 kanal kurulur — env yokken ikisi de stub."""
+    """Settings'ten 3 kanal kurulur — env yokken üçü de stub."""
     n = build_default_notifier()
-    assert len(n.channels) == 2
+    assert len(n.channels) == 3
     names = [c.name for c in n.channels]
     assert "telegram" in names
     assert "whatsapp" in names
+    assert "email" in names
 
 
 # --------------------------------------------------------------------------- #
@@ -281,7 +282,7 @@ def test_build_default_notifier_creates_telegram_and_whatsapp() -> None:
 def test_endpoint_status_returns_channel_list() -> None:
     from app.api.notifications import notifications_status
     out = notifications_status()
-    assert out["total_channels"] == 2
+    assert out["total_channels"] == 3
     assert "channels" in out
     # Env vars yokken hiç active değil
     assert out["active_channels"] == []
