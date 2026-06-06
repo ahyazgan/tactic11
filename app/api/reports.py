@@ -10,6 +10,7 @@ JWT_SECRET_KEY ister.
 from __future__ import annotations
 
 import json
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import select
@@ -22,6 +23,7 @@ from app.reports.pdf import (
     REPORTLAB_AVAILABLE,
     ReportlabNotInstalled,
     build_agent_output_pdf,
+    build_performance_report_pdf,
 )
 from app.reports.share import (
     DEFAULT_TTL_HOURS,
@@ -125,6 +127,87 @@ def latest_agent_output_pdf(
             ),
         )
     return _build_pdf_response(row)
+
+
+@router.post("/reports/performance/pdf")
+def performance_report_pdf(
+    payload: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> Response:
+    """Bir oyuncunun test bataryasından PDF performans raporu üret.
+
+    payload: {
+      "player_name": str, "player_id": int,
+      "results": [[protocol_key, raw], ...],
+      "squad_references": {protocol_key: [float]} (ops),
+      "progression": {protocol_key: [float, ...]} (ops, eski→yeni),
+      "test_date": "YYYY-MM-DD" (ops), "summary": str (ops),
+      "club_name": str (ops)
+    }
+
+    KVKK: sağlık/performans verisi içerir; üretim erişim loguna yazılır.
+    """
+    _ensure_reportlab()
+
+    from dataclasses import asdict
+
+    from app.api.admin import record_data_access
+    from app.engine.performance_test import evaluate_battery, interpret_progression
+
+    player_id = int(payload.get("player_id", 0))
+    results = [(str(k), float(v)) for k, v in payload.get("results", [])]
+    refs = {
+        str(k): [float(x) for x in v]
+        for k, v in (payload.get("squad_references") or {}).items()
+    }
+    try:
+        battery = evaluate_battery(
+            player_id, results, squad_references=refs or None,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    progression_out: list[dict[str, Any]] = []
+    for key, values in (payload.get("progression") or {}).items():
+        try:
+            prog = interpret_progression(
+                str(key), [float(x) for x in values],
+            )
+        except ValueError:
+            continue
+        progression_out.append(asdict(prog))
+
+    # KVKK denetim izi — bu PDF özel nitelikli veri taşır.
+    if player_id:
+        record_data_access(
+            session, subject_id=player_id, data_category="performance_test",
+            action="export_pdf", endpoint="/reports/performance/pdf",
+        )
+
+    try:
+        pdf_bytes = build_performance_report_pdf(
+            player_name=str(payload.get("player_name", f"Oyuncu #{player_id}")),
+            player_external_id=player_id,
+            test_date=payload.get("test_date"),
+            scores=[asdict(s) for s in battery.scores],
+            strong_areas=list(battery.strong_areas),
+            weak_areas=list(battery.weak_areas),
+            progression=progression_out or None,
+            summary=str(payload.get("summary", "")),
+            club_name=payload.get("club_name"),
+        )
+    except ReportlabNotInstalled as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+
+    filename = f"performans_oyuncu_{player_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'inline; filename="{filename}"',
+            "X-Report-Subject": f"player:{player_id}",
+        },
+    )
 
 
 @router.post("/reports/agent-outputs/{output_id}/share")
