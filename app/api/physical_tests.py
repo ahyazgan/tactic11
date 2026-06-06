@@ -21,7 +21,7 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.auth import get_current_user
@@ -77,6 +77,15 @@ class LoadRiskOut(BaseModel):
     flags: list[dict]
     summary: str
     recommendations: list[str]
+
+
+class PlayerSummaryOut(BaseModel):
+    player_id: str
+    player_name: str
+    test_count: int
+    latest_test_date: date | None
+    risk_label: str
+    risk_score: float
 
 
 class TrendOut(BaseModel):
@@ -201,6 +210,42 @@ def create_test(
     if report is not None:
         _maybe_alert_critical(report)
     return record
+
+
+@router.get("/players", response_model=list[PlayerSummaryOut])
+def list_players(
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> list[PlayerSummaryOut]:
+    """Tenant'taki test kaydı olan oyuncuların özeti (kadro listesi için).
+
+    NOT: `/{player_id}` ucundan ÖNCE tanımlı olmalı (yoksa 'players' bir
+    player_id sanılır)."""
+    stmt = (
+        select(
+            PhysicalTest.player_id,
+            func.max(PhysicalTest.player_name),
+            func.count(PhysicalTest.id),
+            func.max(PhysicalTest.test_date),
+        )
+        .where(PhysicalTest.tenant_id == user.tenant_id)
+        .group_by(PhysicalTest.player_id)
+    )
+    out: list[PlayerSummaryOut] = []
+    for row in session.execute(stmt).all():
+        pid = row[0]
+        report = _player_risk(session, tenant_id=user.tenant_id, player_id=pid)
+        out.append(PlayerSummaryOut(
+            player_id=pid,
+            player_name=row[1],
+            test_count=row[2],
+            latest_test_date=row[3],
+            risk_label=report.risk_label if report is not None else "Veri Yok",
+            risk_score=report.risk_score if report is not None else 0.0,
+        ))
+    # En riskli üstte (skora göre azalan).
+    out.sort(key=lambda p: p.risk_score, reverse=True)
+    return out
 
 
 @router.get("/{player_id}", response_model=list[PhysicalTestOut])

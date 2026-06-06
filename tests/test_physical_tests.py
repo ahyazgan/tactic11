@@ -185,3 +185,30 @@ def test_cross_tenant_isolation(client):
     state["tenant_id"] = "t1"
     assert c.delete(f"/physical-tests/{test_id}").status_code == 204
     assert c.get("/physical-tests/12345").json() == []
+
+
+def test_list_players_summary(client):
+    c, state = client
+    # iki oyuncu, t1
+    c.post("/physical-tests/", json={**_SPRINT_OK, "player_id": "100", "player_name": "Oyuncu A"})
+    c.post("/physical-tests/", json={
+        "player_id": "200", "player_name": "Oyuncu B",
+        "test_date": "2026-06-06", "protocol": "cmj", "value": 24.0,  # kötü → riskli
+    })
+    r = c.get("/physical-tests/players")
+    assert r.status_code == 200
+    players = r.json()
+    assert {p["player_id"] for p in players} == {"100", "200"}
+    # şema alanları
+    for p in players:
+        for key in ("player_id", "player_name", "test_count", "risk_label", "risk_score"):
+            assert key in p
+    # en riskli üstte
+    assert players[0]["risk_score"] >= players[-1]["risk_score"]
+
+
+def test_list_players_cross_tenant_empty(client):
+    c, state = client
+    c.post("/physical-tests/", json=_SPRINT_OK)
+    state["tenant_id"] = "t2"
+    assert c.get("/physical-tests/players").json() == []

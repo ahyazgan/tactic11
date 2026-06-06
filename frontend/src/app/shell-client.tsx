@@ -12,8 +12,11 @@ import { I18nProvider } from "@/lib/i18n";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthRoute = pathname === "/login" || pathname.startsWith("/login/");
+  // Fiziksel performans paneli kendi tam-ekran düzenine sahip (saha/tablet);
+  // uygulama shell'i (sidebar+topbar) gizlenir.
+  const isStandalone = pathname === "/physical-tests";
 
-  if (isAuthRoute) {
+  if (isAuthRoute || isStandalone) {
     return <I18nProvider>{children}</I18nProvider>;
   }
 
