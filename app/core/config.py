@@ -79,6 +79,16 @@ class Settings(BaseSettings):
     twilio_auth_token: str = Field(default="", alias="TWILIO_AUTH_TOKEN")
     whatsapp_from: str = Field(default="", alias="WHATSAPP_FROM")
     whatsapp_to: str = Field(default="", alias="WHATSAPP_TO")
+    # E-posta (SMTP) — host/from/to boşsa kanal stub modda çalışır.
+    smtp_host: str = Field(default="", alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, alias="SMTP_PORT")
+    smtp_username: str = Field(default="", alias="SMTP_USERNAME")
+    smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
+    smtp_from: str = Field(default="", alias="SMTP_FROM")
+    smtp_to: str = Field(default="", alias="SMTP_TO")
+    smtp_use_tls: bool = Field(default=True, alias="SMTP_USE_TLS")
+    # Redis cache backend (opsiyonel). Boşsa DB-destekli cache kullanılır.
+    redis_url: str = Field(default="", alias="REDIS_URL")
 
     # Geliştirme/test
     use_fixtures: bool = Field(default=False, alias="USE_FIXTURES")

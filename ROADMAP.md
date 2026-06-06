@@ -189,14 +189,19 @@ PDF raporu (`reports/build_performance_report_pdf`, `POST
 **I. Mobil/saha-içi:** ✓ tablet veri-giriş ekranı (`/performance` — büyük
 dokunma hedefleri, protokol seçimi, anlık değerlendirme, PDF indir).
 **J. Proaktif uyarı:** ✓ maç-içi uyarı motoru (`engine/live_alerts/`);
-push/e-posta GÖNDERİMİ — bekliyor (infra).
-**K. Performans/hız:** caching/asenkron — bekliyor (#9 Redis ile bağlantılı).
+✓ GÖNDERİM köprüsü (`notifications/alert_dispatch` — seçim/dedup/severity +
+digest) + ✓ **e-posta kanalı** (`notifications/email`, stdlib smtplib);
+canlı WS kritik uyarıyı Telegram/WhatsApp/e-postaya iter (stub-aware).
+**K. Performans/hız:** ✓ opsiyonel **Redis cache backend**
+(`data/cache/redis_backend`, `REDIS_URL` ile; graceful → yoksa DB cache);
+asenkron işçi kuyruğu — bekliyor (infra).
 **L. KVKK / hassas veri uyumu:** ✓ `engine/compliance` (sınıflandırma + toplu
 erişim anomali tespiti) + `DataAccessLog` + `/admin/compliance/{access-log,
 audit}` (DPO denetimi); sağlık/performans verisi özel nitelikli olarak işlenir.
 
-> Kalan (G/H/K + #7/#9/#10) gerçek altyapı (Redis/Postgres-replica) ya da
-> frontend i18n çalışması gerektirir; deps-kurulu ortamda yapılmalı.
+> Kalan (G i18n / H rol-görünüm derinliği / K asenkron kuyruk + #7/#10) gerçek
+> altyapı (Postgres-replica) ya da frontend i18n çalışması gerektirir;
+> deps-kurulu ortamda yapılmalı.
 
 > Not: Auth (refresh sha256 + rotation, bcrypt 12-round) audit'te sağlam
 > bulundu — tekrar ele alınmayacak.

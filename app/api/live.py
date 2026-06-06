@@ -459,7 +459,13 @@ async def matches_live(
     # Bağlantı-başına trend state (global DEĞİL) — son N snapshot özeti.
     from app.engine.live_alerts import compute_live_alerts
     from app.engine.live_confidence import summarize_trend
+    from app.notifications import build_default_notifier, dispatch_live_alerts
     trend_history: list[dict[str, Any]] = []
+    # Kritik uyarı telefona (Telegram/WhatsApp/e-posta) — yalnızca gerçek kanal
+    # yapılandırılmışsa. Bağlantı-başına dedup: aynı uyarı tekrar push edilmez.
+    _notifier = build_default_notifier()
+    _push_critical = bool(_notifier.active_channel_names())
+    _alert_sent: set[str] = set()
     try:
         while True:
             elapsed_wall = time.monotonic() - start_wall
@@ -490,6 +496,13 @@ async def matches_live(
                 ],
             }
             await websocket.send_text(json.dumps(snapshot, default=str))
+            # Kritik uyarıyı telefona it (event-loop'u bloklamadan, WS'i bozmadan).
+            if _push_critical and _alerts.critical:
+                with contextlib.suppress(Exception):
+                    await asyncio.to_thread(
+                        dispatch_live_alerts, _alerts, _notifier,
+                        min_severity="critical", already_sent=_alert_sent,
+                    )
             if current_minute >= max_minute:
                 await websocket.send_text(json.dumps({
                     "type": "match_ended", "current_minute": current_minute,

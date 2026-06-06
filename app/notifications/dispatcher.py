@@ -76,6 +76,7 @@ def build_default_notifier() -> Notifier:
     Settings'te alan yoksa boş string → kanal stub modda çalışır.
     """
     from app.core.config import get_settings
+    from app.notifications.email import EmailChannel
     from app.notifications.telegram import TelegramChannel
     from app.notifications.whatsapp import WhatsAppChannel
 
@@ -90,5 +91,14 @@ def build_default_notifier() -> Notifier:
             auth_token=getattr(s, "twilio_auth_token", ""),
             from_number=getattr(s, "whatsapp_from", ""),
             default_to=getattr(s, "whatsapp_to", ""),
+        ),
+        EmailChannel(
+            host=getattr(s, "smtp_host", ""),
+            port=getattr(s, "smtp_port", 587),
+            username=getattr(s, "smtp_username", ""),
+            password=getattr(s, "smtp_password", ""),
+            from_addr=getattr(s, "smtp_from", ""),
+            default_to=getattr(s, "smtp_to", ""),
+            use_tls=getattr(s, "smtp_use_tls", True),
         ),
     ])
