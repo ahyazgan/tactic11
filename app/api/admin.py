@@ -3208,3 +3208,37 @@ def performance_progression(payload: dict[str, Any]) -> dict[str, Any]:
         [float(x) for x in payload.get("values", [])],
     )
     return asdict(report)
+
+
+@router.post(
+    "/performance/workload",
+    tags=["admin"],
+    summary="ACWR (sakatlık riski) + monotony/strain — günlük yük serisinden",
+)
+def performance_workload(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {"daily_loads": [float, ...] (kronolojik, RPE×dk ya da GPS yükü)}."""
+    from dataclasses import asdict
+
+    from app.engine.workload import compute_workload
+
+    report = compute_workload([float(x) for x in payload.get("daily_loads", [])])
+    return asdict(report)
+
+
+@router.post(
+    "/performance/assess-change",
+    tags=["admin"],
+    summary="Yeni ölçüm bireysel baseline'a göre ANLAMLI mı (SWC) — gürültü filtresi",
+)
+def performance_assess_change(payload: dict[str, Any]) -> dict[str, Any]:
+    """payload: {"current": float, "baseline_values": [float], "higher_is_better": bool}."""
+    from dataclasses import asdict
+
+    from app.engine.performance_test import assess_change
+
+    report = assess_change(
+        float(payload["current"]),
+        [float(x) for x in payload.get("baseline_values", [])],
+        higher_is_better=bool(payload.get("higher_is_better", True)),
+    )
+    return asdict(report)
