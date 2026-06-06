@@ -66,10 +66,9 @@ async function getOrRefreshToken(): Promise<string | null> {
 }
 
 function redirectToLogin() {
+  // Login akışı devre dışı (tek-kullanıcılı yerel kurulum). 401 gelirse sadece
+  // bozuk/eski token'ı temizle; /login'e YÖNLENDİRME — sayfa auth'suz render olsun.
   clearTokens();
-  if (typeof window !== "undefined") {
-    window.location.href = "/login";
-  }
 }
 
 async function rawFetch(

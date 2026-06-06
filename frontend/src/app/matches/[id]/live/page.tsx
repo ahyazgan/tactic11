@@ -45,6 +45,9 @@ interface Snapshot {
   current_minute?: number;
   events_so_far?: number;
   score?: string;
+  mode?: string;
+  phase?: string;
+  data_quality?: { status?: string; score?: number };
   ppda?: { ppda?: number };
   field_tilt?: { team_a_tilt?: number };
   match_dominance?: {
@@ -256,6 +259,32 @@ export default function LiveMatchPage() {
           Canlı — Maç #{matchId}
         </h1>
         <div className="text-xs uppercase flex items-center gap-2">
+          {snapshot?.mode && (
+            <span
+              className={`px-2 py-0.5 rounded ${
+                snapshot.mode === "replay_statsbomb"
+                  ? "bg-accent/20 text-accent"
+                  : "bg-win/15 text-win"
+              }`}
+              title="Veri kaynağı: gerçek-zamanlı feed değil, StatsBomb maçının sadık replay'i"
+            >
+              {snapshot.mode === "replay_statsbomb" ? "Replay (StatsBomb)" : "Live"}
+            </span>
+          )}
+          {snapshot?.data_quality?.status && (
+            <span
+              className={`px-2 py-0.5 rounded ${
+                snapshot.data_quality.status === "ok"
+                  ? "bg-win/15 text-win"
+                  : snapshot.data_quality.status === "degraded"
+                  ? "bg-warn/15 text-warn"
+                  : "bg-danger/15 text-danger"
+              }`}
+              title="Event akışı veri kalitesi"
+            >
+              veri: {snapshot.data_quality.status}
+            </span>
+          )}
           {ended && (
             <span className="px-2 py-0.5 rounded bg-textmut/30">Maç bitti</span>
           )}
@@ -306,8 +335,9 @@ export default function LiveMatchPage() {
           <h2 className="text-sm uppercase text-muted mb-3">Maç Durumu</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
             <StatCard label="Dakika"
-              value={snapshot.current_minute?.toFixed(0) ?? "—"} />
-            <StatCard label="Skor"
+              value={snapshot.current_minute?.toFixed(0) ?? "—"}
+              badge={snapshot.phase} />
+            <StatCard label={`Skor (${snapshot.current_minute?.toFixed(0) ?? "—"}'’e kadar)`}
               value={snapshot.score ?? "—"}
               badge={snapshot.live_sub_recommendation?.score_state} />
             <StatCard label="Olay sayısı"

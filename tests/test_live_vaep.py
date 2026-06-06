@@ -34,10 +34,10 @@ def _pass(
         sport="football",
         match_external_id=1,
         possession_id=int(minute * 10),
-        sequence_index=0,
         team_external_id=team_id,
         player_external_id=player_id,
         minute=minute,
+        period=1 if minute <= 45 else 2,
         start_x=sx, start_y=sy, end_x=ex, end_y=ey,
         completed=True,
     )
@@ -52,10 +52,10 @@ def _carry(
         sport="football",
         match_external_id=1,
         possession_id=int(minute * 10),
-        sequence_index=0,
         team_external_id=team_id,
         player_external_id=player_id,
         minute=minute,
+        period=1 if minute <= 45 else 2,
         start_x=sx, start_y=sy, end_x=ex, end_y=ey,
     )
 

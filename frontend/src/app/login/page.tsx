@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login, setTokens } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
+  // Login devre dışı (tek-kullanıcılı yerel kurulum) — bu sayfaya düşen herkesi
+  // doğrudan ana sayfaya yönlendir; giriş formu görünmesin.
+  useEffect(() => {
+    router.replace("/");
+  }, [router]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [tenantSlug, setTenantSlug] = useState("");
