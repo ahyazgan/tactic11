@@ -3302,3 +3302,111 @@ def performance_wellness(payload: dict[str, Any]) -> dict[str, Any]:
     return asdict(compute_wellness(
         w, baseline_totals=[int(x) for x in bt] if bt else None,
     ))
+
+
+# --------------------------------------------------------------------------- #
+# KVKK — hassas veri erişim denetimi (DataAccessLog + anomali tespiti).
+# --------------------------------------------------------------------------- #
+
+
+def record_data_access(
+    session: Session,
+    *,
+    subject_id: int,
+    data_category: str,
+    user_id: int | None = None,
+    subject_type: str = "player",
+    action: str = "read",
+    endpoint: str | None = None,
+) -> None:
+    """Bir hassas-veri erişimini denetim loguna yaz (KVKK izlenebilirlik).
+
+    Sensitivity engine ile sınıflandırılır; tenant_id auto-fill ile dolar.
+    Hata-toleranslı: loglama asıl isteği bozmaz."""
+    from datetime import UTC
+    from datetime import datetime as _dt
+
+    from sqlalchemy.exc import SQLAlchemyError
+
+    from app.engine.compliance import classify_sensitivity
+
+    try:
+        session.add(models.DataAccessLog(
+            user_id=user_id, subject_type=subject_type, subject_id=subject_id,
+            data_category=data_category,
+            sensitivity=classify_sensitivity(data_category),
+            action=action, endpoint=endpoint, created_at=_dt.now(UTC),
+        ))
+        session.commit()
+    except SQLAlchemyError:
+        session.rollback()
+
+
+@router.get(
+    "/compliance/access-log",
+    tags=["admin"],
+    summary="KVKK denetim izi — bir oyuncunun verisine kim erişti (DPO için)",
+)
+def compliance_access_log(
+    subject_id: int | None = Query(default=None),
+    days: int = Query(default=30, ge=1, le=3650),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from datetime import UTC, timedelta
+    from datetime import datetime as _dt
+
+    cutoff = _dt.now(UTC) - timedelta(days=days)
+    q = select(models.DataAccessLog).where(
+        models.DataAccessLog.created_at >= cutoff,
+    )
+    if subject_id is not None:
+        q = q.where(models.DataAccessLog.subject_id == subject_id)
+    rows = list(session.execute(
+        q.order_by(models.DataAccessLog.created_at.desc())
+    ).scalars())
+    return {
+        "subject_id": subject_id, "days": days, "total": len(rows),
+        "entries": [
+            {
+                "user_id": r.user_id, "subject_type": r.subject_type,
+                "subject_id": r.subject_id, "data_category": r.data_category,
+                "sensitivity": r.sensitivity, "action": r.action,
+                "endpoint": r.endpoint,
+                "at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in rows[:500]
+        ],
+    }
+
+
+@router.get(
+    "/compliance/audit",
+    tags=["admin"],
+    summary="Olağandışı toplu hassas-veri erişimi (olası sızıntı) tespiti",
+)
+def compliance_audit(
+    days: int = Query(default=7, ge=1, le=365),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Son N günün erişim loglarından şüpheli toplu erişim çıkar."""
+    from dataclasses import asdict
+    from datetime import UTC, timedelta
+    from datetime import datetime as _dt
+
+    from app.engine.compliance import AccessEvent, detect_access_anomalies
+
+    cutoff = _dt.now(UTC) - timedelta(days=days)
+    rows = list(session.execute(
+        select(models.DataAccessLog).where(
+            models.DataAccessLog.created_at >= cutoff,
+        )
+    ).scalars())
+    events = [
+        AccessEvent(
+            user_id=r.user_id or 0, subject_id=r.subject_id,
+            data_category=r.data_category,
+            minute=r.created_at.timestamp() / 60.0 if r.created_at else 0.0,
+        )
+        for r in rows
+    ]
+    return asdict(detect_access_anomalies(events))
