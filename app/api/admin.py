@@ -3161,10 +3161,13 @@ def performance_score(payload: dict[str, Any]) -> dict[str, Any]:
     from app.engine.performance_test import score_test
 
     refs = payload.get("reference_values")
-    score = score_test(
-        str(payload["protocol_key"]), float(payload["raw_value"]),
-        reference_values=[float(x) for x in refs] if refs else None,
-    )
+    try:
+        score = score_test(
+            str(payload["protocol_key"]), float(payload["raw_value"]),
+            reference_values=[float(x) for x in refs] if refs else None,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
     return asdict(score)
 
 
@@ -3185,10 +3188,13 @@ def performance_battery(payload: dict[str, Any]) -> dict[str, Any]:
         str(k): [float(x) for x in v]
         for k, v in (payload.get("squad_references") or {}).items()
     }
-    report = evaluate_battery(
-        int(payload.get("player_id", 0)), results,
-        squad_references=refs or None,
-    )
+    try:
+        report = evaluate_battery(
+            int(payload.get("player_id", 0)), results,
+            squad_references=refs or None,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
     return asdict(report)
 
 
@@ -3203,10 +3209,13 @@ def performance_progression(payload: dict[str, Any]) -> dict[str, Any]:
 
     from app.engine.performance_test import interpret_progression
 
-    report = interpret_progression(
-        str(payload["protocol_key"]),
-        [float(x) for x in payload.get("values", [])],
-    )
+    try:
+        report = interpret_progression(
+            str(payload["protocol_key"]),
+            [float(x) for x in payload.get("values", [])],
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
     return asdict(report)
 
 
