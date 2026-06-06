@@ -45,6 +45,7 @@ from app.api.observability import (
     prometheus_text,
     should_bypass_rate_limit,
 )
+from app.api.physical_tests import router as physical_tests_router
 from app.api.plan import router as plan_router
 from app.api.reports import router as reports_router
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
@@ -1520,6 +1521,7 @@ protected.include_router(live_vaep_router)
 protected.include_router(notifications_router)
 protected.include_router(notes_router)
 protected.include_router(reports_router)
+protected.include_router(physical_tests_router)
 app.include_router(protected)
 # WebSocket router — auth FastAPI WebSocket'ta header bazlı; pilot demo
 # için public route (production'da Cookie/Header-based auth eklenir).
