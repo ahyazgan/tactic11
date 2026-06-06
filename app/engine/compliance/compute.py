@@ -46,7 +46,7 @@ def classify_sensitivity(data_category: str) -> str:
 
 @dataclass(frozen=True)
 class AccessEvent:
-    user_id: int
+    user_id: str | None       # User.id (UUID) — eski/atıfsız kayıtlarda None
     subject_id: int           # erişilen oyuncu
     data_category: str
     minute: float             # epoch/relative dakika (sıralama için)
@@ -54,7 +54,7 @@ class AccessEvent:
 
 @dataclass(frozen=True)
 class AccessAnomaly:
-    user_id: int
+    user_id: str | None
     reason: str
     distinct_subjects: int
     window_min: float
@@ -78,7 +78,7 @@ def detect_access_anomalies(
     special = [e for e in events if classify_sensitivity(e.data_category) == "ozel_nitelikli"]
 
     # Kullanıcı bazlı sliding-window: pencere içinde farklı özne sayısı.
-    by_user: dict[int, list[AccessEvent]] = {}
+    by_user: dict[str | None, list[AccessEvent]] = {}
     for e in special:
         by_user.setdefault(e.user_id, []).append(e)
 
