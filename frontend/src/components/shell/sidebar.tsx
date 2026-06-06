@@ -12,6 +12,7 @@ import useSWR from "swr";
 import { cn } from "@/lib/cn";
 import { apiFetch } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 
 interface NavItem {
   href: string;
@@ -50,6 +51,7 @@ function relativeTime(iso: string): string {
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useCurrentUser();
+  const { t } = useI18n();
   const role = user?.role ?? "viewer";
 
   const visibleItems = NAV_ITEMS.filter(
@@ -84,7 +86,7 @@ export function Sidebar() {
                   : "border-transparent text-textmut hover:text-text hover:bg-surface2",
               )}
             >
-              {item.label}
+              {t(item.label)}
             </Link>
           );
         })}

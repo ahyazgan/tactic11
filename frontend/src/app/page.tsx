@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Panel } from "@/components/ui";
 import { useCurrentUser } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 
 const QUICK_LINKS: { href: string; label: string; desc: string }[] = [
   { href: "/leagues", label: "Ligler",
@@ -33,12 +34,15 @@ const QUICK_LINKS: { href: string; label: string; desc: string }[] = [
 
 export default function HomePage() {
   const { user, isLoading } = useCurrentUser();
+  const { t } = useI18n();
 
   return (
     <div className="max-w-6xl">
       <div className="flex items-baseline justify-between mb-4">
         <div>
-          <h1 className="text-lg font-semibold text-text">Gösterge tablosu</h1>
+          <h1 className="text-lg font-semibold text-text">
+            {t("Gösterge tablosu")}
+          </h1>
           <p className="text-[12px] text-textmut mt-0.5">
             Veriyle karar destek — kulüp analiz şefi için co-pilot.
           </p>
@@ -48,13 +52,13 @@ export default function HomePage() {
             href="/login"
             className="text-[11px] uppercase tracking-wide px-2 py-1 rounded border border-borderlt text-accent hover:bg-surface2"
           >
-            Giriş yap
+            {t("Giriş yap")}
           </Link>
         )}
       </div>
 
       <h2 className="text-sm font-semibold text-text mb-2 mt-4">
-        Hızlı erişim
+        {t("Hızlı erişim")}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {QUICK_LINKS.map((r) => (

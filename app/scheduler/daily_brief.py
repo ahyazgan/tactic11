@@ -251,7 +251,7 @@ def run_daily_brief(
             )
             skipped += 1
 
-    return DailyBriefRunResult(
+    result = DailyBriefRunResult(
         run_at=now,
         tenants_processed=processed,
         tenants_skipped=skipped,
@@ -259,6 +259,44 @@ def run_daily_brief(
         total_succeeded=succeeded,
         total_failed=failed,
     )
+    # Yapılandırılmış kanal varsa brief özetini telefona gönder (best-effort).
+    _maybe_notify_brief(result)
+    return result
+
+
+def format_daily_brief_digest(result: DailyBriefRunResult) -> str:
+    """Günlük brief sonucunu kısa, telefona uygun bir mesaja çevir (saf)."""
+    when = result.run_at.strftime("%Y-%m-%d %H:%M UTC")
+    lines = [
+        f"📋 Günlük brief — {when}",
+        f"{result.tenants_processed} kulüp işlendi · "
+        f"{result.total_succeeded} rapor üretildi"
+        + (f" · {result.total_failed} hata" if result.total_failed else ""),
+    ]
+    for t in result.per_tenant:
+        if t.agents_succeeded:
+            lines.append(
+                f"• {t.tenant_slug}: {t.matches_processed} maç, "
+                f"{t.agents_succeeded} rapor"
+            )
+    return "\n".join(lines)
+
+
+def _maybe_notify_brief(result: DailyBriefRunResult) -> None:
+    """Yapılandırılmış bildirim kanalı varsa brief özetini gönder (best-effort).
+
+    Hiç rapor üretilmediyse ya da kanal yoksa no-op. Gönderim hatası brief
+    sonucunu etkilemez (scheduler job zaten tamamlandı)."""
+    if result.total_succeeded <= 0:
+        return
+    try:
+        from app.notifications import build_default_notifier
+        notifier = build_default_notifier()
+        if not notifier.active_channel_names():
+            return
+        notifier.send_all(format_daily_brief_digest(result))
+    except Exception as e:  # noqa: BLE001 — bildirim brief'i bozmamalı
+        log.warning("brief bildirimi gönderilemedi: %s", e)
 
 
 def _deliver_webhook(

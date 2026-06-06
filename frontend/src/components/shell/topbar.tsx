@@ -11,6 +11,7 @@ import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { logout, useCurrentUser } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { useIdleTimer } from "@/lib/idle";
 import { useOnlineStatus } from "@/lib/online";
 import { Pill } from "@/components/ui";
@@ -31,6 +32,7 @@ function quotaPct(used?: number, limit?: number): number {
 
 export function TopBar() {
   const { user } = useCurrentUser();
+  const { lang, setLang, t } = useI18n();
   const [season, setSeason] = React.useState<number>(SEASONS[0]);
   const [idleWarn, setIdleWarn] = React.useState(false);
   const online = useOnlineStatus();
@@ -80,7 +82,7 @@ export function TopBar() {
           value={season}
           onChange={(e) => setSeason(Number(e.target.value))}
           className="bg-surface2 border border-border text-text text-[12px] px-2 py-1 rounded h-7"
-          aria-label="Sezon"
+          aria-label={t("Sezon")}
         >
           {SEASONS.map((s) => (
             <option key={s} value={s}>
@@ -90,6 +92,16 @@ export function TopBar() {
         </select>
 
         <div className="flex-1" />
+
+        <button
+          type="button"
+          onClick={() => setLang(lang === "tr" ? "en" : "tr")}
+          className="text-[11px] uppercase tracking-wide px-2 py-1 rounded border border-borderlt text-textmut hover:text-text hover:border-accent transition-colors"
+          aria-label={t("Dil")}
+          title={t("Dil")}
+        >
+          {lang === "tr" ? "EN" : "TR"}
+        </button>
 
         {shouldFetchUsage && maxQuotaPct >= 80 && (
           <Pill variant={maxQuotaPct >= 95 ? "danger" : "warn"}>
@@ -110,7 +122,7 @@ export function TopBar() {
               onClick={logout}
               className="text-[11px] uppercase tracking-wide px-2 py-1 rounded border border-borderlt text-textmut hover:text-text hover:border-accent transition-colors"
             >
-              Çıkış
+              {t("Çıkış")}
             </button>
           </>
         )}
