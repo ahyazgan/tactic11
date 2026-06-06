@@ -70,6 +70,43 @@ def _score_single(protocol: str, value: float) -> tuple[float, str | None]:
     return 0.0, None
 
 
+# Norm dereceleri (eski batarya sistemiyle aynı sözlük) — en iyi → en kötü.
+NORM_LABELS = ("elit", "iyi", "ortalama", "zayıf")
+
+
+def rate_against_norms(protocol: str, value: float) -> str | None:
+    """Tek ölçümü elit/iyi/ortalama/zayıf norm derecesine çevir (saf).
+
+    REFERENCE'tan türetir: `high` = elit eşiği, `low` = kabul sınırı; aradaki
+    [low, high] orta noktayla iyi/ortalama'ya bölünür, low'un kötü tarafı zayıf.
+    `lower_is_better` yönünü dikkate alır. Bilinmeyen protokol → None.
+    """
+    ref = REFERENCE.get(protocol)
+    if ref is None:
+        return None
+    low = cast(float, ref["low"])
+    high = cast(float, ref["high"])
+    lib = bool(cast(bool, ref["lower_is_better"]))
+    mid = (low + high) / 2.0
+    if lib:
+        # düşük değer iyi: high(elit) < low(kabul)
+        if value <= high:
+            return "elit"
+        if value <= mid:
+            return "iyi"
+        if value <= low:
+            return "ortalama"
+        return "zayıf"
+    # yüksek değer iyi
+    if value >= high:
+        return "elit"
+    if value >= mid:
+        return "iyi"
+    if value >= low:
+        return "ortalama"
+    return "zayıf"
+
+
 def compute_load_risk(
     player_id: str,
     player_name: str,

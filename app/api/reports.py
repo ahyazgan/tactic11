@@ -129,7 +129,7 @@ def latest_agent_output_pdf(
     return _build_pdf_response(row)
 
 
-@router.post("/reports/performance/pdf")
+@router.post("/reports/performance/pdf", deprecated=True)
 def performance_report_pdf(
     payload: dict[str, Any],
     session: Session = Depends(get_session),

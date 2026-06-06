@@ -227,3 +227,26 @@ def test_kvkk_access_log_captures_user_and_subject(client, session):
     assert all(r.user_id == "u1" for r in perf)        # kim erişti (str user.id)
     assert all(r.subject_id == 12345 for r in perf)    # hangi oyuncu
     assert {r.action for r in perf} >= {"create", "read"}
+
+
+def test_rate_against_norms_bands():
+    from app.engine.physical.load_risk import rate_against_norms
+    # cmj: low=32, high=42 (yüksek iyi) → mid=37
+    assert rate_against_norms("cmj", 43.0) == "elit"
+    assert rate_against_norms("cmj", 38.0) == "iyi"
+    assert rate_against_norms("cmj", 34.0) == "ortalama"
+    assert rate_against_norms("cmj", 25.0) == "zayıf"
+    # sprint_10m: low=1.90, high=1.70 (düşük iyi) → mid=1.80
+    assert rate_against_norms("sprint_10m", 1.65) == "elit"
+    assert rate_against_norms("sprint_10m", 2.05) == "zayıf"
+    # bilinmeyen → None
+    assert rate_against_norms("custom", 1.0) is None
+
+
+def test_physical_test_out_includes_norm_rating(client):
+    c, _ = client
+    r = c.post("/physical-tests/", json=_SPRINT_OK)  # sprint_10m=1.78 → mid civarı
+    assert r.status_code == 201
+    body = r.json()
+    assert "rating" in body
+    assert body["rating"] in ("elit", "iyi", "ortalama", "zayıf")

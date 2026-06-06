@@ -20,7 +20,7 @@ from __future__ import annotations
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -35,6 +35,7 @@ from app.engine.physical.load_risk import (
     compute_load_risk,
     compute_protocol_trend,
     format_critical_alert,
+    rate_against_norms,
 )
 
 log = get_logger(__name__)
@@ -67,6 +68,14 @@ class PhysicalTestOut(BaseModel):
     unit: str | None
     notes: str | None
     recorded_by: str | None
+    # Norm derecesi (elit/iyi/ortalama/zayıf) — eski batarya sisteminden, B'ye
+    # taşındı. from_attributes ile alanlar dolduktan sonra hesaplanır.
+    rating: str | None = None
+
+    @model_validator(mode="after")
+    def _fill_rating(self) -> PhysicalTestOut:
+        self.rating = rate_against_norms(self.protocol.value, self.value)
+        return self
 
 
 class LoadRiskOut(BaseModel):
