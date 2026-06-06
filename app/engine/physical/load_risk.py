@@ -181,11 +181,13 @@ def compute_protocol_trend(
     ref = REFERENCE.get(protocol)
     lib = bool(cast(bool, ref["lower_is_better"])) if ref is not None else False
 
+    # vals'i doğrudan girdi (Any) üzerinden kur; `ordered` heterojen dict
+    # olduğundan değerleri `object` çıkarsanır → float() mypy hatası verirdi.
+    vals = [float(p["value"]) for p in points]
     ordered = [
         {"test_date": str(p.get("test_date", "")), "value": float(p["value"])}
         for p in points
     ]
-    vals = [float(p["value"]) for p in ordered]
 
     if len(vals) < 2:
         return ProtocolTrend(protocol, ordered, "insufficient", 0.0, lib)
