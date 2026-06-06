@@ -13,6 +13,7 @@ Saf: DB/HTTP yok. Mevcut development_curve + anomaly motorlarını kullanır.
 """
 from __future__ import annotations
 
+import statistics
 from dataclasses import dataclass, field
 
 from app.engine.anomaly import detect_anomalies
@@ -24,6 +25,8 @@ ENGINE_VERSION = "1"
 WEAK_LABEL = "zayıf"
 # Gelişim yön bandı: |slope| bunun altıysa "sabit".
 PROGRESS_EPS = 0.02
+# SWC (Smallest Worthwhile Change): Cohen küçük etki = 0.2 × grup SD.
+SWC_FACTOR = 0.2
 
 
 @dataclass(frozen=True)
@@ -212,4 +215,57 @@ def interpret_progression(
         protocol_key=protocol.key, n=curve.n, trend=trend,
         slope=curve.slope, projection_next=curve.projection_next,
         regression_alert=regression, note=note,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# SWC + bireysel baseline — ölçüm gürültüsünden GERÇEK değişimi ayır.
+# Lig ortalaması değil, oyuncunun KENDİ geçmişine göre (asıl bilimsel değer).
+# --------------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True)
+class ChangeAssessment:
+    current: float
+    baseline_mean: float
+    swc: float                   # smallest worthwhile change (0.2 × baseline SD)
+    delta: float                 # current - baseline_mean
+    beyond_swc: bool
+    verdict: str                 # anlamlı gelişme | anlamlı düşüş | değişim yok
+
+
+def smallest_worthwhile_change(
+    baseline_values: list[float], *, factor: float = SWC_FACTOR,
+) -> float:
+    """SWC = factor × bireyin baseline standart sapması (Cohen küçük etki)."""
+    if len(baseline_values) < 2:
+        return 0.0
+    return round(factor * statistics.pstdev(baseline_values), 3)
+
+
+def assess_change(
+    current: float,
+    baseline_values: list[float],
+    *,
+    higher_is_better: bool,
+    factor: float = SWC_FACTOR,
+) -> ChangeAssessment:
+    """Yeni ölçüm, bireyin baseline'ına göre ANLAMLI mı yoksa gürültü mü?
+
+    |değişim| < SWC ise 'değişim yok' (ölçüm gürültüsü); aksi halde yön'e göre
+    anlamlı gelişme/düşüş. Bireysel referans → lig normundan daha hassas.
+    """
+    baseline_mean = statistics.fmean(baseline_values) if baseline_values else current
+    swc = smallest_worthwhile_change(baseline_values, factor=factor)
+    delta = round(current - baseline_mean, 3)
+    beyond = bool(swc > 0 and abs(delta) >= swc)
+    if not beyond:
+        verdict = "değişim yok (SWC altı — ölçüm gürültüsü olabilir)"
+    elif (delta > 0) == higher_is_better:
+        verdict = "anlamlı gelişme"
+    else:
+        verdict = "anlamlı düşüş — kontrol et"
+    return ChangeAssessment(
+        current=current, baseline_mean=round(baseline_mean, 3), swc=swc,
+        delta=delta, beyond_swc=beyond, verdict=verdict,
     )

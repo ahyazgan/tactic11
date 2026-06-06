@@ -14,11 +14,10 @@ from sqlalchemy.orm import Session
 
 from app.api.live import _compute_live_vaep
 from app.api.live_vaep import live_vaep_snapshot
-from app.db.base import Base
 from app.db import models
-from app.domain import BodyPart, Carry, PassEvent, Shot, ShotPattern
+from app.db.base import Base
+from app.domain import Carry, PassEvent
 from app.sports import football
-
 
 # --------------------------------------------------------------------------- #
 # Saf helper testleri (event-list input, DB yok)
@@ -38,6 +37,7 @@ def _pass(
         team_external_id=team_id,
         player_external_id=player_id,
         minute=minute,
+        period=1 if minute < 45 else 2,
         start_x=sx, start_y=sy, end_x=ex, end_y=ey,
         completed=True,
     )
@@ -56,6 +56,7 @@ def _carry(
         team_external_id=team_id,
         player_external_id=player_id,
         minute=minute,
+        period=1 if minute < 45 else 2,
         start_x=sx, start_y=sy, end_x=ex, end_y=ey,
     )
 

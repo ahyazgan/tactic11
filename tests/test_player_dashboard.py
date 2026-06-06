@@ -1,7 +1,7 @@
 """Player dashboard + /players/{id}/info endpoint testleri (Faz 5 #36)."""
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytest
 from fastapi import HTTPException
@@ -10,10 +10,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from app.api.html_views import player_dashboard_view
-from app.db.base import Base
 from app.db import models
+from app.db.base import Base
 from app.sports import football
-
 
 # --------------------------------------------------------------------------- #
 # HTML render endpoint
@@ -90,7 +89,7 @@ def test_player_info_returns_basic_fields(session: Session) -> None:
     assert out["nationality"] == "TR"
     assert out["birth_date"] == "2000-05-30"
     # Yaş hesabı — sabit doğum tarihi 2000-05-30, today >= 2026-05-30 => 26
-    today = datetime.now(timezone.utc).date()
+    today = datetime.now(UTC).date()
     expected_age = today.year - 2000 - (
         1 if (today.month, today.day) < (5, 30) else 0
     )

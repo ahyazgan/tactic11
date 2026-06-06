@@ -72,8 +72,12 @@ class BestAgainstIn(BaseModel):
     top_n: int = 5
 
 
-def _record_to_dataclass(r: FormationRecordIn) -> FormationMatchupRecord:
+def _record_to_dataclass(r: FormationRecordIn, idx: int = 0) -> FormationMatchupRecord:
+    # match_external_id engine'de kullanılmıyor (yalnız kayıt kimliği); API'den
+    # gelen manuel kayıtlar için sentetik index — runtime'daki eksik-arg crash'ini
+    # de giderir (bu çağrı match_external_id'siz TypeError fırlatıyordu).
     return FormationMatchupRecord(
+        match_external_id=idx,
         my_formation=r.my_formation,
         opp_formation=r.opp_formation,
         my_goals=r.my_goals,
@@ -84,7 +88,7 @@ def _record_to_dataclass(r: FormationRecordIn) -> FormationMatchupRecord:
 @router.post("/formations/matchup", response_model=FormationMatchupOut)
 def formation_matchup(payload: FormationMatchupIn) -> FormationMatchupOut:
     """Bir (my, opp) formation çifti için tarihsel agregat."""
-    records = [_record_to_dataclass(r) for r in payload.records]
+    records = [_record_to_dataclass(r, i) for i, r in enumerate(payload.records)]
     rep = compute_formation_matchup(
         payload.my_formation, payload.opp_formation, records,
     ).value
@@ -104,7 +108,7 @@ def formation_matchup(payload: FormationMatchupIn) -> FormationMatchupOut:
              response_model=list[FormationMatchupOut])
 def formations_best_against(payload: BestAgainstIn) -> list[FormationMatchupOut]:
     """Bir rakip formasyona karşı en yüksek win_rate'li top-N kendi formasyonu."""
-    records = [_record_to_dataclass(r) for r in payload.records]
+    records = [_record_to_dataclass(r, i) for i, r in enumerate(payload.records)]
     reports = best_formations_against(
         payload.opp_formation, records,
         min_matches=payload.min_matches, top_n=payload.top_n,

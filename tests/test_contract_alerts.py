@@ -4,15 +4,13 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from app.db.base import Base
 from app.db import models
+from app.db.base import Base
 from app.engine.contract_alerts import compute_contract_alerts
 from app.sports import football
-
 
 # --------------------------------------------------------------------------- #
 # Engine (saf)
@@ -113,7 +111,8 @@ def test_endpoint_contract_alerts_basic(session: Session) -> None:
     from app.api.sprint3 import list_contract_alerts
     today = datetime.now(UTC).date()
     _seed_contract(session, player_id=1, contract_end=today + timedelta(days=30), team_id=11)
-    _seed_contract(session, player_id=2, contract_end=today + timedelta(days=200), team_id=11)
+    # 150 gün warning aralığında (engine spec: critical≤60, warning≤180).
+    _seed_contract(session, player_id=2, contract_end=today + timedelta(days=150), team_id=11)
     out = list_contract_alerts(
         team_external_id=11, horizon_days=365, session=session,
     )

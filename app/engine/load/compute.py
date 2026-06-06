@@ -105,13 +105,19 @@ def compute_player_load(
         else HIGH_LOAD_MINUTES_PER_WEEK
     )
 
-    cutoff = (now or datetime.now(UTC)) - timedelta(days=window_days)
+    # Tz-robust: HER İKİ tarafı da naive'e indir (SQLite tz'i atar → naive;
+    # Postgres/in-memory aware olabilir; caller now'u aware ya da naive geçebilir).
+    # Tek yönlü normalize ters çakışma yaratıyordu — bu yüzden iki tarafta da.
+    def _naive(dt: datetime) -> datetime:
+        return dt.replace(tzinfo=None) if dt.tzinfo is not None else dt
+
+    cutoff = _naive((now or datetime.now(UTC)) - timedelta(days=window_days))
     window = [
         a
         for a in appearances
         if a.sport == football.SPORT_NAME
         and a.player_external_id == player_external_id
-        and a.kickoff >= cutoff
+        and _naive(a.kickoff) >= cutoff
     ]
 
     minutes_total = sum(a.minutes for a in window)
@@ -120,7 +126,7 @@ def compute_player_load(
     minutes_per_week = round(minutes_total / window_days * 7, 2)
     high_load = minutes_per_week >= effective_threshold
     back_to_back = _max_window_match_count(
-        [a.kickoff for a in window], BACK_TO_BACK_DAYS,
+        [_naive(a.kickoff) for a in window], BACK_TO_BACK_DAYS,
     )
     risk_level = _classify_risk(minutes_per_week, back_to_back)
 

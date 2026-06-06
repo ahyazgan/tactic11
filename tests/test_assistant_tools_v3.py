@@ -10,10 +10,10 @@ from sqlalchemy.orm import Session
 
 from app.assistant.tools import execute_tool, get_tool_schemas
 from app.assistant.tools_v3 import V3_TOOL_HANDLERS, V3_TOOL_SCHEMAS
-from app.db.base import Base
 from app.db import models
+from app.db.base import Base
+from app.db.tenant_context import DEFAULT_TENANT_ID
 from app.sports import football
-
 
 # --------------------------------------------------------------------------- #
 # Register doğrulama
@@ -133,9 +133,12 @@ def test_execute_tool_routes_v3_available_squad_with_squad(session: Session) -> 
 def test_execute_tool_routes_v3_rotation_plan_with_appearances(
     session: Session,
 ) -> None:
+    # Tenant tutarlılığı: insert auto-fill + query filtresi aynı tenant'ı
+    # kullansın (yoksa appearance'lar bulunamaz → loads boş).
+    session.info["tenant_id"] = DEFAULT_TENANT_ID
     # 1 oyuncu, yüksek yük (270+ dk/hafta) → extreme/high
     now = datetime.now(UTC)
-    for i, m_id in enumerate([100, 101, 102, 103, 104]):
+    for _i, m_id in enumerate([100, 101, 102, 103, 104]):
         _seed_appearance(
             session, player_id=7, team_id=11, match_id=m_id,
             minutes=90, kickoff=now,
@@ -146,6 +149,7 @@ def test_execute_tool_routes_v3_rotation_plan_with_appearances(
         "dense_schedule": True,
     })
     payload = json.loads(raw)
+    assert "team_external_id" in payload, f"beklenmeyen payload: {payload}"
     assert payload["team_external_id"] == 11
     assert "candidates" in payload
     assert payload["upcoming_matches"] == 3

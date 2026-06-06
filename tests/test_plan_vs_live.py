@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 import pytest
 from sqlalchemy import create_engine
@@ -12,10 +12,9 @@ from app.agents.base import AgentResult
 from app.agents.game_plan import SCENARIOS, enrich_scenarios
 from app.agents.store import save_agent_output
 from app.api.plan import _active_scenario, _estimated_minute, _load_match_plan
-from app.db.base import Base
 from app.db import models
+from app.db.base import Base
 from app.sports import football
-
 
 # --------------------------------------------------------------------------- #
 # Scenario enrichment (saf fonksiyon — #27)

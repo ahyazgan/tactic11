@@ -1,13 +1,16 @@
 from app.engine.performance_test.compute import (
     PROTOCOLS,
     BatteryReport,
+    ChangeAssessment,
     ProgressionReport,
     TestProtocol,
     TestScore,
+    assess_change,
     evaluate_battery,
     interpret_progression,
     rate_against_norms,
     score_test,
+    smallest_worthwhile_change,
     squad_percentile,
 )
 
@@ -17,9 +20,12 @@ __all__ = [
     "ProgressionReport",
     "TestProtocol",
     "TestScore",
+    "ChangeAssessment",
     "evaluate_battery",
     "interpret_progression",
     "rate_against_norms",
     "score_test",
     "squad_percentile",
+    "smallest_worthwhile_change",
+    "assess_change",
 ]

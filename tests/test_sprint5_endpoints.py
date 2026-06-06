@@ -2,8 +2,6 @@
 (Faz 5 #24, #32)."""
 from __future__ import annotations
 
-from datetime import date
-
 import pytest
 from fastapi import HTTPException
 from sqlalchemy import create_engine

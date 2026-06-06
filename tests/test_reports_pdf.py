@@ -23,14 +23,13 @@ from app.api.reports import (  # noqa: E402
     agent_output_pdf,
     latest_agent_output_pdf,
 )
-from app.db.base import Base  # noqa: E402
 from app.db import models  # noqa: E402
+from app.db.base import Base  # noqa: E402
 from app.reports.pdf import (  # noqa: E402
     _flatten_json,
     _format_value,
     build_agent_output_pdf,
 )
-
 
 # --------------------------------------------------------------------------- #
 # Saf builder testleri

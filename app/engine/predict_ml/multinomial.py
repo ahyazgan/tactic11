@@ -21,14 +21,14 @@ from typing import Any
 
 try:
     import joblib
-    from sklearn.linear_model import LogisticRegression  # type: ignore
-    from sklearn.preprocessing import LabelEncoder  # type: ignore
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import LabelEncoder
     SKLEARN_AVAILABLE = True
 except ImportError:  # pragma: no cover — opsiyonel paketler
     SKLEARN_AVAILABLE = False
-    LogisticRegression = None  # type: ignore[misc, assignment]
-    LabelEncoder = None  # type: ignore[misc, assignment]
-    joblib = None  # type: ignore[assignment]
+    LogisticRegression = None
+    LabelEncoder = None
+    joblib = None
 
 
 MODEL_VERSION = "multinomial_v1"

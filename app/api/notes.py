@@ -173,6 +173,13 @@ def delete_note(
     ).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail=f"note {note_id} bulunamadı")
+    # Yanıtları açıkça sil — DB-cascade'e güvenme (SQLite'ta FK pragma kapalı
+    # olabilir; bu yöntem hem SQLite hem Postgres'te tutarlı çalışır).
+    replies = session.execute(
+        select(models.Note).where(models.Note.parent_note_id == note_id)
+    ).scalars().all()
+    for reply in replies:
+        session.delete(reply)
     session.delete(row)
     session.commit()
     return {"deleted": True, "id": note_id}

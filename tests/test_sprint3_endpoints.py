@@ -16,8 +16,8 @@ from app.api.sprint3 import (
     list_active_rehab,
     transfer_targets,
 )
-from app.db.base import Base
 from app.db import models
+from app.db.base import Base
 from app.sports import football
 
 
@@ -74,7 +74,7 @@ def test_transfer_targets_404_when_target_has_no_appearance(
 
 
 def test_transfer_targets_position_filter(session: Session) -> None:
-    today = datetime.now(UTC).date()
+    datetime.now(UTC).date()
     # Target — MF
     _seed_player(session, player_id=1, position=football.POSITION_MIDFIELDER,
                  birth=date(1998, 1, 1))
