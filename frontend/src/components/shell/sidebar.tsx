@@ -21,6 +21,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { href: "/overview", label: "Genel Bakış", roles: ["admin", "coach", "analyst"] },
   { href: "/leagues", label: "Ligler" },
   { href: "/teams", label: "Takımlar" },
   { href: "/h2h", label: "H2H" },
@@ -31,8 +32,10 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/physical-tests", label: "Yük Riski", roles: ["admin", "coach", "analyst"] },
   { href: "/medical", label: "Tıbbi Merkez", roles: ["admin", "coach", "analyst"] },
   { href: "/decisions", label: "Kararlar", roles: ["admin", "coach", "analyst"] },
+  { href: "/xg", label: "xG Analiz", roles: ["admin", "coach", "analyst"] },
   { href: "/calibration", label: "Kalibrasyon" },
   { href: "/chat", label: "Asistan" },
+  { href: "/notifications", label: "Bildirimler", roles: ["admin"] },
   { href: "/manager-performance", label: "TD Performansı", roles: ["admin", "analyst"] },
   { href: "/admin", label: "Admin", roles: ["admin"] },
 ];

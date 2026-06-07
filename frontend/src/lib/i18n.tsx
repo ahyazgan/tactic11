@@ -18,6 +18,7 @@ const STORAGE_KEY = "manager2_lang";
 // Karşılığı olmayan string `t()` ile aynen döner — kademeli çeviri mümkün.
 const DICT: Record<string, Partial<Record<Lang, string>>> = {
   // Nav
+  "Genel Bakış": { en: "Overview" },
   Ligler: { en: "Leagues" },
   Takımlar: { en: "Teams" },
   Maçlar: { en: "Matches" },
@@ -27,8 +28,10 @@ const DICT: Record<string, Partial<Record<Lang, string>>> = {
   "Yük Riski": { en: "Load Risk" },
   "Tıbbi Merkez": { en: "Medical" },
   Kararlar: { en: "Decisions" },
+  "xG Analiz": { en: "xG Analysis" },
   Kalibrasyon: { en: "Calibration" },
   Asistan: { en: "Assistant" },
+  Bildirimler: { en: "Notifications" },
   "TD Performansı": { en: "Manager Rating" },
   Admin: { en: "Admin" },
   // TopBar / genel
