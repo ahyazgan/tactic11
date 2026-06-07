@@ -6,17 +6,14 @@
  */
 import { test, expect } from "@playwright/test";
 
-const TEST_EMAIL = process.env.E2E_TEST_EMAIL ?? "test@example.com";
-const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD ?? "test-password-1234";
-
 test.describe("Login akışı", () => {
-  test("geçersiz şifre hata gösterir", async ({ page }) => {
+  test("login devre dışı — /login ana sayfaya yönlendirir", async ({ page }) => {
+    // Login kaldırıldı (önizleme): /login form göstermez, /'e yönlendirir.
     await page.goto("/login");
-    await page.locator('input[type="email"]').fill(TEST_EMAIL);
-    await page.locator('input[type="password"]').fill("wrong-password");
-    await page.locator("form button[type='submit']").click();
-    // /login'de kalır, error metin görünür
-    await expect(page).toHaveURL(/\/login/);
+    await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
+      timeout: 10_000,
+    });
+    await expect(page.locator("body")).toBeVisible();
   });
 
   test("logout token'ları temizler ve /login'e döner", async ({ page }) => {

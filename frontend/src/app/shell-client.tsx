@@ -14,7 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isAuthRoute = pathname === "/login" || pathname.startsWith("/login/");
   // Fiziksel performans paneli kendi tam-ekran düzenine sahip (saha/tablet);
   // uygulama shell'i (sidebar+topbar) gizlenir.
-  const isStandalone = pathname === "/physical-tests";
+  const isStandalone = pathname === "/physical-tests" || pathname === "/overview";
 
   if (isAuthRoute || isStandalone) {
     return <I18nProvider>{children}</I18nProvider>;
