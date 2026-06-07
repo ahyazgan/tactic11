@@ -1,12 +1,15 @@
 "use client";
 
-import Link from "next/link";
+/**
+ * Launcher — uygulama girişi. ConsoleShell çatısında (eski TopBar+Sidebar
+ * kaldırıldı; tüm ekranlar konsol diline geçti). Bölümlere göre kart ızgarası.
+ */
 
-interface Item {
-  href: string;
-  label: string;
-  desc: string;
-}
+import Link from "next/link";
+import type { CSSProperties } from "react";
+import { ConsoleShell } from "./_console/shell";
+
+interface Item { href: string; label: string; desc: string }
 const SECTIONS: { title: string; items: Item[] }[] = [
   {
     title: "Günlük",
@@ -45,40 +48,45 @@ const SECTIONS: { title: string; items: Item[] }[] = [
   },
 ];
 
+const cardStyle: CSSProperties = {
+  display: "block",
+  background: "var(--panel)",
+  border: "1px solid var(--line)",
+  borderRadius: 9,
+  padding: "13px 14px",
+  textDecoration: "none",
+};
+
 export default function HomePage() {
   return (
-    <div className="max-w-6xl">
-      <div className="mb-5">
-        <h1 className="text-xl font-bold text-text">manager2</h1>
-        <p className="text-[12px] text-textmut mt-0.5">
-          Veriyle karar destek — kulüp teknik ekibi için co-pilot.
-        </p>
-      </div>
-
-      <div className="space-y-6">
-        {SECTIONS.map((sec) => (
-          <section key={sec.title}>
-            <h2 className="text-[10px] font-bold uppercase tracking-[1.5px] text-textdim mb-2.5 flex items-center gap-2">
-              <span className="w-3 h-px bg-brand" />
-              {sec.title}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-              {sec.items.map((it) => (
-                <Link
-                  key={it.href}
-                  href={it.href}
-                  className="group block bg-surface border border-border rounded-lg p-3.5 hover:border-accent hover:bg-surface2 transition-colors"
-                >
-                  <div className="text-[13.5px] font-semibold text-text group-hover:text-accent transition-colors">
-                    {it.label}
-                  </div>
-                  <div className="text-[11.5px] text-textmut mt-1 leading-snug">{it.desc}</div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-    </div>
+    <ConsoleShell
+      active="/"
+      title="manager2"
+      sub="Co-pilot"
+      desc="Veriyle karar destek — kulüp teknik ekibi için co-pilot. Bir modüle gir."
+      right={
+        <div className="rc">
+          <h3>Hızlı Başlangıç</h3>
+          <div style={{ fontSize: "12px", color: "var(--muted)", lineHeight: 1.6 }}>
+            <b style={{ color: "var(--ink)" }}>Genel Bakış</b> günün özetidir.
+            <div style={{ marginTop: 6 }}>Sol menü ya da aşağıdaki kartlarla tüm modüllere geçebilirsin.</div>
+          </div>
+        </div>
+      }
+    >
+      {SECTIONS.map((sec) => (
+        <div key={sec.title} style={{ marginBottom: 18 }}>
+          <div className="st" style={{ marginTop: 0, marginBottom: 11 }}><h2>{sec.title}</h2></div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 10 }}>
+            {sec.items.map((it) => (
+              <Link key={it.href} href={it.href} style={cardStyle}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)" }}>{it.label}</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4, lineHeight: 1.4 }}>{it.desc}</div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
+    </ConsoleShell>
   );
 }
