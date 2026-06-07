@@ -13,6 +13,8 @@ from typing import Any, cast
 REFERENCE = {
     "sprint_10m":      {"low": 1.90, "high": 1.70, "unit": "sn",     "lower_is_better": True},
     "sprint_30m":      {"low": 4.30, "high": 3.90, "unit": "sn",     "lower_is_better": True},
+    "ttest_agility":   {"low": 11.5, "high": 9.50, "unit": "sn",     "lower_is_better": True},
+    "rsa":             {"low": 4.80, "high": 4.30, "unit": "sn",     "lower_is_better": True},
     "yoyo_irl1":       {"low": 16.0, "high": 19.0, "unit": "seviye", "lower_is_better": False},
     "yoyo_irl2":       {"low": 15.0, "high": 18.0, "unit": "seviye", "lower_is_better": False},
     "cmj":             {"low": 32.0, "high": 42.0, "unit": "cm",     "lower_is_better": False},
