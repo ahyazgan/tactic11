@@ -1,147 +1,97 @@
 "use client";
 
+/**
+ * Antrenman Planı — takım + rakip seç → maça özel plan. ConsoleShell çatısında.
+ * Lig→takım kademeli seçim. Veri: /leagues, /teams/{lig}.
+ */
+
 import * as React from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
-interface League {
-  external_id: number;
-  name: string;
-}
+interface League { external_id: number; name: string }
+interface Team { external_id: number; name: string }
 
-interface Team {
-  external_id: number;
-  name: string;
-}
+const selStyle: React.CSSProperties = {
+  background: "var(--panel)",
+  border: "1px solid var(--line)",
+  color: "var(--ink)",
+  fontSize: "12.5px",
+  padding: "6px 9px",
+  borderRadius: "7px",
+  fontFamily: "inherit",
+  minWidth: "140px",
+};
 
-export default function TrainingIndexPage() {
-  const [leagueA, setLeagueA] = React.useState<string>("");
-  const [leagueB, setLeagueB] = React.useState<string>("");
-  const [teamA, setTeamA] = React.useState<string>("");
-  const [teamB, setTeamB] = React.useState<string>("");
-
-  const { data: leagues } = useSWR<League[]>("/leagues", apiFetch);
-  const { data: teamsA } = useSWR<Team[]>(
-    leagueA ? `/teams/${leagueA}` : null,
-    apiFetch,
-  );
-  const { data: teamsB } = useSWR<Team[]>(
-    leagueB ? `/teams/${leagueB}` : null,
-    apiFetch,
-  );
-
-  return (
-    <div className="max-w-3xl space-y-4">
-      <h1 className="text-lg font-semibold text-text">Antrenman Planı</h1>
-
-      <Panel title="Takım + Rakip seç">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <h3 className="text-[11px] uppercase tracking-wider text-textmut mb-2">
-              Bizim takım
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              <Select
-                value={leagueA}
-                onChange={(v) => {
-                  setLeagueA(v);
-                  setTeamA("");
-                }}
-                options={leagues?.map((l) => ({
-                  value: String(l.external_id),
-                  label: l.name,
-                })) ?? []}
-                placeholder="Lig"
-              />
-              <Select
-                value={teamA}
-                onChange={setTeamA}
-                options={teamsA?.map((t) => ({
-                  value: String(t.external_id),
-                  label: t.name,
-                })) ?? []}
-                placeholder="Takım"
-                disabled={!leagueA}
-              />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-[11px] uppercase tracking-wider text-textmut mb-2">
-              Rakip
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              <Select
-                value={leagueB}
-                onChange={(v) => {
-                  setLeagueB(v);
-                  setTeamB("");
-                }}
-                options={leagues?.map((l) => ({
-                  value: String(l.external_id),
-                  label: l.name,
-                })) ?? []}
-                placeholder="Lig"
-              />
-              <Select
-                value={teamB}
-                onChange={setTeamB}
-                options={teamsB?.map((t) => ({
-                  value: String(t.external_id),
-                  label: t.name,
-                })) ?? []}
-                placeholder="Takım"
-                disabled={!leagueB}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="mt-3">
-          {teamA && teamB && teamA !== teamB ? (
-            <Link
-              href={`/teams/${teamA}/training-plan?opponent_id=${teamB}`}
-              className="inline-block text-[11px] uppercase tracking-wide px-3 py-1 rounded border border-borderlt text-accent hover:bg-surface2"
-            >
-              Plan oluştur →
-            </Link>
-          ) : (
-            <button
-              type="button"
-              disabled
-              className="inline-block text-[11px] uppercase tracking-wide px-3 py-1 rounded border border-borderlt text-textdim opacity-50 cursor-not-allowed"
-            >
-              Plan oluştur →
-            </button>
-          )}
-        </div>
-      </Panel>
-    </div>
-  );
-}
-
-function Select({
-  value, onChange, options, placeholder, disabled,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-  placeholder: string;
-  disabled?: boolean;
+function Sel({ value, onChange, options, placeholder, disabled }: {
+  value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; placeholder: string; disabled?: boolean;
 }) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      disabled={disabled}
-      className="bg-surface2 border border-border text-text text-[12px] px-2 py-1 rounded h-7 disabled:opacity-50"
-    >
+    <select value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} style={{ ...selStyle, opacity: disabled ? 0.5 : 1 }}>
       <option value="">{placeholder}</option>
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
+      {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
+  );
+}
+
+export default function TrainingConsolePage() {
+  const [leagueA, setLeagueA] = React.useState("");
+  const [leagueB, setLeagueB] = React.useState("");
+  const [teamA, setTeamA] = React.useState("");
+  const [teamB, setTeamB] = React.useState("");
+
+  const { data: leagues } = useSWR<League[]>("/leagues", apiFetch, { shouldRetryOnError: false });
+  const { data: teamsA } = useSWR<Team[]>(leagueA ? `/teams/${leagueA}` : null, apiFetch, { shouldRetryOnError: false });
+  const { data: teamsB } = useSWR<Team[]>(leagueB ? `/teams/${leagueB}` : null, apiFetch, { shouldRetryOnError: false });
+  const lgOpts = leagues?.map((l) => ({ value: String(l.external_id), label: l.name })) ?? [];
+  const ready = teamA && teamB && teamA !== teamB;
+
+  return (
+    <ConsoleShell
+      active="/training"
+      title="Antrenman Planı"
+      sub="Maça özel hazırlık"
+      desc="Bizim takım + rakip seç → maça özel antrenman planı oluştur."
+      right={
+        <div className="rc">
+          <h3>Nasıl Çalışır?</h3>
+          <div style={{ fontSize: "12px", color: "var(--muted)", lineHeight: 1.5 }}>
+            Her iki taraf için lig→takım seç. Plan, rakibin zaaflarına göre haftalık antrenman odağını önerir.
+          </div>
+        </div>
+      }
+    >
+      <div className="st" style={{ marginTop: 0 }}><h2>Takım + Rakip Seç</h2></div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginBottom: 14 }}>
+        <div>
+          <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--muted)", marginBottom: 6 }}>Bizim takım</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <Sel value={leagueA} onChange={(x) => { setLeagueA(x); setTeamA(""); }} options={lgOpts} placeholder="Lig" />
+            <Sel value={teamA} onChange={setTeamA} options={teamsA?.map((t) => ({ value: String(t.external_id), label: t.name })) ?? []} placeholder="Takım" disabled={!leagueA} />
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--muted)", marginBottom: 6 }}>Rakip</div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <Sel value={leagueB} onChange={(x) => { setLeagueB(x); setTeamB(""); }} options={lgOpts} placeholder="Lig" />
+            <Sel value={teamB} onChange={setTeamB} options={teamsB?.map((t) => ({ value: String(t.external_id), label: t.name })) ?? []} placeholder="Takım" disabled={!leagueB} />
+          </div>
+        </div>
+      </div>
+
+      <div className="rc" style={{ margin: 0 }}>
+        {ready ? (
+          <Link href={`/teams/${teamA}/training-plan?opponent_id=${teamB}`} style={{ display: "inline-block", fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.5, padding: "8px 16px", borderRadius: 7, border: "1px solid var(--line)", color: "#fff", background: "var(--besiktas)", textDecoration: "none", fontWeight: 600 }}>
+            Plan oluştur →
+          </Link>
+        ) : (
+          <span style={{ display: "inline-block", fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.5, padding: "8px 16px", borderRadius: 7, border: "1px solid var(--line)", color: "var(--dim)", opacity: 0.6 }}>
+            Plan oluştur → (iki farklı takım seç)
+          </span>
+        )}
+      </div>
+    </ConsoleShell>
   );
 }

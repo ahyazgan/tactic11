@@ -1,143 +1,118 @@
 "use client";
 
 /**
- * Maç Planı — pre-match planın canlı senaryo takibi.
- *
- * Maç seç → planın hangi senaryosu (önde/eşit/geride) şimdi aktif, eşleşme
- * reçetesi, duran top ipucu, notlar. (Önerilen 11 + tam rakip brifing referans
- * HTML ile genişletilecek.)
- *
- * Backend: GET /matches/{match_id}/plan/vs-live
+ * Maç Planı — pre-match planın canlı senaryo takibi. ConsoleShell çatısında.
+ * Maç seç → aktif senaryo (önde/eşit/geride), eşleşme reçetesi, duran top, notlar.
+ * Backend: GET /matches/{match_id}/plan/vs-live.
  */
 
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
 interface PlanVsLive {
   summary: string;
   updated_at: string;
   plan_age_seconds: number;
   status: string | null;
-  active_scenario: string; // leading | level | trailing | unknown
+  active_scenario: string;
   matchup_recommendation: string | null;
   set_piece_hint: string | null;
   notes: string[];
 }
 
-const SCENARIO: Record<string, { label: string; cls: string }> = {
-  leading: { label: "ÖNDE", cls: "text-ok" },
-  level: { label: "EŞİT", cls: "text-warn" },
-  trailing: { label: "GERİDE", cls: "text-danger" },
-  unknown: { label: "BİLİNMİYOR", cls: "text-textmut" },
+const SCENARIO: Record<string, { label: string; v: string }> = {
+  leading: { label: "ÖNDE", v: "var(--low)" },
+  level: { label: "EŞİT", v: "var(--mid)" },
+  trailing: { label: "GERİDE", v: "var(--crit)" },
+  unknown: { label: "BİLİNMİYOR", v: "var(--muted)" },
 };
 
-const inputCls =
-  "w-full bg-surface2 border border-border text-text text-[13px] px-2 py-1.5 rounded";
+const inputStyle: React.CSSProperties = {
+  background: "var(--panel)",
+  border: "1px solid var(--line)",
+  color: "var(--ink)",
+  fontSize: "12.5px",
+  padding: "6px 10px",
+  borderRadius: "7px",
+  width: "120px",
+  fontFamily: "inherit",
+};
 
-export default function MatchPlanPage() {
+export default function MatchPlanConsolePage() {
   const [query, setQuery] = React.useState("");
   const [search, setSearch] = React.useState("");
 
-  const plan = useSWR<PlanVsLive>(
-    query ? `/matches/${query}/plan/vs-live` : null,
-    apiFetch,
-    { shouldRetryOnError: false },
-  );
+  const plan = useSWR<PlanVsLive>(query ? `/matches/${query}/plan/vs-live` : null, apiFetch, { shouldRetryOnError: false });
   const d = plan.data;
   const scen = d ? SCENARIO[d.active_scenario] ?? SCENARIO.unknown : null;
 
-  return (
-    <div className="max-w-4xl space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-text">Maç Planı — Canlı Senaryo</h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Pre-match planın hangi senaryosu şimdi aktif, eşleşme reçetesi ve duran
-            top ipucu. Açık oyun (OP) ağırlıklı taktik takibi.
-          </p>
-        </div>
-        <span className="font-mono text-[10px] text-textdim bg-surface2 border border-border rounded px-2 py-0.5">
-          GET /matches/&#123;id&#125;/plan/vs-live
-        </span>
-      </div>
-
-      <Panel
-        title="Maç"
-        actions={
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setQuery(search.trim());
-            }}
-            className="flex items-center gap-2"
-          >
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Maç ID"
-              inputMode="numeric"
-              className={`${inputCls} h-7 w-32`}
-            />
-            <button
-              type="submit"
-              className="text-[11px] uppercase px-2 py-1 rounded border border-borderlt text-textmut hover:text-text"
-            >
-              Getir
-            </button>
-          </form>
-        }
-      >
-        {!query && <p className="text-[12px] text-textmut">Bir maç ID gir.</p>}
-        {query && plan.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-        {query && plan.error && (
-          <p className="text-[12px] text-textmut">
-            Bu maç için kayıtlı plan yok ya da maç bulunamadı.
-          </p>
-        )}
-        {d && scen && (
-          <div className="space-y-3">
-            <div className="flex items-baseline gap-3">
-              <span className="text-[10px] uppercase tracking-wider text-textdim">
-                Aktif senaryo
-              </span>
-              <span className={`text-2xl font-extrabold ${scen.cls}`}>{scen.label}</span>
-              {d.status && (
-                <span className="font-mono text-[11px] text-textmut">{d.status}</span>
-              )}
-            </div>
-            <p className="text-[13px] text-text">{d.summary}</p>
-          </div>
-        )}
-      </Panel>
-
-      {d && scen && (
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Panel title="Eşleşme Reçetesi">
-            <p className="text-[13px] text-text">
-              {d.matchup_recommendation ?? "—"}
-            </p>
-          </Panel>
-          <Panel title="Duran Top İpucu">
-            <p className="text-[13px] text-text">{d.set_piece_hint ?? "—"}</p>
-          </Panel>
-          <Panel title="Notlar" className="sm:col-span-2">
-            {d.notes.length === 0 ? (
-              <p className="text-[12px] text-textmut">Not yok.</p>
-            ) : (
-              <ul className="text-[13px] text-text space-y-1 list-disc pl-4">
-                {d.notes.map((n, i) => (
-                  <li key={i}>{n}</li>
-                ))}
-              </ul>
-            )}
-            <p className="font-mono text-[10px] text-textdim mt-2">
-              plan yaşı: {Math.round(d.plan_age_seconds)}s · güncellendi {d.updated_at}
-            </p>
-          </Panel>
+  const right = (
+    <div className="rc">
+      <h3>Canlı Senaryo</h3>
+      {d && scen ? (
+        <>
+          <div style={{ fontSize: 26, fontWeight: 800, color: scen.v, marginBottom: 8 }}>{scen.label}</div>
+          {d.status && <div className="stat"><span>Durum</span><span className="sv">{d.status}</span></div>}
+          <div className="stat"><span>Plan yaşı</span><span className="sv">{Math.round(d.plan_age_seconds)}s</span></div>
+        </>
+      ) : (
+        <div style={{ fontSize: "12px", color: "var(--muted)", lineHeight: 1.5 }}>
+          Maç ID gir → planın hangi senaryosunun (önde/eşit/geride) aktif olduğunu, eşleşme reçetesini ve duran top ipucunu gösterir.
         </div>
       )}
     </div>
+  );
+
+  return (
+    <ConsoleShell
+      active="/match-plan"
+      title="Maç Planı"
+      sub="Canlı senaryo takibi"
+      desc="Pre-match planın hangi senaryosu şimdi aktif, eşleşme reçetesi ve duran top ipucu."
+      right={right}
+    >
+      <div className="st" style={{ marginTop: 0 }}>
+        <h2>Maç Seç</h2>
+        <form onSubmit={(e) => { e.preventDefault(); setQuery(search.trim()); }} style={{ display: "flex", gap: 6 }}>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Maç ID" inputMode="numeric" style={inputStyle} />
+          <button type="submit" style={{ ...inputStyle, width: "auto", cursor: "pointer", color: "var(--muted)" }}>Getir</button>
+        </form>
+      </div>
+
+      {!query && <div className="pgdesc">Canlı senaryo için bir maç ID gir.</div>}
+      {query && plan.isLoading && <div className="pgdesc">Yükleniyor…</div>}
+      {query && plan.error && <div className="pgdesc">Bu maç için kayıtlı plan yok ya da maç bulunamadı.</div>}
+
+      {d && scen && (
+        <>
+          <div className="rc" style={{ margin: "0 0 12px" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 8 }}>
+              <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: "var(--dim)" }}>Aktif senaryo</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: scen.v }}>{scen.label}</span>
+            </div>
+            <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.5 }}>{d.summary}</div>
+          </div>
+
+          <div className="st"><h2>Eşleşme Reçetesi</h2></div>
+          <div className="rc" style={{ margin: "0 0 12px", fontSize: 13, color: "var(--ink)" }}>{d.matchup_recommendation ?? "—"}</div>
+
+          <div className="st"><h2>Duran Top İpucu</h2></div>
+          <div className="rc" style={{ margin: "0 0 12px", fontSize: 13, color: "var(--ink)" }}>{d.set_piece_hint ?? "—"}</div>
+
+          <div className="st"><h2>Notlar</h2><span className="ep">güncellendi {d.updated_at}</span></div>
+          <div className="rc" style={{ margin: 0 }}>
+            {d.notes.length === 0 ? (
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>Not yok.</div>
+            ) : (
+              <ul style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.7, paddingLeft: 18, margin: 0 }}>
+                {d.notes.map((n, i) => <li key={i}>{n}</li>)}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
+    </ConsoleShell>
   );
 }
