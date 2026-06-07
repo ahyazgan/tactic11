@@ -1,24 +1,20 @@
 "use client";
 
 /**
- * Performans Testi — tablet veri-giriş ekranı.
- *
- * Saha/laboratuvar kullanımı için tasarlandı: büyük dokunma hedefleri,
- * protokol kütüphanesinden seçim, sayısal değer girişi, anında değerlendirme
- * (norm + güçlü/zayıf) ve KVKK uyumlu PDF rapor indirme.
- *
+ * Performans Testi — tablet veri-giriş ekranı. ConsoleShell çatısında.
+ * Protokol seç → değer gir → kalıcı kayıt + batarya değerlendirme + PDF.
  * Backend:
- *   GET  /admin/performance/protocols       — protokol kütüphanesi
- *   POST /physical-tests/                    — her sonuç KALICI kayıt (geçmiş/trend/risk)
- *   POST /admin/performance/battery          — batarya değerlendirme (anlık profil)
- *   POST /reports/performance/pdf            — PDF rapor (özel nitelikli veri)
+ *   GET  /admin/performance/protocols
+ *   POST /physical-tests/
+ *   POST /admin/performance/battery
+ *   POST /reports/performance/pdf
  */
 
 import * as React from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch, getAccessToken } from "@/lib/api";
-import { Panel } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
 interface Protocol {
   key: string;
@@ -27,7 +23,6 @@ interface Protocol {
   higher_is_better: boolean;
   description: string;
 }
-
 interface TestScore {
   protocol_key: string;
   protocol_name: string;
@@ -37,44 +32,48 @@ interface TestScore {
   squad_percentile: number | null;
   note: string;
 }
-
 interface BatteryReport {
   player_external_id: number;
   scores: TestScore[];
   weak_areas: string[];
   strong_areas: string[];
 }
-
 interface Row {
   id: number;
   protocol_key: string;
   raw_value: string;
 }
 
-const RATING_STYLE: Record<string, string> = {
-  elit: "text-emerald-400 border-emerald-700",
-  iyi: "text-green-400 border-green-700",
-  ortalama: "text-amber-400 border-amber-700",
-  zayıf: "text-red-400 border-red-700",
+const RATING_VAR: Record<string, string> = {
+  elit: "var(--low)",
+  iyi: "var(--low)",
+  ortalama: "var(--mid)",
+  zayıf: "var(--crit)",
 };
+
+const fieldStyle: React.CSSProperties = {
+  width: "100%",
+  background: "var(--panel)",
+  border: "1px solid var(--line)",
+  color: "var(--ink)",
+  fontSize: "14px",
+  padding: "0 10px",
+  height: "42px",
+  borderRadius: "7px",
+  fontFamily: "inherit",
+};
+const labelStyle: React.CSSProperties = { display: "block", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.5px", color: "var(--muted)", marginBottom: 4 };
 
 let _rowSeq = 1;
 
-export default function PerformanceEntryPage() {
-  const { data: lib } = useSWR<{ protocols: Protocol[] }>(
-    "/admin/performance/protocols",
-    apiFetch,
-  );
+export default function PerformanceConsolePage() {
+  const { data: lib } = useSWR<{ protocols: Protocol[] }>("/admin/performance/protocols", apiFetch, { shouldRetryOnError: false });
   const protocols = lib?.protocols ?? [];
 
   const [playerName, setPlayerName] = React.useState("");
   const [playerId, setPlayerId] = React.useState("");
-  const [testDate, setTestDate] = React.useState(
-    () => new Date().toISOString().slice(0, 10),
-  );
-  const [rows, setRows] = React.useState<Row[]>([
-    { id: _rowSeq++, protocol_key: "", raw_value: "" },
-  ]);
+  const [testDate, setTestDate] = React.useState(() => new Date().toISOString().slice(0, 10));
+  const [rows, setRows] = React.useState<Row[]>([{ id: _rowSeq++, protocol_key: "", raw_value: "" }]);
   const [report, setReport] = React.useState<BatteryReport | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -97,8 +96,6 @@ export default function PerformanceEntryPage() {
       .filter(([, v]) => !Number.isNaN(v));
   }
 
-  /** Her sonucu /physical-tests/'e KALICI kaydet (best-effort) → geçmiş/trend/risk
-   *  akışına girer. Değerlendirmeyi bloklamamak için satır-bazlı hata yutulur. */
   async function persistResults(): Promise<number> {
     let ok = 0;
     for (const [protocol, value] of validResults()) {
@@ -116,7 +113,7 @@ export default function PerformanceEntryPage() {
         });
         ok++;
       } catch {
-        /* best-effort — bir protokol kaydedilemese de değerlendirme sürsün */
+        /* best-effort */
       }
     }
     return ok;
@@ -127,16 +124,12 @@ export default function PerformanceEntryPage() {
     setBusy(true);
     setSavedCount(null);
     try {
-      // 1) Kalıcı kayıt (geçmiş/trend/risk için), 2) anında değerlendirme.
       const saved = await persistResults();
       setSavedCount(saved);
       const res = await apiFetch<BatteryReport>("/admin/performance/battery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          player_id: Number(playerId) || 0,
-          results: validResults(),
-        }),
+        body: JSON.stringify({ player_id: Number(playerId) || 0, results: validResults() }),
       });
       setReport(res);
     } catch (e) {
@@ -153,10 +146,7 @@ export default function PerformanceEntryPage() {
       const token = getAccessToken();
       const res = await fetch("/api/reports/performance/pdf", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({
           player_name: playerName || `Oyuncu #${playerId || 0}`,
           player_id: Number(playerId) || 0,
@@ -165,9 +155,7 @@ export default function PerformanceEntryPage() {
         }),
       });
       if (!res.ok) {
-        if (res.status === 503) {
-          throw new Error("PDF üretici sunucuda devre dışı (reportlab yok)");
-        }
+        if (res.status === 503) throw new Error("PDF üretici sunucuda devre dışı (reportlab yok)");
         throw new Error(`PDF üretilemedi (HTTP ${res.status})`);
       }
       const blob = await res.blob();
@@ -185,247 +173,110 @@ export default function PerformanceEntryPage() {
   }
 
   const canSubmit = validResults().length > 0 && !busy;
-  const activeProtocol = (key: string) =>
-    protocols.find((p) => p.key === key);
+  const activeProtocol = (key: string) => protocols.find((p) => p.key === key);
 
-  return (
-    <div className="max-w-4xl space-y-4">
-      <div className="flex items-center justify-between gap-3 bg-surface2 border border-borderlt rounded-md px-4 py-3">
-        <div className="text-[12px] text-text">
-          <b>Bu modül yenilendi.</b>{" "}
-          <span className="text-textmut">
-            Kalıcı kayıt + yük riski + trend + PDF artık <b>Yük Riski</b> panelinde.
-          </span>
-        </div>
-        <Link
-          href="/physical-tests"
-          className="shrink-0 text-[11px] uppercase tracking-wide px-3 py-1.5 rounded bg-accent text-bg font-semibold"
-        >
-          Yeni panele git →
-        </Link>
+  const right = (
+    <div className="rc">
+      <h3>Yeni Panel</h3>
+      <div style={{ fontSize: "12px", color: "var(--muted)", lineHeight: 1.5, marginBottom: 12 }}>
+        Kalıcı kayıt + yük riski + trend + risk halkası artık <b style={{ color: "var(--ink)" }}>Performans (Yük Riski)</b> panelinde.
       </div>
-
-      <div className="flex items-center gap-1 border-b border-border">
-        <Link
-          href="/physical-tests"
-          className="px-3 py-2 text-[12.5px] font-semibold text-textmut hover:text-text border-b-2 border-transparent"
-          title="Risk halkası + kadro + geçmiş"
-        >
-          Panel
-        </Link>
-        <span className="px-3 py-2 text-[12.5px] font-semibold text-text border-b-2 border-brand">
-          Veri Girişi &amp; Batarya
-        </span>
-      </div>
-
-      <div>
-        <h1 className="text-lg font-semibold text-text">
-          Performans Testi — Veri Girişi
-        </h1>
-        <p className="text-[11px] text-textmut mt-1">
-          Sağlık/performans verisi KVKK&apos;da özel nitelikli kişisel veridir;
-          erişim ve dışa aktarım denetim kaydına yazılır.
-        </p>
-      </div>
-
-      <Panel title="Oyuncu">
-        <div className="grid sm:grid-cols-3 gap-3">
-          <label className="block">
-            <span className="text-[11px] uppercase tracking-wider text-textmut">
-              Ad
-            </span>
-            <input
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Oyuncu adı"
-              className="mt-1 w-full bg-surface2 border border-border text-text text-base px-3 h-11 rounded"
-            />
-          </label>
-          <label className="block">
-            <span className="text-[11px] uppercase tracking-wider text-textmut">
-              Oyuncu ID
-            </span>
-            <input
-              value={playerId}
-              onChange={(e) => setPlayerId(e.target.value.replace(/[^0-9]/g, ""))}
-              inputMode="numeric"
-              placeholder="örn. 42"
-              className="mt-1 w-full bg-surface2 border border-border text-text text-base px-3 h-11 rounded"
-            />
-          </label>
-          <label className="block">
-            <span className="text-[11px] uppercase tracking-wider text-textmut">
-              Test tarihi
-            </span>
-            <input
-              type="date"
-              value={testDate}
-              onChange={(e) => setTestDate(e.target.value)}
-              className="mt-1 w-full bg-surface2 border border-border text-text text-base px-3 h-11 rounded"
-            />
-          </label>
-        </div>
-      </Panel>
-
-      <Panel
-        title="Test Sonuçları"
-        actions={
-          <button
-            type="button"
-            onClick={addRow}
-            className="text-[11px] uppercase tracking-wide px-3 py-1 rounded border border-borderlt text-accent hover:bg-surface2"
-          >
-            + Test ekle
-          </button>
-        }
-      >
-        <div className="space-y-3">
-          {rows.map((row) => {
-            const proto = activeProtocol(row.protocol_key);
-            return (
-              <div key={row.id} className="space-y-1">
-                <div className="flex items-end gap-2">
-                  <label className="flex-1 block">
-                    <span className="text-[10px] uppercase tracking-wider text-textmut">
-                      Protokol
-                    </span>
-                    <select
-                      value={row.protocol_key}
-                      onChange={(e) =>
-                        updateRow(row.id, { protocol_key: e.target.value })
-                      }
-                      className="mt-1 w-full bg-surface2 border border-border text-text text-base px-2 h-11 rounded"
-                    >
-                      <option value="">Test seç…</option>
-                      {protocols.map((p) => (
-                        <option key={p.key} value={p.key}>
-                          {p.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="w-32 block">
-                    <span className="text-[10px] uppercase tracking-wider text-textmut">
-                      Değer {proto ? `(${proto.unit})` : ""}
-                    </span>
-                    <input
-                      value={row.raw_value}
-                      onChange={(e) =>
-                        updateRow(row.id, {
-                          raw_value: e.target.value.replace(/[^0-9.]/g, ""),
-                        })
-                      }
-                      inputMode="decimal"
-                      placeholder="0"
-                      className="mt-1 w-full bg-surface2 border border-border text-text text-base px-3 h-11 rounded text-right"
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => removeRow(row.id)}
-                    disabled={rows.length <= 1}
-                    aria-label="Satırı sil"
-                    className="h-11 w-11 shrink-0 rounded border border-borderlt text-textdim hover:bg-surface2 disabled:opacity-30"
-                  >
-                    ×
-                  </button>
-                </div>
-                {proto && (
-                  <p className="text-[11px] text-textmut leading-snug">
-                    {proto.description}
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {error && (
-          <p className="mt-3 text-[12px] text-red-400">{error}</p>
-        )}
-        {savedCount !== null && savedCount > 0 && (
-          <p className="mt-3 text-[12px] text-ok">
-            {savedCount} sonuç kaydedildi — geçmiş, trend ve risk panellerine işlendi.
-          </p>
-        )}
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={evaluate}
-            disabled={!canSubmit}
-            className="px-4 h-11 rounded bg-accent text-black font-semibold text-sm disabled:opacity-40"
-          >
-            {busy ? "İşleniyor…" : "Kaydet & Değerlendir"}
-          </button>
-          <button
-            type="button"
-            onClick={downloadPdf}
-            disabled={!canSubmit}
-            className="px-4 h-11 rounded border border-borderlt text-accent text-sm hover:bg-surface2 disabled:opacity-40"
-          >
-            PDF Rapor indir
-          </button>
-        </div>
-      </Panel>
-
-      {report && (
-        <Panel title="Değerlendirme">
-          <div className="space-y-2">
-            {report.scores.map((s) => (
-              <div
-                key={s.protocol_key}
-                className="flex items-center justify-between gap-3 py-2 border-b border-border last:border-0"
-              >
-                <div className="min-w-0">
-                  <div className="text-sm text-text truncate">
-                    {s.protocol_name}
-                  </div>
-                  <div className="text-[11px] text-textmut">
-                    {s.raw_value} {s.unit}
-                    {s.squad_percentile != null
-                      ? ` · kadro %${s.squad_percentile}`
-                      : ""}
-                  </div>
-                </div>
-                <span
-                  className={`shrink-0 text-[11px] uppercase tracking-wide px-2 py-1 rounded border ${
-                    RATING_STYLE[s.rating] ?? "text-textdim border-borderlt"
-                  }`}
-                >
-                  {s.rating}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {(report.strong_areas.length > 0 ||
-            report.weak_areas.length > 0) && (
-            <div className="mt-3 grid sm:grid-cols-2 gap-3 text-[12px]">
-              {report.strong_areas.length > 0 && (
-                <div>
-                  <div className="text-emerald-400 uppercase text-[10px] tracking-wider mb-1">
-                    Güçlü yönler
-                  </div>
-                  <div className="text-textmut">
-                    {report.strong_areas.join(", ")}
-                  </div>
-                </div>
-              )}
-              {report.weak_areas.length > 0 && (
-                <div>
-                  <div className="text-red-400 uppercase text-[10px] tracking-wider mb-1">
-                    Gelişim alanları
-                  </div>
-                  <div className="text-textmut">
-                    {report.weak_areas.join(", ")}
-                  </div>
-                </div>
-              )}
+      <Link href="/physical-tests" style={{ display: "inline-block", fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.5, padding: "8px 14px", borderRadius: 7, background: "var(--besiktas)", color: "#fff", fontWeight: 600, textDecoration: "none" }}>
+        Yeni panele git →
+      </Link>
+      {report && (report.strong_areas.length > 0 || report.weak_areas.length > 0) && (
+        <div style={{ marginTop: 16, borderTop: "1px solid var(--line)", paddingTop: 12 }}>
+          {report.strong_areas.length > 0 && (
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--low)", marginBottom: 3 }}>Güçlü yönler</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>{report.strong_areas.join(", ")}</div>
             </div>
           )}
-        </Panel>
+          {report.weak_areas.length > 0 && (
+            <div>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--crit)", marginBottom: 3 }}>Gelişim alanları</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>{report.weak_areas.join(", ")}</div>
+            </div>
+          )}
+        </div>
       )}
     </div>
+  );
+
+  return (
+    <ConsoleShell
+      active="/performance"
+      title="Performans Testi"
+      sub="Veri girişi & batarya"
+      desc="Saha/laboratuvar veri girişi. Sağlık/performans verisi KVKK'da özel niteliklidir; erişim ve dışa aktarım denetim kaydına yazılır."
+      right={right}
+    >
+      <div className="st" style={{ marginTop: 0 }}><h2>Oyuncu</h2></div>
+      <div className="rc" style={{ margin: "0 0 14px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+          <label><span style={labelStyle}>Ad</span><input value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Oyuncu adı" style={fieldStyle} /></label>
+          <label><span style={labelStyle}>Oyuncu ID</span><input value={playerId} onChange={(e) => setPlayerId(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="örn. 42" style={fieldStyle} /></label>
+          <label><span style={labelStyle}>Test tarihi</span><input type="date" value={testDate} onChange={(e) => setTestDate(e.target.value)} style={fieldStyle} /></label>
+        </div>
+      </div>
+
+      <div className="st"><h2>Test Sonuçları</h2><button type="button" onClick={addRow} style={{ fontSize: 11, textTransform: "uppercase", padding: "4px 10px", borderRadius: 6, border: "1px solid var(--line)", color: "var(--ink)", background: "var(--panel3)", cursor: "pointer" }}>+ Test ekle</button></div>
+      <div className="rc" style={{ margin: "0 0 14px" }}>
+        {rows.map((row) => {
+          const proto = activeProtocol(row.protocol_key);
+          return (
+            <div key={row.id} style={{ marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+                <label style={{ flex: 1 }}>
+                  <span style={labelStyle}>Protokol</span>
+                  <select value={row.protocol_key} onChange={(e) => updateRow(row.id, { protocol_key: e.target.value })} style={fieldStyle}>
+                    <option value="">Test seç…</option>
+                    {protocols.map((p) => <option key={p.key} value={p.key}>{p.name}</option>)}
+                  </select>
+                </label>
+                <label style={{ width: 120 }}>
+                  <span style={labelStyle}>Değer {proto ? `(${proto.unit})` : ""}</span>
+                  <input value={row.raw_value} onChange={(e) => updateRow(row.id, { raw_value: e.target.value.replace(/[^0-9.]/g, "") })} inputMode="decimal" placeholder="0" style={{ ...fieldStyle, textAlign: "right" }} />
+                </label>
+                <button type="button" onClick={() => removeRow(row.id)} disabled={rows.length <= 1} aria-label="Satırı sil" style={{ height: 42, width: 42, flexShrink: 0, borderRadius: 7, border: "1px solid var(--line)", color: "var(--dim)", background: "transparent", cursor: rows.length <= 1 ? "default" : "pointer", opacity: rows.length <= 1 ? 0.3 : 1 }}>×</button>
+              </div>
+              {proto && <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4, lineHeight: 1.4 }}>{proto.description}</div>}
+            </div>
+          );
+        })}
+
+        {error && <div style={{ marginTop: 10, fontSize: 12, color: "var(--crit)" }}>{error}</div>}
+        {savedCount !== null && savedCount > 0 && <div style={{ marginTop: 10, fontSize: 12, color: "var(--low)" }}>{savedCount} sonuç kaydedildi — geçmiş, trend ve risk panellerine işlendi.</div>}
+
+        <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <button type="button" onClick={evaluate} disabled={!canSubmit} style={{ padding: "0 16px", height: 42, borderRadius: 7, background: "var(--besiktas)", color: "#fff", fontWeight: 600, fontSize: 13, border: 0, cursor: canSubmit ? "pointer" : "default", opacity: canSubmit ? 1 : 0.4, fontFamily: "inherit" }}>{busy ? "İşleniyor…" : "Kaydet & Değerlendir"}</button>
+          <button type="button" onClick={downloadPdf} disabled={!canSubmit} style={{ padding: "0 16px", height: 42, borderRadius: 7, background: "transparent", color: "var(--ink)", fontSize: 13, border: "1px solid var(--line)", cursor: canSubmit ? "pointer" : "default", opacity: canSubmit ? 1 : 0.4, fontFamily: "inherit" }}>PDF Rapor indir</button>
+        </div>
+      </div>
+
+      {report && (
+        <>
+          <div className="st"><h2>Değerlendirme</h2><span className="ep">POST /admin/performance/battery</span></div>
+          <div className="tbl">
+            <table>
+              <thead><tr><th>Protokol</th><th className="r">Değer</th><th className="c">Kadro %</th><th className="c">Değerlendirme</th></tr></thead>
+              <tbody>
+                {report.scores.map((s) => {
+                  const v = RATING_VAR[s.rating] ?? "var(--muted)";
+                  return (
+                    <tr key={s.protocol_key}>
+                      <td><span className="nm">{s.protocol_name}</span></td>
+                      <td className="r" style={{ color: "var(--muted)" }}>{s.raw_value} {s.unit}</td>
+                      <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{s.squad_percentile != null ? `%${s.squad_percentile}` : "—"}</td>
+                      <td className="c"><span style={{ fontSize: 10, textTransform: "uppercase", padding: "2px 8px", borderRadius: 5, border: `1px solid ${v}`, color: v }}>{s.rating}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </ConsoleShell>
   );
 }
