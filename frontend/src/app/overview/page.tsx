@@ -302,4 +302,28 @@ const CSS = `
 .ovroot .task:last-child{border:0}
 .ovroot .task .cb{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--line2);flex-shrink:0}
 .ovroot .task .tt{flex:1}
+.ovroot .tbl{overflow-x:auto}
+.ovroot .htabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ovroot .htabs::-webkit-scrollbar{display:none}
+/* Tablet (yatay): kolonları daralt, KPI 3'lü */
+@media (max-width:1200px){
+  .ovroot .cbody{grid-template-columns:172px 1fr 248px}
+  .ovroot .kpis{grid-template-columns:repeat(3,1fr)}
+}
+/* Telefon (yatay) / dar: tek kolon — sol nav gizli, sağ widget'lar altta */
+@media (max-width:900px){
+  .ovroot .cbody{display:block;overflow-y:auto;height:calc(100vh - 46px)}
+  .ovroot .nav{display:none}
+  .ovroot .center{height:auto;overflow:visible;padding:14px}
+  .ovroot .right{border-left:0;border-top:1px solid var(--line);overflow:visible}
+  .ovroot .kpis{grid-template-columns:repeat(2,1fr)}
+  .ovroot .kpi .kn{font-size:22px}
+  .ovroot .pgttl h1{font-size:18px}
+  .ovroot .htab{padding:0 12px;font-size:12px}
+  .ovroot .datebox{display:none}
+}
+@media (max-width:560px){
+  .ovroot .kpis{grid-template-columns:repeat(2,1fr)}
+  .ovroot .logo b{display:none}
+}
 `;
