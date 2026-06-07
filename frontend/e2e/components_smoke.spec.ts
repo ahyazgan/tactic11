@@ -6,22 +6,23 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Sayfa smoke render", () => {
-  test("/login render olur", async ({ page }) => {
+  test("/login ana sayfaya yönlendirir (login kaldırıldı)", async ({ page }) => {
+    // Login kaldırıldı: /login form göstermez, /'e yönlendirir.
     await page.goto("/login");
+    await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
+      timeout: 10_000,
+    });
     await expect(page.locator("body")).toBeVisible();
-    // Email input mevcut olmalı
-    await expect(page.locator('input[type="email"]')).toBeVisible();
   });
 
   test("/ home page render olur", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("body")).toBeVisible();
-    // Backend/oturum yokken ana sayfa login ekranına yönlenir; oturum varken
-    // "Hızlı erişim" gösterilir. Smoke amacı: uygulama çökmeden (beyaz ekran
-    // olmadan) bilinen bir ekrana ulaşıyor mu. İki durumdan biri görünmeli.
-    const home = page.locator("text=Hızlı erişim");
-    const login = page.locator('input[type="email"]');
-    await expect(home.or(login)).toBeVisible({ timeout: 10_000 });
+    // Ana sayfa FM launcher: "Veriyle karar destek" alt başlığı görünür
+    // (login kaldırıldı → her zaman launcher render olur, beyaz ekran değil).
+    await expect(
+      page.locator("text=Veriyle karar destek").first(),
+    ).toBeVisible({ timeout: 10_000 });
   });
 });
 
