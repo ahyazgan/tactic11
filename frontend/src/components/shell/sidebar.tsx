@@ -21,17 +21,22 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { href: "/overview", label: "Genel Bakış", roles: ["admin", "coach", "analyst"] },
   { href: "/leagues", label: "Ligler" },
   { href: "/teams", label: "Takımlar" },
   { href: "/h2h", label: "H2H" },
   { href: "/matches", label: "Maçlar" },
+  { href: "/match-plan", label: "Maç Planı", roles: ["admin", "coach", "analyst"] },
   { href: "/training", label: "Antrenman", roles: ["admin", "coach", "analyst"] },
   { href: "/performance", label: "Performans Testi", roles: ["admin", "coach", "analyst"] },
   { href: "/physical-tests", label: "Yük Riski", roles: ["admin", "coach", "analyst"] },
-  { href: "/contracts", label: "Sözleşmeler", roles: ["admin", "analyst"] },
+  { href: "/medical", label: "Tıbbi Merkez", roles: ["admin", "coach", "analyst"] },
   { href: "/decisions", label: "Kararlar", roles: ["admin", "coach", "analyst"] },
+  { href: "/xg", label: "xG Analiz", roles: ["admin", "coach", "analyst"] },
   { href: "/calibration", label: "Kalibrasyon" },
   { href: "/chat", label: "Asistan" },
+  { href: "/notifications", label: "Bildirimler", roles: ["admin"] },
+  { href: "/contracts", label: "Sözleşmeler", roles: ["admin", "analyst"] },
   { href: "/admin", label: "Admin", roles: ["admin"] },
 ];
 

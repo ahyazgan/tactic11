@@ -14,6 +14,7 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch, getAccessToken } from "@/lib/api";
 import { Panel } from "@/components/ui";
@@ -158,6 +159,21 @@ export default function PerformanceEntryPage() {
 
   return (
     <div className="max-w-4xl space-y-4">
+      <div className="flex items-center justify-between gap-3 bg-surface2 border border-borderlt rounded-md px-4 py-3">
+        <div className="text-[12px] text-text">
+          <b>Bu modül yenilendi.</b>{" "}
+          <span className="text-textmut">
+            Kalıcı kayıt + yük riski + trend + PDF artık <b>Yük Riski</b> panelinde.
+          </span>
+        </div>
+        <Link
+          href="/physical-tests"
+          className="shrink-0 text-[11px] uppercase tracking-wide px-3 py-1.5 rounded bg-accent text-bg font-semibold"
+        >
+          Yeni panele git →
+        </Link>
+      </div>
+
       <div>
         <h1 className="text-lg font-semibold text-text">
           Performans Testi — Veri Girişi
