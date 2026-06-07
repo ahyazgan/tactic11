@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
@@ -49,6 +51,7 @@ function ProbBar({ label, value, color }: { label: string; value: number; color:
 export default function MatchDetailPage() {
   const params = useParams<{ id: string }>();
   const matchId = params.id;
+  const [teamId, setTeamId] = useState("");
 
   const { data: predict, error: predictError } = useSWR<PredictResponse>(
     `/matches/${matchId}/predict?use_ml=true`,
@@ -96,13 +99,46 @@ export default function MatchDetailPage() {
           )}
         </div>
 
-        {/* Sağ: form / load / H2H */}
+        {/* Sağ: maç konsolları */}
         <div className="card">
-          <h2 className="text-sm uppercase text-muted mb-3">Takım analizi</h2>
-          <p className="text-muted text-sm">
-            TODO: form/rating/H2H widget'ları. Endpoint: <span className="font-mono">/teams/{"{id}"}/form</span>,{" "}
-            <span className="font-mono">/teams/{"{id}"}/rating</span>.
+          <h2 className="text-sm uppercase text-muted mb-3">Maç Konsolları</h2>
+          <p className="text-muted text-xs mb-3">
+            Senin takımının ID&apos;sini gir → canlı analiz, devre arası ve
+            değişiklik senaryolarına geç.
           </p>
+          <input
+            value={teamId}
+            onChange={(e) => setTeamId(e.target.value.replace(/[^0-9]/g, ""))}
+            inputMode="numeric"
+            placeholder="Takım ID (senin takımın)"
+            className="w-full bg-bg border border-border rounded px-3 py-2 text-sm mb-3"
+          />
+          <div className="grid grid-cols-1 gap-2">
+            {[
+              { href: `/matches/${matchId}/live?my_team_id=${teamId}&interval_seconds=5&max_minute=90`, label: "Canlı Maç Konsolu", desc: "WebSocket momentum + değişiklik önerisi" },
+              { href: `/matches/${matchId}/halftime?my_team_id=${teamId}`, label: "Devre Arası Brief", desc: "1. yarı 7 engine + AI brief" },
+              { href: `/matches/${matchId}/sub-chess?my_team_id=${teamId}&current_minute=60`, label: "Değişiklik Senaryoları", desc: "Top-3 sub forward-projection" },
+            ].map((c) =>
+              teamId ? (
+                <Link
+                  key={c.href}
+                  href={c.href}
+                  className="block bg-bg border border-border rounded px-3 py-2 hover:border-accent transition-colors"
+                >
+                  <div className="text-sm font-semibold">{c.label}</div>
+                  <div className="text-xs text-muted">{c.desc}</div>
+                </Link>
+              ) : (
+                <div
+                  key={c.href}
+                  className="block bg-bg border border-border rounded px-3 py-2 opacity-50"
+                >
+                  <div className="text-sm font-semibold">{c.label}</div>
+                  <div className="text-xs text-muted">{c.desc}</div>
+                </div>
+              ),
+            )}
+          </div>
         </div>
       </div>
     </main>
