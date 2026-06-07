@@ -10,9 +10,11 @@
  *   GET  /admin/scout/similar/{player_external_id}   — benzer oyuncular
  *   GET  /admin/scout/watchlist                      — izleme listesi
  *   POST /admin/scout/watchlist                      — listeye ekle
+ *   DELETE /admin/scout/watchlist/{id}               — listeden çıkar
  */
 
 import * as React from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { Panel } from "@/components/ui";
@@ -79,6 +81,15 @@ export default function ScoutPage() {
       watch.mutate();
     } catch {
       /* sessizce yut — UI watchlist'i yeniden çeker */
+    }
+  }
+
+  async function removeWatch(pid: number) {
+    try {
+      await apiFetch(`/admin/scout/watchlist/${pid}`, { method: "DELETE" });
+      watch.mutate();
+    } catch {
+      /* sessizce yut */
     }
   }
 
@@ -188,8 +199,21 @@ export default function ScoutPage() {
           <ul className="text-[12px] space-y-1">
             {(watch.data?.entries ?? []).map((e) => (
               <li key={e.id} className="flex items-center gap-3 border-b border-border/40 py-1">
-                <span className="font-mono">#{e.player_external_id}</span>
+                <Link
+                  href={`/players/${e.player_external_id}`}
+                  className="font-mono text-accent"
+                >
+                  #{e.player_external_id}
+                </Link>
                 <span className="text-textmut flex-1">{e.notes ?? "—"}</span>
+                <button
+                  type="button"
+                  onClick={() => removeWatch(e.player_external_id)}
+                  className="text-[10px] uppercase px-2 py-0.5 rounded border border-borderlt text-danger hover:bg-surface2"
+                  title="İzleme listesinden çıkar"
+                >
+                  ✕ çıkar
+                </button>
               </li>
             ))}
           </ul>
