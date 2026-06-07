@@ -264,3 +264,23 @@ def test_pdf_export_returns_pdf_bytes(client):
 def test_pdf_export_404_when_no_data(client):
     c, _ = client
     assert c.get("/physical-tests/99999/pdf").status_code == 404
+
+
+def test_rate_against_norms_all_protocols_extremes():
+    """Tüm REFERENCE protokollerinde uç-iyi→elit, uç-kötü→zayıf; yön doğru."""
+    from app.engine.physical.load_risk import REFERENCE, rate_against_norms
+    valid = {"elit", "iyi", "ortalama", "zayıf"}
+    for p, ref in REFERENCE.items():
+        lib = ref["lower_is_better"]
+        best = ref["high"] * (0.9 if lib else 1.1)   # elit tarafı
+        worst = ref["low"] * (1.2 if lib else 0.8)    # zayıf tarafı
+        rb = rate_against_norms(p, best)
+        rw = rate_against_norms(p, worst)
+        assert rb in valid and rw in valid, (p, rb, rw)
+        assert rb == "elit", (p, "best", best, rb)
+        assert rw == "zayıf", (p, "worst", worst, rw)
+
+
+def test_rate_against_norms_unknown_protocol_none():
+    from app.engine.physical.load_risk import rate_against_norms
+    assert rate_against_norms("bilinmeyen_protokol", 1.0) is None
