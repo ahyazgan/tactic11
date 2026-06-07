@@ -165,6 +165,27 @@ export default function PhysicalPanelPage() {
           <Link href="/" className="pp-back" title="Uygulamaya dön">←</Link>
           <div className="mark">m2</div>
           <h1>manager2 <span>/ Performans Modülü</span></h1>
+          <nav style={{ display: "flex", gap: 2, marginLeft: 18 }}>
+            <span
+              style={{
+                padding: "5px 12px", fontSize: 12.5, fontWeight: 600,
+                color: "#e8ebf2", borderBottom: "2px solid var(--besiktas, #e30613)",
+              }}
+            >
+              Panel
+            </span>
+            <Link
+              href="/performance"
+              style={{
+                padding: "5px 12px", fontSize: 12.5, fontWeight: 600,
+                color: "#8b94a8", borderBottom: "2px solid transparent",
+                textDecoration: "none",
+              }}
+              title="Protokol kütüphanesi + batarya değerlendirme"
+            >
+              Veri Girişi &amp; Batarya
+            </Link>
+          </nav>
         </div>
         <div className="club-pill">
           <span className="dot" />
