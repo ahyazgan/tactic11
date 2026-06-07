@@ -25,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/teams", label: "Takımlar" },
   { href: "/h2h", label: "H2H" },
   { href: "/matches", label: "Maçlar" },
+  { href: "/match-plan", label: "Maç Planı", roles: ["admin", "coach", "analyst"] },
   { href: "/training", label: "Antrenman", roles: ["admin", "coach", "analyst"] },
   { href: "/performance", label: "Performans Testi", roles: ["admin", "coach", "analyst"] },
   { href: "/physical-tests", label: "Yük Riski", roles: ["admin", "coach", "analyst"] },
