@@ -21,6 +21,7 @@ const DICT: Record<string, Partial<Record<Lang, string>>> = {
   "Genel Bakış": { en: "Overview" },
   Ligler: { en: "Leagues" },
   Takımlar: { en: "Teams" },
+  Kadro: { en: "Squad" },
   Maçlar: { en: "Matches" },
   Scout: { en: "Scout" },
   "Maç Planı": { en: "Match Plan" },
