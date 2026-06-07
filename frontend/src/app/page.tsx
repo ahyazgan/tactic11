@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useCurrentUser } from "@/lib/auth";
-import { useI18n } from "@/lib/i18n";
 
 interface Item {
   href: string;
@@ -48,26 +46,13 @@ const SECTIONS: { title: string; items: Item[] }[] = [
 ];
 
 export default function HomePage() {
-  const { user, isLoading } = useCurrentUser();
-  const { t } = useI18n();
-
   return (
     <div className="max-w-6xl">
-      <div className="flex items-baseline justify-between mb-5">
-        <div>
-          <h1 className="text-xl font-bold text-text">manager2</h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Veriyle karar destek — kulüp teknik ekibi için co-pilot.
-          </p>
-        </div>
-        {!isLoading && !user && (
-          <Link
-            href="/login"
-            className="text-[11px] uppercase tracking-wide px-3 py-1.5 rounded border border-borderlt text-accent hover:bg-surface2"
-          >
-            {t("Giriş yap")}
-          </Link>
-        )}
+      <div className="mb-5">
+        <h1 className="text-xl font-bold text-text">manager2</h1>
+        <p className="text-[12px] text-textmut mt-0.5">
+          Veriyle karar destek — kulüp teknik ekibi için co-pilot.
+        </p>
       </div>
 
       <div className="space-y-6">
