@@ -241,6 +241,14 @@ class RehabPayload(BaseModel):
     notes: str | None = Field(None, max_length=1024)
 
 
+class RehabUpdate(BaseModel):
+    """Rehab kaydı kısmi güncelleme (return-to-play geçişi)."""
+    status: str | None = Field(None, description="active | recovering | cleared")
+    expected_return: date | None = None
+    actual_return: date | None = None
+    notes: str | None = Field(None, max_length=1024)
+
+
 class RehabOut(BaseModel):
     id: int
     player_external_id: int
@@ -316,3 +324,57 @@ def _rehab_to_out(r: models.PlayerRehabilitation) -> RehabOut:
         created_at=r.created_at,
         updated_at=r.updated_at,
     )
+
+
+@router.patch("/players/{player_id}/rehab/{rehab_id}", response_model=RehabOut)
+def update_rehab(
+    player_id: int,
+    rehab_id: int,
+    payload: RehabUpdate,
+    session: Session = Depends(get_session),
+) -> RehabOut:
+    """Rehab kaydını güncelle (return-to-play geçişi: active→recovering→cleared).
+
+    `cleared` yapılıp `actual_return` verilmemişse bugünün tarihi otomatik set edilir.
+    """
+    row = session.get(models.PlayerRehabilitation, rehab_id)
+    if row is None or row.player_external_id != player_id:
+        raise HTTPException(status_code=404, detail="rehab kaydı bulunamadı")
+    if payload.status is not None:
+        if payload.status not in VALID_REHAB_STATUSES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"status {payload.status} geçersiz — {VALID_REHAB_STATUSES}",
+            )
+        row.status = payload.status
+        if (
+            payload.status == "cleared"
+            and payload.actual_return is None
+            and row.actual_return is None
+        ):
+            row.actual_return = datetime.now(UTC).date()
+    if payload.expected_return is not None:
+        row.expected_return = payload.expected_return
+    if payload.actual_return is not None:
+        row.actual_return = payload.actual_return
+    if payload.notes is not None:
+        row.notes = payload.notes
+    row.updated_at = datetime.now(UTC)
+    session.commit()
+    return _rehab_to_out(row)
+
+
+@router.get("/rehab/active", response_model=list[RehabOut])
+def list_all_active_rehab(
+    session: Session = Depends(get_session),
+) -> list[RehabOut]:
+    """Takım geneli aktif (cleared olmayan) tüm rehab kayıtları — Tıbbi Merkez."""
+    rows = list(session.execute(
+        select(models.PlayerRehabilitation)
+        .where(
+            models.PlayerRehabilitation.sport == football.SPORT_NAME,
+            models.PlayerRehabilitation.status != "cleared",
+        )
+        .order_by(models.PlayerRehabilitation.injury_start.desc())
+    ).scalars())
+    return [_rehab_to_out(r) for r in rows]
