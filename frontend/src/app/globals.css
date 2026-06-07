@@ -47,6 +47,28 @@ html.light .ovroot {
   --grad: linear-gradient(180deg, #ffffff, #f3f5f9);
 }
 
+/* Açık temada düz kartlar yerine yumuşak gölge + net kontrast. */
+html.light .ovroot .kpi,
+html.light .ovroot .rc,
+html.light .ovroot .tbl {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.07);
+}
+html.light .ovroot .kpi:hover {
+  box-shadow: 0 6px 16px rgba(16, 24, 40, 0.10);
+}
+html.light .ovroot .header,
+html.light .ovroot .nav,
+html.light .ovroot .right,
+html.light .ovroot .btabs {
+  box-shadow: 0 1px 0 rgba(16, 24, 40, 0.04);
+}
+html.light .ovroot thead th { background: #f0f3f8; }
+
+/* Mobilde alt tab bar varken tema düğmesini yukarı al (üst üste binmesin). */
+@media (max-width: 900px) {
+  button[aria-label="Tema değiştir"] { bottom: 70px !important; }
+}
+
 html, body { background: theme('colors.bg'); color: theme('colors.text'); }
 
 body {

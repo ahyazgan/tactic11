@@ -31,10 +31,12 @@ function condColor(v: number): string {
 }
 
 export default function OverviewConsolePage() {
-  const { data } = useSWR<PlayerRow[]>("/physical-tests/players", apiFetch, {
+  const { data, error, isLoading } = useSWR<PlayerRow[]>("/physical-tests/players", apiFetch, {
     shouldRetryOnError: false,
   });
   const players = data ?? [];
+  // Backend bağlı değil / boş → demo şeridi göster.
+  const offline = !isLoading && (!!error || players.length === 0);
   const total = players.length;
   const totalTests = players.reduce((a, p) => a + p.test_count, 0);
   const risky = players.filter((p) => p.risk_label === "Yüksek" || p.risk_label === "Kritik").length;
@@ -103,12 +105,32 @@ export default function OverviewConsolePage() {
       navBadge={risky}
       right={right}
     >
+      {offline && (
+        <div className="demobar">
+          <span style={{ fontSize: 15 }}>🔌</span>
+          <span><b>Demo modu</b> — veri sunucusu (backend) bağlı değil, sayılar 0 görünüyor. Bağlanınca tüm ekranlar gerçek veriyle dolar.</span>
+          <a className="db-cta" href="https://github.com/ahyazgan/manager2#-canlıya-alma-3-dakika" target="_blank" rel="noreferrer">Nasıl bağlanır?</a>
+        </div>
+      )}
+
       <div className="kpis">
-        <div className="kpi"><div className="kl">Kadro</div><div className="kn">{total}</div><div className="kd"><span className="u">{ready} hazır</span> · {risky} riskli</div></div>
-        <div className="kpi"><div className="kl">Toplam Test</div><div className="kn">{totalTests}</div><div className="kd">{total} oyuncu</div></div>
-        <div className="kpi"><div className="kl">Ort. Kondisyon</div><div className="kn">{avgCond}<span className="pct">%</span></div><div className="kd">risk skorundan</div></div>
-        <div className="kpi"><div className="kl">Kritik/Yüksek</div><div className="kn" style={{ color: risky ? "var(--high)" : "var(--low)" }}>{risky}</div><div className="kd">acil takip</div></div>
-        <div className="kpi"><div className="kl">Hazır</div><div className="kn" style={{ color: "var(--low)" }}>{ready}</div><div className="kd">düşük risk</div></div>
+        {isLoading ? (
+          [0, 1, 2, 3, 4].map((i) => (
+            <div className="kpi" key={i}>
+              <div className="kl"><span className="sk sk-line" style={{ width: 56 }} /></div>
+              <div className="kn"><span className="sk sk-kn" /></div>
+              <div className="kd"><span className="sk sk-line" style={{ width: 84 }} /></div>
+            </div>
+          ))
+        ) : (
+          <>
+            <div className="kpi"><div className="kl">Kadro</div><div className="kn">{total}</div><div className="kd"><span className="u">{ready} hazır</span> · {risky} riskli</div></div>
+            <div className="kpi"><div className="kl">Toplam Test</div><div className="kn">{totalTests}</div><div className="kd">{total} oyuncu</div></div>
+            <div className="kpi"><div className="kl">Ort. Kondisyon</div><div className="kn">{avgCond}<span className="pct">%</span></div><div className="kd">risk skorundan</div></div>
+            <div className="kpi"><div className="kl">Kritik/Yüksek</div><div className="kn" style={{ color: risky ? "var(--high)" : "var(--low)" }}>{risky}</div><div className="kd">acil takip</div></div>
+            <div className="kpi"><div className="kl">Hazır</div><div className="kn" style={{ color: "var(--low)" }}>{ready}</div><div className="kd">düşük risk</div></div>
+          </>
+        )}
       </div>
 
       <div className="st"><h2>Yük Riski — Kadro Durumu</h2><span className="ep">GET /physical-tests/players</span></div>
@@ -119,9 +141,24 @@ export default function OverviewConsolePage() {
             <th className="c">Kondisyon</th><th className="c">Son Test</th><th className="c">Risk</th><th className="r">Skor</th>
           </tr></thead>
           <tbody>
-            {players.length === 0 && (
-              <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>
-                Veri yok (backend bağlı değilse boş gelir).
+            {isLoading && [0, 1, 2, 3, 4, 5].map((i) => (
+              <tr key={`sk${i}`}>
+                <td className="c"><span className="sk sk-line" style={{ width: 16, margin: "0 auto" }} /></td>
+                <td><span className="sk sk-line" style={{ width: "60%" }} /></td>
+                <td className="c"><span className="sk sk-line" style={{ width: 24, margin: "0 auto" }} /></td>
+                <td className="c"><span className="sk sk-line" style={{ width: 56, margin: "0 auto" }} /></td>
+                <td className="c"><span className="sk sk-line" style={{ width: 60, margin: "0 auto" }} /></td>
+                <td className="c"><span className="sk sk-line" style={{ width: 50, margin: "0 auto" }} /></td>
+                <td className="r"><span className="sk sk-line" style={{ width: 28, marginLeft: "auto" }} /></td>
+              </tr>
+            ))}
+            {!isLoading && players.length === 0 && (
+              <tr><td colSpan={7}>
+                <div className="empty">
+                  <div className="ei">📋</div>
+                  <div className="et">Henüz test verisi yok</div>
+                  <div className="es">Backend bağlanınca kadro yük-riski burada listelenir.</div>
+                </div>
               </td></tr>
             )}
             {players.map((p, i) => {
