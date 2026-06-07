@@ -51,27 +51,27 @@ PROTOCOLS: dict[str, TestProtocol] = {
         norm_cutoffs=(("elit", 40.0), ("iyi", 35.0), ("ortalama", 30.0)),
     ),
     "sprint_30m": TestProtocol(
-        key="sprint_30m", name="30m Sprint", unit="s",
+        key="sprint_30m", name="30m Sprint", unit="sn",
         higher_is_better=False,
         description=("Foto-hücre kapıları; durağan başlangıç, 30m. 2 deneme, en iyisi. "
                      "10m split de kaydedilebilir."),
         norm_cutoffs=(("elit", 4.00), ("iyi", 4.20), ("ortalama", 4.40)),
     ),
-    "yoyo_ir1": TestProtocol(
-        key="yoyo_ir1", name="Yo-Yo Intermittent Recovery L1", unit="m",
+    "yoyo_irl1": TestProtocol(
+        key="yoyo_irl1", name="Yo-Yo Intermittent Recovery L1", unit="seviye",
         higher_is_better=True,
         description=("20m mekik + 10s aktif dinlenme, artan hız; bip'e uyamayınca "
-                     "biter. Toplam koşulan mesafe (m)."),
-        norm_cutoffs=(("elit", 2400.0), ("iyi", 2000.0), ("ortalama", 1600.0)),
+                     "biter. Ulaşılan kademe/seviye (ör. 18.5)."),
+        norm_cutoffs=(("elit", 20.0), ("iyi", 18.0), ("ortalama", 16.0)),
     ),
     "ttest_agility": TestProtocol(
-        key="ttest_agility", name="T-Test Çeviklik", unit="s",
+        key="ttest_agility", name="T-Test Çeviklik", unit="sn",
         higher_is_better=False,
         description=("T şeklinde koni düzeni: ileri-yan-yan-geri. Yön değiştirme hızı."),
         norm_cutoffs=(("elit", 9.5), ("iyi", 10.5), ("ortalama", 11.5)),
     ),
     "rsa": TestProtocol(
-        key="rsa", name="Tekrarlı Sprint (RSA) — ortalama", unit="s",
+        key="rsa", name="Tekrarlı Sprint (RSA) — ortalama", unit="sn",
         higher_is_better=False,
         description=("6×30m sprint, 20s dinlenme; sprint sürelerinin ortalaması "
                      "(yorgunluk indeksi ayrıca hesaplanır)."),

@@ -25,7 +25,7 @@ def test_protocol_library_lists_tests(client):
     r = client.get("/admin/performance/protocols")
     assert r.status_code == 200
     keys = {p["key"] for p in r.json()["protocols"]}
-    assert {"cmj", "sprint_30m", "yoyo_ir1"} <= keys
+    assert {"cmj", "sprint_30m", "yoyo_irl1"} <= keys
 
 
 def test_score_endpoint_rates_and_percentile(client):

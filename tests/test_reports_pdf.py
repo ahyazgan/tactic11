@@ -234,7 +234,7 @@ def test_build_performance_report_returns_pdf() -> None:
     from app.engine.performance_test import evaluate_battery, interpret_progression
 
     battery = evaluate_battery(
-        42, [("cmj", 38.0), ("sprint_30m", 4.1), ("yoyo_ir1", 2200)],
+        42, [("cmj", 38.0), ("sprint_30m", 4.1), ("yoyo_irl1", 19.0)],
     )
     prog = asdict(interpret_progression("cmj", [34.0, 35.0, 36.0, 38.0]))
     pdf = build_performance_report_pdf(
