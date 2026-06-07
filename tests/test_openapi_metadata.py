@@ -66,3 +66,42 @@ def test_openapi_endpoints_have_tags(client):
             if method in ("get", "post", "put", "delete", "patch") and not op.get("tags"):
                 untagged.append(f"{method.upper()} {path}")
     assert not untagged, f"Tag'siz endpoint'ler: {untagged}"
+
+
+# --------------------------------------------------------------------------- #
+# Konsolidasyon kontratı — fiziksel test (B) + eski batarya (A) deprecation
+# --------------------------------------------------------------------------- #
+
+def test_physical_tests_b_endpoints_in_openapi(client):
+    spec = client.get("/openapi.json").json()
+    paths = spec["paths"]
+    assert "get" in paths.get("/physical-tests/players", {})
+    assert "get" in paths.get("/physical-tests/{player_id}/risk", {})
+    assert "get" in paths.get("/physical-tests/{player_id}/trend", {})
+    assert "get" in paths.get("/physical-tests/{player_id}/pdf", {})
+    # PDF yanıtı application/pdf
+    pdf_op = paths["/physical-tests/{player_id}/pdf"]["get"]
+    assert "application/pdf" in str(pdf_op.get("responses", {}))
+
+
+def test_old_battery_endpoints_marked_deprecated(client):
+    spec = client.get("/openapi.json").json()
+    paths = spec["paths"]
+    checks = [
+        ("/admin/performance/protocols", "get"),
+        ("/admin/performance/score", "post"),
+        ("/admin/performance/battery", "post"),
+        ("/admin/performance/progression", "post"),
+        ("/admin/performance/workload", "post"),
+        ("/reports/performance/pdf", "post"),
+    ]
+    for path, method in checks:
+        op = paths.get(path, {}).get(method, {})
+        assert op, f"endpoint yok: {method.upper()} {path}"
+        assert op.get("deprecated") is True, f"{path} deprecated değil"
+
+
+def test_physical_test_out_exposes_norm_rating(client):
+    spec = client.get("/openapi.json").json()
+    props = spec["components"]["schemas"]["PhysicalTestOut"]["properties"]
+    assert "rating" in props  # norm derecesi (elit/iyi/ortalama/zayıf)
