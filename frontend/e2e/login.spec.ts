@@ -13,7 +13,10 @@ test.describe("Login akışı", () => {
     await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
       timeout: 10_000,
     });
-    await expect(page.locator("body")).toBeVisible();
+    // / Genel Bakış konsolunu render eder (tam-ekran fixed).
+    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("logout token'ları temizler ve /login'e döner", async ({ page }) => {
@@ -24,7 +27,9 @@ test.describe("Login akışı", () => {
       localStorage.setItem("manager2_refresh_token", "dummy-refresh");
     });
     await page.goto("/");
-    // Logout butonu yoksa (auth yok) en azından /'e gidip layout görünür
-    await expect(page.locator("body")).toBeVisible();
+    // / Genel Bakış konsolunu render eder; konsol içeriği görünür olmalı.
+    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });
