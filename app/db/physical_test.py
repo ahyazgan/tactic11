@@ -28,6 +28,8 @@ class TestProtocol(enum.StrEnum):
 
     SPRINT_10M = "sprint_10m"        # sn
     SPRINT_30M = "sprint_30m"        # sn
+    TTEST_AGILITY = "ttest_agility"  # sn — T-test çeviklik
+    RSA = "rsa"                      # sn — tekrarlı sprint ortalaması
     YOYO_IRL1 = "yoyo_irl1"          # seviye (örn: 17.4)
     YOYO_IRL2 = "yoyo_irl2"
     CMJ = "cmj"                      # countermovement jump — cm
