@@ -1,11 +1,17 @@
 "use client";
 
+/**
+ * Set-piece Routine — duran top rutini önerileri + zone haritası. ConsoleShell çatısında.
+ * SetPieceZoneMap görseli korunur.
+ * Backend: GET /admin/teams/{id}/set-piece-routine?opponent_id&set_piece_type.
+ */
+
 import * as React from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel, Pill } from "@/components/ui";
 import { SetPieceZoneMap } from "@/components/charts/SetPieceZoneMap";
+import { ConsoleShell } from "../../../_console/shell";
 
 interface Recommendation {
   target_zone: string;
@@ -15,7 +21,6 @@ interface Recommendation {
   our_strength_score: number;
   routine_score: number;
 }
-
 interface RoutineResponse {
   value?: {
     my_team_external_id: number;
@@ -26,12 +31,9 @@ interface RoutineResponse {
     matches_analyzed: number;
   };
   note?: string;
-  my_events?: number;
-  opp_events?: number;
 }
 
 const SET_PIECE_TYPES = ["all", "corner_kick", "free_kick", "set_piece"];
-
 const ZONE_TR: Record<string, string> = {
   near_post: "Yakın direk",
   central_6yd: "Kale ağzı (6 yd)",
@@ -40,7 +42,7 @@ const ZONE_TR: Record<string, string> = {
   outside_box: "Ceza dışı",
 };
 
-export default function SetPieceRoutinePage() {
+export default function SetPieceRoutineConsolePage() {
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const teamId = params.id;
@@ -48,134 +50,74 @@ export default function SetPieceRoutinePage() {
   const [spType, setSpType] = React.useState<string>("all");
   const [selectedZone, setSelectedZone] = React.useState<string | undefined>();
 
-  const url = opponentId
-    ? `/admin/teams/${teamId}/set-piece-routine` +
-      `?opponent_id=${opponentId}&set_piece_type=${spType}`
-    : null;
-  const { data, error, isLoading } = useSWR<RoutineResponse>(url, apiFetch);
+  const url = opponentId ? `/admin/teams/${teamId}/set-piece-routine?opponent_id=${opponentId}&set_piece_type=${spType}` : null;
+  const { data, error, isLoading } = useSWR<RoutineResponse>(url, apiFetch, { shouldRetryOnError: false });
+
+  const scoresByZone: Record<string, number> = {};
+  data?.value?.top_recommendations.forEach((r) => { scoresByZone[r.target_zone] = Math.min(1, r.routine_score); });
 
   if (!opponentId) {
     return (
-      <div className="max-w-5xl">
-        <Panel>
-          <p className="text-textmut text-[13px]">
-            <code className="font-mono">?opponent_id=&lt;N&gt;</code> gerek.
-          </p>
-        </Panel>
-      </div>
+      <ConsoleShell active="/teams" title={`Set-piece — Takım #${teamId}`} sub="Duran top rutini">
+        <div className="pgdesc"><code style={{ fontFamily: "JetBrains Mono" }}>?opponent_id=&lt;N&gt;</code> parametresi gerekli.</div>
+      </ConsoleShell>
     );
   }
 
-  const scoresByZone: Record<string, number> = {};
-  data?.value?.top_recommendations.forEach((r) => {
-    // routine_score zaten kompozit; 0-1 normalize varsay (clamp)
-    scoresByZone[r.target_zone] = Math.min(1, r.routine_score);
-  });
+  const right = (
+    <div className="rc">
+      <h3>Zone Haritası</h3>
+      {data?.value ? (
+        <>
+          <SetPieceZoneMap scoresByZone={scoresByZone} avoidZone={data.value.avoid_zone} selectedZone={selectedZone} onSelectZone={setSelectedZone} />
+          <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>✕ işareti: rakibin saldırgan pattern&apos;i — burayı bekler, defansif yığınak yapar.</div>
+        </>
+      ) : <div style={{ fontSize: "12px", color: "var(--dim)" }}>Veri bekleniyor…</div>}
+    </div>
+  );
 
   return (
-    <div className="max-w-6xl space-y-4">
-      <div>
-        <h1 className="text-lg font-semibold text-text">
-          Set-piece Routine — Takım #{teamId} vs Rakip #{opponentId}
-        </h1>
-        {data?.value && (
-          <p className="text-[12px] text-textmut">
-            {data.value.matches_analyzed} maç incelendi · tip{" "}
-            <code className="font-mono">{data.value.set_piece_type}</code>
-          </p>
-        )}
-      </div>
-
-      <Panel title="Set-piece tipi">
-        <div className="flex gap-2">
+    <ConsoleShell
+      active="/teams"
+      title={`Set-piece — Takım #${teamId}`}
+      sub={`vs Rakip #${opponentId}`}
+      desc={data?.value ? `${data.value.matches_analyzed} maç incelendi · tip ${data.value.set_piece_type}` : "Rakibe karşı duran top rutini önerileri."}
+      right={right}
+    >
+      <div className="st" style={{ marginTop: 0 }}>
+        <h2>Set-piece Tipi</h2>
+        <div className="seg">
           {SET_PIECE_TYPES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setSpType(t)}
-              className={`text-[11px] uppercase tracking-wide px-3 py-1 rounded border transition-colors ${
-                spType === t
-                  ? "bg-accent/15 border-accent text-accent"
-                  : "border-borderlt text-textmut hover:text-text"
-              }`}
-            >
-              {t}
-            </button>
+            <button key={t} className={spType === t ? "on" : ""} onClick={() => setSpType(t)}>{t}</button>
           ))}
         </div>
-      </Panel>
+      </div>
 
-      {error && (
-        <p className="text-danger text-[13px]">Yüklenemedi: {String(error)}</p>
-      )}
-      {isLoading && (
-        <p className="text-textmut text-[13px]">Hesaplanıyor...</p>
-      )}
-      {data?.note && (
-        <Panel>
-          <p className="text-textmut text-[13px]">{data.note}</p>
-        </Panel>
-      )}
+      {error && <div className="pgdesc">Yüklenemedi: {String(error)}</div>}
+      {isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
+      {data?.note && <div className="pgdesc">{data.note}</div>}
 
       {data?.value && (
-        <div className="grid lg:grid-cols-2 gap-4">
-          <section>
-            <h2 className="text-sm font-semibold text-text mb-2">
-              Zone Haritası
-            </h2>
-            <SetPieceZoneMap
-              scoresByZone={scoresByZone}
-              avoidZone={data.value.avoid_zone}
-              selectedZone={selectedZone}
-              onSelectZone={setSelectedZone}
-            />
-            <p className="text-[11px] text-textmut mt-2">
-              ✕ işareti: rakibin saldırgan pattern'i — rakip burayı bekliyor,
-              defansif yığınak yapar.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-sm font-semibold text-text mb-2">
-              Top Öneriler ({data.value.top_recommendations.length})
-            </h2>
-            <div className="space-y-3">
-              {data.value.top_recommendations.map((r, i) => (
-                <Panel key={i}>
-                  <div className="flex items-baseline justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-text">
-                      {ZONE_TR[r.target_zone] ?? r.target_zone}
-                    </h3>
-                    <Pill variant="win">
-                      score {r.routine_score.toFixed(2)}
-                    </Pill>
-                  </div>
-                  <div className="text-[12px] text-text mb-2">
-                    Teknik: <span className="font-mono">{r.technique}</span>
-                  </div>
-                  <p className="text-[12px] text-textmut leading-[16px]">
-                    {r.rationale}
-                  </p>
-                  <div className="mt-2 flex gap-3 text-[11px] text-textdim">
-                    <span>
-                      rakip zayıflığı{" "}
-                      <span className="font-mono text-loss">
-                        {(r.opponent_weakness_score * 100).toFixed(0)}%
-                      </span>
-                    </span>
-                    <span>
-                      bizim gücümüz{" "}
-                      <span className="font-mono text-win">
-                        {(r.our_strength_score * 100).toFixed(0)}%
-                      </span>
-                    </span>
-                  </div>
-                </Panel>
-              ))}
-            </div>
-          </section>
-        </div>
+        <>
+          <div className="st"><h2>Top Öneriler</h2><span className="ep">{data.value.top_recommendations.length} öneri</span></div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {data.value.top_recommendations.map((r, i) => (
+              <div className="rc" key={i} style={{ margin: 0 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{ZONE_TR[r.target_zone] ?? r.target_zone}</span>
+                  <span style={{ fontSize: 10, textTransform: "uppercase", padding: "2px 8px", borderRadius: 5, border: "1px solid var(--low)", color: "var(--low)" }}>score {r.routine_score.toFixed(2)}</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--ink)", marginBottom: 6 }}>Teknik: <span style={{ fontFamily: "JetBrains Mono" }}>{r.technique}</span></div>
+                <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>{r.rationale}</div>
+                <div style={{ display: "flex", gap: 12, fontSize: 11, color: "var(--dim)", marginTop: 8, fontFamily: "JetBrains Mono" }}>
+                  <span>rakip zayıflığı <span style={{ color: "var(--crit)" }}>{(r.opponent_weakness_score * 100).toFixed(0)}%</span></span>
+                  <span>bizim güç <span style={{ color: "var(--low)" }}>{(r.our_strength_score * 100).toFixed(0)}%</span></span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
-    </div>
+    </ConsoleShell>
   );
 }

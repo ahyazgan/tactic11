@@ -1,16 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useParams, useSearchParams } from "next/navigation";
-import { ConfidenceBadge } from "@/components/ui";
+/**
+ * Canlı Maç Konsolu — WebSocket momentum + sub önerisi + karar logu.
+ * ConsoleShell çatısında. WS reconnect (exp backoff) ve DecisionPanel korunur.
+ * WS: /api/ws/matches/{id}/live?my_team_id&interval_seconds&max_minute&tenant_id.
+ */
 
-interface Confidence {
-  score: number;
-  label: string;
-  drivers: string[];
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { ConsoleShell } from "../../../_console/shell";
+
+interface Confidence { score: number; label: string; drivers: string[] }
+
+function Conf({ c }: { c?: Confidence | null }) {
+  if (!c) return null;
+  return <span style={{ fontSize: 10, textTransform: "uppercase", fontFamily: "JetBrains Mono", color: "var(--muted)", border: "1px solid var(--line)", borderRadius: 5, padding: "1px 6px" }}>güven {c.label} ({Math.round(c.score * 100)})</span>;
 }
 
-// Push notification: tarayıcı izin verir + ürettiği high urgency sub için
 function notifyHighUrgency(playerId: number, score: number) {
   if (typeof window === "undefined") return;
   if (!("Notification" in window)) return;
@@ -22,22 +28,12 @@ function notifyHighUrgency(playerId: number, score: number) {
       requireInteraction: false,
     });
   } catch {
-    // ignore
+    /* ignore */
   }
 }
 
-interface SubRecommendation {
-  player_external_id: number;
-  urgency_score: number;
-  urgency_label: string;
-  reasons: string[];
-}
-
-interface PlayerShift {
-  player_external_id: number;
-  drift_distance: number;
-}
-
+interface SubRecommendation { player_external_id: number; urgency_score: number; urgency_label: string; reasons: string[] }
+interface PlayerShift { player_external_id: number; drift_distance: number }
 interface Snapshot {
   match_id?: number;
   my_team_id?: number;
@@ -47,37 +43,12 @@ interface Snapshot {
   score?: string;
   ppda?: { ppda?: number };
   field_tilt?: { team_a_tilt?: number };
-  match_dominance?: {
-    dominance_score?: number;
-    label?: string;
-    xg_diff?: number;
-    possession_share?: number;
-  };
-  live_sub_recommendation?: {
-    recommendations: SubRecommendation[];
-    score_state: string;
-  };
-  opponent_shape_drift?: {
-    shape_changed: boolean;
-    n_players_significant_drift: number;
-    alert_text: string;
-    player_shifts?: PlayerShift[];
-  };
-  momentum?: {
-    score?: number;
-    holder?: string;
-    alert_text?: string;
-  };
-  context?: {
-    one_liner?: string | null;
-    primary?: { headline?: string } | null;
-    confidence_note?: string;
-  };
-  confidence?: {
-    context?: Confidence | null;
-    live_sub_recommendation?: Confidence | null;
-    momentum?: Confidence | null;
-  };
+  match_dominance?: { dominance_score?: number; label?: string; xg_diff?: number; possession_share?: number };
+  live_sub_recommendation?: { recommendations: SubRecommendation[]; score_state: string };
+  opponent_shape_drift?: { shape_changed: boolean; n_players_significant_drift: number; alert_text: string; player_shifts?: PlayerShift[] };
+  momentum?: { score?: number; holder?: string; alert_text?: string };
+  context?: { one_liner?: string | null; primary?: { headline?: string } | null; confidence_note?: string };
+  confidence?: { context?: Confidence | null; live_sub_recommendation?: Confidence | null; momentum?: Confidence | null };
   trend?: {
     status?: string;
     momentum?: { direction?: string; sustained_snapshots?: number; delta?: number };
@@ -90,40 +61,13 @@ interface Snapshot {
   note?: string;
 }
 
-const TREND_DIR_TONE: Record<string, string> = {
-  "bize doğru": "text-good",
-  "rakibe doğru": "text-bad",
-  "dengeli": "text-muted",
+const TREND_DIR_VAR: Record<string, string> = {
+  "bize doğru": "var(--low)",
+  "rakibe doğru": "var(--crit)",
+  "dengeli": "var(--muted)",
 };
 
-function StatCard({
-  label, value, badge, accent = "default",
-}: {
-  label: string;
-  value: string;
-  badge?: string;
-  accent?: "default" | "green" | "red" | "amber";
-}) {
-  const accentColors = {
-    default: "border-muted",
-    green: "border-green-500/40",
-    red: "border-red-500/40",
-    amber: "border-yellow-500/40",
-  };
-  return (
-    <div className={`card border-l-2 ${accentColors[accent]}`}>
-      <h3 className="text-xs uppercase text-muted mb-1">{label}</h3>
-      <div className="text-2xl font-mono">{value}</div>
-      {badge && (
-        <div className="inline-block mt-1 px-2 py-0.5 rounded bg-accent/20 text-xs uppercase">
-          {badge}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function LiveMatchPage() {
+export default function LiveMatchConsolePage() {
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const matchId = params.id;
@@ -133,10 +77,7 @@ export default function LiveMatchPage() {
   const tenantId = search.get("tenant_id") ?? "t-default";
 
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
-  // Faz 3: 4 state — connecting | open | reconnecting | closed
-  const [wsState, setWsState] = useState<
-    "connecting" | "open" | "reconnecting" | "closed"
-  >("connecting");
+  const [wsState, setWsState] = useState<"connecting" | "open" | "reconnecting" | "closed">("connecting");
   const [reconnectCountdown, setReconnectCountdown] = useState<number | null>(null);
   const [ended, setEnded] = useState(false);
   const [history, setHistory] = useState<Snapshot[]>([]);
@@ -147,12 +88,8 @@ export default function LiveMatchPage() {
   const intentionalCloseRef = useRef<boolean>(false);
   const [manualReconnectTrigger, setManualReconnectTrigger] = useState(0);
 
-  const connected = wsState === "open";
-
-  // İlk render'da push notification izni iste
   useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window
-      && Notification.permission === "default") {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
   }, []);
@@ -161,10 +98,7 @@ export default function LiveMatchPage() {
     if (!myTeam || ended) return;
     const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
-    const url =
-      `${proto}//${host}/api/ws/matches/${matchId}/live` +
-      `?my_team_id=${myTeam}&interval_seconds=${interval}` +
-      `&max_minute=${maxMinute}&tenant_id=${tenantId}`;
+    const url = `${proto}//${host}/api/ws/matches/${matchId}/live?my_team_id=${myTeam}&interval_seconds=${interval}&max_minute=${maxMinute}&tenant_id=${tenantId}`;
 
     intentionalCloseRef.current = false;
     setWsState("connecting");
@@ -187,14 +121,13 @@ export default function LiveMatchPage() {
         setHistory((h) => [...h.slice(-19), data]);
         const recs = data.live_sub_recommendation?.recommendations ?? [];
         for (const rec of recs) {
-          if (rec.urgency_label === "high"
-            && !notifiedPlayersRef.current.has(rec.player_external_id)) {
+          if (rec.urgency_label === "high" && !notifiedPlayersRef.current.has(rec.player_external_id)) {
             notifyHighUrgency(rec.player_external_id, rec.urgency_score);
             notifiedPlayersRef.current.add(rec.player_external_id);
           }
         }
       } catch {
-        // ignore
+        /* ignore */
       }
     };
     ws.onclose = () => {
@@ -202,7 +135,6 @@ export default function LiveMatchPage() {
         setWsState("closed");
         return;
       }
-      // Exponential backoff: 2, 4, 8, 16, max 30 sn; max 10 deneme
       const attempts = reconnectAttemptsRef.current;
       if (attempts >= 10) {
         setWsState("closed");
@@ -212,15 +144,12 @@ export default function LiveMatchPage() {
       reconnectAttemptsRef.current = attempts + 1;
       setWsState("reconnecting");
       setReconnectCountdown(Math.ceil(delay / 1000));
-
-      // Geri sayım
       const countdownInterval = setInterval(() => {
         setReconnectCountdown((c) => (c !== null && c > 0 ? c - 1 : c));
       }, 1000);
       reconnectTimerRef.current = setTimeout(() => {
         clearInterval(countdownInterval);
         setReconnectCountdown(null);
-        // Bağlantıyı yeniden kur — manual trigger ile useEffect tetikle
         setManualReconnectTrigger((x) => x + 1);
       }, delay);
     };
@@ -238,261 +167,150 @@ export default function LiveMatchPage() {
 
   if (!myTeam) {
     return (
-      <main className="max-w-5xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-3">Canlı Maç Dashboard</h1>
-        <div className="card">
-          <p className="text-muted">
-            <code className="font-mono">?my_team_id=&lt;N&gt;</code> parametresi gerek.
-          </p>
-        </div>
-      </main>
+      <ConsoleShell active="/matches" title={`Canlı — Maç #${matchId}`} sub="Canlı maç konsolu">
+        <div className="pgdesc"><code style={{ fontFamily: "JetBrains Mono" }}>?my_team_id=&lt;N&gt;</code> parametresi gerekli (Maç detayından gel).</div>
+      </ConsoleShell>
     );
   }
 
-  return (
-    <main className="max-w-6xl mx-auto p-6">
-      <div className="flex items-baseline justify-between mb-4">
-        <h1 className="text-2xl font-bold">
-          Canlı — Maç #{matchId}
-        </h1>
-        <div className="text-xs uppercase flex items-center gap-2">
-          {ended && (
-            <span className="px-2 py-0.5 rounded bg-textmut/30">Maç bitti</span>
-          )}
-          {!ended && wsState === "open" && (
-            <span className="px-2 py-0.5 rounded bg-win/15 text-win">
-              ● Canlı
-            </span>
-          )}
-          {!ended && wsState === "connecting" && (
-            <span className="px-2 py-0.5 rounded bg-warn/15 text-warn">
-              Bağlanıyor...
-            </span>
-          )}
-          {!ended && wsState === "reconnecting" && (
-            <span className="px-2 py-0.5 rounded bg-warn/15 text-warn">
-              Yeniden bağlanıyor
-              {reconnectCountdown !== null && ` (${reconnectCountdown}sn)`}
-            </span>
-          )}
-          {!ended && wsState === "closed" && (
-            <span className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded bg-danger/15 text-danger">
-                Bağlantı koptu
-              </span>
-              <button
-                type="button"
-                onClick={handleManualReconnect}
-                className="text-[11px] uppercase px-2 py-1 rounded border border-borderlt text-accent hover:bg-surface2"
-              >
-                Yeniden bağlan
-              </button>
-            </span>
-          )}
-        </div>
-      </div>
+  const dom = snapshot?.match_dominance?.dominance_score ?? 0;
+  const recs = snapshot?.live_sub_recommendation?.recommendations ?? [];
 
-      {snapshot?.note && (
-        <div className="card mb-4 text-muted">{snapshot.note}</div>
-      )}
-      {snapshot?.error && (
-        <div className="card border-l-2 border-red-500/40 mb-4">
-          <p className="text-red-400 text-sm">{snapshot.error}</p>
+  const right = (
+    <>
+      <div className="rc">
+        <h3>Bağlantı</h3>
+        {ended && <div style={{ fontSize: 13, color: "var(--muted)" }}>● Maç bitti</div>}
+        {!ended && wsState === "open" && <div style={{ fontSize: 13, color: "var(--low)", fontWeight: 700 }}>● Canlı</div>}
+        {!ended && wsState === "connecting" && <div style={{ fontSize: 13, color: "var(--mid)" }}>Bağlanıyor…</div>}
+        {!ended && wsState === "reconnecting" && <div style={{ fontSize: 13, color: "var(--mid)" }}>Yeniden bağlanıyor{reconnectCountdown !== null ? ` (${reconnectCountdown}sn)` : ""}</div>}
+        {!ended && wsState === "closed" && (
+          <div>
+            <div style={{ fontSize: 13, color: "var(--crit)", marginBottom: 8 }}>Bağlantı koptu</div>
+            <button type="button" onClick={handleManualReconnect} style={{ fontSize: 11, textTransform: "uppercase", padding: "5px 10px", borderRadius: 6, border: "1px solid var(--line)", color: "var(--ink)", background: "var(--panel3)", cursor: "pointer" }}>Yeniden bağlan</button>
+          </div>
+        )}
+        <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 10, fontFamily: "JetBrains Mono" }}>geçmiş: {history.length} kayıt · {interval}sn</div>
+      </div>
+      {recs.length > 0 && (
+        <div className="rc">
+          <h3>Sub Önerileri <span className="tiny">top {recs.length}</span></h3>
+          {recs.map((rec) => {
+            const v = rec.urgency_label === "high" ? "var(--crit)" : rec.urgency_label === "medium" ? "var(--mid)" : "var(--muted)";
+            return (
+              <div className="alrt" key={rec.player_external_id}>
+                <span className="ai" style={{ background: v }} />
+                <div className="am"><b style={{ fontFamily: "JetBrains Mono" }}>#{rec.player_external_id}</b> · {rec.urgency_label}
+                  <span className="tm">aciliyet {rec.urgency_score.toFixed(2)} · {rec.reasons[0] ?? ""}</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
+    </>
+  );
+
+  const statusLabel = ended ? "Maç bitti" : wsState === "open" ? "● Canlı" : wsState === "connecting" ? "Bağlanıyor" : wsState === "reconnecting" ? "Yeniden bağlanıyor" : "Bağlantı koptu";
+
+  return (
+    <ConsoleShell
+      active="/matches"
+      title={`Canlı — Maç #${matchId}`}
+      sub={`Takım #${myTeam} · ${statusLabel}`}
+      desc="WebSocket canlı momentum, dominance ve oyuncu değişikliği önerileri."
+      right={right}
+    >
+      {snapshot?.note && <div className="pgdesc">{snapshot.note}</div>}
+      {snapshot?.error && <div className="rc" style={{ margin: "0 0 14px", borderLeft: "2px solid var(--crit)", color: "var(--crit)", fontSize: 13 }}>{snapshot.error}</div>}
 
       {snapshot && !snapshot.error && (
         <>
-          <h2 className="text-sm uppercase text-muted mb-3">Maç Durumu</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-            <StatCard label="Dakika"
-              value={snapshot.current_minute?.toFixed(0) ?? "—"} />
-            <StatCard label="Skor"
-              value={snapshot.score ?? "—"}
-              badge={snapshot.live_sub_recommendation?.score_state} />
-            <StatCard label="Olay sayısı"
-              value={String(snapshot.events_so_far ?? 0)} />
-            <StatCard label="Dominance"
-              value={snapshot.match_dominance?.dominance_score?.toFixed(2) ?? "—"}
-              badge={snapshot.match_dominance?.label}
-              accent={
-                (snapshot.match_dominance?.dominance_score ?? 0) > 1
-                  ? "green"
-                  : (snapshot.match_dominance?.dominance_score ?? 0) < -1
-                  ? "red"
-                  : "default"
-              } />
+          <div className="st" style={{ marginTop: 0 }}><h2>Maç Durumu</h2></div>
+          <div className="kpis" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+            <div className="kpi"><div className="kl">Dakika</div><div className="kn">{snapshot.current_minute?.toFixed(0) ?? "—"}</div></div>
+            <div className="kpi"><div className="kl">Skor</div><div className="kn">{snapshot.score ?? "—"}</div><div className="kd">{snapshot.live_sub_recommendation?.score_state ?? ""}</div></div>
+            <div className="kpi"><div className="kl">Olay</div><div className="kn">{snapshot.events_so_far ?? 0}</div></div>
+            <div className="kpi"><div className="kl">Dominance</div><div className="kn" style={{ color: dom > 1 ? "var(--low)" : dom < -1 ? "var(--crit)" : "var(--ink)" }}>{snapshot.match_dominance?.dominance_score?.toFixed(2) ?? "—"}</div><div className="kd">{snapshot.match_dominance?.label ?? ""}</div></div>
           </div>
 
           {snapshot.context?.one_liner && (
             <>
-              <h2 className="text-sm uppercase text-muted mb-3">
-                Bağlam & Güven (Orkestra Şefi)
-              </h2>
-              <div className="card mb-6">
-                <div className="flex items-start justify-between gap-3 mb-1">
-                  <span className="text-sm">{snapshot.context.one_liner}</span>
-                  {snapshot.confidence?.context && (
-                    <ConfidenceBadge
-                      score={snapshot.confidence.context.score}
-                      label={snapshot.confidence.context.label}
-                      drivers={snapshot.confidence.context.drivers}
-                    />
-                  )}
+              <div className="st"><h2>Bağlam & Güven</h2></div>
+              <div className="rc" style={{ margin: "0 0 14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 13, color: "var(--ink)" }}>{snapshot.context.one_liner}</span>
+                  <Conf c={snapshot.confidence?.context} />
                 </div>
-                {snapshot.context.confidence_note && (
-                  <div className="text-xs text-warn mb-1">
-                    ⚠ {snapshot.context.confidence_note}
-                  </div>
-                )}
+                {snapshot.context.confidence_note && <div style={{ fontSize: 12, color: "var(--mid)", marginTop: 6 }}>⚠ {snapshot.context.confidence_note}</div>}
                 {snapshot.momentum?.alert_text && (
-                  <div className="flex items-center justify-between gap-3 mt-2 pt-2 border-t border-borderlt">
-                    <span className="text-xs text-muted">
-                      {snapshot.momentum.alert_text}
-                    </span>
-                    {snapshot.confidence?.momentum && (
-                      <ConfidenceBadge
-                        score={snapshot.confidence.momentum.score}
-                        label={snapshot.confidence.momentum.label}
-                        drivers={snapshot.confidence.momentum.drivers}
-                      />
-                    )}
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--line)" }}>
+                    <span style={{ fontSize: 12, color: "var(--muted)" }}>{snapshot.momentum.alert_text}</span>
+                    <Conf c={snapshot.confidence?.momentum} />
                   </div>
                 )}
                 {snapshot.trend?.status === "ok" && snapshot.trend.momentum && (
-                  <div className="text-xs mt-2 pt-2 border-t border-borderlt">
-                    Trend: momentum{" "}
-                    <span
-                      className={
-                        TREND_DIR_TONE[snapshot.trend.momentum.direction ?? ""]
-                          ?? "text-muted"
-                      }
-                    >
-                      {snapshot.trend.momentum.direction}
-                    </span>
-                    {(snapshot.trend.momentum.sustained_snapshots ?? 0) >= 2 && (
-                      <> · {snapshot.trend.momentum.sustained_snapshots} snapshot'tır</>
-                    )}
-                    {snapshot.trend.stability?.stable && (
-                      <span className="text-good"> · sinyal istikrarlı</span>
-                    )}
+                  <div style={{ fontSize: 12, marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--line)", color: "var(--muted)" }}>
+                    Trend: momentum <span style={{ color: TREND_DIR_VAR[snapshot.trend.momentum.direction ?? ""] ?? "var(--muted)" }}>{snapshot.trend.momentum.direction}</span>
+                    {(snapshot.trend.momentum.sustained_snapshots ?? 0) >= 2 && <> · {snapshot.trend.momentum.sustained_snapshots} snapshot&apos;tır</>}
+                    {snapshot.trend.stability?.stable && <span style={{ color: "var(--low)" }}> · sinyal istikrarlı</span>}
                   </div>
                 )}
               </div>
             </>
           )}
 
-          <div className="grid md:grid-cols-3 gap-3 mb-6">
-            <StatCard label="PPDA"
-              value={snapshot.ppda?.ppda?.toFixed(2) ?? "—"} />
-            <StatCard label="Field Tilt (biz)"
-              value={
-                snapshot.field_tilt
-                  ? `%${Math.round((snapshot.field_tilt.team_a_tilt ?? 0) * 100)}`
-                  : "—"
-              } />
-            <StatCard label="xG Farkı"
-              value={snapshot.match_dominance?.xg_diff?.toFixed(2) ?? "—"} />
+          <div className="kpis" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
+            <div className="kpi"><div className="kl">PPDA</div><div className="kn" style={{ fontSize: 22 }}>{snapshot.ppda?.ppda?.toFixed(2) ?? "—"}</div></div>
+            <div className="kpi"><div className="kl">Field Tilt (biz)</div><div className="kn" style={{ fontSize: 22 }}>{snapshot.field_tilt ? `%${Math.round((snapshot.field_tilt.team_a_tilt ?? 0) * 100)}` : "—"}</div></div>
+            <div className="kpi"><div className="kl">xG Farkı</div><div className="kn" style={{ fontSize: 22 }}>{snapshot.match_dominance?.xg_diff?.toFixed(2) ?? "—"}</div></div>
           </div>
 
-          {snapshot.live_sub_recommendation
-            && snapshot.live_sub_recommendation.recommendations.length > 0 && (
+          {recs.length > 0 && (
             <>
-              <h2 className="text-sm uppercase text-muted mb-3">
-                Oyuncu Değişikliği Önerileri (Top 3)
-              </h2>
-              <div className="grid md:grid-cols-3 gap-3 mb-6">
-                {snapshot.live_sub_recommendation.recommendations.map((rec) => (
-                  <div
-                    key={rec.player_external_id}
-                    className={`card border-l-2 ${
-                      rec.urgency_label === "high"
-                        ? "border-red-500/50"
-                        : rec.urgency_label === "medium"
-                        ? "border-yellow-500/50"
-                        : "border-muted"
-                    }`}
-                  >
-                    <div className="flex justify-between mb-1">
-                      <span className="font-mono">
-                        Player #{rec.player_external_id}
-                      </span>
-                      <span className="text-xs uppercase px-2 py-0.5 rounded bg-accent/20">
-                        {rec.urgency_label}
-                      </span>
+              <div className="st"><h2>Değişiklik Önerileri (Top 3)</h2></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 14 }}>
+                {recs.map((rec) => {
+                  const v = rec.urgency_label === "high" ? "var(--crit)" : rec.urgency_label === "medium" ? "var(--mid)" : "var(--muted)";
+                  return (
+                    <div className="rc" key={rec.player_external_id} style={{ margin: 0, borderLeft: `2px solid ${v}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontFamily: "JetBrains Mono" }}>#{rec.player_external_id}</span>
+                        <span style={{ fontSize: 10, textTransform: "uppercase", color: v }}>{rec.urgency_label}</span>
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6 }}>Aciliyet: <span style={{ fontFamily: "JetBrains Mono" }}>{rec.urgency_score.toFixed(2)}</span></div>
+                      <ul style={{ fontSize: 11, color: "var(--muted)", lineHeight: 1.6, paddingLeft: 0, listStyle: "none", margin: 0 }}>
+                        {rec.reasons.map((r, i) => <li key={i}>· {r}</li>)}
+                      </ul>
                     </div>
-                    <div className="text-sm text-muted mb-2">
-                      Aciliyet:{" "}
-                      <span className="font-mono">{rec.urgency_score.toFixed(2)}</span>
-                    </div>
-                    <ul className="text-xs space-y-1">
-                      {rec.reasons.map((r, i) => (
-                        <li key={i} className="text-muted">
-                          · {r}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}
 
           {snapshot.opponent_shape_drift && (
             <>
-              <h2 className="text-sm uppercase text-muted mb-3">
-                Rakip Formasyon Takibi
-              </h2>
-              <div
-                className={`card mb-6 ${
-                  snapshot.opponent_shape_drift.shape_changed
-                    ? "border-l-2 border-red-500/50"
-                    : ""
-                }`}
-              >
-                <div className="text-sm">
-                  {snapshot.opponent_shape_drift.alert_text}
-                </div>
-                {snapshot.opponent_shape_drift.player_shifts
-                  && snapshot.opponent_shape_drift.player_shifts.length > 0 && (
-                  <div className="text-xs text-muted mt-2">
-                    Drift olan oyuncular:{" "}
-                    {snapshot.opponent_shape_drift.player_shifts
-                      .slice(0, 5)
-                      .map(
-                        (p) =>
-                          `#${p.player_external_id} (${p.drift_distance.toFixed(1)})`,
-                      )
-                      .join(", ")}
+              <div className="st"><h2>Rakip Formasyon Takibi</h2></div>
+              <div className="rc" style={{ margin: "0 0 14px", borderLeft: snapshot.opponent_shape_drift.shape_changed ? "2px solid var(--crit)" : undefined }}>
+                <div style={{ fontSize: 13, color: "var(--ink)" }}>{snapshot.opponent_shape_drift.alert_text}</div>
+                {snapshot.opponent_shape_drift.player_shifts && snapshot.opponent_shape_drift.player_shifts.length > 0 && (
+                  <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 6, fontFamily: "JetBrains Mono" }}>
+                    Drift: {snapshot.opponent_shape_drift.player_shifts.slice(0, 5).map((p) => `#${p.player_external_id} (${p.drift_distance.toFixed(1)})`).join(", ")}
                   </div>
                 )}
               </div>
             </>
           )}
 
-          <DecisionPanel
-            matchId={Number(matchId)}
-            teamId={Number(myTeam)}
-            currentMinute={snapshot.current_minute ?? 0}
-          />
-
-          <div className="text-xs text-muted">
-            Snapshot geçmişi: {history.length} kayıt · Interval {interval}sn
-          </div>
+          <DecisionPanel matchId={Number(matchId)} teamId={Number(myTeam)} currentMinute={snapshot.current_minute ?? 0} />
         </>
       )}
-    </main>
+    </ConsoleShell>
   );
 }
 
-
-function DecisionPanel({
-  matchId, teamId, currentMinute,
-}: {
-  matchId: number;
-  teamId: number;
-  currentMinute: number;
-}) {
+function DecisionPanel({ matchId, teamId, currentMinute }: { matchId: number; teamId: number; currentMinute: number }) {
   const [type, setType] = useState<"substitution" | "formation_change" | "tactical_instruction">("substitution");
   const [subjectPid, setSubjectPid] = useState("");
   const [relatedPid, setRelatedPid] = useState("");
@@ -530,53 +348,26 @@ function DecisionPanel({
     }
   }
 
+  const fld: CSSProperties = { background: "var(--panel2)", border: "1px solid var(--line)", borderRadius: 6, padding: "6px 9px", fontSize: 12.5, color: "var(--ink)", fontFamily: "inherit" };
+
   return (
     <>
-      <h2 className="text-sm uppercase text-muted mb-3 mt-6">
-        Karar Logu (TD hamlesi kaydet)
-      </h2>
-      <div className="card mb-4">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as typeof type)}
-            className="bg-transparent border border-muted/30 rounded px-2 py-1 text-sm"
-          >
+      <div className="st"><h2>Karar Logu</h2><span className="ep">TD hamlesi kaydet</span></div>
+      <div className="rc" style={{ margin: 0 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: 8, marginBottom: 8 }}>
+          <select value={type} onChange={(e) => setType(e.target.value as typeof type)} style={fld}>
             <option value="substitution">Substitution</option>
             <option value="formation_change">Formation change</option>
             <option value="tactical_instruction">Tactical instruction</option>
           </select>
-          <input
-            placeholder="Çıkan oyuncu ID (sub)"
-            value={subjectPid}
-            onChange={(e) => setSubjectPid(e.target.value)}
-            className="bg-transparent border border-muted/30 rounded px-2 py-1 text-sm"
-          />
-          <input
-            placeholder="Giren oyuncu ID (sub)"
-            value={relatedPid}
-            onChange={(e) => setRelatedPid(e.target.value)}
-            className="bg-transparent border border-muted/30 rounded px-2 py-1 text-sm"
-          />
-          <button
-            onClick={submit}
-            className="bg-accent/30 hover:bg-accent/50 rounded px-3 py-1 text-sm"
-          >
-            Kaydet @ {currentMinute.toFixed(0)}.dk
-          </button>
+          <input placeholder="Çıkan oyuncu ID" value={subjectPid} onChange={(e) => setSubjectPid(e.target.value)} style={fld} />
+          <input placeholder="Giren oyuncu ID" value={relatedPid} onChange={(e) => setRelatedPid(e.target.value)} style={fld} />
+          <button onClick={submit} style={{ ...fld, background: "var(--besiktas)", color: "#fff", fontWeight: 600, cursor: "pointer", border: 0 }}>Kaydet @ {currentMinute.toFixed(0)}.dk</button>
         </div>
-        <input
-          placeholder="Not (opsiyonel)"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="w-full bg-transparent border border-muted/30 rounded px-2 py-1 text-sm"
-        />
-        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+        <input placeholder="Not (opsiyonel)" value={notes} onChange={(e) => setNotes(e.target.value)} style={{ ...fld, width: "100%", boxSizing: "border-box" }} />
+        {error && <div style={{ color: "var(--crit)", fontSize: 11, marginTop: 8 }}>{error}</div>}
         {saved.length > 0 && (
-          <p className="text-xs text-muted mt-2">
-            Bu oturumda {saved.length} karar kaydedildi:{" "}
-            {saved.map((s) => `#${s.id}@${s.minute.toFixed(0)}'`).join(", ")}
-          </p>
+          <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 8 }}>Bu oturumda {saved.length} karar: {saved.map((s) => `#${s.id}@${s.minute.toFixed(0)}'`).join(", ")}</div>
         )}
       </div>
     </>
