@@ -2,14 +2,14 @@
 
 /**
  * TD Performansı — beklenen puan (xPts) vs gerçek puan + maç bazlı olasılıklar.
- *
- * Backend: GET /admin/manager-performance?team_external_id={id}&days={n}
+ * ConsoleShell çatısında.
+ * Backend: GET /admin/manager-performance?team_external_id={id}&days={n}.
  */
 
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel, EndpointTag, ProbBar } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
 interface PerMatch {
   match_id: number;
@@ -31,17 +31,27 @@ interface MgrResp {
   per_match: PerMatch[];
 }
 
-const inputCls = "bg-surface2 border border-border text-text text-[13px] px-2 py-1.5 rounded";
 const DAYS = [30, 90, 180];
 
 function signed(v: number, d = 2): string {
   return (v >= 0 ? "+" : "") + v.toFixed(d);
 }
 function signColor(v: number): string {
-  return v > 0.05 ? "text-ok" : v < -0.05 ? "text-danger" : "text-textmut";
+  return v > 0.05 ? "var(--low)" : v < -0.05 ? "var(--crit)" : "var(--muted)";
 }
 
-export default function ManagerPerfPage() {
+const inputStyle: React.CSSProperties = {
+  background: "var(--panel)",
+  border: "1px solid var(--line)",
+  color: "var(--ink)",
+  fontSize: "12.5px",
+  padding: "6px 10px",
+  borderRadius: "7px",
+  width: "120px",
+  fontFamily: "inherit",
+};
+
+export default function ManagerPerfConsolePage() {
   const [team, setTeam] = React.useState("");
   const [search, setSearch] = React.useState("");
   const [days, setDays] = React.useState(90);
@@ -52,103 +62,85 @@ export default function ManagerPerfPage() {
     { shouldRetryOnError: false },
   );
   const rows = data?.per_match ?? [];
+  const has = !!data && data.matches_considered > 0;
+  const op = data?.overperformance ?? 0;
+
+  const right = (
+    <div className="rc">
+      <h3>Nasıl Okunur?</h3>
+      <div style={{ fontSize: "12px", color: "var(--muted)", lineHeight: 1.5 }}>
+        <b style={{ color: "var(--ink)" }}>xPts</b> = maç olasılıklarından beklenen puan.
+        <div style={{ marginTop: 8 }}><span style={{ color: "var(--low)" }}>Pozitif fark</span> = modelin üstünde sonuç (iyi yönetim/şans).</div>
+        <div style={{ marginTop: 4 }}><span style={{ color: "var(--crit)" }}>Negatif</span> = altında sonuç.</div>
+        <div style={{ marginTop: 8, color: "var(--dim)" }}>Çubuk: galibiyet / beraberlik / mağlubiyet olasılığı.</div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="max-w-4xl space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-text">TD Performansı</h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Beklenen puan (xPts) vs gerçek puan. Pozitif fark = modelin üstünde
-            sonuç (iyi yönetim/şans), negatif = altında.
-          </p>
-        </div>
-        <EndpointTag method="GET" path="/admin/manager-performance" />
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setTeam(search.trim());
-          }}
-          className="flex items-center gap-2"
-        >
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Takım ID" inputMode="numeric" className={`${inputCls} h-8 w-28`} />
-          <button type="submit" className="text-[11px] uppercase px-2 py-1.5 rounded border border-borderlt text-textmut hover:text-text">
-            Getir
-          </button>
-        </form>
-        <div className="flex items-center gap-1 ml-2">
-          {DAYS.map((d) => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => setDays(d)}
-              className={`text-[11px] px-2 py-1.5 rounded border ${
-                days === d ? "border-accent text-accent" : "border-borderlt text-textmut hover:text-text"
-              }`}
-            >
-              {d}g
-            </button>
-          ))}
+    <ConsoleShell
+      active="/manager-performance"
+      title="TD Performansı"
+      sub="Beklenen vs gerçek puan"
+      desc="Beklenen puan (xPts) vs gerçek puan. Pozitif fark = modelin üstünde sonuç (iyi yönetim/şans), negatif = altında."
+      right={right}
+    >
+      <div className="st" style={{ marginTop: 0 }}>
+        <h2>Takım Seç</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <form onSubmit={(e) => { e.preventDefault(); setTeam(search.trim()); }} style={{ display: "flex", gap: 6 }}>
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Takım ID" inputMode="numeric" style={inputStyle} />
+            <button type="submit" style={{ ...inputStyle, width: "auto", cursor: "pointer", color: "var(--muted)" }}>Getir</button>
+          </form>
+          <div className="seg">
+            {DAYS.map((d) => (
+              <button key={d} className={days === d ? "on" : ""} onClick={() => setDays(d)}>{d}g</button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {!team && <p className="text-[12px] text-textmut">Bir takım ID gir.</p>}
-      {team && isLoading && <p className="text-[12px] text-textmut">Hesaplanıyor…</p>}
-      {error && <p className="text-[12px] text-textmut">Veri üretilemedi ya da yetki yok.</p>}
+      {!team && <div className="pgdesc">Bir takım ID gir (örn. 611) ve dönem seç.</div>}
+      {team && isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
+      {error && <div className="pgdesc">Veri üretilemedi ya da yetki yok.</div>}
 
-      {data && data.matches_considered > 0 && (
+      {has && (
         <>
-          <Panel title="Özet" actions={<span className="font-mono text-[11px] text-textmut">{data.matches_considered} maç · {data.days}g</span>}>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="bg-surface2 border border-border rounded-md px-3 py-2">
-                <div className="text-[10px] uppercase text-textmut">xPts (beklenen)</div>
-                <div className="text-xl font-bold font-mono text-text">{data.xpts.toFixed(1)}</div>
-              </div>
-              <div className="bg-surface2 border border-border rounded-md px-3 py-2">
-                <div className="text-[10px] uppercase text-textmut">Gerçek puan</div>
-                <div className="text-xl font-bold font-mono text-text">{data.actual_points}</div>
-              </div>
-              <div className="bg-surface2 border border-border rounded-md px-3 py-2">
-                <div className="text-[10px] uppercase text-textmut">Fark</div>
-                <div className={`text-xl font-bold font-mono ${signColor(data.overperformance)}`}>
-                  {signed(data.overperformance, 1)}
-                </div>
-              </div>
-            </div>
-          </Panel>
+          <div className="kpis" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
+            <div className="kpi"><div className="kl">xPts (beklenen)</div><div className="kn">{data!.xpts.toFixed(1)}</div><div className="kd">{data!.matches_considered} maç</div></div>
+            <div className="kpi"><div className="kl">Gerçek Puan</div><div className="kn">{data!.actual_points}</div><div className="kd">toplanan</div></div>
+            <div className="kpi"><div className="kl">Fark</div><div className="kn" style={{ color: signColor(op) }}>{signed(op, 1)}</div><div className="kd">gerçek − xPts</div></div>
+          </div>
 
-          <Panel title="Maç Bazlı">
-            <div className="space-y-2">
-              {rows.map((m) => (
-                <div key={m.match_id} className="flex items-center gap-3 text-[12px]">
-                  <span className="font-mono text-textmut w-20 shrink-0">
-                    #{m.match_id}
-                  </span>
-                  <span className="text-[10px] uppercase text-textdim w-8 shrink-0">
-                    {m.is_home ? "Ev" : "Dep"}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <ProbBar home={m.p_win} draw={m.p_draw} away={m.p_loss} />
-                  </div>
-                  <span className="font-mono text-textmut w-24 text-right shrink-0">
-                    xP {m.xpts.toFixed(1)} · {m.actual_pts}p
-                  </span>
-                  <span className={`font-mono w-12 text-right shrink-0 ${signColor(m.delta)}`}>
-                    {signed(m.delta, 1)}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] text-textdim mt-2">
-              Çubuk: galibiyet / beraberlik / mağlubiyet olasılığı. xP = beklenen
-              puan, son sütun = gerçek − beklenen.
-            </p>
-          </Panel>
+          <div className="st"><h2>Maç Bazlı</h2><span className="ep">{data!.matches_considered} maç · {data!.days}g</span></div>
+          <div className="tbl">
+            <table>
+              <thead><tr>
+                <th>Maç</th><th className="c">Saha</th><th>Olasılık (G/B/M)</th>
+                <th className="r">xP</th><th className="r">Gerçek</th><th className="r">Fark</th>
+              </tr></thead>
+              <tbody>
+                {rows.map((m) => (
+                  <tr key={m.match_id}>
+                    <td><span className="nm" style={{ fontFamily: "JetBrains Mono" }}>#{m.match_id}</span></td>
+                    <td className="c" style={{ fontSize: 10.5, textTransform: "uppercase", color: "var(--dim)" }}>{m.is_home ? "Ev" : "Dep"}</td>
+                    <td>
+                      <span className="probbar" style={{ marginBottom: 0, width: 140 }}>
+                        <i style={{ width: `${m.p_win * 100}%`, background: "var(--low)" }} />
+                        <i style={{ width: `${m.p_draw * 100}%`, background: "var(--dim)" }} />
+                        <i style={{ width: `${m.p_loss * 100}%`, background: "var(--high)" }} />
+                      </span>
+                    </td>
+                    <td className="r" style={{ color: "var(--muted)" }}>{m.xpts.toFixed(1)}</td>
+                    <td className="r">{m.actual_pts}p</td>
+                    <td className="r" style={{ color: signColor(m.delta) }}>{signed(m.delta, 1)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
-    </div>
+    </ConsoleShell>
   );
 }
