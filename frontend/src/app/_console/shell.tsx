@@ -32,6 +32,12 @@ const NAV = [
     { ic: "🔍", label: "Rakip & Scout", href: "/scout" },
     { ic: "🤖", label: "AI Asistan", href: "/chat" },
   ] },
+  { grp: "Maç & Veri", items: [
+    { ic: "🆚", label: "Rakip Raporu", href: "/opponent" },
+    { ic: "⚔️", label: "Kafa Kafaya", href: "/h2h" },
+    { ic: "🏆", label: "Ligler", href: "/leagues" },
+    { ic: "🧠", label: "Kararlar", href: "/decisions" },
+  ] },
   { grp: "Sistem", items: [
     { ic: "💳", label: "Sözleşmeler", href: "/contracts" },
     { ic: "🔔", label: "Bildirimler", href: "/notifications" },

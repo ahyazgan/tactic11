@@ -2,14 +2,14 @@
 
 /**
  * Rakip Raporu — eşleşme grid: bizim güç × rakip zaaf (kanal bazlı).
- *
- * Backend: GET /admin/teams/{team_id}/matchup-grid?opponent_id={id}&last_n=5
+ * ConsoleShell çatısında.
+ * Backend: GET /admin/teams/{team_id}/matchup-grid?opponent_id={id}&last_n=5.
  */
 
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
 interface ChannelM {
   channel: string;
@@ -38,10 +38,10 @@ const CHANNEL_LABEL: Record<string, string> = {
   left_halfspace: "Sol yarı alan",
   right_halfspace: "Sağ yarı alan",
 };
-const VERDICT_STYLE: Record<string, string> = {
-  exploit: "text-ok border-emerald-700",
-  neutral: "text-textmut border-borderlt",
-  avoid: "text-danger border-red-800",
+const VERDICT_VAR: Record<string, string> = {
+  exploit: "var(--low)",
+  neutral: "var(--muted)",
+  avoid: "var(--crit)",
 };
 const VERDICT_LABEL: Record<string, string> = {
   exploit: "Sömür",
@@ -53,9 +53,18 @@ function pct(v: number): string {
   return (v * 100).toFixed(0) + "%";
 }
 
-const inputCls = "bg-surface2 border border-border text-text text-[13px] px-2 py-1.5 rounded";
+const inputStyle: React.CSSProperties = {
+  background: "var(--panel)",
+  border: "1px solid var(--line)",
+  color: "var(--ink)",
+  fontSize: "12.5px",
+  padding: "6px 10px",
+  borderRadius: "7px",
+  width: "130px",
+  fontFamily: "inherit",
+};
 
-export default function OpponentReportPage() {
+export default function OpponentConsolePage() {
   const [team, setTeam] = React.useState("");
   const [opp, setOpp] = React.useState("");
   const [q, setQ] = React.useState<{ t: string; o: string } | null>(null);
@@ -67,88 +76,71 @@ export default function OpponentReportPage() {
   );
   const v = data?.value;
 
+  const right = v ? (
+    <div className="rc">
+      <h3>Koridor Önerisi <span className="tiny">{v.matches_analyzed} maç</span></h3>
+      <div className="stat"><span style={{ color: "var(--low)", fontWeight: 700 }}>En iyi</span><span className="sv">{CHANNEL_LABEL[v.best_channel] ?? v.best_channel}</span></div>
+      <div className="stat"><span style={{ color: "var(--crit)", fontWeight: 700 }}>En zayıf</span><span className="sv">{CHANNEL_LABEL[v.worst_channel] ?? v.worst_channel}</span></div>
+      <div style={{ fontSize: "12.5px", color: "var(--ink)", marginTop: 12, lineHeight: 1.5 }}>{v.recommendation}</div>
+    </div>
+  ) : (
+    <div className="rc">
+      <h3>Nasıl Çalışır?</h3>
+      <div style={{ fontSize: "12px", color: "var(--muted)", lineHeight: 1.5 }}>
+        Kanal bazlı eşleşme: bizim güç (final üçte-bir girişleri) × rakip zaaf (savunma aksiyonu boşluğu). Sömürülecek koridoru bulur.
+      </div>
+    </div>
+  );
+
   return (
-    <div className="max-w-4xl space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-text">Rakip Raporu — Eşleşme Grid</h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Kanal bazlı eşleşme: bizim güç (final üçte-bir girişleri) × rakip zaaf
-            (savunma aksiyonu boşluğu). Sömürülecek koridoru bulur.
-          </p>
-        </div>
-        <span className="font-mono text-[10px] text-textdim bg-surface2 border border-border rounded px-2 py-0.5">
-          GET /admin/teams/&#123;id&#125;/matchup-grid
-        </span>
+    <ConsoleShell
+      active="/opponent"
+      title="Rakip Raporu"
+      sub="Eşleşme grid"
+      desc="Kanal bazlı eşleşme: bizim güç × rakip zaaf. Sömürülecek koridoru bulur."
+      right={right}
+    >
+      <div className="st" style={{ marginTop: 0 }}>
+        <h2>Eşleşme</h2>
+        <form onSubmit={(e) => { e.preventDefault(); if (team.trim() && opp.trim()) setQ({ t: team.trim(), o: opp.trim() }); }} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <input value={team} onChange={(e) => setTeam(e.target.value)} placeholder="Bizim takım ID" inputMode="numeric" style={inputStyle} />
+          <span style={{ color: "var(--dim)" }}>vs</span>
+          <input value={opp} onChange={(e) => setOpp(e.target.value)} placeholder="Rakip ID" inputMode="numeric" style={inputStyle} />
+          <button type="submit" style={{ ...inputStyle, width: "auto", cursor: "pointer", color: "var(--muted)" }}>Analiz et</button>
+        </form>
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (team.trim() && opp.trim()) setQ({ t: team.trim(), o: opp.trim() });
-        }}
-        className="flex flex-wrap items-center gap-2"
-      >
-        <input value={team} onChange={(e) => setTeam(e.target.value)} placeholder="Bizim takım ID" inputMode="numeric" className={`${inputCls} h-8 w-36`} />
-        <span className="text-textmut">vs</span>
-        <input value={opp} onChange={(e) => setOpp(e.target.value)} placeholder="Rakip ID" inputMode="numeric" className={`${inputCls} h-8 w-32`} />
-        <button type="submit" className="text-[11px] uppercase px-3 py-1.5 rounded border border-borderlt text-textmut hover:text-text">
-          Analiz et
-        </button>
-      </form>
-
-      {!q && <p className="text-[12px] text-textmut">İki takım ID gir.</p>}
-      {q && isLoading && <p className="text-[12px] text-textmut">Hesaplanıyor…</p>}
-      {error && <p className="text-[12px] text-textmut">Analiz üretilemedi ya da yetki yok.</p>}
-      {data?.note && <p className="text-[12px] text-textmut">{data.note}</p>}
+      {!q && <div className="pgdesc">İki takım ID gir (bizim + rakip).</div>}
+      {q && isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
+      {error && <div className="pgdesc">Analiz üretilemedi ya da yetki yok.</div>}
+      {data?.note && <div className="pgdesc">{data.note}</div>}
 
       {v && (
         <>
-          <Panel title="Öneri">
-            <p className="text-[14px] text-text">{v.recommendation}</p>
-            <div className="mt-2 flex gap-4 text-[12px]">
-              <span className="text-ok">
-                En iyi: <b>{CHANNEL_LABEL[v.best_channel] ?? v.best_channel}</b>
-              </span>
-              <span className="text-danger">
-                En zayıf: <b>{CHANNEL_LABEL[v.worst_channel] ?? v.worst_channel}</b>
-              </span>
-              <span className="text-textmut font-mono">{v.matches_analyzed} maç</span>
-            </div>
-          </Panel>
-
-          <Panel title="Kanal Analizi">
-            <table className="w-full text-[12px]">
-              <thead>
-                <tr className="text-textmut text-left border-b border-border uppercase text-[10.5px]">
-                  <th className="py-1 pr-2">Kanal</th>
-                  <th className="py-1 pr-2 text-right">Bizim güç</th>
-                  <th className="py-1 pr-2 text-right">Rakip zaaf</th>
-                  <th className="py-1 pr-2 text-right">Skor</th>
-                  <th className="py-1">Karar</th>
-                </tr>
-              </thead>
+          <div className="st"><h2>Kanal Analizi</h2><span className="ep">{v.matches_analyzed} maç</span></div>
+          <div className="tbl">
+            <table>
+              <thead><tr>
+                <th>Kanal</th><th className="r">Bizim Güç</th><th className="r">Rakip Zaaf</th><th className="r">Skor</th><th className="c">Karar</th>
+              </tr></thead>
               <tbody>
-                {v.by_channel.map((c) => (
-                  <tr key={c.channel} className="border-b border-border/50">
-                    <td className="py-1 pr-2 text-text">{CHANNEL_LABEL[c.channel] ?? c.channel}</td>
-                    <td className="py-1 pr-2 text-right font-mono text-textmut">{pct(c.our_strength)}</td>
-                    <td className="py-1 pr-2 text-right font-mono text-textmut">{pct(c.opp_weakness)}</td>
-                    <td className="py-1 pr-2 text-right font-mono font-semibold text-text">
-                      {(c.matchup_score * 100).toFixed(0)}
-                    </td>
-                    <td className="py-1">
-                      <span className={`text-[10px] uppercase px-2 py-0.5 rounded border ${VERDICT_STYLE[c.verdict] ?? "text-textmut border-borderlt"}`}>
-                        {VERDICT_LABEL[c.verdict] ?? c.verdict}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {v.by_channel.map((c) => {
+                  const vc = VERDICT_VAR[c.verdict] ?? "var(--muted)";
+                  return (
+                    <tr key={c.channel}>
+                      <td><span className="nm">{CHANNEL_LABEL[c.channel] ?? c.channel}</span></td>
+                      <td className="r" style={{ color: "var(--muted)" }}>{pct(c.our_strength)}</td>
+                      <td className="r" style={{ color: "var(--muted)" }}>{pct(c.opp_weakness)}</td>
+                      <td className="r" style={{ color: "var(--ink)" }}>{(c.matchup_score * 100).toFixed(0)}</td>
+                      <td className="c"><span style={{ fontSize: "10px", textTransform: "uppercase", padding: "2px 8px", borderRadius: 5, border: `1px solid ${vc}`, color: vc }}>{VERDICT_LABEL[c.verdict] ?? c.verdict}</span></td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
-          </Panel>
+          </div>
         </>
       )}
-    </div>
+    </ConsoleShell>
   );
 }
