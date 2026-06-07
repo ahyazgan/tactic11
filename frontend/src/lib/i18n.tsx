@@ -24,6 +24,7 @@ const DICT: Record<string, Partial<Record<Lang, string>>> = {
   Antrenman: { en: "Training" },
   "Performans Testi": { en: "Performance Test" },
   "Yük Riski": { en: "Load Risk" },
+  "Tıbbi Merkez": { en: "Medical" },
   Kararlar: { en: "Decisions" },
   Kalibrasyon: { en: "Calibration" },
   Asistan: { en: "Assistant" },
