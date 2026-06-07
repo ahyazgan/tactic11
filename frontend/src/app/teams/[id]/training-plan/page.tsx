@@ -1,17 +1,17 @@
 "use client";
 
+/**
+ * Antrenman Planı (detay) — rakip profili + önerilen drill'ler + hafta briefi.
+ * ConsoleShell çatısında.
+ * Backend: GET /admin/teams/{id}/training-plan?opponent_id.
+ */
+
 import { useParams, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { DataTable, Panel, Pill, StatTile, type Column } from "@/components/ui";
+import { ConsoleShell } from "../../../_console/shell";
 
-interface Drill {
-  name: string;
-  focus: string;
-  rationale: string;
-  duration_min: string;
-}
-
+interface Drill { name: string; focus: string; rationale: string; duration_min: string }
 interface TrainingPlanResponse {
   my_team_external_id?: number;
   opponent_external_id?: number;
@@ -29,177 +29,83 @@ interface TrainingPlanResponse {
   note?: string;
 }
 
-const DRILL_COLUMNS: Column<Drill>[] = [
-  {
-    key: "name",
-    header: "Drill",
-    sortable: true,
-    sortValue: (r) => r.name,
-    width: "20rem",
-  },
-  {
-    key: "focus",
-    header: "Odak",
-    sortable: true,
-    sortValue: (r) => r.focus,
-    width: "14rem",
-  },
-  {
-    key: "duration_min",
-    header: "Süre",
-    align: "right",
-    sortable: true,
-    sortValue: (r) => Number(r.duration_min) || 0,
-    render: (r) => `${r.duration_min}'`,
-    width: "4rem",
-  },
-  {
-    key: "rationale",
-    header: "Gerekçe",
-    render: (r) => (
-      <span title={r.rationale} className="text-textmut">
-        {r.rationale.length > 80
-          ? r.rationale.slice(0, 80) + "..."
-          : r.rationale}
-      </span>
-    ),
-  },
-];
-
-export default function TrainingPlanPage() {
+export default function TrainingPlanConsolePage() {
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const teamId = params.id;
   const opponentId = search.get("opponent_id");
 
   const { data, error, isLoading } = useSWR<TrainingPlanResponse>(
-    opponentId
-      ? `/admin/teams/${teamId}/training-plan?opponent_id=${opponentId}`
-      : null,
+    opponentId ? `/admin/teams/${teamId}/training-plan?opponent_id=${opponentId}` : null,
     apiFetch,
+    { shouldRetryOnError: false },
   );
 
   if (!opponentId) {
     return (
-      <div className="max-w-5xl">
-        <h1 className="text-lg font-semibold text-text mb-3">
-          Takım #{teamId} — Antrenman Planı
-        </h1>
-        <Panel>
-          <p className="text-textmut text-[13px]">
-            <code className="font-mono">?opponent_id=&lt;N&gt;</code>{" "}
-            parametresi gerek.
-          </p>
-        </Panel>
-      </div>
+      <ConsoleShell active="/training" title={`Antrenman — Takım #${teamId}`} sub="Maça özel plan">
+        <div className="pgdesc"><code style={{ fontFamily: "JetBrains Mono" }}>?opponent_id=&lt;N&gt;</code> parametresi gerekli (Antrenman ekranından gel).</div>
+      </ConsoleShell>
     );
   }
 
-  if (error) {
-    return (
-      <div className="max-w-5xl">
-        <p className="text-danger text-[13px]">Yüklenemedi: {String(error)}</p>
-      </div>
-    );
-  }
-  if (isLoading || !data) {
-    return (
-      <div className="max-w-5xl">
-        <p className="text-textmut text-[13px]">Yükleniyor...</p>
-      </div>
-    );
-  }
-  if ((data.events_loaded ?? 0) === 0) {
-    return (
-      <div className="max-w-5xl">
-        <h1 className="text-lg font-semibold text-text mb-3">
-          Takım #{teamId} vs Rakip #{opponentId}
-        </h1>
-        <Panel>
-          <p className="text-textmut text-[13px]">{data.note ?? "Veri yok."}</p>
-        </Panel>
-      </div>
-    );
-  }
+  const op = data?.opponent_profile;
+  const drills = data?.drills ?? [];
 
-  const op = data.opponent_profile;
+  const right = (
+    <div className="rc">
+      <h3>Hafta Briefi</h3>
+      {data?.ai_brief ? (
+        <div style={{ fontSize: 12.5, color: "var(--ink)", whiteSpace: "pre-wrap", lineHeight: 1.55 }}>{data.ai_brief}</div>
+      ) : <div style={{ fontSize: "12px", color: "var(--dim)" }}>Brief yok.</div>}
+    </div>
+  );
 
   return (
-    <div className="max-w-6xl space-y-4">
-      <div>
-        <h1 className="text-lg font-semibold text-text">
-          Antrenman Planı — Takım #{teamId} vs Rakip #{opponentId}
-        </h1>
-        <p className="text-[12px] text-textmut">
-          {data.matches_analyzed} rakip maç incelendi · {data.events_loaded} event
-        </p>
-      </div>
+    <ConsoleShell
+      active="/training"
+      title={`Antrenman — Takım #${teamId}`}
+      sub={`vs Rakip #${opponentId}`}
+      desc={data?.matches_analyzed != null ? `${data.matches_analyzed} rakip maç · ${data.events_loaded ?? 0} event` : "Rakibe özel haftalık antrenman planı."}
+      right={right}
+    >
+      {error && <div className="pgdesc">Yüklenemedi: {String(error)}</div>}
+      {isLoading && <div className="pgdesc">Yükleniyor…</div>}
+      {data && (data.events_loaded ?? 0) === 0 && <div className="pgdesc">{data.note ?? "Veri yok."}</div>}
 
       {op && (
-        <section>
-          <h2 className="text-sm font-semibold text-text mb-2">Rakip Profili</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <StatTile label="PPDA" value={op.ppda.toFixed(2)} />
-            <div className="bg-surface border border-border rounded-md p-3">
-              <span className="text-[10px] uppercase tracking-wider text-textdim">
-                Pres tarzı
-              </span>
-              <div className="mt-1">
-                <Pill variant="neutral">{op.pressing_style}</Pill>
-              </div>
-            </div>
-            <div className="bg-surface border border-border rounded-md p-3">
-              <span className="text-[10px] uppercase tracking-wider text-textdim">
-                Kazanım
-              </span>
-              <div className="mt-1">
-                <Pill variant="neutral">{op.recovery_style}</Pill>
-              </div>
-            </div>
-            <div className="bg-surface border border-border rounded-md p-3">
-              <span className="text-[10px] uppercase tracking-wider text-textdim">
-                Arketip
-              </span>
-              <div className="mt-1">
-                <Pill variant="neutral">{op.archetype}</Pill>
-              </div>
-            </div>
-            <div className="bg-surface border border-border rounded-md p-3">
-              <span className="text-[10px] uppercase tracking-wider text-textdim">
-                Kanal
-              </span>
-              <div className="mt-1">
-                <Pill variant="neutral">{op.dominant_channel}</Pill>
-              </div>
-            </div>
+        <>
+          <div className="st" style={{ marginTop: 0 }}><h2>Rakip Profili</h2></div>
+          <div className="kpis" style={{ gridTemplateColumns: "repeat(5,1fr)" }}>
+            <div className="kpi"><div className="kl">PPDA</div><div className="kn" style={{ fontSize: 20 }}>{op.ppda.toFixed(2)}</div></div>
+            <div className="kpi"><div className="kl">Pres Tarzı</div><div className="kn" style={{ fontSize: 14 }}>{op.pressing_style}</div></div>
+            <div className="kpi"><div className="kl">Kazanım</div><div className="kn" style={{ fontSize: 14 }}>{op.recovery_style}</div></div>
+            <div className="kpi"><div className="kl">Arketip</div><div className="kn" style={{ fontSize: 14 }}>{op.archetype}</div></div>
+            <div className="kpi"><div className="kl">Kanal</div><div className="kn" style={{ fontSize: 14 }}>{op.dominant_channel}</div></div>
           </div>
-        </section>
+        </>
       )}
 
-      {data.drills && data.drills.length > 0 && (
-        <section>
-          <h2 className="text-sm font-semibold text-text mb-2">
-            Önerilen Drill'ler
-          </h2>
-          <DataTable<Drill>
-            columns={DRILL_COLUMNS}
-            rows={data.drills}
-            rowKey={(r) => r.name}
-            emptyMessage="Drill yok"
-          />
-        </section>
+      {drills.length > 0 && (
+        <>
+          <div className="st"><h2>Önerilen Drill&apos;ler</h2><span className="ep">{drills.length} drill</span></div>
+          <div className="tbl">
+            <table>
+              <thead><tr><th>Drill</th><th>Odak</th><th className="c">Süre</th><th>Gerekçe</th></tr></thead>
+              <tbody>
+                {drills.map((d) => (
+                  <tr key={d.name}>
+                    <td><span className="nm">{d.name}</span></td>
+                    <td style={{ color: "var(--muted)" }}>{d.focus}</td>
+                    <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{d.duration_min}&apos;</td>
+                    <td style={{ color: "var(--muted)", fontSize: 11.5 }} title={d.rationale}>{d.rationale.length > 80 ? d.rationale.slice(0, 80) + "…" : d.rationale}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
-
-      {data.ai_brief && (
-        <section>
-          <h2 className="text-sm font-semibold text-text mb-2">Hafta Briefi</h2>
-          <Panel>
-            <p className="text-[13px] text-text whitespace-pre-wrap leading-[18px]">
-              {data.ai_brief}
-            </p>
-          </Panel>
-        </section>
-      )}
-    </div>
+    </ConsoleShell>
   );
 }
