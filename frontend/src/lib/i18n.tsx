@@ -21,6 +21,7 @@ const DICT: Record<string, Partial<Record<Lang, string>>> = {
   Ligler: { en: "Leagues" },
   Takımlar: { en: "Teams" },
   Maçlar: { en: "Matches" },
+  "Rakip Raporu": { en: "Opponent Report" },
   Antrenman: { en: "Training" },
   "Performans Testi": { en: "Performance Test" },
   "Yük Riski": { en: "Load Risk" },
