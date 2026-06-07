@@ -87,6 +87,14 @@ def seed() -> int:
     with SessionLocal() as session:
         _ensure_tenant(session)
         _ensure_admin(session)
+        # İdempotent: test verisi zaten varsa tekrar ekleme (her deploy/restart'ta
+        # çalışabildiği için duplicate olmasın).
+        already = session.execute(
+            select(PhysicalTest).where(PhysicalTest.tenant_id == TENANT_ID).limit(1)
+        ).scalar_one_or_none()
+        if already is not None:
+            print("  test verisi zaten var — seed atlandı (idempotent)")
+            return 0
         for player_id, name, tests in DEMO_PLAYERS:
             for protocol, value in tests:
                 session.add(PhysicalTest(
