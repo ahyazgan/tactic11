@@ -1,17 +1,15 @@
 "use client";
 
 /**
- * Kadro — yük & uygunluk panosu. Tüm oyuncular risk seviyesine göre.
- *
- * Backend: GET /physical-tests/players → [{player_id, player_name, test_count,
- *          latest_test_date, risk_label, risk_score}]  (riskli üstte)
+ * Kadro — Teknik Ekip Konsolu. ConsoleShell çatısını kullanır.
+ * Oyuncu listesi (kondisyon + risk) + durum filtresi + sağ kolonda
+ * durum dağılımı ve en riskli oyuncular. Gerçek veri: GET /physical-tests/players.
  */
 
 import * as React from "react";
-import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel, EndpointTag, RiskPill } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
 interface PlayerRow {
   player_id: string;
@@ -22,103 +20,149 @@ interface PlayerRow {
   risk_score: number;
 }
 
-const RISK_BAR: Record<string, string> = {
-  Kritik: "bg-danger",
-  Yüksek: "bg-high",
-  Orta: "bg-warn",
-  Düşük: "bg-ok",
+const RISK_VAR: Record<string, string> = {
+  Kritik: "var(--crit)",
+  Yüksek: "var(--high)",
+  Orta: "var(--mid)",
+  Düşük: "var(--low)",
 };
-const ORDER = ["Kritik", "Yüksek", "Orta", "Düşük", "Veri Yok"];
 
-function Kpi({ label, value, cls }: { label: string; value: number; cls?: string }) {
-  return (
-    <div className="bg-surface2 border border-border rounded-md px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wider text-textmut">{label}</div>
-      <div className={`text-2xl font-bold font-mono ${cls ?? "text-text"}`}>{value}</div>
-    </div>
-  );
+/** Risk etiketinden kadro durumu türet. */
+function statusOf(label: string): { txt: string; v: string } {
+  if (label === "Kritik" || label === "Yüksek") return { txt: "Risk", v: "var(--high)" };
+  if (label === "Orta") return { txt: "İzlemede", v: "var(--mid)" };
+  return { txt: "Hazır", v: "var(--low)" };
 }
 
-export default function SquadPage() {
-  const { data, isLoading, error } = useSWR<PlayerRow[]>(
-    "/physical-tests/players",
-    apiFetch,
-    { shouldRetryOnError: false },
-  );
+function condColor(v: number): string {
+  return v >= 85 ? "var(--low)" : v >= 72 ? "var(--mid)" : "var(--high)";
+}
+
+type Filter = "all" | "ready" | "risk";
+
+export default function SquadConsolePage() {
+  const { data } = useSWR<PlayerRow[]>("/physical-tests/players", apiFetch, {
+    shouldRetryOnError: false,
+  });
+  const [filter, setFilter] = React.useState<Filter>("all");
+
   const players = data ?? [];
+  const risky = players.filter((p) => p.risk_label === "Yüksek" || p.risk_label === "Kritik").length;
+  const ready = players.filter((p) => p.risk_label === "Düşük").length;
+  const watch = players.filter((p) => p.risk_label === "Orta").length;
+  const avgCond = players.length
+    ? Math.round(players.reduce((a, p) => a + (100 - p.risk_score * 100), 0) / players.length)
+    : 0;
 
-  const counts = players.reduce<Record<string, number>>((acc, p) => {
-    acc[p.risk_label] = (acc[p.risk_label] ?? 0) + 1;
-    return acc;
-  }, {});
+  // Durum dağılımı (sağ kolon).
+  const dist = [
+    { label: "Düşük", n: players.filter((p) => p.risk_label === "Düşük").length, v: "var(--low)" },
+    { label: "Orta", n: watch, v: "var(--mid)" },
+    { label: "Yüksek", n: players.filter((p) => p.risk_label === "Yüksek").length, v: "var(--high)" },
+    { label: "Kritik", n: players.filter((p) => p.risk_label === "Kritik").length, v: "var(--crit)" },
+  ];
+  const distMax = Math.max(1, ...dist.map((d) => d.n));
 
-  return (
-    <div className="max-w-6xl space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-text">Kadro — Yük & Uygunluk</h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Tüm oyuncular fiziksel yük riskine göre. Kritik olanlar üstte; rotasyon
-            ve antrenman yükü kararları için.
-          </p>
-        </div>
-        <EndpointTag method="GET" path="/physical-tests/players" />
+  const topRisk = [...players]
+    .filter((p) => p.risk_label === "Yüksek" || p.risk_label === "Kritik")
+    .sort((a, b) => b.risk_score - a.risk_score)
+    .slice(0, 5);
+
+  const shown = players.filter((p) => {
+    if (filter === "ready") return p.risk_label === "Düşük";
+    if (filter === "risk") return p.risk_label === "Yüksek" || p.risk_label === "Kritik";
+    return true;
+  });
+
+  const right = (
+    <>
+      <div className="rc">
+        <h3>Durum Dağılımı <span className="tiny">{players.length} oyuncu</span></h3>
+        {dist.map((d) => (
+          <div key={d.label}>
+            <div className="stat" style={{ borderBottom: 0, paddingBottom: 2 }}>
+              <span style={{ color: d.v, fontWeight: 700 }}>{d.label}</span>
+              <span className="sv">{d.n}</span>
+            </div>
+            <div className="mbar"><i style={{ width: `${(d.n / distMax) * 100}%`, background: d.v }} /></div>
+          </div>
+        ))}
       </div>
 
-      {data && (
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-          <Kpi label="Toplam" value={players.length} />
-          <Kpi label="Kritik" value={counts["Kritik"] ?? 0} cls="text-danger" />
-          <Kpi label="Yüksek" value={counts["Yüksek"] ?? 0} cls="text-high" />
-          <Kpi label="Orta" value={counts["Orta"] ?? 0} cls="text-warn" />
-          <Kpi label="Düşük" value={counts["Düşük"] ?? 0} cls="text-ok" />
-        </div>
-      )}
+      <div className="rc">
+        <h3>En Riskli <span className="tiny">{topRisk.length}</span></h3>
+        {topRisk.length === 0 && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Riskli oyuncu yok.</div>}
+        {topRisk.map((p) => {
+          const rv = RISK_VAR[p.risk_label] ?? "var(--dim)";
+          return (
+            <div className="alrt" key={p.player_id}>
+              <span className="ai" style={{ background: rv }} />
+              <div className="am"><b>{p.player_name}</b> · {p.risk_label.toLowerCase()}
+                <span className="tm">risk {Math.round(p.risk_score * 100)}/100 · {p.test_count} test</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
 
-      <Panel title={`Oyuncular (${players.length})`}>
-        {isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-        {error && (
-          <p className="text-[12px] text-textmut">
-            Veri yok ya da yetki yok. (Önce performans testi girilmiş olmalı.)
-          </p>
-        )}
-        {data && players.length === 0 && (
-          <p className="text-[12px] text-textmut">Kayıtlı test verisi olan oyuncu yok.</p>
-        )}
-        {players.length > 0 && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-            {players.map((p) => (
-              <Link
-                key={p.player_id}
-                href={`/players/${p.player_id}`}
-                className="block bg-surface2 border border-border rounded-md p-3 hover:border-borderlt transition-colors"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-text truncate">
-                      {p.player_name}
-                    </div>
-                    <div className="text-[10px] font-mono text-textdim">
-                      #{p.player_id} · {p.test_count} test
-                    </div>
-                  </div>
-                  <RiskPill label={p.risk_label} />
-                </div>
-                <div className="mt-2 h-1.5 rounded bg-elevated overflow-hidden">
-                  <div
-                    className={`h-full rounded ${RISK_BAR[p.risk_label] ?? "bg-textdim"}`}
-                    style={{ width: `${Math.max(4, Math.min(100, p.risk_score * 100))}%` }}
-                  />
-                </div>
-                <div className="mt-1 flex items-center justify-between text-[10px] font-mono text-textmut">
-                  <span>risk {(p.risk_score * 100).toFixed(0)}/100</span>
-                  <span>{p.latest_test_date ?? "—"}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </Panel>
-    </div>
+  return (
+    <ConsoleShell
+      active="/squad"
+      title="Kadro"
+      sub="Oyuncu listesi ve durum"
+      desc="Tüm kadro kondisyon ve yük-riski ile. Filtreyle hazır/riskli oyunculara odaklan."
+      navBadge={risky}
+      right={right}
+    >
+      <div className="kpis">
+        <div className="kpi"><div className="kl">Kadro Mevcudu</div><div className="kn">{players.length}</div><div className="kd">toplam oyuncu</div></div>
+        <div className="kpi"><div className="kl">Hazır</div><div className="kn" style={{ color: "var(--low)" }}>{ready}</div><div className="kd">düşük risk</div></div>
+        <div className="kpi"><div className="kl">İzlemede</div><div className="kn" style={{ color: "var(--mid)" }}>{watch}</div><div className="kd">orta risk</div></div>
+        <div className="kpi"><div className="kl">Riskli</div><div className="kn" style={{ color: risky ? "var(--high)" : "var(--low)" }}>{risky}</div><div className="kd">yüksek/kritik</div></div>
+        <div className="kpi"><div className="kl">Ort. Kondisyon</div><div className="kn">{avgCond}<span className="pct">%</span></div><div className="kd">risk skorundan</div></div>
+      </div>
+
+      <div className="st">
+        <h2>Oyuncular</h2>
+        <div className="seg">
+          <button className={filter === "all" ? "on" : ""} onClick={() => setFilter("all")}>Tümü</button>
+          <button className={filter === "ready" ? "on" : ""} onClick={() => setFilter("ready")}>Hazır</button>
+          <button className={filter === "risk" ? "on" : ""} onClick={() => setFilter("risk")}>Riskli</button>
+        </div>
+      </div>
+      <div className="tbl">
+        <table>
+          <thead><tr>
+            <th className="c">#</th><th>Oyuncu</th><th className="c">Test</th>
+            <th className="c">Kondisyon</th><th className="c">Son Test</th><th className="c">Durum</th><th className="r">Risk</th>
+          </tr></thead>
+          <tbody>
+            {shown.length === 0 && (
+              <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>
+                {players.length === 0 ? "Veri yok (backend bağlı değilse boş gelir)." : "Bu filtrede oyuncu yok."}
+              </td></tr>
+            )}
+            {shown.map((p, i) => {
+              const cond = Math.round(100 - p.risk_score * 100);
+              const rv = RISK_VAR[p.risk_label] ?? "var(--dim)";
+              const st = statusOf(p.risk_label);
+              return (
+                <tr key={p.player_id}>
+                  <td className="pnum c">{i + 1}</td>
+                  <td><span className="nm">{p.player_name}</span> <span className="nat">#{p.player_id}</span></td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{p.test_count}</td>
+                  <td className="c"><span className="cond"><i style={{ width: `${cond}%`, background: condColor(cond) }} /></span></td>
+                  <td className="c" style={{ color: "var(--dim)", fontFamily: "JetBrains Mono", fontSize: "11px" }}>{p.latest_test_date ?? "—"}</td>
+                  <td className="c"><span className="risk" style={{ color: st.v }}><span className="rd" style={{ background: st.v, boxShadow: `0 0 7px ${st.v}` }} />{st.txt}</span></td>
+                  <td className="r" style={{ color: rv }}>{Math.round(p.risk_score * 100)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </ConsoleShell>
   );
 }
