@@ -8,7 +8,6 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [tenantSlug, setTenantSlug] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +16,7 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const pair = await login(email, password, tenantSlug || undefined);
+      const pair = await login(email, password);
       setTokens(pair.access_token, pair.refresh_token);
       router.push("/matches");
     } catch (e) {
@@ -39,11 +38,6 @@ export default function LoginPage() {
         <input
           type="password" placeholder="şifre"
           required value={password} onChange={(e) => setPassword(e.target.value)}
-          className="w-full bg-bg border border-border rounded px-3 py-2"
-        />
-        <input
-          placeholder="tenant slug (opsiyonel)"
-          value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)}
           className="w-full bg-bg border border-border rounded px-3 py-2"
         />
         {error && <p className="text-bad text-sm">{error}</p>}
