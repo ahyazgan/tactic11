@@ -22,6 +22,8 @@ const config: Config = {
         // Marka
         accent: "#3d7eff",
         accenthov: "#5a92ff",
+        // Kulüp markası — CSS değişkeninden (tenant'a göre dinamik), varsayılan kırmızı
+        brand: "var(--brand, #e30613)",
         // Durum
         win: "#3fb950",
         draw: "#d4a72c",
@@ -29,6 +31,8 @@ const config: Config = {
         warn: "#d4a72c",
         danger: "#e5534b",
         ok: "#3fb950",
+        // 4-kademe risk skalası (FM): high turuncu (yeni), diğerleri mevcut.
+        high: "#f97316",
 
         // Legacy aliases — mevcut sayfalar refactor edilene kadar geriye uyumluluk
         // Yeni kod DESIGN.md token'larını kullanır; aşağıdakiler kalsın
