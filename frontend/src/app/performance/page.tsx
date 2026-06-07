@@ -9,7 +9,8 @@
  *
  * Backend:
  *   GET  /admin/performance/protocols       — protokol kütüphanesi
- *   POST /admin/performance/battery          — batarya değerlendirme
+ *   POST /physical-tests/                    — her sonuç KALICI kayıt (geçmiş/trend/risk)
+ *   POST /admin/performance/battery          — batarya değerlendirme (anlık profil)
  *   POST /reports/performance/pdf            — PDF rapor (özel nitelikli veri)
  */
 
@@ -77,6 +78,7 @@ export default function PerformanceEntryPage() {
   const [report, setReport] = React.useState<BatteryReport | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [savedCount, setSavedCount] = React.useState<number | null>(null);
 
   function updateRow(id: number, patch: Partial<Row>) {
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
@@ -95,10 +97,39 @@ export default function PerformanceEntryPage() {
       .filter(([, v]) => !Number.isNaN(v));
   }
 
+  /** Her sonucu /physical-tests/'e KALICI kaydet (best-effort) → geçmiş/trend/risk
+   *  akışına girer. Değerlendirmeyi bloklamamak için satır-bazlı hata yutulur. */
+  async function persistResults(): Promise<number> {
+    let ok = 0;
+    for (const [protocol, value] of validResults()) {
+      try {
+        await apiFetch("/physical-tests/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            player_id: playerId || "0",
+            player_name: playerName || `Oyuncu #${playerId || 0}`,
+            test_date: testDate,
+            protocol,
+            value,
+          }),
+        });
+        ok++;
+      } catch {
+        /* best-effort — bir protokol kaydedilemese de değerlendirme sürsün */
+      }
+    }
+    return ok;
+  }
+
   async function evaluate() {
     setError(null);
     setBusy(true);
+    setSavedCount(null);
     try {
+      // 1) Kalıcı kayıt (geçmiş/trend/risk için), 2) anında değerlendirme.
+      const saved = await persistResults();
+      setSavedCount(saved);
       const res = await apiFetch<BatteryReport>("/admin/performance/battery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -298,6 +329,11 @@ export default function PerformanceEntryPage() {
 
         {error && (
           <p className="mt-3 text-[12px] text-red-400">{error}</p>
+        )}
+        {savedCount !== null && savedCount > 0 && (
+          <p className="mt-3 text-[12px] text-ok">
+            {savedCount} sonuç kaydedildi — geçmiş, trend ve risk panellerine işlendi.
+          </p>
         )}
 
         <div className="mt-4 flex flex-wrap gap-2">
