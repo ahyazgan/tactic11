@@ -284,3 +284,16 @@ def test_rate_against_norms_all_protocols_extremes():
 def test_rate_against_norms_unknown_protocol_none():
     from app.engine.physical.load_risk import rate_against_norms
     assert rate_against_norms("bilinmeyen_protokol", 1.0) is None
+
+
+def test_post_accepts_ttest_and_rsa_protocols(client):
+    """ttest_agility + rsa artık kaydedilebilir (performans kütüphanesi ↔ B enum)."""
+    c, _ = client
+    for proto, val, unit in [("ttest_agility", 9.4, "sn"), ("rsa", 4.35, "sn")]:
+        r = c.post("/physical-tests/", json={
+            "player_id": "777", "player_name": "Çevik Oyuncu",
+            "test_date": "2026-06-07", "protocol": proto, "value": val,
+        })
+        assert r.status_code == 201, r.text
+        assert r.json()["protocol"] == proto
+        assert r.json()["unit"] == unit  # UNIT_MAP'ten otomatik

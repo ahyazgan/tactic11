@@ -173,6 +173,8 @@ def _player_risk(
 UNIT_MAP = {
     TestProtocol.SPRINT_10M: "sn",
     TestProtocol.SPRINT_30M: "sn",
+    TestProtocol.TTEST_AGILITY: "sn",
+    TestProtocol.RSA: "sn",
     TestProtocol.YOYO_IRL1: "seviye",
     TestProtocol.YOYO_IRL2: "seviye",
     TestProtocol.CMJ: "cm",
