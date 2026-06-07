@@ -1,16 +1,14 @@
 "use client";
 
 /**
- * Sözleşmeler — biten/geçmiş sözleşme uyarı panosu (FM Contracts).
- *
- * Backend: GET /players/contract-alerts?horizon_days=365[&team_external_id=]
+ * Sözleşmeler — biten/geçmiş sözleşme uyarı panosu. ConsoleShell çatısında.
+ * Backend: GET /players/contract-alerts?horizon_days=365.
  */
 
 import * as React from "react";
-import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
 interface Alert {
   player_external_id: number;
@@ -30,11 +28,11 @@ interface AlertsResp {
   alerts: Alert[];
 }
 
-const LEVEL_STYLE: Record<string, string> = {
-  critical: "text-danger",
-  expired: "text-danger",
-  warning: "text-high",
-  notice: "text-warn",
+const LEVEL_VAR: Record<string, string> = {
+  critical: "var(--crit)",
+  expired: "var(--crit)",
+  warning: "var(--high)",
+  notice: "var(--mid)",
 };
 const LEVEL_LABEL: Record<string, string> = {
   critical: "Kritik",
@@ -48,18 +46,9 @@ function euro(v: number | null): string {
   return "€" + v.toLocaleString("tr-TR");
 }
 
-function Kpi({ label, value, cls }: { label: string; value: number; cls?: string }) {
-  return (
-    <div className="bg-surface2 border border-border rounded-md px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wider text-textmut">{label}</div>
-      <div className={`text-xl font-bold font-mono ${cls ?? "text-text"}`}>{value}</div>
-    </div>
-  );
-}
-
 const HORIZONS = [180, 365, 730];
 
-export default function ContractsPage() {
+export default function ContractsConsolePage() {
   const [horizon, setHorizon] = React.useState(365);
   const { data, isLoading, error } = useSWR<AlertsResp>(
     `/players/contract-alerts?horizon_days=${horizon}`,
@@ -68,92 +57,83 @@ export default function ContractsPage() {
   );
   const alerts = data?.alerts ?? [];
 
-  return (
-    <div className="max-w-5xl space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-text">Sözleşmeler</h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Belirlenen ufuk içinde biten veya süresi geçmiş sözleşmeler.
-          </p>
+  const breakdown = [
+    { label: "Kritik", n: data?.critical_count ?? 0, v: "var(--crit)" },
+    { label: "Uyarı", n: data?.warning_count ?? 0, v: "var(--high)" },
+    { label: "Bilgi", n: data?.notice_count ?? 0, v: "var(--mid)" },
+    { label: "Bitti", n: data?.expired_count ?? 0, v: "var(--crit)" },
+  ];
+
+  const right = (
+    <div className="rc">
+      <h3>Seviye Dağılımı <span className="tiny">{data?.in_horizon ?? 0} ufukta</span></h3>
+      {breakdown.map((b) => (
+        <div className="stat" key={b.label}>
+          <span style={{ color: b.v, fontWeight: 700 }}>{b.label}</span>
+          <span className="sv">{b.n}</span>
         </div>
-        <span className="font-mono text-[10px] text-textdim bg-surface2 border border-border rounded px-2 py-0.5">
-          GET /players/contract-alerts
-        </span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <span className="text-[11px] text-textmut uppercase">Ufuk:</span>
-        {HORIZONS.map((h) => (
-          <button
-            key={h}
-            type="button"
-            onClick={() => setHorizon(h)}
-            className={`text-[11px] px-2 py-1 rounded border ${
-              horizon === h
-                ? "border-accent text-accent"
-                : "border-borderlt text-textmut hover:text-text"
-            }`}
-          >
-            {h} gün
-          </button>
-        ))}
-      </div>
-
-      {data && (
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-          <Kpi label="Toplam" value={data.total_contracts} />
-          <Kpi label="Ufukta" value={data.in_horizon} />
-          <Kpi label="Kritik" value={data.critical_count} cls="text-danger" />
-          <Kpi label="Uyarı" value={data.warning_count} cls="text-high" />
-          <Kpi label="Bilgi" value={data.notice_count} cls="text-warn" />
-          <Kpi label="Bitti" value={data.expired_count} cls="text-danger" />
-        </div>
-      )}
-
-      <Panel title="Uyarılar">
-        {isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-        {error && <p className="text-[12px] text-textmut">Sözleşme verisi yok ya da yetki yok.</p>}
-        {data && alerts.length === 0 && (
-          <p className="text-[12px] text-ok">Bu ufukta biten sözleşme yok.</p>
-        )}
-        {alerts.length > 0 && (
-          <table className="w-full text-[12px]">
-            <thead>
-              <tr className="text-textmut text-left border-b border-border uppercase text-[10.5px]">
-                <th className="py-1 pr-2">Oyuncu</th>
-                <th className="py-1 pr-2">Bitiş</th>
-                <th className="py-1 pr-2 text-right">Kalan</th>
-                <th className="py-1 pr-2 text-right">Yıllık ücret</th>
-                <th className="py-1 pr-2">Durum</th>
-                <th className="py-1">Not</th>
-              </tr>
-            </thead>
-            <tbody>
-              {alerts.map((a) => (
-                <tr key={a.player_external_id} className="border-b border-border/50">
-                  <td className="py-1 pr-2">
-                    <Link href={`/players/${a.player_external_id}`} className="font-mono text-accent">
-                      #{a.player_external_id}
-                    </Link>
-                  </td>
-                  <td className="py-1 pr-2 font-mono text-textmut">{a.contract_end}</td>
-                  <td className={`py-1 pr-2 text-right font-mono ${LEVEL_STYLE[a.level] ?? "text-textmut"}`}>
-                    {a.days_remaining}g
-                  </td>
-                  <td className="py-1 pr-2 text-right font-mono text-textmut">
-                    {euro(a.annual_salary_eur)}
-                  </td>
-                  <td className={`py-1 pr-2 font-semibold ${LEVEL_STYLE[a.level] ?? "text-textmut"}`}>
-                    {LEVEL_LABEL[a.level] ?? a.level}
-                  </td>
-                  <td className="py-1 text-textmut">{a.message}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Panel>
+      ))}
+      <div className="stat"><span>Toplam sözleşme</span><span className="sv">{data?.total_contracts ?? 0}</span></div>
     </div>
+  );
+
+  return (
+    <ConsoleShell
+      active="/contracts"
+      title="Sözleşmeler"
+      sub="Bitiş uyarıları"
+      desc="Belirlenen ufuk içinde biten veya süresi geçmiş sözleşmeler. Erken aksiyon için öncelik panosu."
+      navBadge={data?.critical_count}
+      right={right}
+    >
+      <div className="st" style={{ marginTop: 0 }}>
+        <h2>Ufuk</h2>
+        <div className="seg">
+          {HORIZONS.map((h) => (
+            <button key={h} className={horizon === h ? "on" : ""} onClick={() => setHorizon(h)}>{h} gün</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="kpis" style={{ gridTemplateColumns: "repeat(5,1fr)" }}>
+        <div className="kpi"><div className="kl">Toplam</div><div className="kn">{data?.total_contracts ?? 0}</div><div className="kd">sözleşme</div></div>
+        <div className="kpi"><div className="kl">Ufukta</div><div className="kn">{data?.in_horizon ?? 0}</div><div className="kd">{horizon} gün içinde</div></div>
+        <div className="kpi"><div className="kl">Kritik</div><div className="kn" style={{ color: "var(--crit)" }}>{data?.critical_count ?? 0}</div><div className="kd">acil</div></div>
+        <div className="kpi"><div className="kl">Uyarı</div><div className="kn" style={{ color: "var(--high)" }}>{data?.warning_count ?? 0}</div><div className="kd">yaklaşan</div></div>
+        <div className="kpi"><div className="kl">Bitti</div><div className="kn" style={{ color: "var(--crit)" }}>{data?.expired_count ?? 0}</div><div className="kd">süresi geçmiş</div></div>
+      </div>
+
+      <div className="st"><h2>Uyarılar</h2><span className="ep">GET /players/contract-alerts</span></div>
+      {isLoading && <div className="pgdesc">Yükleniyor…</div>}
+      {error && <div className="pgdesc">Sözleşme verisi yok ya da yetki yok.</div>}
+      <div className="tbl">
+        <table>
+          <thead><tr>
+            <th>Oyuncu</th><th className="c">Bitiş</th><th className="r">Kalan</th>
+            <th className="r">Yıllık Ücret</th><th className="c">Durum</th><th>Not</th>
+          </tr></thead>
+          <tbody>
+            {alerts.length === 0 && (
+              <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>
+                {data ? "Bu ufukta biten sözleşme yok." : "Veri yok (backend bağlı değilse boş gelir)."}
+              </td></tr>
+            )}
+            {alerts.map((a) => {
+              const v = LEVEL_VAR[a.level] ?? "var(--muted)";
+              return (
+                <tr key={a.player_external_id}>
+                  <td><span className="nm" style={{ fontFamily: "JetBrains Mono" }}>#{a.player_external_id}</span></td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)", fontSize: 11 }}>{a.contract_end}</td>
+                  <td className="r" style={{ color: v }}>{a.days_remaining}g</td>
+                  <td className="r" style={{ color: "var(--muted)" }}>{euro(a.annual_salary_eur)}</td>
+                  <td className="c"><span className="risk" style={{ color: v }}><span className="rd" style={{ background: v, boxShadow: `0 0 7px ${v}` }} />{LEVEL_LABEL[a.level] ?? a.level}</span></td>
+                  <td style={{ color: "var(--muted)", fontSize: 11.5 }}>{a.message}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </ConsoleShell>
   );
 }

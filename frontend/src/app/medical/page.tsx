@@ -1,23 +1,19 @@
 "use client";
 
 /**
- * Tıbbi Merkez — sakatlık/rehabilitasyon takibi (return_to_play).
- *
- * Oyuncu seç → aktif rehab kayıtları (sakatlık tipi, durum, dönüş tarihi,
- * kalan gün) + yeni rehab kaydı. Yük geçmişi için Yük Riski paneline link.
- *
+ * Tıbbi Merkez — sakatlık/rehabilitasyon takibi (return_to_play). ConsoleShell çatısında.
+ * Takım geneli aktif sakatlıklar + oyuncu sorgu + yeni rehab kaydı (sağ kolon).
  * Backend:
- *   GET  /rehab/active                — takım geneli aktif sakatlıklar
- *   GET  /players/{id}/rehab/active   — oyuncu aktif rehab
- *   POST /players/{id}/rehab          — yeni kayıt
- *   PATCH /players/{id}/rehab/{rid}   — durum güncelle (return-to-play)
+ *   GET   /rehab/active
+ *   GET   /players/{id}/rehab/active
+ *   POST  /players/{id}/rehab
+ *   PATCH /players/{id}/rehab/{rid}
  */
 
 import * as React from "react";
-import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
 interface Rehab {
   id: number;
@@ -30,10 +26,10 @@ interface Rehab {
   notes: string | null;
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  active: "text-danger",
-  recovering: "text-warn",
-  cleared: "text-ok",
+const STATUS_VAR: Record<string, string> = {
+  active: "var(--crit)",
+  recovering: "var(--mid)",
+  cleared: "var(--low)",
 };
 const STATUS_LABEL: Record<string, string> = {
   active: "Sakat",
@@ -47,14 +43,23 @@ function daysUntil(iso: string | null): number | null {
   return Math.ceil(ms / 86_400_000);
 }
 
-const inputCls =
-  "w-full bg-surface2 border border-border text-text text-[13px] px-2 py-1.5 rounded";
+const fieldStyle: React.CSSProperties = {
+  width: "100%",
+  background: "var(--panel)",
+  border: "1px solid var(--line)",
+  color: "var(--ink)",
+  fontSize: "12.5px",
+  padding: "6px 9px",
+  borderRadius: "6px",
+  fontFamily: "inherit",
+};
+const labelStyle: React.CSSProperties = { display: "block", fontSize: "10.5px", color: "var(--muted)", margin: "8px 0 3px", textTransform: "uppercase", letterSpacing: "0.5px" };
 
-export default function MedicalPage() {
+export default function MedicalConsolePage() {
   const [query, setQuery] = React.useState("");
   const [search, setSearch] = React.useState("");
 
-  // Form
+  // Yeni kayıt formu
   const [injuryType, setInjuryType] = React.useState("");
   const [status, setStatus] = React.useState("active");
   const [start, setStart] = React.useState(() => new Date().toISOString().slice(0, 10));
@@ -63,14 +68,8 @@ export default function MedicalPage() {
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
 
-  const rehab = useSWR<Rehab[]>(
-    query ? `/players/${query}/rehab/active` : null,
-    apiFetch,
-    { shouldRetryOnError: false },
-  );
+  const rehab = useSWR<Rehab[]>(query ? `/players/${query}/rehab/active` : null, apiFetch, { shouldRetryOnError: false });
   const rows = rehab.data ?? [];
-
-  // Takım geneli aktif sakatlıklar (oyuncu seçmeden).
   const team = useSWR<Rehab[]>("/rehab/active", apiFetch, { shouldRetryOnError: false });
   const teamRows = team.data ?? [];
 
@@ -86,20 +85,14 @@ export default function MedicalPage() {
       team.mutate();
       rehab.mutate();
     } catch {
-      /* sessizce yut — listeler yeniden çekilir */
+      /* sessizce yut */
     }
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!query) {
-      setErr("Önce bir oyuncu getir.");
-      return;
-    }
-    if (!injuryType.trim()) {
-      setErr("Sakatlık tipi gerekli.");
-      return;
-    }
+    if (!query) { setErr("Önce bir oyuncu getir."); return; }
+    if (!injuryType.trim()) { setErr("Sakatlık tipi gerekli."); return; }
     setErr(null);
     setBusy(true);
     try {
@@ -114,10 +107,9 @@ export default function MedicalPage() {
           notes: notes.trim() || null,
         }),
       });
-      setInjuryType("");
-      setNotes("");
-      setExpected("");
+      setInjuryType(""); setNotes(""); setExpected("");
       rehab.mutate();
+      team.mutate();
     } catch (e2) {
       setErr(e2 instanceof Error ? e2.message : "Kayıt başarısız");
     } finally {
@@ -125,227 +117,124 @@ export default function MedicalPage() {
     }
   }
 
+  const activeN = teamRows.filter((r) => r.status === "active").length;
+  const recoveringN = teamRows.filter((r) => r.status === "recovering").length;
+  const clearedN = teamRows.filter((r) => r.status === "cleared").length;
+
+  const right = (
+    <div className="rc">
+      <h3>Yeni Rehab Kaydı {query ? <span className="tiny">#{query}</span> : <span className="tiny">oyuncu seç</span>}</h3>
+      <form onSubmit={submit}>
+        <label style={labelStyle}>Sakatlık tipi</label>
+        <input value={injuryType} onChange={(e) => setInjuryType(e.target.value)} placeholder="örn. hamstring grade 2" style={fieldStyle} />
+        <label style={labelStyle}>Durum</label>
+        <select value={status} onChange={(e) => setStatus(e.target.value)} style={fieldStyle}>
+          <option value="active">Sakat</option>
+          <option value="recovering">İyileşiyor</option>
+          <option value="cleared">Hazır</option>
+        </select>
+        <label style={labelStyle}>Başlangıç</label>
+        <input type="date" value={start} onChange={(e) => setStart(e.target.value)} style={fieldStyle} />
+        <label style={labelStyle}>Tahmini dönüş</label>
+        <input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} style={fieldStyle} />
+        <label style={labelStyle}>Not</label>
+        <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="opsiyonel" style={fieldStyle} />
+        {err && <div style={{ fontSize: "11.5px", color: "var(--crit)", marginTop: 8 }}>{err}</div>}
+        <button type="submit" disabled={busy} style={{ width: "100%", marginTop: 12, padding: "9px", borderRadius: 7, background: "var(--besiktas)", color: "#fff", fontWeight: 600, fontSize: 12.5, border: 0, cursor: busy ? "default" : "pointer", opacity: busy ? 0.5 : 1, fontFamily: "inherit" }}>
+          {busy ? "Kaydediliyor…" : "Kaydet"}
+        </button>
+      </form>
+    </div>
+  );
+
   return (
-    <div className="max-w-5xl space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-text">Tıbbi Merkez</h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Sakatlık & dönüş takibi (return-to-play). Sağlık verisi KVKK&apos;da özel
-            niteliklidir; erişim denetim kaydına yazılır.
-          </p>
-        </div>
-        <span className="font-mono text-[10px] text-textdim bg-surface2 border border-border rounded px-2 py-0.5">
-          GET /rehab/active
-        </span>
+    <ConsoleShell
+      active="/medical"
+      title="Tıbbi Merkez"
+      sub="Sakatlık & dönüş takibi"
+      desc="Return-to-play takibi. Sağlık verisi KVKK'da özel niteliklidir; erişim denetim kaydına yazılır."
+      navBadge={activeN}
+      right={right}
+    >
+      <div className="kpis" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+        <div className="kpi"><div className="kl">Aktif Sakatlık</div><div className="kn" style={{ color: activeN ? "var(--crit)" : "var(--low)" }}>{activeN}</div><div className="kd">tedavide</div></div>
+        <div className="kpi"><div className="kl">İyileşiyor</div><div className="kn" style={{ color: "var(--mid)" }}>{recoveringN}</div><div className="kd">dönüşe yakın</div></div>
+        <div className="kpi"><div className="kl">Hazır</div><div className="kn" style={{ color: "var(--low)" }}>{clearedN}</div><div className="kd">temizlendi</div></div>
+        <div className="kpi"><div className="kl">Toplam Kayıt</div><div className="kn">{teamRows.length}</div><div className="kd">aktif rehab</div></div>
       </div>
 
-      <Panel title={`Aktif Sakatlıklar (${teamRows.length})`}>
-        {team.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-        {team.error && (
-          <p className="text-[12px] text-textmut">Liste alınamadı ya da yetki yok.</p>
-        )}
-        {team.data && teamRows.length === 0 && (
-          <p className="text-[12px] text-ok">Aktif sakatlık yok — kadro tam.</p>
-        )}
-        {teamRows.length > 0 && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+      <div className="st"><h2>Aktif Sakatlıklar</h2><span className="ep">GET /rehab/active</span></div>
+      {team.isLoading && <div className="pgdesc">Yükleniyor…</div>}
+      {team.error && <div className="pgdesc">Liste alınamadı ya da yetki yok.</div>}
+      <div className="tbl">
+        <table>
+          <thead><tr>
+            <th>Oyuncu</th><th>Sakatlık</th><th className="c">Başlangıç → Dönüş</th>
+            <th className="c">Kalan</th><th className="c">Durum</th><th className="r">Aksiyon</th>
+          </tr></thead>
+          <tbody>
+            {teamRows.length === 0 && (
+              <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>
+                {team.data ? "Aktif sakatlık yok — kadro tam." : "Veri yok (backend bağlı değilse boş gelir)."}
+              </td></tr>
+            )}
             {teamRows.map((r) => {
               const left = daysUntil(r.expected_return);
               const next = NEXT[r.status];
+              const v = STATUS_VAR[r.status] ?? "var(--muted)";
               return (
-                <div key={r.id} className="bg-surface2 border border-border rounded-md p-3">
-                  <div className="flex items-center justify-between">
-                    <Link
-                      href={`/players/${r.player_external_id}`}
-                      className="text-[13px] font-semibold text-text hover:text-accent font-mono"
-                    >
-                      #{r.player_external_id}
-                    </Link>
-                    <span
-                      className={`text-[11px] font-semibold uppercase ${STATUS_STYLE[r.status] ?? "text-textmut"}`}
-                    >
-                      {STATUS_LABEL[r.status] ?? r.status}
-                    </span>
-                  </div>
-                  <div className="mt-1 text-[12px] text-text">{r.injury_type}</div>
-                  <div className="text-[11px] text-textmut font-mono">
-                    {r.injury_start} → {r.expected_return ?? "—"}
-                    {left !== null && left > 0 ? ` · ${left}g` : ""}
-                  </div>
-                  {next && (
-                    <div className="mt-2 flex gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setStatusFor(r, next)}
-                        className="text-[10px] uppercase px-2 py-1 rounded border border-borderlt text-accent hover:bg-surface"
-                      >
-                        {next === "recovering" ? "İyileşmeye al" : "Hazır işaretle"}
+                <tr key={r.id}>
+                  <td><span className="nm" style={{ fontFamily: "JetBrains Mono" }}>#{r.player_external_id}</span></td>
+                  <td>{r.injury_type}</td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)", fontSize: 11 }}>{r.injury_start} → {r.expected_return ?? "—"}</td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: left !== null && left <= 0 ? "var(--high)" : "var(--muted)" }}>{left !== null ? `${left}g` : "—"}</td>
+                  <td className="c"><span className="risk" style={{ color: v }}><span className="rd" style={{ background: v, boxShadow: `0 0 7px ${v}` }} />{STATUS_LABEL[r.status] ?? r.status}</span></td>
+                  <td className="r">
+                    {next ? (
+                      <button type="button" onClick={() => setStatusFor(r, next)} style={{ fontSize: "10px", textTransform: "uppercase", padding: "2px 8px", borderRadius: 5, border: "1px solid var(--line)", color: "var(--ink)", background: "var(--panel3)", cursor: "pointer" }}>
+                        {next === "recovering" ? "İyileşmeye al" : "✓ Hazır"}
                       </button>
-                      {next !== "cleared" && (
-                        <button
-                          type="button"
-                          onClick={() => setStatusFor(r, "cleared")}
-                          className="text-[10px] uppercase px-2 py-1 rounded border border-borderlt text-ok hover:bg-surface"
-                        >
-                          ✓ Hazır
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
+                    ) : <span style={{ color: "var(--dim)", fontSize: 11 }}>—</span>}
+                  </td>
+                </tr>
               );
             })}
-          </div>
-        )}
-      </Panel>
+          </tbody>
+        </table>
+      </div>
 
-      <Panel
-        title="Oyuncu"
-        actions={
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setQuery(search.trim());
-            }}
-            className="flex items-center gap-2"
-          >
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Oyuncu ID"
-              className={`${inputCls} h-7 w-32`}
-            />
-            <button
-              type="submit"
-              className="text-[11px] uppercase px-2 py-1 rounded border border-borderlt text-textmut hover:text-text"
-            >
-              Getir
-            </button>
-          </form>
-        }
-      >
-        {!query && <p className="text-[12px] text-textmut">Bir oyuncu ID gir.</p>}
-        {query && rehab.isLoading && (
-          <p className="text-[12px] text-textmut">Yükleniyor…</p>
-        )}
-        {query && !rehab.isLoading && rows.length === 0 && (
-          <p className="text-[12px] text-textmut">
-            Aktif rehab kaydı yok.{" "}
-            <Link href="/physical-tests" className="text-accent">
-              Yük Riski paneli →
-            </Link>
-          </p>
-        )}
-        {rows.length > 0 && (
-          <div className="grid sm:grid-cols-2 gap-3">
-            {rows.map((r) => {
-              const left = daysUntil(r.expected_return);
-              return (
-                <div
-                  key={r.id}
-                  className="bg-surface2 border border-border rounded-md p-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-semibold text-text">
-                      {r.injury_type}
-                    </span>
-                    <span
-                      className={`text-[11px] font-semibold uppercase ${
-                        STATUS_STYLE[r.status] ?? "text-textmut"
-                      }`}
-                    >
-                      {STATUS_LABEL[r.status] ?? r.status}
-                    </span>
-                  </div>
-                  <div className="mt-1 text-[11px] text-textmut font-mono">
-                    {r.injury_start} → {r.expected_return ?? "—"}
-                  </div>
-                  {left !== null && r.status !== "cleared" && (
-                    <div className="mt-1 text-[12px] text-text">
-                      {left > 0 ? (
-                        <>
-                          Tahmini dönüşe{" "}
-                          <span className="font-mono text-accent">{left}</span> gün
-                        </>
-                      ) : (
-                        <span className="text-warn">Dönüş tarihi geçti</span>
-                      )}
-                    </div>
-                  )}
-                  {r.notes && (
-                    <div className="mt-1 text-[11px] text-textmut">{r.notes}</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Panel>
-
-      <Panel title="Yeni rehab kaydı">
-        <form onSubmit={submit} className="space-y-2 text-[13px]">
-          <div className="grid sm:grid-cols-2 gap-2">
-            <label className="block">
-              <span className="block text-[11px] text-textmut mb-0.5">Sakatlık tipi</span>
-              <input
-                value={injuryType}
-                onChange={(e) => setInjuryType(e.target.value)}
-                placeholder="örn. hamstring grade 2"
-                className={inputCls}
-              />
-            </label>
-            <label className="block">
-              <span className="block text-[11px] text-textmut mb-0.5">Durum</span>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className={inputCls}
-              >
-                <option value="active">Sakat (active)</option>
-                <option value="recovering">İyileşiyor (recovering)</option>
-                <option value="cleared">Hazır (cleared)</option>
-              </select>
-            </label>
-            <label className="block">
-              <span className="block text-[11px] text-textmut mb-0.5">Sakatlık başlangıcı</span>
-              <input
-                type="date"
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-                className={inputCls}
-              />
-            </label>
-            <label className="block">
-              <span className="block text-[11px] text-textmut mb-0.5">Tahmini dönüş</span>
-              <input
-                type="date"
-                value={expected}
-                onChange={(e) => setExpected(e.target.value)}
-                className={inputCls}
-              />
-            </label>
-          </div>
-          <label className="block">
-            <span className="block text-[11px] text-textmut mb-0.5">Not</span>
-            <input
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="opsiyonel"
-              className={inputCls}
-            />
-          </label>
-          {err && <div className="text-[12px] text-danger">{err}</div>}
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full mt-1 py-2 rounded bg-accent text-bg font-medium text-[13px] disabled:opacity-50"
-          >
-            {busy ? "Kaydediliyor…" : "Kaydet"}
-          </button>
-          <p className="font-mono text-[10px] text-textdim">POST /players/&#123;id&#125;/rehab</p>
+      <div className="st">
+        <h2>Oyuncu Sorgu</h2>
+        <form onSubmit={(e) => { e.preventDefault(); setQuery(search.trim()); }} style={{ display: "flex", gap: 6 }}>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Oyuncu ID" inputMode="numeric" style={{ ...fieldStyle, width: 120 }} />
+          <button type="submit" style={{ ...fieldStyle, width: "auto", cursor: "pointer", color: "var(--muted)" }}>Getir</button>
         </form>
-      </Panel>
-    </div>
+      </div>
+      {!query && <div className="pgdesc">Bir oyuncunun rehab geçmişi için ID gir; sağdaki formla yeni kayıt ekleyebilirsin.</div>}
+      {query && rehab.isLoading && <div className="pgdesc">Yükleniyor…</div>}
+      {query && !rehab.isLoading && rows.length === 0 && <div className="pgdesc">#{query} için aktif rehab kaydı yok.</div>}
+      {rows.length > 0 && (
+        <div className="tbl">
+          <table>
+            <thead><tr><th>Sakatlık</th><th className="c">Başlangıç → Dönüş</th><th className="c">Kalan</th><th className="c">Durum</th><th>Not</th></tr></thead>
+            <tbody>
+              {rows.map((r) => {
+                const left = daysUntil(r.expected_return);
+                const v = STATUS_VAR[r.status] ?? "var(--muted)";
+                return (
+                  <tr key={r.id}>
+                    <td><span className="nm">{r.injury_type}</span></td>
+                    <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)", fontSize: 11 }}>{r.injury_start} → {r.expected_return ?? "—"}</td>
+                    <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{left !== null && r.status !== "cleared" ? `${left}g` : "—"}</td>
+                    <td className="c"><span className="risk" style={{ color: v }}><span className="rd" style={{ background: v, boxShadow: `0 0 7px ${v}` }} />{STATUS_LABEL[r.status] ?? r.status}</span></td>
+                    <td style={{ color: "var(--muted)", fontSize: 11.5 }}>{r.notes ?? "—"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </ConsoleShell>
   );
 }

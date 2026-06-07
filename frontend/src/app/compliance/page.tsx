@@ -1,18 +1,17 @@
 "use client";
 
 /**
- * Erişim Denetimi (KVKK) — özel nitelikli kişisel veriye kim, ne zaman, neye
- * erişti + şüpheli toplu-erişim anomalileri. Uyumluluk/denetim arayüzü.
- *
+ * Erişim Denetimi (KVKK) — özel nitelikli veriye kim/ne zaman/neye erişti +
+ * şüpheli toplu-erişim anomalileri. ConsoleShell çatısında.
  * Backend:
- *   GET /admin/compliance/access-log?subject_id=&days=   — erişim kayıtları
- *   GET /admin/compliance/audit?days=                    — anomali tespiti
+ *   GET /admin/compliance/access-log?subject_id=&days=
+ *   GET /admin/compliance/audit?days=
  */
 
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel, EndpointTag } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
 interface LogEntry {
   user_id: string | null;
@@ -39,15 +38,25 @@ interface AuditResp {
 
 function sensColor(s: string): string {
   const v = s.toLowerCase();
-  if (v.includes("özel") || v.includes("special")) return "text-danger";
-  if (v.includes("kişisel") || v.includes("personal")) return "text-high";
-  return "text-textmut";
+  if (v.includes("özel") || v.includes("special")) return "var(--crit)";
+  if (v.includes("kişisel") || v.includes("personal")) return "var(--high)";
+  return "var(--muted)";
 }
 
-const inputCls = "bg-surface2 border border-border text-text text-[13px] px-2 py-1.5 rounded";
 const DAYS = [7, 30, 90];
 
-export default function CompliancePage() {
+const inputStyle: React.CSSProperties = {
+  background: "var(--panel)",
+  border: "1px solid var(--line)",
+  color: "var(--ink)",
+  fontSize: "12.5px",
+  padding: "6px 10px",
+  borderRadius: "7px",
+  width: "200px",
+  fontFamily: "inherit",
+};
+
+export default function ComplianceConsolePage() {
   const [subject, setSubject] = React.useState("");
   const [subjectQ, setSubjectQ] = React.useState("");
   const [days, setDays] = React.useState(30);
@@ -63,109 +72,83 @@ export default function CompliancePage() {
   const entries = log.data?.entries ?? [];
   const anomalies = audit.data?.anomalies ?? [];
 
-  return (
-    <div className="max-w-5xl space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-text">Erişim Denetimi · KVKK</h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Özel nitelikli kişisel veriye (sağlık/performans) kim, ne zaman, neye
-            erişti. Toplu-erişim anomalileri işaretlenir.
-          </p>
-        </div>
-        <EndpointTag method="GET" path="/admin/compliance/access-log" />
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSubjectQ(subject.trim());
-          }}
-          className="flex items-center gap-2"
-        >
-          <input
-            value={subject}
-            onChange={(e) => setSubject(e.target.value.replace(/[^0-9]/g, ""))}
-            inputMode="numeric"
-            placeholder="Özne ID (oyuncu) — opsiyonel"
-            className={`${inputCls} h-8 w-56`}
-          />
-          <button type="submit" className="text-[11px] uppercase px-2 py-1.5 rounded border border-borderlt text-textmut hover:text-text">
-            Filtrele
-          </button>
-        </form>
-        <div className="flex items-center gap-1 ml-2">
-          {DAYS.map((d) => (
-            <button key={d} type="button" onClick={() => setDays(d)} className={`text-[11px] px-2 py-1.5 rounded border ${days === d ? "border-accent text-accent" : "border-borderlt text-textmut hover:text-text"}`}>
-              {d}g
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {anomalies.length > 0 && (
-        <Panel title={`⚠ Şüpheli Toplu Erişim (${anomalies.length})`}>
-          <ul className="text-[12px] space-y-1">
-            {anomalies.map((a, i) => (
-              <li key={i} className="flex items-center gap-3 text-danger">
-                <span className="font-mono">{a.user_id ?? "(atıfsız)"}</span>
-                {a.distinct_subjects !== undefined && (
-                  <span className="font-mono text-textmut">{a.distinct_subjects} özneye erişim</span>
-                )}
-                {a.data_category && <span className="text-textmut">· {a.data_category}</span>}
-              </li>
-            ))}
-          </ul>
-        </Panel>
-      )}
-
-      <Panel
-        title={`Erişim Kayıtları (${log.data?.total ?? 0})`}
-        actions={<EndpointTag method="GET" path="/admin/compliance/audit" />}
-      >
-        {log.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-        {log.error && <p className="text-[12px] text-textmut">Kayıt alınamadı ya da yetki yok (admin).</p>}
-        {log.data && entries.length === 0 && (
-          <p className="text-[12px] text-textmut">Bu aralıkta erişim kaydı yok.</p>
-        )}
-        {entries.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-[12px]">
-              <thead>
-                <tr className="text-textmut text-left border-b border-border uppercase text-[10.5px]">
-                  <th className="py-1 pr-2">Zaman</th>
-                  <th className="py-1 pr-2">Kullanıcı</th>
-                  <th className="py-1 pr-2">Özne</th>
-                  <th className="py-1 pr-2">Kategori</th>
-                  <th className="py-1 pr-2">Hassasiyet</th>
-                  <th className="py-1 pr-2">Eylem</th>
-                  <th className="py-1">Uç</th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((e, i) => (
-                  <tr key={i} className="border-b border-border/50">
-                    <td className="py-1 pr-2 font-mono text-textmut whitespace-nowrap">
-                      {e.at ? e.at.slice(0, 19).replace("T", " ") : "—"}
-                    </td>
-                    <td className="py-1 pr-2 font-mono">{e.user_id ?? "—"}</td>
-                    <td className="py-1 pr-2 font-mono text-textmut">
-                      {e.subject_type}#{e.subject_id}
-                    </td>
-                    <td className="py-1 pr-2">{e.data_category}</td>
-                    <td className={`py-1 pr-2 font-semibold ${sensColor(e.sensitivity)}`}>
-                      {e.sensitivity}
-                    </td>
-                    <td className="py-1 pr-2 font-mono text-textmut">{e.action}</td>
-                    <td className="py-1 font-mono text-textdim">{e.endpoint}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+  const right = (
+    <div className="rc">
+      <h3>Şüpheli Toplu Erişim <span className="tiny">{anomalies.length}</span></h3>
+      {anomalies.length === 0 && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Anomali tespit edilmedi.</div>}
+      {anomalies.map((a, i) => (
+        <div className="alrt" key={i}>
+          <span className="ai" style={{ background: "var(--crit)" }} />
+          <div className="am"><b style={{ fontFamily: "JetBrains Mono" }}>{a.user_id ?? "(atıfsız)"}</b>
+            <span className="tm">
+              {a.distinct_subjects !== undefined ? `${a.distinct_subjects} özneye erişim` : ""}
+              {a.data_category ? ` · ${a.data_category}` : ""}
+            </span>
           </div>
-        )}
-      </Panel>
+        </div>
+      ))}
     </div>
+  );
+
+  return (
+    <ConsoleShell
+      active="/compliance"
+      title="Erişim Denetimi"
+      sub="KVKK · denetim"
+      desc="Özel nitelikli kişisel veriye (sağlık/performans) kim, ne zaman, neye erişti. Toplu-erişim anomalileri işaretlenir."
+      navBadge={anomalies.length}
+      right={right}
+    >
+      <div className="st" style={{ marginTop: 0 }}>
+        <h2>Filtre</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <form onSubmit={(e) => { e.preventDefault(); setSubjectQ(subject.trim()); }} style={{ display: "flex", gap: 6 }}>
+            <input value={subject} onChange={(e) => setSubject(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="Özne ID (ops.)" style={inputStyle} />
+            <button type="submit" style={{ ...inputStyle, width: "auto", cursor: "pointer", color: "var(--muted)" }}>Filtrele</button>
+          </form>
+          <div className="seg">
+            {DAYS.map((d) => (
+              <button key={d} className={days === d ? "on" : ""} onClick={() => setDays(d)}>{d}g</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="kpis" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
+        <div className="kpi"><div className="kl">Erişim Kaydı</div><div className="kn">{log.data?.total ?? 0}</div><div className="kd">son {days} gün</div></div>
+        <div className="kpi"><div className="kl">Anomali</div><div className="kn" style={{ color: anomalies.length ? "var(--crit)" : "var(--low)" }}>{anomalies.length}</div><div className="kd">toplu erişim</div></div>
+        <div className="kpi"><div className="kl">Dönem</div><div className="kn">{days}<span className="pct">g</span></div><div className="kd">seçili aralık</div></div>
+      </div>
+
+      <div className="st"><h2>Erişim Kayıtları</h2><span className="ep">GET /admin/compliance/access-log</span></div>
+      {log.isLoading && <div className="pgdesc">Yükleniyor…</div>}
+      {log.error && <div className="pgdesc">Kayıt alınamadı ya da yetki yok (admin).</div>}
+      <div className="tbl">
+        <table>
+          <thead><tr>
+            <th>Zaman</th><th>Kullanıcı</th><th>Özne</th><th>Kategori</th>
+            <th className="c">Hassasiyet</th><th className="c">Eylem</th><th>Uç</th>
+          </tr></thead>
+          <tbody>
+            {entries.length === 0 && (
+              <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>
+                {log.data ? "Bu aralıkta erişim kaydı yok." : "Veri yok (backend bağlı değilse boş gelir)."}
+              </td></tr>
+            )}
+            {entries.map((e, i) => (
+              <tr key={i}>
+                <td style={{ fontFamily: "JetBrains Mono", color: "var(--muted)", fontSize: 11, whiteSpace: "nowrap" }}>{e.at ? e.at.slice(0, 19).replace("T", " ") : "—"}</td>
+                <td style={{ fontFamily: "JetBrains Mono" }}>{e.user_id ?? "—"}</td>
+                <td style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{e.subject_type}#{e.subject_id}</td>
+                <td>{e.data_category}</td>
+                <td className="c" style={{ color: sensColor(e.sensitivity), fontWeight: 700 }}>{e.sensitivity}</td>
+                <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{e.action}</td>
+                <td style={{ fontFamily: "JetBrains Mono", color: "var(--dim)", fontSize: 11 }}>{e.endpoint}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </ConsoleShell>
   );
 }
