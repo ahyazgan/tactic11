@@ -39,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/notifications", label: "Bildirimler", roles: ["admin"] },
   { href: "/contracts", label: "Sözleşmeler", roles: ["admin", "analyst"] },
   { href: "/opponent", label: "Rakip Raporu", roles: ["admin", "coach", "analyst"] },
+  { href: "/manager-performance", label: "TD Performansı", roles: ["admin", "analyst"] },
   { href: "/admin", label: "Admin", roles: ["admin"] },
 ];
 
