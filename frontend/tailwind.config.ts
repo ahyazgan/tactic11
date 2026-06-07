@@ -6,19 +6,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // DESIGN.md token'ları — FM 2010-15 estetik (tek doğruluk kaynağı)
+        // DESIGN.md token'ları — tema-değişkenli (açık/koyu). Değerler
+        // globals.css'te :root (koyu) + html.light (açık) altında.
         // Zeminler
-        bg: "#14171c",
-        surface: "#1a1d24",
-        surface2: "#21252e",
-        elevated: "#272c37",
+        bg: "var(--c-bg)",
+        surface: "var(--c-surface)",
+        surface2: "var(--c-surface2)",
+        elevated: "var(--c-elevated)",
         // Çizgiler
-        border: "#2c3038",
-        borderlt: "#3a3f4a",
+        border: "var(--c-border)",
+        borderlt: "var(--c-borderlt)",
         // Metin
-        text: "#e4e7ec",
-        textmut: "#9aa1ad",
-        textdim: "#6b7280",
+        text: "var(--c-text)",
+        textmut: "var(--c-textmut)",
+        textdim: "var(--c-textdim)",
         // Marka
         accent: "#3d7eff",
         accenthov: "#5a92ff",
@@ -37,9 +38,9 @@ const config: Config = {
         // Legacy aliases — mevcut sayfalar refactor edilene kadar geriye uyumluluk
         // Yeni kod DESIGN.md token'larını kullanır; aşağıdakiler kalsın
         // ki mevcut /matches, /chat, /login, /calibration sayfaları kırılmasın.
-        panel: "#1a1d24",         // → surface
-        fg: "#e4e7ec",            // → text
-        muted: "#9aa1ad",         // → textmut
+        panel: "var(--c-surface)",   // → surface
+        fg: "var(--c-text)",         // → text
+        muted: "var(--c-textmut)",   // → textmut
         good: "#3fb950",          // → win/ok
         bad: "#e5534b",           // → loss/danger
       },
