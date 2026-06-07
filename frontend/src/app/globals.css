@@ -4,9 +4,47 @@
 
 :root {
   color-scheme: dark;
-  /* Kulüp marka rengi — tenant'a göre runtime'da override edilebilir.
-     Varsayılan Beşiktaş kırmızısı. (GS #f5a200, FB #ffed00 vb.) */
+  /* Kulüp marka rengi — tenant'a göre runtime'da override edilebilir. */
   --brand: #e30613;
+  /* Tema paleti — KOYU (varsayılan). Tailwind token'ları bunları okur. */
+  --c-bg: #14171c;
+  --c-surface: #1a1d24;
+  --c-surface2: #21252e;
+  --c-elevated: #272c37;
+  --c-border: #2c3038;
+  --c-borderlt: #3a3f4a;
+  --c-text: #e4e7ec;
+  --c-textmut: #9aa1ad;
+  --c-textdim: #6b7280;
+}
+
+/* Tema paleti — AÇIK. <html class="light"> ile aktifleşir. */
+html.light {
+  color-scheme: light;
+  --c-bg: #f3f5f9;
+  --c-surface: #ffffff;
+  --c-surface2: #eef1f6;
+  --c-elevated: #e5e9f0;
+  --c-border: #d7dce5;
+  --c-borderlt: #c3cad6;
+  --c-text: #1a1f2e;
+  --c-textmut: #5a6276;
+  --c-textdim: #8b94a8;
+}
+
+/* Standalone konsol (.ovroot) açık tema override'ı — kendi paleti var. */
+html.light .ovroot {
+  --bg: #f3f5f9;
+  --header: #ffffff;
+  --panel: #ffffff;
+  --panel2: #eef1f6;
+  --panel3: #e5e9f0;
+  --line: #d7dce5;
+  --line2: #c3cad6;
+  --ink: #1a1f2e;
+  --muted: #5a6276;
+  --dim: #8b94a8;
+  --grad: linear-gradient(180deg, #ffffff, #f3f5f9);
 }
 
 html, body { background: theme('colors.bg'); color: theme('colors.text'); }

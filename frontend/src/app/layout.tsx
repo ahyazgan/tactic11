@@ -2,6 +2,10 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { AppShell } from "./shell-client";
 import { SwRegister } from "./sw-register";
+import { ThemeToggle } from "./theme-toggle";
+
+// Yenilemede tema flaşı olmasın: render'dan önce kaydedilen temayı uygula.
+const THEME_SCRIPT = `(function(){try{if(localStorage.getItem("m2-theme")==="light")document.documentElement.classList.add("light")}catch(e){}})()`;
 
 export const metadata: Metadata = {
   title: "manager2 — Teknik Ekip Konsolu",
@@ -26,7 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr" className="dark">
       <body className="bg-bg text-text">
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <AppShell>{children}</AppShell>
+        <ThemeToggle />
         <SwRegister />
       </body>
     </html>
