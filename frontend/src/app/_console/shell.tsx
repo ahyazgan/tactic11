@@ -25,6 +25,8 @@ const NAV = [
     { ic: "👥", label: "Kadro", href: "/squad" },
     { ic: "📋", label: "Performans", href: "/physical-tests" },
     { ic: "🏥", label: "Tıbbi Merkez", href: "/medical" },
+    { ic: "🏃", label: "Antrenman", href: "/training" },
+    { ic: "📝", label: "Maç Planı", href: "/match-plan" },
   ] },
   { grp: "Analiz", items: [
     { ic: "📈", label: "xG Performans", href: "/xg" },
@@ -36,6 +38,7 @@ const NAV = [
     { ic: "🆚", label: "Rakip Raporu", href: "/opponent" },
     { ic: "⚔️", label: "Kafa Kafaya", href: "/h2h" },
     { ic: "🏆", label: "Ligler", href: "/leagues" },
+    { ic: "👔", label: "Takımlar", href: "/teams" },
     { ic: "🧠", label: "Kararlar", href: "/decisions" },
   ] },
   { grp: "Sistem", items: [
