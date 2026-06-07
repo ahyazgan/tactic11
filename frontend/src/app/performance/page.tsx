@@ -205,6 +205,19 @@ export default function PerformanceEntryPage() {
         </Link>
       </div>
 
+      <div className="flex items-center gap-1 border-b border-border">
+        <Link
+          href="/physical-tests"
+          className="px-3 py-2 text-[12.5px] font-semibold text-textmut hover:text-text border-b-2 border-transparent"
+          title="Risk halkası + kadro + geçmiş"
+        >
+          Panel
+        </Link>
+        <span className="px-3 py-2 text-[12.5px] font-semibold text-text border-b-2 border-brand">
+          Veri Girişi &amp; Batarya
+        </span>
+      </div>
+
       <div>
         <h1 className="text-lg font-semibold text-text">
           Performans Testi — Veri Girişi
