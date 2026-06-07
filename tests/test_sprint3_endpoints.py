@@ -12,9 +12,12 @@ from sqlalchemy.orm import Session
 
 from app.api.sprint3 import (
     RehabPayload,
+    RehabUpdate,
     create_rehab,
     list_active_rehab,
+    list_all_active_rehab,
     transfer_targets,
+    update_rehab,
 )
 from app.db import models
 from app.db.base import Base
@@ -185,3 +188,60 @@ def test_cleared_rehab_excluded_from_active(session: Session) -> None:
     active = list_active_rehab(player_id=7, session=session)
     assert len(active) == 1
     assert active[0].injury_type == "ankle sprain"
+
+
+def test_update_rehab_transition_to_cleared(session: Session) -> None:
+    out = create_rehab(
+        player_id=99,
+        payload=RehabPayload(
+            injury_type="hamstring", injury_start=date.today() - timedelta(days=20),
+            status="active",
+        ),
+        session=session,
+    )
+    # active → cleared; actual_return verilmedi → otomatik bugün
+    upd = update_rehab(
+        player_id=99, rehab_id=out.id,
+        payload=RehabUpdate(status="cleared"), session=session,
+    )
+    assert upd.status == "cleared"
+    assert upd.actual_return == date.today()
+    # artık aktif listede yok
+    assert list_active_rehab(player_id=99, session=session) == []
+
+
+def test_update_rehab_404_unknown(session: Session) -> None:
+    with pytest.raises(HTTPException) as exc:
+        update_rehab(
+            player_id=1, rehab_id=123456,
+            payload=RehabUpdate(status="recovering"), session=session,
+        )
+    assert exc.value.status_code == 404
+
+
+def test_update_rehab_invalid_status_rejected(session: Session) -> None:
+    out = create_rehab(
+        player_id=5,
+        payload=RehabPayload(injury_type="x", injury_start=date.today(), status="active"),
+        session=session,
+    )
+    with pytest.raises(HTTPException) as exc:
+        update_rehab(
+            player_id=5, rehab_id=out.id,
+            payload=RehabUpdate(status="bogus"), session=session,
+        )
+    assert exc.value.status_code == 400
+
+
+def test_list_all_active_rehab_team_wide(session: Session) -> None:
+    # 2 oyuncu, biri aktif biri cleared
+    create_rehab(player_id=10, payload=RehabPayload(
+        injury_type="ankle", injury_start=date.today(), status="active"), session=session)
+    create_rehab(player_id=20, payload=RehabPayload(
+        injury_type="acl", injury_start=date.today() - timedelta(days=200),
+        actual_return=date.today() - timedelta(days=30), status="cleared"), session=session)
+    create_rehab(player_id=30, payload=RehabPayload(
+        injury_type="calf", injury_start=date.today(), status="recovering"), session=session)
+    everyone = list_all_active_rehab(session=session)
+    pids = {r.player_external_id for r in everyone}
+    assert pids == {10, 30}  # cleared (20) hariç, takım geneli
