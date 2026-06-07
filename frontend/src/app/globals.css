@@ -2,7 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
+:root {
+  color-scheme: dark;
+  /* Kulüp marka rengi — tenant'a göre runtime'da override edilebilir.
+     Varsayılan Beşiktaş kırmızısı. (GS #f5a200, FB #ffed00 vb.) */
+  --brand: #e30613;
+}
 
 html, body { background: theme('colors.bg'); color: theme('colors.text'); }
 
