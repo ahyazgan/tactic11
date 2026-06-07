@@ -1,16 +1,16 @@
 "use client";
 
+/**
+ * Takım Detayı — son form + rating. ConsoleShell çatısında.
+ * Veri: GET /teams/{id}/form, GET /teams/{id}/rating.
+ */
+
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { ConfidenceBadge } from "@/components/ui";
+import { ConsoleShell } from "../../_console/shell";
 
-interface Confidence {
-  score: number;
-  label: string;
-  drivers: string[];
-}
-
+interface Confidence { score: number; label: string; drivers: string[] }
 interface FormResponse {
   value: {
     matches_played: number;
@@ -24,94 +24,68 @@ interface FormResponse {
   };
   confidence: Confidence | null;
 }
-
 interface RatingResponse {
-  value: {
-    rating: number;
-    home_rating: number | null;
-    away_rating: number | null;
-    matches_considered: number;
-  };
+  value: { rating: number; home_rating: number | null; away_rating: number | null; matches_considered: number };
   confidence: Confidence | null;
 }
 
 function ResultDot({ r }: { r: "W" | "D" | "L" }) {
-  const color = r === "W" ? "bg-good" : r === "L" ? "bg-bad" : "bg-muted";
-  return (
-    <span className={`inline-block w-6 h-6 rounded text-center text-xs leading-6 font-bold text-white ${color}`}>
-      {r}
-    </span>
-  );
+  const bg = r === "W" ? "var(--low)" : r === "L" ? "var(--crit)" : "var(--dim)";
+  return <span style={{ display: "inline-flex", width: 24, height: 24, borderRadius: 5, alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff", background: bg }}>{r}</span>;
 }
 
-export default function TeamDetailPage() {
+export default function TeamDetailConsolePage() {
   const params = useParams<{ id: string }>();
   const teamId = params.id;
 
-  const { data: form } = useSWR<FormResponse>(`/teams/${teamId}/form`, apiFetch);
-  const { data: rating } = useSWR<RatingResponse>(`/teams/${teamId}/rating`, apiFetch);
+  const { data: form } = useSWR<FormResponse>(`/teams/${teamId}/form`, apiFetch, { shouldRetryOnError: false });
+  const { data: rating } = useSWR<RatingResponse>(`/teams/${teamId}/rating`, apiFetch, { shouldRetryOnError: false });
+  const f = form?.value;
+  const rt = rating?.value;
+
+  const right = (
+    <div className="rc">
+      <h3>Rating</h3>
+      {rt ? (
+        <>
+          <div style={{ fontSize: 30, fontWeight: 800, fontFamily: "JetBrains Mono", marginBottom: 8 }}>{rt.rating.toFixed(2)}</div>
+          <div className="stat"><span>Ev</span><span className="sv">{rt.home_rating?.toFixed(2) ?? "—"}</span></div>
+          <div className="stat"><span>Deplasman</span><span className="sv">{rt.away_rating?.toFixed(2) ?? "—"}</span></div>
+          <div className="stat"><span>Değerlendirilen</span><span className="sv">{rt.matches_considered} maç</span></div>
+        </>
+      ) : <div style={{ fontSize: "12px", color: "var(--dim)" }}>Yükleniyor…</div>}
+    </div>
+  );
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Takım #{teamId}</h1>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="card">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm uppercase text-muted">Son form</h2>
-            {form?.confidence && (
-              <ConfidenceBadge
-                score={form.confidence.score}
-                label={form.confidence.label}
-                drivers={form.confidence.drivers}
-              />
-            )}
-          </div>
-          {form ? (
-            <>
-              <div className="text-3xl font-mono mb-2">
-                {form.value.wins}-{form.value.draws}-{form.value.losses}
-              </div>
-              <div className="text-sm text-muted mb-3">
-                PPG: <span className="font-mono">{form.value.points_per_game}</span> ·{" "}
-                GF/GA: <span className="font-mono">{form.value.goals_for}/{form.value.goals_against}</span>
-              </div>
-              <div className="flex gap-1">
-                {form.value.last_results.slice(0, 10).map((r, i) => (
-                  <ResultDot key={i} r={r} />
-                ))}
-              </div>
-            </>
-          ) : (
-            <p className="text-muted">Yükleniyor...</p>
-          )}
-        </div>
-
-        <div className="card">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm uppercase text-muted">Rating</h2>
-            {rating?.confidence && (
-              <ConfidenceBadge
-                score={rating.confidence.score}
-                label={rating.confidence.label}
-                drivers={rating.confidence.drivers}
-              />
-            )}
-          </div>
-          {rating ? (
-            <>
-              <div className="text-3xl font-mono mb-2">{rating.value.rating.toFixed(2)}</div>
-              <div className="text-sm text-muted">
-                Ev: <span className="font-mono">{rating.value.home_rating?.toFixed(2) ?? "—"}</span> ·{" "}
-                Dep: <span className="font-mono">{rating.value.away_rating?.toFixed(2) ?? "—"}</span>
-              </div>
-              <div className="text-xs text-muted mt-2">{rating.value.matches_considered} maç değerlendirildi</div>
-            </>
-          ) : (
-            <p className="text-muted">Yükleniyor...</p>
-          )}
-        </div>
+    <ConsoleShell
+      active="/teams"
+      title={`Takım #${teamId}`}
+      sub="Form & rating"
+      desc="Takımın son form dökümü ve model rating'i."
+      right={right}
+    >
+      <div className="st" style={{ marginTop: 0 }}><h2>Son Form</h2>{form?.confidence && <span className="ep">güven: {form.confidence.label}</span>}</div>
+      <div className="rc" style={{ margin: "0 0 14px" }}>
+        {f ? (
+          <>
+            <div style={{ fontSize: 30, fontWeight: 800, fontFamily: "JetBrains Mono", marginBottom: 8 }}>{f.wins}-{f.draws}-{f.losses}</div>
+            <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>
+              PPG: <b style={{ color: "var(--ink)", fontFamily: "JetBrains Mono" }}>{f.points_per_game}</b> · GF/GA: <b style={{ color: "var(--ink)", fontFamily: "JetBrains Mono" }}>{f.goals_for}/{f.goals_against}</b>
+            </div>
+            <div style={{ display: "flex", gap: 5 }}>
+              {f.last_results.slice(0, 10).map((r, i) => <ResultDot key={i} r={r} />)}
+            </div>
+          </>
+        ) : <div style={{ fontSize: "12px", color: "var(--dim)" }}>Yükleniyor…</div>}
       </div>
-    </main>
+
+      <div className="kpis" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+        <div className="kpi"><div className="kl">Oynanan</div><div className="kn">{f?.matches_played ?? "—"}</div><div className="kd">maç</div></div>
+        <div className="kpi"><div className="kl">Galibiyet</div><div className="kn" style={{ color: "var(--low)" }}>{f?.wins ?? "—"}</div><div className="kd">W</div></div>
+        <div className="kpi"><div className="kl">Beraberlik</div><div className="kn" style={{ color: "var(--mid)" }}>{f?.draws ?? "—"}</div><div className="kd">D</div></div>
+        <div className="kpi"><div className="kl">Mağlubiyet</div><div className="kn" style={{ color: "var(--crit)" }}>{f?.losses ?? "—"}</div><div className="kd">L</div></div>
+      </div>
+    </ConsoleShell>
   );
 }
