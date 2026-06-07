@@ -1,10 +1,11 @@
 /**
- * Kök rota — açılışta doğrudan Genel Bakış konsoluna yönlendirir.
- * (Eski kart launcher kaldırıldı; uygulama Genel Bakış ile açılır.)
+ * Kök rota — açılışta doğrudan Genel Bakış konsolunu gösterir.
+ * (Redirect yerine doğrudan render: `/` 200 döner; CI healthcheck'i ve
+ * derin linkler sorunsuz çalışır. Eski kart launcher kaldırıldı.)
  */
 
-import { redirect } from "next/navigation";
+import OverviewConsolePage from "./overview/page";
 
 export default function HomePage() {
-  redirect("/overview");
+  return <OverviewConsolePage />;
 }
