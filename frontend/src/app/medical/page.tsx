@@ -7,8 +7,10 @@
  * kalan gün) + yeni rehab kaydı. Yük geçmişi için Yük Riski paneline link.
  *
  * Backend:
- *   GET  /players/{id}/rehab/active   — aktif rehab kayıtları
+ *   GET  /rehab/active                — takım geneli aktif sakatlıklar
+ *   GET  /players/{id}/rehab/active   — oyuncu aktif rehab
  *   POST /players/{id}/rehab          — yeni kayıt
+ *   PATCH /players/{id}/rehab/{rid}   — durum güncelle (return-to-play)
  */
 
 import * as React from "react";
@@ -68,6 +70,26 @@ export default function MedicalPage() {
   );
   const rows = rehab.data ?? [];
 
+  // Takım geneli aktif sakatlıklar (oyuncu seçmeden).
+  const team = useSWR<Rehab[]>("/rehab/active", apiFetch, { shouldRetryOnError: false });
+  const teamRows = team.data ?? [];
+
+  const NEXT: Record<string, string> = { active: "recovering", recovering: "cleared" };
+
+  async function setStatusFor(r: Rehab, next: string) {
+    try {
+      await apiFetch(`/players/${r.player_external_id}/rehab/${r.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      team.mutate();
+      rehab.mutate();
+    } catch {
+      /* sessizce yut — listeler yeniden çekilir */
+    }
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!query) {
@@ -114,9 +136,69 @@ export default function MedicalPage() {
           </p>
         </div>
         <span className="font-mono text-[10px] text-textdim bg-surface2 border border-border rounded px-2 py-0.5">
-          GET /players/&#123;id&#125;/rehab/active
+          GET /rehab/active
         </span>
       </div>
+
+      <Panel title={`Aktif Sakatlıklar (${teamRows.length})`}>
+        {team.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
+        {team.error && (
+          <p className="text-[12px] text-textmut">Liste alınamadı ya da yetki yok.</p>
+        )}
+        {team.data && teamRows.length === 0 && (
+          <p className="text-[12px] text-ok">Aktif sakatlık yok — kadro tam.</p>
+        )}
+        {teamRows.length > 0 && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {teamRows.map((r) => {
+              const left = daysUntil(r.expected_return);
+              const next = NEXT[r.status];
+              return (
+                <div key={r.id} className="bg-surface2 border border-border rounded-md p-3">
+                  <div className="flex items-center justify-between">
+                    <Link
+                      href={`/players/${r.player_external_id}`}
+                      className="text-[13px] font-semibold text-text hover:text-accent font-mono"
+                    >
+                      #{r.player_external_id}
+                    </Link>
+                    <span
+                      className={`text-[11px] font-semibold uppercase ${STATUS_STYLE[r.status] ?? "text-textmut"}`}
+                    >
+                      {STATUS_LABEL[r.status] ?? r.status}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-[12px] text-text">{r.injury_type}</div>
+                  <div className="text-[11px] text-textmut font-mono">
+                    {r.injury_start} → {r.expected_return ?? "—"}
+                    {left !== null && left > 0 ? ` · ${left}g` : ""}
+                  </div>
+                  {next && (
+                    <div className="mt-2 flex gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setStatusFor(r, next)}
+                        className="text-[10px] uppercase px-2 py-1 rounded border border-borderlt text-accent hover:bg-surface"
+                      >
+                        {next === "recovering" ? "İyileşmeye al" : "Hazır işaretle"}
+                      </button>
+                      {next !== "cleared" && (
+                        <button
+                          type="button"
+                          onClick={() => setStatusFor(r, "cleared")}
+                          className="text-[10px] uppercase px-2 py-1 rounded border border-borderlt text-ok hover:bg-surface"
+                        >
+                          ✓ Hazır
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Panel>
 
       <Panel
         title="Oyuncu"
