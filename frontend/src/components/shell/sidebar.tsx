@@ -21,6 +21,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { href: "/overview", label: "Genel Bakış", roles: ["admin", "coach", "analyst"] },
   { href: "/leagues", label: "Ligler" },
   { href: "/teams", label: "Takımlar" },
   { href: "/h2h", label: "H2H" },
