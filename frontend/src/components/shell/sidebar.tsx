@@ -25,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/leagues", label: "Ligler" },
   { href: "/teams", label: "Takımlar" },
   { href: "/h2h", label: "H2H" },
+  { href: "/scout", label: "Scout", roles: ["admin", "coach", "analyst"] },
   { href: "/matches", label: "Maçlar" },
   { href: "/match-plan", label: "Maç Planı", roles: ["admin", "coach", "analyst"] },
   { href: "/training", label: "Antrenman", roles: ["admin", "coach", "analyst"] },
@@ -36,6 +37,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/calibration", label: "Kalibrasyon" },
   { href: "/chat", label: "Asistan" },
   { href: "/notifications", label: "Bildirimler", roles: ["admin"] },
+  { href: "/contracts", label: "Sözleşmeler", roles: ["admin", "analyst"] },
+  { href: "/opponent", label: "Rakip Raporu", roles: ["admin", "coach", "analyst"] },
   { href: "/manager-performance", label: "TD Performansı", roles: ["admin", "analyst"] },
   { href: "/admin", label: "Admin", roles: ["admin"] },
 ];
