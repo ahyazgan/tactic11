@@ -1,32 +1,13 @@
 /**
- * Shell wrapper — /login için sidebar+topbar gizler; diğer rotalarda sarar.
- * Client-side çünkü usePathname client hook'u.
+ * Shell wrapper. Tüm ekranlar artık ConsoleShell'i (kendi tam-ekran header+nav)
+ * kullanır; eski TopBar+Sidebar kaldırıldı. Bu sarmalayıcı yalnızca I18nProvider
+ * bağlamını sağlar (login dahil her rota kendi düzenini çizer).
  */
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
-import { Sidebar, TopBar } from "@/components/shell";
 import { I18nProvider } from "@/lib/i18n";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const isAuthRoute = pathname === "/login" || pathname.startsWith("/login/");
-  // Fiziksel performans paneli kendi tam-ekran düzenine sahip (saha/tablet);
-  // uygulama shell'i (sidebar+topbar) gizlenir.
-  const isStandalone = pathname === "/physical-tests" || pathname === "/overview";
-
-  if (isAuthRoute || isStandalone) {
-    return <I18nProvider>{children}</I18nProvider>;
-  }
-
-  return (
-    <I18nProvider>
-      <TopBar />
-      <Sidebar />
-      <main className="pl-56 pt-12 min-h-screen bg-bg">
-        <div className="p-4">{children}</div>
-      </main>
-    </I18nProvider>
-  );
+  return <I18nProvider>{children}</I18nProvider>;
 }

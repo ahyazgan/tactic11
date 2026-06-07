@@ -12,17 +12,19 @@ test.describe("Sayfa smoke render", () => {
     await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
       timeout: 10_000,
     });
-    await expect(page.locator("body")).toBeVisible();
+    // / artık Genel Bakış konsolunu render eder (tam-ekran fixed; body değil
+    // konsol içeriği kontrol edilir).
+    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("/ home page render olur", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("body")).toBeVisible();
-    // Ana sayfa FM launcher: "Veriyle karar destek" alt başlığı görünür
-    // (login kaldırıldı → her zaman launcher render olur, beyaz ekran değil).
-    await expect(
-      page.locator("text=Veriyle karar destek").first(),
-    ).toBeVisible({ timeout: 10_000 });
+    // Ana sayfa Genel Bakış konsoludur (kart launcher kaldırıldı).
+    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });
 
