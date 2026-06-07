@@ -18,8 +18,9 @@ yapılandırılmış bildirim kanalına uyarı gider (best-effort).
 from __future__ import annotations
 
 from datetime import date
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -350,6 +351,85 @@ def get_trend(
         slope=trend.slope,
         lower_is_better=trend.lower_is_better,
         points=trend.points,
+    )
+
+
+@router.get("/{player_id}/pdf", responses={200: {"content": {"application/pdf": {}}}})
+def get_pdf(
+    player_id: str,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> Response:
+    """Oyuncunun kayıtlı testlerinden PDF performans raporu (norm + risk).
+
+    Eski batarya PDF'inin (System A) B'ye taşınmış hâli: veriyi tekrar
+    girmeden, DB'deki kayıtlardan üretir. KVKK: export_pdf loglanır."""
+    rows = list(
+        session.execute(
+            select(PhysicalTest)
+            .where(
+                PhysicalTest.tenant_id == user.tenant_id,
+                PhysicalTest.player_id == player_id,
+            )
+            .order_by(PhysicalTest.test_date.desc())
+            .limit(50)
+        ).scalars()
+    )
+    if not rows:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"player_id={player_id} için test kaydı bulunamadı.",
+        )
+
+    scores: list[dict[str, Any]] = []
+    strong: list[str] = []
+    weak: list[str] = []
+    for r in rows:
+        rating = rate_against_norms(r.protocol, r.value) or "—"
+        scores.append({
+            "protocol_key": r.protocol, "protocol_name": r.protocol,
+            "raw_value": r.value, "unit": r.unit or "",
+            "rating": rating, "squad_percentile": None,
+        })
+        if rating == "elit":
+            strong.append(r.protocol)
+        elif rating == "zayıf":
+            weak.append(r.protocol)
+
+    report = compute_load_risk(
+        player_id, rows[0].player_name,
+        [
+            {"protocol": r.protocol, "value": r.value,
+             "unit": r.unit, "test_date": r.test_date}
+            for r in rows
+        ],
+    )
+    _log_access(
+        session, player_id=player_id, action="export_pdf",
+        endpoint="/physical-tests/{player_id}/pdf", user_id=user.id,
+    )
+
+    from app.reports.pdf import ReportlabNotInstalled, build_performance_report_pdf
+    try:
+        pdf_bytes = build_performance_report_pdf(
+            player_name=rows[0].player_name,
+            player_external_id=int(player_id) if player_id.isdigit() else 0,
+            test_date=str(rows[0].test_date),
+            scores=scores,
+            strong_areas=strong,
+            weak_areas=weak,
+            summary=f"{report.risk_label} risk — {report.summary}",
+            club_name=None,
+        )
+    except ReportlabNotInstalled as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'inline; filename="performans_{player_id}.pdf"',
+        },
     )
 
 

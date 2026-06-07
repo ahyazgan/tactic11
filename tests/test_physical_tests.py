@@ -250,3 +250,17 @@ def test_physical_test_out_includes_norm_rating(client):
     body = r.json()
     assert "rating" in body
     assert body["rating"] in ("elit", "iyi", "ortalama", "zayıf")
+
+
+def test_pdf_export_returns_pdf_bytes(client):
+    c, _ = client
+    c.post("/physical-tests/", json=_SPRINT_OK)
+    r = c.get("/physical-tests/12345/pdf")
+    assert r.status_code == 200, r.text
+    assert r.headers["content-type"].startswith("application/pdf")
+    assert r.content[:4] == b"%PDF"
+
+
+def test_pdf_export_404_when_no_data(client):
+    c, _ = client
+    assert c.get("/physical-tests/99999/pdf").status_code == 404
