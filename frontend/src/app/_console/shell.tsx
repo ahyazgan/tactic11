@@ -19,6 +19,15 @@ const TABS = [
   { label: "Analiz", href: "/xg" },
 ];
 
+// Mobil alt tab bar — başparmakla erişilen 5 ana hedef.
+const BTABS = [
+  { ic: "▦", label: "Genel", href: "/overview" },
+  { ic: "👥", label: "Kadro", href: "/squad" },
+  { ic: "📋", label: "Perf", href: "/physical-tests" },
+  { ic: "⚽", label: "Maç", href: "/matches" },
+  { ic: "🔍", label: "Scout", href: "/scout" },
+];
+
 const NAV = [
   { grp: "Kulüp", items: [
     { ic: "▦", label: "Genel Bakış", href: "/overview" },
@@ -116,6 +125,18 @@ export function ConsoleShell({ active, title, sub, desc, navBadge, right, childr
         {/* Right */}
         <aside className="right">{right}</aside>
       </div>
+
+      {/* Mobil alt tab bar */}
+      <nav className="btabs">
+        {BTABS.map((t) => {
+          const on = t.href === active;
+          return (
+            <Link key={t.href} href={t.href} className={`btab${on ? " active" : ""}`}>
+              <span className="bi">{t.ic}</span>{t.label}
+            </Link>
+          );
+        })}
+      </nav>
 
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
     </div>
@@ -245,5 +266,42 @@ const CSS = `
 @media (max-width:560px){
   .ovroot .kpis{grid-template-columns:repeat(2,1fr)}
   .ovroot .logo b{display:none}
+}
+
+/* ============ Tasarım cilası ============ */
+/* Mikro etkileşim — kart/satır/sekme geçişleri */
+.ovroot .kpi{transition:border-color .15s ease, transform .15s ease, box-shadow .15s ease}
+.ovroot .kpi:hover{border-color:var(--line2);transform:translateY(-1px)}
+.ovroot .rc{transition:border-color .15s ease}
+.ovroot tbody tr{transition:background .12s ease}
+.ovroot .htab,.ovroot .ni,.ovroot .seg button{transition:color .12s ease, background .12s ease, border-color .12s ease}
+
+/* Skeleton (yükleniyor) shimmer */
+.ovroot .sk{display:block;border-radius:6px;background:linear-gradient(90deg,var(--panel2) 25%,var(--panel3) 37%,var(--panel2) 63%);background-size:400% 100%;animation:sksh 1.3s ease-in-out infinite}
+@keyframes sksh{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.ovroot .sk-line{height:13px;margin:7px 0}
+.ovroot .sk-kn{height:24px;width:54px;margin:2px 0 6px}
+
+/* Boş durum — ikon + başlık + alt metin */
+.ovroot .empty{text-align:center;padding:32px 18px}
+.ovroot .empty .ei{font-size:28px;margin-bottom:8px;opacity:.85}
+.ovroot .empty .et{font-size:13px;color:var(--muted);font-weight:600}
+.ovroot .empty .es{font-size:11.5px;color:var(--dim);margin-top:4px}
+
+/* Demo / offline şerit */
+.ovroot .demobar{display:flex;align-items:center;gap:10px;background:linear-gradient(90deg,rgba(234,179,8,.12),transparent);border:1px solid var(--line);border-left:3px solid var(--mid);border-radius:8px;padding:9px 12px;margin-bottom:14px;font-size:12px;color:var(--muted)}
+.ovroot .demobar b{color:var(--ink)}
+.ovroot .demobar .db-cta{margin-left:auto;color:var(--ink);text-decoration:none;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;border:1px solid var(--line2);padding:5px 10px;border-radius:6px;white-space:nowrap}
+.ovroot .demobar .db-cta:hover{border-color:var(--mid);color:var(--mid)}
+
+/* Mobil alt tab bar */
+.ovroot .btabs{display:none}
+@media (max-width:900px){
+  .ovroot .btabs{display:flex;position:fixed;left:0;right:0;bottom:0;height:56px;background:var(--header);border-top:1px solid var(--line);z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -4px 14px rgba(0,0,0,.22)}
+  .ovroot .btab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--dim);text-decoration:none;font-size:9.5px;font-weight:600}
+  .ovroot .btab .bi{font-size:18px;line-height:1}
+  .ovroot .btab.active{color:var(--ink)}
+  .ovroot .btab.active .bi{filter:drop-shadow(0 0 6px var(--besiktas))}
+  .ovroot .center{padding-bottom:70px}
 }
 `;
