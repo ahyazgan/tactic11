@@ -65,9 +65,11 @@ export function Sidebar() {
   const { t } = useI18n();
   const role = user?.role ?? "viewer";
 
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.roles || item.roles.includes(role),
-  );
+  // Giriş yapılmamışsa (önizleme/backend yok) TÜM ekranları göster ki tasarım
+  // gezilebilsin. Kullanıcı varsa kendi rolüne göre filtrele.
+  const visibleItems = user
+    ? NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role))
+    : NAV_ITEMS;
 
   const shouldFetchJobs =
     user?.role === "admin" || user?.role === "analyst";
