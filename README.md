@@ -4,6 +4,23 @@ Spor zekası platformu — futbol teknik ekiplerine veriyle karar desteği veren
 Bugün: futbol verisi (API-Football) çek, doğrula, depola, sun.
 Yarın: tracking, tahmin, otomasyon. Sonra: diğer sporlar.
 
+## 🚀 Canlıya alma (~3 dakika)
+
+Frontend (ekranlar) Vercel'de canlı. Backend'i (veri sunucusu + DB) açmak için:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ahyazgan/manager2)
+
+1. **Render:** Yukarıdaki düğmeye bas → Render'a giriş yap → repoyu seç → **Apply**.
+   `render.yaml` blueprint'i Postgres + API servisini kurar; migration + demo seed
+   **otomatik** çalışır. Servis "Live" olunca URL'i kopyala
+   (`https://manager2-api-xxxx.onrender.com`).
+2. **Vercel:** Projen → **Settings → Environment Variables** → ekle:
+   `API_BASE_URL = <Render URL'i>` *(sonunda `/` YOK)* → **Deployments → Redeploy**.
+3. **Giriş:** `admin@besiktas-demo` / `demo-password-1234` → ekranlar gerçek veriyle dolar.
+
+> Düğme repoyu Render'a bağlamak için GitHub yetkisi isteyebilir. Detay:
+> [`DEPLOYMENT.md`](DEPLOYMENT.md).
+
 > **Production state:**
 > [`PILOT_ENGINES.md`](PILOT_ENGINES.md) — **19 production-grade engine**
 > gerçek La Liga 2018/19 (34 maç, 85k event) ile sinyal/gürültü auditten geçti.
