@@ -38,6 +38,7 @@ const DICT: Record<string, Partial<Record<Lang, string>>> = {
   Bildirimler: { en: "Notifications" },
   "Rakip Raporu": { en: "Opponent Report" },
   "TD Performansı": { en: "Manager Rating" },
+  "Erişim Denetimi": { en: "Access Audit" },
   Admin: { en: "Admin" },
   // TopBar / genel
   Çıkış: { en: "Log out" },
