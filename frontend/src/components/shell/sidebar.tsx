@@ -28,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/training", label: "Antrenman", roles: ["admin", "coach", "analyst"] },
   { href: "/performance", label: "Performans Testi", roles: ["admin", "coach", "analyst"] },
   { href: "/physical-tests", label: "Yük Riski", roles: ["admin", "coach", "analyst"] },
+  { href: "/contracts", label: "Sözleşmeler", roles: ["admin", "analyst"] },
   { href: "/decisions", label: "Kararlar", roles: ["admin", "coach", "analyst"] },
   { href: "/calibration", label: "Kalibrasyon" },
   { href: "/chat", label: "Asistan" },
