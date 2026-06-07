@@ -45,6 +45,8 @@ const NAV = [
     { ic: "💳", label: "Sözleşmeler", href: "/contracts" },
     { ic: "🔔", label: "Bildirimler", href: "/notifications" },
     { ic: "🔒", label: "Erişim Denetimi", href: "/compliance" },
+    { ic: "🎚️", label: "Kalibrasyon", href: "/calibration" },
+    { ic: "⚙️", label: "Admin", href: "/admin" },
   ] },
 ];
 
