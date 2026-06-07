@@ -34,6 +34,7 @@ const DICT: Record<string, Partial<Record<Lang, string>>> = {
   Kalibrasyon: { en: "Calibration" },
   Asistan: { en: "Assistant" },
   Bildirimler: { en: "Notifications" },
+  "Rakip Raporu": { en: "Opponent Report" },
   Admin: { en: "Admin" },
   // TopBar / genel
   Çıkış: { en: "Log out" },

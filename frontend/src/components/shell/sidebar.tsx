@@ -38,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/chat", label: "Asistan" },
   { href: "/notifications", label: "Bildirimler", roles: ["admin"] },
   { href: "/contracts", label: "Sözleşmeler", roles: ["admin", "analyst"] },
+  { href: "/opponent", label: "Rakip Raporu", roles: ["admin", "coach", "analyst"] },
   { href: "/admin", label: "Admin", roles: ["admin"] },
 ];
 
