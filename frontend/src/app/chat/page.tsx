@@ -1,17 +1,15 @@
 "use client";
 
 /**
- * AI Asistan — yardımcı manager (co-pilot) sohbeti.
- *
- * Gerçek kulüp verisiyle çalışır; tool çağrıları (LineupRecommendationAgent,
- * OpponentScoutAgent, PhysicalRiskAgent…) yanıttaki `tool_traces`'ten gösterilir.
- *
- * Backend: POST /assistant/chat  { message, conversation_id }
+ * AI Asistan — yardımcı manager (co-pilot) sohbeti. ConsoleShell çatısında.
+ * Başlangıç soruları sağ kolonda; sohbet + composer ortada (flex-yükseklik).
+ * Backend: POST /assistant/chat { message, conversation_id }
  *          → { text, conversation_id, tool_traces: [{ name }] }
  */
 
 import * as React from "react";
 import { apiFetch } from "@/lib/api";
+import { ConsoleShell } from "../_console/shell";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -32,11 +30,7 @@ const CHIPS = [
   "Sıradaki rakip brifingi",
 ];
 
-const AI_AVATAR: React.CSSProperties = {
-  background: "linear-gradient(135deg,#3b82f6,#6366f1)",
-};
-
-export default function ChatPage() {
+export default function ChatConsolePage() {
   const [messages, setMessages] = React.useState<ChatMessage[]>([]);
   const [input, setInput] = React.useState("");
   const [conversationId, setConversationId] = React.useState<number | null>(null);
@@ -83,137 +77,113 @@ export default function ChatPage() {
     setInput("");
   }
 
-  return (
-    <div className="flex gap-3 h-[calc(100vh-5rem)]">
-      {/* Sohbet geçmişi / başlangıç */}
-      <aside className="w-56 shrink-0 bg-surface border border-border rounded-lg p-3 overflow-y-auto hidden md:block">
-        <button
-          onClick={newChat}
-          className="w-full bg-surface2 border border-borderlt rounded-lg py-2.5 text-[13px] font-bold hover:border-accent mb-4"
-        >
-          + Yeni Sohbet
-        </button>
-        <div className="text-[10px] font-bold uppercase tracking-wider text-textdim mb-2">
-          Başlangıç soruları
-        </div>
-        {STARTERS.map((s, i) => (
-          <button
-            key={i}
-            onClick={() => send(s)}
-            className="block w-full text-left px-3 py-2 rounded-lg text-[12.5px] text-textmut hover:bg-surface2 hover:text-text truncate"
-          >
-            {s}
-          </button>
-        ))}
-      </aside>
+  const aiAvatar: React.CSSProperties = { background: "linear-gradient(135deg,#3b82f6,#6366f1)" };
+  const avatarBase: React.CSSProperties = {
+    width: 28, height: 28, borderRadius: 7, flexShrink: 0, display: "flex",
+    alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#fff",
+  };
 
-      {/* Sohbet kolonu */}
-      <main className="flex-1 flex flex-col min-w-0 bg-surface border border-border rounded-lg overflow-hidden">
-        <div ref={scrollRef} className="flex-1 overflow-y-auto py-6">
-          <div className="max-w-3xl mx-auto px-6">
+  const right = (
+    <div className="rc">
+      <h3>Sohbet</h3>
+      <button
+        onClick={newChat}
+        style={{ width: "100%", background: "var(--panel3)", border: "1px solid var(--line)", borderRadius: 8, padding: "9px", fontSize: 12.5, fontWeight: 700, color: "var(--ink)", cursor: "pointer", marginBottom: 14, fontFamily: "inherit" }}
+      >
+        + Yeni Sohbet
+      </button>
+      <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "var(--dim)", marginBottom: 8 }}>Başlangıç soruları</div>
+      {STARTERS.map((s, i) => (
+        <button
+          key={i}
+          onClick={() => send(s)}
+          style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, fontSize: 12, color: "var(--muted)", background: "transparent", border: 0, cursor: "pointer", marginBottom: 2, fontFamily: "inherit" }}
+        >
+          {s}
+        </button>
+      ))}
+    </div>
+  );
+
+  return (
+    <ConsoleShell
+      active="/chat"
+      title="AI Asistan"
+      sub="Co-pilot · gerçek kulüp verisiyle"
+      right={right}
+    >
+      <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 132px)", border: "1px solid var(--line)", borderRadius: 9, background: "var(--panel)", overflow: "hidden" }}>
+        {/* Mesajlar */}
+        <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
+          <div style={{ maxWidth: 720, margin: "0 auto" }}>
             {messages.length === 0 && (
-              <div className="text-center text-textmut text-[13px] mt-12">
-                <div className="text-3xl mb-2">⚽</div>
-                manager2 AI gerçek kulüp verinizle çalışır.
-                <br />
-                Bir şey sorun ya da soldan başlayın.
+              <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13, marginTop: 40 }}>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>⚽</div>
+                manager2 AI gerçek kulüp verinizle çalışır.<br />Bir şey sorun ya da sağdan başlayın.
               </div>
             )}
-
             {messages.map((m, i) => (
-              <div key={i} className="mb-6 flex gap-3">
-                <div
-                  className={`w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-extrabold text-[12px] text-white ${
-                    m.role === "user" ? "bg-brand" : ""
-                  }`}
-                  style={m.role === "assistant" ? AI_AVATAR : undefined}
-                >
+              <div key={i} style={{ marginBottom: 22, display: "flex", gap: 12 }}>
+                <div style={{ ...avatarBase, ...(m.role === "assistant" ? aiAvatar : { background: "var(--besiktas)" }) }}>
                   {m.role === "user" ? "S" : "m2"}
                 </div>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-textdim mb-1">
+                <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--dim)", marginBottom: 4 }}>
                     {m.role === "user" ? "Teknik Ekip" : "manager2 AI"}
                   </div>
                   {m.tools && m.tools.length > 0 && (
-                    <div className="flex flex-col gap-1.5 my-2">
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, margin: "8px 0" }}>
                       {m.tools.map((t, j) => (
-                        <div
-                          key={j}
-                          className="flex items-center gap-2.5 bg-surface2 border border-border rounded-lg px-3 py-1.5 text-[12px]"
-                        >
-                          <span
-                            className="w-2 h-2 rounded-full bg-ok text-ok"
-                            style={{ boxShadow: "0 0 7px currentColor" }}
-                          />
-                          <span className="font-mono font-semibold text-text">{t}</span>
-                          <span className="ml-auto font-mono text-[10.5px] text-textdim">çağrıldı</span>
+                        <div key={j} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--panel2)", border: "1px solid var(--line)", borderRadius: 8, padding: "6px 11px", fontSize: 12 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--low)", boxShadow: "0 0 7px var(--low)" }} />
+                          <span style={{ fontFamily: "JetBrains Mono", fontWeight: 600, color: "var(--ink)" }}>{t}</span>
+                          <span style={{ marginLeft: "auto", fontFamily: "JetBrains Mono", fontSize: 10.5, color: "var(--dim)" }}>çağrıldı</span>
                         </div>
                       ))}
                     </div>
                   )}
-                  <div className="text-[14px] leading-relaxed whitespace-pre-wrap text-text">
-                    {m.text}
-                  </div>
+                  <div style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: "pre-wrap", color: "var(--ink)" }}>{m.text}</div>
                 </div>
               </div>
             ))}
-
             {loading && (
-              <div className="mb-6 flex gap-3">
-                <div
-                  className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-extrabold text-[12px] text-white"
-                  style={AI_AVATAR}
-                >
-                  m2
-                </div>
-                <div className="pt-1.5 text-[13px] text-textmut">düşünüyor…</div>
+              <div style={{ marginBottom: 22, display: "flex", gap: 12 }}>
+                <div style={{ ...avatarBase, ...aiAvatar }}>m2</div>
+                <div style={{ paddingTop: 6, fontSize: 13, color: "var(--muted)" }}>düşünüyor…</div>
               </div>
             )}
           </div>
         </div>
 
         {/* Composer */}
-        <div className="border-t border-border p-4">
-          <div className="max-w-3xl mx-auto">
-            <div className="flex gap-2 mb-3 flex-wrap">
+        <div style={{ borderTop: "1px solid var(--line)", padding: 14, background: "var(--header)" }}>
+          <div style={{ maxWidth: 720, margin: "0 auto" }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
               {CHIPS.map((c, i) => (
-                <button
-                  key={i}
-                  onClick={() => setInput(c)}
-                  className="bg-surface2 border border-border text-textmut px-3 py-1.5 rounded-full text-[12px] hover:border-accent hover:text-text"
-                >
+                <button key={i} onClick={() => setInput(c)} style={{ background: "var(--panel2)", border: "1px solid var(--line)", color: "var(--muted)", padding: "5px 12px", borderRadius: 999, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>
                   {c}
                 </button>
               ))}
             </div>
-            <div className="flex gap-2.5 items-end bg-surface2 border border-borderlt rounded-xl px-3 py-2.5">
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-end", background: "var(--panel2)", border: "1px solid var(--line2)", borderRadius: 12, padding: "10px 12px" }}>
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    send();
-                  }
-                }}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 rows={1}
                 placeholder="Takımınız hakkında bir şey sorun…"
-                className="flex-1 bg-transparent text-text text-[14px] resize-none outline-none max-h-28 leading-relaxed"
+                style={{ flex: 1, background: "transparent", color: "var(--ink)", fontSize: 14, resize: "none", outline: "none", maxHeight: 110, lineHeight: 1.5, border: 0, fontFamily: "inherit" }}
               />
-              <button
-                onClick={() => send()}
-                disabled={loading}
-                className="w-9 h-9 rounded-lg bg-brand text-white text-lg shrink-0 flex items-center justify-center disabled:opacity-50"
-              >
+              <button onClick={() => send()} disabled={loading} style={{ width: 34, height: 34, borderRadius: 8, background: "var(--besiktas)", color: "#fff", fontSize: 17, flexShrink: 0, border: 0, cursor: loading ? "default" : "pointer", opacity: loading ? 0.5 : 1 }}>
                 ↑
               </button>
             </div>
-            <div className="text-center text-[10.5px] text-textdim mt-2.5 font-mono">
+            <div style={{ textAlign: "center", fontSize: 10.5, color: "var(--dim)", marginTop: 10, fontFamily: "JetBrains Mono" }}>
               manager2 AI gerçek kulüp verinizle çalışır · yanıtlar audit log&apos;a kaydedilir
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </ConsoleShell>
   );
 }
