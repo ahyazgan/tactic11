@@ -1,23 +1,19 @@
 "use client";
 
 /**
- * Scout / Rakip Dosyası — oyuncu benzerliği + izleme listesi.
- *
- * Hedef oyuncu → cosine similarity ile top-N benzer oyuncu (per-90 stat
- * vektörü), + scout izleme listesi (watchlist) ekle/gör.
- *
+ * Scout — Oyuncu Benzerliği. ConsoleShell çatısını kullanır.
+ * Hedef oyuncu → cosine similarity ile top-N benzer oyuncu + izleme listesi.
  * Backend:
- *   GET  /admin/scout/similar/{player_external_id}   — benzer oyuncular
- *   GET  /admin/scout/watchlist                      — izleme listesi
- *   POST /admin/scout/watchlist                      — listeye ekle
- *   DELETE /admin/scout/watchlist/{id}               — listeden çıkar
+ *   GET    /admin/scout/similar/{player_external_id}
+ *   GET    /admin/scout/watchlist
+ *   POST   /admin/scout/watchlist
+ *   DELETE /admin/scout/watchlist/{id}
  */
 
 import * as React from "react";
-import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 
 interface SimMatch {
   player_external_id: number;
@@ -41,16 +37,24 @@ interface WatchResp {
   entries: WatchEntry[];
 }
 
-const inputCls =
-  "w-full bg-surface2 border border-border text-text text-[13px] px-2 py-1.5 rounded";
-
 function simColor(sim: number): string {
-  if (sim >= 0.85) return "text-ok";
-  if (sim >= 0.7) return "text-warn";
-  return "text-textmut";
+  if (sim >= 0.85) return "var(--low)";
+  if (sim >= 0.7) return "var(--mid)";
+  return "var(--muted)";
 }
 
-export default function ScoutPage() {
+const inputStyle: React.CSSProperties = {
+  background: "var(--panel)",
+  border: "1px solid var(--line)",
+  color: "var(--ink)",
+  fontSize: "12.5px",
+  padding: "6px 10px",
+  borderRadius: "7px",
+  width: "130px",
+  fontFamily: "inherit",
+};
+
+export default function ScoutConsolePage() {
   const [query, setQuery] = React.useState("");
   const [search, setSearch] = React.useState("");
 
@@ -64,23 +68,19 @@ export default function ScoutPage() {
   });
 
   const matches = sim.data?.value.top_matches ?? [];
-  const watched = new Set(
-    (watch.data?.entries ?? []).map((e) => e.player_external_id),
-  );
+  const entries = watch.data?.entries ?? [];
+  const watched = new Set(entries.map((e) => e.player_external_id));
 
   async function addWatch(pid: number) {
     try {
       await apiFetch("/admin/scout/watchlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          player_external_id: pid,
-          notes: `Scout: ${query} ile benzer`,
-        }),
+        body: JSON.stringify({ player_external_id: pid, notes: `Scout: ${query} ile benzer` }),
       });
       watch.mutate();
     } catch {
-      /* sessizce yut — UI watchlist'i yeniden çeker */
+      /* sessizce yut */
     }
   }
 
@@ -93,89 +93,77 @@ export default function ScoutPage() {
     }
   }
 
-  return (
-    <div className="max-w-5xl space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-text">Scout — Oyuncu Benzerliği</h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Per-90 stat vektörü + cosine similarity ile hedef oyuncuya en yakın
-            profiller. Rol/profil eşleştirme için aday havuzu mevcut kadrodur.
-          </p>
+  const right = (
+    <div className="rc">
+      <h3>İzleme Listesi <span className="tiny">{entries.length}</span></h3>
+      {entries.length === 0 && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Liste boş. Soldan oyuncu ekle.</div>}
+      {entries.map((e) => (
+        <div className="alrt" key={e.id}>
+          <span className="ai" style={{ background: "var(--low)" }} />
+          <div className="am" style={{ flex: 1 }}>
+            <b style={{ fontFamily: "JetBrains Mono" }}>#{e.player_external_id}</b>
+            <span className="tm">{e.notes ?? "—"}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => removeWatch(e.player_external_id)}
+            title="İzleme listesinden çıkar"
+            style={{ background: "transparent", border: "1px solid var(--line)", color: "var(--crit)", fontSize: "10px", padding: "2px 7px", borderRadius: 5, cursor: "pointer" }}
+          >
+            ✕
+          </button>
         </div>
-        <span className="font-mono text-[10px] text-textdim bg-surface2 border border-border rounded px-2 py-0.5">
-          GET /admin/scout/similar/&#123;id&#125;
-        </span>
+      ))}
+    </div>
+  );
+
+  return (
+    <ConsoleShell
+      active="/scout"
+      title="Scout — Benzerlik"
+      sub="Oyuncu profil eşleştirme"
+      desc="Per-90 stat vektörü + cosine similarity ile hedef oyuncuya en yakın profiller. Aday havuzu mevcut kadrodur."
+      right={right}
+    >
+      <div className="st" style={{ marginTop: 0 }}>
+        <h2>Hedef Oyuncu</h2>
+        <form onSubmit={(e) => { e.preventDefault(); setQuery(search.trim()); }} style={{ display: "flex", gap: 6 }}>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Oyuncu ID" inputMode="numeric" style={inputStyle} />
+          <button type="submit" style={{ ...inputStyle, width: "auto", cursor: "pointer", color: "var(--muted)" }}>Analiz et</button>
+        </form>
       </div>
 
-      <Panel
-        title="Hedef oyuncu"
-        actions={
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setQuery(search.trim());
-            }}
-            className="flex items-center gap-2"
-          >
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Oyuncu ID"
-              inputMode="numeric"
-              className={`${inputCls} h-7 w-32`}
-            />
-            <button
-              type="submit"
-              className="text-[11px] uppercase px-2 py-1 rounded border border-borderlt text-textmut hover:text-text"
-            >
-              Analiz et
-            </button>
-          </form>
-        }
-      >
-        {!query && <p className="text-[12px] text-textmut">Bir hedef oyuncu ID gir.</p>}
-        {query && sim.isLoading && <p className="text-[12px] text-textmut">Hesaplanıyor…</p>}
-        {query && sim.error && (
-          <p className="text-[12px] text-textmut">
-            Bu oyuncu için maç verisi (appearance) yok ya da aday havuzu yetersiz.
-          </p>
-        )}
-        {sim.data && matches.length > 0 && (
-          <>
-            <div className="text-[11px] text-textmut font-mono mb-2">
-              hedef #{sim.data.value.target_player_id} ·{" "}
-              {sim.data.value.candidates_eligible}/{sim.data.value.candidates_considered} uygun aday
-            </div>
-            <table className="w-full text-[12px]">
-              <thead>
-                <tr className="text-textmut text-left border-b border-border uppercase text-[10.5px]">
-                  <th className="py-1 pr-2 w-8">#</th>
-                  <th className="py-1 pr-2">Oyuncu</th>
-                  <th className="py-1 pr-2 text-right">Benzerlik</th>
-                  <th className="py-1 pr-2 text-right">Dakika</th>
-                  <th className="py-1 text-right">İzle</th>
-                </tr>
-              </thead>
+      {!query && <div className="pgdesc">Benzerlik analizi için bir hedef oyuncu ID gir.</div>}
+      {query && sim.isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
+      {query && sim.error && <div className="pgdesc">Bu oyuncu için maç verisi yok ya da aday havuzu yetersiz.</div>}
+      {sim.data && matches.length === 0 && !sim.isLoading && <div className="pgdesc">Yeterli benzer aday bulunamadı.</div>}
+
+      {sim.data && matches.length > 0 && (
+        <>
+          <div className="st">
+            <h2>Benzer Oyuncular</h2>
+            <span className="ep">hedef #{sim.data.value.target_player_id} · {sim.data.value.candidates_eligible}/{sim.data.value.candidates_considered} aday</span>
+          </div>
+          <div className="tbl">
+            <table>
+              <thead><tr>
+                <th className="c">#</th><th>Oyuncu</th><th className="r">Benzerlik</th><th className="r">Dakika</th><th className="c">İzle</th>
+              </tr></thead>
               <tbody>
                 {matches.map((m, i) => (
-                  <tr key={m.player_external_id} className="border-b border-border/50">
-                    <td className="py-1 pr-2 font-mono text-textdim">{i + 1}</td>
-                    <td className="py-1 pr-2 font-mono">#{m.player_external_id}</td>
-                    <td className={`py-1 pr-2 text-right font-mono font-semibold ${simColor(m.similarity)}`}>
-                      {(m.similarity * 100).toFixed(1)}%
-                    </td>
-                    <td className="py-1 pr-2 text-right font-mono text-textmut">
-                      {m.total_minutes}
-                    </td>
-                    <td className="py-1 text-right">
+                  <tr key={m.player_external_id}>
+                    <td className="pnum c">{i + 1}</td>
+                    <td><span className="nm" style={{ fontFamily: "JetBrains Mono" }}>#{m.player_external_id}</span></td>
+                    <td className="r" style={{ color: simColor(m.similarity) }}>{(m.similarity * 100).toFixed(1)}%</td>
+                    <td className="r" style={{ color: "var(--muted)" }}>{m.total_minutes}</td>
+                    <td className="c">
                       {watched.has(m.player_external_id) ? (
-                        <span className="text-[10px] text-ok uppercase">✓ listede</span>
+                        <span style={{ fontSize: "10px", color: "var(--low)", textTransform: "uppercase" }}>✓ listede</span>
                       ) : (
                         <button
                           type="button"
                           onClick={() => addWatch(m.player_external_id)}
-                          className="text-[10px] uppercase px-2 py-0.5 rounded border border-borderlt text-accent hover:bg-surface2"
+                          style={{ fontSize: "10px", textTransform: "uppercase", padding: "2px 8px", borderRadius: 5, border: "1px solid var(--line)", color: "var(--ink)", background: "var(--panel3)", cursor: "pointer" }}
                         >
                           + izle
                         </button>
@@ -185,41 +173,9 @@ export default function ScoutPage() {
                 ))}
               </tbody>
             </table>
-          </>
-        )}
-        {sim.data && matches.length === 0 && !sim.isLoading && (
-          <p className="text-[12px] text-textmut">Yeterli benzer aday bulunamadı.</p>
-        )}
-      </Panel>
-
-      <Panel title={`İzleme Listesi (${watch.data?.entries.length ?? 0})`}>
-        {(watch.data?.entries ?? []).length === 0 ? (
-          <p className="text-[12px] text-textmut">Liste boş. Yukarıdan oyuncu ekle.</p>
-        ) : (
-          <ul className="text-[12px] space-y-1">
-            {(watch.data?.entries ?? []).map((e) => (
-              <li key={e.id} className="flex items-center gap-3 border-b border-border/40 py-1">
-                <Link
-                  href={`/players/${e.player_external_id}`}
-                  className="font-mono text-accent"
-                >
-                  #{e.player_external_id}
-                </Link>
-                <span className="text-textmut flex-1">{e.notes ?? "—"}</span>
-                <button
-                  type="button"
-                  onClick={() => removeWatch(e.player_external_id)}
-                  className="text-[10px] uppercase px-2 py-0.5 rounded border border-borderlt text-danger hover:bg-surface2"
-                  title="İzleme listesinden çıkar"
-                >
-                  ✕ çıkar
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="font-mono text-[10px] text-textdim mt-2">GET /admin/scout/watchlist</p>
-      </Panel>
-    </div>
+          </div>
+        </>
+      )}
+    </ConsoleShell>
   );
 }
