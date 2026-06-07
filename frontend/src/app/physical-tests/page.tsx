@@ -15,7 +15,7 @@
 import * as React from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, getAccessToken } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
 
 interface PlayerSummary {
@@ -139,6 +139,22 @@ export default function PhysicalPanelPage() {
     }
   }
 
+  async function downloadPdf() {
+    if (!activeId) return;
+    const token = getAccessToken();
+    const res = await fetch(`/api/physical-tests/${activeId}/pdf`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      setErr("PDF üretilemedi.");
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+    window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
+
   const score = risk.data ? Math.round(risk.data.risk_score * 100) : 0;
   const ringColor = risk.data ? riskVar(risk.data.risk_label) : "var(--dim)";
 
@@ -198,7 +214,11 @@ export default function PhysicalPanelPage() {
                   : "Soldan oyuncu seç veya yeni test gir."}
               </div>
             </div>
-            <span className="endpoint">GET /physical-tests/&#123;id&#125;/risk</span>
+            {active && (
+              <button type="button" className="pdfbtn" onClick={downloadPdf}>
+                ⬇ PDF indir
+              </button>
+            )}
           </div>
 
           <div className="grid">
@@ -491,6 +511,12 @@ export default function PhysicalPanelPage() {
           font-family:'JetBrains Mono';font-size:11px;color:var(--dim);
           background:var(--panel2);padding:4px 10px;border-radius:6px;border:1px solid var(--line)
         }
+        .pp-root .pdfbtn{
+          background:var(--besiktas);color:#fff;border:0;padding:9px 16px;border-radius:9px;
+          font-weight:800;font-size:13px;font-family:'Archivo';cursor:pointer;
+          letter-spacing:0.2px;transition:filter .15s
+        }
+        .pp-root .pdfbtn:hover{filter:brightness(1.1)}
 
         @media (max-width:820px){
           .pp-root .topbar{padding:14px 18px;flex-wrap:wrap;gap:10px}
