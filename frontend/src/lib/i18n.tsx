@@ -29,6 +29,7 @@ const DICT: Record<string, Partial<Record<Lang, string>>> = {
   Kararlar: { en: "Decisions" },
   Kalibrasyon: { en: "Calibration" },
   Asistan: { en: "Assistant" },
+  "TD Performansı": { en: "Manager Rating" },
   Admin: { en: "Admin" },
   // TopBar / genel
   Çıkış: { en: "Log out" },
