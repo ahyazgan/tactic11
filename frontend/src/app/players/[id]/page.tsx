@@ -48,12 +48,36 @@ interface Rehab {
   status: string;
   expected_return: string | null;
 }
+interface InjuryResp {
+  value: {
+    risk_score: number;
+    risk_level: string;
+    acwr: number | null;
+    acwr_flag: string;
+    load_factor: number;
+    age_factor: number;
+    frequency_factor: number;
+    recommendation: string;
+  };
+}
 
 const RISK_COLOR: Record<string, string> = {
   Düşük: "text-ok",
   Orta: "text-warn",
   Yüksek: "text-high",
   Kritik: "text-danger",
+};
+const INJURY_LEVEL: Record<string, { label: string; cls: string }> = {
+  low: { label: "Düşük", cls: "text-ok" },
+  moderate: { label: "Orta", cls: "text-warn" },
+  high: { label: "Yüksek", cls: "text-high" },
+  severe: { label: "Çok Yüksek", cls: "text-danger" },
+};
+const ACWR_FLAG: Record<string, string> = {
+  safe: "Güvenli bölge",
+  undertrained: "Az yüklenme",
+  danger: "Tehlikeli bölge",
+  unknown: "Veri yetersiz",
 };
 const STATUS_LABEL: Record<string, string> = {
   active: "Sakat",
@@ -85,8 +109,13 @@ export default function PlayerProfilePage() {
   const rehab = useSWR<Rehab[]>(id ? `/players/${id}/rehab/active` : null, apiFetch, {
     shouldRetryOnError: false,
   });
+  const injury = useSWR<InjuryResp>(
+    id ? `/admin/players/${id}/injury-risk` : null, apiFetch,
+    { shouldRetryOnError: false },
+  );
 
   const r = role.data?.value;
+  const inj = injury.data?.value;
   const matches = sim.data?.value.top_matches ?? [];
   const rehabs = rehab.data ?? [];
 
@@ -192,6 +221,34 @@ export default function PlayerProfilePage() {
                 </li>
               ))}
             </ul>
+          )}
+        </Panel>
+
+        <Panel title="Sakatlık Riski (Yük)" actions={<Tag>injury-risk</Tag>}>
+          {injury.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
+          {injury.error && <p className="text-[12px] text-textmut">Maç/yük verisi yok.</p>}
+          {inj && (
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-3">
+                <span className={`text-2xl font-bold font-mono ${INJURY_LEVEL[inj.risk_level]?.cls ?? "text-textmut"}`}>
+                  {Math.round(inj.risk_score)}
+                  <span className="text-[12px] text-textdim">/100</span>
+                </span>
+                <span className={`text-[13px] font-semibold ${INJURY_LEVEL[inj.risk_level]?.cls ?? "text-textmut"}`}>
+                  {INJURY_LEVEL[inj.risk_level]?.label ?? inj.risk_level}
+                </span>
+              </div>
+              <div className="text-[11px] font-mono text-textmut">
+                ACWR {inj.acwr !== null ? inj.acwr.toFixed(2) : "—"} ·{" "}
+                {ACWR_FLAG[inj.acwr_flag] ?? inj.acwr_flag}
+              </div>
+              <div className="flex gap-3 text-[11px] font-mono text-textmut">
+                <span>yük {Math.round(inj.load_factor)}</span>
+                <span>yaş {Math.round(inj.age_factor)}</span>
+                <span>sıklık {Math.round(inj.frequency_factor)}</span>
+              </div>
+              <p className="text-[12px] text-text">{inj.recommendation}</p>
+            </div>
           )}
         </Panel>
       </div>
