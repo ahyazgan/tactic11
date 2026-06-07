@@ -1,88 +1,68 @@
 "use client";
 
+/**
+ * Lig Takımları — bir ligin takım listesi. ConsoleShell çatısında.
+ * Satıra tıkla → takım detayı. Veri: GET /teams/{leagueId}.
+ */
+
 import useSWR from "swr";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
-import { DataTable, type Column } from "@/components/ui";
+import { ConsoleShell } from "../../../_console/shell";
 
-interface League {
-  external_id: number;
-  name: string;
-  season: number;
-  country: string | null;
-}
+interface League { external_id: number; name: string; season: number; country: string | null }
+interface Team { sport: string; external_id: number; name: string; country: string | null; founded: number | null }
 
-interface Team {
-  sport: string;
-  external_id: number;
-  name: string;
-  country: string | null;
-  founded: number | null;
-}
-
-const TEAM_COLUMNS: Column<Team>[] = [
-  { key: "name", header: "Takım", sortable: true,
-    sortValue: (r) => r.name },
-  { key: "country", header: "Ülke", sortable: true,
-    sortValue: (r) => r.country ?? "",
-    render: (r) => r.country ?? "—" },
-  { key: "founded", header: "Kuruluş", align: "right",
-    sortable: true, sortValue: (r) => r.founded ?? 0,
-    render: (r) => r.founded ?? "—",
-    width: "6rem" },
-  { key: "external_id", header: "ID", align: "right",
-    sortable: true, sortValue: (r) => r.external_id,
-    width: "5rem" },
-];
-
-export default function LeagueTeamsPage() {
+export default function LeagueTeamsConsolePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const leagueId = params.id;
 
-  const { data: leagues } = useSWR<League[]>("/leagues", apiFetch);
+  const { data: leagues } = useSWR<League[]>("/leagues", apiFetch, { shouldRetryOnError: false });
   const league = leagues?.find((l) => l.external_id === Number(leagueId));
+  const { data: teams, error, isLoading } = useSWR<Team[]>(`/teams/${leagueId}`, apiFetch, { shouldRetryOnError: false });
+  const rows = teams ?? [];
 
-  const { data: teams, error, isLoading } = useSWR<Team[]>(
-    `/teams/${leagueId}`,
-    apiFetch,
+  const right = (
+    <div className="rc">
+      <h3>Lig Bilgisi</h3>
+      <div className="stat"><span>Ad</span><span className="sv" style={{ fontFamily: "inherit" }}>{league?.name ?? `#${leagueId}`}</span></div>
+      <div className="stat"><span>Ülke</span><span className="sv" style={{ fontFamily: "inherit" }}>{league?.country ?? "—"}</span></div>
+      {league && <div className="stat"><span>Sezon</span><span className="sv">{league.season}/{league.season + 1}</span></div>}
+      <div className="stat"><span>Takım sayısı</span><span className="sv">{rows.length}</span></div>
+    </div>
   );
 
   return (
-    <div className="max-w-6xl">
-      <nav className="text-[11px] text-textmut mb-2">
-        <Link href="/leagues" className="hover:text-text">Ligler</Link>
-        <span className="mx-1">/</span>
-        <span className="text-text">{league?.name ?? `#${leagueId}`}</span>
-      </nav>
-
-      <h1 className="text-lg font-semibold text-text mb-1">
-        {league?.name ?? `Lig #${leagueId}`} — Takımlar
-      </h1>
-      {league && (
-        <p className="text-[12px] text-textmut mb-3">
-          {league.country ?? "—"} · {league.season}/{league.season + 1}
-        </p>
-      )}
-
-      {isLoading && (
-        <p className="text-textmut text-[13px]">Yükleniyor...</p>
-      )}
-      {error && (
-        <p className="text-danger text-[13px]">
-          Yüklenemedi: {String(error)}
-        </p>
-      )}
-      {teams && (
-        <DataTable<Team>
-          columns={TEAM_COLUMNS}
-          rows={teams}
-          rowKey={(r) => r.external_id}
-          onRowClick={(r) => router.push(`/teams/${r.external_id}`)}
-          emptyMessage="Bu ligde takım yok"
-        />
-      )}
-    </div>
+    <ConsoleShell
+      active="/leagues"
+      title={league?.name ?? `Lig #${leagueId}`}
+      sub="Takımlar"
+      desc="Bu ligdeki takımlar. Takım detayı için bir satıra tıkla."
+      right={right}
+    >
+      {isLoading && <div className="pgdesc">Yükleniyor…</div>}
+      {error && <div className="pgdesc">Yüklenemedi ya da yetki yok.</div>}
+      <div className="st" style={{ marginTop: 0 }}><h2>Takım Listesi</h2><span className="ep">GET /teams/{leagueId}</span></div>
+      <div className="tbl">
+        <table>
+          <thead><tr><th className="c">#</th><th>Takım</th><th>Ülke</th><th className="c">Kuruluş</th><th className="r">ID</th></tr></thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>Bu ligde takım yok.</td></tr>
+            )}
+            {rows.map((t, i) => (
+              <tr key={t.external_id} onClick={() => router.push(`/teams/${t.external_id}`)} style={{ cursor: "pointer" }}>
+                <td className="pnum c">{i + 1}</td>
+                <td><span className="nm">{t.name}</span></td>
+                <td style={{ color: "var(--muted)" }}>{t.country ?? "—"}</td>
+                <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{t.founded ?? "—"}</td>
+                <td className="r" style={{ color: "var(--dim)" }}>{t.external_id}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </ConsoleShell>
   );
 }

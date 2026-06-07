@@ -1,22 +1,17 @@
 "use client";
 
 /**
- * Oyuncu Profili — birleşik görünüm: rol tipolojisi + fiziksel risk + tıbbi
- * (rehab) + benzer oyuncular. Tüm modülleri tek sayfada bağlar.
- *
- * Backend:
- *   GET /admin/scout/player-role/{id}   — rol tipolojisi (engine.player_role)
- *   GET /admin/scout/similar/{id}       — benzer oyuncular
- *   GET /physical-tests/{id}/risk       — yük/fiziksel risk
- *   GET /players/{id}/rehab/active      — aktif sakatlık/rehab
+ * Oyuncu Profili — rol tipolojisi + fiziksel risk + tıbbi + benzer + yük riski.
+ * ConsoleShell çatısında.
+ * Backend: /admin/scout/player-role/{id}, /admin/scout/similar/{id},
+ *   /physical-tests/{id}/risk, /players/{id}/rehab/active, /admin/players/{id}/injury-risk.
  */
 
-import * as React from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
-import { Panel } from "@/components/ui";
+import { ConsoleShell } from "../../_console/shell";
 
 const ROLE_LABEL: Record<string, string> = {
   deep_playmaker: "Derin Oyun Kurucu (Regista)",
@@ -31,227 +26,131 @@ const ROLE_LABEL: Record<string, string> = {
   unknown: "Bilinmiyor",
 };
 
-interface RoleResp {
-  value: { primary_role: string; confidence: number; secondary_role: string };
-}
-interface SimResp {
-  value: { top_matches: { player_external_id: number; similarity: number }[] };
-}
-interface RiskResp {
-  risk_label: string;
-  risk_score: number;
-  summary: string;
-  flags: { protocol: string }[];
-}
-interface Rehab {
-  injury_type: string;
-  status: string;
-  expected_return: string | null;
-}
+interface RoleResp { value: { primary_role: string; confidence: number; secondary_role: string } }
+interface SimResp { value: { top_matches: { player_external_id: number; similarity: number }[] } }
+interface RiskResp { risk_label: string; risk_score: number; summary: string; flags: { protocol: string }[] }
+interface Rehab { injury_type: string; status: string; expected_return: string | null }
 interface InjuryResp {
   value: {
-    risk_score: number;
-    risk_level: string;
-    acwr: number | null;
-    acwr_flag: string;
-    load_factor: number;
-    age_factor: number;
-    frequency_factor: number;
-    recommendation: string;
+    risk_score: number; risk_level: string; acwr: number | null; acwr_flag: string;
+    load_factor: number; age_factor: number; frequency_factor: number; recommendation: string;
   };
 }
 
-const RISK_COLOR: Record<string, string> = {
-  Düşük: "text-ok",
-  Orta: "text-warn",
-  Yüksek: "text-high",
-  Kritik: "text-danger",
+const RISK_VAR: Record<string, string> = { Düşük: "var(--low)", Orta: "var(--mid)", Yüksek: "var(--high)", Kritik: "var(--crit)" };
+const INJURY_LEVEL: Record<string, { label: string; v: string }> = {
+  low: { label: "Düşük", v: "var(--low)" },
+  moderate: { label: "Orta", v: "var(--mid)" },
+  high: { label: "Yüksek", v: "var(--high)" },
+  severe: { label: "Çok Yüksek", v: "var(--crit)" },
 };
-const INJURY_LEVEL: Record<string, { label: string; cls: string }> = {
-  low: { label: "Düşük", cls: "text-ok" },
-  moderate: { label: "Orta", cls: "text-warn" },
-  high: { label: "Yüksek", cls: "text-high" },
-  severe: { label: "Çok Yüksek", cls: "text-danger" },
-};
-const ACWR_FLAG: Record<string, string> = {
-  safe: "Güvenli bölge",
-  undertrained: "Az yüklenme",
-  danger: "Tehlikeli bölge",
-  unknown: "Veri yetersiz",
-};
-const STATUS_LABEL: Record<string, string> = {
-  active: "Sakat",
-  recovering: "İyileşiyor",
-  cleared: "Hazır",
-};
+const ACWR_FLAG: Record<string, string> = { safe: "Güvenli bölge", undertrained: "Az yüklenme", danger: "Tehlikeli bölge", unknown: "Veri yetersiz" };
+const STATUS_LABEL: Record<string, string> = { active: "Sakat", recovering: "İyileşiyor", cleared: "Hazır" };
 
-function Tag({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="font-mono text-[10px] text-textdim bg-surface2 border border-border rounded px-2 py-0.5">
-      {children}
-    </span>
-  );
-}
-
-export default function PlayerProfilePage() {
+export default function PlayerProfileConsolePage() {
   const params = useParams();
   const id = String(params?.id ?? "");
 
-  const role = useSWR<RoleResp>(id ? `/admin/scout/player-role/${id}` : null, apiFetch, {
-    shouldRetryOnError: false,
-  });
-  const sim = useSWR<SimResp>(id ? `/admin/scout/similar/${id}` : null, apiFetch, {
-    shouldRetryOnError: false,
-  });
-  const risk = useSWR<RiskResp>(id ? `/physical-tests/${id}/risk` : null, apiFetch, {
-    shouldRetryOnError: false,
-  });
-  const rehab = useSWR<Rehab[]>(id ? `/players/${id}/rehab/active` : null, apiFetch, {
-    shouldRetryOnError: false,
-  });
-  const injury = useSWR<InjuryResp>(
-    id ? `/admin/players/${id}/injury-risk` : null, apiFetch,
-    { shouldRetryOnError: false },
-  );
+  const role = useSWR<RoleResp>(id ? `/admin/scout/player-role/${id}` : null, apiFetch, { shouldRetryOnError: false });
+  const sim = useSWR<SimResp>(id ? `/admin/scout/similar/${id}` : null, apiFetch, { shouldRetryOnError: false });
+  const risk = useSWR<RiskResp>(id ? `/physical-tests/${id}/risk` : null, apiFetch, { shouldRetryOnError: false });
+  const rehab = useSWR<Rehab[]>(id ? `/players/${id}/rehab/active` : null, apiFetch, { shouldRetryOnError: false });
+  const injury = useSWR<InjuryResp>(id ? `/admin/players/${id}/injury-risk` : null, apiFetch, { shouldRetryOnError: false });
 
   const r = role.data?.value;
   const inj = injury.data?.value;
   const matches = sim.data?.value.top_matches ?? [];
   const rehabs = rehab.data ?? [];
 
+  const right = (
+    <>
+      <div className="rc">
+        <h3>Tıbbi Durum <span className="tiny">rehab/active</span></h3>
+        {rehab.isLoading && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Yükleniyor…</div>}
+        {rehabs.length === 0 && !rehab.isLoading && <div style={{ fontSize: "12px", color: "var(--low)" }}>Aktif sakatlık yok — hazır.</div>}
+        {rehabs.map((rh, i) => (
+          <div className="stat" key={i}>
+            <span style={{ fontSize: 12 }}>{rh.injury_type}</span>
+            <span className="sv" style={{ fontFamily: "inherit", fontSize: 11.5 }}>{STATUS_LABEL[rh.status] ?? rh.status} · {rh.expected_return ?? "—"}</span>
+          </div>
+        ))}
+      </div>
+      <div className="rc">
+        <h3>Benzer Oyuncular <span className="tiny">scout/similar</span></h3>
+        {sim.isLoading && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Yükleniyor…</div>}
+        {matches.length === 0 && !sim.isLoading && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Benzer oyuncu bulunamadı.</div>}
+        {matches.slice(0, 6).map((m) => (
+          <div className="stat" key={m.player_external_id}>
+            <Link href={`/players/${m.player_external_id}`} style={{ fontFamily: "JetBrains Mono", color: "var(--low)", textDecoration: "none" }}>#{m.player_external_id}</Link>
+            <span className="sv">{(m.similarity * 100).toFixed(1)}%</span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+
   return (
-    <div className="max-w-5xl space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold text-text">
-            Oyuncu Profili <span className="font-mono text-textmut">#{id}</span>
-          </h1>
-          <p className="text-[12px] text-textmut mt-0.5">
-            Rol tipolojisi, fiziksel risk, tıbbi durum ve benzer oyuncular tek bakışta.
-          </p>
-        </div>
-        <Link
-          href={`/players/${id}/tactical`}
-          className="text-[11px] uppercase px-3 py-1 rounded border border-borderlt text-accent hover:bg-surface2"
-        >
-          Taktik profil →
-        </Link>
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Panel title="Rol & Profil" actions={<Tag>player-role</Tag>}>
-          {role.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-          {role.error && <p className="text-[12px] text-textmut">Yeterli maç verisi yok.</p>}
+    <ConsoleShell
+      active="/squad"
+      title={`Oyuncu #${id}`}
+      sub="Birleşik profil"
+      desc="Rol tipolojisi, fiziksel risk, tıbbi durum ve yük riski tek bakışta."
+      right={right}
+    >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        {/* Rol & Profil */}
+        <div className="rc" style={{ margin: 0 }}>
+          <h3>Rol & Profil <span className="tiny">player-role</span></h3>
+          {role.isLoading && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Yükleniyor…</div>}
+          {role.error && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Yeterli maç verisi yok.</div>}
           {r && (
-            <div className="space-y-2">
-              <div>
-                <div className="text-2xl font-bold text-text">
-                  {ROLE_LABEL[r.primary_role] ?? r.primary_role}
-                </div>
-                <div className="text-[11px] text-textmut font-mono mt-0.5">
-                  güven {(r.confidence * 100).toFixed(0)}%
-                </div>
-              </div>
+            <>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "var(--ink)" }}>{ROLE_LABEL[r.primary_role] ?? r.primary_role}</div>
+              <div style={{ fontSize: 11, color: "var(--muted)", fontFamily: "JetBrains Mono", marginTop: 3 }}>güven {(r.confidence * 100).toFixed(0)}%</div>
               {r.secondary_role && r.secondary_role !== "unknown" && (
-                <div className="text-[12px] text-textmut">
-                  İkincil: {ROLE_LABEL[r.secondary_role] ?? r.secondary_role}
-                </div>
+                <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>İkincil: {ROLE_LABEL[r.secondary_role] ?? r.secondary_role}</div>
               )}
-            </div>
+            </>
           )}
-        </Panel>
+        </div>
 
-        <Panel title="Fiziksel Risk" actions={<Tag>physical-tests/risk</Tag>}>
-          {risk.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-          {risk.error && <p className="text-[12px] text-textmut">Test verisi yok.</p>}
+        {/* Fiziksel Risk */}
+        <div className="rc" style={{ margin: 0 }}>
+          <h3>Fiziksel Risk <span className="tiny">physical-tests/risk</span></h3>
+          {risk.isLoading && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Yükleniyor…</div>}
+          {risk.error && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Test verisi yok.</div>}
           {risk.data && (
-            <div className="space-y-2">
-              <div className="flex items-baseline gap-3">
-                <span className={`text-xl font-bold ${RISK_COLOR[risk.data.risk_label] ?? "text-textmut"}`}>
-                  {risk.data.risk_label}
-                </span>
-                <span className="font-mono text-[12px] text-textmut">
-                  {(risk.data.risk_score * 100).toFixed(0)}/100
-                </span>
+            <>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                <span style={{ fontSize: 18, fontWeight: 800, color: RISK_VAR[risk.data.risk_label] ?? "var(--muted)" }}>{risk.data.risk_label}</span>
+                <span style={{ fontFamily: "JetBrains Mono", fontSize: 12, color: "var(--muted)" }}>{(risk.data.risk_score * 100).toFixed(0)}/100</span>
               </div>
-              <p className="text-[12px] text-textmut">{risk.data.summary}</p>
-              {risk.data.flags.length > 0 && (
-                <div className="text-[11px] text-high font-mono">
-                  {risk.data.flags.map((f) => f.protocol).join(" · ")}
-                </div>
-              )}
-            </div>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>{risk.data.summary}</div>
+              {risk.data.flags.length > 0 && <div style={{ fontSize: 11, color: "var(--high)", fontFamily: "JetBrains Mono", marginTop: 6 }}>{risk.data.flags.map((f) => f.protocol).join(" · ")}</div>}
+            </>
           )}
-        </Panel>
+        </div>
 
-        <Panel title="Tıbbi Durum" actions={<Tag>rehab/active</Tag>}>
-          {rehab.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-          {rehabs.length === 0 && !rehab.isLoading && (
-            <p className="text-[12px] text-ok">Aktif sakatlık yok — hazır.</p>
-          )}
-          {rehabs.length > 0 && (
-            <ul className="text-[12px] space-y-1">
-              {rehabs.map((rh, i) => (
-                <li key={i} className="flex items-center justify-between border-b border-border/40 py-1">
-                  <span className="text-text">{rh.injury_type}</span>
-                  <span className="text-textmut font-mono">
-                    {STATUS_LABEL[rh.status] ?? rh.status} · {rh.expected_return ?? "—"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Panel>
-
-        <Panel title="Benzer Oyuncular" actions={<Tag>scout/similar</Tag>}>
-          {sim.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-          {matches.length === 0 && !sim.isLoading && (
-            <p className="text-[12px] text-textmut">Benzer oyuncu bulunamadı.</p>
-          )}
-          {matches.length > 0 && (
-            <ul className="text-[12px] space-y-1">
-              {matches.slice(0, 6).map((m) => (
-                <li key={m.player_external_id} className="flex items-center justify-between py-0.5">
-                  <Link href={`/players/${m.player_external_id}`} className="font-mono text-accent">
-                    #{m.player_external_id}
-                  </Link>
-                  <span className="font-mono text-textmut">
-                    {(m.similarity * 100).toFixed(1)}%
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Panel>
-
-        <Panel title="Sakatlık Riski (Yük)" actions={<Tag>injury-risk</Tag>}>
-          {injury.isLoading && <p className="text-[12px] text-textmut">Yükleniyor…</p>}
-          {injury.error && <p className="text-[12px] text-textmut">Maç/yük verisi yok.</p>}
+        {/* Sakatlık Riski (Yük) */}
+        <div className="rc" style={{ margin: 0, gridColumn: "1 / -1" }}>
+          <h3>Sakatlık Riski (Yük) <span className="tiny">injury-risk</span></h3>
+          {injury.isLoading && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Yükleniyor…</div>}
+          {injury.error && <div style={{ fontSize: "12px", color: "var(--dim)" }}>Maç/yük verisi yok.</div>}
           {inj && (
-            <div className="space-y-2">
-              <div className="flex items-baseline gap-3">
-                <span className={`text-2xl font-bold font-mono ${INJURY_LEVEL[inj.risk_level]?.cls ?? "text-textmut"}`}>
-                  {Math.round(inj.risk_score)}
-                  <span className="text-[12px] text-textdim">/100</span>
-                </span>
-                <span className={`text-[13px] font-semibold ${INJURY_LEVEL[inj.risk_level]?.cls ?? "text-textmut"}`}>
-                  {INJURY_LEVEL[inj.risk_level]?.label ?? inj.risk_level}
-                </span>
+            <>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                <span style={{ fontSize: 24, fontWeight: 800, fontFamily: "JetBrains Mono", color: INJURY_LEVEL[inj.risk_level]?.v ?? "var(--muted)" }}>{Math.round(inj.risk_score)}<span style={{ fontSize: 12, color: "var(--dim)" }}>/100</span></span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: INJURY_LEVEL[inj.risk_level]?.v ?? "var(--muted)" }}>{INJURY_LEVEL[inj.risk_level]?.label ?? inj.risk_level}</span>
               </div>
-              <div className="text-[11px] font-mono text-textmut">
-                ACWR {inj.acwr !== null ? inj.acwr.toFixed(2) : "—"} ·{" "}
-                {ACWR_FLAG[inj.acwr_flag] ?? inj.acwr_flag}
+              <div style={{ fontSize: 11, fontFamily: "JetBrains Mono", color: "var(--muted)", marginTop: 6 }}>ACWR {inj.acwr !== null ? inj.acwr.toFixed(2) : "—"} · {ACWR_FLAG[inj.acwr_flag] ?? inj.acwr_flag}</div>
+              <div style={{ display: "flex", gap: 12, fontSize: 11, fontFamily: "JetBrains Mono", color: "var(--muted)", marginTop: 4 }}>
+                <span>yük {Math.round(inj.load_factor)}</span><span>yaş {Math.round(inj.age_factor)}</span><span>sıklık {Math.round(inj.frequency_factor)}</span>
               </div>
-              <div className="flex gap-3 text-[11px] font-mono text-textmut">
-                <span>yük {Math.round(inj.load_factor)}</span>
-                <span>yaş {Math.round(inj.age_factor)}</span>
-                <span>sıklık {Math.round(inj.frequency_factor)}</span>
-              </div>
-              <p className="text-[12px] text-text">{inj.recommendation}</p>
-            </div>
+              <div style={{ fontSize: 12, color: "var(--ink)", marginTop: 8 }}>{inj.recommendation}</div>
+            </>
           )}
-        </Panel>
+        </div>
       </div>
-    </div>
+    </ConsoleShell>
   );
 }
