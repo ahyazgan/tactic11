@@ -9,6 +9,7 @@
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { ConsoleShell } from "../_console/shell";
+import { RiskDonut, LegendRow } from "../_console/viz";
 
 interface PlayerRow {
   player_id: string;
@@ -48,8 +49,32 @@ export default function OverviewConsolePage() {
     .filter((p) => p.risk_label === "Kritik" || p.risk_label === "Yüksek")
     .slice(0, 4);
 
+  const dlow = players.filter((p) => p.risk_label === "Düşük").length;
+  const dmid = players.filter((p) => p.risk_label === "Orta").length;
+  const dhigh = players.filter((p) => p.risk_label === "Yüksek").length;
+  const dcrit = players.filter((p) => p.risk_label === "Kritik").length;
+  const segments = [
+    { value: dlow, color: "var(--low)" },
+    { value: dmid, color: "var(--mid)" },
+    { value: dhigh, color: "var(--high)" },
+    { value: dcrit, color: "var(--crit)" },
+  ];
+
   const right = (
     <>
+      <div className="rc">
+        <h3>Kadro Sağlığı <span className="tiny">{total} oyuncu</span></h3>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <RiskDonut segments={segments} centerLabel={total} centerSub="kadro" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <LegendRow color="var(--low)" label="Düşük" value={dlow} />
+            <LegendRow color="var(--mid)" label="Orta" value={dmid} />
+            <LegendRow color="var(--high)" label="Yüksek" value={dhigh} />
+            <LegendRow color="var(--crit)" label="Kritik" value={dcrit} />
+          </div>
+        </div>
+      </div>
+
       <div className="rc">
         <h3>Sıradaki Maç <span className="tiny">— · —</span></h3>
         <div className="nm-vs"><span className="t">BJK</span><span className="x">vs</span><span className="t away">—</span></div>

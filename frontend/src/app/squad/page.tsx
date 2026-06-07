@@ -10,6 +10,7 @@ import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { ConsoleShell } from "../_console/shell";
+import { RiskDonut, LegendRow } from "../_console/viz";
 
 interface PlayerRow {
   player_id: string;
@@ -61,7 +62,6 @@ export default function SquadConsolePage() {
     { label: "Yüksek", n: players.filter((p) => p.risk_label === "Yüksek").length, v: "var(--high)" },
     { label: "Kritik", n: players.filter((p) => p.risk_label === "Kritik").length, v: "var(--crit)" },
   ];
-  const distMax = Math.max(1, ...dist.map((d) => d.n));
 
   const topRisk = [...players]
     .filter((p) => p.risk_label === "Yüksek" || p.risk_label === "Kritik")
@@ -78,15 +78,14 @@ export default function SquadConsolePage() {
     <>
       <div className="rc">
         <h3>Durum Dağılımı <span className="tiny">{players.length} oyuncu</span></h3>
-        {dist.map((d) => (
-          <div key={d.label}>
-            <div className="stat" style={{ borderBottom: 0, paddingBottom: 2 }}>
-              <span style={{ color: d.v, fontWeight: 700 }}>{d.label}</span>
-              <span className="sv">{d.n}</span>
-            </div>
-            <div className="mbar"><i style={{ width: `${(d.n / distMax) * 100}%`, background: d.v }} /></div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <RiskDonut segments={dist.map((d) => ({ value: d.n, color: d.v }))} centerLabel={players.length} centerSub="kadro" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {dist.map((d) => (
+              <LegendRow key={d.label} color={d.v} label={d.label} value={d.n} />
+            ))}
           </div>
-        ))}
+        </div>
       </div>
 
       <div className="rc">
