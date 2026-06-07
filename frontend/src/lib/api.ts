@@ -65,11 +65,12 @@ async function getOrRefreshToken(): Promise<string | null> {
   return refreshInFlight;
 }
 
-function redirectToLogin() {
+// 401 olduğunda token'ı temizle ama kullanıcıyı ZORLA /login'e atma.
+// Backend yoksa / önizlemede her çağrı 401 olur; yönlendirme yapmayınca
+// kullanıcı dashboard'da kalır, ekranlar boş/"veri yok" gösterir, gezinebilir.
+// Giriş için sayfalardaki "Giriş" linki kullanılır.
+function clearAuthState() {
   clearTokens();
-  if (typeof window !== "undefined") {
-    window.location.href = "/login";
-  }
 }
 
 async function rawFetch(
@@ -96,13 +97,13 @@ export async function apiFetch<T = unknown>(
     // Refresh flow — singleton kuyruk
     const newToken = await getOrRefreshToken();
     if (!newToken) {
-      redirectToLogin();
+      clearAuthState();
       throw new Error("Unauthorized");
     }
     // Tek bir retry
     res = await rawFetch(path, init, newToken);
     if (res.status === 401) {
-      redirectToLogin();
+      clearAuthState();
       throw new Error("Unauthorized after refresh");
     }
   }
