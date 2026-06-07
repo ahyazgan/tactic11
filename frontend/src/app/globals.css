@@ -39,3 +39,24 @@ input[type="submit"][data-touch="true"] {
   h1 { font-size: 1.5rem !important; }
   h2 { font-size: 1rem !important; }
 }
+
+/* PWA: telefon/tablet DİKEYKEN yatay çevirmeyi iste (uygulama yatay tasarlandı).
+   Yatayda (ve PC'de width>1024) overlay gözükmez → uygulama açılır. */
+@media (orientation: portrait) and (max-width: 1024px) {
+  body::before {
+    content: "↻  Lütfen cihazınızı yatay çevirin";
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 28px;
+    background: #0c0e14;
+    color: #e8ebf2;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+}
