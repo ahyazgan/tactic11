@@ -37,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/calibration", label: "Kalibrasyon" },
   { href: "/chat", label: "Asistan" },
   { href: "/notifications", label: "Bildirimler", roles: ["admin"] },
+  { href: "/contracts", label: "Sözleşmeler", roles: ["admin", "analyst"] },
   { href: "/admin", label: "Admin", roles: ["admin"] },
 ];
 
