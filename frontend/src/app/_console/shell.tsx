@@ -80,9 +80,21 @@ const FULL_NAV: NavGroup[] = [
     { label: "Haftalık Rapor",     href: "/weekly-report",icon: "ti-report-analytics" },
     { label: "AI Asistan",         href: "/chat",         icon: "ti-robot", badge: "AI", badgeKind: "ai" },
   ]},
+  // "Diğer" — mockup IA'sında olmayan ama mevcut (eski) sayfalar; URL'leri korunur.
+  { grp: "Diğer", items: [
+    { label: "Kararlar",            href: "/decisions",           icon: "ti-brain" },
+    { label: "Kafa Kafaya",         href: "/h2h",                 icon: "ti-swords" },
+    { label: "Ligler",              href: "/leagues",             icon: "ti-trophy" },
+    { label: "Takımlar",            href: "/teams",               icon: "ti-shield" },
+    { label: "Sözleşmeler",         href: "/contracts",           icon: "ti-file-text" },
+    { label: "TD Performansı",      href: "/manager-performance", icon: "ti-target" },
+    { label: "Veri Girişi & Batarya",href: "/performance",        icon: "ti-clipboard-data" },
+  ]},
   { grp: "Sistem", items: [
-    { label: "Bildirimler",  href: "/notifications", icon: "ti-bell", badge: 5, badgeKind: "count" },
-    { label: "Ayarlar",      href: "/admin",         icon: "ti-settings" },
+    { label: "Bildirimler",    href: "/notifications", icon: "ti-bell", badge: 5, badgeKind: "count" },
+    { label: "Erişim Denetimi",href: "/compliance",    icon: "ti-lock" },
+    { label: "Kalibrasyon",    href: "/calibration",   icon: "ti-adjustments" },
+    { label: "Ayarlar",        href: "/admin",         icon: "ti-settings" },
   ]},
 ];
 
