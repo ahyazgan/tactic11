@@ -203,6 +203,50 @@ export function demoRiskFor(playerId: number): RiskReport {
   };
 }
 
+// Protokol rehberi — canlıda GET /physical-tests/protocols döndürür; demo'da statik.
+export interface ProtocolInfo {
+  key: string;
+  name: string;
+  unit: string;
+  higher_is_better: boolean;
+  description: string;
+  norm_elite: number;
+  norm_good: number;
+  norm_average: number;
+  ref_low?: number;
+  ref_high?: number;
+}
+
+export const demoProtocols: ProtocolInfo[] = [
+  { key: "sprint_10m", name: "10m Sprint (ivmelenme)", unit: "sn", higher_is_better: false,
+    description: "Foto-hücre kapıları; durağan başlangıç, 10m. İlk adım gücü/ivmelenme. 2 deneme, en iyisi.",
+    norm_elite: 1.70, norm_good: 1.80, norm_average: 1.90 },
+  { key: "sprint_30m", name: "30m Sprint", unit: "sn", higher_is_better: false,
+    description: "Foto-hücre kapıları; durağan başlangıç, 30m. 2 deneme, en iyisi. 10m split de kaydedilebilir.",
+    norm_elite: 4.00, norm_good: 4.20, norm_average: 4.40 },
+  { key: "yoyo_irl1", name: "Yo-Yo Intermittent Recovery L1", unit: "seviye", higher_is_better: true,
+    description: "20m mekik + 10s aktif dinlenme, artan hız; bip'e uyamayınca biter. Ulaşılan kademe.",
+    norm_elite: 20.0, norm_good: 18.0, norm_average: 16.0 },
+  { key: "cmj", name: "Countermovement Jump (dikey sıçrama)", unit: "cm", higher_is_better: true,
+    description: "Eller belde, hızlı çömel-zıpla; force plate ya da jump mat ile yükseklik. 3 deneme, en iyisi.",
+    norm_elite: 40.0, norm_good: 35.0, norm_average: 30.0 },
+  { key: "isokinetic_quad", name: "İzokinetik Quadriceps (60°/s)", unit: "Nm/kg", higher_is_better: true,
+    description: "İzokinetik dinamometre, 60°/sn; kuadriseps tepe torku / vücut ağırlığı. H/Q oranı için.",
+    norm_elite: 3.20, norm_good: 2.85, norm_average: 2.50 },
+  { key: "isokinetic_ham", name: "İzokinetik Hamstring (60°/s)", unit: "Nm/kg", higher_is_better: true,
+    description: "İzokinetik dinamometre, 60°/sn; hamstring tepe torku / vücut ağırlığı. Sakatlık riskinin anahtarı.",
+    norm_elite: 2.00, norm_good: 1.75, norm_average: 1.50 },
+  { key: "vo2max", name: "VO2max (maksimal oksijen)", unit: "ml/kg/min", higher_is_better: true,
+    description: "Doğrudan (metabolik araba) ya da Beep/Cooper'dan kestirim. Aerobik kapasite.",
+    norm_elite: 62.0, norm_good: 57.0, norm_average: 52.0 },
+  { key: "gps_total_dist", name: "GPS Toplam Mesafe (maç)", unit: "m", higher_is_better: true,
+    description: "GPS/LPS biriminden bir maç/antrenmandaki toplam kat edilen mesafe. İş hacmi göstergesi.",
+    norm_elite: 11500, norm_good: 10250, norm_average: 9000 },
+  { key: "body_fat_pct", name: "Vücut Yağ Oranı", unit: "%", higher_is_better: false,
+    description: "Skinfold (kaliper) ya da biyoimpedans; vücut yağ yüzdesi. Düşük iyi (atletik kompozisyon).",
+    norm_elite: 8.0, norm_good: 11.0, norm_average: 14.0 },
+];
+
 // --------------------------------------------------------------------------- //
 // SIRADAKİ MAÇ + MAÇ PLANI
 // --------------------------------------------------------------------------- //
