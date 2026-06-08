@@ -102,6 +102,50 @@ def test_websocket_score_is_as_of_minute_not_final(session, client):
         assert "phase" in data
 
 
+def _seed_appearance(
+    session, *, player_id: int, match_id: int = 7001,
+    minutes: int, sub_out: int | None = None, sub_in: int | None = None,
+):
+    session.add(models.PlayerAppearance(
+        sport=football.SPORT_NAME, tenant_id="t-default",
+        player_external_id=player_id, match_external_id=match_id,
+        team_external_id=11, minutes=minutes,
+        kickoff=datetime.now(UTC) - timedelta(days=1),
+        substituted_in_minute=sub_in, substituted_out_minute=sub_out,
+    ))
+
+
+def test_snapshot_excludes_subbed_off_player_and_normalizes_vaep(session):
+    """Faz B uçtan uca: appearance verisi varsa çıkmış oyuncu sub önerilmez ve
+    VAEP oyuncu-başına gerçek dakikaya normalize olur (feed→snapshot)."""
+    from app.api.live import _compute_live_snapshot
+    from app.api.replay_feed import StatsBombReplayFeed
+
+    session.info["tenant_id"] = "t-default"
+    _seed_match_with_events(session)  # team 11, oyuncular 100-110, bol pas
+    # 100 numara 60'ta çıktı (75'te sahada değil); 101 tam maç oynuyor.
+    _seed_appearance(session, player_id=100, minutes=60, sub_out=60)
+    for pid in range(101, 111):
+        _seed_appearance(session, player_id=pid, minutes=90)
+    session.commit()
+
+    feed = StatsBombReplayFeed(session, 7001)
+    apps = feed.appearances()
+    assert apps is not None and len(apps) == 11
+
+    snap = _compute_live_snapshot(feed, 7001, 11, current_minute=75.0)
+    # Çıkmış 100, sub önerilerinde olmamalı.
+    rec_ids = {
+        r["player_external_id"]
+        for r in snap["live_sub_recommendation"]["recommendations"]
+    }
+    assert 100 not in rec_ids
+    # VAEP'te 100 görünüyorsa dakikası 60 (75 değil) olmalı.
+    vaep_by_id = {p["player_id"]: p for p in snap["vaep"]["top_players"]}
+    if 100 in vaep_by_id:
+        assert vaep_by_id[100]["minutes_played"] == 60.0
+
+
 def test_websocket_match_not_found(session, client):
     """Match yok → snapshot içinde error field."""
     session.add(models.Tenant(

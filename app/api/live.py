@@ -213,6 +213,18 @@ def _compute_live_snapshot(
     my_score = home_sc if my_team_id == home_id else away_sc
     opp_score = away_sc if my_team_id == home_id else home_sc
 
+    # Faz B: kadro/sub farkındalığı. appearances yoksa (None) eski davranış —
+    # eligible=None (tüm aktörler), VAEP current_minute'a normalize.
+    appearances = feed.appearances()
+    eligible_ids: set[int] | None = None
+    if appearances is not None:
+        from app.engine.live_lineup import resolve_on_pitch
+        eligible_ids = set(
+            resolve_on_pitch(
+                appearances, current_minute, team_external_id=my_team_id,
+            ).player_ids
+        )
+
     snapshot: dict[str, Any] = {
         "match_id": match_id,
         "my_team_id": my_team_id,
@@ -243,7 +255,7 @@ def _compute_live_snapshot(
         sub_rec = compute_live_sub_recommendation(
             my_team_id, passes_so_far, defs_so_far,
             current_minute=current_minute, my_score=my_score,
-            opponent_score=opp_score,
+            opponent_score=opp_score, eligible_player_ids=eligible_ids,
         )
         snapshot["live_sub_recommendation"] = engine_result_to_dict(sub_rec)["value"]
         shape = compute_live_shape_drift(
@@ -333,10 +345,11 @@ def _compute_live_snapshot(
         }
 
         # Faz 5 #47: VAEP canlı momentum (player-level streaming)
+        # Faz B: appearances varsa oyuncu-başına gerçek dakikaya normalize.
         snapshot["vaep"] = _compute_live_vaep(
             my_team_id=my_team_id, opp_team_id=opp_id,
             passes=passes_so_far, carries=carries_so_far, shots=shots_so_far,
-            current_minute=current_minute,
+            current_minute=current_minute, appearances=appearances,
         )
 
         # Faz 8: bağlam motoru (orkestra şefi) — tek "şimdi şunu yap" başlığı
