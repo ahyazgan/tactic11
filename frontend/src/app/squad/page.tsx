@@ -9,6 +9,8 @@
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
+import { demoPlayerRows } from "@/lib/demo-data";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -42,12 +44,13 @@ function condColor(v: number): string {
 type Filter = "all" | "ready" | "risk";
 
 export default function SquadConsolePage() {
-  const { data } = useSWR<PlayerRow[]>("/physical-tests/players", apiFetch, {
+  // Demo modunda canlı API'ye dokunma; dolu mock kadroyu göster (boş tablo olmaz).
+  const { data } = useSWR<PlayerRow[]>(DEMO_MODE ? null : "/physical-tests/players", apiFetch, {
     shouldRetryOnError: false,
   });
   const [filter, setFilter] = React.useState<Filter>("all");
 
-  const players = data ?? [];
+  const players = DEMO_MODE ? (demoPlayerRows as PlayerRow[]) : (data ?? []);
   const risky = players.filter((p) => p.risk_label === "Yüksek" || p.risk_label === "Kritik").length;
   const ready = players.filter((p) => p.risk_label === "Düşük").length;
   const watch = players.filter((p) => p.risk_label === "Orta").length;
