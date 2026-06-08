@@ -41,6 +41,9 @@ interface Snapshot {
   current_minute?: number;
   events_so_far?: number;
   score?: string;
+  mode?: string;
+  phase?: string;
+  data_quality?: { status?: string; score?: number };
   ppda?: { ppda?: number };
   field_tilt?: { team_a_tilt?: number };
   match_dominance?: { dominance_score?: number; label?: string; xg_diff?: number; possession_share?: number };
@@ -226,10 +229,24 @@ export default function LiveMatchConsolePage() {
 
       {snapshot && !snapshot.error && (
         <>
-          <div className="st" style={{ marginTop: 0 }}><h2>Maç Durumu</h2></div>
+          <div className="st" style={{ marginTop: 0 }}>
+            <h2>Maç Durumu</h2>
+            <span className="tiny" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              {snapshot.mode && (
+                <span title="Gerçek-zamanlı feed değil, StatsBomb maçının sadık replay'i" style={{ color: snapshot.mode === "replay_statsbomb" ? "var(--accent)" : "var(--low)" }}>
+                  {snapshot.mode === "replay_statsbomb" ? "Replay (StatsBomb)" : "Live"}
+                </span>
+              )}
+              {snapshot.data_quality?.status && (
+                <span title="Event akışı veri kalitesi" style={{ color: snapshot.data_quality.status === "ok" ? "var(--low)" : snapshot.data_quality.status === "degraded" ? "var(--mid)" : "var(--crit)" }}>
+                  veri: {snapshot.data_quality.status}
+                </span>
+              )}
+            </span>
+          </div>
           <div className="kpis" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
-            <div className="kpi"><div className="kl">Dakika</div><div className="kn">{snapshot.current_minute?.toFixed(0) ?? "—"}</div></div>
-            <div className="kpi"><div className="kl">Skor</div><div className="kn">{snapshot.score ?? "—"}</div><div className="kd">{snapshot.live_sub_recommendation?.score_state ?? ""}</div></div>
+            <div className="kpi"><div className="kl">Dakika</div><div className="kn">{snapshot.current_minute?.toFixed(0) ?? "—"}</div><div className="kd">{snapshot.phase ?? ""}</div></div>
+            <div className="kpi"><div className="kl">Skor{snapshot.current_minute != null ? ` (${snapshot.current_minute.toFixed(0)}'e kadar)` : ""}</div><div className="kn">{snapshot.score ?? "—"}</div><div className="kd">{snapshot.live_sub_recommendation?.score_state ?? ""}</div></div>
             <div className="kpi"><div className="kl">Olay</div><div className="kn">{snapshot.events_so_far ?? 0}</div></div>
             <div className="kpi"><div className="kl">Dominance</div><div className="kn" style={{ color: dom > 1 ? "var(--low)" : dom < -1 ? "var(--crit)" : "var(--ink)" }}>{snapshot.match_dominance?.dominance_score?.toFixed(2) ?? "—"}</div><div className="kd">{snapshot.match_dominance?.label ?? ""}</div></div>
           </div>
