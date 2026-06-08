@@ -250,6 +250,15 @@ export default function PhysicalPanelPage() {
             </Link>
           </nav>
         </div>
+        <Link href="/test-session" style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "var(--besiktas)", color: "#fff",
+          padding: "8px 16px", borderRadius: 9, fontSize: 13,
+          fontWeight: 800, textDecoration: "none", fontFamily: "'Archivo'",
+          letterSpacing: "0.2px", marginLeft: "auto",
+        }}>
+          ▶ Saha Testi Başlat
+        </Link>
         <div className="club-pill">
           <span className="dot" />
           <b>{user?.tenant_slug?.toUpperCase() ?? user?.tenant_id ?? "KULÜP"}</b>
