@@ -1,6 +1,7 @@
 """Fiziksel performans testi endpoint'leri.
 
 POST   /physical-tests/                — test kaydı gir
+POST   /physical-tests/batch           — toplu kayıt (bir protokol, çok oyuncu)
 GET    /physical-tests/protocols       — tüm protokollerin tanımı + nasıl-yapılır
 GET    /physical-tests/{player_id}     — oyuncunun tüm testleri (en yeni önce)
 GET    /physical-tests/{player_id}/risk  — yükleme riski raporu
@@ -271,6 +272,87 @@ def list_protocols() -> list[ProtocolInfoOut]:
         ))
     out.sort(key=lambda p: p.key)
     return out
+
+
+class BatchTestItem(BaseModel):
+    player_id: str = Field(..., description="API-Football player ID")
+    player_name: str = Field(..., description="Oyuncu adı")
+    value: float = Field(..., description="Ölçülen değer")
+    notes: str | None = Field(None)
+
+
+class PhysicalTestBatchCreate(BaseModel):
+    protocol: TestProtocol = Field(..., description="Tüm kayıtlar için aynı protokol")
+    test_date: date = Field(..., description="Test tarihi (tüm kayıtlar için)")
+    recorded_by: str | None = Field(None)
+    items: list[BatchTestItem] = Field(..., min_length=1, max_length=50,
+                                       description="En az 1, en fazla 50 oyuncu")
+
+
+class BatchResultOut(BaseModel):
+    created: int
+    failed: int
+    errors: list[str]          # başarısız satırlar (player_id + sebep)
+    risk_alerts: list[str]     # batch sonrası kritik riske düşen oyuncular
+
+
+@router.post("/batch", response_model=BatchResultOut, status_code=status.HTTP_201_CREATED)
+def create_batch(
+    payload: PhysicalTestBatchCreate,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> BatchResultOut:
+    """Bir protokol için tüm kadronun test sonuçlarını tek istekte kaydet.
+
+    Kısmi başarı: hatalı satırlar atlanır, diğerleri kaydedilir.
+    Kritik riske düşen oyuncular risk_alerts listesinde döner.
+    """
+    unit = UNIT_MAP.get(payload.protocol, "")
+    recorded_by = payload.recorded_by or user.email
+
+    created_players: list[tuple[str, str]] = []   # (player_id, player_name)
+    errors: list[str] = []
+    for item in payload.items:
+        try:
+            record = PhysicalTest(
+                tenant_id=user.tenant_id,           # body'den gelen tenant ignore
+                player_id=item.player_id,
+                player_name=item.player_name,
+                test_date=payload.test_date,
+                protocol=payload.protocol.value,
+                value=item.value,
+                unit=unit,
+                notes=item.notes,
+                recorded_by=recorded_by,
+            )
+            session.add(record)
+            created_players.append((item.player_id, item.player_name))
+        except Exception as e:  # noqa: BLE001 — hatalı satır batch'i durdurmamalı
+            errors.append(f"{item.player_id}: {e}")
+
+    session.commit()   # tüm başarılı insert'ler tek commit
+
+    # KVKK: her oyuncu için ayrı denetim logu (record_data_access içeride commit eder).
+    for pid, _name in created_players:
+        _log_access(
+            session, player_id=pid, action="batch_create",
+            endpoint="/physical-tests/batch", user_id=user.id,
+        )
+
+    # Kritik risk: batch sonrası her oyuncuyu değerlendir.
+    risk_alerts: list[str] = []
+    for pid, name in created_players:
+        report = _player_risk(session, tenant_id=user.tenant_id, player_id=pid)
+        if report is not None and report.risk_label == CRITICAL_LABEL:
+            risk_alerts.append(f"{name} — Kritik risk")
+            _maybe_alert_critical(report)
+
+    return BatchResultOut(
+        created=len(created_players),
+        failed=len(errors),
+        errors=errors,
+        risk_alerts=risk_alerts,
+    )
 
 
 @router.get("/players", response_model=list[PlayerSummaryOut])

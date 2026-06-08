@@ -355,3 +355,106 @@ def test_protocols_sprint_norms_descending(client):
     protocols = {p["key"]: p for p in r.json()}
     s = protocols["sprint_30m"]
     assert s["norm_elite"] < s["norm_good"] < s["norm_average"]
+
+
+# --------------------------------------------------------------------------- #
+# Blok 2 — POST /physical-tests/batch (toplu kayıt)
+# --------------------------------------------------------------------------- #
+
+_BATCH_PAYLOAD = {
+    "protocol": "sprint_10m",
+    "test_date": "2026-06-06",
+    "recorded_by": "kondisyoner@besiktas.com",
+    "items": [
+        {"player_id": "301", "player_name": "Oyuncu A", "value": 1.75},
+        {"player_id": "302", "player_name": "Oyuncu B", "value": 1.82},
+        {"player_id": "303", "player_name": "Oyuncu C", "value": 1.91},
+    ],
+}
+
+
+def test_batch_creates_all_items(client):
+    c, _ = client
+    r = c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["created"] == 3
+    assert body["failed"] == 0
+
+
+def test_batch_items_queryable_per_player(client):
+    c, _ = client
+    c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    for pid in ("301", "302", "303"):
+        r = c.get(f"/physical-tests/{pid}")
+        assert r.status_code == 200
+        data = r.json()
+        assert len(data) == 1
+        assert data[0]["protocol"] == "sprint_10m"
+
+
+def test_batch_unit_autofilled(client):
+    c, _ = client
+    c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    r = c.get("/physical-tests/301")
+    assert r.json()[0]["unit"] == "sn"
+
+
+def test_batch_partial_success_on_duplicate_value_error(client):
+    """Bir item geçersiz olsa bile diğerleri kaydedilmeli."""
+    c, _ = client
+    payload = {**_BATCH_PAYLOAD, "items": [
+        {"player_id": "401", "player_name": "Geçerli", "value": 1.75},
+        {"player_id": "402", "player_name": "Sıfır", "value": 0.0},  # geçerli ama düşük
+        {"player_id": "403", "player_name": "Geçerli2", "value": 1.80},
+    ]}
+    r = c.post("/physical-tests/batch", json=payload)
+    assert r.status_code == 201
+    # 3 geçerli kayıt
+    assert r.json()["created"] == 3
+
+
+def test_batch_max_50_items_enforced(client):
+    c, _ = client
+    payload = {**_BATCH_PAYLOAD, "items": [
+        {"player_id": str(i), "player_name": f"O{i}", "value": 1.80}
+        for i in range(51)
+    ]}
+    r = c.post("/physical-tests/batch", json=payload)
+    assert r.status_code == 422  # Pydantic validation
+
+
+def test_batch_tenant_isolation(client):
+    c, state = client
+    c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    state["tenant_id"] = "other_tenant"
+    for pid in ("301", "302", "303"):
+        assert c.get(f"/physical-tests/{pid}").json() == []
+
+
+def test_batch_kvkk_log_created(client, session):
+    from sqlalchemy import select
+
+    from app.db import models
+    c, _ = client
+    c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    rows = session.execute(select(models.DataAccessLog)).scalars().all()
+    batch_logs = [r for r in rows if r.action == "batch_create"]
+    assert len(batch_logs) == 3  # her oyuncu için ayrı log
+
+
+def test_batch_risk_alerts_on_critical(client):
+    """Kritik riske düşen oyuncu risk_alerts'te görünmeli."""
+    c, _ = client
+    payload = {
+        "protocol": "sprint_10m",
+        "test_date": "2026-06-06",
+        "items": [
+            # Çok yavaş sprint + daha önce kötü test yok → düşük risk bekle
+            {"player_id": "501", "player_name": "Hızlı", "value": 1.72},
+        ],
+    }
+    r = c.post("/physical-tests/batch", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    assert isinstance(body["risk_alerts"], list)
