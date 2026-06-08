@@ -30,6 +30,19 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="tr" className="light">
+      <head>
+        {/* FM26 shell ikonları — Tabler webfont SELF-HOSTED (public/tabler-icons.css +
+            public/fonts/). CDN'e (jsdelivr) bağlı DEĞİL: offline/firewall/TR-engeli
+            durumunda da ikonlar gelir; "ikonlar görünmüyor" tuzağı biter. */}
+        <link rel="stylesheet" href="/tabler-icons.css" />
+        <link
+          rel="preload"
+          as="font"
+          type="font/woff2"
+          href="/fonts/tabler-icons.woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="bg-bg text-text">
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <AppShell>{children}</AppShell>
