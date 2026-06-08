@@ -8,6 +8,9 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { DEMO_MODE } from "@/lib/demo-mode";
+import { demoLive, type LiveEvent } from "@/lib/demo-data";
 import { ConsoleShell } from "../../../_console/shell";
 
 interface Confidence { score: number; label: string; drivers: string[] }
@@ -83,7 +86,7 @@ const TREND_DIR_VAR: Record<string, string> = {
   "dengeli": "var(--muted)",
 };
 
-export default function LiveMatchConsolePage() {
+function LiveWsView() {
   const params = useParams<{ id: string }>();
   const search = useSearchParams();
   const matchId = params.id;
@@ -435,4 +438,117 @@ function DecisionPanel({ matchId, teamId, currentMinute }: { matchId: number; te
       </div>
     </>
   );
+}
+
+// =========================================================================== //
+// DEMO görünümü — backend/WS YOK; xG yarışı + momentum + olay akışı + sub.
+// =========================================================================== //
+
+const HOME_COLOR = "#3d7eff";
+const AWAY_COLOR = "#ef4444";
+
+const EV_ICON: Record<LiveEvent["type"], string> = {
+  gol: "⚽", sari_kart: "🟨", kirmizi_kart: "🟥",
+  sakatlik: "🩹", degisiklik: "🔁", buyuk_firsat: "✨",
+};
+
+function DemoLiveView() {
+  const d = demoLive;
+  const events = [...d.events].sort((a, b) => b.minute - a.minute); // en yeni üstte
+  const subUv: Record<string, string> = { "kritik": "var(--crit)", "yüksek": "var(--high)", "orta": "var(--mid)" };
+
+  const right = (
+    <>
+      <div className="rc">
+        <h3>Bağlantı <span className="tiny">replay (demo)</span></h3>
+        <div style={{ fontSize: 13, color: "var(--low)", fontWeight: 700 }}>● Canlı (demo)</div>
+        <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 6, fontFamily: "JetBrains Mono" }}>{d.minute}. dakika · momentum {d.momentumHolder}</div>
+      </div>
+      <div className="rc">
+        <h3>Değişiklik Önerileri <span className="tiny">top {d.subs.length}</span></h3>
+        {d.subs.map((s, i) => {
+          const c = subUv[s.urgency] ?? "var(--muted)";
+          return (
+            <div key={i} style={{ padding: "9px 0", borderTop: i ? "1px solid var(--line)" : undefined }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
+                <b style={{ fontSize: 12.5 }}>{s.player_out}</b>
+                <span style={{ fontSize: 9.5, textTransform: "uppercase", color: c }}>{s.urgency}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: "var(--low)", marginBottom: 4 }}>↳ {s.player_in}</div>
+              <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.5 }}>{s.rationale}</div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+
+  return (
+    <ConsoleShell active="/matches/demo/live" title="Canlı Maç" sub={`${d.home} vs ${d.away} · ${d.minute}'`}
+      desc="Event-zaman güdümlü replay (demo). xG yarışı, momentum, olay akışı ve gerekçeli oyuncu değişikliği önerileri." right={right}>
+      {/* Skor başlığı */}
+      <div className="rc" style={{ margin: "0 0 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 22 }}>
+        <div style={{ textAlign: "right", flex: 1 }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: HOME_COLOR }}>{d.home}</div>
+          <div style={{ fontSize: 11, color: "var(--dim)", fontFamily: "JetBrains Mono" }}>xG {d.homeXg.toFixed(2)}</div>
+        </div>
+        <div style={{ fontFamily: "JetBrains Mono", fontWeight: 800, fontSize: 34, letterSpacing: 2 }}>{d.score[0]}-{d.score[1]}</div>
+        <div style={{ textAlign: "left", flex: 1 }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: AWAY_COLOR }}>{d.away}</div>
+          <div style={{ fontSize: 11, color: "var(--dim)", fontFamily: "JetBrains Mono" }}>xG {d.awayXg.toFixed(2)}</div>
+        </div>
+      </div>
+
+      {/* xG yarışı */}
+      <div className="st" style={{ marginTop: 0 }}><h2>xG Yarışı</h2><span className="ep">{d.minute}. dakikaya kadar</span></div>
+      <div className="rc" style={{ margin: "0 0 14px", height: 240 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={d.series} margin={{ top: 8, right: 12, bottom: 4, left: -18 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+            <XAxis dataKey="minute" tick={{ fontSize: 11, fill: "var(--dim)" }} stroke="var(--line)" />
+            <YAxis tick={{ fontSize: 11, fill: "var(--dim)" }} stroke="var(--line)" />
+            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} labelFormatter={(m) => `${m}. dakika`} />
+            <Line type="monotone" dataKey="home" name={d.home} stroke={HOME_COLOR} strokeWidth={2.5} dot={false} />
+            <Line type="monotone" dataKey="away" name={d.away} stroke={AWAY_COLOR} strokeWidth={2.5} dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Momentum */}
+      <div className="st"><h2>Momentum</h2><span className="ep">+ {d.home} · − {d.away}</span></div>
+      <div className="rc" style={{ margin: "0 0 14px" }}>
+        <div style={{ display: "flex", gap: 3, alignItems: "center", height: 44 }}>
+          {d.series.map((p) => {
+            const m = p.momentum; // -100..100
+            const pos = m >= 0;
+            return (
+              <div key={p.minute} title={`${p.minute}': ${m}`} style={{ flex: 1, height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <div style={{ height: `${Math.abs(m) / 2 + 6}%`, background: pos ? HOME_COLOR : AWAY_COLOR, borderRadius: 2, alignSelf: pos ? "flex-start" : "flex-end", width: "100%", opacity: 0.85 }} />
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 8 }}>Son 8 dakikada momentum <b style={{ color: AWAY_COLOR }}>{d.away}</b>'e geçti — üst üste 2 korner.</div>
+      </div>
+
+      {/* Olay akışı */}
+      <div className="st"><h2>Olay Akışı</h2><span className="ep">{d.events.length} olay</span></div>
+      <div className="rc" style={{ margin: 0, padding: 0, overflow: "hidden" }}>
+        {events.map((e, i) => {
+          const c = e.team === "home" ? HOME_COLOR : AWAY_COLOR;
+          return (
+            <div key={i} style={{ display: "grid", gridTemplateColumns: "auto auto 1fr", gap: 11, alignItems: "center", padding: "10px 14px", borderTop: i ? "1px solid var(--line)" : undefined }}>
+              <span style={{ fontFamily: "JetBrains Mono", fontWeight: 700, fontSize: 12, color: "var(--ink)", minWidth: 26 }}>{e.minute}&apos;</span>
+              <span style={{ fontSize: 15 }}>{EV_ICON[e.type]}</span>
+              <span style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.45, borderLeft: `2px solid ${c}`, paddingLeft: 10 }}>{e.text}</span>
+            </div>
+          );
+        })}
+      </div>
+    </ConsoleShell>
+  );
+}
+
+export default function LiveMatchPage() {
+  return DEMO_MODE ? <DemoLiveView /> : <LiveWsView />;
 }
