@@ -114,11 +114,14 @@ def _compute_live_vaep(
     from app.engine.vaep.compute import compute_vaep
 
     minutes_by_player: dict[int, float] = {}
+    on_pitch_ids: frozenset[int] = frozenset()
     if appearances is not None:
         from app.engine.live_lineup import resolve_on_pitch
-        minutes_by_player = resolve_on_pitch(
+        op = resolve_on_pitch(
             appearances, current_minute, team_external_id=my_team_id,
-        ).minutes_by_player
+        )
+        minutes_by_player = op.minutes_by_player
+        on_pitch_ids = op.player_ids
 
     try:
         my_team = compute_vaep(
@@ -166,6 +169,8 @@ def _compute_live_vaep(
             "vaep_value": round(r.vaep_value, 4),
             "total_actions": r.total_actions,
             "minutes_played": round(player_minutes, 1),
+            # Faz B: appearances yoksa None (bilinmiyor) → frontend rozet göstermez.
+            "on_pitch": (pid in on_pitch_ids) if appearances is not None else None,
             "vaep_per_90": (
                 round(r.vaep_per_90, 4) if r.vaep_per_90 is not None else None
             ),

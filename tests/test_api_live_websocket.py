@@ -140,10 +140,11 @@ def test_snapshot_excludes_subbed_off_player_and_normalizes_vaep(session):
         for r in snap["live_sub_recommendation"]["recommendations"]
     }
     assert 100 not in rec_ids
-    # VAEP'te 100 görünüyorsa dakikası 60 (75 değil) olmalı.
+    # VAEP'te 100 görünüyorsa dakikası 60 (75 değil) ve sahada değil.
     vaep_by_id = {p["player_id"]: p for p in snap["vaep"]["top_players"]}
     if 100 in vaep_by_id:
         assert vaep_by_id[100]["minutes_played"] == 60.0
+        assert vaep_by_id[100]["on_pitch"] is False
 
 
 def test_websocket_match_not_found(session, client):

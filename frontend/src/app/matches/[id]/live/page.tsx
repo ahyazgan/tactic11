@@ -34,6 +34,14 @@ function notifyHighUrgency(playerId: number, score: number) {
 
 interface SubRecommendation { player_external_id: number; urgency_score: number; urgency_label: string; reasons: string[] }
 interface PlayerShift { player_external_id: number; drift_distance: number }
+interface VaepPlayer {
+  player_id: number;
+  vaep_value: number;
+  total_actions: number;
+  minutes_played?: number;
+  on_pitch?: boolean | null;
+  vaep_per_90?: number | null;
+}
 interface Snapshot {
   match_id?: number;
   my_team_id?: number;
@@ -50,6 +58,11 @@ interface Snapshot {
   live_sub_recommendation?: { recommendations: SubRecommendation[]; score_state: string };
   opponent_shape_drift?: { shape_changed: boolean; n_players_significant_drift: number; alert_text: string; player_shifts?: PlayerShift[] };
   momentum?: { score?: number; holder?: string; alert_text?: string };
+  vaep?: {
+    my_team_total?: number;
+    opp_team_total?: number;
+    top_players?: VaepPlayer[];
+  };
   context?: { one_liner?: string | null; primary?: { headline?: string } | null; confidence_note?: string };
   confidence?: { context?: Confidence | null; live_sub_recommendation?: Confidence | null; momentum?: Confidence | null };
   trend?: {
@@ -233,7 +246,7 @@ export default function LiveMatchConsolePage() {
             <h2>Maç Durumu</h2>
             <span className="tiny" style={{ display: "flex", gap: 8, alignItems: "center" }}>
               {snapshot.mode && (
-                <span title="Gerçek-zamanlı feed değil, StatsBomb maçının sadık replay'i" style={{ color: snapshot.mode === "replay_statsbomb" ? "var(--accent)" : "var(--low)" }}>
+                <span title="Gerçek-zamanlı feed değil, StatsBomb maçının sadık replay'i" style={{ color: snapshot.mode === "replay_statsbomb" ? "var(--mid)" : "var(--low)" }}>
                   {snapshot.mode === "replay_statsbomb" ? "Replay (StatsBomb)" : "Live"}
                 </span>
               )}
@@ -299,6 +312,39 @@ export default function LiveMatchConsolePage() {
                       <ul style={{ fontSize: 11, color: "var(--muted)", lineHeight: 1.6, paddingLeft: 0, listStyle: "none", margin: 0 }}>
                         {rec.reasons.map((r, i) => <li key={i}>· {r}</li>)}
                       </ul>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          {(snapshot.vaep?.top_players?.length ?? 0) > 0 && (
+            <>
+              <div className="st">
+                <h2>Oyuncu Etkisi (VAEP)</h2>
+                <span className="tiny" style={{ fontFamily: "JetBrains Mono" }}>
+                  takım toplam {snapshot.vaep?.my_team_total?.toFixed(2) ?? "—"}
+                </span>
+              </div>
+              <div className="rc" style={{ margin: "0 0 14px", padding: 0, overflow: "hidden" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "auto 1fr auto auto auto", fontSize: 11, color: "var(--dim)", textTransform: "uppercase", padding: "8px 12px", borderBottom: "1px solid var(--line)", gap: 10 }}>
+                  <span>Oyuncu</span><span>Durum</span><span style={{ textAlign: "right" }}>Dakika</span><span style={{ textAlign: "right" }}>VAEP</span><span style={{ textAlign: "right" }}>VAEP/90</span>
+                </div>
+                {snapshot.vaep?.top_players?.map((p) => {
+                  const onPitch = p.on_pitch;
+                  const badge = onPitch === true
+                    ? { t: "sahada", c: "var(--low)" }
+                    : onPitch === false
+                    ? { t: "çıktı", c: "var(--crit)" }
+                    : null;
+                  return (
+                    <div key={p.player_id} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto auto auto", alignItems: "center", padding: "7px 12px", borderTop: "1px solid var(--line)", gap: 10, opacity: onPitch === false ? 0.6 : 1 }}>
+                      <span style={{ fontFamily: "JetBrains Mono" }}>#{p.player_id}</span>
+                      <span>{badge ? <span style={{ fontSize: 10, textTransform: "uppercase", color: badge.c }}>● {badge.t}</span> : <span style={{ fontSize: 10, color: "var(--dim)" }}>—</span>}</span>
+                      <span style={{ textAlign: "right", fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{p.minutes_played != null ? `${p.minutes_played.toFixed(0)}'` : "—"}</span>
+                      <span style={{ textAlign: "right", fontFamily: "JetBrains Mono" }}>{p.vaep_value.toFixed(2)}</span>
+                      <span style={{ textAlign: "right", fontFamily: "JetBrains Mono", color: "var(--low)" }}>{p.vaep_per_90 != null ? p.vaep_per_90.toFixed(2) : "—"}</span>
                     </div>
                   );
                 })}
