@@ -42,35 +42,47 @@ const FULL_BTABS = [
 
 const BTABS = FULL_BTABS;
 
-const FULL_NAV = [
-  { grp: "Kulüp", items: [
-    { label: "Genel Bakış",   href: "/overview",          icon: "ti-layout-dashboard" },
-    { label: "Kadro",         href: "/squad",             icon: "ti-users" },
-    { label: "Performans",    href: "/physical-tests",    icon: "ti-activity" },
-    { label: "Tıbbi Merkez",  href: "/medical",           icon: "ti-heart-rate-monitor" },
-    { label: "Antrenman",     href: "/training",          icon: "ti-run" },
-    { label: "Maç Planı",     href: "/match-plan",        icon: "ti-clipboard-list" },
+// Yapı, kullanıcının "Yardımcı Antrenör" menü mockup'ından (IA) alındı; görsel
+// dil mevcut FM26 açık temasıdır. Rozetler: live (CANLI), new (YENİ), ai (AI),
+// count (sayı). "Fiziksel Durum" sayısı dinamik (navBadge prop'u) ile dolar.
+type BadgeKind = "live" | "new" | "ai" | "count";
+interface NavItem { label: string; href: string; icon: string; badge?: string | number; badgeKind?: BadgeKind }
+interface NavGroup { grp: string; items: NavItem[] }
+
+const FULL_NAV: NavGroup[] = [
+  { grp: "Genel", items: [
+    { label: "Kontrol Paneli", href: "/overview",      icon: "ti-layout-dashboard" },
+    { label: "Canlı Maç",      href: DEMO_LIVE_HREF,    icon: "ti-ball-football", badge: "CANLI", badgeKind: "live" },
   ]},
-  { grp: "Analiz", items: [
-    { label: "xG Performans", href: "/xg",                icon: "ti-chart-line" },
-    { label: "TD Performansı",href: "/manager-performance",icon: "ti-target"},
-    { label: "Rakip & Scout", href: "/scout",             icon: "ti-eye" },
-    { label: "AI Asistan",    href: "/chat",              icon: "ti-robot" },
+  { grp: "Takım", items: [
+    { label: "Kadro",            href: "/squad",          icon: "ti-users" },
+    { label: "Fiziksel Durum",   href: "/physical-tests", icon: "ti-activity" },
+    { label: "Sakatlık & Sağlık",href: "/medical",        icon: "ti-heart-rate-monitor" },
+    { label: "Yük Takibi",       href: "/workload",       icon: "ti-chart-area-line" },
   ]},
-  { grp: "Maç & Veri", items: [
-    { label: "Canlı Maç",     href: DEMO_LIVE_HREF,        icon: "ti-ball-football" },
-    { label: "Rakip Raporu",  href: "/opponent",          icon: "ti-file-analytics" },
-    { label: "Kafa Kafaya",   href: "/h2h",               icon: "ti-swords" },
-    { label: "Ligler",        href: "/leagues",           icon: "ti-trophy" },
-    { label: "Takımlar",      href: "/teams",             icon: "ti-shield" },
-    { label: "Kararlar",      href: "/decisions",         icon: "ti-brain" },
+  { grp: "Maç & Taktik", items: [
+    { label: "Fikstür",          href: "/matches",        icon: "ti-calendar-event" },
+    { label: "Maç Öncesi Plan",  href: "/match-plan",     icon: "ti-clipboard-list" },
+    { label: "Rakip Analizi",    href: "/opponent",       icon: "ti-file-analytics" },
+    { label: "Taktik Tahtası",   href: "/tactics-board",  icon: "ti-soccer-field", badge: "YENİ", badgeKind: "new" },
+  ]},
+  { grp: "Antrenman", items: [
+    { label: "Antrenman Planı",  href: "/training",       icon: "ti-run" },
+    { label: "Yoklama",          href: "/attendance",     icon: "ti-checklist" },
+  ]},
+  { grp: "Keşif & Transfer", items: [
+    { label: "Oyuncu Keşif",     href: "/scout",          icon: "ti-binoculars" },
+    { label: "Skaut Raporları",  href: "/scout-reports",  icon: "ti-file-text" },
+    { label: "Transfer",         href: "/transfer",       icon: "ti-arrows-exchange" },
+  ]},
+  { grp: "Raporlar & AI", items: [
+    { label: "Performans Analizi", href: "/xg",           icon: "ti-chart-line" },
+    { label: "Haftalık Rapor",     href: "/weekly-report",icon: "ti-report-analytics" },
+    { label: "AI Asistan",         href: "/chat",         icon: "ti-robot", badge: "AI", badgeKind: "ai" },
   ]},
   { grp: "Sistem", items: [
-    { label: "Sözleşmeler",   href: "/contracts",         icon: "ti-file-text" },
-    { label: "Bildirimler",   href: "/notifications",     icon: "ti-bell" },
-    { label: "Erişim Denetimi",href: "/compliance",       icon: "ti-lock" },
-    { label: "Kalibrasyon",   href: "/calibration",       icon: "ti-adjustments" },
-    { label: "Admin",         href: "/admin",             icon: "ti-settings" },
+    { label: "Bildirimler",  href: "/notifications", icon: "ti-bell", badge: 5, badgeKind: "count" },
+    { label: "Ayarlar",      href: "/admin",         icon: "ti-settings" },
   ]},
 ];
 
@@ -143,8 +155,11 @@ export function ConsoleShell({
                 >
                   <i className={`ti ${it.icon}`} aria-hidden="true" />
                   <span className="sni-label">{it.label}</span>
-                  {it.label === "Performans" && navBadge != null && navBadge > 0 && (
-                    <span className="sbadge">{navBadge}</span>
+                  {it.badge != null && (
+                    <span className={`nbadge ${it.badgeKind ?? "count"}`}>{it.badge}</span>
+                  )}
+                  {it.label === "Fiziksel Durum" && navBadge != null && navBadge > 0 && (
+                    <span className="nbadge count">{navBadge}</span>
                   )}
                 </Link>
               ))}
@@ -317,6 +332,19 @@ const CSS = `
   font-size:10.5px;font-weight:700;
   padding:2px 6px;border-radius:10px;
   min-width:20px;text-align:center;
+}
+/* Nav rozetleri (mockup IA): live / new / ai / count */
+.ovroot .nbadge{
+  margin-left:auto;flex-shrink:0;
+  font-size:9.5px;font-weight:700;letter-spacing:.4px;
+  padding:2px 7px;border-radius:20px;line-height:1.5;
+}
+.ovroot .nbadge.live{background:var(--low-bg);color:var(--low);text-transform:uppercase}
+.ovroot .nbadge.new{background:var(--accent-lt);color:var(--accent);text-transform:uppercase}
+.ovroot .nbadge.ai{background:#e6efff;color:#2563eb;letter-spacing:.6px}
+.ovroot .nbadge.count{
+  background:var(--mid-bg);color:var(--mid);
+  min-width:18px;text-align:center;padding:2px 6px;border-radius:10px;
 }
 
 /* ── ORTA ── */
