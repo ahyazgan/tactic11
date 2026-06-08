@@ -23,20 +23,18 @@ import time
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.api.replay_feed import ReplayFeed, StatsBombReplayFeed
 from app.api.serialize import engine_result_to_dict
 from app.core.logging import get_logger
-from app.data.loaders import load_match_events
-from app.db import models
 from app.db.session import get_session
 from app.engine.field_tilt import compute_field_tilt
 from app.engine.live_shape_drift import compute_live_shape_drift
 from app.engine.live_sub_recommendation import compute_live_sub_recommendation
 from app.engine.match_dominance import compute_match_dominance
 from app.engine.ppda import compute_ppda
-from app.sports import football
+from app.engine.replay_clock import current_phase
 
 log = get_logger(__name__)
 
@@ -99,15 +97,31 @@ def _compute_live_vaep(
     shots: list[Any],
     current_minute: float,
     top_n: int = 5,
+    appearances: list[Any] | None = None,
 ) -> dict[str, Any]:
     """My + opp takım toplam VAEP + top-N my_team oyuncusu (Faz 5 #47).
 
     Saf orchestrator: engine.vaep.compute_vaep'i takım ve oyuncu için çağırır;
     DB/HTTP bilmez. WebSocket snapshot'ına gömülür ve REST test'lerinde de
-    bağımsız çağrılabilir. minutes_played = current_minute (basit varsayım —
-    her oyuncu için aynı; sub/lineup verisi henüz live'da yok).
+    bağımsız çağrılabilir.
+
+    Faz B (kadro farkındalığı): `appearances` (PlayerAppearance listesi) verilirse
+    her oyuncunun VAEP/90'ı O OYUNCUNUN gerçek sahada-geçen dakikasına normalize
+    edilir (sonradan giren 10 dk'lık oyuncu 75 dk'ya bölünmez). Takım toplamı
+    yine `current_minute`'a normalize (her zaman 11 kişi sahada). None →
+    eski davranış: minutes_played = current_minute (her oyuncu için aynı).
     """
     from app.engine.vaep.compute import compute_vaep
+
+    minutes_by_player: dict[int, float] = {}
+    on_pitch_ids: frozenset[int] = frozenset()
+    if appearances is not None:
+        from app.engine.live_lineup import resolve_on_pitch
+        op = resolve_on_pitch(
+            appearances, current_minute, team_external_id=my_team_id,
+        )
+        minutes_by_player = op.minutes_by_player
+        on_pitch_ids = op.player_ids
 
     try:
         my_team = compute_vaep(
@@ -138,11 +152,13 @@ def _compute_live_vaep(
 
     player_results: list[dict[str, Any]] = []
     for pid in my_team_player_ids:
+        # Faz B: oyuncunun gerçek sahada-geçen dakikası (yoksa current_minute).
+        player_minutes = minutes_by_player.get(pid, current_minute)
         try:
             r = compute_vaep(
                 player_external_id=pid,
                 all_passes=passes, all_carries=carries, all_shots=shots,
-                minutes_played=current_minute,
+                minutes_played=player_minutes,
             ).value
         except (ValueError, ZeroDivisionError):
             continue
@@ -152,6 +168,9 @@ def _compute_live_vaep(
             "player_id": pid,
             "vaep_value": round(r.vaep_value, 4),
             "total_actions": r.total_actions,
+            "minutes_played": round(player_minutes, 1),
+            # Faz B: appearances yoksa None (bilinmiyor) → frontend rozet göstermez.
+            "on_pitch": (pid in on_pitch_ids) if appearances is not None else None,
             "vaep_per_90": (
                 round(r.vaep_per_90, 4) if r.vaep_per_90 is not None else None
             ),
@@ -170,36 +189,46 @@ def _compute_live_vaep(
 
 
 def _compute_live_snapshot(
-    session, match_id: int, my_team_id: int, current_minute: float,
+    feed: ReplayFeed, match_id: int, my_team_id: int, current_minute: float,
 ) -> dict[str, Any]:
     """Tek-snapshot: events şu ana kadar olanlar + canlı engine'ler."""
-    match = session.execute(
-        select(models.Match).where(
-            models.Match.sport == football.SPORT_NAME,
-            models.Match.external_id == match_id,
-        )
-    ).scalar_one_or_none()
-    if match is None:
-        return {"error": f"match {match_id} bulunamadı"}
-
-    home_id = match.home_team_external_id
-    away_id = match.away_team_external_id
+    home_id = feed.home_team_id
+    away_id = feed.away_team_id
     opp_id = away_id if my_team_id == home_id else home_id
 
-    loaded = load_match_events(session, match_id)
-    # Sadece şu ana kadar olan event'ler
-    passes_so_far = [p for p in loaded.passes if p.minute <= current_minute]
-    carries_so_far = [c for c in loaded.carries if c.minute <= current_minute]
-    defs_so_far = [d for d in loaded.defensive_actions
-                    if d.minute <= current_minute]
-    shots_so_far = [s for s in loaded.shots if s.minute <= current_minute]
+    # Sadece şu ana kadar olan event'ler (feed dilimler)
+    evw = feed.window(current_minute)
+    passes_so_far = evw.passes
+    carries_so_far = evw.carries
+    defs_so_far = evw.defensive_actions
+    shots_so_far = evw.shots
 
     if not passes_so_far:
         return {
             "match_id": match_id, "current_minute": current_minute,
             "events_so_far": 0,
             "note": "Henüz event yok",
+            "mode": feed.mode(),
         }
+
+    # As-of-minute koşan skor (final-skor sızıntısı yerine). Bu local'ler aşağıda
+    # 5 tüketiciye akar: sub_recommendation, sub_timing, tactical_trigger,
+    # score_time_matrix, context_only — hepsi doğru oyun durumuyla beslenir.
+    home_sc, away_sc = feed.running_score(current_minute)
+    my_score = home_sc if my_team_id == home_id else away_sc
+    opp_score = away_sc if my_team_id == home_id else home_sc
+
+    # Faz B: kadro/sub farkındalığı. appearances yoksa (None) eski davranış —
+    # eligible=None (tüm aktörler), VAEP current_minute'a normalize.
+    appearances = feed.appearances()
+    eligible_ids: set[int] | None = None
+    if appearances is not None:
+        from app.engine.live_lineup import resolve_on_pitch
+        eligible_ids = set(
+            resolve_on_pitch(
+                appearances, current_minute, team_external_id=my_team_id,
+            ).player_ids
+        )
 
     snapshot: dict[str, Any] = {
         "match_id": match_id,
@@ -208,7 +237,9 @@ def _compute_live_snapshot(
         "current_minute": current_minute,
         "events_so_far": (len(passes_so_far) + len(carries_so_far)
                           + len(defs_so_far) + len(shots_so_far)),
-        "score": f"{match.home_score}-{match.away_score}",
+        "score": f"{home_sc}-{away_sc}",
+        "mode": feed.mode(),
+        "phase": current_phase(current_minute),
     }
     try:
         ppda = compute_ppda(my_team_id, passes_so_far, defs_so_far)
@@ -225,13 +256,11 @@ def _compute_live_snapshot(
             opponent_carries=carries_so_far,
         )
         snapshot["match_dominance"] = engine_result_to_dict(dom)["value"]
-        # Live decisions (gerçek "live" özellikler)
-        my_score = match.home_score if my_team_id == home_id else match.away_score
-        opp_score = match.away_score if my_team_id == home_id else match.home_score
+        # Live decisions (gerçek "live" özellikler) — skor yukarıda as-of hesaplandı
         sub_rec = compute_live_sub_recommendation(
             my_team_id, passes_so_far, defs_so_far,
             current_minute=current_minute, my_score=my_score,
-            opponent_score=opp_score,
+            opponent_score=opp_score, eligible_player_ids=eligible_ids,
         )
         snapshot["live_sub_recommendation"] = engine_result_to_dict(sub_rec)["value"]
         shape = compute_live_shape_drift(
@@ -321,10 +350,11 @@ def _compute_live_snapshot(
         }
 
         # Faz 5 #47: VAEP canlı momentum (player-level streaming)
+        # Faz B: appearances varsa oyuncu-başına gerçek dakikaya normalize.
         snapshot["vaep"] = _compute_live_vaep(
             my_team_id=my_team_id, opp_team_id=opp_id,
             passes=passes_so_far, carries=carries_so_far, shots=shots_so_far,
-            current_minute=current_minute,
+            current_minute=current_minute, appearances=appearances,
         )
 
         # Faz 8: bağlam motoru (orkestra şefi) — tek "şimdi şunu yap" başlığı
@@ -438,14 +468,16 @@ async def matches_live(
     my_team_id: int = Query(...),
     interval_seconds: int = Query(default=10),
     max_minute: float = Query(default=90.0,
-        description="Simülasyon üst sınırı; replay için"),
+        description="Opsiyonel sert tavan; replay normalde son-event'te biter"),
+    speed: float = Query(default=5.0,
+        description="Her interval'da ilerleyen match-dakikası (replay hızı)"),
     tenant_id: str = Query(default="t-default"),
     session: Session = Depends(get_session),
 ) -> None:
     """WebSocket: her N saniyede tactical snapshot push.
 
-    Replay modu: events tablosundaki match için simulated wall-clock; her
-    interval'da "şu dakikadayız" değeri artar.
+    Replay modu: event-zaman güdümlü saat; replay gerçek son-event dakikasında
+    biter (düz 90 değil). `speed` wall-time→match-time eşler.
     """
     interval = max(MIN_INTERVAL_SECONDS, min(MAX_INTERVAL_SECONDS, interval_seconds))
     await websocket.accept()
@@ -459,6 +491,7 @@ async def matches_live(
     # Bağlantı-başına trend state (global DEĞİL) — son N snapshot özeti.
     from app.engine.live_alerts import compute_live_alerts
     from app.engine.live_confidence import summarize_trend
+    from app.engine.replay_clock import ClockConfig, advance_minute
     from app.notifications import build_default_notifier, dispatch_live_alerts
     trend_history: list[dict[str, Any]] = []
     # Kritik uyarı telefona (Telegram/WhatsApp/e-posta) — yalnızca gerçek kanal
@@ -467,13 +500,26 @@ async def matches_live(
     _push_critical = bool(_notifier.active_channel_names())
     _alert_sent: set[str] = set()
     try:
+        # Feed'i bağlantı başında BİR kez kur (event'ler bir kez yüklenir).
+        try:
+            feed: ReplayFeed = StatsBombReplayFeed(session, match_id)
+        except ValueError as e:
+            await websocket.send_text(json.dumps({"error": str(e)}))
+            return
+        last_event_minute = feed.last_event_minute()
+        clock_cfg = ClockConfig(speed=speed, start_minute=SIMULATION_START_MINUTE)
         while True:
             elapsed_wall = time.monotonic() - start_wall
-            # Replay: her interval'da +5 dk simülasyon
-            current_minute = min(max_minute, SIMULATION_START_MINUTE
-                                 + (elapsed_wall / interval) * 5.0)
+            current_minute, ended = advance_minute(
+                elapsed_wall=elapsed_wall, interval=interval,
+                last_event_minute=last_event_minute, config=clock_cfg,
+            )
+            # max_minute opsiyonel sert tavan (test geri-uyumu)
+            if current_minute >= max_minute:
+                current_minute = max_minute
+                ended = True
             snapshot = _compute_live_snapshot(
-                session, match_id, my_team_id, current_minute,
+                feed, match_id, my_team_id, current_minute,
             )
             # Zamansal trend: snapshot'tan küçük bir özet biriktir, yön türet.
             trend_history.append(_trend_frame(snapshot))
@@ -503,7 +549,7 @@ async def matches_live(
                         dispatch_live_alerts, _alerts, _notifier,
                         min_severity="critical", already_sent=_alert_sent,
                     )
-            if current_minute >= max_minute:
+            if ended:
                 await websocket.send_text(json.dumps({
                     "type": "match_ended", "current_minute": current_minute,
                 }))

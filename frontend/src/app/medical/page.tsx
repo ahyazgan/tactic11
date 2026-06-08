@@ -1,9 +1,13 @@
 "use client";
 
 /**
- * Tıbbi Merkez — sakatlık/rehabilitasyon takibi (return_to_play). ConsoleShell çatısında.
- * Takım geneli aktif sakatlıklar + oyuncu sorgu + yeni rehab kaydı (sağ kolon).
- * Backend:
+ * Tıbbi Merkez — sakatlık / rehabilitasyon / dönüş-riski konsolu. ConsoleShell çatısında.
+ *
+ * DEMO_MODE açıkken: canlı API'ye hiç dokunulmaz; FK Demo evreninden zengin,
+ * inandırıcı Türkçe tıbbi içerik render edilir (boş-state / "ID gir" / spinner yok).
+ * DEMO_MODE kapalıyken eski canlı-API davranışı (SWR + form) geri gelir.
+ *
+ * Backend (DEMO kapalıyken):
  *   GET   /rehab/active
  *   GET   /players/{id}/rehab/active
  *   POST  /players/{id}/rehab
@@ -13,7 +17,9 @@
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../_console/shell";
+import { RiskDonut, LegendRow } from "../_console/viz";
 
 interface Rehab {
   id: number;
@@ -55,7 +61,245 @@ const fieldStyle: React.CSSProperties = {
 };
 const labelStyle: React.CSSProperties = { display: "block", fontSize: "10.5px", color: "var(--muted)", margin: "8px 0 3px", textTransform: "uppercase", letterSpacing: "0.5px" };
 
+// --------------------------------------------------------------------------- //
+// DEMO VERİSİ (bu dosyaya özel inline const) — FK Demo evreni ile tutarlı.
+// "Bugün" 2026-06-08 (maç günü). Tarihler buna göre kurgulandı.
+// --------------------------------------------------------------------------- //
+
+interface DemoInjury {
+  player: string;
+  shirt: number;
+  pos: string;
+  injury: string;
+  region: "Adale" | "Eklem" | "Kemik" | "Bağ" | "Diğer";
+  start: string;          // sakatlanma tarihi
+  expected: string | null; // tahmini dönüş
+  status: "active" | "recovering" | "cleared";
+  progress: number;       // rehab ilerleme 0..100
+  load: number;           // dönüşe hazırlık / yük toleransı 0..100
+  notes: string;
+}
+
+const DEMO_INJURIES: DemoInjury[] = [
+  { player: "Caner Öztürk", shirt: 10, pos: "10 Numara", injury: "Hamstring zorlanması (Grade 1)", region: "Adale", start: "2026-06-06", expected: "2026-06-20", status: "active", progress: 18, load: 24, notes: "Maç-içi arka adale sinyali. MR temiz, düşük dereceli. Tam istirahat 4 gün." },
+  { player: "Onur Kaya", shirt: 3, pos: "Sol Bek", injury: "Aşil tendinopatisi", region: "Eklem", start: "2026-05-28", expected: "2026-06-15", status: "active", progress: 35, load: 41, notes: "Yük yönetimi protokolü. Eksantrik güç çalışması başladı." },
+  { player: "Kerem Aslan", shirt: 4, pos: "Stoper", injury: "Adduktor zorlanması (Grade 2)", region: "Adale", start: "2026-05-22", expected: "2026-06-12", status: "recovering", progress: 64, load: 58, notes: "Saha-içi koşu fazına geçti. Yön değiştirme testleri %80 simetri." },
+  { player: "Eren Acar", shirt: 15, pos: "Stoper", injury: "Diz kapsül zorlanması", region: "Eklem", start: "2026-05-18", expected: "2026-06-14", status: "recovering", progress: 58, load: 52, notes: "Şişlik geriledi. İzokinetik kuvvet farkı %12 (hedef <%10)." },
+  { player: "Selim Korkmaz", shirt: 18, pos: "Sol Kanat", injury: "Bilek burkulması (Grade 1)", region: "Bağ", start: "2026-05-30", expected: "2026-06-10", status: "recovering", progress: 78, load: 71, notes: "Ağrısız tam yük. Proprioseptif denge + sprint hazır." },
+  { player: "Uğur Bal", shirt: 19, pos: "Santrfor", injury: "Kasık ödemi (overload)", region: "Adale", start: "2026-05-25", expected: "2026-06-11", status: "recovering", progress: 70, load: 66, notes: "ACWR yüksekti, yük düşürüldü. Bu hafta takımla kısmi antrenman." },
+  { player: "Volkan Taş", shirt: 16, pos: "Ön Libero", injury: "Baldır zorlanması (Grade 1)", region: "Adale", start: "2026-05-12", expected: "2026-06-02", status: "cleared", progress: 100, load: 92, notes: "Return-to-play tamamlandı. Son maçta 72 dk oynadı, sorun yok." },
+  { player: "Sinan Güneş", shirt: 24, pos: "Sağ Bek", injury: "Ayak bileği kontüzyonu", region: "Diğer", start: "2026-05-08", expected: "2026-05-26", status: "cleared", progress: 100, load: 96, notes: "Tam temizlendi. Kadroya geri döndü, full yük." },
+];
+
+const DEMO_REGION_DIST = [
+  { label: "Adale", v: "var(--crit)" },
+  { label: "Eklem", v: "var(--high)" },
+  { label: "Bağ", v: "var(--mid)" },
+  { label: "Diğer", v: "var(--low)" },
+];
+
+// Return-to-play takvimi (önümüzdeki günler) — sadece aktif/iyileşen kayıtlar.
+interface RtpRow { player: string; shirt: number; phase: string; eta: string; days: number; conf: number; v: string }
+const DEMO_RTP: RtpRow[] = [
+  { player: "Selim Korkmaz", shirt: 18, phase: "Kadro değerlendirme", eta: "2026-06-10", days: 2, conf: 88, v: "var(--low)" },
+  { player: "Uğur Bal", shirt: 19, phase: "Takımla kısmi antrenman", eta: "2026-06-11", days: 3, conf: 74, v: "var(--mid)" },
+  { player: "Kerem Aslan", shirt: 4, phase: "Saha-içi koşu fazı", eta: "2026-06-12", days: 4, conf: 69, v: "var(--mid)" },
+  { player: "Eren Acar", shirt: 15, phase: "Kuvvet simetri çalışması", eta: "2026-06-14", days: 6, conf: 61, v: "var(--high)" },
+  { player: "Onur Kaya", shirt: 3, phase: "Yük yönetimi (tendinopati)", eta: "2026-06-15", days: 7, conf: 52, v: "var(--high)" },
+  { player: "Caner Öztürk", shirt: 10, phase: "Akut faz — istirahat", eta: "2026-06-20", days: 12, conf: 44, v: "var(--crit)" },
+];
+
+// Yük / re-injury risk uyarıları (sağ kolon).
+interface LoadAlert { player: string; note: string; v: string; tag: string }
+const DEMO_LOAD_ALERTS: LoadAlert[] = [
+  { player: "Caner Öztürk (10)", note: "Tekrar sakatlık riski yüksek — ACWR 1.6, akut faz. Dönüşte dakika sınırı şart.", v: "var(--crit)", tag: "kritik" },
+  { player: "Onur Kaya (3)", note: "Aşil yükü hassas; antrenmanda sıçrama hacmini sınırla.", v: "var(--high)", tag: "yüksek" },
+  { player: "Eren Acar (15)", note: "Kuvvet simetrisi %12 — dönüş öncesi <%10 hedefine indir.", v: "var(--high)", tag: "yüksek" },
+  { player: "Uğur Bal (19)", note: "Kademeli yük artışı iyi gidiyor; bu hafta tam antrenman.", v: "var(--mid)", tag: "izleme" },
+];
+
+function progColor(v: number): string {
+  return v >= 80 ? "var(--low)" : v >= 50 ? "var(--mid)" : "var(--high)";
+}
+
 export default function MedicalConsolePage() {
+  // ───────────────────────────── DEMO MODU ─────────────────────────────
+  // Canlı API'ye hiç dokunma; FK Demo evreninden zengin tıbbi merkez render et.
+  if (DEMO_MODE) return <MedicalDemo />;
+  return <MedicalLive />;
+}
+
+/* ─────────────────────────── DEMO RENDER ─────────────────────────── */
+function MedicalDemo() {
+  type Filter = "all" | "active" | "recovering" | "cleared";
+  const [filter, setFilter] = React.useState<Filter>("all");
+
+  const activeN = DEMO_INJURIES.filter((r) => r.status === "active").length;
+  const recoveringN = DEMO_INJURIES.filter((r) => r.status === "recovering").length;
+  const clearedN = DEMO_INJURIES.filter((r) => r.status === "cleared").length;
+  const openN = activeN + recoveringN;
+
+  // Bölge dağılımı (donut) — açık (cleared olmayan) kayıtlardan.
+  const open = DEMO_INJURIES.filter((r) => r.status !== "cleared");
+  const regionCount = (label: string) => open.filter((r) => r.region === label).length;
+  const dist = DEMO_REGION_DIST.map((d) => ({ ...d, n: regionCount(d.label) }));
+
+  const shown = DEMO_INJURIES.filter((r) => filter === "all" || r.status === filter);
+
+  const right = (
+    <>
+      <div className="rc">
+        <h3>Sakatlık Bölgesi <span className="tiny">{open.length} açık</span></h3>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <RiskDonut segments={dist.map((d) => ({ value: d.n, color: d.v }))} centerLabel={open.length} centerSub="açık" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {dist.map((d) => (
+              <LegendRow key={d.label} color={d.v} label={d.label} value={d.n} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="rc">
+        <h3>Sıradaki Dönüş <span className="tiny">return-to-play</span></h3>
+        <div className="nm-vs"><span className="t">Selim Korkmaz</span></div>
+        <div className="nm-when">Kadro değerlendirme · 2 gün · Rakip SK maçı</div>
+        <div className="probbar">
+          <i style={{ width: "88%", background: "var(--low)" }} />
+          <i style={{ width: "12%", background: "var(--surface2)" }} />
+        </div>
+        <div className="probleg">
+          <div className="pi"><div className="pv" style={{ color: "var(--low)" }}>%88</div><div className="pl">Hazırlık</div></div>
+          <div className="pi"><div className="pv" style={{ color: "var(--muted)" }}>78</div><div className="pl">Rehab İlerleme</div></div>
+          <div className="pi"><div className="pv" style={{ color: "var(--ink)" }}>13g</div><div className="pl">Süre</div></div>
+        </div>
+      </div>
+
+      <div className="rc">
+        <h3>Re-injury / Yük Uyarıları <span className="tiny">{DEMO_LOAD_ALERTS.length} aktif</span></h3>
+        {DEMO_LOAD_ALERTS.map((a) => (
+          <div className="alrt" key={a.player}>
+            <span className="ai" style={{ background: a.v }} />
+            <div className="am"><b>{a.player}</b> · {a.tag}
+              <span className="tm">{a.note}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rc">
+        <h3>Görevler <span className="tiny">0/3</span></h3>
+        <div className="task"><span className="cb" /><span className="tt">Caner Öztürk dönüş protokolü onayı</span></div>
+        <div className="task"><span className="cb" /><span className="tt">Selim Korkmaz kadro değerlendirme (RTP)</span></div>
+        <div className="task"><span className="cb" /><span className="tt">Eren Acar izokinetik re-test planı</span></div>
+      </div>
+    </>
+  );
+
+  return (
+    <ConsoleShell
+      active="/medical"
+      title="Tıbbi Merkez"
+      sub="Sakatlık & dönüş takibi"
+      desc="Return-to-play takibi, rehabilitasyon ilerlemesi ve tekrar-sakatlık riski. Sağlık verisi KVKK'da özel niteliklidir; erişim denetim kaydına yazılır."
+      navBadge={activeN}
+      right={right}
+    >
+      <div className="kpis" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+        <div className="kpi"><div className="kl">Aktif Sakatlık</div><div className="kn" style={{ color: activeN ? "var(--crit)" : "var(--low)" }}>{activeN}</div><div className="kd">akut tedavide</div></div>
+        <div className="kpi"><div className="kl">İyileşiyor</div><div className="kn" style={{ color: "var(--mid)" }}>{recoveringN}</div><div className="kd">rehab fazında</div></div>
+        <div className="kpi"><div className="kl">Bu Hafta Dönen</div><div className="kn" style={{ color: "var(--low)" }}>{clearedN}</div><div className="kd">kadroya geri</div></div>
+        <div className="kpi"><div className="kl">Açık Vaka</div><div className="kn">{openN}</div><div className="kd">takipte</div></div>
+      </div>
+
+      <div className="st">
+        <h2>Sakatlık & Rehabilitasyon</h2>
+        <div className="seg">
+          <button className={filter === "all" ? "on" : ""} onClick={() => setFilter("all")}>Tümü</button>
+          <button className={filter === "active" ? "on" : ""} onClick={() => setFilter("active")}>Sakat</button>
+          <button className={filter === "recovering" ? "on" : ""} onClick={() => setFilter("recovering")}>İyileşiyor</button>
+          <button className={filter === "cleared" ? "on" : ""} onClick={() => setFilter("cleared")}>Hazır</button>
+        </div>
+      </div>
+      <div className="tbl">
+        <table>
+          <thead><tr>
+            <th>Oyuncu</th><th>Sakatlık</th><th className="c">Başlangıç → Dönüş</th>
+            <th className="c">Kalan</th><th className="c">Rehab İlerleme</th><th className="c">Durum</th>
+          </tr></thead>
+          <tbody>
+            {shown.map((r, i) => {
+              const left = daysUntil(r.expected);
+              const v = STATUS_VAR[r.status];
+              return (
+                <tr key={`${r.player}-${i}`}>
+                  <td>
+                    <span className="nm">{r.player}</span> <span className="nat">#{r.shirt}</span>
+                    <div style={{ fontSize: 10.5, color: "var(--dim)", marginTop: 2 }}>{r.pos}</div>
+                  </td>
+                  <td>
+                    <span style={{ fontSize: 12.5 }}>{r.injury}</span>
+                    <div style={{ fontSize: 10.5, color: "var(--dim)", marginTop: 2 }}>{r.region}</div>
+                  </td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)", fontSize: 11 }}>{r.start} → {r.expected ?? "—"}</td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: r.status === "cleared" ? "var(--dim)" : left !== null && left <= 3 ? "var(--high)" : "var(--muted)" }}>
+                    {r.status === "cleared" ? "döndü" : left !== null ? `${left}g` : "—"}
+                  </td>
+                  <td className="c">
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span className="mbar" style={{ flex: 1, margin: 0 }}><i style={{ width: `${r.progress}%`, background: progColor(r.progress) }} /></span>
+                      <span style={{ fontFamily: "JetBrains Mono", fontSize: 11, color: "var(--muted)", minWidth: 30, textAlign: "right" }}>{r.progress}%</span>
+                    </div>
+                  </td>
+                  <td className="c"><span className="risk" style={{ color: v }}><span className="rd" style={{ background: v, boxShadow: `0 0 7px ${v}` }} />{STATUS_LABEL[r.status]}</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="st"><h2>Return-to-Play Takvimi</h2><span className="ep">model güveni · tahmini dönüş</span></div>
+      <div className="tbl">
+        <table>
+          <thead><tr>
+            <th>Oyuncu</th><th>Mevcut Faz</th><th className="c">Tahmini Dönüş</th>
+            <th className="c">Kalan</th><th className="r">Model Güveni</th>
+          </tr></thead>
+          <tbody>
+            {DEMO_RTP.map((r) => (
+              <tr key={r.player}>
+                <td><span className="nm">{r.player}</span> <span className="nat">#{r.shirt}</span></td>
+                <td style={{ color: "var(--muted)", fontSize: 12 }}>{r.phase}</td>
+                <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)", fontSize: 11 }}>{r.eta}</td>
+                <td className="c" style={{ fontFamily: "JetBrains Mono", color: r.days <= 3 ? "var(--low)" : r.days <= 7 ? "var(--mid)" : "var(--high)" }}>{r.days}g</td>
+                <td className="r" style={{ color: r.v }}>{r.conf}<span style={{ fontSize: 10, color: "var(--dim)", fontWeight: 400 }}>/100</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="st"><h2>Klinik Notlar</h2><span className="ep">tıbbi ekip</span></div>
+      <div className="tbl">
+        <table>
+          <thead><tr><th>Oyuncu</th><th>Not</th></tr></thead>
+          <tbody>
+            {DEMO_INJURIES.filter((r) => r.status !== "cleared").map((r, i) => (
+              <tr key={`note-${i}`}>
+                <td style={{ whiteSpace: "nowrap" }}><span className="nm">{r.player}</span> <span className="nat">#{r.shirt}</span></td>
+                <td style={{ color: "var(--muted)", fontSize: 12 }}>{r.notes}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </ConsoleShell>
+  );
+}
+
+/* ─────────────────────── CANLI RENDER (DEMO kapalı) ─────────────────────── */
+function MedicalLive() {
   const [query, setQuery] = React.useState("");
   const [search, setSearch] = React.useState("");
 

@@ -1,0 +1,36 @@
+{
+  "match_id": 16029,
+  "tenant_id": "t-default",
+  "home_team_id": 217,
+  "away_team_id": 213,
+  "score": "4-2",
+  "ingest": {
+    "rows_inserted": 2316,
+    "rows_skipped": 0,
+    "shots": 42,
+    "passes": 976,
+    "carries": 813,
+    "defensive_actions": 485
+  },
+  "home_tactical": {
+    "ppda": 2.83,
+    "pressing_style": "mid_press",
+    "recovery_zone": "deep_block",
+    "compactness": "balanced",
+    "transition_style": "counter_attacking",
+    "dominant_channel": "right",
+    "direct_play_style": "possession",
+    "tempo_label": "medium",
+    "press_resistance_rate": 0.936,
+    "field_tilt_team_share": 0.4623,
+    "team_xt_total": 3.704,
+    "coaching_archetype": "low_block_counter",
+    "coaching_top_features": [
+      "transition_speed",
+      "press_intensity"
+    ],
+    "match_dominance_score": 1.98,
+    "match_dominance_label": "balanced",
+    "vaep_value": 10.9431
+  }
+}

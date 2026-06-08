@@ -1,0 +1,9 @@
+{
+  "name": "football-intelligence",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "dev:web": "npm --prefix frontend run dev:web",
+    "dev:api": "npm --prefix frontend run dev:api"
+  }
+}

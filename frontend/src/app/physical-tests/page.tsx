@@ -17,6 +17,8 @@ import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch, getAccessToken } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
+import { DEMO_MODE } from "@/lib/demo-mode";
+import { demoPlayerSummaries, demoHistoryFor, demoRiskFor } from "@/lib/demo-data";
 
 interface PlayerSummary {
   player_id: string;
@@ -83,7 +85,11 @@ export default function PhysicalPanelPage() {
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
 
-  const players = useSWR<PlayerSummary[]>("/physical-tests/players", apiFetch);
+  const playersSwr = useSWR<PlayerSummary[]>(
+    DEMO_MODE ? null : "/physical-tests/players", apiFetch);
+  const players = DEMO_MODE
+    ? { data: demoPlayerSummaries as PlayerSummary[], isLoading: false, mutate: async () => {} }
+    : playersSwr;
   const list = players.data ?? [];
 
   // İlk yükte ilk oyuncuyu seç
@@ -101,13 +107,19 @@ export default function PhysicalPanelPage() {
     }
   }, [active]);
 
-  const history = useSWR<PhysicalTest[]>(
-    activeId ? `/physical-tests/${activeId}` : null, apiFetch,
+  const historySwr = useSWR<PhysicalTest[]>(
+    DEMO_MODE || !activeId ? null : `/physical-tests/${activeId}`, apiFetch,
   );
-  const risk = useSWR<RiskReport>(
-    activeId ? `/physical-tests/${activeId}/risk` : null, apiFetch,
+  const history = DEMO_MODE
+    ? { data: activeId ? (demoHistoryFor(Number(activeId)) as PhysicalTest[]) : [], isLoading: false, mutate: async () => {} }
+    : historySwr;
+  const riskSwr = useSWR<RiskReport>(
+    DEMO_MODE || !activeId ? null : `/physical-tests/${activeId}/risk`, apiFetch,
     { shouldRetryOnError: false },
   );
+  const risk = DEMO_MODE
+    ? { data: activeId ? (demoRiskFor(Number(activeId)) as RiskReport) : undefined, isLoading: false, mutate: async () => {} }
+    : riskSwr;
 
   async function addTest() {
     const v = parseFloat(val);

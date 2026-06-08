@@ -29,7 +29,10 @@ from typing import Any
 from app.core.logging import get_logger
 from app.data.ingest.event import ingest_events_for_match
 from app.data.loaders import load_match_events
-from app.data.sources.statsbomb_open import StatsBombOpen
+from app.data.sources.statsbomb_open import (
+    StatsBombOpen,
+    appearances_from_events_json,
+)
 from app.db import models
 from app.db.base import Base
 from app.db.session import SessionLocal, engine
@@ -120,6 +123,46 @@ def _engine_summary(name: str, result_value: Any, fields: list[str]) -> str:
     return f"  {name}: " + ", ".join(parts)
 
 
+def _ingest_appearances(
+    session, src: StatsBombOpen, *, match_id: int, tenant_id: str, kickoff,
+) -> int:
+    """StatsBomb events → PlayerAppearance satırları (giriş/çıkış dakikası).
+
+    Faz B: maç-içi replay'in kadro farkındalığı bu satırları okur
+    (`StatsBombReplayFeed.appearances`). substituted_in/out_minute kolonlarına
+    yazar. Idempotent: (player, match) zaten varsa günceller.
+    """
+    events = src.get_events(match_id)
+    parsed = appearances_from_events_json(events)
+    existing = {
+        r.player_external_id: r
+        for r in session.execute(
+            models.PlayerAppearance.__table__.select().where(
+                models.PlayerAppearance.match_external_id == match_id,
+            )
+        ).all()
+    }
+    written = 0
+    for app in parsed:
+        start = float(app["start_minute"])
+        end = app["end_minute"]
+        sub_in = int(start) if start > 0 else None
+        sub_out = int(end) if end is not None else None
+        minutes = int((end if end is not None else 90.0) - start)
+        if app["player_external_id"] in existing:
+            continue  # ilk seed insert-only; mevcut satıra dokunma
+        session.add(models.PlayerAppearance(
+            sport=football.SPORT_NAME, tenant_id=tenant_id,
+            player_external_id=app["player_external_id"],
+            match_external_id=match_id,
+            team_external_id=app["team_external_id"],
+            minutes=max(0, minutes), kickoff=kickoff,
+            substituted_in_minute=sub_in, substituted_out_minute=sub_out,
+        ))
+        written += 1
+    return written
+
+
 def run_demo(match_id: int = DEFAULT_MATCH_ID, tenant_id: str = "t-demo") -> dict:
     _ensure_db()
     src = StatsBombOpen()
@@ -170,6 +213,15 @@ def run_demo(match_id: int = DEFAULT_MATCH_ID, tenant_id: str = "t-demo") -> dic
         print(f"    Paslar:   {ingest_report.passes}")
         print(f"    Carry:    {ingest_report.carries}")
         print(f"    Defansif: {ingest_report.defensive_actions}")
+        print("\n[2b/4] Kadro/sub ingest (Starting XI + Substitution → appearances)...")
+        appearance_count = _ingest_appearances(
+            session, src, match_id=match_id, tenant_id=tenant_id,
+            kickoff=match.kickoff,
+        )
+        session.commit()
+        print(f"    Appearance satırı: {appearance_count}")
+        report["appearances"] = appearance_count
+
         report["ingest"] = {
             "rows_inserted": ingest_report.rows_inserted,
             "rows_skipped": ingest_report.rows_skipped,

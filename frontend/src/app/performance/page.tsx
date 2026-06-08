@@ -1,9 +1,14 @@
 "use client";
 
 /**
- * Performans Testi — tablet veri-giriş ekranı. ConsoleShell çatısında.
- * Protokol seç → değer gir → kalıcı kayıt + batarya değerlendirme + PDF.
- * Backend:
+ * Performans Testi — batarya & sezon performansı. ConsoleShell çatısında.
+ *
+ * DEMO_MODE: canlı API'ye hiç dokunmaz. FK Demo kadrosunun fiziksel-test
+ * bataryası, sezon trendleri ve kadro karşılaştırması demo-data.ts'ten gösterilir
+ * (boş protokol listesi / "veri yok" olmaz). Öne çıkan oyuncu = kritik riskli
+ * Caner Öztürk (#10); ölçümler demoHistoryFor + demoRiskFor'dan türetilir.
+ *
+ * DEMO kapalı: eski tablet veri-giriş ekranı (kalıcı kayıt + batarya + PDF).
  *   GET  /admin/performance/protocols
  *   POST /physical-tests/
  *   POST /admin/performance/battery
@@ -14,7 +19,10 @@ import * as React from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch, getAccessToken } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
+import { demoSquad, demoHistoryFor, demoRiskFor } from "@/lib/demo-data";
 import { ConsoleShell } from "../_console/shell";
+import { Gauge } from "../_console/viz";
 
 interface Protocol {
   key: string;
@@ -66,7 +74,321 @@ const labelStyle: React.CSSProperties = { display: "block", fontSize: "10px", te
 
 let _rowSeq = 1;
 
-export default function PerformanceConsolePage() {
+export default function PerformancePage() {
+  // Demo modunda canlı API/giriş yok — dolu sezon-performansı panelini göster.
+  if (DEMO_MODE) return <PerformanceDemoConsole />;
+  return <PerformanceFormConsole />;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DEMO — Sezon Performansı & Batarya (backend yok, FK Demo evreni)
+═══════════════════════════════════════════════════════════════════════════ */
+
+// Protokol kataloğu — demoHistoryFor'un ürettiği anahtarlarla birebir.
+// better: "low" → düşük değer daha iyi (sprint), "high" → yüksek değer daha iyi.
+interface ProtoMeta { key: string; name: string; short: string; unit: string; better: "low" | "high" }
+const DEMO_PROTOCOLS: ProtoMeta[] = [
+  { key: "sprint_10m", name: "Sprint 10 m", short: "10M", unit: "sn", better: "low" },
+  { key: "sprint_30m", name: "Sprint 30 m", short: "30M", unit: "sn", better: "low" },
+  { key: "yoyo_irl1", name: "Yo-Yo IRL1", short: "YOYO", unit: "sv", better: "high" },
+  { key: "cmj", name: "CMJ — Dikey Sıçrama", short: "CMJ", unit: "cm", better: "high" },
+  { key: "vo2max", name: "VO2max", short: "VO2", unit: "ml", better: "high" },
+];
+
+/** Bir oyuncunun bir protokoldeki son ölçüm + trend (5 ölçüm) zinciri. */
+function latestSeries(playerId: number, protoKey: string): number[] {
+  return demoHistoryFor(playerId)
+    .filter((t) => t.protocol === protoKey)
+    .map((t) => t.value);
+}
+
+/** Kadro genelinde bir protokol için tüm oyuncuların son değeri. */
+function squadLatest(protoKey: string): number[] {
+  return demoSquad.map((p) => {
+    const s = latestSeries(p.player_id, protoKey);
+    return s.length ? s[s.length - 1] : NaN;
+  }).filter((v) => !Number.isNaN(v));
+}
+
+/** Yüzde sıralaması (0..100): better'a göre yön. */
+function percentileOf(value: number, pool: number[], better: "low" | "high"): number {
+  if (pool.length === 0) return 50;
+  const betterCount = pool.filter((v) => (better === "low" ? v <= value : v >= value)).length;
+  // value'dan "daha iyi ya da eşit" olanların oranı → yüksek = elit
+  return Math.round((betterCount / pool.length) * 100);
+}
+
+function ratingFromPct(pct: number): { txt: string; cls: string } {
+  if (pct >= 80) return { txt: "elit", cls: "risk-low" };
+  if (pct >= 55) return { txt: "iyi", cls: "risk-low" };
+  if (pct >= 30) return { txt: "ortalama", cls: "risk-mid" };
+  return { txt: "zayıf", cls: "risk-crit" };
+}
+
+const RISK_CLS: Record<string, string> = {
+  Kritik: "risk-crit",
+  Yüksek: "risk-high",
+  Orta: "risk-mid",
+  Düşük: "risk-low",
+};
+
+/** Mini sparkline — bir protokolün 5 ölçümlük trendi. */
+function Spark({ values, better, width = 88, height = 26 }: { values: number[]; better: "low" | "high"; width?: number; height?: number }) {
+  if (values.length < 2) return <span style={{ color: "var(--dim)" }}>—</span>;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const pad = 3;
+  const stepX = (width - pad * 2) / (values.length - 1);
+  const pts = values.map((v, i) => {
+    const x = pad + i * stepX;
+    const y = pad + (height - pad * 2) * (1 - (v - min) / span);
+    return [x, y] as const;
+  });
+  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  // İyiye gidiş yönü: son − ilk; better'a göre renk.
+  const delta = values[values.length - 1] - values[0];
+  const improving = better === "low" ? delta < 0 : delta > 0;
+  const col = Math.abs(delta) < span * 0.05 ? "var(--mid)" : improving ? "var(--low)" : "var(--crit)";
+  const last = pts[pts.length - 1];
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ display: "block" }}>
+      <polyline points={pts.map((p) => `${p[0]},${p[1]}`).join(" ")} fill="none" stroke={col} strokeOpacity={0.18} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={d} fill="none" stroke={col} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={last[0]} cy={last[1]} r={2.4} fill={col} />
+    </svg>
+  );
+}
+
+function PerformanceDemoConsole() {
+  // Öne çıkan oyuncu: kritik riskli 10 numara (id=8), demoSquad'da garanti var.
+  const FEATURED_ID = 8;
+  const [focusId, setFocusId] = React.useState<number>(FEATURED_ID);
+  const focus = demoSquad.find((p) => p.player_id === focusId) ?? demoSquad[0];
+  const risk = demoRiskFor(focus.player_id);
+
+  // Sezon KPI'ları
+  const totalTests = demoSquad.length * DEMO_PROTOCOLS.length * 5; // 24 × 5 protokol × 5 ölçüm
+  const avgCond = Math.round(demoSquad.reduce((a, p) => a + p.condition, 0) / demoSquad.length);
+  const criticalCount = demoSquad.filter((p) => p.risk_label === "Kritik").length;
+  const monitored = demoSquad.filter((p) => p.risk_label === "Yüksek" || p.risk_label === "Orta").length;
+  const elitCount = demoSquad.filter((p) => p.condition >= 88).length;
+
+  // Öne çıkan oyuncu bataryası (5 protokol)
+  const focusBattery: TestScore[] = DEMO_PROTOCOLS.map((pr) => {
+    const series = latestSeries(focus.player_id, pr.key);
+    const raw = series.length ? series[series.length - 1] : 0;
+    const pct = percentileOf(raw, squadLatest(pr.key), pr.better);
+    const r = ratingFromPct(pct);
+    return {
+      protocol_key: pr.key,
+      protocol_name: pr.name,
+      raw_value: raw,
+      unit: pr.unit,
+      rating: r.txt,
+      squad_percentile: pct,
+      note: "",
+    };
+  });
+
+  // Kadro protokol kıyası: her protokol için en iyi & en zayıf oyuncu + kadro ort.
+  const benchmarks = DEMO_PROTOCOLS.map((pr) => {
+    const rows = demoSquad.map((p) => {
+      const s = latestSeries(p.player_id, pr.key);
+      return { p, v: s.length ? s[s.length - 1] : NaN };
+    }).filter((r) => !Number.isNaN(r.v));
+    const sorted = [...rows].sort((a, b) => (pr.better === "low" ? a.v - b.v : b.v - a.v));
+    const avg = rows.reduce((a, r) => a + r.v, 0) / rows.length;
+    return {
+      meta: pr,
+      best: sorted[0],
+      worst: sorted[sorted.length - 1],
+      avg,
+    };
+  });
+
+  // En iyi atletik profil (kondisyon) — sağ kolon
+  const topPerformers = [...demoSquad].sort((a, b) => b.condition - a.condition).slice(0, 5);
+
+  // Odak oyuncu için trend tablosu satırları (protokol bazında spark + delta)
+  const focusTrends = DEMO_PROTOCOLS.map((pr) => {
+    const series = latestSeries(focus.player_id, pr.key);
+    return { meta: pr, series };
+  });
+
+  const focusRiskCls = RISK_CLS[focus.risk_label] ?? "risk-mid";
+  const gaugeColor = focus.condition >= 85 ? "var(--low)" : focus.condition >= 72 ? "var(--mid)" : "var(--crit)";
+
+  const right = (
+    <>
+      <div className="rc">
+        <h3>Odak Oyuncu <span className="tiny">#{focus.shirt}</span></h3>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 10 }}>
+          <Gauge value={focus.condition} color={gaugeColor} label="kondisyon" />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>{focus.player_name}</div>
+            <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{focus.pos_detail} · {focus.age} yaş</div>
+            <div style={{ marginTop: 8 }}>
+              <span className={`risk ${focusRiskCls}`}><span className="rd" style={{ background: "currentColor" }} />{focus.risk_label} risk · {focus.risk_score}/100</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5, borderTop: "1px solid var(--line)", paddingTop: 10 }}>
+          {risk.summary}
+        </div>
+      </div>
+
+      <div className="rc">
+        <h3>Güçlü / Gelişim Alanları</h3>
+        <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--low)", marginBottom: 4 }}>Güçlü</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+          {focusBattery.filter((s) => (s.squad_percentile ?? 0) >= 55).map((s) => (
+            <span key={s.protocol_key} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 20, background: "var(--low-bg)", color: "var(--low)", fontWeight: 600 }}>{s.protocol_name}</span>
+          ))}
+          {focusBattery.filter((s) => (s.squad_percentile ?? 0) >= 55).length === 0 && (
+            <span style={{ fontSize: 12, color: "var(--dim)" }}>Belirgin güçlü alan yok.</span>
+          )}
+        </div>
+        <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--crit)", marginBottom: 4 }}>Gelişim</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {focusBattery.filter((s) => (s.squad_percentile ?? 0) < 30).map((s) => (
+            <span key={s.protocol_key} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 20, background: "var(--crit-bg)", color: "var(--crit)", fontWeight: 600 }}>{s.protocol_name}</span>
+          ))}
+          {focusBattery.filter((s) => (s.squad_percentile ?? 0) < 30).length === 0 && (
+            <span style={{ fontSize: 12, color: "var(--dim)" }}>Kritik gelişim alanı yok.</span>
+          )}
+        </div>
+      </div>
+
+      <div className="rc">
+        <h3>En İyi Atletik Profil <span className="tiny">kondisyon</span></h3>
+        {topPerformers.map((p) => (
+          <div className="alrt" key={p.player_id}>
+            <span className="ai" style={{ background: "var(--low)" }} />
+            <div className="am"><b>{p.player_name}</b> · {p.pos_detail}
+              <span className="tm">kondisyon {p.condition} · risk {p.risk_score}/100</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rc">
+        <Link href="/physical-tests" style={{ display: "inline-block", fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.5, padding: "8px 14px", borderRadius: 7, background: "var(--accent)", color: "#fff", fontWeight: 600, textDecoration: "none" }}>
+          Yük riski paneli →
+        </Link>
+      </div>
+    </>
+  );
+
+  return (
+    <ConsoleShell
+      active="/performance"
+      title="Performans"
+      sub="Batarya & sezon performansı"
+      desc="FK Demo kadrosunun fiziksel-test bataryası ve sezon trendi. Değerler kadro içi yüzde sırasına göre değerlendirilir; sağlık/performans verisi KVKK'da özel niteliklidir."
+      navBadge={criticalCount}
+      right={right}
+    >
+      <div className="kpis">
+        <div className="kpi"><div className="kl">Test Kaydı</div><div className="kn">{totalTests.toLocaleString("tr-TR")}</div><div className="kd">son 5 pencere · {DEMO_PROTOCOLS.length} protokol</div></div>
+        <div className="kpi"><div className="kl">Ort. Kondisyon</div><div className="kn">{avgCond}<span className="pct">%</span></div><div className="kd">{demoSquad.length} oyuncu</div></div>
+        <div className="kpi"><div className="kl">Elit Profil</div><div className="kn" style={{ color: "var(--low)" }}>{elitCount}</div><div className="kd">kondisyon ≥ 88</div></div>
+        <div className="kpi"><div className="kl">İzlemede</div><div className="kn" style={{ color: "var(--mid)" }}>{monitored}</div><div className="kd">orta/yüksek yük</div></div>
+        <div className="kpi"><div className="kl">Kritik Risk</div><div className="kn" style={{ color: criticalCount ? "var(--crit)" : "var(--low)" }}>{criticalCount}</div><div className="kd">batarya kırmızı</div></div>
+      </div>
+
+      {/* ── Odak oyuncu bataryası ── */}
+      <div className="st">
+        <h2>Batarya — {focus.player_name}</h2>
+        <div className="seg">
+          {demoSquad.filter((p) => p.risk_label === "Kritik" || p.condition >= 90).slice(0, 4).map((p) => (
+            <button key={p.player_id} className={p.player_id === focusId ? "on" : ""} onClick={() => setFocusId(p.player_id)}>
+              {p.player_name.split(" ")[0]}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="tbl" style={{ marginBottom: 14 }}>
+        <table>
+          <thead><tr>
+            <th>Protokol</th><th className="r">Son Değer</th><th className="c">Trend (5 ölçüm)</th><th className="c">Kadro %</th><th className="c">Değerlendirme</th>
+          </tr></thead>
+          <tbody>
+            {focusBattery.map((s, i) => {
+              const meta = DEMO_PROTOCOLS[i];
+              const series = focusTrends[i].series;
+              const r = ratingFromPct(s.squad_percentile ?? 0);
+              return (
+                <tr key={s.protocol_key}>
+                  <td><span className="nm">{s.protocol_name}</span> <span className="nat">{meta.short}</span></td>
+                  <td className="r" style={{ color: "var(--muted)" }}>{s.raw_value} <span style={{ color: "var(--dim)", fontWeight: 400 }}>{s.unit}</span></td>
+                  <td className="c"><div style={{ display: "inline-block" }}><Spark values={series} better={meta.better} /></div></td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>%{s.squad_percentile}</td>
+                  <td className="c"><span className={`risk ${r.cls}`}><span className="rd" style={{ background: "currentColor" }} />{r.txt}</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {risk.flags.length > 0 && (
+        <>
+          <div className="st"><h2>Yük & Sakatlık Bayrakları</h2><span className="ep">live_risk_monitor · load_monitor</span></div>
+          <div className="rc" style={{ margin: "0 0 14px" }}>
+            {risk.flags.map((f, i) => (
+              <div className="alrt" key={i}>
+                <span className="ai" style={{ background: "var(--crit)" }} />
+                <div className="am"><b>{f.message}</b>
+                  <span className="tm">{DEMO_PROTOCOLS.find((p) => p.key === f.protocol)?.name ?? f.protocol} · {f.value} {f.unit}</span>
+                </div>
+              </div>
+            ))}
+            {risk.recommendations.length > 0 && (
+              <div style={{ marginTop: 12, borderTop: "1px solid var(--line)", paddingTop: 10 }}>
+                <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--muted)", marginBottom: 6 }}>Öneriler</div>
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: "var(--muted)", lineHeight: 1.7 }}>
+                  {risk.recommendations.map((rec, i) => <li key={i}>{rec}</li>)}
+                </ul>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ── Kadro protokol kıyası ── */}
+      <div className="st"><h2>Kadro Protokol Kıyası</h2><span className="ep">{demoSquad.length} oyuncu · son ölçüm</span></div>
+      <div className="tbl">
+        <table>
+          <thead><tr>
+            <th>Protokol</th><th className="c">Kadro Ort.</th><th>En İyi</th><th>En Geride</th><th className="c">Aralık</th>
+          </tr></thead>
+          <tbody>
+            {benchmarks.map((b) => {
+              const fmt = (v: number) => `${Math.round(v * 100) / 100} ${b.meta.unit}`;
+              const range = Math.abs(b.best.v - b.worst.v);
+              return (
+                <tr key={b.meta.key}>
+                  <td><span className="nm">{b.meta.name}</span> <span className="nat">{b.meta.better === "low" ? "düşük iyi" : "yüksek iyi"}</span></td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{fmt(b.avg)}</td>
+                  <td><span className="nm" style={{ color: "var(--low)" }}>{b.best.p.player_name}</span> <span className="nat">{fmt(b.best.v)}</span></td>
+                  <td><span style={{ color: "var(--muted)" }}>{b.worst.p.player_name}</span> <span className="nat">{fmt(b.worst.v)}</span></td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--dim)" }}>±{Math.round(range * 100) / 100}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </ConsoleShell>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CANLI — Tablet veri-giriş ekranı (DEMO_MODE kapalıyken)
+═══════════════════════════════════════════════════════════════════════════ */
+
+function PerformanceFormConsole() {
   const { data: lib } = useSWR<{ protocols: Protocol[] }>("/admin/performance/protocols", apiFetch, { shouldRetryOnError: false });
   const protocols = lib?.protocols ?? [];
 
