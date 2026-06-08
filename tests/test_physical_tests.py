@@ -297,3 +297,61 @@ def test_post_accepts_ttest_and_rsa_protocols(client):
         assert r.status_code == 201, r.text
         assert r.json()["protocol"] == proto
         assert r.json()["unit"] == unit  # UNIT_MAP'ten otomatik
+
+
+# --------------------------------------------------------------------------- #
+# Blok 1 — GET /physical-tests/protocols (protokol rehberi)
+# --------------------------------------------------------------------------- #
+
+def test_protocols_endpoint_returns_all_protocols(client):
+    c, _ = client
+    r = c.get("/physical-tests/protocols")
+    assert r.status_code == 200
+    protocols = r.json()
+    keys = {p["key"] for p in protocols}
+    # Temel protokoller mevcut olmalı
+    assert {"sprint_10m", "sprint_30m", "cmj", "yoyo_irl1", "ttest_agility", "rsa"}.issubset(keys)
+    # custom hariç tutulmuş olmalı
+    assert "custom" not in keys
+    # Her protokolde gerekli alanlar
+    for p in protocols:
+        for field in ("key", "name", "unit", "higher_is_better", "description",
+                      "norm_elite", "norm_good", "norm_average"):
+            assert field in p, f"{field} eksik: {p['key']}"
+
+
+def test_protocols_endpoint_no_auth_required():
+    """Protokol listesi auth olmadan erişilebilir (tester tableti için)."""
+    from fastapi.testclient import TestClient
+
+    from app.api.main import app
+    c = TestClient(app)
+    r = c.get("/physical-tests/protocols")
+    assert r.status_code == 200
+
+
+def test_protocols_sprint_10m_higher_is_better_false(client):
+    c, _ = client
+    r = c.get("/physical-tests/protocols")
+    protocols = {p["key"]: p for p in r.json()}
+    assert "sprint_10m" in protocols
+    assert protocols["sprint_10m"]["higher_is_better"] is False
+    assert protocols["sprint_10m"]["unit"] == "sn"
+
+
+def test_protocols_cmj_norms_ascending(client):
+    """CMJ: elit > iyi > ortalama (yüksek iyi)."""
+    c, _ = client
+    r = c.get("/physical-tests/protocols")
+    protocols = {p["key"]: p for p in r.json()}
+    cmj = protocols["cmj"]
+    assert cmj["norm_elite"] > cmj["norm_good"] > cmj["norm_average"]
+
+
+def test_protocols_sprint_norms_descending(client):
+    """Sprint: elit < iyi < ortalama (düşük iyi)."""
+    c, _ = client
+    r = c.get("/physical-tests/protocols")
+    protocols = {p["key"]: p for p in r.json()}
+    s = protocols["sprint_30m"]
+    assert s["norm_elite"] < s["norm_good"] < s["norm_average"]

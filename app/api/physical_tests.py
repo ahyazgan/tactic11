@@ -1,6 +1,7 @@
 """Fiziksel performans testi endpoint'leri.
 
 POST   /physical-tests/                — test kaydı gir
+GET    /physical-tests/protocols       — tüm protokollerin tanımı + nasıl-yapılır
 GET    /physical-tests/{player_id}     — oyuncunun tüm testleri (en yeni önce)
 GET    /physical-tests/{player_id}/risk  — yükleme riski raporu
 GET    /physical-tests/{player_id}/trend?protocol=… — protokol zaman serisi
@@ -30,8 +31,10 @@ from app.core.logging import get_logger
 from app.db import models
 from app.db.physical_test import PhysicalTest, TestProtocol
 from app.db.session import get_session
+from app.engine.performance_test import compute as perf
 from app.engine.physical.load_risk import (
     CRITICAL_LABEL,
+    REFERENCE,
     LoadRiskReport,
     compute_load_risk,
     compute_protocol_trend,
@@ -224,6 +227,50 @@ def create_test(
     if report is not None:
         _maybe_alert_critical(report)
     return record
+
+
+class ProtocolInfoOut(BaseModel):
+    key: str
+    name: str
+    unit: str
+    higher_is_better: bool
+    description: str
+    norm_elite: float
+    norm_good: float
+    norm_average: float
+    # load_risk REFERENCE'tan: referans aralığı (varsa)
+    ref_low: float | None = None
+    ref_high: float | None = None
+
+
+@router.get("/protocols", response_model=list[ProtocolInfoOut])
+def list_protocols() -> list[ProtocolInfoOut]:
+    """Tüm desteklenen test protokollerinin tanımı, nasıl-yapılır metni ve norm eşikleri.
+
+    Auth gerektirmez — tester tableti için herkese açık.
+
+    NOT: `/{player_id}` ucundan ÖNCE tanımlı olmalı (yoksa 'protocols' bir
+    player_id sanılır)."""
+    out: list[ProtocolInfoOut] = []
+    for key, proto in perf.PROTOCOLS.items():
+        if key == "custom":
+            continue
+        norms = dict(proto.norm_cutoffs)   # {"elit": x, "iyi": y, "ortalama": z}
+        ref = REFERENCE.get(key)
+        out.append(ProtocolInfoOut(
+            key=proto.key,
+            name=proto.name,
+            unit=proto.unit,
+            higher_is_better=proto.higher_is_better,
+            description=proto.description,
+            norm_elite=norms["elit"],
+            norm_good=norms["iyi"],
+            norm_average=norms["ortalama"],
+            ref_low=float(ref["low"]) if ref is not None else None,
+            ref_high=float(ref["high"]) if ref is not None else None,
+        ))
+    out.sort(key=lambda p: p.key)
+    return out
 
 
 @router.get("/players", response_model=list[PlayerSummaryOut])
