@@ -61,6 +61,9 @@ class PhysicalTestCreate(BaseModel):
     unit: str | None = Field(None, description="Birim (boşsa otomatik doldurulur)")
     notes: str | None = Field(None)
     recorded_by: str | None = Field(None, description="Kaydı yapan kişi")
+    components: dict[str, Any] | None = Field(
+        None, description="Ham bileşenler (RSA süreleri, DJ uçuş/temas, hop sol/sağ vb.)",
+    )
 
 
 class PhysicalTestOut(BaseModel):
@@ -75,6 +78,7 @@ class PhysicalTestOut(BaseModel):
     unit: str | None
     notes: str | None
     recorded_by: str | None
+    components: dict[str, Any] | None = None
     # Norm derecesi (elit/iyi/ortalama/zayıf) — eski batarya sisteminden, B'ye
     # taşındı. from_attributes ile alanlar dolduktan sonra hesaplanır.
     rating: str | None = None
@@ -192,6 +196,14 @@ UNIT_MAP = {
     TestProtocol.GPS_HIRD: "m",
     TestProtocol.GPS_ACC: "adet",
     TestProtocol.BODY_FAT: "%",
+    TestProtocol.SPRINT_5M: "sn",
+    TestProtocol.T505: "sn",
+    TestProtocol.ARROWHEAD: "sn",
+    TestProtocol.ILLINOIS: "sn",
+    TestProtocol.IFT_30_15: "km/sa",
+    TestProtocol.ADDUCTOR_SQUEEZE: "N",
+    TestProtocol.DROP_JUMP_RSI: "RSI",
+    TestProtocol.TRIPLE_HOP: "cm",
 }
 
 
@@ -215,6 +227,7 @@ def create_test(
         unit=unit,
         notes=payload.notes,
         recorded_by=payload.recorded_by or user.email,
+        components=payload.components,
     )
     session.add(record)
     session.commit()
@@ -274,6 +287,238 @@ def list_protocols() -> list[ProtocolInfoOut]:
         ))
     out.sort(key=lambda p: p.key)
     return out
+
+
+# ── Türetilmiş metrik hesaplama uçları (saf, auth'suz — tester tableti) ──────
+# Ham ölçümleri alır, spor-bilimi göstergesi döner. DB'ye dokunmaz; istenirse
+# sonuç POST /physical-tests/ ile `components` alanına yazılarak saklanır.
+
+def _derive_or_422(fn: Any, *args: Any, **kwargs: Any) -> Any:
+    """Engine saf fonksiyonunu çağır; geçersiz girdi (ValueError) → 422."""
+    try:
+        return fn(*args, **kwargs)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=str(e)) from e
+
+
+class RSAFatigueIn(BaseModel):
+    sprint_times: list[float] = Field(..., min_length=2, max_length=20,
+                                      description="Sprint süreleri (sn), kronolojik")
+
+
+class RSAFatigueOut(BaseModel):
+    n: int
+    best: float
+    mean: float
+    total: float
+    fatigue_index_pct: float
+    insufficient_recovery: bool
+    note: str
+
+
+@router.post("/derive/rsa-fatigue", response_model=RSAFatigueOut)
+def derive_rsa_fatigue(payload: RSAFatigueIn) -> RSAFatigueOut:
+    """Tekrarlı sprint sürelerinden Yorgunluk İndeksi (FI>%7 → yetersiz toparlanma)."""
+    r = _derive_or_422(perf.repeated_sprint_fatigue_index, payload.sprint_times)
+    return RSAFatigueOut(**asdict(r))
+
+
+class CODDeficitIn(BaseModel):
+    cod_time: float = Field(..., gt=0, description="505 (veya COD) süresi, sn")
+    linear_10m: float = Field(..., gt=0, description="10m düz sprint süresi, sn")
+
+
+class CODDeficitOut(BaseModel):
+    cod_time: float
+    linear_time: float
+    deficit: float
+    poor_deceleration: bool
+    note: str
+
+
+@router.post("/derive/cod-deficit", response_model=CODDeficitOut)
+def derive_cod_deficit(payload: CODDeficitIn) -> CODDeficitOut:
+    """COD Deficit = 505 − 10m düz sprint (yüksek → zayıf frenleme/deceleration)."""
+    r = _derive_or_422(perf.change_of_direction_deficit,
+                       payload.cod_time, payload.linear_10m)
+    return CODDeficitOut(**asdict(r))
+
+
+class RSIIn(BaseModel):
+    flight_time_s: float = Field(..., ge=0, description="Havada kalma süresi, sn")
+    contact_time_s: float = Field(..., gt=0, description="Yere temas süresi, sn")
+
+
+class RSIOut(BaseModel):
+    rsi: float
+
+
+@router.post("/derive/rsi", response_model=RSIOut)
+def derive_rsi(payload: RSIIn) -> RSIOut:
+    """Drop Jump RSI = uçuş süresi / temas süresi (reaktif kuvvet)."""
+    rsi = _derive_or_422(perf.reactive_strength_index,
+                         payload.flight_time_s, payload.contact_time_s)
+    return RSIOut(rsi=rsi)
+
+
+class AsymmetryIn(BaseModel):
+    left: float = Field(..., ge=0, description="Sol bacak ölçümü")
+    right: float = Field(..., ge=0, description="Sağ bacak ölçümü")
+
+
+class AsymmetryOut(BaseModel):
+    left: float
+    right: float
+    asymmetry_pct: float
+    stronger_side: str
+    flag: str
+    note: str
+
+
+@router.post("/derive/asymmetry", response_model=AsymmetryOut)
+def derive_asymmetry(payload: AsymmetryIn) -> AsymmetryOut:
+    """Bacak asimetri %'si + bayrak (>%10 sarı, >%15 kırmızı). Triple Hop vb."""
+    r = _derive_or_422(perf.limb_asymmetry, payload.left, payload.right)
+    return AsymmetryOut(**asdict(r))
+
+
+class VO2YoyoIn(BaseModel):
+    distance_m: float = Field(..., ge=0, description="Yo-Yo IR1 toplam mesafe (m)")
+
+
+class VO2VIFTIn(BaseModel):
+    vift_kmh: float = Field(..., gt=0, description="30-15 IFT son kademe hızı (km/sa)")
+    age: int = Field(..., gt=0, lt=60)
+    weight_kg: float = Field(..., gt=0)
+    female: bool = Field(False)
+
+
+class VO2Out(BaseModel):
+    vo2max: float = Field(..., description="Kestirilen VO2max (ml/kg/dk)")
+
+
+@router.post("/derive/vo2max/yoyo", response_model=VO2Out)
+def derive_vo2max_yoyo(payload: VO2YoyoIn) -> VO2Out:
+    """Yo-Yo IR1 mesafesinden VO2max kestirimi — Bangsbo (2008)."""
+    v = _derive_or_422(perf.derive_vo2max_from_yoyo_ir1, payload.distance_m)
+    return VO2Out(vo2max=v)
+
+
+@router.post("/derive/vo2max/vift", response_model=VO2Out)
+def derive_vo2max_vift(payload: VO2VIFTIn) -> VO2Out:
+    """VIFT (30-15 IFT) + yaş/kilo/cinsiyetten VO2max kestirimi — Buchheit (2008)."""
+    v = _derive_or_422(perf.estimate_vo2max_from_vift, payload.vift_kmh,
+                       payload.age, payload.weight_kg, female=payload.female)
+    return VO2Out(vo2max=v)
+
+
+class DropChangeOut(BaseModel):
+    current: float
+    previous: float
+    drop_pct: float
+    flagged: bool
+    note: str
+
+
+class AdductorDropIn(BaseModel):
+    current: float = Field(..., ge=0, description="Güncel adductor squeeze (N)")
+    previous: float = Field(..., gt=0, description="Önceki ölçüm (N)")
+
+
+@router.post("/derive/adductor-drop", response_model=DropChangeOut)
+def derive_adductor_drop(payload: AdductorDropIn) -> DropChangeOut:
+    """MD+1 Adductor Squeeze düşüşü (>%10 → kasık/pubis riski)."""
+    r = _derive_or_422(perf.adductor_squeeze_drop, payload.current, payload.previous)
+    return DropChangeOut(**asdict(r))
+
+
+class CMJFatigueIn(BaseModel):
+    current: float = Field(..., ge=0, description="Güncel CMJ (cm)")
+    baseline_values: list[float] = Field(..., min_length=1,
+                                         description="Baseline CMJ ölçümleri (cm)")
+
+
+@router.post("/derive/cmj-fatigue", response_model=DropChangeOut)
+def derive_cmj_fatigue(payload: CMJFatigueIn) -> DropChangeOut:
+    """MD+1 CMJ baseline kıyas (>%10 düşüş → nöromusküler yorgunluk)."""
+    r = _derive_or_422(perf.cmj_neuromuscular_drop, payload.current,
+                       payload.baseline_values)
+    return DropChangeOut(**asdict(r))
+
+
+class ReturnToPlayIn(BaseModel):
+    current: float = Field(..., gt=0, description="Dönüş mikro-test sonucu")
+    pre_injury_baseline: float = Field(..., gt=0, description="Sakatlık-öncesi baseline")
+    higher_is_better: bool = Field(True, description="Metrik yönü (sprint süresi=False)")
+
+
+class ReturnToPlayOut(BaseModel):
+    current: float
+    baseline: float
+    pct_of_baseline: float
+    cleared: bool
+    light: str
+    note: str
+
+
+@router.post("/derive/return-to-play", response_model=ReturnToPlayOut)
+def derive_return_to_play(payload: ReturnToPlayIn) -> ReturnToPlayOut:
+    """Return-to-play: baseline'a göre <%95 kırmızı / ≥%95 yeşil ışık."""
+    r = _derive_or_422(perf.return_to_play_readiness, payload.current,
+                       payload.pre_injury_baseline,
+                       higher_is_better=payload.higher_is_better)
+    return ReturnToPlayOut(**asdict(r))
+
+
+class HQRatioIn(BaseModel):
+    hamstring: float = Field(..., ge=0, description="İzokinetik hamstring tepe tork")
+    quadriceps: float = Field(..., gt=0, description="İzokinetik quadriceps tepe tork")
+
+
+class HQRatioOut(BaseModel):
+    hamstring: float
+    quadriceps: float
+    ratio: float
+    band: str
+    at_risk: bool
+    note: str
+
+
+@router.post("/derive/hq-ratio", response_model=HQRatioOut)
+def derive_hq_ratio(payload: HQRatioIn) -> HQRatioOut:
+    """Hamstring:Quadriceps oranı + risk bandı (<0.47 yüksek hamstring riski)."""
+    r = _derive_or_422(perf.hamstring_quad_ratio, payload.hamstring, payload.quadriceps)
+    return HQRatioOut(**asdict(r))
+
+
+class PositionPresetOut(BaseModel):
+    position: str
+    protocols: list[ProtocolInfoOut]   # önerilen protokollerin tam tanımı
+
+
+@router.get("/presets/{position}", response_model=PositionPresetOut)
+def get_position_preset(position: str) -> PositionPresetOut:
+    """Mevkiye özel önerilen test paketi (kaleci/stoper/bek/kanat/orta_saha/forvet).
+
+    Bilinmeyen mevki → genel batarya. Auth gerektirmez (tester tableti)."""
+    keys = perf.protocols_for_position(position)
+    protos: list[ProtocolInfoOut] = []
+    for key in keys:
+        proto = perf.PROTOCOLS.get(key)
+        if proto is None:
+            continue
+        norms = dict(proto.norm_cutoffs)
+        ref = REFERENCE.get(key)
+        protos.append(ProtocolInfoOut(
+            key=proto.key, name=proto.name, unit=proto.unit,
+            higher_is_better=proto.higher_is_better, description=proto.description,
+            norm_elite=norms["elit"], norm_good=norms["iyi"],
+            norm_average=norms["ortalama"],
+            ref_low=float(ref["low"]) if ref is not None else None,
+            ref_high=float(ref["high"]) if ref is not None else None,
+        ))
+    return PositionPresetOut(position=position.strip().lower(), protocols=protos)
 
 
 class BatchTestItem(BaseModel):

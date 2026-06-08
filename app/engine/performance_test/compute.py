@@ -149,6 +149,68 @@ PROTOCOLS: dict[str, TestProtocol] = {
                      "Düşük iyi (atletik kompozisyon). Elit ≤8%, ortalama ~14%."),
         norm_cutoffs=(("elit", 8.0), ("iyi", 11.0), ("ortalama", 14.0)),
     ),
+    # ── Faz 2 ek protokolleri (sürat split / çeviklik / patlayıcı / MD+1). ──
+    "sprint_5m": TestProtocol(
+        key="sprint_5m", name="5m Sprint (reaksiyon/ilk adım)", unit="sn",
+        higher_is_better=False,
+        description=("Foto-hücre; durağan başlangıç, 5m. Reaksiyon + ilk adım gücü "
+                     "(0-5m). 2 deneme, en iyisi. Elit ≤0.95sn, ortalama ~1.15sn."),
+        norm_cutoffs=(("elit", 0.95), ("iyi", 1.05), ("ortalama", 1.15)),
+    ),
+    "t505": TestProtocol(
+        key="t505", name="505 Çeviklik (yön değiştirme)", unit="sn",
+        higher_is_better=False,
+        description=("10m hızlan, çizgide 180° dön, 5m geri çık; kapı 5m'de. "
+                     "Frenleme + yeniden hızlanma. COD Deficit için 10m düz sprintle "
+                     "kıyaslanır. Elit ≤2.20sn, ortalama ~2.60sn."),
+        norm_cutoffs=(("elit", 2.20), ("iyi", 2.40), ("ortalama", 2.60)),
+    ),
+    "arrowhead": TestProtocol(
+        key="arrowhead", name="Arrowhead Çeviklik", unit="sn",
+        higher_is_better=False,
+        description=("Ok-başı koni düzeni; sağ/sol dallanan yön değiştirme. "
+                     "Çok yönlü çeviklik. Elit ≤7.50sn, ortalama ~8.50sn."),
+        norm_cutoffs=(("elit", 7.50), ("iyi", 8.00), ("ortalama", 8.50)),
+    ),
+    "illinois": TestProtocol(
+        key="illinois", name="Illinois Çeviklik", unit="sn",
+        higher_is_better=False,
+        description=("10×5m alanda slalom + düz koşu; ivmelenme + slalom çevikliği. "
+                     "Elit ≤15.20sn, ortalama ~16.80sn."),
+        norm_cutoffs=(("elit", 15.20), ("iyi", 16.00), ("ortalama", 16.80)),
+    ),
+    "ift_30_15": TestProtocol(
+        key="ift_30_15", name="30-15 IFT (VIFT — maksimal aralıklı koşu hızı)", unit="km/sa",
+        higher_is_better=True,
+        description=("30s koşu + 15s yürüme dinlenme, artan hız; uyamayınca biter. "
+                     "Ulaşılan son kademe hızı = VIFT (aralıklı koşu reçetesinin temeli). "
+                     "VO2max kestirimi için Buchheit formülü. Elit ≥21.5, ortalama ~18.5 km/sa."),
+        norm_cutoffs=(("elit", 21.5), ("iyi", 20.0), ("ortalama", 18.5)),
+    ),
+    "adductor_squeeze": TestProtocol(
+        key="adductor_squeeze", name="Adductor Squeeze (kasık kuvveti)", unit="N",
+        higher_is_better=True,
+        description=("Sırtüstü, dizler 45°, dinamometre dizler arasında; izometrik "
+                     "iç-bacak sıkma kuvveti. MD+1 kasık/pubis takibi: baseline'a göre "
+                     ">%10 düşüş riskli. Elit ≥400N, ortalama ~280N."),
+        norm_cutoffs=(("elit", 400.0), ("iyi", 340.0), ("ortalama", 280.0)),
+    ),
+    "drop_jump_rsi": TestProtocol(
+        key="drop_jump_rsi", name="Drop Jump RSI (reaktif kuvvet)", unit="RSI",
+        higher_is_better=True,
+        description=("30cm kutudan in, yere değer değmez maksimum sıçra; "
+                     "RSI = havada kalma / yere temas süresi. Reaktif/elastik güç. "
+                     "Elit ≥2.50, ortalama ~1.50."),
+        norm_cutoffs=(("elit", 2.50), ("iyi", 2.00), ("ortalama", 1.50)),
+    ),
+    "triple_hop": TestProtocol(
+        key="triple_hop", name="Triple Hop (tek bacak, 3 sıçrama mesafesi)", unit="cm",
+        higher_is_better=True,
+        description=("Tek bacak ardışık 3 sıçrama toplam mesafesi (sol/sağ ayrı ölçülür); "
+                     "bacak asimetrisi (>%10 sarı, >%15 kırmızı) için. "
+                     "Elit ≥600cm, ortalama ~480cm."),
+        norm_cutoffs=(("elit", 600.0), ("iyi", 540.0), ("ortalama", 480.0)),
+    ),
 }
 
 
@@ -341,3 +403,323 @@ def assess_change(
         current=current, baseline_mean=round(baseline_mean, 3), swc=swc,
         delta=delta, beyond_swc=beyond, verdict=verdict,
     )
+
+
+# --------------------------------------------------------------------------- #
+# Türetilmiş metrikler — ham ölçümden spor-bilimi göstergesi üret (saf).
+# Tüm eşikler aşağıda adlandırılmış sabit (ev konvansiyonu: engine eşiği =
+# modül sabiti, env değil). DB/HTTP yok; ham sayı girer, dataclass çıkar.
+# --------------------------------------------------------------------------- #
+
+# Bangsbo (2008) Yo-Yo IR1 → VO2max: VO2 = mesafe(m) × 0.0084 + 36.4.
+YOYO_IR1_VO2_SLOPE = 0.0084
+YOYO_IR1_VO2_INTERCEPT = 36.4
+# RSA yorgunluk indeksi: FI > %7 → yetersiz toparlanma bayrağı.
+RSA_FATIGUE_FLAG_PCT = 7.0
+# 505 COD Deficit: 505 − 10m düz sprint; bu eşik üstü zayıf frenleme/deceleration.
+COD_DEFICIT_FLAG_S = 1.00
+# Bacak (limb) asimetri eşikleri: > %10 sarı (izle), > %15 kırmızı (müdahale).
+ASYMMETRY_WARN_PCT = 10.0
+ASYMMETRY_HIGH_PCT = 15.0
+# MD+1 Adductor Squeeze: önceki ölçüme göre > %10 düşüş → kasık/pubis riski.
+ADDUCTOR_DROP_FLAG_PCT = 10.0
+# MD+1 CMJ nöromusküler yorgunluk: baseline'a göre > %10 düşüş → yorgunluk.
+CMJ_FATIGUE_DROP_PCT = 10.0
+# Return-to-play: baseline'ın ≥ %95'i → yeşil ışık; altı → kırmızı (sahaya çıkmasın).
+RTP_GREEN_LIGHT_PCT = 95.0
+
+
+def derive_vo2max_from_yoyo_ir1(distance_m: float) -> float:
+    """Yo-Yo IR1 toplam mesafesinden (m) VO2max kestirimi — Bangsbo (2008).
+
+    VO2max = mesafe × 0.0084 + 36.4 (ml/kg/dk). Girdi mesafedir; seviye değil
+    (seviye→mesafe dönüşümü protokol tablosundan manuel girilir)."""
+    if distance_m < 0:
+        raise ValueError("mesafe negatif olamaz")
+    return round(distance_m * YOYO_IR1_VO2_SLOPE + YOYO_IR1_VO2_INTERCEPT, 1)
+
+
+def estimate_vo2max_from_vift(
+    vift_kmh: float, age: int, weight_kg: float, *, female: bool = False,
+) -> float:
+    """30-15 IFT son kademe hızından (VIFT) VO2max kestirimi — Buchheit (2008).
+
+    VO2max = 28.3 − 2.15·G − 0.741·A − 0.0357·W + 0.0586·A·VIFT + 1.03·VIFT
+    (G: erkek=1, kadın=2; A: yaş; W: kg). ml/kg/dk."""
+    if vift_kmh <= 0:
+        raise ValueError("VIFT pozitif olmalı")
+    g = 2 if female else 1
+    vo2 = (28.3 - 2.15 * g - 0.741 * age - 0.0357 * weight_kg
+           + 0.0586 * age * vift_kmh + 1.03 * vift_kmh)
+    return round(vo2, 1)
+
+
+@dataclass(frozen=True)
+class RSAFatigueReport:
+    n: int
+    best: float
+    mean: float
+    total: float
+    fatigue_index_pct: float     # FI = ((total/(best·n)) − 1) × 100
+    insufficient_recovery: bool  # FI > %7
+    note: str = ""
+
+
+def repeated_sprint_fatigue_index(sprint_times: list[float]) -> RSAFatigueReport:
+    """Tekrarlı sprint (ör. 6×30m) sürelerinden Yorgunluk İndeksi (FI).
+
+    FI = [(toplam_süre / (en_iyi_süre × sprint_sayısı)) − 1] × 100.
+    FI > %7 → 'yetersiz toparlanma' bayrağı (anaerobik dayanıklılık zayıf)."""
+    if len(sprint_times) < 2:
+        raise ValueError("FI için en az 2 sprint gerekir")
+    if any(t <= 0 for t in sprint_times):
+        raise ValueError("sprint süreleri pozitif olmalı")
+    n = len(sprint_times)
+    best = min(sprint_times)
+    total = sum(sprint_times)
+    mean = total / n
+    fi = ((total / (best * n)) - 1) * 100
+    fi = round(fi, 2)
+    flag = fi > RSA_FATIGUE_FLAG_PCT
+    note = f"FI %{fi} ({n} sprint, en iyi {round(best, 2)}sn)"
+    if flag:
+        note += f" — yetersiz toparlanma (>%{RSA_FATIGUE_FLAG_PCT:g})"
+    return RSAFatigueReport(
+        n=n, best=round(best, 3), mean=round(mean, 3), total=round(total, 3),
+        fatigue_index_pct=fi, insufficient_recovery=flag, note=note,
+    )
+
+
+@dataclass(frozen=True)
+class CODDeficitReport:
+    cod_time: float          # 505 süresi
+    linear_time: float       # 10m düz sprint
+    deficit: float           # cod − linear
+    poor_deceleration: bool  # deficit > eşik
+    note: str = ""
+
+
+def change_of_direction_deficit(
+    cod_time: float, linear_10m: float,
+) -> CODDeficitReport:
+    """COD Deficit = 505_süresi − 10m_düz_sprint. Yüksek → zayıf frenleme.
+
+    Düz hızdan arındırılmış 'saf yön değiştirme maliyeti'; eşik üstü
+    deceleration/frenleme zayıflığı (sakatlık + verim riski)."""
+    if cod_time <= 0 or linear_10m <= 0:
+        raise ValueError("süreler pozitif olmalı")
+    deficit = round(cod_time - linear_10m, 3)
+    poor = deficit > COD_DEFICIT_FLAG_S
+    note = f"COD Deficit {deficit}sn"
+    if poor:
+        note += f" — zayıf frenleme/deceleration (>%{COD_DEFICIT_FLAG_S:g}sn)"
+    return CODDeficitReport(
+        cod_time=round(cod_time, 3), linear_time=round(linear_10m, 3),
+        deficit=deficit, poor_deceleration=poor, note=note,
+    )
+
+
+def reactive_strength_index(flight_time_s: float, contact_time_s: float) -> float:
+    """Drop Jump RSI = havada kalma süresi / yere temas süresi (saf).
+
+    Reaktif/elastik kuvvet göstergesi; yüksek iyi."""
+    if contact_time_s <= 0:
+        raise ValueError("temas süresi pozitif olmalı")
+    if flight_time_s < 0:
+        raise ValueError("uçuş süresi negatif olamaz")
+    return round(flight_time_s / contact_time_s, 3)
+
+
+@dataclass(frozen=True)
+class AsymmetryReport:
+    left: float
+    right: float
+    asymmetry_pct: float     # |L−R| / max(L,R) × 100
+    stronger_side: str       # "sol" | "sağ" | "denge"
+    flag: str                # "yeşil" | "sarı" | "kırmızı"
+    note: str = ""
+
+
+def limb_asymmetry(left: float, right: float) -> AsymmetryReport:
+    """İki bacak ölçümünden asimetri yüzdesi + bayrak (Triple Hop vb.).
+
+    asimetri = |sol − sağ| / max(sol, sağ) × 100. > %10 sarı, > %15 kırmızı
+    (sakatlık/yeniden-sakatlanma riski)."""
+    if left < 0 or right < 0:
+        raise ValueError("ölçümler negatif olamaz")
+    hi = max(left, right)
+    if hi == 0:
+        raise ValueError("en az bir ölçüm pozitif olmalı")
+    asym = round(abs(left - right) / hi * 100, 2)
+    if abs(left - right) < 1e-9:
+        side = "denge"
+    else:
+        side = "sol" if left > right else "sağ"
+    if asym > ASYMMETRY_HIGH_PCT:
+        flag = "kırmızı"
+    elif asym > ASYMMETRY_WARN_PCT:
+        flag = "sarı"
+    else:
+        flag = "yeşil"
+    note = f"asimetri %{asym} ({flag}); güçlü taraf: {side}"
+    return AsymmetryReport(
+        left=round(left, 3), right=round(right, 3), asymmetry_pct=asym,
+        stronger_side=side, flag=flag, note=note,
+    )
+
+
+@dataclass(frozen=True)
+class DropChangeReport:
+    current: float
+    previous: float
+    drop_pct: float          # (previous − current) / previous × 100 (pozitif = düşüş)
+    flagged: bool
+    note: str = ""
+
+
+def adductor_squeeze_drop(current: float, previous: float) -> DropChangeReport:
+    """MD+1 Adductor Squeeze: önceki ölçüme göre düşüş yüzdesi + kasık/pubis flag.
+
+    Kuvvet düştükçe risk: düşüş > %10 → pubis/kasık riski bayrağı."""
+    if previous <= 0 or current < 0:
+        raise ValueError("kuvvet değerleri geçersiz")
+    drop = round((previous - current) / previous * 100, 2)
+    flag = drop > ADDUCTOR_DROP_FLAG_PCT
+    note = f"adductor %{drop} düşüş" if drop > 0 else f"adductor %{abs(drop)} artış"
+    if flag:
+        note += f" — kasık/pubis riski (>%{ADDUCTOR_DROP_FLAG_PCT:g})"
+    return DropChangeReport(
+        current=round(current, 3), previous=round(previous, 3),
+        drop_pct=drop, flagged=flag, note=note,
+    )
+
+
+def cmj_neuromuscular_drop(current: float, baseline_values: list[float]) -> DropChangeReport:
+    """MD+1 CMJ: baseline ortalamasına göre düşüş yüzdesi + nöromusküler yorgunluk flag.
+
+    CMJ yüksekliği baseline'ın > %10 altındaysa nöromusküler yorgunluk bayrağı
+    (toparlanmamış kas-sinir sistemi → sakatlık + verim riski)."""
+    if current < 0:
+        raise ValueError("CMJ negatif olamaz")
+    if not baseline_values:
+        raise ValueError("baseline gerekli")
+    baseline_mean = statistics.fmean(baseline_values)
+    if baseline_mean <= 0:
+        raise ValueError("baseline ortalaması pozitif olmalı")
+    drop = round((baseline_mean - current) / baseline_mean * 100, 2)
+    flag = drop > CMJ_FATIGUE_DROP_PCT
+    note = f"CMJ baseline'a göre %{drop} düşüş" if drop > 0 else f"CMJ %{abs(drop)} üstünde"
+    if flag:
+        note += f" — nöromusküler yorgunluk (>%{CMJ_FATIGUE_DROP_PCT:g})"
+    return DropChangeReport(
+        current=round(current, 3), previous=round(baseline_mean, 3),
+        drop_pct=drop, flagged=flag, note=note,
+    )
+
+
+@dataclass(frozen=True)
+class ReturnToPlayReport:
+    current: float
+    baseline: float
+    pct_of_baseline: float   # yön'e göre normalize (100 = baseline'a eşit)
+    cleared: bool            # ≥ %95 → yeşil ışık
+    light: str               # "yeşil" | "kırmızı"
+    note: str = ""
+
+
+def return_to_play_readiness(
+    current: float, pre_injury_baseline: float, *, higher_is_better: bool = True,
+) -> ReturnToPlayReport:
+    """Sakatlık dönüşü: mikro-test sonucunu sakatlık-öncesi baseline ile kıyasla.
+
+    pct = (current/baseline) [yüksek iyi] ya da (baseline/current) [düşük iyi] × 100.
+    ≥ %95 → yeşil ışık (sahaya çıkabilir); < %95 → kırmızı (sahaya çıkmasın)."""
+    if pre_injury_baseline <= 0 or current <= 0:
+        raise ValueError("değerler pozitif olmalı")
+    ratio = (current / pre_injury_baseline if higher_is_better
+             else pre_injury_baseline / current)
+    pct = round(ratio * 100, 1)
+    cleared = pct >= RTP_GREEN_LIGHT_PCT
+    light = "yeşil" if cleared else "kırmızı"
+    note = (f"baseline'ın %{pct}'i — "
+            + ("yeşil ışık (sahaya çıkabilir)" if cleared
+               else f"kırmızı ışık (sahaya çıkmasın, hedef ≥%{RTP_GREEN_LIGHT_PCT:g})"))
+    return ReturnToPlayReport(
+        current=round(current, 3), baseline=round(pre_injury_baseline, 3),
+        pct_of_baseline=pct, cleared=cleared, light=light, note=note,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Hamstring:Quadriceps (H:Q) oranı — en güçlü hamstring sakatlık prediktörü.
+# Konsantrik H:Q literatürde ~0.60 hedef; < 0.47 yüksek risk (kas dengesizliği).
+# --------------------------------------------------------------------------- #
+
+# Konsantrik H:Q oranı bantları (izokinetik tepe tork temelli).
+HQ_RATIO_IDEAL_MIN = 0.60   # ≥ bu → ideal denge
+HQ_RATIO_RISK = 0.47        # < bu → yüksek hamstring sakatlık riski
+
+
+@dataclass(frozen=True)
+class HQRatioReport:
+    hamstring: float
+    quadriceps: float
+    ratio: float             # hamstring / quadriceps
+    band: str                # "ideal" | "sınırda" | "yüksek_risk"
+    at_risk: bool            # ratio < HQ_RATIO_RISK
+    note: str = ""
+
+
+def hamstring_quad_ratio(hamstring: float, quadriceps: float) -> HQRatioReport:
+    """İzokinetik hamstring ve quadriceps tepe torkundan H:Q oranı + risk bandı.
+
+    H:Q = hamstring / quadriceps (aynı açısal hız, ör. 60°/sn). Birim oranlandığı
+    için Nm da Nm/kg da olur (ikisi de aynı oyuncudan). ≥0.60 ideal, 0.47-0.60
+    sınırda (izle), <0.47 yüksek hamstring sakatlık riski (kuadriseps baskın)."""
+    if hamstring < 0 or quadriceps <= 0:
+        raise ValueError("quadriceps pozitif, hamstring negatif olamaz")
+    ratio = round(hamstring / quadriceps, 3)
+    if ratio >= HQ_RATIO_IDEAL_MIN:
+        band = "ideal"
+    elif ratio >= HQ_RATIO_RISK:
+        band = "sınırda"
+    else:
+        band = "yüksek_risk"
+    at_risk = ratio < HQ_RATIO_RISK
+    note = f"H:Q {ratio} ({band})"
+    if at_risk:
+        note += f" — yüksek hamstring riski (hedef ≥{HQ_RATIO_IDEAL_MIN:g}, kuadriseps baskın)"
+    return HQRatioReport(
+        hamstring=round(hamstring, 3), quadriceps=round(quadriceps, 3),
+        ratio=ratio, band=band, at_risk=at_risk, note=note,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Mevkiye özel test paketleri — sadece preset (config) düzeyi, ayrı engine yok.
+# --------------------------------------------------------------------------- #
+
+# Mevki → o mevkide önceliklendirilen protokol seti (default batarya önerisi).
+POSITION_TEST_PRESETS: dict[str, tuple[str, ...]] = {
+    "kaleci": ("cmj", "sj", "drop_jump_rsi", "sprint_5m", "t505", "adductor_squeeze"),
+    "stoper": ("cmj", "sprint_10m", "t505", "yoyo_irl1", "isokinetic_ham",
+               "adductor_squeeze"),
+    "bek": ("sprint_10m", "sprint_30m", "ift_30_15", "illinois", "rsa", "triple_hop"),
+    "kanat": ("sprint_10m", "sprint_30m", "ift_30_15", "arrowhead", "rsa",
+              "triple_hop"),
+    "orta_saha": ("yoyo_irl1", "ift_30_15", "vo2max", "sprint_30m", "ttest_agility",
+                  "cmj"),
+    "forvet": ("sprint_5m", "sprint_10m", "cmj", "drop_jump_rsi", "t505",
+               "adductor_squeeze"),
+}
+# Mevki eşleşmezse uygulanan genel batarya.
+DEFAULT_POSITION_PRESET: tuple[str, ...] = (
+    "sprint_10m", "sprint_30m", "yoyo_irl1", "cmj", "ttest_agility", "rsa",
+)
+
+
+def protocols_for_position(position: str) -> tuple[str, ...]:
+    """Mevki adından (TR, büyük/küçük harf duyarsız) önerilen protokol seti.
+
+    Bilinmeyen/boş mevki → DEFAULT_POSITION_PRESET."""
+    return POSITION_TEST_PRESETS.get(position.strip().lower(), DEFAULT_POSITION_PRESET)

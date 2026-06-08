@@ -12,6 +12,9 @@
 import * as React from "react";
 import Link from "next/link";
 import { demoSquad } from "@/lib/demo-data";
+import {
+  PROTO_NAME, PROTO_UNIT, loadDerivedRecords, type SavedRecord,
+} from "@/lib/derived-tests";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -112,6 +115,10 @@ function Cell({ metric, value, unit }: { metric: "hrv" | "sprint" | "cmj" | "acw
 }
 
 export default function FizikselDurumPage() {
+  // Test Hesaplayıcı'da kaydedilen türetilmiş metrikler (localStorage, client-only).
+  const [derived, setDerived] = React.useState<SavedRecord[]>([]);
+  React.useEffect(() => { setDerived(loadDerivedRecords()); }, []);
+
   const dist = [
     { label: "Hazır", v: "var(--low)", n: READY },
     { label: "İzlenmeli", v: "var(--mid)", n: WATCH },
@@ -151,6 +158,9 @@ export default function FizikselDurumPage() {
         </Link>
         <Link href="/test-session" style={{ display: "block", textAlign: "center", padding: "9px", borderRadius: 9, border: 0, background: "var(--besiktas)", color: "#fff", fontWeight: 700, fontSize: 12.5, textDecoration: "none" }}>
           <i className="ti ti-run" style={{ marginRight: 6 }} />Saha testi başlat
+        </Link>
+        <Link href="/physical-tests/derive" style={{ display: "block", textAlign: "center", padding: "9px", borderRadius: 9, border: "1px solid var(--line)", background: "var(--panel)", color: "var(--ink)", fontWeight: 600, fontSize: 12.5, textDecoration: "none", marginTop: 8 }}>
+          <i className="ti ti-calculator" style={{ marginRight: 6 }} />Test hesaplayıcı (FI · RSI · H:Q · RTP)
         </Link>
         <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 10 }}>Son test oturumu: 2026-06-05</div>
       </div>
@@ -216,6 +226,43 @@ export default function FizikselDurumPage() {
       </div>
       <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8 }}>
         HRV ms · Sprint 10m sn (düşük iyi) · CMJ cm · ACWR akut/kronik · Yük haftalık iç yük (0–100). Hücre rengi metriğin yönüne göre.
+      </div>
+
+      <div className="st"><h2>Test Hesaplayıcı Kayıtları</h2><span className="ep">{derived.length} kayıt · son girilenler</span></div>
+      {derived.length === 0 ? (
+        <div className="rc" style={{ margin: 0 }}>
+          <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.5 }}>
+            Henüz türetilmiş test kaydı yok. <Link href="/physical-tests/derive" style={{ color: "var(--accent)", textDecoration: "none" }}>Test Hesaplayıcı</Link>'da
+            FI / RSI / H:Q gibi bir metriği hesaplayıp “Kaydet”e bastığında burada listelenir.
+          </div>
+        </div>
+      ) : (
+        <div className="tbl">
+          <table>
+            <thead><tr>
+              <th>Oyuncu</th><th>Metrik</th><th className="r">Değer</th>
+              <th>Özet</th><th className="c">Tarih</th>
+            </tr></thead>
+            <tbody>
+              {[...derived].sort((a, b) => b.id - a.id).slice(0, 12).map((r) => (
+                <tr key={r.id}>
+                  <td><span className="nm">{r.player_name}</span></td>
+                  <td style={{ color: "var(--muted)" }}>{PROTO_NAME[r.protocol] ?? r.protocol}</td>
+                  <td className="r" style={{ fontFamily: "JetBrains Mono", fontWeight: 700 }}>
+                    {r.value}{PROTO_UNIT[r.protocol] ? ` ${PROTO_UNIT[r.protocol]}` : ""}
+                  </td>
+                  <td style={{ color: "var(--muted)", fontSize: 12 }}>{r.label}</td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{r.test_date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
+        <i className="ti ti-calculator" />
+        Bu kayıtlar Test Hesaplayıcı'dan gelir (demo: tarayıcıda saklanır).
+        <Link href="/physical-tests/derive" style={{ marginLeft: "auto", color: "var(--accent)", textDecoration: "none" }}>Test Hesaplayıcı →</Link>
       </div>
     </ConsoleShell>
   );

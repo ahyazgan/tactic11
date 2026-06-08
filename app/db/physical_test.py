@@ -17,7 +17,9 @@ from __future__ import annotations
 import enum
 from datetime import date
 
-from sqlalchemy import Date, Float, ForeignKey, Index, Integer, String, Text
+from typing import Any
+
+from sqlalchemy import JSON, Date, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -41,6 +43,15 @@ class TestProtocol(enum.StrEnum):
     GPS_HIRD = "gps_hir_dist"        # high-intensity running distance
     GPS_ACC = "gps_acc_count"        # atak sayısı
     BODY_FAT = "body_fat_pct"        # %
+    # Faz 2 ek protokolleri (sürat split / çeviklik / patlayıcı / MD+1).
+    SPRINT_5M = "sprint_5m"          # sn — 5m reaksiyon/ilk adım
+    T505 = "t505"                    # sn — 505 yön değiştirme
+    ARROWHEAD = "arrowhead"          # sn — arrowhead çeviklik
+    ILLINOIS = "illinois"            # sn — illinois çeviklik
+    IFT_30_15 = "ift_30_15"          # km/sa — VIFT
+    ADDUCTOR_SQUEEZE = "adductor_squeeze"  # N — kasık kuvveti (MD+1)
+    DROP_JUMP_RSI = "drop_jump_rsi"  # RSI — reaktif kuvvet
+    TRIPLE_HOP = "triple_hop"        # cm — tek bacak 3 sıçrama
     CUSTOM = "custom"                # serbest
 
 
@@ -66,3 +77,7 @@ class PhysicalTest(Base):
     unit: Mapped[str | None] = mapped_column(String(32), nullable=True)  # otomatik doldurulur
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     recorded_by: Mapped[str | None] = mapped_column(String(128), nullable=True)  # girişi yapan
+    # Çok-bileşenli ham veri (saklanır): RSA 6 sprint süresi, Drop Jump uçuş/temas,
+    # Triple Hop sol/sağ, COD 505+10m vb. `value` türetilmiş metriği tutar
+    # (FI/RSI/asimetri), `components` ham bileşenleri JSON olarak. Nullable.
+    components: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)

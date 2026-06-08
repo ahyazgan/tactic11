@@ -528,3 +528,192 @@ def test_battery_tenant_isolation(client):
     })
     state["tenant_id"] = "other"
     assert c.get("/physical-tests/900/battery").status_code == 404
+
+
+# --------------------------------------------------------------------------- #
+# Faz 2 — türetilmiş metrik uçları (/derive/*) + mevki preset + components
+# --------------------------------------------------------------------------- #
+
+def test_derive_rsa_fatigue(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/rsa-fatigue",
+               json={"sprint_times": [4.0, 4.0, 4.0, 5.0]})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["fatigue_index_pct"] == 6.25
+    assert body["n"] == 4
+    assert body["insufficient_recovery"] is False
+
+
+def test_derive_rsa_fatigue_flags_high(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/rsa-fatigue",
+               json={"sprint_times": [4.3, 4.45, 4.6, 4.8, 5.0, 5.2]})
+    assert r.json()["insufficient_recovery"] is True
+
+
+def test_derive_rsa_fatigue_too_few_422(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/rsa-fatigue", json={"sprint_times": [4.3]})
+    assert r.status_code == 422  # Pydantic min_length
+
+
+def test_derive_cod_deficit(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/cod-deficit",
+               json={"cod_time": 3.0, "linear_10m": 1.7})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["deficit"] == 1.3
+    assert body["poor_deceleration"] is True
+
+
+def test_derive_rsi(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/rsi",
+               json={"flight_time_s": 0.5, "contact_time_s": 0.25})
+    assert r.status_code == 200
+    assert r.json()["rsi"] == 2.0
+
+
+def test_derive_asymmetry_red(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/asymmetry",
+               json={"left": 600.0, "right": 480.0})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["flag"] == "kırmızı"
+    assert body["stronger_side"] == "sol"
+
+
+def test_derive_vo2max_yoyo(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/vo2max/yoyo", json={"distance_m": 2000.0})
+    assert r.status_code == 200
+    assert r.json()["vo2max"] == 53.2
+
+
+def test_derive_vo2max_vift(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/vo2max/vift",
+               json={"vift_kmh": 20.0, "age": 24, "weight_kg": 75.0})
+    assert r.status_code == 200
+    assert 50.0 < r.json()["vo2max"] < 65.0
+
+
+def test_derive_adductor_drop(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/adductor-drop",
+               json={"current": 340.0, "previous": 400.0})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["drop_pct"] == 15.0
+    assert body["flagged"] is True
+
+
+def test_derive_cmj_fatigue(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/cmj-fatigue",
+               json={"current": 34.0, "baseline_values": [40.0, 41.0, 39.0]})
+    assert r.status_code == 200
+    assert r.json()["flagged"] is True
+
+
+def test_derive_return_to_play_red(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/return-to-play",
+               json={"current": 90.0, "pre_injury_baseline": 100.0})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["cleared"] is False
+    assert body["light"] == "kırmızı"
+
+
+def test_derive_return_to_play_green(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/return-to-play",
+               json={"current": 98.0, "pre_injury_baseline": 100.0})
+    assert r.json()["cleared"] is True
+
+
+def test_derive_no_auth_required():
+    """Türetme uçları tester tableti için auth'suz erişilebilir."""
+    from fastapi.testclient import TestClient
+
+    from app.api.main import app
+    c = TestClient(app)
+    r = c.post("/physical-tests/derive/rsi",
+               json={"flight_time_s": 0.5, "contact_time_s": 0.25})
+    assert r.status_code == 200
+
+
+def test_preset_known_position(client):
+    c, _ = client
+    r = c.get("/physical-tests/presets/kaleci")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["position"] == "kaleci"
+    keys = {p["key"] for p in body["protocols"]}
+    assert "cmj" in keys
+    # Her protokol tam tanımıyla dönmeli
+    for p in body["protocols"]:
+        assert "norm_elite" in p and "description" in p
+
+
+def test_preset_case_insensitive(client):
+    c, _ = client
+    assert c.get("/physical-tests/presets/Kaleci").json()["position"] == "kaleci"
+
+
+def test_preset_unknown_returns_default(client):
+    c, _ = client
+    r = c.get("/physical-tests/presets/bilinmeyen")
+    assert r.status_code == 200
+    assert len(r.json()["protocols"]) >= 1
+
+
+def test_new_protocol_persists_with_components(client):
+    """Drop Jump RSI kaydı + ham bileşenler (uçuş/temas) components'a yazılır."""
+    c, _ = client
+    r = c.post("/physical-tests/", json={
+        "player_id": "1100", "player_name": "Reaktif Oyuncu",
+        "test_date": "2026-06-08", "protocol": "drop_jump_rsi", "value": 2.1,
+        "components": {"flight_time_s": 0.52, "contact_time_s": 0.25},
+    })
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["unit"] == "RSI"           # UNIT_MAP'ten otomatik
+    assert body["components"]["flight_time_s"] == 0.52
+    # Geri okunabilir
+    got = c.get("/physical-tests/1100").json()
+    assert got[0]["components"]["contact_time_s"] == 0.25
+
+
+def test_new_protocol_in_protocols_endpoint(client):
+    c, _ = client
+    keys = {p["key"] for p in c.get("/physical-tests/protocols").json()}
+    assert {"t505", "ift_30_15", "drop_jump_rsi", "triple_hop"}.issubset(keys)
+
+
+def test_derive_hq_ratio_high_risk(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/hq-ratio",
+               json={"hamstring": 1.2, "quadriceps": 2.9})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["band"] == "yüksek_risk"
+    assert body["at_risk"] is True
+
+
+def test_derive_hq_ratio_ideal(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/hq-ratio",
+               json={"hamstring": 1.8, "quadriceps": 2.8})
+    assert r.json()["band"] == "ideal"
+
+
+def test_derive_hq_ratio_zero_quad_422(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/hq-ratio",
+               json={"hamstring": 1.5, "quadriceps": 0.0})
+    assert r.status_code == 422  # Pydantic gt=0

@@ -57,6 +57,7 @@ const FULL_NAV: NavGroup[] = [
   { grp: "Takım", items: [
     { label: "Kadro",            href: "/squad",          icon: "ti-users" },
     { label: "Fiziksel Durum",   href: "/physical-tests", icon: "ti-activity" },
+    { label: "Test Hesaplayıcı", href: "/physical-tests/derive", icon: "ti-calculator" },
     { label: "Sakatlık & Sağlık",href: "/medical",        icon: "ti-heart-rate-monitor" },
     { label: "Yük Takibi",       href: "/workload",       icon: "ti-chart-area-line" },
   ]},

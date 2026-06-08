@@ -26,6 +26,15 @@ REFERENCE = {
     "gps_total_dist":  {"low": 9000, "high": 11500, "unit": "m",     "lower_is_better": False},
     "gps_hir_dist":    {"low": 800,  "high": 1200, "unit": "m",      "lower_is_better": False},
     "gps_acc_count":   {"low": 30,   "high": 50,   "unit": "adet",   "lower_is_better": False},
+    # ── Faz 2 ek protokolleri (performance_test.PROTOCOLS ile senkron). ──
+    "sprint_5m":       {"low": 1.15, "high": 0.95, "unit": "sn",     "lower_is_better": True},
+    "t505":            {"low": 2.60, "high": 2.20, "unit": "sn",     "lower_is_better": True},
+    "arrowhead":       {"low": 8.50, "high": 7.50, "unit": "sn",     "lower_is_better": True},
+    "illinois":        {"low": 16.80, "high": 15.20, "unit": "sn",   "lower_is_better": True},
+    "ift_30_15":       {"low": 18.5, "high": 21.5, "unit": "km/sa",  "lower_is_better": False},
+    "adductor_squeeze": {"low": 280.0, "high": 400.0, "unit": "N",   "lower_is_better": False},
+    "drop_jump_rsi":   {"low": 1.50, "high": 2.50, "unit": "RSI",    "lower_is_better": False},
+    "triple_hop":      {"low": 480.0, "high": 600.0, "unit": "cm",   "lower_is_better": False},
 }
 
 
