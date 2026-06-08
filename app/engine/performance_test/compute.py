@@ -77,6 +77,78 @@ PROTOCOLS: dict[str, TestProtocol] = {
                      "(yorgunluk indeksi ayrıca hesaplanır)."),
         norm_cutoffs=(("elit", 4.30), ("iyi", 4.55), ("ortalama", 4.80)),
     ),
+    # ── load_risk.REFERENCE ile aynı key'ler; norm: elit=high, iyi=mid, ortalama=low.
+    "sprint_10m": TestProtocol(
+        key="sprint_10m", name="10m Sprint (ivmelenme)", unit="sn",
+        higher_is_better=False,
+        description=("Foto-hücre kapıları; durağan başlangıç, 10m. İlk adım gücü/ivmelenme. "
+                     "2 deneme, en iyisi. Elit ≤1.70sn, ortalama ~1.90sn."),
+        norm_cutoffs=(("elit", 1.70), ("iyi", 1.80), ("ortalama", 1.90)),
+    ),
+    "yoyo_irl2": TestProtocol(
+        key="yoyo_irl2", name="Yo-Yo Intermittent Recovery L2", unit="seviye",
+        higher_is_better=True,
+        description=("L1'den daha yüksek başlangıç hızı; daha kısa sürede yüksek yoğunluk "
+                     "dayanıklılığı. Ulaşılan kademe. Elit ≥18.0, ortalama ~15.0."),
+        norm_cutoffs=(("elit", 18.0), ("iyi", 16.5), ("ortalama", 15.0)),
+    ),
+    "sj": TestProtocol(
+        key="sj", name="Squat Jump (statik sıçrama)", unit="cm",
+        higher_is_better=True,
+        description=("90° çömelmeden, ön-gerilim olmadan dikey sıçra (eller belde). "
+                     "Konsentrik güç. CMJ ile farkı elastik enerji göstergesi. "
+                     "Elit ≥38cm, ortalama ~28cm."),
+        norm_cutoffs=(("elit", 38.0), ("iyi", 33.0), ("ortalama", 28.0)),
+    ),
+    "isokinetic_quad": TestProtocol(
+        key="isokinetic_quad", name="İzokinetik Quadriceps (60°/s)", unit="Nm/kg",
+        higher_is_better=True,
+        description=("İzokinetik dinamometre, 60°/sn; kuadriseps tepe torku / vücut ağırlığı. "
+                     "Diz ekstansiyon gücü + H/Q oranı için. Elit ≥3.20, ortalama ~2.50."),
+        norm_cutoffs=(("elit", 3.20), ("iyi", 2.85), ("ortalama", 2.50)),
+    ),
+    "isokinetic_ham": TestProtocol(
+        key="isokinetic_ham", name="İzokinetik Hamstring (60°/s)", unit="Nm/kg",
+        higher_is_better=True,
+        description=("İzokinetik dinamometre, 60°/sn; hamstring tepe torku / vücut ağırlığı. "
+                     "H/Q oranı sakatlık riskinin anahtarı. Elit ≥2.00, ortalama ~1.50."),
+        norm_cutoffs=(("elit", 2.00), ("iyi", 1.75), ("ortalama", 1.50)),
+    ),
+    "vo2max": TestProtocol(
+        key="vo2max", name="VO2max (maksimal oksijen)", unit="ml/kg/min",
+        higher_is_better=True,
+        description=("Doğrudan (metabolik araba) ya da Beep/Cooper'dan kestirim. "
+                     "Aerobik kapasite. Elit ≥62, ortalama ~52 ml/kg/dk."),
+        norm_cutoffs=(("elit", 62.0), ("iyi", 57.0), ("ortalama", 52.0)),
+    ),
+    "gps_total_dist": TestProtocol(
+        key="gps_total_dist", name="GPS Toplam Mesafe (maç)", unit="m",
+        higher_is_better=True,
+        description=("GPS/LPS biriminden bir maç/antrenmandaki toplam kat edilen mesafe. "
+                     "İş hacmi göstergesi. Elit ~11500m, ortalama ~9000m."),
+        norm_cutoffs=(("elit", 11500.0), ("iyi", 10250.0), ("ortalama", 9000.0)),
+    ),
+    "gps_hir_dist": TestProtocol(
+        key="gps_hir_dist", name="GPS Yüksek Şiddet Mesafe", unit="m",
+        higher_is_better=True,
+        description=("Yüksek-hız eşiği (>19.8 km/s) üstünde kat edilen mesafe. "
+                     "Yüksek-yoğunluk iş kapasitesi. Elit ~1200m, ortalama ~800m."),
+        norm_cutoffs=(("elit", 1200.0), ("iyi", 1000.0), ("ortalama", 800.0)),
+    ),
+    "gps_acc_count": TestProtocol(
+        key="gps_acc_count", name="GPS İvmelenme Sayısı", unit="adet",
+        higher_is_better=True,
+        description=("Yüksek-eşik (>3 m/s²) ivmelenme/yavaşlama olay sayısı. "
+                     "Nöromüsküler yük göstergesi. Elit ~50, ortalama ~30 adet."),
+        norm_cutoffs=(("elit", 50.0), ("iyi", 40.0), ("ortalama", 30.0)),
+    ),
+    "body_fat_pct": TestProtocol(
+        key="body_fat_pct", name="Vücut Yağ Oranı", unit="%",
+        higher_is_better=False,
+        description=("Skinfold (kaliper) ya da biyoimpedans; vücut yağ yüzdesi. "
+                     "Düşük iyi (atletik kompozisyon). Elit ≤8%, ortalama ~14%."),
+        norm_cutoffs=(("elit", 8.0), ("iyi", 11.0), ("ortalama", 14.0)),
+    ),
 }
 
 

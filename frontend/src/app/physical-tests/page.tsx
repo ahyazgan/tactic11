@@ -15,10 +15,16 @@
 import * as React from "react";
 import Link from "next/link";
 import useSWR from "swr";
+import {
+  Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from "recharts";
 import { apiFetch, getAccessToken } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
 import { DEMO_MODE } from "@/lib/demo-mode";
-import { demoPlayerSummaries, demoHistoryFor, demoRiskFor } from "@/lib/demo-data";
+import {
+  demoPlayerSummaries, demoHistoryFor, demoRiskFor, demoProtocols,
+  type ProtocolInfo,
+} from "@/lib/demo-data";
 
 interface PlayerSummary {
   player_id: string;
@@ -70,6 +76,32 @@ function riskVar(label: string): string {
   }
 }
 
+type TrendDir = "improving" | "worsening" | "stable" | "insufficient";
+const DIRECTION_LABEL: Record<TrendDir, string> = {
+  improving: "İyileşiyor ↑",
+  worsening: "Kötüleşiyor ↓",
+  stable: "Sabit →",
+  insufficient: "Yetersiz veri",
+};
+
+/** İlk→son değişimden yön çıkar (protokol yönüne duyarlı). */
+function seriesDirection(values: number[], higherIsBetter: boolean): TrendDir {
+  if (values.length < 2) return "insufficient";
+  const first = values[0];
+  const last = values[values.length - 1];
+  const eps = Math.abs(first) * 0.01 || 0.001;
+  const diff = last - first;
+  if (Math.abs(diff) <= eps) return "stable";
+  const rising = diff > 0;
+  return rising === higherIsBetter ? "improving" : "worsening";
+}
+
+function dirColor(dir: TrendDir): string {
+  if (dir === "improving") return "var(--low)";
+  if (dir === "worsening") return "var(--crit)";
+  return "var(--muted)";
+}
+
 export default function PhysicalPanelPage() {
   const { user } = useCurrentUser();
   const [activeId, setActiveId] = React.useState<string | null>(null);
@@ -84,6 +116,7 @@ export default function PhysicalPanelPage() {
   const [date, setDate] = React.useState(() => new Date().toISOString().slice(0, 10));
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
+  const [showGuide, setShowGuide] = React.useState(false);
 
   const playersSwr = useSWR<PlayerSummary[]>(
     DEMO_MODE ? null : "/physical-tests/players", apiFetch);
@@ -120,6 +153,24 @@ export default function PhysicalPanelPage() {
   const risk = DEMO_MODE
     ? { data: activeId ? (demoRiskFor(Number(activeId)) as RiskReport) : undefined, isLoading: false, mutate: async () => {} }
     : riskSwr;
+
+  // Protokol rehberi — canlıda GET /protocols (auth'suz), demo'da statik.
+  const protocolsSwr = useSWR<ProtocolInfo[]>(
+    DEMO_MODE ? null : "/physical-tests/protocols", apiFetch);
+  const protocols: ProtocolInfo[] = DEMO_MODE ? demoProtocols : (protocolsSwr.data ?? []);
+  const protoInfo = protocols.find((p) => p.key === proto) ?? null;
+
+  // Trend sparkline — yüklü geçmişten seçili protokolün serisi (tarih artan).
+  const protoSeries = React.useMemo(() => {
+    const rows = (history.data ?? [])
+      .filter((t) => t.protocol === proto)
+      .slice()
+      .sort((a, b) => a.test_date.localeCompare(b.test_date));
+    return rows.map((t) => ({ date: t.test_date, val: t.value }));
+  }, [history.data, proto]);
+  const protoDir = seriesDirection(
+    protoSeries.map((p) => p.val), protoInfo?.higher_is_better ?? true,
+  );
 
   async function addTest() {
     const v = parseFloat(val);
@@ -199,6 +250,15 @@ export default function PhysicalPanelPage() {
             </Link>
           </nav>
         </div>
+        <Link href="/test-session" style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "var(--besiktas)", color: "#fff",
+          padding: "8px 16px", borderRadius: 9, fontSize: 13,
+          fontWeight: 800, textDecoration: "none", fontFamily: "'Archivo'",
+          letterSpacing: "0.2px", marginLeft: "auto",
+        }}>
+          ▶ Saha Testi Başlat
+        </Link>
         <div className="club-pill">
           <span className="dot" />
           <b>{user?.tenant_slug?.toUpperCase() ?? user?.tenant_id ?? "KULÜP"}</b>
@@ -340,6 +400,46 @@ export default function PhysicalPanelPage() {
                   <input type="number" step="0.01" value={val} onChange={(e) => setVal(e.target.value)} placeholder="0.00" />
                 </div>
               </div>
+
+              {/* Protokol rehberi — "nasıl uygulanır" + norm eşikleri */}
+              <button
+                type="button"
+                onClick={() => setShowGuide((v) => !v)}
+                style={{
+                  background: "none", border: 0, color: "var(--muted)",
+                  fontSize: 12, cursor: "pointer", padding: "0 0 10px",
+                  textDecoration: "underline", fontFamily: "inherit",
+                }}
+              >
+                {showGuide ? "Rehberi gizle" : "Protokol nasıl uygulanır?"}
+              </button>
+              {showGuide && protoInfo && (
+                <div style={{
+                  background: "var(--panel2)", border: "1px solid var(--line)",
+                  borderRadius: 10, padding: "13px 15px", marginBottom: 13,
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 5 }}>{protoInfo.name}</div>
+                  <div style={{ color: "var(--muted)", fontSize: 13, lineHeight: 1.5, marginBottom: 11 }}>
+                    {protoInfo.description}
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {([
+                      ["Elit", protoInfo.norm_elite, "var(--low)"],
+                      ["İyi", protoInfo.norm_good, "var(--mid)"],
+                      ["Ortalama", protoInfo.norm_average, "var(--dim)"],
+                    ] as [string, number, string][]).map(([label, v, col]) => (
+                      <span key={label} style={{
+                        fontFamily: "'JetBrains Mono'", fontSize: 12,
+                        background: "var(--panel)", border: "1px solid var(--line)",
+                        borderRadius: 7, padding: "5px 10px",
+                      }}>
+                        <b style={{ color: col }}>{label}</b>{" "}
+                        {v} {protoInfo.unit}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="row">
                 <div className="field">
                   <label>Kaydeden</label>
@@ -357,6 +457,38 @@ export default function PhysicalPanelPage() {
 
               <div className="tests">
                 <div className="ctitle" style={{ marginBottom: 10 }}>Test Geçmişi</div>
+
+                {/* Seçili protokolün trend sparkline'ı (yön renkli) */}
+                {protoSeries.length >= 2 && (
+                  <div style={{ marginBottom: 14 }}>
+                    <div style={{
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      marginBottom: 4,
+                    }}>
+                      <span style={{ fontSize: 12, color: "var(--muted)", fontFamily: "'Archivo Narrow'", textTransform: "uppercase", letterSpacing: 1 }}>
+                        {protoName(proto)} trendi
+                      </span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: dirColor(protoDir) }}>
+                        {DIRECTION_LABEL[protoDir]}
+                      </span>
+                    </div>
+                    <div style={{ height: 72 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={protoSeries} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
+                          <XAxis dataKey="date" hide />
+                          <YAxis domain={["auto", "auto"]} hide />
+                          <Tooltip
+                            contentStyle={{ background: "var(--panel2)", border: "1px solid var(--line)", borderRadius: 8, fontSize: 12 }}
+                            labelStyle={{ color: "var(--muted)" }}
+                            formatter={(v: number) => [`${v} ${protoUnit(proto)}`, protoName(proto)]}
+                          />
+                          <Line type="monotone" dataKey="val" stroke={dirColor(protoDir)} strokeWidth={2.5} dot={{ r: 2.5, fill: dirColor(protoDir) }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+
                 <div id="history">
                   {(history.data ?? []).map((t) => (
                     <div className="testrow" key={t.id}>

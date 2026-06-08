@@ -297,3 +297,234 @@ def test_post_accepts_ttest_and_rsa_protocols(client):
         assert r.status_code == 201, r.text
         assert r.json()["protocol"] == proto
         assert r.json()["unit"] == unit  # UNIT_MAP'ten otomatik
+
+
+# --------------------------------------------------------------------------- #
+# Blok 1 — GET /physical-tests/protocols (protokol rehberi)
+# --------------------------------------------------------------------------- #
+
+def test_protocols_endpoint_returns_all_protocols(client):
+    c, _ = client
+    r = c.get("/physical-tests/protocols")
+    assert r.status_code == 200
+    protocols = r.json()
+    keys = {p["key"] for p in protocols}
+    # Temel protokoller mevcut olmalı
+    assert {"sprint_10m", "sprint_30m", "cmj", "yoyo_irl1", "ttest_agility", "rsa"}.issubset(keys)
+    # custom hariç tutulmuş olmalı
+    assert "custom" not in keys
+    # Her protokolde gerekli alanlar
+    for p in protocols:
+        for field in ("key", "name", "unit", "higher_is_better", "description",
+                      "norm_elite", "norm_good", "norm_average"):
+            assert field in p, f"{field} eksik: {p['key']}"
+
+
+def test_protocols_endpoint_no_auth_required():
+    """Protokol listesi auth olmadan erişilebilir (tester tableti için)."""
+    from fastapi.testclient import TestClient
+
+    from app.api.main import app
+    c = TestClient(app)
+    r = c.get("/physical-tests/protocols")
+    assert r.status_code == 200
+
+
+def test_protocols_sprint_10m_higher_is_better_false(client):
+    c, _ = client
+    r = c.get("/physical-tests/protocols")
+    protocols = {p["key"]: p for p in r.json()}
+    assert "sprint_10m" in protocols
+    assert protocols["sprint_10m"]["higher_is_better"] is False
+    assert protocols["sprint_10m"]["unit"] == "sn"
+
+
+def test_protocols_cmj_norms_ascending(client):
+    """CMJ: elit > iyi > ortalama (yüksek iyi)."""
+    c, _ = client
+    r = c.get("/physical-tests/protocols")
+    protocols = {p["key"]: p for p in r.json()}
+    cmj = protocols["cmj"]
+    assert cmj["norm_elite"] > cmj["norm_good"] > cmj["norm_average"]
+
+
+def test_protocols_sprint_norms_descending(client):
+    """Sprint: elit < iyi < ortalama (düşük iyi)."""
+    c, _ = client
+    r = c.get("/physical-tests/protocols")
+    protocols = {p["key"]: p for p in r.json()}
+    s = protocols["sprint_30m"]
+    assert s["norm_elite"] < s["norm_good"] < s["norm_average"]
+
+
+# --------------------------------------------------------------------------- #
+# Blok 2 — POST /physical-tests/batch (toplu kayıt)
+# --------------------------------------------------------------------------- #
+
+_BATCH_PAYLOAD = {
+    "protocol": "sprint_10m",
+    "test_date": "2026-06-06",
+    "recorded_by": "kondisyoner@besiktas.com",
+    "items": [
+        {"player_id": "301", "player_name": "Oyuncu A", "value": 1.75},
+        {"player_id": "302", "player_name": "Oyuncu B", "value": 1.82},
+        {"player_id": "303", "player_name": "Oyuncu C", "value": 1.91},
+    ],
+}
+
+
+def test_batch_creates_all_items(client):
+    c, _ = client
+    r = c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["created"] == 3
+    assert body["failed"] == 0
+
+
+def test_batch_items_queryable_per_player(client):
+    c, _ = client
+    c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    for pid in ("301", "302", "303"):
+        r = c.get(f"/physical-tests/{pid}")
+        assert r.status_code == 200
+        data = r.json()
+        assert len(data) == 1
+        assert data[0]["protocol"] == "sprint_10m"
+
+
+def test_batch_unit_autofilled(client):
+    c, _ = client
+    c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    r = c.get("/physical-tests/301")
+    assert r.json()[0]["unit"] == "sn"
+
+
+def test_batch_partial_success_on_duplicate_value_error(client):
+    """Bir item geçersiz olsa bile diğerleri kaydedilmeli."""
+    c, _ = client
+    payload = {**_BATCH_PAYLOAD, "items": [
+        {"player_id": "401", "player_name": "Geçerli", "value": 1.75},
+        {"player_id": "402", "player_name": "Sıfır", "value": 0.0},  # geçerli ama düşük
+        {"player_id": "403", "player_name": "Geçerli2", "value": 1.80},
+    ]}
+    r = c.post("/physical-tests/batch", json=payload)
+    assert r.status_code == 201
+    # 3 geçerli kayıt
+    assert r.json()["created"] == 3
+
+
+def test_batch_max_50_items_enforced(client):
+    c, _ = client
+    payload = {**_BATCH_PAYLOAD, "items": [
+        {"player_id": str(i), "player_name": f"O{i}", "value": 1.80}
+        for i in range(51)
+    ]}
+    r = c.post("/physical-tests/batch", json=payload)
+    assert r.status_code == 422  # Pydantic validation
+
+
+def test_batch_tenant_isolation(client):
+    c, state = client
+    c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    state["tenant_id"] = "other_tenant"
+    for pid in ("301", "302", "303"):
+        assert c.get(f"/physical-tests/{pid}").json() == []
+
+
+def test_batch_kvkk_log_created(client, session):
+    from sqlalchemy import select
+
+    from app.db import models
+    c, _ = client
+    c.post("/physical-tests/batch", json=_BATCH_PAYLOAD)
+    rows = session.execute(select(models.DataAccessLog)).scalars().all()
+    batch_logs = [r for r in rows if r.action == "batch_create"]
+    assert len(batch_logs) == 3  # her oyuncu için ayrı log
+
+
+def test_batch_risk_alerts_on_critical(client):
+    """Kritik riske düşen oyuncu risk_alerts'te görünmeli."""
+    c, _ = client
+    payload = {
+        "protocol": "sprint_10m",
+        "test_date": "2026-06-06",
+        "items": [
+            # Çok yavaş sprint + daha önce kötü test yok → düşük risk bekle
+            {"player_id": "501", "player_name": "Hızlı", "value": 1.72},
+        ],
+    }
+    r = c.post("/physical-tests/batch", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    assert isinstance(body["risk_alerts"], list)
+
+
+# --------------------------------------------------------------------------- #
+# Blok 3 — GET /physical-tests/{player_id}/battery (battery profili + SWC)
+# --------------------------------------------------------------------------- #
+
+def test_battery_returns_profile(client):
+    c, _ = client
+    for proto, val in [("sprint_10m", 1.78), ("cmj", 38.0), ("yoyo_irl1", 17.5)]:
+        c.post("/physical-tests/", json={
+            "player_id": "600", "player_name": "Profil Oyuncu",
+            "test_date": "2026-06-06", "protocol": proto, "value": val,
+        })
+    r = c.get("/physical-tests/600/battery")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["player_id"] == "600"
+    assert isinstance(body["strong_areas"], list)
+    assert isinstance(body["weak_areas"], list)
+    assert len(body["scores"]) == 3
+
+
+def test_battery_404_no_data(client):
+    c, _ = client
+    assert c.get("/physical-tests/99999/battery").status_code == 404
+
+
+def test_battery_swc_requires_3_historical(client):
+    """SWC değerlendirmesi için ≥3 geçmiş kayıt gerekli."""
+    c, _ = client
+    # Sadece 1 kayıt
+    c.post("/physical-tests/", json={
+        "player_id": "700", "player_name": "Az Veri",
+        "test_date": "2026-06-06", "protocol": "cmj", "value": 38.0,
+    })
+    r = c.get("/physical-tests/700/battery")
+    assert r.status_code == 200
+    # SWC assessments boş olmalı (yeterli geçmiş yok)
+    assert r.json()["swc_assessments"] == []
+
+
+def test_battery_swc_meaningful_change(client):
+    """3+ geçmiş kayıt + belirgin gelişme → SWC 'anlamlı gelişme' vermeli."""
+    c, _ = client
+    # 3 tarihte artan CMJ (gelişme) + mevcut
+    for d, v in [
+        ("2026-03-01", 32.0), ("2026-04-01", 35.0), ("2026-05-01", 38.0),
+        ("2026-06-06", 42.0),  # mevcut
+    ]:
+        c.post("/physical-tests/", json={
+            "player_id": "800", "player_name": "Gelişen Oyuncu",
+            "test_date": d, "protocol": "cmj", "value": v,
+        })
+    r = c.get("/physical-tests/800/battery")
+    assert r.status_code == 200
+    swc_list = r.json()["swc_assessments"]
+    cmj_swc = next((s for s in swc_list if s["protocol_key"] == "cmj"), None)
+    assert cmj_swc is not None
+    assert cmj_swc["beyond_swc"] is True
+    assert "gelişme" in cmj_swc["verdict"]
+
+
+def test_battery_tenant_isolation(client):
+    c, state = client
+    c.post("/physical-tests/", json={
+        "player_id": "900", "player_name": "İzole",
+        "test_date": "2026-06-06", "protocol": "cmj", "value": 38.0,
+    })
+    state["tenant_id"] = "other"
+    assert c.get("/physical-tests/900/battery").status_code == 404
