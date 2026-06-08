@@ -10,7 +10,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { DEMO_MODE } from "@/lib/demo-mode";
-import { demoLive, type LiveEvent } from "@/lib/demo-data";
+import { demoLive, type LiveEvent, type LivePlayerImpact } from "@/lib/demo-data";
 import { ConsoleShell } from "../../../_console/shell";
 
 interface Confidence { score: number; label: string; drivers: string[] }
@@ -452,6 +452,86 @@ const EV_ICON: Record<LiveEvent["type"], string> = {
   sakatlik: "🩹", degisiklik: "🔁", buyuk_firsat: "✨",
 };
 
+// Faz B — sahadaki kadro farkındalığı: as-of sahadaki XI, oyuncu-başı gerçek
+// dakika ve dakikaya normalize VAEP/90. En yüksek VAEP/90 üstte; çıkan oyuncu
+// soluk + "öneri havuzundan düştü". Kısa süre oynayan etkili oyuncuyu öne çıkarır.
+function LineupImpact({ lineup, clock, formation }: { lineup: LivePlayerImpact[]; clock: number; formation: string }) {
+  const onPitch = lineup.filter((p) => p.onPitch);
+  const off = lineup.filter((p) => !p.onPitch);
+  const rows = [...lineup].sort((a, b) => Number(b.onPitch) - Number(a.onPitch) || b.vaepPer90 - a.vaepPer90);
+  const maxPer90 = Math.max(0.8, ...lineup.map((p) => p.vaepPer90));
+  const topImpact = onPitch.reduce((best, p) => (p.vaepPer90 > best.vaepPer90 ? p : best), onPitch[0]);
+
+  return (
+    <>
+      <div className="st">
+        <h2>Sahadaki Kadro & Oyuncu Etkisi</h2>
+        <span className="ep">{formation} · {onPitch.length} sahada · {clock}&apos;e kadar</span>
+      </div>
+      <div className="tbl" style={{ marginBottom: 8 }}>
+        <table>
+          <thead>
+            <tr>
+              <th>Oyuncu</th>
+              <th className="c">Durum</th>
+              <th className="r">Dakika</th>
+              <th className="r">VAEP</th>
+              <th className="r">VAEP/90</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((p) => {
+              const minPct = Math.min(100, (p.minutes / clock) * 100);
+              const p90Pct = Math.min(100, (p.vaepPer90 / maxPer90) * 100);
+              const isTop = p.onPitch && p.shirt === topImpact.shirt;
+              return (
+                <tr key={p.shirt} style={{ opacity: p.onPitch ? 1 : 0.5 }}>
+                  <td>
+                    <span className="pnum" style={{ marginRight: 8 }}>{p.shirt}</span>
+                    <span className="nm">{p.name}</span>
+                    <span className="pos" style={{ marginLeft: 8 }}>{p.pos}</span>
+                    {p.subbedInMinute != null && (
+                      <span style={{ marginLeft: 8, fontSize: 10.5, color: "var(--low)", fontWeight: 600 }}>girdi {p.subbedInMinute}&apos;</span>
+                    )}
+                  </td>
+                  <td className="c">
+                    {p.onPitch ? (
+                      <span className="risk risk-low"><i className="rd" style={{ background: "var(--low)" }} />sahada</span>
+                    ) : (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--dim)", fontWeight: 600 }}>
+                        çıktı {p.subbedOutMinute}&apos;
+                      </span>
+                    )}
+                  </td>
+                  <td className="r">
+                    <span style={{ display: "block" }}>{p.minutes}&apos;</span>
+                    <span className="mbar" style={{ width: 56, display: "inline-block", margin: "3px 0 0" }}>
+                      <i style={{ width: `${minPct}%`, background: "var(--border2)" }} />
+                    </span>
+                  </td>
+                  <td className="r" style={{ color: "var(--muted)" }}>{p.vaep.toFixed(2)}</td>
+                  <td className="r">
+                    <span style={{ color: isTop ? "var(--accent)" : "var(--ink)", fontWeight: 700 }}>{p.vaepPer90.toFixed(2)}</span>
+                    <span className="mbar" style={{ width: 56, display: "inline-block", margin: "3px 0 0" }}>
+                      <i style={{ width: `${p90Pct}%`, background: isTop ? "var(--accent)" : "var(--low)" }} />
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 14px", fontSize: 11.5, color: "var(--dim)", marginBottom: 14, lineHeight: 1.5 }}>
+        <span><b style={{ color: "var(--accent)" }}>VAEP/90</b> = etki ÷ gerçek dakika × 90 — {topImpact.name} {topImpact.minutes}&apos;de {topImpact.vaepPer90.toFixed(2)} ile öne çıkıyor.</span>
+        {off.length > 0 && (
+          <span>Çıkan {off.map((p) => p.name).join(", ")} öneri havuzundan otomatik düştü.</span>
+        )}
+      </div>
+    </>
+  );
+}
+
 function DemoLiveView() {
   const d = demoLive;
   const events = [...d.events].sort((a, b) => b.minute - a.minute); // en yeni üstte
@@ -530,6 +610,9 @@ function DemoLiveView() {
         </div>
         <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 8 }}>Son 8 dakikada momentum <b style={{ color: AWAY_COLOR }}>{d.away}</b>'e geçti — üst üste 2 korner.</div>
       </div>
+
+      {/* Faz B — sahadaki kadro & oyuncu etkisi */}
+      <LineupImpact lineup={d.lineup} clock={d.minute} formation={d.formation} />
 
       {/* Olay akışı */}
       <div className="st"><h2>Olay Akışı</h2><span className="ep">{d.events.length} olay</span></div>

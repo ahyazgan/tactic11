@@ -294,6 +294,19 @@ export interface LiveSubSuggestion {
   urgency: "orta" | "yüksek" | "kritik";
   rationale: string;
 }
+// Faz B — sahadaki kadro farkındalığı: as-of sahadaki oyuncular, oyuncu-başı
+// gerçek dakika ve dakikaya normalize VAEP/90. Çıkan oyuncu öneri havuzundan düşer.
+export interface LivePlayerImpact {
+  shirt: number;
+  name: string;
+  pos: string;              // kısa pozisyon kodu: GK/RB/CB/LB/DM/CM/AM/LW/ST/RW
+  onPitch: boolean;
+  minutes: number;          // bu dakikaya kadar oynadığı GERÇEK dakika
+  vaep: number;             // kümülatif VAEP katkısı
+  vaepPer90: number;        // dakikaya normalize: vaep / minutes * 90
+  subbedInMinute?: number;  // sonradan girdiyse
+  subbedOutMinute?: number; // çıktıysa (öneri havuzundan düşer)
+}
 export interface DemoLive {
   home: string;
   away: string;
@@ -302,9 +315,11 @@ export interface DemoLive {
   homeXg: number;
   awayXg: number;
   momentumHolder: string;
+  formation: string;
   series: XgPoint[];
   events: LiveEvent[];
   subs: LiveSubSuggestion[];
+  lineup: LivePlayerImpact[];
 }
 
 // 0..67 dakika, 5'er dakikalık kümülatif xG + momentum serisi
@@ -334,6 +349,7 @@ export const demoLive: DemoLive = {
   homeXg: 1.22,
   awayXg: 1.35,
   momentumHolder: DEMO_OPPONENT,
+  formation: "4-3-3",
   series: LIVE_SERIES,
   events: [
     { minute: 12, type: "buyuk_firsat", team: "home", text: "Tolga Erdem sağdan içeri kat etti, vuruş direkten döndü (xG 0.31)." },
@@ -341,6 +357,7 @@ export const demoLive: DemoLive = {
     { minute: 31, type: "sari_kart", team: "home", text: "Kerem Aslan geç müdahaleden sarı kart gördü." },
     { minute: 38, type: "buyuk_firsat", team: "away", text: "Rakip SK kontra atağında kaleci Emre Çetin kurtardı." },
     { minute: 45, type: "gol", team: "away", text: "GOL! Rakip SK köşe vuruşunda far-post'ta boş kaldı, kafa golü. 1-1." },
+    { minute: 46, type: "degisiklik", team: "home", text: "Değişiklik: Hakan Arslan (11) çıktı, Arda Çelik (17) girdi — sol kanada tazelik." },
     { minute: 52, type: "sakatlik", team: "home", text: "Caner Öztürk arka adalesini tuttu; sağlık ekibi sahada." },
     { minute: 58, type: "sari_kart", team: "away", text: "Rakip 6 numara taktik faulden sarı gördü." },
     { minute: 64, type: "buyuk_firsat", team: "away", text: "Rakip SK üst üste 2 korner kullandı; momentum onlarda." },
@@ -358,6 +375,22 @@ export const demoLive: DemoLive = {
       urgency: "yüksek",
       rationale: "Sol bek yorgunluk bandında; rakip sağ kanat bu koridordan sürekli giriyor. Savunma istikrarı için değişiklik.",
     },
+  ],
+  // 67. dakikaya kadarki saha durumu. minutes = gerçek oynanan dakika;
+  // vaepPer90 = vaep / minutes * 90 → kısa süre oynayan etkili oyuncu (Arda) öne çıkar.
+  lineup: [
+    { shirt: 1,  name: "Emre Çetin",   pos: "GK", onPitch: true,  minutes: 67, vaep: 0.02, vaepPer90: 0.03 },
+    { shirt: 2,  name: "Burak Yıldız", pos: "RB", onPitch: true,  minutes: 67, vaep: 0.07, vaepPer90: 0.09 },
+    { shirt: 4,  name: "Kerem Aslan",  pos: "CB", onPitch: true,  minutes: 67, vaep: 0.05, vaepPer90: 0.07 },
+    { shirt: 5,  name: "Mert Demir",   pos: "CB", onPitch: true,  minutes: 67, vaep: 0.06, vaepPer90: 0.08 },
+    { shirt: 3,  name: "Onur Kaya",    pos: "LB", onPitch: true,  minutes: 67, vaep: 0.04, vaepPer90: 0.05 },
+    { shirt: 6,  name: "Serkan Polat", pos: "DM", onPitch: true,  minutes: 67, vaep: 0.09, vaepPer90: 0.12 },
+    { shirt: 8,  name: "Yusuf Şahin",  pos: "CM", onPitch: true,  minutes: 67, vaep: 0.17, vaepPer90: 0.23 },
+    { shirt: 10, name: "Caner Öztürk", pos: "AM", onPitch: true,  minutes: 67, vaep: 0.21, vaepPer90: 0.28 },
+    { shirt: 17, name: "Arda Çelik",   pos: "LW", onPitch: true,  minutes: 21, vaep: 0.18, vaepPer90: 0.77, subbedInMinute: 46 },
+    { shirt: 9,  name: "Doğan Yılmaz", pos: "ST", onPitch: true,  minutes: 67, vaep: 0.34, vaepPer90: 0.46 },
+    { shirt: 7,  name: "Tolga Erdem",  pos: "RW", onPitch: true,  minutes: 67, vaep: 0.29, vaepPer90: 0.39 },
+    { shirt: 11, name: "Hakan Arslan", pos: "LW", onPitch: false, minutes: 46, vaep: 0.05, vaepPer90: 0.10, subbedOutMinute: 46 },
   ],
 };
 
