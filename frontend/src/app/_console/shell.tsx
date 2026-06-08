@@ -21,90 +21,60 @@ import { DEMO_MODE } from "@/lib/demo-mode";
 const DEMO_LIVE_HREF = "/matches/demo/live";
 
 const FULL_TABS = [
-  { label: "Portal",      href: "/overview",        icon: "🏠" },
-  { label: "Kadro",       href: "/squad",            icon: "👥" },
-  { label: "Maç",         href: "/matches",          icon: "⚽" },
-  { label: "Analiz",      href: "/xg",               icon: "📈" },
-  { label: "Scout",       href: "/scout",            icon: "🔍" },
+  { label: "Portal",      href: "/overview",        icon: "ti-home" },
+  { label: "Kadro",       href: "/squad",            icon: "ti-users" },
+  { label: "Maç",         href: "/matches",          icon: "ti-ball-football" },
+  { label: "Analiz",      href: "/xg",               icon: "ti-chart-bar" },
+  { label: "Scout",       href: "/scout",            icon: "ti-search" },
 ];
 
-const DEMO_TABS = [
-  { label: "Genel Bakış", href: "/overview",       icon: "🏠" },
-  { label: "Fiziksel",    href: "/physical-tests",  icon: "📋" },
-  { label: "Maç Planı",   href: "/match-plan",      icon: "📝" },
-  { label: "Canlı Maç",   href: DEMO_LIVE_HREF,      icon: "⚽" },
-  { label: "Kararlar",    href: "/decisions",       icon: "🧠" },
-  { label: "Asistan",     href: "/chat",            icon: "🤖" },
-];
-
-const TABS = DEMO_MODE ? DEMO_TABS : FULL_TABS;
+// Navigasyon HER ZAMAN tam menü (önizlemedeki KULÜP/ANALİZ/SİSTEM düzeni).
+// DEMO_MODE yalnızca veriyi + kulüp markasını etkiler; sidebar/sekmeleri DEĞİL.
+const TABS = FULL_TABS;
 
 const FULL_BTABS = [
-  { ic: "🏠", label: "Portal",  href: "/overview" },
-  { ic: "👥", label: "Kadro",   href: "/squad" },
-  { ic: "📋", label: "Perf",    href: "/physical-tests" },
-  { ic: "⚽", label: "Maç",     href: "/matches" },
-  { ic: "🔍", label: "Scout",   href: "/scout" },
+  { ic: "ti-home",             label: "Portal",  href: "/overview" },
+  { ic: "ti-users",            label: "Kadro",   href: "/squad" },
+  { ic: "ti-activity",         label: "Perf",    href: "/physical-tests" },
+  { ic: "ti-ball-football",    label: "Maç",     href: "/matches" },
+  { ic: "ti-search",           label: "Scout",   href: "/scout" },
 ];
 
-const DEMO_BTABS = [
-  { ic: "🏠", label: "Genel",   href: "/overview" },
-  { ic: "📋", label: "Fiziksel",href: "/physical-tests" },
-  { ic: "📝", label: "Plan",    href: "/match-plan" },
-  { ic: "⚽", label: "Canlı",   href: DEMO_LIVE_HREF },
-  { ic: "🧠", label: "Karar",   href: "/decisions" },
-  { ic: "🤖", label: "Asistan", href: "/chat" },
-];
-
-const BTABS = DEMO_MODE ? DEMO_BTABS : FULL_BTABS;
-
-const DEMO_NAV = [
-  { grp: "Maç Öncesi", items: [
-    { label: "Genel Bakış",        href: "/overview",       icon: "◫" },
-    { label: "Fiziksel Performans", href: "/physical-tests", icon: "◻" },
-    { label: "Maç Planı",          href: "/match-plan",     icon: "◻" },
-  ]},
-  { grp: "Maç Günü", items: [
-    { label: "Canlı Maç", href: DEMO_LIVE_HREF, icon: "◻" },
-    { label: "Kararlar",  href: "/decisions",   icon: "◻" },
-  ]},
-  { grp: "Asistan", items: [
-    { label: "AI Asistan", href: "/chat", icon: "◻" },
-  ]},
-];
+const BTABS = FULL_BTABS;
 
 const FULL_NAV = [
   { grp: "Kulüp", items: [
-    { label: "Genel Bakış",   href: "/overview",          icon: "◫" },
-    { label: "Kadro",         href: "/squad",             icon: "◻" },
-    { label: "Performans",    href: "/physical-tests",    icon: "◻" },
-    { label: "Tıbbi Merkez",  href: "/medical",           icon: "◻" },
-    { label: "Antrenman",     href: "/training",          icon: "◻" },
-    { label: "Maç Planı",     href: "/match-plan",        icon: "◻" },
+    { label: "Genel Bakış",   href: "/overview",          icon: "ti-layout-dashboard" },
+    { label: "Kadro",         href: "/squad",             icon: "ti-users" },
+    { label: "Performans",    href: "/physical-tests",    icon: "ti-activity" },
+    { label: "Tıbbi Merkez",  href: "/medical",           icon: "ti-heart-rate-monitor" },
+    { label: "Antrenman",     href: "/training",          icon: "ti-run" },
+    { label: "Maç Planı",     href: "/match-plan",        icon: "ti-clipboard-list" },
   ]},
   { grp: "Analiz", items: [
-    { label: "xG Performans", href: "/xg",                icon: "◻" },
-    { label: "TD Performansı",href: "/manager-performance",icon: "◻"},
-    { label: "Rakip & Scout", href: "/scout",             icon: "◻" },
-    { label: "AI Asistan",    href: "/chat",              icon: "◻" },
+    { label: "xG Performans", href: "/xg",                icon: "ti-chart-line" },
+    { label: "TD Performansı",href: "/manager-performance",icon: "ti-target"},
+    { label: "Rakip & Scout", href: "/scout",             icon: "ti-eye" },
+    { label: "AI Asistan",    href: "/chat",              icon: "ti-robot" },
   ]},
   { grp: "Maç & Veri", items: [
-    { label: "Rakip Raporu",  href: "/opponent",          icon: "◻" },
-    { label: "Kafa Kafaya",   href: "/h2h",               icon: "◻" },
-    { label: "Ligler",        href: "/leagues",           icon: "◻" },
-    { label: "Takımlar",      href: "/teams",             icon: "◻" },
-    { label: "Kararlar",      href: "/decisions",         icon: "◻" },
+    { label: "Canlı Maç",     href: DEMO_LIVE_HREF,        icon: "ti-ball-football" },
+    { label: "Rakip Raporu",  href: "/opponent",          icon: "ti-file-analytics" },
+    { label: "Kafa Kafaya",   href: "/h2h",               icon: "ti-swords" },
+    { label: "Ligler",        href: "/leagues",           icon: "ti-trophy" },
+    { label: "Takımlar",      href: "/teams",             icon: "ti-shield" },
+    { label: "Kararlar",      href: "/decisions",         icon: "ti-brain" },
   ]},
   { grp: "Sistem", items: [
-    { label: "Sözleşmeler",   href: "/contracts",         icon: "◻" },
-    { label: "Bildirimler",   href: "/notifications",     icon: "◻" },
-    { label: "Erişim Denetimi",href: "/compliance",       icon: "◻" },
-    { label: "Kalibrasyon",   href: "/calibration",       icon: "◻" },
-    { label: "Admin",         href: "/admin",             icon: "◻" },
+    { label: "Sözleşmeler",   href: "/contracts",         icon: "ti-file-text" },
+    { label: "Bildirimler",   href: "/notifications",     icon: "ti-bell" },
+    { label: "Erişim Denetimi",href: "/compliance",       icon: "ti-lock" },
+    { label: "Kalibrasyon",   href: "/calibration",       icon: "ti-adjustments" },
+    { label: "Admin",         href: "/admin",             icon: "ti-settings" },
   ]},
 ];
 
-const NAV = DEMO_MODE ? DEMO_NAV : FULL_NAV;
+const NAV = FULL_NAV;
 
 export interface ConsoleShellProps {
   active: string;
@@ -119,10 +89,6 @@ export interface ConsoleShellProps {
 export function ConsoleShell({
   active, title, sub, desc, navBadge, right, children,
 }: ConsoleShellProps) {
-  const today = new Date().toLocaleDateString("tr-TR", {
-    day: "2-digit", month: "short", year: "numeric",
-  });
-
   return (
     <div className={`ovroot${DEMO_MODE ? " demo" : ""}`}>
 
@@ -140,6 +106,7 @@ export function ConsoleShell({
               href={t.href}
               className={`ntab${t.href === active || (t.href !== "/overview" && active.startsWith(t.href)) ? " active" : ""}`}
             >
+              <i className={`ti ${t.icon}`} aria-hidden="true" />
               {t.label}
             </Link>
           ))}
@@ -150,11 +117,10 @@ export function ConsoleShell({
             <span className="sp-icon">⌕</span>
             <span>Ara…</span>
           </div>
-          <div className="datebox">{today}</div>
           <div className="club-chip">
             <div className="crest">{DEMO_MODE ? "FK" : "B"}</div>
             <div>
-              <div className="cname">{DEMO_MODE ? "FK Demo" : "Kulüp"}</div>
+              <div className="cname">{DEMO_MODE ? "FK Demo" : "Beşiktaş JK"}</div>
               <div className="crole">teknik ekip</div>
             </div>
           </div>
@@ -175,6 +141,7 @@ export function ConsoleShell({
                   href={it.href}
                   className={`sni${it.href === active ? " active" : ""}`}
                 >
+                  <i className={`ti ${it.icon}`} aria-hidden="true" />
                   <span className="sni-label">{it.label}</span>
                   {it.label === "Performans" && navBadge != null && navBadge > 0 && (
                     <span className="sbadge">{navBadge}</span>
@@ -205,7 +172,7 @@ export function ConsoleShell({
       <nav className="btabs" aria-label="Mobil navigasyon">
         {BTABS.map((t) => (
           <Link key={t.href} href={t.href} className={`btab${t.href === active ? " active" : ""}`}>
-            <span className="bi">{t.ic}</span>
+            <i className={`ti ${t.ic} bi`} aria-hidden="true" />
             {t.label}
           </Link>
         ))}
@@ -272,12 +239,13 @@ const CSS = `
 .ovroot .nav-tabs{display:flex;gap:2px;height:100%;align-items:center;overflow-x:auto}
 .ovroot .nav-tabs::-webkit-scrollbar{display:none}
 .ovroot .ntab{
-  display:flex;align-items:center;white-space:nowrap;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
   padding:7px 13px;border-radius:9px;
   font-size:13px;font-weight:500;color:var(--muted);
   text-decoration:none;
   transition:background .1s,color .1s;
 }
+.ovroot .ntab i{font-size:16px;line-height:1}
 .ovroot .ntab:hover{background:var(--surface2);color:var(--ink)}
 .ovroot .ntab.active{background:var(--accent-lt);color:var(--accent);font-weight:600}
 
@@ -334,12 +302,13 @@ const CSS = `
 .ovroot .sgrp:first-child{padding-top:5px}
 
 .ovroot .sni{
-  display:flex;align-items:center;gap:0;
+  display:flex;align-items:center;gap:9px;
   padding:7px 10px;border-radius:8px;
   font-size:12.5px;font-weight:500;color:var(--muted);
   text-decoration:none;
   transition:background .08s,color .08s;
 }
+.ovroot .sni i{font-size:16px;flex-shrink:0;line-height:1}
 .ovroot .sni:hover{background:var(--surface2);color:var(--ink)}
 .ovroot .sni.active{background:var(--accent-lt);color:var(--accent);font-weight:600}
 .ovroot .sni-label{flex:1}
