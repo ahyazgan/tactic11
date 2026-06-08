@@ -8,6 +8,8 @@
 
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
+import { demoPlayerRows, demoNextMatch } from "@/lib/demo-data";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -32,10 +34,11 @@ function condColor(v: number): string {
 }
 
 export default function OverviewConsolePage() {
-  const { data, error, isLoading } = useSWR<PlayerRow[]>("/physical-tests/players", apiFetch, {
+  const { data, error, isLoading } = useSWR<PlayerRow[]>(
+    DEMO_MODE ? null : "/physical-tests/players", apiFetch, {
     shouldRetryOnError: false,
   });
-  const players = data ?? [];
+  const players = DEMO_MODE ? (demoPlayerRows as PlayerRow[]) : (data ?? []);
   // Backend bağlı değil / boş → demo şeridi göster.
   const offline = !isLoading && (!!error || players.length === 0);
   const total = players.length;
@@ -76,18 +79,18 @@ export default function OverviewConsolePage() {
       </div>
 
       <div className="rc">
-        <h3>Sıradaki Maç <span className="tiny">— · —</span></h3>
-        <div className="nm-vs"><span className="t">BJK</span><span className="x">vs</span><span className="t away">—</span></div>
-        <div className="nm-when">Maç verisi için Maçlar sekmesi</div>
+        <h3>Sıradaki Maç <span className="tiny">{DEMO_MODE ? `${demoNextMatch.date} · ${demoNextMatch.kickoff}` : "— · —"}</span></h3>
+        <div className="nm-vs"><span className="t">{DEMO_MODE ? "FK Demo" : "BJK"}</span><span className="x">vs</span><span className="t away">{DEMO_MODE ? demoNextMatch.away : "—"}</span></div>
+        <div className="nm-when">{DEMO_MODE ? demoNextMatch.competition : "Maç verisi için Maçlar sekmesi"}</div>
         <div className="probbar">
-          <i style={{ width: "34%", background: "var(--low)" }} />
-          <i style={{ width: "33%", background: "var(--dim)" }} />
-          <i style={{ width: "33%", background: "var(--high)" }} />
+          <i style={{ width: `${DEMO_MODE ? Math.round(demoNextMatch.win * 100) : 34}%`, background: "var(--low)" }} />
+          <i style={{ width: `${DEMO_MODE ? Math.round(demoNextMatch.draw * 100) : 33}%`, background: "var(--dim)" }} />
+          <i style={{ width: `${DEMO_MODE ? Math.round(demoNextMatch.loss * 100) : 33}%`, background: "var(--high)" }} />
         </div>
         <div className="probleg">
-          <div className="pi"><div className="pv" style={{ color: "var(--low)" }}>—</div><div className="pl">Galibiyet</div></div>
-          <div className="pi"><div className="pv" style={{ color: "var(--muted)" }}>—</div><div className="pl">Berabere</div></div>
-          <div className="pi"><div className="pv" style={{ color: "var(--high)" }}>—</div><div className="pl">Mağlubiyet</div></div>
+          <div className="pi"><div className="pv" style={{ color: "var(--low)" }}>{DEMO_MODE ? `%${Math.round(demoNextMatch.win * 100)}` : "—"}</div><div className="pl">Galibiyet</div></div>
+          <div className="pi"><div className="pv" style={{ color: "var(--muted)" }}>{DEMO_MODE ? `%${Math.round(demoNextMatch.draw * 100)}` : "—"}</div><div className="pl">Berabere</div></div>
+          <div className="pi"><div className="pv" style={{ color: "var(--high)" }}>{DEMO_MODE ? `%${Math.round(demoNextMatch.loss * 100)}` : "—"}</div><div className="pl">Mağlubiyet</div></div>
         </div>
       </div>
 

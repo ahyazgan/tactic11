@@ -64,6 +64,28 @@ html.light .ovroot .btabs {
 }
 html.light .ovroot thead th { background: #f0f3f8; }
 
+/* Fiziksel Performans paneli (.pp-root) — kendi koyu paleti var; demo açık tema
+   için aynı yapıyı koruyup yalnızca palet değişkenlerini light'a çevir. */
+html.light .pp-root {
+  --bg: #f3f5f9;
+  --panel: #ffffff;
+  --panel2: #eef1f6;
+  --line: #d7dce5;
+  --ink: #1a1f2e;
+  --muted: #5a6276;
+  --dim: #8b94a8;
+  --accent: #3d7eff;
+  --low: #16a34a;
+  --mid: #d97706;
+  --high: #ea580c;
+  --crit: #dc2626;
+  background-image: none;
+}
+html.light .pp-root .topbar { background: rgba(255, 255, 255, 0.85); }
+html.light .pp-root .card {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.07);
+}
+
 /* Mobilde alt tab bar varken tema düğmesini yukarı al (üst üste binmesin). */
 @media (max-width: 900px) {
   button[aria-label="Tema değiştir"] { bottom: 70px !important; }

@@ -9,6 +9,8 @@
 
 import * as React from "react";
 import { apiFetch } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
+import { demoChatQA } from "@/lib/demo-data";
 import { ConsoleShell } from "../_console/shell";
 
 interface ChatMessage {
@@ -17,21 +19,47 @@ interface ChatMessage {
   tools?: string[];
 }
 
-const STARTERS = [
-  "Galatasaray maçına nasıl çıkmalıyız?",
-  "Rafa Silva'yı dinlendirsek mi?",
-  "Sakat oyuncuların dönüş planı",
-  "Duran toplarda neden zayıfız?",
-];
-const CHIPS = [
-  "Duran top planı çıkar",
-  "Kimler kart riskinde?",
-  "Beraberlikte ne yapalım?",
-  "Sıradaki rakip brifingi",
-];
+const STARTERS = DEMO_MODE
+  ? demoChatQA.map((qa) => qa.question)
+  : [
+    "Galatasaray maçına nasıl çıkmalıyız?",
+    "Rafa Silva'yı dinlendirsek mi?",
+    "Sakat oyuncuların dönüş planı",
+    "Duran toplarda neden zayıfız?",
+  ];
+const CHIPS = DEMO_MODE
+  ? demoChatQA.map((qa) => qa.question)
+  : [
+    "Duran top planı çıkar",
+    "Kimler kart riskinde?",
+    "Beraberlikte ne yapalım?",
+    "Sıradaki rakip brifingi",
+  ];
+
+// Demo: açılışta dolu örnek diyalog (ilk soru-cevap), gerisi başlangıç sorularında.
+const demoInitialMessages: ChatMessage[] = DEMO_MODE
+  ? [
+    { role: "user", text: demoChatQA[0].question },
+    { role: "assistant", text: demoChatQA[0].answer, tools: demoChatQA[0].tools },
+  ]
+  : [];
+
+/** Demo: soruyu hazır cevaplarla eşle (yoksa nazik bir genel cevap). */
+function demoAnswer(msg: string): { text: string; tools: string[] } {
+  const lower = msg.toLocaleLowerCase("tr");
+  const hit = demoChatQA.find(
+    (qa) => qa.question.toLocaleLowerCase("tr") === lower
+      || lower.includes(qa.question.toLocaleLowerCase("tr").slice(0, 12)),
+  );
+  if (hit) return { text: hit.answer, tools: hit.tools };
+  return {
+    text: "Demo modunda bu soru için hazır bir yanıt yok. Sağdaki başlangıç sorularından birini deneyin — risk, rakip taktiği ve momentum üzerine gerçek sayılarla cevap veriyorum.",
+    tools: ["context_engine"],
+  };
+}
 
 export default function ChatConsolePage() {
-  const [messages, setMessages] = React.useState<ChatMessage[]>([]);
+  const [messages, setMessages] = React.useState<ChatMessage[]>(demoInitialMessages);
   const [input, setInput] = React.useState("");
   const [conversationId, setConversationId] = React.useState<number | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -47,6 +75,15 @@ export default function ChatConsolePage() {
     setInput("");
     setMessages((m) => [...m, { role: "user", text: msg }]);
     setLoading(true);
+    // Demo: backend'e gitme, hazır cevabı kısa bir gecikmeyle göster.
+    if (DEMO_MODE) {
+      const ans = demoAnswer(msg);
+      window.setTimeout(() => {
+        setMessages((m) => [...m, { role: "assistant", text: ans.text, tools: ans.tools }]);
+        setLoading(false);
+      }, 450);
+      return;
+    }
     try {
       const res = await apiFetch<{
         text: string;
@@ -72,7 +109,7 @@ export default function ChatConsolePage() {
   }
 
   function newChat() {
-    setMessages([]);
+    setMessages(DEMO_MODE ? demoInitialMessages : []);
     setConversationId(null);
     setInput("");
   }

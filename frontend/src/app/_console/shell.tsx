@@ -10,7 +10,12 @@
 import * as React from "react";
 import Link from "next/link";
 
-const TABS = [
+import { DEMO_MODE } from "@/lib/demo-mode";
+
+// Demo: canlı maç ekranına markasız sabit hedef (id "demo" → sayfa mock gösterir).
+const DEMO_LIVE_HREF = "/matches/demo/live";
+
+const FULL_TABS = [
   { label: "Genel Bakış", href: "/overview" },
   { label: "Kadro", href: "/squad" },
   { label: "Performans", href: "/physical-tests" },
@@ -19,8 +24,20 @@ const TABS = [
   { label: "Analiz", href: "/xg" },
 ];
 
-// Mobil alt tab bar — başparmakla erişilen 5 ana hedef.
-const BTABS = [
+// Demo üst sekmeleri — maçın doğal akışı (6 demo ekranı).
+const DEMO_TABS = [
+  { label: "Genel Bakış", href: "/overview" },
+  { label: "Fiziksel", href: "/physical-tests" },
+  { label: "Maç Planı", href: "/match-plan" },
+  { label: "Canlı Maç", href: DEMO_LIVE_HREF },
+  { label: "Kararlar", href: "/decisions" },
+  { label: "Asistan", href: "/chat" },
+];
+
+const TABS = DEMO_MODE ? DEMO_TABS : FULL_TABS;
+
+// Mobil alt tab bar — başparmakla erişilen ana hedefler.
+const FULL_BTABS = [
   { ic: "▦", label: "Genel", href: "/overview" },
   { ic: "👥", label: "Kadro", href: "/squad" },
   { ic: "📋", label: "Perf", href: "/physical-tests" },
@@ -28,7 +45,34 @@ const BTABS = [
   { ic: "🔍", label: "Scout", href: "/scout" },
 ];
 
-const NAV = [
+const DEMO_BTABS = [
+  { ic: "▦", label: "Genel", href: "/overview" },
+  { ic: "📋", label: "Fiziksel", href: "/physical-tests" },
+  { ic: "📝", label: "Plan", href: "/match-plan" },
+  { ic: "⚽", label: "Canlı", href: DEMO_LIVE_HREF },
+  { ic: "🧠", label: "Karar", href: "/decisions" },
+  { ic: "🤖", label: "Asistan", href: "/chat" },
+];
+
+const BTABS = DEMO_MODE ? DEMO_BTABS : FULL_BTABS;
+
+// Demo navigasyonu — maçın doğal zaman çizgisine göre gruplu.
+const DEMO_NAV = [
+  { grp: "Maç Öncesi", items: [
+    { ic: "▦", label: "Genel Bakış", href: "/overview" },
+    { ic: "📋", label: "Fiziksel Performans", href: "/physical-tests" },
+    { ic: "📝", label: "Maç Planı", href: "/match-plan" },
+  ] },
+  { grp: "Maç Günü", items: [
+    { ic: "⚽", label: "Canlı Maç", href: DEMO_LIVE_HREF },
+    { ic: "🧠", label: "Kararlar", href: "/decisions" },
+  ] },
+  { grp: "Asistan", items: [
+    { ic: "🤖", label: "AI Asistan", href: "/chat" },
+  ] },
+];
+
+const FULL_NAV = [
   { grp: "Kulüp", items: [
     { ic: "▦", label: "Genel Bakış", href: "/overview" },
     { ic: "👥", label: "Kadro", href: "/squad" },
@@ -59,6 +103,8 @@ const NAV = [
   ] },
 ];
 
+const NAV = DEMO_MODE ? DEMO_NAV : FULL_NAV;
+
 export interface ConsoleShellProps {
   /** Aktif ekranın href'i (tab + nav vurgusu). Örn: "/squad" */
   active: string;
@@ -77,7 +123,7 @@ export function ConsoleShell({ active, title, sub, desc, navBadge, right, childr
   const today = new Date().toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" });
 
   return (
-    <div className="ovroot">
+    <div className={`ovroot${DEMO_MODE ? " demo" : ""}`}>
       {/* Header */}
       <div className="header">
         <div className="logo"><div className="m">m2</div><b>manager2</b></div>
@@ -91,8 +137,8 @@ export function ConsoleShell({ active, title, sub, desc, navBadge, right, childr
         <div className="hright">
           <div className="datebox"><span>Teknik Ekip Konsolu</span><b>{today}</b></div>
           <div className="clubchip">
-            <div className="badge">B</div>
-            <div><div className="cn">Kulüp</div><div className="cr">teknik ekip</div></div>
+            <div className="badge">{DEMO_MODE ? "FK" : "B"}</div>
+            <div><div className="cn">{DEMO_MODE ? "FK Demo" : "Kulüp"}</div><div className="cr">teknik ekip</div></div>
           </div>
         </div>
       </div>
@@ -152,6 +198,8 @@ const CSS = `
   position:fixed;inset:0;background:var(--bg);color:var(--ink);
   font-family:'Inter',sans-serif;font-size:13px;overflow:hidden;
 }
+/* Demo: marka kırmızısı yerine nötr accent (aktif sekme/nav/rozet). */
+.ovroot.demo{--besiktas:#3d7eff}
 .ovroot .header{height:46px;background:var(--header);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:20px}
 .ovroot .logo{display:flex;align-items:center;gap:10px;padding-right:18px;border-right:1px solid var(--line)}
 .ovroot .logo .m{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#fff,#aeb4c2);display:flex;align-items:center;justify-content:center;font-weight:900;color:#0c0e14;font-size:14px}
