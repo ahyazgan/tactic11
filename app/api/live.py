@@ -97,15 +97,28 @@ def _compute_live_vaep(
     shots: list[Any],
     current_minute: float,
     top_n: int = 5,
+    appearances: list[Any] | None = None,
 ) -> dict[str, Any]:
     """My + opp takım toplam VAEP + top-N my_team oyuncusu (Faz 5 #47).
 
     Saf orchestrator: engine.vaep.compute_vaep'i takım ve oyuncu için çağırır;
     DB/HTTP bilmez. WebSocket snapshot'ına gömülür ve REST test'lerinde de
-    bağımsız çağrılabilir. minutes_played = current_minute (basit varsayım —
-    her oyuncu için aynı; sub/lineup verisi henüz live'da yok).
+    bağımsız çağrılabilir.
+
+    Faz B (kadro farkındalığı): `appearances` (PlayerAppearance listesi) verilirse
+    her oyuncunun VAEP/90'ı O OYUNCUNUN gerçek sahada-geçen dakikasına normalize
+    edilir (sonradan giren 10 dk'lık oyuncu 75 dk'ya bölünmez). Takım toplamı
+    yine `current_minute`'a normalize (her zaman 11 kişi sahada). None →
+    eski davranış: minutes_played = current_minute (her oyuncu için aynı).
     """
     from app.engine.vaep.compute import compute_vaep
+
+    minutes_by_player: dict[int, float] = {}
+    if appearances is not None:
+        from app.engine.live_lineup import resolve_on_pitch
+        minutes_by_player = resolve_on_pitch(
+            appearances, current_minute, team_external_id=my_team_id,
+        ).minutes_by_player
 
     try:
         my_team = compute_vaep(
@@ -136,11 +149,13 @@ def _compute_live_vaep(
 
     player_results: list[dict[str, Any]] = []
     for pid in my_team_player_ids:
+        # Faz B: oyuncunun gerçek sahada-geçen dakikası (yoksa current_minute).
+        player_minutes = minutes_by_player.get(pid, current_minute)
         try:
             r = compute_vaep(
                 player_external_id=pid,
                 all_passes=passes, all_carries=carries, all_shots=shots,
-                minutes_played=current_minute,
+                minutes_played=player_minutes,
             ).value
         except (ValueError, ZeroDivisionError):
             continue
@@ -150,6 +165,7 @@ def _compute_live_vaep(
             "player_id": pid,
             "vaep_value": round(r.vaep_value, 4),
             "total_actions": r.total_actions,
+            "minutes_played": round(player_minutes, 1),
             "vaep_per_90": (
                 round(r.vaep_per_90, 4) if r.vaep_per_90 is not None else None
             ),

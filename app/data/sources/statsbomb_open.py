@@ -66,6 +66,10 @@ _BODY_PART_MAP: dict[int, str] = {
 # StatsBomb event.type.id == 16 → Shot
 SHOT_EVENT_TYPE_ID = 16
 
+# Lineup/substitution event tipleri (Faz B — maç-içi kadro farkındalığı)
+STARTING_XI_EVENT_TYPE_ID = 35   # tactics.lineup ilk 11'i taşır
+SUBSTITUTION_EVENT_TYPE_ID = 19  # player = çıkan, substitution.replacement = giren
+
 
 class StatsBombOpen:
     """StatsBomb Open Data adapter — GitHub raw ingest.
@@ -181,3 +185,57 @@ def shots_from_events_json(events_json: list[dict[str, Any]], *, match_id: int) 
         s for s in (_event_to_shot(ev, match_id=match_id) for ev in events_json if _is_shot_event(ev))
         if s is not None
     ]
+
+
+def appearances_from_events_json(
+    events_json: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """StatsBomb events JSON → oyuncu görünümleri (Faz B kadro/sub farkındalığı).
+
+    Saf parse, HTTP yok. İki event tipinden türetir:
+    - Starting XI (tip 35): `tactics.lineup` içindeki her oyuncu → ilk 11,
+      `start_minute = 0.0`.
+    - Substitution (tip 19): event'in `player` = SAHADAN ÇIKAN (end = event
+      dakikası), `substitution.replacement` = SAHAYA GİREN (start = event dakikası).
+
+    Dönüş: `{player_external_id, team_external_id, start_minute, end_minute}`
+    dict listesi. `end_minute=None` → çıkmadı (maç sonuna kadar). Kadrosuz/bozuk
+    event'ler atlanır (sahadaki gerçeği bozmadan).
+    """
+    appearances: dict[int, dict[str, Any]] = {}
+
+    for ev in events_json:
+        type_id = int((ev.get("type") or {}).get("id", 0))
+        team_id = int((ev.get("team") or {}).get("id", 0)) or None
+
+        if type_id == STARTING_XI_EVENT_TYPE_ID:
+            lineup = ((ev.get("tactics") or {}).get("lineup")) or []
+            for slot in lineup:
+                pid = (slot.get("player") or {}).get("id")
+                if pid is None or team_id is None:
+                    continue
+                appearances[int(pid)] = {
+                    "player_external_id": int(pid),
+                    "team_external_id": team_id,
+                    "start_minute": 0.0,
+                    "end_minute": None,
+                }
+
+        elif type_id == SUBSTITUTION_EVENT_TYPE_ID:
+            minute = float(ev.get("minute", 0))
+            off_player = (ev.get("player") or {}).get("id")
+            sub_block = ev.get("substitution") or {}
+            on_player = (sub_block.get("replacement") or {}).get("id")
+            # Çıkan oyuncunun penceresini kapat
+            if off_player is not None and int(off_player) in appearances:
+                appearances[int(off_player)]["end_minute"] = minute
+            # Giren oyuncu için yeni pencere aç
+            if on_player is not None and team_id is not None:
+                appearances[int(on_player)] = {
+                    "player_external_id": int(on_player),
+                    "team_external_id": team_id,
+                    "start_minute": minute,
+                    "end_minute": None,
+                }
+
+    return list(appearances.values())

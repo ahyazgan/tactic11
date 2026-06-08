@@ -167,6 +167,46 @@ def test_live_vaep_model_version_baseline() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Faz B — kadro farkındalığı: oyuncu-başına dakika normalizasyonu
+# --------------------------------------------------------------------------- #
+
+
+def test_live_vaep_appearances_normalize_per_player_minutes() -> None:
+    """Aynı aksiyonu yapan iki oyuncudan az dakika oynayanın VAEP/90'ı yüksek."""
+    from app.engine.live_lineup import PlayerAppearance
+
+    # 101 baştan beri oynuyor (75 dk), 102 60'ta girdi (15 dk). İkisi de 1 ileri pas.
+    passes = [
+        _pass(minute=10, team_id=11, player_id=101, sx=40, ex=80),
+        _pass(minute=65, team_id=11, player_id=102, sx=40, ex=80),
+    ]
+    appearances = [
+        PlayerAppearance(101, 11, start_minute=0.0, end_minute=None),
+        PlayerAppearance(102, 11, start_minute=60.0, end_minute=None),
+    ]
+    out = _compute_live_vaep(
+        my_team_id=11, opp_team_id=22,
+        passes=passes, carries=[], shots=[],
+        current_minute=75.0, appearances=appearances,
+    )
+    by_id = {p["player_id"]: p for p in out["top_players"]}
+    assert by_id[101]["minutes_played"] == 75.0
+    assert by_id[102]["minutes_played"] == 15.0
+    # Aynı tek aksiyon → az dakika oynayan 102'nin per-90'ı belirgin yüksek.
+    assert by_id[102]["vaep_per_90"] > by_id[101]["vaep_per_90"]
+
+
+def test_live_vaep_without_appearances_uses_current_minute() -> None:
+    """appearances=None → eski davranış: herkes current_minute'a normalize."""
+    passes = [_pass(minute=10, team_id=11, player_id=101, sx=40, ex=80)]
+    out = _compute_live_vaep(
+        my_team_id=11, opp_team_id=22,
+        passes=passes, carries=[], shots=[], current_minute=75.0,
+    )
+    assert out["top_players"][0]["minutes_played"] == 75.0
+
+
+# --------------------------------------------------------------------------- #
 # REST endpoint testleri
 # --------------------------------------------------------------------------- #
 
