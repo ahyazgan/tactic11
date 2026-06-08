@@ -32,20 +32,8 @@ html.light {
   --c-textdim: #8b94a8;
 }
 
-/* Standalone konsol (.ovroot) açık tema override'ı — kendi paleti var. */
-html.light .ovroot {
-  --bg: #f3f5f9;
-  --header: #ffffff;
-  --panel: #ffffff;
-  --panel2: #eef1f6;
-  --panel3: #e5e9f0;
-  --line: #d7dce5;
-  --line2: #c3cad6;
-  --ink: #1a1f2e;
-  --muted: #5a6276;
-  --dim: #8b94a8;
-  --grad: linear-gradient(180deg, #ffffff, #f3f5f9);
-}
+/* NOT: .ovroot artık kendi FM26 açık paletini shell.tsx içinde tanımlıyor
+   (eski html.light .ovroot değişken override'ı kaldırıldı — çakışmasın). */
 
 /* Açık temada düz kartlar yerine yumuşak gölge + net kontrast. */
 html.light .ovroot .kpi,
