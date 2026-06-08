@@ -1,8 +1,11 @@
 """Fiziksel performans testi endpoint'leri.
 
 POST   /physical-tests/                — test kaydı gir
+POST   /physical-tests/batch           — toplu kayıt (bir protokol, çok oyuncu)
+GET    /physical-tests/protocols       — tüm protokollerin tanımı + nasıl-yapılır
 GET    /physical-tests/{player_id}     — oyuncunun tüm testleri (en yeni önce)
 GET    /physical-tests/{player_id}/risk  — yükleme riski raporu
+GET    /physical-tests/{player_id}/battery — test günü profili + SWC yorumu
 GET    /physical-tests/{player_id}/trend?protocol=… — protokol zaman serisi
 DELETE /physical-tests/{test_id}       — kaydı sil
 
@@ -17,6 +20,7 @@ yapılandırılmış bildirim kanalına uyarı gider (best-effort).
 
 from __future__ import annotations
 
+from dataclasses import asdict
 from datetime import date
 from typing import Any
 
@@ -30,8 +34,10 @@ from app.core.logging import get_logger
 from app.db import models
 from app.db.physical_test import PhysicalTest, TestProtocol
 from app.db.session import get_session
+from app.engine.performance_test import compute as perf
 from app.engine.physical.load_risk import (
     CRITICAL_LABEL,
+    REFERENCE,
     LoadRiskReport,
     compute_load_risk,
     compute_protocol_trend,
@@ -226,6 +232,131 @@ def create_test(
     return record
 
 
+class ProtocolInfoOut(BaseModel):
+    key: str
+    name: str
+    unit: str
+    higher_is_better: bool
+    description: str
+    norm_elite: float
+    norm_good: float
+    norm_average: float
+    # load_risk REFERENCE'tan: referans aralığı (varsa)
+    ref_low: float | None = None
+    ref_high: float | None = None
+
+
+@router.get("/protocols", response_model=list[ProtocolInfoOut])
+def list_protocols() -> list[ProtocolInfoOut]:
+    """Tüm desteklenen test protokollerinin tanımı, nasıl-yapılır metni ve norm eşikleri.
+
+    Auth gerektirmez — tester tableti için herkese açık.
+
+    NOT: `/{player_id}` ucundan ÖNCE tanımlı olmalı (yoksa 'protocols' bir
+    player_id sanılır)."""
+    out: list[ProtocolInfoOut] = []
+    for key, proto in perf.PROTOCOLS.items():
+        if key == "custom":
+            continue
+        norms = dict(proto.norm_cutoffs)   # {"elit": x, "iyi": y, "ortalama": z}
+        ref = REFERENCE.get(key)
+        out.append(ProtocolInfoOut(
+            key=proto.key,
+            name=proto.name,
+            unit=proto.unit,
+            higher_is_better=proto.higher_is_better,
+            description=proto.description,
+            norm_elite=norms["elit"],
+            norm_good=norms["iyi"],
+            norm_average=norms["ortalama"],
+            ref_low=float(ref["low"]) if ref is not None else None,
+            ref_high=float(ref["high"]) if ref is not None else None,
+        ))
+    out.sort(key=lambda p: p.key)
+    return out
+
+
+class BatchTestItem(BaseModel):
+    player_id: str = Field(..., description="API-Football player ID")
+    player_name: str = Field(..., description="Oyuncu adı")
+    value: float = Field(..., description="Ölçülen değer")
+    notes: str | None = Field(None)
+
+
+class PhysicalTestBatchCreate(BaseModel):
+    protocol: TestProtocol = Field(..., description="Tüm kayıtlar için aynı protokol")
+    test_date: date = Field(..., description="Test tarihi (tüm kayıtlar için)")
+    recorded_by: str | None = Field(None)
+    items: list[BatchTestItem] = Field(..., min_length=1, max_length=50,
+                                       description="En az 1, en fazla 50 oyuncu")
+
+
+class BatchResultOut(BaseModel):
+    created: int
+    failed: int
+    errors: list[str]          # başarısız satırlar (player_id + sebep)
+    risk_alerts: list[str]     # batch sonrası kritik riske düşen oyuncular
+
+
+@router.post("/batch", response_model=BatchResultOut, status_code=status.HTTP_201_CREATED)
+def create_batch(
+    payload: PhysicalTestBatchCreate,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> BatchResultOut:
+    """Bir protokol için tüm kadronun test sonuçlarını tek istekte kaydet.
+
+    Kısmi başarı: hatalı satırlar atlanır, diğerleri kaydedilir.
+    Kritik riske düşen oyuncular risk_alerts listesinde döner.
+    """
+    unit = UNIT_MAP.get(payload.protocol, "")
+    recorded_by = payload.recorded_by or user.email
+
+    created_players: list[tuple[str, str]] = []   # (player_id, player_name)
+    errors: list[str] = []
+    for item in payload.items:
+        try:
+            record = PhysicalTest(
+                tenant_id=user.tenant_id,           # body'den gelen tenant ignore
+                player_id=item.player_id,
+                player_name=item.player_name,
+                test_date=payload.test_date,
+                protocol=payload.protocol.value,
+                value=item.value,
+                unit=unit,
+                notes=item.notes,
+                recorded_by=recorded_by,
+            )
+            session.add(record)
+            created_players.append((item.player_id, item.player_name))
+        except Exception as e:  # noqa: BLE001 — hatalı satır batch'i durdurmamalı
+            errors.append(f"{item.player_id}: {e}")
+
+    session.commit()   # tüm başarılı insert'ler tek commit
+
+    # KVKK: her oyuncu için ayrı denetim logu (record_data_access içeride commit eder).
+    for pid, _name in created_players:
+        _log_access(
+            session, player_id=pid, action="batch_create",
+            endpoint="/physical-tests/batch", user_id=user.id,
+        )
+
+    # Kritik risk: batch sonrası her oyuncuyu değerlendir.
+    risk_alerts: list[str] = []
+    for pid, name in created_players:
+        report = _player_risk(session, tenant_id=user.tenant_id, player_id=pid)
+        if report is not None and report.risk_label == CRITICAL_LABEL:
+            risk_alerts.append(f"{name} — Kritik risk")
+            _maybe_alert_critical(report)
+
+    return BatchResultOut(
+        created=len(created_players),
+        failed=len(errors),
+        errors=errors,
+        risk_alerts=risk_alerts,
+    )
+
+
 @router.get("/players", response_model=list[PlayerSummaryOut])
 def list_players(
     session: Session = Depends(get_session),
@@ -313,6 +444,107 @@ def get_risk(
         flags=report.flags,
         summary=report.summary,
         recommendations=report.recommendations,
+    )
+
+
+class SWCAssessmentOut(BaseModel):
+    protocol_key: str
+    protocol_name: str
+    current: float
+    baseline_mean: float
+    swc: float
+    delta: float
+    beyond_swc: bool
+    verdict: str   # "anlamlı gelişme" | "anlamlı düşüş — kontrol et" | "değişim yok …"
+
+
+class BatteryOut(BaseModel):
+    player_id: str
+    player_name: str
+    test_date: str          # en son test tarihi
+    strong_areas: list[str]
+    weak_areas: list[str]
+    scores: list[dict]      # TestScore dataclass → dict
+    swc_assessments: list[SWCAssessmentOut]   # sadece ≥3 geçmişi olan protokoller
+
+
+@router.get("/{player_id}/battery", response_model=BatteryOut)
+def get_battery(
+    player_id: str,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> BatteryOut:
+    """Son test oturumundan atlet profili: güçlü/zayıf alan + SWC yorumu.
+
+    Son test tarihindeki tüm protokolleri kullanır.
+    Aynı protokolde ≥3 geçmiş kayıt varsa SWC ile anlam yorumu eklenir.
+    """
+    rows = list(
+        session.execute(
+            select(PhysicalTest)
+            .where(
+                PhysicalTest.tenant_id == user.tenant_id,
+                PhysicalTest.player_id == player_id,
+            )
+            .order_by(PhysicalTest.test_date.desc())
+            .limit(100)
+        ).scalars()
+    )
+    if not rows:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"player_id={player_id} için test kaydı bulunamadı.",
+        )
+
+    latest_date = rows[0].test_date
+    # Son test gününün protokolleri (engine'in bildiği protokollerle sınırlı).
+    latest_tests = [
+        t for t in rows
+        if t.test_date == latest_date and t.protocol in perf.PROTOCOLS
+    ]
+    battery = perf.evaluate_battery(
+        int(player_id) if player_id.isdigit() else 0,
+        [(t.protocol, t.value) for t in latest_tests],
+    )
+
+    # SWC: protokol başına tüm geçmiş (kronolojik) ≥3 kayıt varsa anlam yorumu.
+    swc_assessments: list[SWCAssessmentOut] = []
+    for proto_key in {t.protocol for t in latest_tests}:
+        proto = perf.PROTOCOLS[proto_key]
+        history = sorted(
+            (r for r in rows if r.protocol == proto_key),
+            key=lambda r: r.test_date,
+        )
+        values = [r.value for r in history]
+        if len(values) < 3:
+            continue
+        change = perf.assess_change(
+            values[-1], values[:-1], higher_is_better=proto.higher_is_better,
+        )
+        swc_assessments.append(SWCAssessmentOut(
+            protocol_key=proto_key,
+            protocol_name=proto.name,
+            current=change.current,
+            baseline_mean=change.baseline_mean,
+            swc=change.swc,
+            delta=change.delta,
+            beyond_swc=change.beyond_swc,
+            verdict=change.verdict,
+        ))
+    swc_assessments.sort(key=lambda s: s.protocol_key)
+
+    _log_access(
+        session, player_id=player_id, action="read",
+        endpoint="/physical-tests/{player_id}/battery", user_id=user.id,
+    )
+    return BatteryOut(
+        player_id=player_id,
+        player_name=rows[0].player_name,
+        test_date=str(latest_date),
+        strong_areas=list(battery.strong_areas),
+        weak_areas=list(battery.weak_areas),
+        scores=[asdict(s) for s in battery.scores],
+        swc_assessments=swc_assessments,
     )
 
 
