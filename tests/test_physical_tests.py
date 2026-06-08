@@ -458,3 +458,73 @@ def test_batch_risk_alerts_on_critical(client):
     assert r.status_code == 201
     body = r.json()
     assert isinstance(body["risk_alerts"], list)
+
+
+# --------------------------------------------------------------------------- #
+# Blok 3 — GET /physical-tests/{player_id}/battery (battery profili + SWC)
+# --------------------------------------------------------------------------- #
+
+def test_battery_returns_profile(client):
+    c, _ = client
+    for proto, val in [("sprint_10m", 1.78), ("cmj", 38.0), ("yoyo_irl1", 17.5)]:
+        c.post("/physical-tests/", json={
+            "player_id": "600", "player_name": "Profil Oyuncu",
+            "test_date": "2026-06-06", "protocol": proto, "value": val,
+        })
+    r = c.get("/physical-tests/600/battery")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["player_id"] == "600"
+    assert isinstance(body["strong_areas"], list)
+    assert isinstance(body["weak_areas"], list)
+    assert len(body["scores"]) == 3
+
+
+def test_battery_404_no_data(client):
+    c, _ = client
+    assert c.get("/physical-tests/99999/battery").status_code == 404
+
+
+def test_battery_swc_requires_3_historical(client):
+    """SWC değerlendirmesi için ≥3 geçmiş kayıt gerekli."""
+    c, _ = client
+    # Sadece 1 kayıt
+    c.post("/physical-tests/", json={
+        "player_id": "700", "player_name": "Az Veri",
+        "test_date": "2026-06-06", "protocol": "cmj", "value": 38.0,
+    })
+    r = c.get("/physical-tests/700/battery")
+    assert r.status_code == 200
+    # SWC assessments boş olmalı (yeterli geçmiş yok)
+    assert r.json()["swc_assessments"] == []
+
+
+def test_battery_swc_meaningful_change(client):
+    """3+ geçmiş kayıt + belirgin gelişme → SWC 'anlamlı gelişme' vermeli."""
+    c, _ = client
+    # 3 tarihte artan CMJ (gelişme) + mevcut
+    for d, v in [
+        ("2026-03-01", 32.0), ("2026-04-01", 35.0), ("2026-05-01", 38.0),
+        ("2026-06-06", 42.0),  # mevcut
+    ]:
+        c.post("/physical-tests/", json={
+            "player_id": "800", "player_name": "Gelişen Oyuncu",
+            "test_date": d, "protocol": "cmj", "value": v,
+        })
+    r = c.get("/physical-tests/800/battery")
+    assert r.status_code == 200
+    swc_list = r.json()["swc_assessments"]
+    cmj_swc = next((s for s in swc_list if s["protocol_key"] == "cmj"), None)
+    assert cmj_swc is not None
+    assert cmj_swc["beyond_swc"] is True
+    assert "gelişme" in cmj_swc["verdict"]
+
+
+def test_battery_tenant_isolation(client):
+    c, state = client
+    c.post("/physical-tests/", json={
+        "player_id": "900", "player_name": "İzole",
+        "test_date": "2026-06-06", "protocol": "cmj", "value": 38.0,
+    })
+    state["tenant_id"] = "other"
+    assert c.get("/physical-tests/900/battery").status_code == 404
