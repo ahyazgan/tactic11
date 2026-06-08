@@ -260,16 +260,20 @@ class ProtocolInfoOut(BaseModel):
 
 
 @router.get("/protocols", response_model=list[ProtocolInfoOut])
-def list_protocols() -> list[ProtocolInfoOut]:
-    """Tüm desteklenen test protokollerinin tanımı, nasıl-yapılır metni ve norm eşikleri.
+def list_protocols(position: str | None = None) -> list[ProtocolInfoOut]:
+    """Desteklenen test protokollerinin tanımı, nasıl-yapılır metni ve norm eşikleri.
 
-    Auth gerektirmez — tester tableti için herkese açık.
+    `?position=` verilirse (TR ya da EN kod: GK/CM/WB_W/kaleci…) yalnız o mevkinin
+    önerilen test paketi döner. Auth gerektirmez — tester tableti için herkese açık.
 
     NOT: `/{player_id}` ucundan ÖNCE tanımlı olmalı (yoksa 'protocols' bir
     player_id sanılır)."""
+    allowed = set(perf.protocols_for_position(position)) if position else None
     out: list[ProtocolInfoOut] = []
     for key, proto in perf.PROTOCOLS.items():
         if key == "custom":
+            continue
+        if allowed is not None and key not in allowed:
             continue
         norms = dict(proto.norm_cutoffs)   # {"elit": x, "iyi": y, "ortalama": z}
         ref = REFERENCE.get(key)
@@ -490,6 +494,70 @@ def derive_hq_ratio(payload: HQRatioIn) -> HQRatioOut:
     """Hamstring:Quadriceps oranı + risk bandı (<0.47 yüksek hamstring riski)."""
     r = _derive_or_422(perf.hamstring_quad_ratio, payload.hamstring, payload.quadriceps)
     return HQRatioOut(**asdict(r))
+
+
+class SprintSplitIn(BaseModel):
+    t5: float | None = Field(None, gt=0, description="0-5m süresi (sn)")
+    t10: float | None = Field(None, gt=0, description="0-10m süresi (sn)")
+    t30: float | None = Field(None, gt=0, description="0-30m süresi (sn)")
+
+
+class SprintSplitOut(BaseModel):
+    t5: float | None
+    t10: float | None
+    t30: float | None
+    reaction: float | None
+    acceleration: float | None
+    max_speed: float | None
+    limiter: str
+    note: str
+
+
+@router.post("/derive/sprint-split", response_model=SprintSplitOut)
+def derive_sprint_split(payload: SprintSplitIn) -> SprintSplitOut:
+    """Sprint split faz analizi (0-5/5-10/10-30m) → limitör faz (reaksiyon/ivmelenme/max hız)."""
+    r = _derive_or_422(perf.sprint_split_analysis, payload.t5, payload.t10, payload.t30)
+    return SprintSplitOut(**asdict(r))
+
+
+class VIFTTargetsIn(BaseModel):
+    vift: float = Field(..., gt=0, description="30-15 IFT son kademe hızı (km/sa)")
+
+
+class VIFTTargetsOut(BaseModel):
+    vift: float
+    speed_95: float
+    speed_100: float
+    speed_105: float
+    note: str
+
+
+@router.post("/derive/vift-targets", response_model=VIFTTargetsOut)
+def derive_vift_targets(payload: VIFTTargetsIn) -> VIFTTargetsOut:
+    """VIFT'ten %95/100/105 aerobik koşu hızları (aralıklı antrenman reçetesi)."""
+    r = _derive_or_422(perf.vift_to_aerobic_targets, payload.vift)
+    return VIFTTargetsOut(**asdict(r))
+
+
+class RtpClearanceIn(BaseModel):
+    current: dict[str, float] = Field(..., description="Dönüş ölçümleri {protokol: değer}")
+    baseline: dict[str, float] = Field(..., description="Sakatlık-öncesi {protokol: değer}")
+
+
+class RtpClearanceOut(BaseModel):
+    ratios: dict[str, float]
+    lowest_protocol: str
+    lowest_ratio: float
+    cleared: bool
+    light: str
+    note: str
+
+
+@router.post("/derive/rtp-clearance", response_model=RtpClearanceOut)
+def derive_rtp_clearance(payload: RtpClearanceIn) -> RtpClearanceOut:
+    """Çok-protokol return-to-play: ortak testleri baseline ile kıyasla → yeşil/kırmızı ışık."""
+    r = _derive_or_422(perf.return_to_play_clearance, payload.current, payload.baseline)
+    return RtpClearanceOut(**asdict(r))
 
 
 class PositionPresetOut(BaseModel):

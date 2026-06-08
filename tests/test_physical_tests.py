@@ -717,3 +717,59 @@ def test_derive_hq_ratio_zero_quad_422(client):
     r = c.post("/physical-tests/derive/hq-ratio",
                json={"hamstring": 1.5, "quadriceps": 0.0})
     assert r.status_code == 422  # Pydantic gt=0
+
+
+def test_derive_sprint_split(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/sprint-split",
+               json={"t5": 0.96, "t10": 1.72, "t30": 4.60})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["limiter"] == "maksimal hız"
+    assert body["max_speed"] == 2.88
+
+
+def test_derive_sprint_split_partial(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/sprint-split", json={"t10": 1.75, "t30": 4.10})
+    assert r.status_code == 200
+    assert r.json()["reaction"] is None
+
+
+def test_derive_vift_targets(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/vift-targets", json={"vift": 20.0})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["speed_95"] == 19.0 and body["speed_105"] == 21.0
+
+
+def test_derive_rtp_clearance_red(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/rtp-clearance",
+               json={"current": {"cmj": 32.0, "yoyo_irl1": 18.0},
+                     "baseline": {"cmj": 40.0, "yoyo_irl1": 18.5}})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["cleared"] is False
+    assert body["lowest_protocol"] == "cmj"
+
+
+def test_derive_rtp_clearance_no_common_422(client):
+    c, _ = client
+    r = c.post("/physical-tests/derive/rtp-clearance",
+               json={"current": {"cmj": 40.0}, "baseline": {"yoyo_irl1": 18.0}})
+    assert r.status_code == 422
+
+
+def test_protocols_position_filter_gk(client):
+    c, _ = client
+    r = c.get("/physical-tests/protocols?position=GK")
+    assert r.status_code == 200
+    keys = {p["key"] for p in r.json()}
+    # Kaleci preset'i: cmj/sj/drop_jump_rsi/sprint_5m/t505/adductor_squeeze
+    assert "cmj" in keys and "drop_jump_rsi" in keys
+    assert "yoyo_irl2" not in keys           # preset dışı
+    # Filtresiz tam liste daha büyük olmalı
+    full = c.get("/physical-tests/protocols").json()
+    assert len(full) > len(r.json())

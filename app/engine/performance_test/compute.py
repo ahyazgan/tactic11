@@ -696,6 +696,153 @@ def hamstring_quad_ratio(hamstring: float, quadriceps: float) -> HQRatioReport:
 
 
 # --------------------------------------------------------------------------- #
+# Sprint split faz analizi — 0-5 / 5-10 / 10-30m fazlarından darboğaz.
+# Elit referans split'leri (sn); faz başına referansa göre açık → limitör faz.
+# --------------------------------------------------------------------------- #
+
+SPLIT_REF_5M = 0.95      # 0-5m reaksiyon/ilk adım
+SPLIT_REF_10M = 1.70     # 0-10m kümülatif
+SPLIT_REF_30M = 4.00     # 0-30m kümülatif
+
+
+@dataclass(frozen=True)
+class SplitReport:
+    t5: float | None
+    t10: float | None
+    t30: float | None
+    reaction: float | None       # 0-5m
+    acceleration: float | None   # 5-10m
+    max_speed: float | None      # 10-30m
+    limiter: str                 # "reaksiyon" | "ivmelenme" | "maksimal hız" | "dengeli" | "yetersiz veri"
+    note: str = ""
+
+
+def sprint_split_analysis(
+    t5: float | None, t10: float | None, t30: float | None,
+) -> SplitReport:
+    """Sprint split'lerinden faz analizi: hangi faz darboğaz (limitör)?
+
+    0-5m → reaksiyon/ilk adım, 5-10m → ivmelenme, 10-30m → maksimal hız.
+    Her faz elit referansla kıyaslanır; en yüksek %-açık olan faz limitör.
+    Eksik split (None) atlanır; hiçbiri yoksa 'yetersiz veri'."""
+    for v in (t5, t10, t30):
+        if v is not None and v <= 0:
+            raise ValueError("split süreleri pozitif olmalı")
+    reaction = t5 if t5 is not None else None
+    acceleration = round(t10 - t5, 3) if (t10 is not None and t5 is not None) else None
+    max_speed = round(t30 - t10, 3) if (t30 is not None and t10 is not None) else None
+
+    ref_accel = SPLIT_REF_10M - SPLIT_REF_5M    # 0.75
+    ref_max = SPLIT_REF_30M - SPLIT_REF_10M     # 2.30
+    deficits: dict[str, float] = {}
+    if reaction is not None:
+        deficits["reaksiyon"] = (reaction - SPLIT_REF_5M) / SPLIT_REF_5M * 100
+    if acceleration is not None:
+        deficits["ivmelenme"] = (acceleration - ref_accel) / ref_accel * 100
+    if max_speed is not None:
+        deficits["maksimal hız"] = (max_speed - ref_max) / ref_max * 100
+
+    if not deficits:
+        return SplitReport(t5, t10, t30, reaction, acceleration, max_speed,
+                           "yetersiz veri", "split girilmedi")
+    limiter = max(deficits, key=lambda k: deficits[k])
+    worst = round(deficits[limiter], 1)
+    if worst <= 2.0:   # elit referansa yakın
+        limiter = "dengeli"
+        note = "tüm fazlar elit referansa yakın — dengeli profil"
+    else:
+        note = f"limitör faz: {limiter} (elit referansın %{worst} üstünde)"
+    return SplitReport(
+        t5=t5, t10=t10, t30=t30, reaction=reaction, acceleration=acceleration,
+        max_speed=max_speed, limiter=limiter, note=note,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# VIFT → aerobik antrenman hızları (reçete altyapısı).
+# --------------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True)
+class AerobicTargets:
+    vift: float
+    speed_95: float    # km/sa — %95 VIFT (aerobik dayanıklılık)
+    speed_100: float   # %100 VIFT (VO2max aralıkları)
+    speed_105: float   # %105 VIFT (supramaksimal)
+    note: str = ""
+
+
+def vift_to_aerobic_targets(vift: float) -> AerobicTargets:
+    """30-15 IFT son kademe hızından (VIFT) %95/100/105 koşu hızları (km/sa).
+
+    Aralıklı koşu reçetesinin temeli: %95 sürekli/uzun aralık, %100 VO2max
+    aralığı, %105 kısa supramaksimal tekrar."""
+    if vift <= 0:
+        raise ValueError("VIFT pozitif olmalı")
+    return AerobicTargets(
+        vift=round(vift, 1),
+        speed_95=round(vift * 0.95, 1),
+        speed_100=round(vift, 1),
+        speed_105=round(vift * 1.05, 1),
+        note=f"VIFT {round(vift, 1)} km/sa → %95 {round(vift * 0.95, 1)} · "
+             f"%100 {round(vift, 1)} · %105 {round(vift * 1.05, 1)} km/sa",
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Return-to-play — çok-protokol baseline kıyas (sahaya dönüş ışığı).
+# --------------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True)
+class RtpClearanceReport:
+    ratios: dict[str, float]     # protokol → baseline'a oran (yön'e duyarlı, 1.0 = eşit)
+    lowest_protocol: str
+    lowest_ratio: float
+    cleared: bool                # tüm oranlar ≥ eşik
+    light: str                   # "yeşil" | "kırmızı"
+    note: str = ""
+
+
+def return_to_play_clearance(
+    current: dict[str, float], baseline: dict[str, float],
+) -> RtpClearanceReport:
+    """Sakatlık dönüşü mikro-test setini sakatlık-öncesi baseline ile kıyasla.
+
+    Ortak protokoller için yön'e duyarlı oran (yüksek-iyi: current/baseline,
+    düşük-iyi: baseline/current). En düşük oran < %95 → kırmızı ışık
+    ('sahaya çıkmasın'); hepsi ≥ %95 → yeşil ışık."""
+    common = [k for k in current if k in baseline]
+    if not common:
+        raise ValueError("current ve baseline'da ortak protokol yok")
+    threshold = RTP_GREEN_LIGHT_PCT / 100.0
+    ratios: dict[str, float] = {}
+    for k in common:
+        b, c = baseline[k], current[k]
+        if b <= 0 or c <= 0:
+            raise ValueError(f"{k}: değerler pozitif olmalı")
+        proto = PROTOCOLS.get(k)
+        hib = proto.higher_is_better if proto is not None else True
+        ratio = (c / b) if hib else (b / c)
+        ratios[k] = round(ratio, 3)
+    lowest_protocol = min(ratios, key=lambda k: ratios[k])
+    lowest_ratio = ratios[lowest_protocol]
+    cleared = lowest_ratio >= threshold
+    light = "yeşil" if cleared else "kırmızı"
+    if cleared:
+        note = f"tüm testler baseline'ın ≥%{RTP_GREEN_LIGHT_PCT:g}'i — yeşil ışık (sahaya çıkabilir)"
+    else:
+        proto = PROTOCOLS.get(lowest_protocol)
+        pname = proto.name if proto is not None else lowest_protocol
+        note = (f"kırmızı ışık — {pname} baseline'ın %{round(lowest_ratio * 100, 1)}'inde "
+                f"(hedef ≥%{RTP_GREEN_LIGHT_PCT:g}, sahaya çıkmasın)")
+    return RtpClearanceReport(
+        ratios=ratios, lowest_protocol=lowest_protocol, lowest_ratio=lowest_ratio,
+        cleared=cleared, light=light, note=note,
+    )
+
+
+# --------------------------------------------------------------------------- #
 # Mevkiye özel test paketleri — sadece preset (config) düzeyi, ayrı engine yok.
 # --------------------------------------------------------------------------- #
 
@@ -717,9 +864,23 @@ DEFAULT_POSITION_PRESET: tuple[str, ...] = (
     "sprint_10m", "sprint_30m", "yoyo_irl1", "cmj", "ttest_agility", "rsa",
 )
 
+# İngilizce mevki kodu → TR preset anahtarı (GK/DF/CB/WB/W/CM/MF/FW/ST...).
+POSITION_ALIASES: dict[str, str] = {
+    "gk": "kaleci", "goalkeeper": "kaleci",
+    "cb": "stoper", "df": "stoper", "defender": "stoper",
+    "wb": "bek", "fb": "bek", "rb": "bek", "lb": "bek",
+    "wb_w": "kanat", "w": "kanat", "wing": "kanat", "winger": "kanat",
+    "rw": "kanat", "lw": "kanat",
+    "cm": "orta_saha", "mf": "orta_saha", "dm": "orta_saha", "am": "orta_saha",
+    "fw": "forvet", "st": "forvet", "cf": "forvet", "striker": "forvet",
+}
+
 
 def protocols_for_position(position: str) -> tuple[str, ...]:
-    """Mevki adından (TR, büyük/küçük harf duyarsız) önerilen protokol seti.
+    """Mevki adından (TR ya da EN kod; büyük/küçük harf duyarsız) protokol seti.
 
+    Önce EN kod alias'ı çözülür (GK→kaleci, CM→orta_saha, WB_W→kanat...).
     Bilinmeyen/boş mevki → DEFAULT_POSITION_PRESET."""
-    return POSITION_TEST_PRESETS.get(position.strip().lower(), DEFAULT_POSITION_PRESET)
+    key = position.strip().lower()
+    key = POSITION_ALIASES.get(key, key)
+    return POSITION_TEST_PRESETS.get(key, DEFAULT_POSITION_PRESET)

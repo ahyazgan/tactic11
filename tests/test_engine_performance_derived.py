@@ -17,6 +17,9 @@ from app.engine.performance_test import (
     estimate_vo2max_from_vift,
     hamstring_quad_ratio,
     limb_asymmetry,
+    return_to_play_clearance,
+    sprint_split_analysis,
+    vift_to_aerobic_targets,
     protocols_for_position,
     reactive_strength_index,
     repeated_sprint_fatigue_index,
@@ -300,3 +303,102 @@ def test_position_preset_keys_are_valid_protocols():
             assert k in PROTOCOLS, f"{pos} preset'inde geçersiz protokol: {k}"
     for k in DEFAULT_POSITION_PRESET:
         assert k in PROTOCOLS
+
+
+def test_position_preset_en_alias():
+    # EN kod TR preset'e map olur (GK→kaleci, CM→orta_saha, WB_W→kanat)
+    assert protocols_for_position("GK") == protocols_for_position("kaleci")
+    assert protocols_for_position("CM") == protocols_for_position("orta_saha")
+    assert protocols_for_position("WB_W") == protocols_for_position("kanat")
+
+
+# --------------------------------------------------------------------------- #
+# Sprint split faz analizi
+# --------------------------------------------------------------------------- #
+
+
+def test_sprint_split_phases_computed():
+    r = sprint_split_analysis(0.98, 1.75, 4.10)
+    assert r.reaction == 0.98
+    assert r.acceleration == 0.77   # 1.75 − 0.98
+    assert r.max_speed == 2.35      # 4.10 − 1.75
+
+
+def test_sprint_split_limiter_max_speed():
+    # max hız fazı elit referansın (2.30) çok üstünde → limitör
+    r = sprint_split_analysis(0.96, 1.72, 4.60)  # max_speed 2.88 vs 2.30
+    assert r.limiter == "maksimal hız"
+
+
+def test_sprint_split_balanced_when_near_elite():
+    r = sprint_split_analysis(0.95, 1.70, 4.00)  # tam referans
+    assert r.limiter == "dengeli"
+
+
+def test_sprint_split_partial_inputs():
+    r = sprint_split_analysis(None, 1.75, 4.10)  # t5 yok → reaksiyon yok
+    assert r.reaction is None
+    assert r.acceleration is None    # t5 gerektirir
+    assert r.max_speed == 2.35
+
+
+def test_sprint_split_no_data():
+    r = sprint_split_analysis(None, None, None)
+    assert r.limiter == "yetersiz veri"
+
+
+def test_sprint_split_rejects_nonpositive():
+    with pytest.raises(ValueError):
+        sprint_split_analysis(-0.5, 1.7, 4.0)
+
+
+# --------------------------------------------------------------------------- #
+# VIFT → aerobik hedef hızlar
+# --------------------------------------------------------------------------- #
+
+
+def test_vift_targets_values():
+    r = vift_to_aerobic_targets(20.0)
+    assert r.speed_95 == 19.0
+    assert r.speed_100 == 20.0
+    assert r.speed_105 == 21.0
+
+
+def test_vift_targets_rejects_nonpositive():
+    with pytest.raises(ValueError):
+        vift_to_aerobic_targets(0.0)
+
+
+# --------------------------------------------------------------------------- #
+# Return-to-play clearance (çok protokol)
+# --------------------------------------------------------------------------- #
+
+
+def test_rtp_clearance_green_all_above_95():
+    r = return_to_play_clearance(
+        {"cmj": 39.0, "yoyo_irl1": 18.0}, {"cmj": 40.0, "yoyo_irl1": 18.5},
+    )
+    assert r.cleared is True
+    assert r.light == "yeşil"
+
+
+def test_rtp_clearance_red_when_one_below():
+    r = return_to_play_clearance(
+        {"cmj": 32.0, "yoyo_irl1": 18.0}, {"cmj": 40.0, "yoyo_irl1": 18.5},
+    )
+    assert r.cleared is False
+    assert r.light == "kırmızı"
+    assert r.lowest_protocol == "cmj"   # 0.80 en düşük
+
+
+def test_rtp_clearance_direction_aware_lower_is_better():
+    # sprint_30m düşük-iyi: dönüş yavaşladı (4.20 vs baseline 4.00) → oran<1
+    r = return_to_play_clearance({"sprint_30m": 4.20}, {"sprint_30m": 4.00})
+    assert r.ratios["sprint_30m"] < 1.0     # baseline/current = 0.952
+    # 0.952 ≥ 0.95 → yeşil (sınırda)
+    assert r.cleared is True
+
+
+def test_rtp_clearance_no_common_raises():
+    with pytest.raises(ValueError):
+        return_to_play_clearance({"cmj": 40.0}, {"yoyo_irl1": 18.0})
