@@ -9,6 +9,7 @@
 
 import { demoSquad, type SquadPlayer } from "@/lib/demo-data";
 import type { SavedRecord } from "@/lib/derived-tests";
+import { acwrForPlayer, type LoadSession } from "@/lib/load";
 
 export type Light = "kırmızı" | "sarı" | "yeşil";
 
@@ -305,14 +306,21 @@ export interface SquadReadinessRow {
   source: "entered" | "demo";   // karar gerçek girilen veriden mi, demo profilinden mi
 }
 
-/** Tüm kadro: girilen veri varsa onu, yoksa demo profilini kullan. Kırmızı önce. */
-export function squadReadiness(records: SavedRecord[] = []): SquadReadinessRow[] {
+/** Tüm kadro: girilen test + yük (ACWR) varsa onlardan, yoksa demo profili. Kırmızı önce. */
+export function squadReadiness(
+  records: SavedRecord[] = [], loads: LoadSession[] = [],
+): SquadReadinessRow[] {
   return demoSquad
     .map((player): SquadReadinessRow => {
-      const entered = enteredReadinessFor(player.player_id, records);
-      return entered
-        ? { player, decision: entered, source: "entered" }
-        : { player, decision: assessReadiness(demoInputFor(player)), source: "demo" };
+      const recInput = inputFromRecords(
+        records.filter((r) => String(r.player_id) === String(player.player_id)));
+      const acwr = acwrForPlayer(player.player_id, loads);
+      if (recInput || acwr != null) {
+        const input: ReadinessInput = { ...(recInput ?? {}) };
+        if (acwr != null) input.acwr = acwr;
+        return { player, decision: assessReadiness(input), source: "entered" };
+      }
+      return { player, decision: assessReadiness(demoInputFor(player)), source: "demo" };
     })
     .sort((a, b) =>
       LIGHT_RANK[a.decision.light] - LIGHT_RANK[b.decision.light]

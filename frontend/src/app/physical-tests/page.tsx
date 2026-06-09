@@ -21,9 +21,11 @@ import { DEMO_MODE } from "@/lib/demo-mode";
 import {
   squadReadiness, LIGHT_VAR, type ReadinessFlag, type ReadinessDecision,
 } from "@/lib/readiness";
+import { loadSessions, type LoadSession } from "@/lib/load";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 import { CsvImport } from "./CsvImport";
+import { LoadEntry } from "./LoadEntry";
 
 // Pano satırı — demo (tam SquadPlayer) ve API (yalnız id+ad) ortak şekli.
 interface BoardRow {
@@ -202,20 +204,22 @@ function Cell({ metric, value, unit }: { metric: "hrv" | "sprint" | "cmj" | "acw
 export default function FizikselDurumPage() {
   // Test Hesaplayıcı'da kaydedilen türetilmiş metrikler (localStorage, client-only).
   const [derived, setDerived] = React.useState<SavedRecord[]>([]);
-  React.useEffect(() => { setDerived(loadDerivedRecords()); }, []);
+  const [loads, setLoads] = React.useState<LoadSession[]>([]);
+  React.useEffect(() => { setDerived(loadDerivedRecords()); setLoads(loadSessions()); }, []);
 
-  // Hazırlık kararı kaynağı: DEMO → localStorage (girilen yoksa demo profili);
-  // production → GET /physical-tests/squad-readiness (gerçek DB, backend sentez).
+  // Hazırlık kararı kaynağı: DEMO → localStorage (test kayıtları + yük/ACWR;
+  // hiçbiri yoksa demo profili); production → GET /physical-tests/squad-readiness
+  // (gerçek DB: testler + sRPE/GPS yük serisinden ACWR, backend sentez).
   const squadSwr = useSWR<ApiSquadRow[]>(
     DEMO_MODE ? null : "/physical-tests/squad-readiness", apiFetch);
   const readinessRows: BoardRow[] = React.useMemo(() => {
-    if (DEMO_MODE) return squadReadiness(derived);
+    if (DEMO_MODE) return squadReadiness(derived, loads);
     return (squadSwr.data ?? []).map((r) => ({
       player: { player_id: r.player_id, player_name: r.player_name },
       decision: r.decision,
       source: "entered" as const,
     }));
-  }, [derived, squadSwr.data]);
+  }, [derived, loads, squadSwr.data]);
   const cantPlay = readinessRows.filter((r) => r.decision.light === "kırmızı").length;
   const monitor = readinessRows.filter((r) => r.decision.light === "sarı").length;
   const enteredCount = readinessRows.filter((r) => r.source === "entered").length;
@@ -287,6 +291,8 @@ export default function FizikselDurumPage() {
 
       <div className="st" style={{ marginTop: 0 }}><h2>Hazırlık Kararı</h2><span className="ep">karar verici · {cantPlay} çıkamaz · {monitor} izle · {enteredCount > 0 ? `${enteredCount} girilen veriden` : "demo profili"} · satıra tıkla → gerekçe</span></div>
       <ReadinessBoard rows={readinessRows} />
+
+      <LoadEntry onChanged={() => { setLoads(loadSessions()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
 
       <div className="st"><h2>Takım HRV Trendi</h2><span className="ep">son 14 gün · maç sonrası dip</span></div>
       <div className="rc" style={{ margin: "0 0 16px" }}>

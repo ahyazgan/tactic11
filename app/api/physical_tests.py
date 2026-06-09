@@ -21,7 +21,7 @@ yapılandırılmış bildirim kanalına uyarı gider (best-effort).
 from __future__ import annotations
 
 from dataclasses import asdict
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -34,7 +34,10 @@ from app.core.logging import get_logger
 from app.db import models
 from app.db.physical_test import PhysicalTest, TestProtocol
 from app.db.session import get_session
+from app.db.session_load import SessionLoad
+from app.engine.gps_load import srpe_session_load
 from app.engine.performance_test import compute as perf
+from app.engine.workload import compute_workload
 from app.engine.physical.load_risk import (
     CRITICAL_LABEL,
     REFERENCE,
@@ -831,22 +834,44 @@ def squad_readiness(
     Demo frontend'in localStorage panosunun production karşılığı — tek istekte
     tüm kadronun 🔴/🟡/🟢 kararı (canlı maç motorlarıyla aynı saf-hesap katmanı).
     `/{player_id}` ucundan ÖNCE tanımlı (yoksa player_id sanılır)."""
-    rows = list(session.execute(
+    # Test kayıtları → oyuncu başına {protokol: en son kayıt}.
+    test_rows = list(session.execute(
         select(PhysicalTest)
         .where(PhysicalTest.tenant_id == user.tenant_id)
         .order_by(PhysicalTest.test_date.desc(), PhysicalTest.id.desc())
     ).scalars())
-
-    # Oyuncu → {protokol: en son kayıt} (desc sıralı → ilk görülen en yenisi).
     by_player: dict[str, dict[str, PhysicalTest]] = {}
     names: dict[str, str] = {}
-    for r in rows:
+    for r in test_rows:
         names.setdefault(r.player_id, r.player_name)
         by_player.setdefault(r.player_id, {}).setdefault(r.protocol, r)
 
+    # Yük kayıtları → oyuncu başına günlük seri (gün başına AU toplamı) → ACWR.
+    load_rows = list(session.execute(
+        select(SessionLoad)
+        .where(SessionLoad.tenant_id == user.tenant_id)
+        .order_by(SessionLoad.session_date.asc())
+    ).scalars())
+    daily_by_player: dict[str, dict[date, float]] = {}
+    for lr in load_rows:
+        names.setdefault(lr.player_id, lr.player_name)
+        day = daily_by_player.setdefault(lr.player_id, {})
+        day[lr.session_date] = day.get(lr.session_date, 0.0) + lr.load_au
+
+    def _acwr_for(pid: str) -> float | None:
+        days = daily_by_player.get(pid)
+        if not days:
+            return None
+        series = [days[d] for d in sorted(days)]   # kronolojik günlük yük
+        return compute_workload(series).acwr
+
     out: list[SquadReadinessRowOut] = []
-    for pid, latest in by_player.items():
-        decision = perf.assess_readiness(**_readiness_kwargs_from_latest(latest))
+    for pid in set(by_player) | set(daily_by_player):
+        kw = _readiness_kwargs_from_latest(by_player.get(pid, {}))
+        acwr = _acwr_for(pid)
+        if acwr is not None:
+            kw["acwr"] = acwr
+        decision = perf.assess_readiness(**kw)
         out.append(SquadReadinessRowOut(
             player_id=pid, player_name=names.get(pid, pid),
             decision=ReadinessOut(**asdict(decision)),
@@ -855,6 +880,76 @@ def squad_readiness(
     light_rank = {"kırmızı": 0, "sarı": 1, "yeşil": 2}
     out.sort(key=lambda x: light_rank.get(x.decision.light, 9))
     return out
+
+
+class SessionLoadIn(BaseModel):
+    player_id: str = Field(..., description="API-Football player ID")
+    player_name: str
+    session_date: date
+    source: str = Field("srpe", description="srpe | gps | minutes")
+    rpe: float | None = Field(None, gt=0, le=10, description="sRPE: Borg CR-10")
+    duration_min: float | None = Field(None, gt=0, description="Seans süresi (dk)")
+    load_au: float | None = Field(None, gt=0, description="Doğrudan iç-yük (AU); gps/elle. sRPE'de rpe×süre'den hesaplanır")
+    notes: str | None = Field(None)
+
+
+class SessionLoadOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    player_id: str
+    player_name: str
+    session_date: date
+    source: str
+    load_au: float
+    rpe: float | None
+    duration_min: float | None
+
+
+@router.post("/session-load", response_model=SessionLoadOut, status_code=status.HTTP_201_CREATED)
+def create_session_load(
+    payload: SessionLoadIn,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> SessionLoad:
+    """Günlük antrenman/maç yükü kaydet (ACWR serisine beslenir).
+
+    `source="srpe"` → rpe×süre'den AU (Foster, donanımsız evrensel).
+    `source="gps"/"minutes"` → `load_au` doğrudan verilir. Kaynak-agnostik:
+    hepsi aynı seriye yazılır, `compute_workload` ACWR'yi üretir."""
+    if payload.source == "srpe":
+        if payload.rpe is None or payload.duration_min is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="sRPE için rpe + duration_min gerekli")
+        load_au = _derive_or_422(srpe_session_load, payload.rpe, payload.duration_min)
+    else:
+        if payload.load_au is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"source={payload.source} için load_au gerekli")
+        load_au = payload.load_au
+
+    record = SessionLoad(
+        tenant_id=user.tenant_id,
+        player_id=payload.player_id,
+        player_name=payload.player_name,
+        session_date=payload.session_date,
+        source=payload.source,
+        load_au=load_au,
+        rpe=payload.rpe,
+        duration_min=payload.duration_min,
+        notes=payload.notes,
+        recorded_by=user.email,
+        created_at=datetime.now(UTC),
+    )
+    session.add(record)
+    session.commit()
+    session.refresh(record)
+    _log_access(
+        session, player_id=record.player_id, action="create",
+        endpoint="/physical-tests/session-load", user_id=user.id,
+    )
+    return record
 
 
 @router.get("/{player_id}", response_model=list[PhysicalTestOut])

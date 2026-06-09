@@ -888,3 +888,53 @@ def test_squad_readiness_requires_auth():
     c = TestClient(app)
     r = c.get("/physical-tests/squad-readiness")
     assert r.status_code in (401, 403)
+
+
+# --------------------------------------------------------------------------- #
+# Günlük yük (sRPE) + ACWR'nin squad-readiness'e beslenmesi
+# --------------------------------------------------------------------------- #
+
+
+def test_session_load_srpe_computes_au(client):
+    c, _ = client
+    r = c.post("/physical-tests/session-load", json={
+        "player_id": "881", "player_name": "Yük Test", "session_date": "2026-06-08",
+        "source": "srpe", "rpe": 7.0, "duration_min": 60.0,
+    })
+    assert r.status_code == 201, r.text
+    assert r.json()["load_au"] == 420.0   # 7 × 60
+
+
+def test_session_load_srpe_requires_rpe_duration(client):
+    c, _ = client
+    r = c.post("/physical-tests/session-load", json={
+        "player_id": "881", "player_name": "Yük Test", "session_date": "2026-06-08",
+        "source": "srpe",
+    })
+    assert r.status_code == 422
+
+
+def test_session_load_gps_requires_load_au(client):
+    c, _ = client
+    r = c.post("/physical-tests/session-load", json={
+        "player_id": "881", "player_name": "Yük Test", "session_date": "2026-06-08",
+        "source": "gps",
+    })
+    assert r.status_code == 422
+
+
+def test_squad_readiness_includes_acwr_from_loads(client):
+    c, _ = client
+    # 7 günlük eşit yük → acute=chronic → ACWR 1.0 (ideal); ACWR bayrağı oluşmalı.
+    for d in range(1, 8):
+        r = c.post("/physical-tests/session-load", json={
+            "player_id": "882", "player_name": "ACWR Test",
+            "session_date": f"2026-06-0{d}", "source": "srpe",
+            "rpe": 5.0, "duration_min": 60.0,
+        })
+        assert r.status_code == 201, r.text
+    body = c.get("/physical-tests/squad-readiness").json()
+    row = next((x for x in body if x["player_id"] == "882"), None)
+    assert row is not None
+    metrics = {f["metric"] for f in row["decision"]["flags"]}
+    assert "ACWR" in metrics

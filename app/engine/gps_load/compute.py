@@ -25,6 +25,21 @@ W_SPRINT = 0.08        # sprint metresi 8×
 W_HI_EVENT = 0.5       # her accel/decel → 0.5 AU
 # Yüksek-yoğunluk seans bayrağı (distance/min eşiği, m/dk).
 HIGH_INTENSITY_M_PER_MIN = 120.0
+# Session-RPE (Foster) ölçeği üst sınırı (Borg CR-10).
+RPE_MAX = 10.0
+
+
+def srpe_session_load(rpe: float, duration_min: float) -> float:
+    """Foster sRPE iç-yük (AU) = RPE × süre(dk).
+
+    GPS donanımı olmayan kulüpler için evrensel yük yöntemi. Çıktı
+    `compute_gps_load.session_load` ile AYNI birimde (AU) → aynı ACWR
+    serisine (`compute_workload`) beslenir. Kaynak-agnostik tasarım."""
+    if not 0 < rpe <= RPE_MAX:
+        raise ValueError(f"RPE 0-{RPE_MAX:g} aralığında olmalı")
+    if duration_min <= 0:
+        raise ValueError("süre pozitif olmalı")
+    return round(rpe * duration_min, 1)
 
 
 @dataclass(frozen=True)

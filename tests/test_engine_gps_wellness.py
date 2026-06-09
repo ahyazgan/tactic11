@@ -1,8 +1,27 @@
 """GPS yük + wellness (spor bilimi) — saf engine testleri."""
 from __future__ import annotations
 
-from app.engine.gps_load import GpsSession, compute_gps_load
+import pytest
+
+from app.engine.gps_load import GpsSession, compute_gps_load, srpe_session_load
 from app.engine.wellness import WellnessInput, compute_wellness
+
+
+def test_srpe_session_load_foster():
+    # RPE 7 × 60 dk = 420 AU (Foster sRPE)
+    assert srpe_session_load(7.0, 60.0) == 420.0
+
+
+def test_srpe_rejects_out_of_range_rpe():
+    with pytest.raises(ValueError):
+        srpe_session_load(11.0, 60.0)
+    with pytest.raises(ValueError):
+        srpe_session_load(0.0, 60.0)
+
+
+def test_srpe_rejects_nonpositive_duration():
+    with pytest.raises(ValueError):
+        srpe_session_load(7.0, 0.0)
 
 
 def test_gps_uses_device_player_load_when_present():
