@@ -832,3 +832,59 @@ def test_readiness_no_auth_required():
     r = c.post("/physical-tests/readiness", json={"acwr": 1.7})
     assert r.status_code == 200
     assert r.json()["light"] == "kırmızı"
+
+
+# --------------------------------------------------------------------------- #
+# Kadro geneli Hazırlık Kararı (GET /squad-readiness) — DB'den sentez
+# --------------------------------------------------------------------------- #
+
+
+def test_squad_readiness_red_from_entered_tests(client):
+    c, _ = client
+    # H:Q kırmızı: hamstring 1.2 / quad 3.0 = 0.40 (<0.47) — components.quadriceps
+    r0 = c.post("/physical-tests/", json={
+        "player_id": "991", "player_name": "Test Kırmızı", "test_date": "2026-06-08",
+        "protocol": "isokinetic_ham", "value": 1.2, "components": {"quadriceps": 3.0},
+    })
+    assert r0.status_code == 201, r0.text
+    r = c.get("/physical-tests/squad-readiness")
+    assert r.status_code == 200, r.text
+    row = next((x for x in r.json() if x["player_id"] == "991"), None)
+    assert row is not None
+    assert row["decision"]["light"] == "kırmızı"
+    assert any(f["metric"] == "H:Q" for f in row["decision"]["flags"])
+
+
+def test_squad_readiness_pairs_separate_ham_quad(client):
+    c, _ = client
+    # Ayrı isokinetic_ham + isokinetic_quad kayıtları → H:Q eşlenmeli (CSV deseni)
+    c.post("/physical-tests/", json={"player_id": "992", "player_name": "Test Eşle",
+        "test_date": "2026-06-08", "protocol": "isokinetic_ham", "value": 2.0})
+    c.post("/physical-tests/", json={"player_id": "992", "player_name": "Test Eşle",
+        "test_date": "2026-06-08", "protocol": "isokinetic_quad", "value": 3.0})
+    r = c.get("/physical-tests/squad-readiness")
+    row = next((x for x in r.json() if x["player_id"] == "992"), None)
+    assert row is not None
+    # 2.0/3.0 = 0.667 ideal → H:Q yeşil bayrak mevcut
+    assert any(f["metric"] == "H:Q" for f in row["decision"]["flags"])
+
+
+def test_squad_readiness_no_relevant_tests_is_no_data(client):
+    c, _ = client
+    # Sadece sprint → readiness'e eşlenen metrik yok → "veri yok" (sarı)
+    c.post("/physical-tests/", json={"player_id": "993", "player_name": "Test Sprint",
+        "test_date": "2026-06-08", "protocol": "sprint_10m", "value": 1.8})
+    r = c.get("/physical-tests/squad-readiness")
+    row = next((x for x in r.json() if x["player_id"] == "993"), None)
+    assert row is not None
+    assert row["decision"]["checked"] == 0
+    assert row["decision"]["light"] == "sarı"
+
+
+def test_squad_readiness_requires_auth():
+    from fastapi.testclient import TestClient
+
+    from app.api.main import app
+    c = TestClient(app)
+    r = c.get("/physical-tests/squad-readiness")
+    assert r.status_code in (401, 403)

@@ -761,6 +761,102 @@ def list_players(
     return out
 
 
+def _readiness_kwargs_from_latest(latest: dict[str, PhysicalTest]) -> dict[str, Any]:
+    """Oyuncunun protokol→en son test eşlemesinden assess_readiness kwargs'ı.
+
+    Frontend lib/readiness.ts:inputFromRecords ile birebir aynı eşleme; ham
+    girdiler `components`'ten okunur (yoksa o metrik atlanır)."""
+    def comp(rec: PhysicalTest, key: str) -> Any:
+        return (rec.components or {}).get(key)
+
+    def isnum(x: Any) -> bool:
+        return isinstance(x, (int, float))
+
+    kw: dict[str, Any] = {}
+
+    ham = latest.get("isokinetic_ham")
+    if ham is not None:
+        quad = comp(ham, "quadriceps")
+        if quad is None and "isokinetic_quad" in latest:
+            quad = latest["isokinetic_quad"].value
+        if isnum(quad) and quad > 0:
+            kw["hq"] = (ham.value, float(quad))
+
+    th = latest.get("triple_hop")
+    if th is not None:
+        left, right = comp(th, "left"), comp(th, "right")
+        if isnum(left) and isnum(right):
+            kw["asymmetry"] = (float(left), float(right), "Triple Hop")
+
+    rsa = latest.get("rsa")
+    if rsa is not None:
+        st = comp(rsa, "sprint_times")
+        if isinstance(st, list) and len(st) >= 2 and all(isnum(x) for x in st):
+            kw["rsa"] = [float(x) for x in st]
+
+    cod = latest.get("t505")
+    if cod is not None:
+        lin = comp(cod, "linear_10m")
+        if isnum(lin) and lin > 0 and cod.value > 0:
+            kw["cod"] = (cod.value, float(lin))
+
+    add = latest.get("adductor_squeeze")
+    if add is not None:
+        prev = comp(add, "previous")
+        if isnum(prev) and prev > 0:
+            kw["adductor"] = (add.value, float(prev))
+
+    cmj = latest.get("cmj")
+    if cmj is not None:
+        base = comp(cmj, "baseline_values")
+        if isinstance(base, list) and base and all(isnum(x) for x in base):
+            kw["cmj"] = (cmj.value, [float(x) for x in base])
+
+    return kw
+
+
+class SquadReadinessRowOut(BaseModel):
+    player_id: str
+    player_name: str
+    decision: ReadinessOut
+
+
+@router.get("/squad-readiness", response_model=list[SquadReadinessRowOut])
+def squad_readiness(
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> list[SquadReadinessRowOut]:
+    """Kadro geneli Hazırlık Kararı: her oyuncunun SON testlerinden assess_readiness.
+
+    Demo frontend'in localStorage panosunun production karşılığı — tek istekte
+    tüm kadronun 🔴/🟡/🟢 kararı (canlı maç motorlarıyla aynı saf-hesap katmanı).
+    `/{player_id}` ucundan ÖNCE tanımlı (yoksa player_id sanılır)."""
+    rows = list(session.execute(
+        select(PhysicalTest)
+        .where(PhysicalTest.tenant_id == user.tenant_id)
+        .order_by(PhysicalTest.test_date.desc(), PhysicalTest.id.desc())
+    ).scalars())
+
+    # Oyuncu → {protokol: en son kayıt} (desc sıralı → ilk görülen en yenisi).
+    by_player: dict[str, dict[str, PhysicalTest]] = {}
+    names: dict[str, str] = {}
+    for r in rows:
+        names.setdefault(r.player_id, r.player_name)
+        by_player.setdefault(r.player_id, {}).setdefault(r.protocol, r)
+
+    out: list[SquadReadinessRowOut] = []
+    for pid, latest in by_player.items():
+        decision = perf.assess_readiness(**_readiness_kwargs_from_latest(latest))
+        out.append(SquadReadinessRowOut(
+            player_id=pid, player_name=names.get(pid, pid),
+            decision=ReadinessOut(**asdict(decision)),
+        ))
+    # Kırmızı önce, sonra sarı/yeşil.
+    light_rank = {"kırmızı": 0, "sarı": 1, "yeşil": 2}
+    out.sort(key=lambda x: light_rank.get(x.decision.light, 9))
+    return out
+
+
 @router.get("/{player_id}", response_model=list[PhysicalTestOut])
 def list_tests(
     player_id: str,

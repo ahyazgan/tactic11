@@ -15,12 +15,24 @@ import { demoSquad } from "@/lib/demo-data";
 import {
   PROTO_NAME, PROTO_UNIT, loadDerivedRecords, type SavedRecord,
 } from "@/lib/derived-tests";
+import useSWR from "swr";
+import { apiFetch } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
 import {
-  squadReadiness, LIGHT_VAR, type ReadinessFlag, type SquadReadinessRow,
+  squadReadiness, LIGHT_VAR, type ReadinessFlag, type ReadinessDecision,
 } from "@/lib/readiness";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 import { CsvImport } from "./CsvImport";
+
+// Pano satırı — demo (tam SquadPlayer) ve API (yalnız id+ad) ortak şekli.
+interface BoardRow {
+  player: { player_id: number | string; player_name: string; shirt?: number; pos_detail?: string };
+  decision: ReadinessDecision;
+  source: "entered" | "demo";
+}
+// GET /physical-tests/squad-readiness satırı.
+interface ApiSquadRow { player_id: string; player_name: string; decision: ReadinessDecision }
 
 type Band = "Hazır" | "İzlenmeli" | "Riskli";
 const BAND_META: Record<Band, { v: string; bg: string }> = {
@@ -108,9 +120,9 @@ function FlagRow({ f }: { f: ReadinessFlag }) {
 
 // Kadro karar panosu: kırmızı önce; satıra tıkla → o oyuncunun kanıt zinciri.
 // `source` = karar gerçek girilen testten mi (entered) yoksa demo profilinden mi.
-function ReadinessBoard({ rows }: { rows: SquadReadinessRow[] }) {
+function ReadinessBoard({ rows }: { rows: BoardRow[] }) {
   const firstRed = rows.find((r) => r.decision.light === "kırmızı")?.player.player_id ?? null;
-  const [open, setOpen] = React.useState<number | null>(firstRed);
+  const [open, setOpen] = React.useState<number | string | null>(firstRed);
   return (
     <div className="rc" style={{ margin: "0 0 16px", padding: 0, overflow: "hidden" }}>
       {rows.map(({ player, decision, source }, i) => {
@@ -123,10 +135,10 @@ function ReadinessBoard({ rows }: { rows: SquadReadinessRow[] }) {
               onClick={() => setOpen(isOpen ? null : player.player_id)}
               style={{ display: "grid", gridTemplateColumns: "auto 1fr auto auto", gap: 12, alignItems: "center", width: "100%", textAlign: "left", padding: "10px 14px", background: isOpen ? "var(--panel2)" : "transparent", border: 0, borderLeft: `3px solid ${v}`, cursor: "pointer", color: "var(--ink)", fontFamily: "inherit" }}
             >
-              <span className="pnum">{player.shirt}</span>
+              <span className="pnum">{player.shirt ?? "·"}</span>
               <span style={{ minWidth: 0 }}>
                 <span className="nm">{player.player_name}</span>
-                <span style={{ color: "var(--muted)", marginLeft: 8, fontSize: 12 }}>{player.pos_detail}</span>
+                {player.pos_detail && <span style={{ color: "var(--muted)", marginLeft: 8, fontSize: 12 }}>{player.pos_detail}</span>}
                 {source === "entered" && (
                   <span title="Karar girilen gerçek testlerden" style={{ marginLeft: 8, fontSize: 9.5, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--accent)", border: "1px solid var(--accent)", borderRadius: 4, padding: "0 5px", verticalAlign: "middle" }}>girilen</span>
                 )}
@@ -192,8 +204,18 @@ export default function FizikselDurumPage() {
   const [derived, setDerived] = React.useState<SavedRecord[]>([]);
   React.useEffect(() => { setDerived(loadDerivedRecords()); }, []);
 
-  // Hazırlık kararı: girilen test kayıtları varsa onlardan, yoksa demo profilinden.
-  const readinessRows = React.useMemo(() => squadReadiness(derived), [derived]);
+  // Hazırlık kararı kaynağı: DEMO → localStorage (girilen yoksa demo profili);
+  // production → GET /physical-tests/squad-readiness (gerçek DB, backend sentez).
+  const squadSwr = useSWR<ApiSquadRow[]>(
+    DEMO_MODE ? null : "/physical-tests/squad-readiness", apiFetch);
+  const readinessRows: BoardRow[] = React.useMemo(() => {
+    if (DEMO_MODE) return squadReadiness(derived);
+    return (squadSwr.data ?? []).map((r) => ({
+      player: { player_id: r.player_id, player_name: r.player_name },
+      decision: r.decision,
+      source: "entered" as const,
+    }));
+  }, [derived, squadSwr.data]);
   const cantPlay = readinessRows.filter((r) => r.decision.light === "kırmızı").length;
   const monitor = readinessRows.filter((r) => r.decision.light === "sarı").length;
   const enteredCount = readinessRows.filter((r) => r.source === "entered").length;
@@ -310,7 +332,7 @@ export default function FizikselDurumPage() {
         HRV ms · Sprint 10m sn (düşük iyi) · CMJ cm · ACWR akut/kronik · Yük haftalık iç yük (0–100). Hücre rengi metriğin yönüne göre.
       </div>
 
-      <CsvImport onImported={() => setDerived(loadDerivedRecords())} />
+      <CsvImport onImported={() => { setDerived(loadDerivedRecords()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
 
       <div className="st"><h2>Test Hesaplayıcı Kayıtları</h2><span className="ep">{derived.length} kayıt · son girilenler</span></div>
       {derived.length === 0 ? (
