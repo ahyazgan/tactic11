@@ -560,6 +560,61 @@ def derive_rtp_clearance(payload: RtpClearanceIn) -> RtpClearanceOut:
     return RtpClearanceOut(**asdict(r))
 
 
+class ReadinessIn(BaseModel):
+    """Bir oyuncunun türetilmiş test metrikleri — hepsi opsiyonel, verilen
+    değerlendirilir. Eksik metrik kararda atlanır."""
+    rtp: tuple[float, float, bool] | None = Field(
+        None, description="(current, baseline, higher_is_better)")
+    hq: tuple[float, float] | None = Field(
+        None, description="(hamstring, quadriceps) izokinetik tepe tork")
+    asymmetry: tuple[float, float, str] | None = Field(
+        None, description="(sol, sağ, test_adı) bacak asimetri")
+    rsa: list[float] | None = Field(
+        None, min_length=2, max_length=20, description="Tekrarlı sprint süreleri (sn)")
+    cod: tuple[float, float] | None = Field(
+        None, description="(505_süresi, 10m_düz) COD deficit")
+    adductor: tuple[float, float] | None = Field(
+        None, description="(güncel, önceki) adductor squeeze")
+    cmj: tuple[float, list[float]] | None = Field(
+        None, description="(güncel, baseline_değerleri) CMJ")
+    acwr: float | None = Field(None, gt=0, description="Akut:kronik yük oranı")
+
+
+class ReadinessFlagOut(BaseModel):
+    metric: str
+    engine: str
+    severity: str
+    value: str
+    threshold: str
+    action: str
+
+
+class ReadinessOut(BaseModel):
+    light: str
+    verdict: str
+    red_count: int
+    yellow_count: int
+    checked: int
+    flags: list[ReadinessFlagOut]
+    summary: str
+
+
+@router.post("/readiness", response_model=ReadinessOut)
+def assess_player_readiness(payload: ReadinessIn) -> ReadinessOut:
+    """Türetilmiş test metriklerini tek hazırlık kararına sentezler.
+
+    Verilen her metrik kendi flag motorundan geçer; en kötü severity genel
+    ışığı belirler (kırmızı 'sahaya çıkmasın' > sarı 'izle/yük yönet' > yeşil
+    'tam maça hazır'). Canlı maç 'En İyi Hamle' sentezinin test karşılığı."""
+    r = _derive_or_422(
+        perf.assess_readiness,
+        rtp=payload.rtp, hq=payload.hq, asymmetry=payload.asymmetry,
+        rsa=payload.rsa, cod=payload.cod, adductor=payload.adductor,
+        cmj=payload.cmj, acwr=payload.acwr,
+    )
+    return ReadinessOut(**asdict(r))
+
+
 class PositionPresetOut(BaseModel):
     position: str
     protocols: list[ProtocolInfoOut]   # önerilen protokollerin tam tanımı

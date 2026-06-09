@@ -11,6 +11,7 @@ from app.engine.performance_test import (
     DEFAULT_POSITION_PRESET,
     PROTOCOLS,
     adductor_squeeze_drop,
+    assess_readiness,
     change_of_direction_deficit,
     cmj_neuromuscular_drop,
     derive_vo2max_from_yoyo_ir1,
@@ -402,3 +403,77 @@ def test_rtp_clearance_direction_aware_lower_is_better():
 def test_rtp_clearance_no_common_raises():
     with pytest.raises(ValueError):
         return_to_play_clearance({"cmj": 40.0}, {"yoyo_irl1": 18.0})
+
+
+# --------------------------------------------------------------------------- #
+# Hazırlık Kararı (assess_readiness) — çok-metrik sentez
+# --------------------------------------------------------------------------- #
+
+
+def test_readiness_no_metrics_is_yellow_no_data():
+    d = assess_readiness()
+    assert d.light == "sarı"
+    assert d.checked == 0
+    assert d.flags == ()
+    assert "verisi yok" in d.summary.lower()
+
+
+def test_readiness_all_green_ready():
+    d = assess_readiness(
+        rtp=(40.0, 40.0, True),          # %100 → yeşil
+        hq=(2.0, 3.0),                   # 0.667 ideal → yeşil
+        asymmetry=(50.0, 49.0, "Triple Hop"),  # %2 → yeşil
+        rsa=[7.0, 7.1, 7.2, 7.3],        # FI düşük → yeşil
+        acwr=1.1,                        # tatlı bölge → yeşil
+    )
+    assert d.light == "yeşil"
+    assert d.verdict == "tam maça hazır"
+    assert d.red_count == 0 and d.yellow_count == 0
+    assert d.checked == 5
+
+
+def test_readiness_rtp_red_forces_dont_play():
+    d = assess_readiness(rtp=(30.0, 40.0, True))   # %75 < %95 → kırmızı
+    assert d.light == "kırmızı"
+    assert d.verdict == "sahaya çıkmasın"
+    assert d.red_count == 1
+    assert d.flags[0].metric == "RTP"
+    assert d.flags[0].severity == "kırmızı"
+
+
+def test_readiness_hq_high_risk_is_red():
+    d = assess_readiness(hq=(1.0, 3.0))   # 0.33 < 0.47 → yüksek_risk
+    assert d.light == "kırmızı"
+    assert any(f.metric == "H:Q" and f.severity == "kırmızı" for f in d.flags)
+
+
+def test_readiness_only_yellow_is_monitor():
+    # RSA yetersiz toparlanma (sarı) + ACWR sınırda (sarı), kırmızı yok
+    d = assess_readiness(rsa=[7.0, 7.6, 8.0, 8.4], acwr=1.4)
+    assert d.light == "sarı"
+    assert d.verdict == "izle / yük yönet"
+    assert d.red_count == 0 and d.yellow_count >= 1
+
+
+def test_readiness_flags_sorted_red_first():
+    d = assess_readiness(
+        rsa=[7.0, 7.6, 8.0, 8.4],        # sarı
+        rtp=(30.0, 40.0, True),          # kırmızı
+        hq=(2.0, 3.0),                   # yeşil
+    )
+    sev = [f.severity for f in d.flags]
+    # kırmızı önce, yeşil sonda
+    assert sev[0] == "kırmızı"
+    assert sev[-1] == "yeşil"
+    assert d.light == "kırmızı"
+
+
+def test_readiness_acwr_above_high_is_red():
+    d = assess_readiness(acwr=1.7)   # > 1.50 → kırmızı
+    assert d.light == "kırmızı"
+    assert d.flags[0].metric == "ACWR"
+
+
+def test_readiness_invalid_input_raises():
+    with pytest.raises(ValueError):
+        assess_readiness(hq=(1.0, 0.0))   # quadriceps 0 → ValueError

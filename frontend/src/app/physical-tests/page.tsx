@@ -15,6 +15,9 @@ import { demoSquad } from "@/lib/demo-data";
 import {
   PROTO_NAME, PROTO_UNIT, loadDerivedRecords, type SavedRecord,
 } from "@/lib/derived-tests";
+import {
+  demoSquadReadiness, LIGHT_VAR, type ReadinessFlag,
+} from "@/lib/readiness";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -82,6 +85,70 @@ const FASTEST = STATUS.reduce((b, s) => (s.sprint < b.sprint ? s : b), STATUS[0]
 
 // Takım ortalama HRV trendi (14 gün) — maç sonrası dip + toparlanma.
 const HRV_TREND = [82, 80, 79, 76, 71, 73, 78, 81, 80, 77, 72, 75, 79, AVG_HRV];
+
+// ── Hazırlık Kararı (karar verici) — assess_readiness motorunun kadro çıktısı ──
+const READINESS = demoSquadReadiness();
+const CANT_PLAY = READINESS.filter((r) => r.decision.light === "kırmızı").length;
+const MONITOR = READINESS.filter((r) => r.decision.light === "sarı").length;
+
+function FlagRow({ f }: { f: ReadinessFlag }) {
+  const v = LIGHT_VAR[f.severity];
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "150px auto 1fr", gap: 10, alignItems: "baseline", fontSize: 12, padding: "5px 0", borderTop: "1px solid var(--line)" }}>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        <span style={{ width: 8, height: 8, borderRadius: "50%", background: v, flexShrink: 0 }} />
+        <b>{f.metric}</b>
+      </span>
+      <span style={{ fontFamily: "JetBrains Mono", color: v, whiteSpace: "nowrap" }}>{f.value}</span>
+      <span style={{ color: "var(--muted)", lineHeight: 1.45 }}>
+        {f.action} <span style={{ color: "var(--dim)", fontSize: 11 }}>· eşik {f.threshold} · {f.engine}</span>
+      </span>
+    </div>
+  );
+}
+
+// Kadro karar panosu: kırmızı önce; satıra tıkla → o oyuncunun kanıt zinciri.
+function ReadinessBoard() {
+  const firstRed = READINESS.find((r) => r.decision.light === "kırmızı")?.player.player_id ?? null;
+  const [open, setOpen] = React.useState<number | null>(firstRed);
+  return (
+    <div className="rc" style={{ margin: "0 0 16px", padding: 0, overflow: "hidden" }}>
+      {READINESS.map(({ player, decision }, i) => {
+        const v = LIGHT_VAR[decision.light];
+        const isOpen = open === player.player_id;
+        return (
+          <div key={player.player_id} style={{ borderTop: i ? "1px solid var(--line)" : undefined }}>
+            <button
+              type="button"
+              onClick={() => setOpen(isOpen ? null : player.player_id)}
+              style={{ display: "grid", gridTemplateColumns: "auto 1fr auto auto", gap: 12, alignItems: "center", width: "100%", textAlign: "left", padding: "10px 14px", background: isOpen ? "var(--panel2)" : "transparent", border: 0, borderLeft: `3px solid ${v}`, cursor: "pointer", color: "var(--ink)", fontFamily: "inherit" }}
+            >
+              <span className="pnum">{player.shirt}</span>
+              <span style={{ minWidth: 0 }}>
+                <span className="nm">{player.player_name}</span>
+                <span style={{ color: "var(--muted)", marginLeft: 8, fontSize: 12 }}>{player.pos_detail}</span>
+                <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{decision.summary}</div>
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, color: v, textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                <span style={{ width: 9, height: 9, borderRadius: "50%", background: v }} />{decision.verdict}
+              </span>
+              <span style={{ fontFamily: "JetBrains Mono", fontSize: 11, color: "var(--dim)", whiteSpace: "nowrap" }}>
+                {decision.red_count > 0 && <span style={{ color: "var(--crit)" }}>{decision.red_count}🔴 </span>}
+                {decision.yellow_count > 0 && <span style={{ color: "var(--mid)" }}>{decision.yellow_count}🟡 </span>}
+                {isOpen ? "▲" : "▼"}
+              </span>
+            </button>
+            {isOpen && (
+              <div style={{ padding: "2px 14px 12px 17px", background: "var(--panel2)" }}>
+                {decision.flags.map((f, j) => <FlagRow key={j} f={f} />)}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function HrvTrend({ data }: { data: number[] }) {
   const W = 560, H = 130, padX = 24, padY = 16;
@@ -180,11 +247,14 @@ export default function FizikselDurumPage() {
         <div className="kpi"><div className="kl">Sahaya Hazır</div><div className="kn" style={{ color: "var(--low)" }}>{READY}<span className="pct">/{STATUS.length}</span></div><div className="kd">{WATCH} izlenmeli · {RISKY} riskli</div></div>
         <div className="kpi"><div className="kl">Ort. HRV</div><div className="kn" style={{ color: AVG_HRV >= 78 ? "var(--low)" : "var(--mid)" }}>{AVG_HRV}<span className="pct"> ms</span></div><div className="kd">kalp atış değişkenliği</div></div>
         <div className="kpi"><div className="kl">Ort. ACWR</div><div className="kn" style={{ color: AVG_ACWR > 1.3 ? "var(--high)" : "var(--low)" }}>{AVG_ACWR.toFixed(2)}</div><div className="kd">akut/kronik yük</div></div>
-        <div className="kpi"><div className="kl">Kritik Risk</div><div className="kn" style={{ color: RISKY ? "var(--crit)" : "var(--low)" }}>{RISKY}</div><div className="kd">acil değerlendirme</div></div>
+        <div className="kpi"><div className="kl">Karar: Çıkamaz</div><div className="kn" style={{ color: CANT_PLAY ? "var(--crit)" : "var(--low)" }}>{CANT_PLAY}</div><div className="kd">{MONITOR} izle · karar verici</div></div>
         <div className="kpi"><div className="kl">En Hızlı</div><div className="kn" style={{ fontSize: 18 }}>{FASTEST.name.split(" ")[0]}</div><div className="kd">10m {FASTEST.sprint.toFixed(2)}sn</div></div>
       </div>
 
-      <div className="st" style={{ marginTop: 0 }}><h2>Takım HRV Trendi</h2><span className="ep">son 14 gün · maç sonrası dip</span></div>
+      <div className="st" style={{ marginTop: 0 }}><h2>Hazırlık Kararı</h2><span className="ep">karar verici · {CANT_PLAY} çıkamaz · {MONITOR} izle · satıra tıkla → gerekçe</span></div>
+      <ReadinessBoard />
+
+      <div className="st"><h2>Takım HRV Trendi</h2><span className="ep">son 14 gün · maç sonrası dip</span></div>
       <div className="rc" style={{ margin: "0 0 16px" }}>
         <HrvTrend data={HRV_TREND} />
         <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8 }}>

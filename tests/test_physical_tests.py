@@ -773,3 +773,62 @@ def test_protocols_position_filter_gk(client):
     # Filtresiz tam liste daha büyük olmalı
     full = c.get("/physical-tests/protocols").json()
     assert len(full) > len(r.json())
+
+
+# --------------------------------------------------------------------------- #
+# Hazırlık Kararı uç noktası (POST /readiness) — çok-metrik sentez
+# --------------------------------------------------------------------------- #
+
+
+def test_readiness_red_when_rtp_below_baseline(client):
+    c, _ = client
+    r = c.post("/physical-tests/readiness",
+               json={"rtp": [30.0, 40.0, True], "hq": [2.0, 3.0]})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["light"] == "kırmızı"
+    assert body["verdict"] == "sahaya çıkmasın"
+    assert body["red_count"] == 1
+    assert body["flags"][0]["severity"] == "kırmızı"
+
+
+def test_readiness_green_all_ok(client):
+    c, _ = client
+    r = c.post("/physical-tests/readiness",
+               json={"hq": [2.0, 3.0], "asymmetry": [50.0, 49.0, "Triple Hop"],
+                     "acwr": 1.1})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["light"] == "yeşil"
+    assert body["checked"] == 3
+
+
+def test_readiness_yellow_monitor(client):
+    c, _ = client
+    r = c.post("/physical-tests/readiness", json={"acwr": 1.4})
+    body = r.json()
+    assert body["light"] == "sarı"
+    assert body["verdict"] == "izle / yük yönet"
+
+
+def test_readiness_empty_is_no_data(client):
+    c, _ = client
+    r = c.post("/physical-tests/readiness", json={})
+    assert r.status_code == 200
+    assert r.json()["checked"] == 0
+
+
+def test_readiness_invalid_input_422(client):
+    c, _ = client
+    r = c.post("/physical-tests/readiness", json={"hq": [1.0, 0.0]})
+    assert r.status_code == 422
+
+
+def test_readiness_no_auth_required():
+    from fastapi.testclient import TestClient
+
+    from app.api.main import app
+    c = TestClient(app)
+    r = c.post("/physical-tests/readiness", json={"acwr": 1.7})
+    assert r.status_code == 200
+    assert r.json()["light"] == "kırmızı"

@@ -884,3 +884,192 @@ def protocols_for_position(position: str) -> tuple[str, ...]:
     key = position.strip().lower()
     key = POSITION_ALIASES.get(key, key)
     return POSITION_TEST_PRESETS.get(key, DEFAULT_POSITION_PRESET)
+
+
+# --------------------------------------------------------------------------- #
+# Hazırlık Kararı (readiness decision) — bir oyuncunun türetilmiş test
+# metriklerini tek bir oynat/oynatma kararına sentezler. Her verilen metrik
+# kendi flag fonksiyonundan geçer; en kötü severity genel ışığı belirler
+# (kırmızı > sarı > yeşil). YENİ EŞİK YOK: mevcut motorların bayraklarını
+# önceliklendirip birleştirir — canlı maçtaki "en iyi hamle" sentezinin test
+# tarafı karşılığı.
+# --------------------------------------------------------------------------- #
+
+# ACWR (akut:kronik yük oranı) bantları — yük tarafı readiness sinyali.
+ACWR_SWEET_MIN = 0.80
+ACWR_SWEET_MAX = 1.30
+ACWR_HIGH = 1.50            # > bu → kırmızı (akut yük zirvede)
+
+# Genel ışık → karar metni.
+READINESS_VERDICT = {
+    "kırmızı": "sahaya çıkmasın",
+    "sarı": "izle / yük yönet",
+    "yeşil": "tam maça hazır",
+}
+_LIGHT_RANK = {"kırmızı": 0, "sarı": 1, "yeşil": 2}
+
+
+@dataclass(frozen=True)
+class ReadinessFlag:
+    metric: str          # "RTP" | "H:Q" | "Asimetri" | "RSA" | "COD" | ...
+    engine: str          # kaynak motor fonksiyonu
+    severity: str        # "kırmızı" | "sarı" | "yeşil"
+    value: str           # okunur değer ("0.43", "%17", "FI %9")
+    threshold: str       # eşik açıklaması
+    action: str          # önerilen aksiyon
+
+
+@dataclass(frozen=True)
+class ReadinessDecision:
+    light: str               # "kırmızı" | "sarı" | "yeşil"
+    verdict: str             # READINESS_VERDICT[light]
+    red_count: int
+    yellow_count: int
+    checked: int             # değerlendirilen metrik sayısı
+    flags: tuple[ReadinessFlag, ...]   # severity sıralı (kırmızı önce)
+    summary: str
+
+
+def assess_readiness(
+    *,
+    rtp: tuple[float, float, bool] | None = None,        # (current, baseline, higher_is_better)
+    hq: tuple[float, float] | None = None,               # (hamstring, quadriceps)
+    asymmetry: tuple[float, float, str] | None = None,   # (left, right, test_label)
+    rsa: list[float] | None = None,                      # sprint süreleri
+    cod: tuple[float, float] | None = None,              # (cod_time, linear_10m)
+    adductor: tuple[float, float] | None = None,         # (current, previous)
+    cmj: tuple[float, list[float]] | None = None,        # (current, baseline_values)
+    acwr: float | None = None,                           # akut:kronik yük
+) -> ReadinessDecision:
+    """Türetilmiş test metriklerini tek hazırlık kararına sentezler.
+
+    Verilen her metrik kendi motor fonksiyonundan geçer ve bir ReadinessFlag
+    üretir. En kötü severity genel ışığı belirler: herhangi bir kırmızı →
+    'sahaya çıkmasın'; kırmızı yok ama sarı var → 'izle / yük yönet'; hepsi
+    yeşil → 'tam maça hazır'. Hiç metrik verilmezse 'veri yok' (sarı).
+    Girdiler geçersizse alt motor fonksiyonları ValueError yükseltir (API 422)."""
+    flags: list[ReadinessFlag] = []
+
+    if rtp is not None:
+        cur, base, hib = rtp
+        r = return_to_play_readiness(cur, base, higher_is_better=hib)
+        flags.append(ReadinessFlag(
+            metric="RTP", engine="return_to_play_readiness",
+            severity="yeşil" if r.cleared else "kırmızı",
+            value=f"baseline'ın %{r.pct_of_baseline:g}'i",
+            threshold=f"≥%{RTP_GREEN_LIGHT_PCT:g} yeşil ışık",
+            action=("sahaya hazır" if r.cleared
+                    else "sahaya çıkmasın — rehabilitasyona devam, baseline'a ulaşsın"),
+        ))
+
+    if hq is not None:
+        ham, quad = hq
+        r = hamstring_quad_ratio(ham, quad)
+        sev = {"ideal": "yeşil", "sınırda": "sarı", "yüksek_risk": "kırmızı"}[r.band]
+        flags.append(ReadinessFlag(
+            metric="H:Q", engine="hamstring_quad_ratio", severity=sev,
+            value=f"{r.ratio:g} ({r.band})",
+            threshold=f"≥{HQ_RATIO_IDEAL_MIN:g} ideal · <{HQ_RATIO_RISK:g} risk",
+            action=("denge iyi" if sev == "yeşil"
+                    else "eksantrik hamstring güçlendirme; <0.47 ise maç yükünü sınırla"),
+        ))
+
+    if asymmetry is not None:
+        left, right, label = asymmetry
+        r = limb_asymmetry(left, right)
+        flags.append(ReadinessFlag(
+            metric=f"Asimetri ({label})" if label else "Asimetri",
+            engine="limb_asymmetry", severity=r.flag,
+            value=f"%{r.asymmetry_pct:g} (güçlü: {r.stronger_side})",
+            threshold=f">%{ASYMMETRY_WARN_PCT:g} sarı · >%{ASYMMETRY_HIGH_PCT:g} kırmızı",
+            action=("denge iyi" if r.flag == "yeşil"
+                    else "tek-bacak düzeltici program; yeniden-sakatlanma riski"),
+        ))
+
+    if rsa is not None:
+        r = repeated_sprint_fatigue_index(rsa)
+        flags.append(ReadinessFlag(
+            metric="RSA", engine="repeated_sprint_fatigue_index",
+            severity="sarı" if r.insufficient_recovery else "yeşil",
+            value=f"FI %{r.fatigue_index_pct:g}",
+            threshold=f">%{RSA_FATIGUE_FLAG_PCT:g} yetersiz toparlanma",
+            action=("anaerobik dayanıklılık iyi" if not r.insufficient_recovery
+                    else "tekrarlı sprint + toparlanma bloğu"),
+        ))
+
+    if cod is not None:
+        cod_t, lin = cod
+        r = change_of_direction_deficit(cod_t, lin)
+        flags.append(ReadinessFlag(
+            metric="COD", engine="change_of_direction_deficit",
+            severity="sarı" if r.poor_deceleration else "yeşil",
+            value=f"{r.deficit:g}sn açık",
+            threshold=f">{COD_DEFICIT_FLAG_S:g}sn zayıf frenleme",
+            action=("yön değiştirme iyi" if not r.poor_deceleration
+                    else "frenleme/deceleration mekaniği çalışması"),
+        ))
+
+    if adductor is not None:
+        cur, prev = adductor
+        r = adductor_squeeze_drop(cur, prev)
+        flags.append(ReadinessFlag(
+            metric="Adductor", engine="adductor_squeeze_drop",
+            severity="sarı" if r.flagged else "yeşil",
+            value=f"%{r.drop_pct:g} düşüş",
+            threshold=f">%{ADDUCTOR_DROP_FLAG_PCT:g} kasık/pubis riski",
+            action=("kasık kuvveti iyi" if not r.flagged
+                    else "kasık yükünü azalt, MD+1 takip; kasık/pubis riski"),
+        ))
+
+    if cmj is not None:
+        cur, baseline_vals = cmj
+        r = cmj_neuromuscular_drop(cur, baseline_vals)
+        flags.append(ReadinessFlag(
+            metric="CMJ", engine="cmj_neuromuscular_drop",
+            severity="sarı" if r.flagged else "yeşil",
+            value=f"baseline'a göre %{r.drop_pct:g}",
+            threshold=f">%{CMJ_FATIGUE_DROP_PCT:g} nöromusküler yorgunluk",
+            action=("toparlanma tam" if not r.flagged
+                    else "yükü azalt; nöromusküler yorgunluk"),
+        ))
+
+    if acwr is not None:
+        if acwr > ACWR_HIGH:
+            sev, act = "kırmızı", "akut yük zirvede — rotasyon / erken çıkış planla"
+        elif acwr > ACWR_SWEET_MAX:
+            sev, act = "sarı", "yük artışı dik — antrenman hacmini düşür"
+        elif acwr < ACWR_SWEET_MIN:
+            sev, act = "sarı", "düşük yük — maç temposuna kademeli hazırla"
+        else:
+            sev, act = "yeşil", "yük dengeli"
+        flags.append(ReadinessFlag(
+            metric="ACWR", engine="acwr_band", severity=sev,
+            value=f"{round(acwr, 2)}",
+            threshold=f"tatlı bölge {ACWR_SWEET_MIN:g}–{ACWR_SWEET_MAX:g} · >{ACWR_HIGH:g} kırmızı",
+            action=act,
+        ))
+
+    flags.sort(key=lambda f: _LIGHT_RANK.get(f.severity, 9))
+    red = sum(1 for f in flags if f.severity == "kırmızı")
+    yellow = sum(1 for f in flags if f.severity == "sarı")
+
+    if not flags:
+        light = "sarı"
+        verdict = READINESS_VERDICT[light]
+        summary = "Değerlendirilecek test verisi yok — karar verilemez."
+    else:
+        light = "kırmızı" if red else "sarı" if yellow else "yeşil"
+        verdict = READINESS_VERDICT[light]
+        if light == "kırmızı":
+            top = ", ".join(f.metric for f in flags if f.severity == "kırmızı")
+            summary = f"{red} kırmızı bayrak ({top}) — sahaya çıkmasın."
+        elif light == "sarı":
+            top = ", ".join(f.metric for f in flags if f.severity == "sarı")
+            summary = f"{yellow} sarı bayrak ({top}) — oynayabilir, yük yönetilmeli."
+        else:
+            summary = f"{len(flags)} metrik kontrol edildi, hepsi yeşil — tam maça hazır."
+
+    return ReadinessDecision(
+        light=light, verdict=verdict, red_count=red, yellow_count=yellow,
+        checked=len(flags), flags=tuple(flags), summary=summary,
+    )
