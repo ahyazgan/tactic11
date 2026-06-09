@@ -254,7 +254,7 @@ export default function PhysicalPanelPage() {
           display: "flex", alignItems: "center", gap: 6,
           background: "var(--besiktas)", color: "#fff",
           padding: "8px 16px", borderRadius: 9, fontSize: 13,
-          fontWeight: 800, textDecoration: "none", fontFamily: "'Archivo'",
+          fontWeight: 800, textDecoration: "none", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
           letterSpacing: "0.2px", marginLeft: "auto",
         }}>
           ▶ Saha Testi Başlat
@@ -429,7 +429,7 @@ export default function PhysicalPanelPage() {
                       ["Ortalama", protoInfo.norm_average, "var(--dim)"],
                     ] as [string, number, string][]).map(([label, v, col]) => (
                       <span key={label} style={{
-                        fontFamily: "'JetBrains Mono'", fontSize: 12,
+                        fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: 12,
                         background: "var(--panel)", border: "1px solid var(--line)",
                         borderRadius: 7, padding: "5px 10px",
                       }}>
@@ -465,7 +465,7 @@ export default function PhysicalPanelPage() {
                       display: "flex", alignItems: "center", justifyContent: "space-between",
                       marginBottom: 4,
                     }}>
-                      <span style={{ fontSize: 12, color: "var(--muted)", fontFamily: "'Archivo Narrow'", textTransform: "uppercase", letterSpacing: 1 }}>
+                      <span style={{ fontSize: 12, color: "var(--muted)", fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif", textTransform: "uppercase", letterSpacing: 1 }}>
                         {protoName(proto)} trendi
                       </span>
                       <span style={{ fontSize: 12, fontWeight: 700, color: dirColor(protoDir) }}>
@@ -512,7 +512,9 @@ export default function PhysicalPanelPage() {
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Narrow:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        /* Fontlar uygulama genelindeki stack'ten gelir (Inter / JetBrains Mono →
+           sistem fallback). Runtime Google Fonts @import KALDIRILDI: kullanıcı
+           ortamında CDN engelli (offline/firewall/TR), tek kalan CDN bağımlılığıydı. */
         @property --p { syntax:'<number>'; inherits:false; initial-value:0 }
         @keyframes pp-slidein { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:none} }
 
@@ -520,7 +522,7 @@ export default function PhysicalPanelPage() {
           --bg:#0a0a0c; --panel:#131318; --panel2:#1a1a21; --line:#26262f;
           --ink:#f4f4f6; --muted:#8a8a96; --dim:#5a5a66; --accent:#ffffff;
           --low:#3ddc84; --mid:#ffd23f; --high:#ff8c42; --crit:#ff4d4d; --besiktas:#e30613;
-          background:var(--bg); color:var(--ink); font-family:'Archivo',sans-serif;
+          background:var(--bg); color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, sans-serif;
           min-height:100vh; margin:0;
           background-image:
             radial-gradient(circle at 15% 10%, rgba(255,255,255,0.03), transparent 40%),
@@ -563,7 +565,7 @@ export default function PhysicalPanelPage() {
 
         .pp-root .roster{border-right:1px solid var(--line);padding:24px 0;background:var(--panel)}
         .pp-root .roster .lbl{
-          font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:2px;
+          font-family:Inter, ui-sans-serif, system-ui, sans-serif;text-transform:uppercase;letter-spacing:2px;
           font-size:11px;color:var(--dim);padding:0 24px;margin-bottom:14px;font-weight:600
         }
         .pp-root .player{
@@ -572,15 +574,15 @@ export default function PhysicalPanelPage() {
         }
         .pp-root .player:hover{background:var(--panel2)}
         .pp-root .player.active{background:var(--panel2);border-left-color:var(--besiktas)}
-        .pp-root .player .num{font-family:'JetBrains Mono';font-size:13px;color:var(--dim);width:24px;font-weight:700}
+        .pp-root .player .num{font-family:'JetBrains Mono', ui-monospace, monospace;font-size:13px;color:var(--dim);width:24px;font-weight:700}
         .pp-root .player .topline{display:contents}
         .pp-root .player .pinfo{flex:1}
         .pp-root .player .pname{font-size:14px;font-weight:600;letter-spacing:-0.2px}
-        .pp-root .player .ppos{font-size:11px;color:var(--muted);font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:1px}
+        .pp-root .player .ppos{font-size:11px;color:var(--muted);font-family:Inter, ui-sans-serif, system-ui, sans-serif;text-transform:uppercase;letter-spacing:1px}
         .pp-root .player .pdot{width:8px;height:8px;border-radius:50%}
 
         .pp-root .main{padding:30px 36px;overflow-y:auto}
-        .pp-root .crumb{font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:2px;font-size:11px;color:var(--dim);margin-bottom:6px}
+        .pp-root .crumb{font-family:Inter, ui-sans-serif, system-ui, sans-serif;text-transform:uppercase;letter-spacing:2px;font-size:11px;color:var(--dim);margin-bottom:6px}
         .pp-root .phead{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:26px}
         .pp-root .phead h2{font-size:34px;font-weight:900;letter-spacing:-1px}
         .pp-root .phead .meta{color:var(--muted);font-size:13px;margin-top:4px}
@@ -590,7 +592,7 @@ export default function PhysicalPanelPage() {
 
         .pp-root .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px}
         .pp-root .card .ctitle{
-          font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:2px;
+          font-family:Inter, ui-sans-serif, system-ui, sans-serif;text-transform:uppercase;letter-spacing:2px;
           font-size:12px;color:var(--muted);margin-bottom:18px;font-weight:600;
           display:flex;align-items:center;gap:8px
         }
@@ -605,12 +607,12 @@ export default function PhysicalPanelPage() {
         }
         .pp-root .ring::before{content:'';position:absolute;inset:11px;border-radius:50%;background:var(--panel)}
         .pp-root .ring .val{position:relative;text-align:center}
-        .pp-root .ring .val .num{font-size:32px;font-weight:900;font-family:'JetBrains Mono';line-height:1}
-        .pp-root .ring .val .of{font-size:11px;color:var(--dim);font-family:'JetBrains Mono'}
+        .pp-root .ring .val .num{font-size:32px;font-weight:900;font-family:'JetBrains Mono', ui-monospace, monospace;line-height:1}
+        .pp-root .ring .val .of{font-size:11px;color:var(--dim);font-family:'JetBrains Mono', ui-monospace, monospace}
         .pp-root .risklabel{flex:1}
         .pp-root .risklabel .tag{
           display:inline-block;padding:6px 15px;border-radius:8px;font-size:13px;font-weight:800;
-          letter-spacing:1px;text-transform:uppercase;font-family:'Archivo Narrow';margin-bottom:10px
+          letter-spacing:1px;text-transform:uppercase;font-family:Inter, ui-sans-serif, system-ui, sans-serif;margin-bottom:10px
         }
         .pp-root .risklabel .summary{font-size:14.5px;line-height:1.55;color:var(--ink)}
 
@@ -621,9 +623,9 @@ export default function PhysicalPanelPage() {
         }
         .pp-root .flag:last-child{border:0}
         .pp-root .flag .ficon{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-        .pp-root .flag .fname{font-family:'JetBrains Mono';font-size:12px;color:var(--muted);width:120px;flex-shrink:0}
+        .pp-root .flag .fname{font-family:'JetBrains Mono', ui-monospace, monospace;font-size:12px;color:var(--muted);width:120px;flex-shrink:0}
         .pp-root .flag .fmsg{flex:1;color:var(--ink)}
-        .pp-root .flag .fval{font-family:'JetBrains Mono';font-weight:700;font-size:13px}
+        .pp-root .flag .fval{font-family:'JetBrains Mono', ui-monospace, monospace;font-weight:700;font-size:13px}
 
         .pp-root .recs li{
           list-style:none;padding:11px 0 11px 26px;position:relative;font-size:13.5px;
@@ -635,18 +637,18 @@ export default function PhysicalPanelPage() {
         .pp-root .row{display:flex;gap:12px;margin-bottom:13px}
         .pp-root .field{flex:1}
         .pp-root .field label{
-          display:block;font-family:'Archivo Narrow';text-transform:uppercase;
+          display:block;font-family:Inter, ui-sans-serif, system-ui, sans-serif;text-transform:uppercase;
           letter-spacing:1.5px;font-size:10.5px;color:var(--dim);margin-bottom:6px;font-weight:600
         }
         .pp-root .field select,.pp-root .field input{
           width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
-          padding:11px 13px;border-radius:9px;font-size:14px;font-family:'Archivo';outline:none;transition:border .15s
+          padding:11px 13px;border-radius:9px;font-size:14px;font-family:Inter, ui-sans-serif, system-ui, sans-serif;outline:none;transition:border .15s
         }
         .pp-root .field select:focus,.pp-root .field input:focus{border-color:var(--muted)}
         .pp-root .field input::placeholder{color:var(--dim)}
         .pp-root .addbtn{
           width:100%;margin-top:6px;background:var(--ink);color:#0a0a0c;border:0;
-          padding:13px;border-radius:10px;font-size:14px;font-weight:800;font-family:'Archivo';
+          padding:13px;border-radius:10px;font-size:14px;font-weight:800;font-family:Inter, ui-sans-serif, system-ui, sans-serif;
           cursor:pointer;letter-spacing:0.3px;transition:transform .1s,box-shadow .2s
         }
         .pp-root .addbtn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,255,255,0.12)}
@@ -659,9 +661,9 @@ export default function PhysicalPanelPage() {
           padding:9px 0;font-size:13px;border-bottom:1px solid rgba(38,38,47,0.5);
           animation:pp-slidein .35s ease
         }
-        .pp-root .testrow .tn{font-family:'Archivo Narrow';text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;font-size:12px}
-        .pp-root .testrow .tv{font-family:'JetBrains Mono';font-weight:700;text-align:right}
-        .pp-root .testrow .td{font-family:'JetBrains Mono';color:var(--dim);font-size:11px;text-align:right}
+        .pp-root .testrow .tn{font-family:Inter, ui-sans-serif, system-ui, sans-serif;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;font-size:12px}
+        .pp-root .testrow .tv{font-family:'JetBrains Mono', ui-monospace, monospace;font-weight:700;text-align:right}
+        .pp-root .testrow .td{font-family:'JetBrains Mono', ui-monospace, monospace;color:var(--dim);font-size:11px;text-align:right}
 
         .pp-root .toast{
           position:fixed;bottom:28px;right:28px;background:var(--low);color:#04140a;
@@ -670,15 +672,15 @@ export default function PhysicalPanelPage() {
           box-shadow:0 12px 40px rgba(0,0,0,.5);z-index:50;display:flex;align-items:center;gap:10px
         }
         .pp-root .toast.show{transform:translateY(0)}
-        .pp-root .toast .code{font-family:'JetBrains Mono';background:rgba(0,0,0,.15);padding:2px 8px;border-radius:6px;font-size:12px}
+        .pp-root .toast .code{font-family:'JetBrains Mono', ui-monospace, monospace;background:rgba(0,0,0,.15);padding:2px 8px;border-radius:6px;font-size:12px}
 
         .pp-root .endpoint{
-          font-family:'JetBrains Mono';font-size:11px;color:var(--dim);
+          font-family:'JetBrains Mono', ui-monospace, monospace;font-size:11px;color:var(--dim);
           background:var(--panel2);padding:4px 10px;border-radius:6px;border:1px solid var(--line)
         }
         .pp-root .pdfbtn{
           background:var(--besiktas);color:#fff;border:0;padding:9px 16px;border-radius:9px;
-          font-weight:800;font-size:13px;font-family:'Archivo';cursor:pointer;
+          font-weight:800;font-size:13px;font-family:Inter, ui-sans-serif, system-ui, sans-serif;cursor:pointer;
           letter-spacing:0.2px;transition:filter .15s
         }
         .pp-root .pdfbtn:hover{filter:brightness(1.1)}
