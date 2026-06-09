@@ -205,7 +205,16 @@ function Cell({ metric, value, unit }: { metric: "hrv" | "sprint" | "cmj" | "acw
   );
 }
 
+type Tab = "karar" | "giris" | "analiz";
+const tabStyle = (active: boolean): React.CSSProperties => ({
+  padding: "9px 16px", fontSize: 13.5, fontWeight: 700, cursor: "pointer",
+  fontFamily: "inherit", background: "transparent", border: 0,
+  borderBottom: active ? "2px solid var(--besiktas)" : "2px solid transparent",
+  color: active ? "var(--ink)" : "var(--muted)",
+});
+
 export default function FizikselDurumPage() {
+  const [tab, setTab] = React.useState<Tab>("karar");
   // Test Hesaplayıcı'da kaydedilen türetilmiş metrikler (localStorage, client-only).
   const [derived, setDerived] = React.useState<SavedRecord[]>([]);
   const [loads, setLoads] = React.useState<LoadSession[]>([]);
@@ -294,99 +303,120 @@ export default function FizikselDurumPage() {
         <div className="kpi"><div className="kl">En Hızlı</div><div className="kn" style={{ fontSize: 18 }}>{FASTEST.name.split(" ")[0]}</div><div className="kd">10m {FASTEST.sprint.toFixed(2)}sn</div></div>
       </div>
 
-      <div className="st" style={{ marginTop: 0 }}><h2>Hazırlık Kararı</h2><span className="ep">karar verici · {cantPlay} çıkamaz · {monitor} izle · {enteredCount > 0 ? `${enteredCount} girilen veriden` : "demo profili"} · satıra tıkla → gerekçe</span></div>
-      <ReadinessBoard rows={readinessRows} />
-
-      <LoadEntry onChanged={() => { setLoads(loadSessions()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
-
-      <GpsImport onChanged={() => { setLoads(loadSessions()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
-
-      <WellnessEntry onChanged={() => { setWellness(loadWellness()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
-
-      <div className="st"><h2>Takım HRV Trendi</h2><span className="ep">son 14 gün · maç sonrası dip</span></div>
-      <div className="rc" style={{ margin: "0 0 16px" }}>
-        <HrvTrend data={HRV_TREND} />
-        <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8 }}>
-          Maç (5. gün) sonrası HRV düştü, toparlanma günleriyle yükseldi. Düşük HRV = yetersiz toparlanma / yüksek stres göstergesi.
-        </div>
+      {/* Sekmeler — sayfayı 3 göreve böl: Karar / Veri Girişi / Analiz */}
+      <div style={{ display: "flex", gap: 4, margin: "2px 0 16px", borderBottom: "1px solid var(--line)" }}>
+        <button type="button" onClick={() => setTab("karar")} style={tabStyle(tab === "karar")}>
+          Karar{cantPlay > 0 ? ` · ${cantPlay}🔴` : ""}
+        </button>
+        <button type="button" onClick={() => setTab("giris")} style={tabStyle(tab === "giris")}>Veri Girişi</button>
+        <button type="button" onClick={() => setTab("analiz")} style={tabStyle(tab === "analiz")}>Analiz</button>
       </div>
 
-      <div className="st"><h2>Kadro Isı Haritası</h2><span className="ep">yeşil iyi · sarı izle · kırmızı risk</span></div>
-      <div className="tbl">
-        <table>
-          <thead><tr>
-            <th className="c">#</th><th>Oyuncu</th><th>Mevki</th>
-            <th className="c">Hazırlık</th><th className="c">HRV</th><th className="c">Sprint 10m</th>
-            <th className="c">CMJ</th><th className="c">ACWR</th><th className="c">Yük</th>
-          </tr></thead>
-          <tbody>
-            {STATUS.map((s) => {
-              const m = BAND_META[s.band];
-              return (
-                <tr key={s.shirt}>
-                  <td className="pnum c">{s.shirt}</td>
-                  <td><span className="nm">{s.name}</span></td>
-                  <td style={{ color: "var(--muted)" }}>{s.pos}</td>
-                  <td className="c">
-                    <span className="risk" style={{ background: m.bg, color: m.v }}>
-                      <span className="rd" style={{ background: m.v }} />{s.band}
-                    </span>
-                  </td>
-                  <Cell metric="hrv" value={s.hrv} />
-                  <Cell metric="sprint" value={s.sprint} />
-                  <Cell metric="cmj" value={s.cmj} />
-                  <Cell metric="acwr" value={s.acwr} />
-                  <Cell metric="load" value={s.load} />
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8 }}>
-        HRV ms · Sprint 10m sn (düşük iyi) · CMJ cm · ACWR akut/kronik · Yük haftalık iç yük (0–100). Hücre rengi metriğin yönüne göre.
-      </div>
-
-      <SquadCompare />
-
-      <CsvImport onImported={() => { setDerived(loadDerivedRecords()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
-
-      <div className="st"><h2>Test Hesaplayıcı Kayıtları</h2><span className="ep">{derived.length} kayıt · son girilenler</span></div>
-      {derived.length === 0 ? (
-        <div className="rc" style={{ margin: 0 }}>
-          <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.5 }}>
-            Henüz türetilmiş test kaydı yok. <Link href="/physical-tests/derive" style={{ color: "var(--accent)", textDecoration: "none" }}>Test Hesaplayıcı</Link>'da
-            FI / RSI / H:Q gibi bir metriği hesaplayıp “Kaydet”e bastığında burada listelenir.
-          </div>
-        </div>
-      ) : (
-        <div className="tbl">
-          <table>
-            <thead><tr>
-              <th>Oyuncu</th><th>Metrik</th><th className="r">Değer</th>
-              <th>Özet</th><th className="c">Tarih</th>
-            </tr></thead>
-            <tbody>
-              {[...derived].sort((a, b) => b.id - a.id).slice(0, 12).map((r) => (
-                <tr key={r.id}>
-                  <td><span className="nm">{r.player_name}</span></td>
-                  <td style={{ color: "var(--muted)" }}>{PROTO_NAME[r.protocol] ?? r.protocol}</td>
-                  <td className="r" style={{ fontFamily: "JetBrains Mono", fontWeight: 700 }}>
-                    {r.value}{PROTO_UNIT[r.protocol] ? ` ${PROTO_UNIT[r.protocol]}` : ""}
-                  </td>
-                  <td style={{ color: "var(--muted)", fontSize: 12 }}>{r.label}</td>
-                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{r.test_date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {tab === "karar" && (
+        <>
+          <div className="st" style={{ marginTop: 0 }}><h2>Hazırlık Kararı</h2><span className="ep">karar verici · {cantPlay} çıkamaz · {monitor} izle · {enteredCount > 0 ? `${enteredCount} girilen veriden` : "demo profili"} · satıra tıkla → gerekçe</span></div>
+          <ReadinessBoard rows={readinessRows} />
+        </>
       )}
-      <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
-        <i className="ti ti-calculator" />
-        Bu kayıtlar Test Hesaplayıcı'dan gelir (demo: tarayıcıda saklanır).
-        <Link href="/physical-tests/derive" style={{ marginLeft: "auto", color: "var(--accent)", textDecoration: "none" }}>Test Hesaplayıcı →</Link>
-      </div>
+
+      {tab === "giris" && (
+        <>
+          <LoadEntry onChanged={() => { setLoads(loadSessions()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
+
+          <GpsImport onChanged={() => { setLoads(loadSessions()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
+
+          <WellnessEntry onChanged={() => { setWellness(loadWellness()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
+
+          <CsvImport onImported={() => { setDerived(loadDerivedRecords()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
+
+          <div className="st"><h2>Test Hesaplayıcı Kayıtları</h2><span className="ep">{derived.length} kayıt · son girilenler</span></div>
+          {derived.length === 0 ? (
+            <div className="rc" style={{ margin: 0 }}>
+              <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.5 }}>
+                Henüz türetilmiş test kaydı yok. <Link href="/physical-tests/derive" style={{ color: "var(--accent)", textDecoration: "none" }}>Test Hesaplayıcı</Link>'da
+                FI / RSI / H:Q gibi bir metriği hesaplayıp “Kaydet”e bastığında burada listelenir.
+              </div>
+            </div>
+          ) : (
+            <div className="tbl">
+              <table>
+                <thead><tr>
+                  <th>Oyuncu</th><th>Metrik</th><th className="r">Değer</th>
+                  <th>Özet</th><th className="c">Tarih</th>
+                </tr></thead>
+                <tbody>
+                  {[...derived].sort((a, b) => b.id - a.id).slice(0, 12).map((r) => (
+                    <tr key={r.id}>
+                      <td><span className="nm">{r.player_name}</span></td>
+                      <td style={{ color: "var(--muted)" }}>{PROTO_NAME[r.protocol] ?? r.protocol}</td>
+                      <td className="r" style={{ fontFamily: "JetBrains Mono", fontWeight: 700 }}>
+                        {r.value}{PROTO_UNIT[r.protocol] ? ` ${PROTO_UNIT[r.protocol]}` : ""}
+                      </td>
+                      <td style={{ color: "var(--muted)", fontSize: 12 }}>{r.label}</td>
+                      <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{r.test_date}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
+            <i className="ti ti-calculator" />
+            Bu kayıtlar Test Hesaplayıcı'dan gelir (demo: tarayıcıda saklanır).
+            <Link href="/physical-tests/derive" style={{ marginLeft: "auto", color: "var(--accent)", textDecoration: "none" }}>Test Hesaplayıcı →</Link>
+          </div>
+        </>
+      )}
+
+      {tab === "analiz" && (
+        <>
+          <div className="st" style={{ marginTop: 0 }}><h2>Takım HRV Trendi</h2><span className="ep">son 14 gün · maç sonrası dip</span></div>
+          <div className="rc" style={{ margin: "0 0 16px" }}>
+            <HrvTrend data={HRV_TREND} />
+            <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 8 }}>
+              Maç (5. gün) sonrası HRV düştü, toparlanma günleriyle yükseldi. Düşük HRV = yetersiz toparlanma / yüksek stres göstergesi.
+            </div>
+          </div>
+
+          <div className="st"><h2>Kadro Isı Haritası</h2><span className="ep">yeşil iyi · sarı izle · kırmızı risk</span></div>
+          <div className="tbl">
+            <table>
+              <thead><tr>
+                <th className="c">#</th><th>Oyuncu</th><th>Mevki</th>
+                <th className="c">Hazırlık</th><th className="c">HRV</th><th className="c">Sprint 10m</th>
+                <th className="c">CMJ</th><th className="c">ACWR</th><th className="c">Yük</th>
+              </tr></thead>
+              <tbody>
+                {STATUS.map((s) => {
+                  const m = BAND_META[s.band];
+                  return (
+                    <tr key={s.shirt}>
+                      <td className="pnum c">{s.shirt}</td>
+                      <td><span className="nm">{s.name}</span></td>
+                      <td style={{ color: "var(--muted)" }}>{s.pos}</td>
+                      <td className="c">
+                        <span className="risk" style={{ background: m.bg, color: m.v }}>
+                          <span className="rd" style={{ background: m.v }} />{s.band}
+                        </span>
+                      </td>
+                      <Cell metric="hrv" value={s.hrv} />
+                      <Cell metric="sprint" value={s.sprint} />
+                      <Cell metric="cmj" value={s.cmj} />
+                      <Cell metric="acwr" value={s.acwr} />
+                      <Cell metric="load" value={s.load} />
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8 }}>
+            HRV ms · Sprint 10m sn (düşük iyi) · CMJ cm · ACWR akut/kronik · Yük haftalık iç yük (0–100). Hücre rengi metriğin yönüne göre.
+          </div>
+
+          <SquadCompare />
+        </>
+      )}
     </ConsoleShell>
   );
 }
