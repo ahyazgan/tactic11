@@ -961,3 +961,41 @@ def test_session_load_gps_player_load_passthrough(client):
     })
     assert r.status_code == 201, r.text
     assert r.json()["load_au"] == 650.0
+
+
+# --------------------------------------------------------------------------- #
+# Wellness (öznel günlük hazırlık) + squad-readiness'e beslenmesi
+# --------------------------------------------------------------------------- #
+
+
+def test_wellness_create_computes_readiness(client):
+    c, _ = client
+    r = c.post("/physical-tests/wellness", json={
+        "player_id": "885", "player_name": "Wellness Test", "entry_date": "2026-06-08",
+        "sleep_quality": 7, "fatigue": 7, "muscle_soreness": 7, "stress": 6, "mood": 7,
+    })
+    assert r.status_code == 201, r.text
+    assert r.json()["readiness"] >= 0.9   # 34/35
+
+
+def test_wellness_rejects_out_of_range(client):
+    c, _ = client
+    r = c.post("/physical-tests/wellness", json={
+        "player_id": "885", "player_name": "X", "entry_date": "2026-06-08",
+        "sleep_quality": 9, "fatigue": 7, "muscle_soreness": 7, "stress": 6, "mood": 7,
+    })
+    assert r.status_code == 422
+
+
+def test_squad_readiness_includes_wellness_red(client):
+    c, _ = client
+    # Düşük wellness → readiness ~0.31 → dikkat → kırmızı bayrak
+    c.post("/physical-tests/wellness", json={
+        "player_id": "886", "player_name": "Düşük Wellness", "entry_date": "2026-06-08",
+        "sleep_quality": 2, "fatigue": 2, "muscle_soreness": 2, "stress": 3, "mood": 2,
+    })
+    body = c.get("/physical-tests/squad-readiness").json()
+    row = next((x for x in body if x["player_id"] == "886"), None)
+    assert row is not None
+    assert any(f["metric"] == "Wellness" for f in row["decision"]["flags"])
+    assert row["decision"]["light"] == "kırmızı"

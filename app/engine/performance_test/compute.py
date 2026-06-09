@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 
 from app.engine.anomaly import detect_anomalies
 from app.engine.development_curve import development_curve
+from app.engine.wellness import WellnessInput, compute_wellness
 
 ENGINE_NAME = "engine.performance_test"
 ENGINE_VERSION = "1"
@@ -940,6 +941,7 @@ def assess_readiness(
     adductor: tuple[float, float] | None = None,         # (current, previous)
     cmj: tuple[float, list[float]] | None = None,        # (current, baseline_values)
     acwr: float | None = None,                           # akut:kronik yük
+    wellness: tuple[int, int, int, int, int] | None = None,  # (uyku, yorgunluk, ağrı, stres, ruh hali) 1-7
 ) -> ReadinessDecision:
     """Türetilmiş test metriklerini tek hazırlık kararına sentezler.
 
@@ -1047,6 +1049,19 @@ def assess_readiness(
             value=f"{round(acwr, 2)}",
             threshold=f"tatlı bölge {ACWR_SWEET_MIN:g}–{ACWR_SWEET_MAX:g} · >{ACWR_HIGH:g} kırmızı",
             action=act,
+        ))
+
+    if wellness is not None:
+        # Öznel günlük hazırlık (uyku/yorgunluk/ağrı/stres/ruh hali) → readiness.
+        w = compute_wellness(WellnessInput(*wellness))
+        sev = {"hazır": "yeşil", "izle": "sarı", "dikkat": "kırmızı"}[w.zone]
+        wflags = "; ".join(w.flags) if w.flags else ""
+        flags.append(ReadinessFlag(
+            metric="Wellness", engine="compute_wellness", severity=sev,
+            value=f"hazırlık %{round(w.readiness * 100)} ({w.zone})",
+            threshold="≥%70 hazır · %55-70 izle · <%55 dikkat",
+            action=("öznel hazırlık iyi" if sev == "yeşil"
+                    else (wflags or "öznel hazırlık düşük") + " — yükü/kadroyu değerlendir"),
         ))
 
     flags.sort(key=lambda f: _LIGHT_RANK.get(f.severity, 9))

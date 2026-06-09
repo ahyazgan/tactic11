@@ -10,6 +10,9 @@
 import { demoSquad, type SquadPlayer } from "@/lib/demo-data";
 import type { SavedRecord } from "@/lib/derived-tests";
 import { acwrForPlayer, type LoadSession } from "@/lib/load";
+import {
+  latestWellnessFor, wellnessReadiness, wellnessZone, type WellnessEntry,
+} from "@/lib/wellness";
 
 export type Light = "kırmızı" | "sarı" | "yeşil";
 
@@ -64,6 +67,7 @@ export interface ReadinessInput {
   adductor?: { current: number; previous: number };
   cmj?: { current: number; baseline: number[] };
   acwr?: number;
+  wellness?: { sleep_quality: number; fatigue: number; muscle_soreness: number; stress: number; mood: number };
 }
 
 /** assess_readiness aynası — verilen her metrik flag'lenir, en kötü severity karar. */
@@ -176,6 +180,18 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       value: `${Math.round(input.acwr * 100) / 100}`,
       threshold: `tatlı bölge ${fmt(ACWR_MIN)}–${fmt(ACWR_MAX)} · >${fmt(ACWR_HIGH)} kırmızı`,
       action: act,
+    });
+  }
+
+  if (input.wellness) {
+    const readiness = wellnessReadiness(input.wellness);
+    const zone = wellnessZone(readiness);
+    const sev: Light = zone === "hazır" ? "yeşil" : zone === "izle" ? "sarı" : "kırmızı";
+    flags.push({
+      metric: "Wellness", engine: "compute_wellness", severity: sev,
+      value: `hazırlık %${Math.round(readiness * 100)} (${zone})`,
+      threshold: "≥%70 hazır · %55-70 izle · <%55 dikkat",
+      action: sev === "yeşil" ? "öznel hazırlık iyi" : "uyku/yorgunluk/ağrı düşük — yükü/kadroyu değerlendir",
     });
   }
 
@@ -308,16 +324,23 @@ export interface SquadReadinessRow {
 
 /** Tüm kadro: girilen test + yük (ACWR) varsa onlardan, yoksa demo profili. Kırmızı önce. */
 export function squadReadiness(
-  records: SavedRecord[] = [], loads: LoadSession[] = [],
+  records: SavedRecord[] = [], loads: LoadSession[] = [], wellness: WellnessEntry[] = [],
 ): SquadReadinessRow[] {
   return demoSquad
     .map((player): SquadReadinessRow => {
       const recInput = inputFromRecords(
         records.filter((r) => String(r.player_id) === String(player.player_id)));
       const acwr = acwrForPlayer(player.player_id, loads);
-      if (recInput || acwr != null) {
+      const we = latestWellnessFor(player.player_id, wellness);
+      if (recInput || acwr != null || we) {
         const input: ReadinessInput = { ...(recInput ?? {}) };
         if (acwr != null) input.acwr = acwr;
+        if (we) {
+          input.wellness = {
+            sleep_quality: we.sleep_quality, fatigue: we.fatigue,
+            muscle_soreness: we.muscle_soreness, stress: we.stress, mood: we.mood,
+          };
+        }
         return { player, decision: assessReadiness(input), source: "entered" };
       }
       return { player, decision: assessReadiness(demoInputFor(player)), source: "demo" };

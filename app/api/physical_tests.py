@@ -35,7 +35,9 @@ from app.db import models
 from app.db.physical_test import PhysicalTest, TestProtocol
 from app.db.session import get_session
 from app.db.session_load import SessionLoad
+from app.db.wellness_entry import WellnessEntry
 from app.engine.gps_load import GpsSession, compute_gps_load, srpe_session_load
+from app.engine.wellness import WellnessInput, compute_wellness
 from app.engine.performance_test import compute as perf
 from app.engine.workload import compute_workload
 from app.engine.physical.load_risk import (
@@ -858,6 +860,17 @@ def squad_readiness(
         day = daily_by_player.setdefault(lr.player_id, {})
         day[lr.session_date] = day.get(lr.session_date, 0.0) + lr.load_au
 
+    # Wellness kayıtları → oyuncu başına EN SON anket (öznel readiness).
+    wellness_rows = list(session.execute(
+        select(WellnessEntry)
+        .where(WellnessEntry.tenant_id == user.tenant_id)
+        .order_by(WellnessEntry.entry_date.desc(), WellnessEntry.id.desc())
+    ).scalars())
+    latest_wellness: dict[str, WellnessEntry] = {}
+    for wr in wellness_rows:
+        names.setdefault(wr.player_id, wr.player_name)
+        latest_wellness.setdefault(wr.player_id, wr)   # desc → ilk = en son
+
     def _acwr_for(pid: str) -> float | None:
         days = daily_by_player.get(pid)
         if not days:
@@ -866,11 +879,14 @@ def squad_readiness(
         return compute_workload(series).acwr
 
     out: list[SquadReadinessRowOut] = []
-    for pid in set(by_player) | set(daily_by_player):
+    for pid in set(by_player) | set(daily_by_player) | set(latest_wellness):
         kw = _readiness_kwargs_from_latest(by_player.get(pid, {}))
         acwr = _acwr_for(pid)
         if acwr is not None:
             kw["acwr"] = acwr
+        we = latest_wellness.get(pid)
+        if we is not None:
+            kw["wellness"] = (we.sleep_quality, we.fatigue, we.muscle_soreness, we.stress, we.mood)
         decision = perf.assess_readiness(**kw)
         out.append(SquadReadinessRowOut(
             player_id=pid, player_name=names.get(pid, pid),
@@ -967,6 +983,66 @@ def create_session_load(
     _log_access(
         session, player_id=record.player_id, action="create",
         endpoint="/physical-tests/session-load", user_id=user.id,
+    )
+    return record
+
+
+class WellnessIn(BaseModel):
+    player_id: str
+    player_name: str
+    entry_date: date
+    sleep_quality: int = Field(..., ge=1, le=7)
+    fatigue: int = Field(..., ge=1, le=7, description="7 = dinç")
+    muscle_soreness: int = Field(..., ge=1, le=7, description="7 = ağrısız")
+    stress: int = Field(..., ge=1, le=7, description="7 = sakin")
+    mood: int = Field(..., ge=1, le=7)
+
+
+class WellnessOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    player_id: str
+    player_name: str
+    entry_date: date
+    sleep_quality: int
+    fatigue: int
+    muscle_soreness: int
+    stress: int
+    mood: int
+    readiness: float
+
+
+@router.post("/wellness", response_model=WellnessOut, status_code=status.HTTP_201_CREATED)
+def create_wellness(
+    payload: WellnessIn,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> WellnessEntry:
+    """Öznel günlük hazırlık anketi (5 madde 1-7) → readiness; Hazırlık Kararı'na işlenir."""
+    report = compute_wellness(WellnessInput(
+        sleep_quality=payload.sleep_quality, fatigue=payload.fatigue,
+        muscle_soreness=payload.muscle_soreness, stress=payload.stress, mood=payload.mood,
+    ))
+    record = WellnessEntry(
+        tenant_id=user.tenant_id,
+        player_id=payload.player_id,
+        player_name=payload.player_name,
+        entry_date=payload.entry_date,
+        sleep_quality=payload.sleep_quality,
+        fatigue=payload.fatigue,
+        muscle_soreness=payload.muscle_soreness,
+        stress=payload.stress,
+        mood=payload.mood,
+        readiness=report.readiness,
+        recorded_by=user.email,
+        created_at=datetime.now(UTC),
+    )
+    session.add(record)
+    session.commit()
+    session.refresh(record)
+    _log_access(
+        session, player_id=record.player_id, action="create",
+        endpoint="/physical-tests/wellness", user_id=user.id,
     )
     return record
 

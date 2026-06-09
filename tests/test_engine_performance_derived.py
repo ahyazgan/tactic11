@@ -477,3 +477,15 @@ def test_readiness_acwr_above_high_is_red():
 def test_readiness_invalid_input_raises():
     with pytest.raises(ValueError):
         assess_readiness(hq=(1.0, 0.0))   # quadriceps 0 → ValueError
+
+
+def test_readiness_wellness_good_is_green():
+    d = assess_readiness(wellness=(7, 7, 7, 6, 7))  # readiness 34/35≈0.97 → hazır
+    assert d.light == "yeşil"
+    assert any(f.metric == "Wellness" and f.severity == "yeşil" for f in d.flags)
+
+
+def test_readiness_wellness_poor_is_red():
+    d = assess_readiness(wellness=(2, 2, 2, 3, 2))  # readiness 11/35≈0.31 → dikkat
+    assert d.light == "kırmızı"
+    assert any(f.metric == "Wellness" and f.severity == "kırmızı" for f in d.flags)
