@@ -81,14 +81,14 @@ interface DemoInjury {
 }
 
 const DEMO_INJURIES: DemoInjury[] = [
-  { player: "Caner Öztürk", shirt: 10, pos: "10 Numara", injury: "Hamstring zorlanması (Grade 1)", region: "Adale", start: "2026-06-06", expected: "2026-06-20", status: "active", progress: 18, load: 24, notes: "Maç-içi arka adale sinyali. MR temiz, düşük dereceli. Tam istirahat 4 gün." },
-  { player: "Onur Kaya", shirt: 3, pos: "Sol Bek", injury: "Aşil tendinopatisi", region: "Eklem", start: "2026-05-28", expected: "2026-06-15", status: "active", progress: 35, load: 41, notes: "Yük yönetimi protokolü. Eksantrik güç çalışması başladı." },
-  { player: "Kerem Aslan", shirt: 4, pos: "Stoper", injury: "Adduktor zorlanması (Grade 2)", region: "Adale", start: "2026-05-22", expected: "2026-06-12", status: "recovering", progress: 64, load: 58, notes: "Saha-içi koşu fazına geçti. Yön değiştirme testleri %80 simetri." },
-  { player: "Eren Acar", shirt: 15, pos: "Stoper", injury: "Diz kapsül zorlanması", region: "Eklem", start: "2026-05-18", expected: "2026-06-14", status: "recovering", progress: 58, load: 52, notes: "Şişlik geriledi. İzokinetik kuvvet farkı %12 (hedef <%10)." },
-  { player: "Selim Korkmaz", shirt: 18, pos: "Sol Kanat", injury: "Bilek burkulması (Grade 1)", region: "Bağ", start: "2026-05-30", expected: "2026-06-10", status: "recovering", progress: 78, load: 71, notes: "Ağrısız tam yük. Proprioseptif denge + sprint hazır." },
-  { player: "Uğur Bal", shirt: 19, pos: "Santrfor", injury: "Kasık ödemi (overload)", region: "Adale", start: "2026-05-25", expected: "2026-06-11", status: "recovering", progress: 70, load: 66, notes: "ACWR yüksekti, yük düşürüldü. Bu hafta takımla kısmi antrenman." },
-  { player: "Volkan Taş", shirt: 16, pos: "Ön Libero", injury: "Baldır zorlanması (Grade 1)", region: "Adale", start: "2026-05-12", expected: "2026-06-02", status: "cleared", progress: 100, load: 92, notes: "Return-to-play tamamlandı. Son maçta 72 dk oynadı, sorun yok." },
-  { player: "Sinan Güneş", shirt: 24, pos: "Sağ Bek", injury: "Ayak bileği kontüzyonu", region: "Diğer", start: "2026-05-08", expected: "2026-05-26", status: "cleared", progress: 100, load: 96, notes: "Tam temizlendi. Kadroya geri döndü, full yük." },
+  { player: "Orkun Kökçü", shirt: 10, pos: "10 Numara", injury: "Hamstring zorlanması (Grade 1)", region: "Adale", start: "2026-06-06", expected: "2026-06-20", status: "active", progress: 18, load: 24, notes: "Maç-içi arka adale sinyali. MR temiz, düşük dereceli. Tam istirahat 4 gün." },
+  { player: "Rıdvan Yılmaz", shirt: 3, pos: "Sol Bek", injury: "Aşil tendinopatisi", region: "Eklem", start: "2026-05-28", expected: "2026-06-15", status: "active", progress: 35, load: 41, notes: "Yük yönetimi protokolü. Eksantrik güç çalışması başladı." },
+  { player: "Tiago Djaló", shirt: 4, pos: "Stoper", injury: "Adduktor zorlanması (Grade 2)", region: "Adale", start: "2026-05-22", expected: "2026-06-12", status: "recovering", progress: 64, load: 58, notes: "Saha-içi koşu fazına geçti. Yön değiştirme testleri %80 simetri." },
+  { player: "Felix Uduokhai", shirt: 15, pos: "Stoper", injury: "Diz kapsül zorlanması", region: "Eklem", start: "2026-05-18", expected: "2026-06-14", status: "recovering", progress: 58, load: 52, notes: "Şişlik geriledi. İzokinetik kuvvet farkı %12 (hedef <%10)." },
+  { player: "Kartal Yılmaz", shirt: 18, pos: "Sol Kanat", injury: "Bilek burkulması (Grade 1)", region: "Bağ", start: "2026-05-30", expected: "2026-06-10", status: "recovering", progress: 78, load: 71, notes: "Ağrısız tam yük. Proprioseptif denge + sprint hazır." },
+  { player: "El Bilal Touré", shirt: 19, pos: "Santrfor", injury: "Kasık ödemi (overload)", region: "Adale", start: "2026-05-25", expected: "2026-06-11", status: "recovering", progress: 70, load: 66, notes: "ACWR yüksekti, yük düşürüldü. Bu hafta takımla kısmi antrenman." },
+  { player: "Kristjan Asllani", shirt: 16, pos: "Ön Libero", injury: "Baldır zorlanması (Grade 1)", region: "Adale", start: "2026-05-12", expected: "2026-06-02", status: "cleared", progress: 100, load: 92, notes: "Return-to-play tamamlandı. Son maçta 72 dk oynadı, sorun yok." },
+  { player: "Taylan Bulut", shirt: 24, pos: "Sağ Bek", injury: "Ayak bileği kontüzyonu", region: "Diğer", start: "2026-05-08", expected: "2026-05-26", status: "cleared", progress: 100, load: 96, notes: "Tam temizlendi. Kadroya geri döndü, full yük." },
 ];
 
 const DEMO_REGION_DIST = [
@@ -101,21 +101,21 @@ const DEMO_REGION_DIST = [
 // Return-to-play takvimi (önümüzdeki günler) — sadece aktif/iyileşen kayıtlar.
 interface RtpRow { player: string; shirt: number; phase: string; eta: string; days: number; conf: number; v: string }
 const DEMO_RTP: RtpRow[] = [
-  { player: "Selim Korkmaz", shirt: 18, phase: "Kadro değerlendirme", eta: "2026-06-10", days: 2, conf: 88, v: "var(--low)" },
-  { player: "Uğur Bal", shirt: 19, phase: "Takımla kısmi antrenman", eta: "2026-06-11", days: 3, conf: 74, v: "var(--mid)" },
-  { player: "Kerem Aslan", shirt: 4, phase: "Saha-içi koşu fazı", eta: "2026-06-12", days: 4, conf: 69, v: "var(--mid)" },
-  { player: "Eren Acar", shirt: 15, phase: "Kuvvet simetri çalışması", eta: "2026-06-14", days: 6, conf: 61, v: "var(--high)" },
-  { player: "Onur Kaya", shirt: 3, phase: "Yük yönetimi (tendinopati)", eta: "2026-06-15", days: 7, conf: 52, v: "var(--high)" },
-  { player: "Caner Öztürk", shirt: 10, phase: "Akut faz — istirahat", eta: "2026-06-20", days: 12, conf: 44, v: "var(--crit)" },
+  { player: "Kartal Yılmaz", shirt: 18, phase: "Kadro değerlendirme", eta: "2026-06-10", days: 2, conf: 88, v: "var(--low)" },
+  { player: "El Bilal Touré", shirt: 19, phase: "Takımla kısmi antrenman", eta: "2026-06-11", days: 3, conf: 74, v: "var(--mid)" },
+  { player: "Tiago Djaló", shirt: 4, phase: "Saha-içi koşu fazı", eta: "2026-06-12", days: 4, conf: 69, v: "var(--mid)" },
+  { player: "Felix Uduokhai", shirt: 15, phase: "Kuvvet simetri çalışması", eta: "2026-06-14", days: 6, conf: 61, v: "var(--high)" },
+  { player: "Rıdvan Yılmaz", shirt: 3, phase: "Yük yönetimi (tendinopati)", eta: "2026-06-15", days: 7, conf: 52, v: "var(--high)" },
+  { player: "Orkun Kökçü", shirt: 10, phase: "Akut faz — istirahat", eta: "2026-06-20", days: 12, conf: 44, v: "var(--crit)" },
 ];
 
 // Yük / re-injury risk uyarıları (sağ kolon).
 interface LoadAlert { player: string; note: string; v: string; tag: string }
 const DEMO_LOAD_ALERTS: LoadAlert[] = [
-  { player: "Caner Öztürk (10)", note: "Tekrar sakatlık riski yüksek — ACWR 1.6, akut faz. Dönüşte dakika sınırı şart.", v: "var(--crit)", tag: "kritik" },
-  { player: "Onur Kaya (3)", note: "Aşil yükü hassas; antrenmanda sıçrama hacmini sınırla.", v: "var(--high)", tag: "yüksek" },
-  { player: "Eren Acar (15)", note: "Kuvvet simetrisi %12 — dönüş öncesi <%10 hedefine indir.", v: "var(--high)", tag: "yüksek" },
-  { player: "Uğur Bal (19)", note: "Kademeli yük artışı iyi gidiyor; bu hafta tam antrenman.", v: "var(--mid)", tag: "izleme" },
+  { player: "Orkun Kökçü (10)", note: "Tekrar sakatlık riski yüksek — ACWR 1.6, akut faz. Dönüşte dakika sınırı şart.", v: "var(--crit)", tag: "kritik" },
+  { player: "Rıdvan Yılmaz (3)", note: "Aşil yükü hassas; antrenmanda sıçrama hacmini sınırla.", v: "var(--high)", tag: "yüksek" },
+  { player: "Felix Uduokhai (15)", note: "Kuvvet simetrisi %12 — dönüş öncesi <%10 hedefine indir.", v: "var(--high)", tag: "yüksek" },
+  { player: "El Bilal Touré (19)", note: "Kademeli yük artışı iyi gidiyor; bu hafta tam antrenman.", v: "var(--mid)", tag: "izleme" },
 ];
 
 function progColor(v: number): string {
@@ -162,7 +162,7 @@ function MedicalDemo() {
 
       <div className="rc">
         <h3>Sıradaki Dönüş <span className="tiny">return-to-play</span></h3>
-        <div className="nm-vs"><span className="t">Selim Korkmaz</span></div>
+        <div className="nm-vs"><span className="t">Kartal Yılmaz</span></div>
         <div className="nm-when">Kadro değerlendirme · 2 gün · Rakip SK maçı</div>
         <div className="probbar">
           <i style={{ width: "88%", background: "var(--low)" }} />
@@ -189,9 +189,9 @@ function MedicalDemo() {
 
       <div className="rc">
         <h3>Görevler <span className="tiny">0/3</span></h3>
-        <div className="task"><span className="cb" /><span className="tt">Caner Öztürk dönüş protokolü onayı</span></div>
-        <div className="task"><span className="cb" /><span className="tt">Selim Korkmaz kadro değerlendirme (RTP)</span></div>
-        <div className="task"><span className="cb" /><span className="tt">Eren Acar izokinetik re-test planı</span></div>
+        <div className="task"><span className="cb" /><span className="tt">Orkun Kökçü dönüş protokolü onayı</span></div>
+        <div className="task"><span className="cb" /><span className="tt">Kartal Yılmaz kadro değerlendirme (RTP)</span></div>
+        <div className="task"><span className="cb" /><span className="tt">Felix Uduokhai izokinetik re-test planı</span></div>
       </div>
     </>
   );

@@ -16,6 +16,7 @@ import useSWR from "swr";
 import { useParams, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../../../_console/shell";
 import { RiskDonut, LegendRow } from "../../../_console/viz";
 
@@ -164,11 +165,17 @@ function LeagueTeamsDemo() {
   // En formda 5 takım (son 5 maçtan puan).
   const inForm = [...teams].sort((a, b) => formPts(b) - formPts(a)).slice(0, 5);
 
-  const shown = teams.filter((t) => {
+  const filtered = teams.filter((t) => {
     if (scope === "top") return t.rank <= 5;
     if (scope === "drop") return t.rank >= 14;
     return true;
   });
+
+  // Sıralama: varsayılan lig sırası (rank artan). Sütun başlığına tıkla → o metrik.
+  const sort = useSort<"rank" | "name" | "played" | "win" | "draw" | "loss" | "diff" | "points">("rank", "asc");
+  const valOf = (t: DemoTeam, k: typeof sort.key) =>
+    k === "diff" ? t.gf - t.ga : k === "points" ? points(t) : t[k];
+  const shown = [...filtered].sort((a, b) => sortCompare(valOf(a, sort.key), valOf(b, sort.key), sort.dir));
 
   const right = (
     <>
@@ -257,17 +264,17 @@ function LeagueTeamsDemo() {
       <div className="tbl">
         <table>
           <thead><tr>
-            <th className="c">#</th>
-            <th>Takım</th>
+            <SortableTh active={sort.key === "rank"} dir={sort.dir} label="#" align="c" onClick={() => sort.onSort("rank")} />
+            <SortableTh active={sort.key === "name"} dir={sort.dir} label="Takım" onClick={() => sort.onSort("name")} />
             <th>Şehir</th>
-            <th className="c">O</th>
-            <th className="c">G</th>
-            <th className="c">B</th>
-            <th className="c">M</th>
+            <SortableTh active={sort.key === "played"} dir={sort.dir} label="O" align="c" onClick={() => sort.onSort("played")} />
+            <SortableTh active={sort.key === "win"} dir={sort.dir} label="G" align="c" onClick={() => sort.onSort("win")} />
+            <SortableTh active={sort.key === "draw"} dir={sort.dir} label="B" align="c" onClick={() => sort.onSort("draw")} />
+            <SortableTh active={sort.key === "loss"} dir={sort.dir} label="M" align="c" onClick={() => sort.onSort("loss")} />
             <th className="c">A-Y</th>
-            <th className="c">Av</th>
+            <SortableTh active={sort.key === "diff"} dir={sort.dir} label="Av" align="c" onClick={() => sort.onSort("diff")} />
             <th className="c">Form</th>
-            <th className="r">P</th>
+            <SortableTh active={sort.key === "points"} dir={sort.dir} label="P" align="r" onClick={() => sort.onSort("points")} />
           </tr></thead>
           <tbody>
             {shown.map((t) => {

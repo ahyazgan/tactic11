@@ -90,7 +90,7 @@ const demoChannels: ChannelM[] = [
 const DEMO_BEST = "right";
 const DEMO_WORST = "left";
 const DEMO_RECO =
-  "Hücum yükünü sağ koridora kaydır: Tolga Erdem (7) ile rakip sol bekin arkasını sömür (eşleşme skoru 74). " +
+  "Hücum yükünü sağ koridora kaydır: Milot Rashica (7) ile rakip sol bekin arkasını sömür (eşleşme skoru 74). " +
   "Sol kanattan ısrar etme — rakip o tarafta agresif savunuyor (kaçın). Duran toplarda far-post (ikinci direk) açık.";
 
 // Üst bilgi kartı
@@ -145,11 +145,11 @@ const demoWeak: OppWeak[] = [
 // Eşleşme avantajı (bizim oyuncu vs rakip oyuncu)
 interface DuelM { ours: string; theirs: string; advantage: number; note: string }
 const demoDuels: DuelM[] = [
-  { ours: "Tolga Erdem (7) — Sağ Kanat", theirs: "Sol Bek", advantage: 72, note: "1v1 hız ve dripling üstünlüğü" },
-  { ours: "Yusuf Şahin (8) — Merkez", theirs: "6 Numara", advantage: 63, note: "Pres kırma ve ileri pas kalitesi" },
-  { ours: "Doğan Yılmaz (9) — Santrfor", theirs: "Stoper ikilisi", advantage: 58, note: "Hava topu ve derinlik tehdidi" },
-  { ours: "Emre Çetin (1) — Kaleci", theirs: "Santrfor (Kovač)", advantage: 47, note: "Hava toplarında dikkat — far-post" },
-  { ours: "Onur Kaya (3) — Sol Bek", theirs: "Sağ Kanat (Petrović)", advantage: 38, note: "Savunmada zorlanabilir — destek gerekli" },
+  { ours: "Milot Rashica (7) — Sağ Kanat", theirs: "Sol Bek", advantage: 72, note: "1v1 hız ve dripling üstünlüğü" },
+  { ours: "Salih Uçan (8) — Merkez", theirs: "6 Numara", advantage: 63, note: "Pres kırma ve ileri pas kalitesi" },
+  { ours: "Oh Hyeon-Gyu (9) — Santrfor", theirs: "Stoper ikilisi", advantage: 58, note: "Hava topu ve derinlik tehdidi" },
+  { ours: "Ersin Destanoğlu (1) — Kaleci", theirs: "Santrfor (Kovač)", advantage: 47, note: "Hava toplarında dikkat — far-post" },
+  { ours: "Rıdvan Yılmaz (3) — Sol Bek", theirs: "Sağ Kanat (Petrović)", advantage: 38, note: "Savunmada zorlanabilir — destek gerekli" },
 ];
 
 // Maç bazlı kümülatif xG/şut hikâyesi (son 5 maç rakip yediği/attığı) — inline SVG çizgi.

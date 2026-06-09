@@ -32,30 +32,30 @@ export interface SquadPlayer {
 }
 
 export const demoSquad: SquadPlayer[] = [
-  { player_id: 1, player_name: "Emre Çetin", position: "GK", pos_detail: "Kaleci", age: 29, condition: 92, risk_label: "Düşük", risk_score: 12, shirt: 1 },
-  { player_id: 2, player_name: "Burak Yıldız", position: "DF", pos_detail: "Sağ Bek", age: 26, condition: 81, risk_label: "Orta", risk_score: 44, shirt: 2 },
-  { player_id: 3, player_name: "Kerem Aslan", position: "DF", pos_detail: "Stoper", age: 31, condition: 74, risk_label: "Yüksek", risk_score: 68, shirt: 4 },
-  { player_id: 4, player_name: "Mert Demir", position: "DF", pos_detail: "Stoper", age: 24, condition: 88, risk_label: "Düşük", risk_score: 19, shirt: 5 },
-  { player_id: 5, player_name: "Onur Kaya", position: "DF", pos_detail: "Sol Bek", age: 28, condition: 69, risk_label: "Yüksek", risk_score: 71, shirt: 3 },
-  { player_id: 6, player_name: "Serkan Polat", position: "MF", pos_detail: "Ön Libero", age: 27, condition: 84, risk_label: "Orta", risk_score: 38, shirt: 6 },
-  { player_id: 7, player_name: "Yusuf Şahin", position: "MF", pos_detail: "Merkez OS", age: 23, condition: 90, risk_label: "Düşük", risk_score: 15, shirt: 8 },
-  { player_id: 8, player_name: "Caner Öztürk", position: "MF", pos_detail: "10 Numara", age: 30, condition: 58, risk_label: "Kritik", risk_score: 86, shirt: 10 },
-  { player_id: 9, player_name: "Hakan Arslan", position: "FW", pos_detail: "Sol Kanat", age: 25, condition: 79, risk_label: "Orta", risk_score: 41, shirt: 11 },
-  { player_id: 10, player_name: "Doğan Yılmaz", position: "FW", pos_detail: "Santrfor", age: 27, condition: 86, risk_label: "Düşük", risk_score: 22, shirt: 9 },
-  { player_id: 11, player_name: "Tolga Erdem", position: "FW", pos_detail: "Sağ Kanat", age: 22, condition: 91, risk_label: "Düşük", risk_score: 17, shirt: 7 },
-  { player_id: 12, player_name: "Barış Koç", position: "GK", pos_detail: "Kaleci", age: 24, condition: 94, risk_label: "Düşük", risk_score: 8, shirt: 12 },
-  { player_id: 13, player_name: "Eren Acar", position: "DF", pos_detail: "Stoper", age: 33, condition: 64, risk_label: "Yüksek", risk_score: 73, shirt: 15 },
-  { player_id: 14, player_name: "Sinan Güneş", position: "DF", pos_detail: "Sağ Bek", age: 21, condition: 89, risk_label: "Düşük", risk_score: 20, shirt: 24 },
-  { player_id: 15, player_name: "Volkan Taş", position: "MF", pos_detail: "Ön Libero", age: 29, condition: 76, risk_label: "Orta", risk_score: 47, shirt: 16 },
-  { player_id: 16, player_name: "Cem Aydın", position: "MF", pos_detail: "Merkez OS", age: 26, condition: 83, risk_label: "Orta", risk_score: 35, shirt: 20 },
-  { player_id: 17, player_name: "Arda Çelik", position: "MF", pos_detail: "Sol Kanat", age: 20, condition: 93, risk_label: "Düşük", risk_score: 11, shirt: 17 },
-  { player_id: 18, player_name: "Uğur Bal", position: "FW", pos_detail: "Santrfor", age: 31, condition: 67, risk_label: "Yüksek", risk_score: 65, shirt: 19 },
-  { player_id: 19, player_name: "Murat Şen", position: "FW", pos_detail: "Sağ Kanat", age: 24, condition: 85, risk_label: "Düşük", risk_score: 24, shirt: 21 },
-  { player_id: 20, player_name: "Okan Yavuz", position: "DF", pos_detail: "Sol Bek", age: 27, condition: 80, risk_label: "Orta", risk_score: 43, shirt: 23 },
-  { player_id: 21, player_name: "Berkay Doğan", position: "MF", pos_detail: "10 Numara", age: 23, condition: 87, risk_label: "Düşük", risk_score: 18, shirt: 14 },
-  { player_id: 22, player_name: "Furkan Er", position: "DF", pos_detail: "Stoper", age: 25, condition: 82, risk_label: "Orta", risk_score: 39, shirt: 25 },
-  { player_id: 23, player_name: "Selim Korkmaz", position: "FW", pos_detail: "Sol Kanat", age: 28, condition: 72, risk_label: "Yüksek", risk_score: 61, shirt: 18 },
-  { player_id: 24, player_name: "İlkay Bozkurt", position: "GK", pos_detail: "Kaleci", age: 19, condition: 95, risk_label: "Düşük", risk_score: 6, shirt: 30 },
+  { player_id: 1, player_name: "Ersin Destanoğlu", position: "GK", pos_detail: "Kaleci", age: 29, condition: 92, risk_label: "Düşük", risk_score: 12, shirt: 1 },
+  { player_id: 2, player_name: "Amir Murillo", position: "DF", pos_detail: "Sağ Bek", age: 26, condition: 81, risk_label: "Orta", risk_score: 44, shirt: 2 },
+  { player_id: 3, player_name: "Tiago Djaló", position: "DF", pos_detail: "Stoper", age: 31, condition: 74, risk_label: "Yüksek", risk_score: 68, shirt: 4 },
+  { player_id: 4, player_name: "Emmanuel Agbadou", position: "DF", pos_detail: "Stoper", age: 24, condition: 88, risk_label: "Düşük", risk_score: 19, shirt: 5 },
+  { player_id: 5, player_name: "Rıdvan Yılmaz", position: "DF", pos_detail: "Sol Bek", age: 28, condition: 69, risk_label: "Yüksek", risk_score: 71, shirt: 3 },
+  { player_id: 6, player_name: "Wilfred Ndidi", position: "MF", pos_detail: "Ön Libero", age: 27, condition: 84, risk_label: "Orta", risk_score: 38, shirt: 6 },
+  { player_id: 7, player_name: "Salih Uçan", position: "MF", pos_detail: "Merkez OS", age: 23, condition: 90, risk_label: "Düşük", risk_score: 15, shirt: 8 },
+  { player_id: 8, player_name: "Orkun Kökçü", position: "MF", pos_detail: "10 Numara", age: 30, condition: 58, risk_label: "Kritik", risk_score: 86, shirt: 10 },
+  { player_id: 9, player_name: "Cengiz Ünder", position: "FW", pos_detail: "Sol Kanat", age: 25, condition: 79, risk_label: "Orta", risk_score: 41, shirt: 11 },
+  { player_id: 10, player_name: "Oh Hyeon-Gyu", position: "FW", pos_detail: "Santrfor", age: 27, condition: 86, risk_label: "Düşük", risk_score: 22, shirt: 9 },
+  { player_id: 11, player_name: "Milot Rashica", position: "FW", pos_detail: "Sağ Kanat", age: 22, condition: 91, risk_label: "Düşük", risk_score: 17, shirt: 7 },
+  { player_id: 12, player_name: "Devis Vásquez", position: "GK", pos_detail: "Kaleci", age: 24, condition: 94, risk_label: "Düşük", risk_score: 8, shirt: 12 },
+  { player_id: 13, player_name: "Felix Uduokhai", position: "DF", pos_detail: "Stoper", age: 33, condition: 64, risk_label: "Yüksek", risk_score: 73, shirt: 15 },
+  { player_id: 14, player_name: "Taylan Bulut", position: "DF", pos_detail: "Sağ Bek", age: 21, condition: 89, risk_label: "Düşük", risk_score: 20, shirt: 24 },
+  { player_id: 15, player_name: "Kristjan Asllani", position: "MF", pos_detail: "Ön Libero", age: 29, condition: 76, risk_label: "Orta", risk_score: 47, shirt: 16 },
+  { player_id: 16, player_name: "Gökhan Sazdağı", position: "MF", pos_detail: "Merkez OS", age: 26, condition: 83, risk_label: "Orta", risk_score: 35, shirt: 20 },
+  { player_id: 17, player_name: "Jota Silva", position: "MF", pos_detail: "Sol Kanat", age: 20, condition: 93, risk_label: "Düşük", risk_score: 11, shirt: 17 },
+  { player_id: 18, player_name: "El Bilal Touré", position: "FW", pos_detail: "Santrfor", age: 31, condition: 67, risk_label: "Yüksek", risk_score: 65, shirt: 19 },
+  { player_id: 19, player_name: "Václav Černý", position: "FW", pos_detail: "Sağ Kanat", age: 24, condition: 85, risk_label: "Düşük", risk_score: 24, shirt: 21 },
+  { player_id: 20, player_name: "Necip Uysal", position: "DF", pos_detail: "Sol Bek", age: 27, condition: 80, risk_label: "Orta", risk_score: 43, shirt: 23 },
+  { player_id: 21, player_name: "Junior Olaitan", position: "MF", pos_detail: "10 Numara", age: 23, condition: 87, risk_label: "Düşük", risk_score: 18, shirt: 14 },
+  { player_id: 22, player_name: "Emir Han Topçu", position: "DF", pos_detail: "Stoper", age: 25, condition: 82, risk_label: "Orta", risk_score: 39, shirt: 25 },
+  { player_id: 23, player_name: "Kartal Yılmaz", position: "FW", pos_detail: "Sol Kanat", age: 28, condition: 72, risk_label: "Yüksek", risk_score: 61, shirt: 18 },
+  { player_id: 24, player_name: "Emre Bilgin", position: "GK", pos_detail: "Kaleci", age: 19, condition: 95, risk_label: "Düşük", risk_score: 6, shirt: 30 },
 ];
 
 // --------------------------------------------------------------------------- //
@@ -86,7 +86,7 @@ export interface OverviewKpi { label: string; value: string; sub: string }
 export const demoOverviewKpis: OverviewKpi[] = [
   { label: "Kadro Hazırlığı", value: "%81", sub: "ort. kondisyon" },
   { label: "Sahaya Hazır", value: "20/24", sub: "4 oyuncu riskli" },
-  { label: "Kritik Risk", value: "1", sub: "Caner Öztürk (8)" },
+  { label: "Kritik Risk", value: "1", sub: "Orkun Kökçü (8)" },
   { label: "Sıradaki Maç", value: "2 gün", sub: "Rakip SK (D)" },
   { label: "Galibiyet Olasılığı", value: "%48", sub: "model tahmini" },
 ];
@@ -290,7 +290,7 @@ export const demoPlan: PlanVsLive = {
   plan_age_seconds: 540,
   status: "Hazır",
   active_scenario: "level",   // sayfa anahtarı: leading|level|trailing
-  matchup_recommendation: "Tolga Erdem (7) vs rakip sol bek: hız avantajı %72 — bu eşleşmeyi sömür",
+  matchup_recommendation: "Milot Rashica (7) vs rakip sol bek: hız avantajı %72 — bu eşleşmeyi sömür",
   set_piece_hint: "Köşelerde ikinci direk: rakip zonal savunmada far-post zayıf",
   notes: [
     "Rakip pres tetiği: kaleci-stoper ilk pasında yüksek bas",
@@ -308,17 +308,17 @@ export const demoWeaknesses: OpponentWeakness[] = [
 
 export interface Matchup { ours: string; theirs: string; advantage: number; note: string }
 export const demoMatchups: Matchup[] = [
-  { ours: "Tolga Erdem (7) — Sağ Kanat", theirs: "Sol Bek", advantage: 72, note: "1v1 hız ve dripling üstünlüğü" },
-  { ours: "Doğan Yılmaz (9) — Santrfor", theirs: "Stoper ikilisi", advantage: 58, note: "Hava topu ve derinlik tehdidi" },
-  { ours: "Yusuf Şahin (8) — Merkez", theirs: "6 Numara", advantage: 63, note: "Pres kırma ve ileri pas kalitesi" },
-  { ours: "Onur Kaya (3) — Sol Bek", theirs: "Sağ Kanat", advantage: 41, note: "Savunmada zorlanabilir — destek gerekli" },
+  { ours: "Milot Rashica (7) — Sağ Kanat", theirs: "Sol Bek", advantage: 72, note: "1v1 hız ve dripling üstünlüğü" },
+  { ours: "Oh Hyeon-Gyu (9) — Santrfor", theirs: "Stoper ikilisi", advantage: 58, note: "Hava topu ve derinlik tehdidi" },
+  { ours: "Salih Uçan (8) — Merkez", theirs: "6 Numara", advantage: 63, note: "Pres kırma ve ileri pas kalitesi" },
+  { ours: "Rıdvan Yılmaz (3) — Sol Bek", theirs: "Sağ Kanat", advantage: 41, note: "Savunmada zorlanabilir — destek gerekli" },
 ];
 
 export interface Scenario { state: "Öndeyiz" | "Berabere" | "Geride"; plan: string; subs: string }
 export const demoScenarios: Scenario[] = [
   { state: "Öndeyiz", plan: "Blok düşür, geçişe çık. Kanat oyuncuları savunmaya yardım etsin.", subs: "Taze stoper + savunma 6 numarası" },
-  { state: "Berabere", plan: "Ritmi koru, sağ kanat 1v1'i sömür. Duran toplarda far-post.", subs: "Berkay Doğan (14) ile yaratıcılık" },
-  { state: "Geride", plan: "İkinci santrfor + yüksek blok. Kanatlardan bol orta.", subs: "Uğur Bal (19) — hava topu hedefi" },
+  { state: "Berabere", plan: "Ritmi koru, sağ kanat 1v1'i sömür. Duran toplarda far-post.", subs: "Junior Olaitan (14) ile yaratıcılık" },
+  { state: "Geride", plan: "İkinci santrfor + yüksek blok. Kanatlardan bol orta.", subs: "El Bilal Touré (19) — hava topu hedefi" },
 ];
 
 // --------------------------------------------------------------------------- //
@@ -420,58 +420,58 @@ export const demoLive: DemoLive = {
   formation: "4-3-3",
   series: LIVE_SERIES,
   events: [
-    { minute: 12, type: "buyuk_firsat", team: "home", text: "Tolga Erdem sağdan içeri kat etti, vuruş direkten döndü (xG 0.31)." },
-    { minute: 23, type: "gol", team: "home", text: "GOL! Doğan Yılmaz ceza sahasında topla buluştu ve ağları havalandırdı. 1-0." },
-    { minute: 31, type: "sari_kart", team: "home", text: "Kerem Aslan geç müdahaleden sarı kart gördü." },
-    { minute: 38, type: "buyuk_firsat", team: "away", text: "Rakip SK kontra atağında kaleci Emre Çetin kurtardı." },
+    { minute: 12, type: "buyuk_firsat", team: "home", text: "Milot Rashica sağdan içeri kat etti, vuruş direkten döndü (xG 0.31)." },
+    { minute: 23, type: "gol", team: "home", text: "GOL! Oh Hyeon-Gyu ceza sahasında topla buluştu ve ağları havalandırdı. 1-0." },
+    { minute: 31, type: "sari_kart", team: "home", text: "Tiago Djaló geç müdahaleden sarı kart gördü." },
+    { minute: 38, type: "buyuk_firsat", team: "away", text: "Rakip SK kontra atağında kaleci Ersin Destanoğlu kurtardı." },
     { minute: 45, type: "gol", team: "away", text: "GOL! Rakip SK köşe vuruşunda far-post'ta boş kaldı, kafa golü. 1-1." },
-    { minute: 46, type: "degisiklik", team: "home", text: "Değişiklik: Hakan Arslan (11) çıktı, Arda Çelik (17) girdi — sol kanada tazelik." },
-    { minute: 52, type: "sakatlik", team: "home", text: "Caner Öztürk arka adalesini tuttu; sağlık ekibi sahada." },
+    { minute: 46, type: "degisiklik", team: "home", text: "Değişiklik: Cengiz Ünder (11) çıktı, Jota Silva (17) girdi — sol kanada tazelik." },
+    { minute: 52, type: "sakatlik", team: "home", text: "Orkun Kökçü arka adalesini tuttu; sağlık ekibi sahada." },
     { minute: 58, type: "sari_kart", team: "away", text: "Rakip 6 numara taktik faulden sarı gördü." },
     { minute: 64, type: "buyuk_firsat", team: "away", text: "Rakip SK üst üste 2 korner kullandı; momentum onlarda." },
   ],
   subs: [
     {
-      player_out: "Caner Öztürk (10)",
-      player_in: "Berkay Doğan (14)",
+      player_out: "Orkun Kökçü (10)",
+      player_in: "Junior Olaitan (14)",
       urgency: "kritik",
       rationale: "8 numara sakatlık sinyali + kondisyon kritik eşikte (58). Momentum 3 dakikadır rakipte. Şimdi taze yaratıcılık şart.",
     },
     {
-      player_out: "Onur Kaya (3)",
-      player_in: "Okan Yavuz (23)",
+      player_out: "Rıdvan Yılmaz (3)",
+      player_in: "Necip Uysal (23)",
       urgency: "yüksek",
       rationale: "Sol bek yorgunluk bandında; rakip sağ kanat bu koridordan sürekli giriyor. Savunma istikrarı için değişiklik.",
     },
   ],
   // 67. dakikaya kadarki saha durumu. minutes = gerçek oynanan dakika;
-  // vaepPer90 = vaep / minutes * 90 → kısa süre oynayan etkili oyuncu (Arda) öne çıkar.
+  // vaepPer90 = vaep / minutes * 90 → kısa süre oynayan etkili oyuncu (Jota) öne çıkar.
   lineup: [
-    { shirt: 1,  name: "Emre Çetin",   pos: "GK", onPitch: true,  minutes: 67, vaep: 0.02, vaepPer90: 0.03 },
-    { shirt: 2,  name: "Burak Yıldız", pos: "RB", onPitch: true,  minutes: 67, vaep: 0.07, vaepPer90: 0.09 },
-    { shirt: 4,  name: "Kerem Aslan",  pos: "CB", onPitch: true,  minutes: 67, vaep: 0.05, vaepPer90: 0.07 },
-    { shirt: 5,  name: "Mert Demir",   pos: "CB", onPitch: true,  minutes: 67, vaep: 0.06, vaepPer90: 0.08 },
-    { shirt: 3,  name: "Onur Kaya",    pos: "LB", onPitch: true,  minutes: 67, vaep: 0.04, vaepPer90: 0.05 },
-    { shirt: 6,  name: "Serkan Polat", pos: "DM", onPitch: true,  minutes: 67, vaep: 0.09, vaepPer90: 0.12 },
-    { shirt: 8,  name: "Yusuf Şahin",  pos: "CM", onPitch: true,  minutes: 67, vaep: 0.17, vaepPer90: 0.23 },
-    { shirt: 10, name: "Caner Öztürk", pos: "AM", onPitch: true,  minutes: 67, vaep: 0.21, vaepPer90: 0.28 },
-    { shirt: 17, name: "Arda Çelik",   pos: "LW", onPitch: true,  minutes: 21, vaep: 0.18, vaepPer90: 0.77, subbedInMinute: 46 },
-    { shirt: 9,  name: "Doğan Yılmaz", pos: "ST", onPitch: true,  minutes: 67, vaep: 0.34, vaepPer90: 0.46 },
-    { shirt: 7,  name: "Tolga Erdem",  pos: "RW", onPitch: true,  minutes: 67, vaep: 0.29, vaepPer90: 0.39 },
-    { shirt: 11, name: "Hakan Arslan", pos: "LW", onPitch: false, minutes: 46, vaep: 0.05, vaepPer90: 0.10, subbedOutMinute: 46 },
+    { shirt: 1,  name: "Ersin Destanoğlu",   pos: "GK", onPitch: true,  minutes: 67, vaep: 0.02, vaepPer90: 0.03 },
+    { shirt: 2,  name: "Amir Murillo", pos: "RB", onPitch: true,  minutes: 67, vaep: 0.07, vaepPer90: 0.09 },
+    { shirt: 4,  name: "Tiago Djaló",  pos: "CB", onPitch: true,  minutes: 67, vaep: 0.05, vaepPer90: 0.07 },
+    { shirt: 5,  name: "Emmanuel Agbadou",   pos: "CB", onPitch: true,  minutes: 67, vaep: 0.06, vaepPer90: 0.08 },
+    { shirt: 3,  name: "Rıdvan Yılmaz",    pos: "LB", onPitch: true,  minutes: 67, vaep: 0.04, vaepPer90: 0.05 },
+    { shirt: 6,  name: "Wilfred Ndidi", pos: "DM", onPitch: true,  minutes: 67, vaep: 0.09, vaepPer90: 0.12 },
+    { shirt: 8,  name: "Salih Uçan",  pos: "CM", onPitch: true,  minutes: 67, vaep: 0.17, vaepPer90: 0.23 },
+    { shirt: 10, name: "Orkun Kökçü", pos: "AM", onPitch: true,  minutes: 67, vaep: 0.21, vaepPer90: 0.28 },
+    { shirt: 17, name: "Jota Silva",   pos: "LW", onPitch: true,  minutes: 21, vaep: 0.18, vaepPer90: 0.77, subbedInMinute: 46 },
+    { shirt: 9,  name: "Oh Hyeon-Gyu", pos: "ST", onPitch: true,  minutes: 67, vaep: 0.34, vaepPer90: 0.46 },
+    { shirt: 7,  name: "Milot Rashica",  pos: "RW", onPitch: true,  minutes: 67, vaep: 0.29, vaepPer90: 0.39 },
+    { shirt: 11, name: "Cengiz Ünder", pos: "LW", onPitch: false, minutes: 46, vaep: 0.05, vaepPer90: 0.10, subbedOutMinute: 46 },
   ],
   // ── Gizli karar motorları (67'/1-1/momentum rakipte/Caner sakatlık sinyali) ──
   tacticalTriggers: [
     { type: "press_height", urgency: "medium", recommendation:
       "Momentum 8 dakikadır rakipte — pres hattını düşür, orta blokta dengeyi yeniden kur." },
     { type: "channel_shift", urgency: "medium", recommendation:
-      "Rakip sol koridorumuzdan (Onur Kaya, 3) sürekli giriyor — hücum yükünü sağ kanada (Tolga, 7) kaydır." },
+      "Rakip sol koridorumuzdan (Rıdvan Yılmaz, 3) sürekli giriyor — hücum yükünü sağ kanada (Tolga, 7) kaydır." },
   ],
   matchup: {
     struggling_defender: 3,
     hot_opponent: 23,
     alerts: [
-      "DÜELLO: Onur Kaya (3) son 10 dakikada 4 düellodan 3'ünü kaybetti — yardımcı gönder ya da eşleşmeyi değiştir.",
+      "DÜELLO: Rıdvan Yılmaz (3) son 10 dakikada 4 düellodan 3'ünü kaybetti — yardımcı gönder ya da eşleşmeyi değiştir.",
       "SICAK EL: Rakip #23 her topa giriyor (%42 dokunuş payı) — özel markaj düşün.",
     ],
   },
@@ -492,7 +492,7 @@ export const demoLive: DemoLive = {
     alerts: [],
   },
   subTiming: {
-    package: ["Caner Öztürk (10)", "Onur Kaya (3)"],
+    package: ["Orkun Kökçü (10)", "Rıdvan Yılmaz (3)"],
     rationale:
       "Çifte değişiklik penceresi 68–72 dk: yaratıcılık (Caner) + savunma istikrarı (Onur) birlikte tazelensin; tek pencerede iki sorunu çöz.",
     advices: [
@@ -504,11 +504,11 @@ export const demoLive: DemoLive = {
     total: 3, critical: 1, warning: 2, info: 0,
     alerts: [
       { type: "fatigue", severity: "critical", player_id: 10,
-        message: "Caner Öztürk (10) yorgunluk kritik (0.62) + sakatlık sinyali — değiştir." },
+        message: "Orkun Kökçü (10) yorgunluk kritik (0.62) + sakatlık sinyali — değiştir." },
       { type: "momentum_break", severity: "warning",
         message: "Momentum 2 snapshot'tır rakibe doğru — kontrolü geri al." },
       { type: "matchup", severity: "warning", player_id: 3,
-        message: "Sol koridor zayıf (Onur Kaya, 3 düello kaybı)." },
+        message: "Sol koridor zayıf (Rıdvan Yılmaz, 3 düello kaybı)." },
     ],
   },
   dataQuality: {
@@ -520,11 +520,11 @@ export const demoLive: DemoLive = {
     time_management: "Normal tempo — 70. dakikadan sonra zaman yönetimi devreye girecek.",
     card_flags: [
       { player_external_id: 4, risk_type: "card", severity: "medium",
-        message: "Kerem Aslan (4) sarı kartlı — agresif girişlere dikkat, ikinci sarı riski." },
+        message: "Tiago Djaló (4) sarı kartlı — agresif girişlere dikkat, ikinci sarı riski." },
     ],
     injury_flags: [
       { player_external_id: 10, risk_type: "injury", severity: "medium",
-        message: "Caner Öztürk (10) yorgunluk 0.62 — sakatlık riski, değişiklik düşün." },
+        message: "Orkun Kökçü (10) yorgunluk 0.62 — sakatlık riski, değişiklik düşün." },
     ],
     total_flags: 2,
   },
@@ -539,19 +539,19 @@ export const demoChatQA: ChatQA[] = [
   {
     question: "Bu hafta sakatlık riski en yüksek oyuncular kim?",
     answer:
-      "En yüksek risk Caner Öztürk (10) — KRİTİK. Akut/kronik yük oranı 1.6 (eşik 1.5 üstü) ve son 3 ölçümde sprint hızı düştü; kondisyonu 58. Bu maç için 60. dakika sonrası değişiklik öneriyorum.\n\nİkinci grup Yüksek risk: Onur Kaya (3), Kerem Aslan (4) ve Eren Acar (15). Üçü de ACWR 1.4 bandında ve dikey sıçramada yorgunluk işareti var.\n\nDüşük risk tarafında kadronun %58'i tam maç yüküne hazır; rotasyon için Arda Çelik (17) ve Sinan Güneş (24) ideal.",
+      "En yüksek risk Orkun Kökçü (10) — KRİTİK. Akut/kronik yük oranı 1.6 (eşik 1.5 üstü) ve son 3 ölçümde sprint hızı düştü; kondisyonu 58. Bu maç için 60. dakika sonrası değişiklik öneriyorum.\n\nİkinci grup Yüksek risk: Rıdvan Yılmaz (3), Tiago Djaló (4) ve Felix Uduokhai (15). Üçü de ACWR 1.4 bandında ve dikey sıçramada yorgunluk işareti var.\n\nDüşük risk tarafında kadronun %58'i tam maç yüküne hazır; rotasyon için Jota Silva (17) ve Taylan Bulut (24) ideal.",
     tools: ["load_risk_monitor", "physical_test_trend", "squad_availability"],
   },
   {
     question: "Rakip SK'ya karşı hangi taktiği önerirsin?",
     answer:
-      "Rakip SK sağ bekini hücumda yüksek tutuyor; arkasındaki koridor maç başına ortalama 6 kez açılıyor. Tolga Erdem'i (7) o tarafa koyup hız avantajını (%72) sömürmenizi öneriyorum.\n\nDuran toplarda büyük fırsat var: rakip zonal savunmada ikinci direği (far-post) örtemiyor — son 8 maçta 4 gol yedi. Köşelerde far-post varyasyonu hazırlayın.\n\nDikkat: ilk 15 dakika yüksek pres bekleniyor. Ön libero geç çıksın, kaleci-stoper ilk pasında uzun seçeneği açık tutun.",
+      "Rakip SK sağ bekini hücumda yüksek tutuyor; arkasındaki koridor maç başına ortalama 6 kez açılıyor. Milot Rashica'i (7) o tarafa koyup hız avantajını (%72) sömürmenizi öneriyorum.\n\nDuran toplarda büyük fırsat var: rakip zonal savunmada ikinci direği (far-post) örtemiyor — son 8 maçta 4 gol yedi. Köşelerde far-post varyasyonu hazırlayın.\n\nDikkat: ilk 15 dakika yüksek pres bekleniyor. Ön libero geç çıksın, kaleci-stoper ilk pasında uzun seçeneği açık tutun.",
     tools: ["opponent_report", "matchup_engine", "set_piece_analyzer"],
   },
   {
     question: "67. dakikada momentum neden rakibe geçti?",
     answer:
-      "Üç sinyal aynı anda işaret ediyor: (1) Momentum izleyici son 8 dakikada xG akışını -34'e çekti — rakip üst üste 2 korner kullandı. (2) Caner Öztürk'ün 52. dakikadaki sakatlık sinyali sonrası orta sahada pres yoğunluğunuz %22 düştü. (3) Sol bek Onur Kaya yorgunluk bandında ve rakip sağ kanat o koridordan sürekli giriyor.\n\nNet öneri: Caner Öztürk → Berkay Doğan değişikliği (kritik aciliyet) + sol beke taze oyuncu. Bu iki hamle momentum'u dengeler; model güveni %83.",
+      "Üç sinyal aynı anda işaret ediyor: (1) Momentum izleyici son 8 dakikada xG akışını -34'e çekti — rakip üst üste 2 korner kullandı. (2) Orkun Kökçü'ün 52. dakikadaki sakatlık sinyali sonrası orta sahada pres yoğunluğunuz %22 düştü. (3) Sol bek Rıdvan Yılmaz yorgunluk bandında ve rakip sağ kanat o koridordan sürekli giriyor.\n\nNet öneri: Orkun Kökçü → Junior Olaitan değişikliği (kritik aciliyet) + sol beke taze oyuncu. Bu iki hamle momentum'u dengeler; model güveni %83.",
     tools: ["momentum_tracker", "context_engine", "sub_timing"],
   },
 ];
@@ -582,13 +582,13 @@ export interface DecisionCard {
 export const demoDecisions: DecisionCard[] = [
   {
     minute: 23,
-    headline: "Sağ kanat 1v1'i sömür — Tolga Erdem'e topu getir",
+    headline: "Sağ kanat 1v1'i sömür — Milot Rashica'e topu getir",
     decisionType: "Taktik",
     confidence: 76,
     urgency: "orta",
     rationale: "Rakip sağ bek yüksek konumlanıyor; sağ kanattaki hız üstünlüğü açık fırsat. Hücum yönünü o tarafa kaydır.",
     signals: [
-      { engine: "matchup_engine", label: "Tolga Erdem vs sol bek hız avantajı %72", sampleSize: 14, magnitude: 0.72 },
+      { engine: "matchup_engine", label: "Milot Rashica vs sol bek hız avantajı %72", sampleSize: 14, magnitude: 0.72 },
       { engine: "field_tilt", label: "Sağ koridordan girişler artıyor", sampleSize: 9, magnitude: 0.55 },
       { engine: "opponent_shape", label: "Rakip sağ bek arkası 6 kez açıldı", sampleSize: 6, magnitude: 0.48 },
     ],
@@ -607,7 +607,7 @@ export const demoDecisions: DecisionCard[] = [
   },
   {
     minute: 52,
-    headline: "Caner Öztürk'ü yakın izle — sakatlık + yük riski",
+    headline: "Orkun Kökçü'ü yakın izle — sakatlık + yük riski",
     decisionType: "Risk",
     confidence: 80,
     urgency: "yüksek",
@@ -620,11 +620,11 @@ export const demoDecisions: DecisionCard[] = [
   },
   {
     minute: 67,
-    headline: "Şimdi oyuncu değişikliği yap — Caner Öztürk çıksın",
+    headline: "Şimdi oyuncu değişikliği yap — Orkun Kökçü çıksın",
     decisionType: "Oyuncu Değişikliği",
     confidence: 83,
     urgency: "kritik",
-    rationale: "Üç motor aynı anı işaret ediyor: momentum 3 dakikadır düşüyor, 8 numara sakatlık + kondisyon kritik eşikte, skor 1-1. Taze yaratıcılık (Berkay Doğan) momentum'u dengeler.",
+    rationale: "Üç motor aynı anı işaret ediyor: momentum 3 dakikadır düşüyor, 8 numara sakatlık + kondisyon kritik eşikte, skor 1-1. Taze yaratıcılık (Junior Olaitan) momentum'u dengeler.",
     signals: [
       { engine: "momentum_tracker", label: "Momentum 8 dakikadır rakipte (-34)", sampleSize: 18, magnitude: 0.78 },
       { engine: "sub_timing", label: "8 numara kondisyon kritik eşikte (58)", sampleSize: 11, magnitude: 0.81 },

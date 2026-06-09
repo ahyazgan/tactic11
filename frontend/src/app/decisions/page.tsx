@@ -15,6 +15,7 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoDecisions, demoDecisionSummary, type DecisionCard, type Urgency } from "@/lib/demo-data";
+import { engineLabel } from "@/lib/labels";
 import { ConsoleShell } from "../_console/shell";
 
 const URGENCY_VAR: Record<Urgency, string> = {
@@ -69,7 +70,7 @@ function DecisionCardView({ d }: { d: DecisionCard }) {
           </div>
           {d.signals.map((s, i) => (
             <div key={i} style={{ display: "grid", gridTemplateColumns: "152px 1fr auto", gap: 10, alignItems: "center", padding: "6px 0", borderTop: i ? "1px solid rgba(128,128,128,0.12)" : undefined }}>
-              <span style={{ fontFamily: "JetBrains Mono", fontSize: 11, color: "var(--ink)", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.engine}</span>
+              <span title={s.engine} style={{ fontSize: 11, color: "var(--ink)", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{engineLabel(s.engine)}</span>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 12, color: "var(--ink)", marginBottom: 3 }}>{s.label}</div>
                 <div style={{ height: 5, borderRadius: 3, background: "var(--panel3)", overflow: "hidden" }}>

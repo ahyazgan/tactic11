@@ -15,6 +15,7 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { DEMO_CLUB, DEMO_OPPONENT, demoSquad, demoWeaknesses } from "@/lib/demo-data";
+import { engineLabel } from "@/lib/labels";
 import { ChannelPreferenceBar } from "@/components/charts/ChannelPreferenceBar";
 import { CoachingIdentityRadar } from "@/components/charts/CoachingIdentityRadar";
 import { RecoveryZoneStacked } from "@/components/charts/RecoveryZoneStacked";
@@ -317,7 +318,7 @@ const DEMO_ATTACK_ROWS: PressRow[] = [
   { metric: "Build-up uzun top oranı", engine: "build_up", value: "%24", bar: 24, tone: "var(--low)", note: "Arkadan kurma ağırlıklı, uzun top az" },
 ];
 
-// Koridor tercihi (sol/orta/sağ) — sağ kanat baskın (Tolga Erdem 7 ile uyumlu).
+// Koridor tercihi (sol/orta/sağ) — sağ kanat baskın (Milot Rashica 7 ile uyumlu).
 const DEMO_CHANNELS = { left: 28, central: 31, right: 41 };
 
 // Top geri kazanım bölgesi (savunma/orta/hücum üçlük payı).
@@ -386,7 +387,7 @@ function FormationPitch() {
       {DEMO_FORMATION.map((s) => {
         const cx = (s.x / 100) * (W - 12) + 6;
         const cy = H - ((s.y / 100) * (H - 14) + 7); // y=0 kendi kalemiz (alt)
-        const crit = s.shirt === 10; // 10 numara (Caner Öztürk) kritik risk
+        const crit = s.shirt === 10; // 10 numara (Orkun Kökçü) kritik risk
         return (
           <g key={s.shirt}>
             <circle cx={cx} cy={cy} r="6.4" fill={crit ? "var(--crit)" : "var(--accent)"} stroke="#fff" strokeWidth="0.8" />
@@ -482,7 +483,7 @@ function MetricTable({ rows }: { rows: PressRow[] }) {
             <tr key={r.metric}>
               <td>
                 <span className="nm">{r.metric}</span>{" "}
-                <span className="nat" style={{ fontFamily: "JetBrains Mono" }}>{r.engine}</span>
+                <span className="nat" title={r.engine}>{engineLabel(r.engine)}</span>
               </td>
               <td className="c" style={{ fontFamily: "JetBrains Mono", fontWeight: 700, color: r.tone }}>{r.value}</td>
               <td style={{ minWidth: 130 }}>
@@ -577,7 +578,7 @@ function DemoTacticalPage() {
           <div>
             <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.6, marginBottom: 12 }}>
               <b style={{ color: "var(--ink)" }}>{DEMO_CLUB}</b> {DEMO_FORMATION_NAME} ile çift ön libero üzerine kuruyor.
-              Sağ kanat (Tolga Erdem 7) baskın hücum koridoru; sol bek yüksek çıkıp genişlik veriyor.
+              Sağ kanat (Milot Rashica 7) baskın hücum koridoru; sol bek yüksek çıkıp genişlik veriyor.
               Topu kazanınca 10 numara üzerinden dikey geçiş aranıyor.
             </div>
             <div className="stat"><span>İlk 11 ort. yaş</span><span className="sv">{Math.round(starters.reduce((a, p) => a + (p?.age ?? 0), 0) / (starters.length || 1))}</span></div>

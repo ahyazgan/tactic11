@@ -5,7 +5,7 @@
  * Hedef oyuncu → cosine similarity ile top-N benzer profil + filtreler + izleme listesi.
  *
  * DEMO_MODE açıkken: canlı API'ye dokunmaz, zengin Türkçe scout demosu render eder
- * (FK Demo evreni — hedef Caner Öztürk #10, transfer adayları + benzerlik tablosu).
+ * (FK Demo evreni — hedef Orkun Kökçü #10, transfer adayları + benzerlik tablosu).
  *
  * Backend (DEMO kapalı):
  *   GET    /admin/scout/similar/{player_external_id}
@@ -44,7 +44,7 @@ interface WatchResp {
 
 /* ─────────────────────────────────────────────
    DEMO EVRENİ — bu dosyaya özel inline scout verisi
-   (FK Demo · hedef profil: Caner Öztürk #10, "10 Numara")
+   (FK Demo · hedef profil: Orkun Kökçü #10, "10 Numara")
 ───────────────────────────────────────────── */
 
 type DemoPos = "GK" | "DF" | "MF" | "FW";
@@ -73,7 +73,7 @@ interface ScoutCandidate {
 /** Hedef oyuncu — kadrodaki 10 numara (yerine alternatif aranıyor). */
 const TARGET = {
   external_id: 8,
-  name: "Caner Öztürk",
+  name: "Orkun Kökçü",
   shirt: 10,
   pos_detail: "10 Numara",
   age: 30,
@@ -82,7 +82,7 @@ const TARGET = {
 
 /** Aday havuzu — hedefe per-90 profil yakınlığına göre sıralı (16 oyuncu). */
 const CANDIDATES: ScoutCandidate[] = [
-  { external_id: 201, name: "Berkay Doğan",   pos: "MF", pos_detail: "10 Numara",   age: 23, club: "FK Demo",        league: "Süper Lig",   value: "€4.2M",  minutes: 1180, goals: 6,  assists: 9,  xg90: 0.28, xa90: 0.34, prog90: 7.1, similarity: 0.93, tier: "Rotasyon", note: "Kadro içi — hazır alternatif. Yaratıcılık ve pres kırma kalitesi yüksek." },
+  { external_id: 201, name: "Junior Olaitan",   pos: "MF", pos_detail: "10 Numara",   age: 23, club: "FK Demo",        league: "Süper Lig",   value: "€4.2M",  minutes: 1180, goals: 6,  assists: 9,  xg90: 0.28, xa90: 0.34, prog90: 7.1, similarity: 0.93, tier: "Rotasyon", note: "Kadro içi — hazır alternatif. Yaratıcılık ve pres kırma kalitesi yüksek." },
   { external_id: 202, name: "Emir Kaplan",    pos: "MF", pos_detail: "Ön Libero",   age: 21, club: "Genç Yıldız FK", league: "Süper Lig",   value: "€6.8M",  minutes: 2340, goals: 4,  assists: 11, xg90: 0.21, xa90: 0.41, prog90: 8.4, similarity: 0.91, tier: "Gelecek",  note: "Yarı-alan ustası. Yaşına göre olgun karar verme; gelişim eğrisi dik." },
   { external_id: 203, name: "Deniz Aktaş",    pos: "MF", pos_detail: "Merkez OS",   age: 25, club: "Liman SK",       league: "Süper Lig",   value: "€5.1M",  minutes: 2610, goals: 7,  assists: 8,  xg90: 0.31, xa90: 0.29, prog90: 6.7, similarity: 0.88, tier: "İlk 11",   note: "Gol katkısı dengeli; ceza sahasına geç giriş timing'i çok iyi." },
   { external_id: 204, name: "Mateo Rincón",   pos: "MF", pos_detail: "10 Numara",   age: 24, club: "Atlético Vega",  league: "La Liga 2",   value: "€8.5M",  minutes: 2480, goals: 9,  assists: 7,  xg90: 0.36, xa90: 0.27, prog90: 7.9, similarity: 0.86, tier: "İlk 11",   note: "Yabancı bonservis. Bitiricilik üst düzey ama uyum süresi gerekebilir." },

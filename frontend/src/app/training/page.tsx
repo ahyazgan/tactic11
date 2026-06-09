@@ -57,7 +57,7 @@ interface TrainingFocus {
 }
 
 const demoFocus: TrainingFocus[] = [
-  { title: "Sağ kanat 1v1 bitiriciliği", detail: "Rakip sağ bek arkası maç başına ort. 6 kez açılıyor. Tolga Erdem için izole 1v1 + içeri kat etme tekrarları.", block: "MG-2 · Taktik", priority: "yüksek" },
+  { title: "Sağ kanat 1v1 bitiriciliği", detail: "Rakip sağ bek arkası maç başına ort. 6 kez açılıyor. Milot Rashica için izole 1v1 + içeri kat etme tekrarları.", block: "MG-2 · Taktik", priority: "yüksek" },
   { title: "Duran top — far-post varyasyonu", detail: "Rakip zonal savunmada ikinci direği örtemiyor (son 8 maçta 4 gol yedi). Köşelerde far-post koşu kalıbı çalışıldı.", block: "MG-2 · Taktik", priority: "yüksek" },
   { title: "Geçiş savunması (ön libero)", detail: "İlk 15 dk yüksek pres bekleniyor. Top kaybı sonrası ön libero koruması ve geri pres senkronu.", block: "MG-3 · Pozisyon", priority: "orta" },
   { title: "Geç dakika tempo bankası", detail: "Rakip 75. dk sonrası tempo düşürüyor. Tekrarlı sprint dayanıklılığı (RSA) ile son 15 dk üstünlüğü hedefleniyor.", block: "MG-4 · Yüklenme", priority: "orta" },
@@ -76,22 +76,22 @@ interface PlayerLoad {
 }
 
 const demoLoads: PlayerLoad[] = [
-  { shirt: 1, name: "Emre Çetin", pos: "Kaleci", weekLoad: 58, acwr: 0.95, availability: "Hazır", note: "Kaleci özel programı" },
-  { shirt: 2, name: "Burak Yıldız", pos: "Sağ Bek", weekLoad: 79, acwr: 1.18, availability: "Hazır", note: "Tam katılım" },
-  { shirt: 4, name: "Kerem Aslan", pos: "Stoper", weekLoad: 71, acwr: 1.42, availability: "Yönetiliyor", note: "MG-4 hacmi %30 azaltıldı" },
-  { shirt: 5, name: "Mert Demir", pos: "Stoper", weekLoad: 84, acwr: 1.05, availability: "Hazır", note: "Tam katılım" },
-  { shirt: 3, name: "Onur Kaya", pos: "Sol Bek", weekLoad: 68, acwr: 1.46, availability: "Yönetiliyor", note: "Sprint hacmi sınırlı" },
-  { shirt: 6, name: "Serkan Polat", pos: "Ön Libero", weekLoad: 82, acwr: 1.15, availability: "Hazır", note: "Tam katılım" },
-  { shirt: 8, name: "Yusuf Şahin", pos: "Merkez OS", weekLoad: 86, acwr: 1.02, availability: "Hazır", note: "Tam katılım" },
-  { shirt: 10, name: "Caner Öztürk", pos: "10 Numara", weekLoad: 41, acwr: 1.62, availability: "Şüpheli", note: "Arka adale — MG-4/3 bireysel, MG-1 testi" },
-  { shirt: 11, name: "Hakan Arslan", pos: "Sol Kanat", weekLoad: 77, acwr: 1.21, availability: "Hazır", note: "Tam katılım" },
-  { shirt: 9, name: "Doğan Yılmaz", pos: "Santrfor", weekLoad: 83, acwr: 1.08, availability: "Hazır", note: "Bitiricilik ekstra blok" },
-  { shirt: 7, name: "Tolga Erdem", pos: "Sağ Kanat", weekLoad: 88, acwr: 1.12, availability: "Hazır", note: "1v1 odak — maçın anahtarı" },
-  { shirt: 15, name: "Eren Acar", pos: "Stoper", weekLoad: 62, acwr: 1.44, availability: "Yönetiliyor", note: "Yaş + yük; rotasyon adayı" },
-  { shirt: 14, name: "Berkay Doğan", pos: "10 Numara", weekLoad: 80, acwr: 0.98, availability: "Hazır", note: "Caner'in yedeği — taze tutuluyor" },
-  { shirt: 17, name: "Arda Çelik", pos: "Sol Kanat", weekLoad: 73, acwr: 0.88, availability: "Hazır", note: "Rotasyon için ideal" },
-  { shirt: 24, name: "Sinan Güneş", pos: "Sağ Bek", weekLoad: 70, acwr: 0.91, availability: "Hazır", note: "Rotasyon için ideal" },
-  { shirt: 19, name: "Uğur Bal", pos: "Santrfor", weekLoad: 64, acwr: 1.38, availability: "Yönetiliyor", note: "Plan B hava topu hedefi" },
+  { shirt: 1, name: "Ersin Destanoğlu", pos: "Kaleci", weekLoad: 58, acwr: 0.95, availability: "Hazır", note: "Kaleci özel programı" },
+  { shirt: 2, name: "Amir Murillo", pos: "Sağ Bek", weekLoad: 79, acwr: 1.18, availability: "Hazır", note: "Tam katılım" },
+  { shirt: 4, name: "Tiago Djaló", pos: "Stoper", weekLoad: 71, acwr: 1.42, availability: "Yönetiliyor", note: "MG-4 hacmi %30 azaltıldı" },
+  { shirt: 5, name: "Emmanuel Agbadou", pos: "Stoper", weekLoad: 84, acwr: 1.05, availability: "Hazır", note: "Tam katılım" },
+  { shirt: 3, name: "Rıdvan Yılmaz", pos: "Sol Bek", weekLoad: 68, acwr: 1.46, availability: "Yönetiliyor", note: "Sprint hacmi sınırlı" },
+  { shirt: 6, name: "Wilfred Ndidi", pos: "Ön Libero", weekLoad: 82, acwr: 1.15, availability: "Hazır", note: "Tam katılım" },
+  { shirt: 8, name: "Salih Uçan", pos: "Merkez OS", weekLoad: 86, acwr: 1.02, availability: "Hazır", note: "Tam katılım" },
+  { shirt: 10, name: "Orkun Kökçü", pos: "10 Numara", weekLoad: 41, acwr: 1.62, availability: "Şüpheli", note: "Arka adale — MG-4/3 bireysel, MG-1 testi" },
+  { shirt: 11, name: "Cengiz Ünder", pos: "Sol Kanat", weekLoad: 77, acwr: 1.21, availability: "Hazır", note: "Tam katılım" },
+  { shirt: 9, name: "Oh Hyeon-Gyu", pos: "Santrfor", weekLoad: 83, acwr: 1.08, availability: "Hazır", note: "Bitiricilik ekstra blok" },
+  { shirt: 7, name: "Milot Rashica", pos: "Sağ Kanat", weekLoad: 88, acwr: 1.12, availability: "Hazır", note: "1v1 odak — maçın anahtarı" },
+  { shirt: 15, name: "Felix Uduokhai", pos: "Stoper", weekLoad: 62, acwr: 1.44, availability: "Yönetiliyor", note: "Yaş + yük; rotasyon adayı" },
+  { shirt: 14, name: "Junior Olaitan", pos: "10 Numara", weekLoad: 80, acwr: 0.98, availability: "Hazır", note: "Caner'in yedeği — taze tutuluyor" },
+  { shirt: 17, name: "Jota Silva", pos: "Sol Kanat", weekLoad: 73, acwr: 0.88, availability: "Hazır", note: "Rotasyon için ideal" },
+  { shirt: 24, name: "Taylan Bulut", pos: "Sağ Bek", weekLoad: 70, acwr: 0.91, availability: "Hazır", note: "Rotasyon için ideal" },
+  { shirt: 19, name: "El Bilal Touré", pos: "Santrfor", weekLoad: 64, acwr: 1.38, availability: "Yönetiliyor", note: "Plan B hava topu hedefi" },
 ];
 
 const WEEK_TOTAL = demoLoads.reduce((a, p) => a + p.weekLoad, 0);

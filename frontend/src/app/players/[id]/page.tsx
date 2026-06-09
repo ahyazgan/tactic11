@@ -5,7 +5,7 @@
  * ConsoleShell çatısında.
  *
  * DEMO_MODE (varsayılan): canlı API'ye hiç dokunmaz; URL [id] → demoSquad lookup
- * (örn id=8 Caner Öztürk #10 kritik) ile zengin, inandırıcı Türkçe profil gösterir.
+ * (örn id=8 Orkun Kökçü #10 kritik) ile zengin, inandırıcı Türkçe profil gösterir.
  * Risk/öneri/flag'ler demoRiskFor()'dan, test trendi demoHistoryFor()'dan gelir.
  * DEMO kapalı: eski canlı-API (player-role / similar / physical-tests/risk /
  * rehab/active / injury-risk) davranışına döner.

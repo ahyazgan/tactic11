@@ -8,6 +8,7 @@
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../_console/shell";
 
 interface Alert {
@@ -56,6 +57,9 @@ export default function ContractsConsolePage() {
     { shouldRetryOnError: false },
   );
   const alerts = data?.alerts ?? [];
+
+  const sort = useSort<"contract_end" | "days_remaining" | "annual_salary_eur" | "level">("days_remaining", "asc");
+  const sortedAlerts = [...alerts].sort((a, b) => sortCompare(a[sort.key], b[sort.key], sort.dir));
 
   const breakdown = [
     { label: "Kritik", n: data?.critical_count ?? 0, v: "var(--crit)" },
@@ -109,16 +113,20 @@ export default function ContractsConsolePage() {
       <div className="tbl">
         <table>
           <thead><tr>
-            <th>Oyuncu</th><th className="c">Bitiş</th><th className="r">Kalan</th>
-            <th className="r">Yıllık Ücret</th><th className="c">Durum</th><th>Not</th>
+            <th>Oyuncu</th>
+            <SortableTh active={sort.key === "contract_end"} dir={sort.dir} label="Bitiş" align="c" onClick={() => sort.onSort("contract_end")} />
+            <SortableTh active={sort.key === "days_remaining"} dir={sort.dir} label="Kalan" align="r" onClick={() => sort.onSort("days_remaining")} />
+            <SortableTh active={sort.key === "annual_salary_eur"} dir={sort.dir} label="Yıllık Ücret" align="r" onClick={() => sort.onSort("annual_salary_eur")} />
+            <SortableTh active={sort.key === "level"} dir={sort.dir} label="Durum" align="c" onClick={() => sort.onSort("level")} />
+            <th>Not</th>
           </tr></thead>
           <tbody>
-            {alerts.length === 0 && (
+            {sortedAlerts.length === 0 && (
               <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>
                 {data ? "Bu ufukta biten sözleşme yok." : "Veri yok (backend bağlı değilse boş gelir)."}
               </td></tr>
             )}
-            {alerts.map((a) => {
+            {sortedAlerts.map((a) => {
               const v = LEVEL_VAR[a.level] ?? "var(--muted)";
               return (
                 <tr key={a.player_external_id}>

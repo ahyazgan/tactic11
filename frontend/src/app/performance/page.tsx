@@ -6,7 +6,7 @@
  * DEMO_MODE: canlı API'ye hiç dokunmaz. FK Demo kadrosunun fiziksel-test
  * bataryası, sezon trendleri ve kadro karşılaştırması demo-data.ts'ten gösterilir
  * (boş protokol listesi / "veri yok" olmaz). Öne çıkan oyuncu = kritik riskli
- * Caner Öztürk (#10); ölçümler demoHistoryFor + demoRiskFor'dan türetilir.
+ * Orkun Kökçü (#10); ölçümler demoHistoryFor + demoRiskFor'dan türetilir.
  *
  * DEMO kapalı: eski tablet veri-giriş ekranı (kalıcı kayıt + batarya + PDF).
  *   GET  /admin/performance/protocols

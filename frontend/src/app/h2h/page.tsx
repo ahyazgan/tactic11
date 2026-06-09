@@ -49,18 +49,18 @@ interface DemoH2HMatch {
 
 // Eskiden yeniye değil — yeniden eskiye (en üst = en yeni). 12 karşılaşma.
 const DEMO_MATCHES: DemoH2HMatch[] = [
-  { date: "2026-01-26", competition: "Süper Lig — 18. Hafta", venue: "Dep", scoreHome: 2, scoreAway: 2, outcome: "B", scorers: "Doğan Yılmaz, Tolga Erdem" },
-  { date: "2025-09-14", competition: "Süper Lig — 5. Hafta",  venue: "Ev",  scoreHome: 3, scoreAway: 1, outcome: "G", scorers: "Doğan Yılmaz ×2, Caner Öztürk" },
-  { date: "2025-04-06", competition: "Türkiye Kupası — Çeyrek", venue: "Ev", scoreHome: 1, scoreAway: 0, outcome: "G", scorers: "Tolga Erdem" },
+  { date: "2026-01-26", competition: "Süper Lig — 18. Hafta", venue: "Dep", scoreHome: 2, scoreAway: 2, outcome: "B", scorers: "Oh Hyeon-Gyu, Milot Rashica" },
+  { date: "2025-09-14", competition: "Süper Lig — 5. Hafta",  venue: "Ev",  scoreHome: 3, scoreAway: 1, outcome: "G", scorers: "Oh Hyeon-Gyu ×2, Orkun Kökçü" },
+  { date: "2025-04-06", competition: "Türkiye Kupası — Çeyrek", venue: "Ev", scoreHome: 1, scoreAway: 0, outcome: "G", scorers: "Milot Rashica" },
   { date: "2025-02-09", competition: "Süper Lig — 22. Hafta", venue: "Dep", scoreHome: 0, scoreAway: 1, outcome: "M", scorers: "—" },
-  { date: "2024-10-20", competition: "Süper Lig — 9. Hafta",  venue: "Ev",  scoreHome: 2, scoreAway: 0, outcome: "G", scorers: "Caner Öztürk, Doğan Yılmaz" },
-  { date: "2024-05-12", competition: "Süper Lig — 33. Hafta", venue: "Dep", scoreHome: 1, scoreAway: 1, outcome: "B", scorers: "Yusuf Şahin" },
+  { date: "2024-10-20", competition: "Süper Lig — 9. Hafta",  venue: "Ev",  scoreHome: 2, scoreAway: 0, outcome: "G", scorers: "Orkun Kökçü, Oh Hyeon-Gyu" },
+  { date: "2024-05-12", competition: "Süper Lig — 33. Hafta", venue: "Dep", scoreHome: 1, scoreAway: 1, outcome: "B", scorers: "Salih Uçan" },
   { date: "2024-01-21", competition: "Süper Lig — 19. Hafta", venue: "Ev",  scoreHome: 0, scoreAway: 2, outcome: "M", scorers: "—" },
-  { date: "2023-09-24", competition: "Süper Lig — 6. Hafta",  venue: "Dep", scoreHome: 2, scoreAway: 1, outcome: "G", scorers: "Doğan Yılmaz, Hakan Arslan" },
-  { date: "2023-03-05", competition: "Türkiye Kupası — Yarı", venue: "Dep", scoreHome: 1, scoreAway: 1, outcome: "B", scorers: "Tolga Erdem" },
-  { date: "2022-11-13", competition: "Süper Lig — 13. Hafta", venue: "Ev",  scoreHome: 4, scoreAway: 1, outcome: "G", scorers: "Doğan Yılmaz ×2, Caner Öztürk, Tolga Erdem" },
-  { date: "2022-04-30", competition: "Süper Lig — 32. Hafta", venue: "Dep", scoreHome: 1, scoreAway: 2, outcome: "M", scorers: "Caner Öztürk" },
-  { date: "2021-12-04", competition: "Süper Lig — 15. Hafta", venue: "Ev",  scoreHome: 2, scoreAway: 2, outcome: "B", scorers: "Hakan Arslan, Doğan Yılmaz" },
+  { date: "2023-09-24", competition: "Süper Lig — 6. Hafta",  venue: "Dep", scoreHome: 2, scoreAway: 1, outcome: "G", scorers: "Oh Hyeon-Gyu, Cengiz Ünder" },
+  { date: "2023-03-05", competition: "Türkiye Kupası — Yarı", venue: "Dep", scoreHome: 1, scoreAway: 1, outcome: "B", scorers: "Milot Rashica" },
+  { date: "2022-11-13", competition: "Süper Lig — 13. Hafta", venue: "Ev",  scoreHome: 4, scoreAway: 1, outcome: "G", scorers: "Oh Hyeon-Gyu ×2, Orkun Kökçü, Milot Rashica" },
+  { date: "2022-04-30", competition: "Süper Lig — 32. Hafta", venue: "Dep", scoreHome: 1, scoreAway: 2, outcome: "M", scorers: "Orkun Kökçü" },
+  { date: "2021-12-04", competition: "Süper Lig — 15. Hafta", venue: "Ev",  scoreHome: 2, scoreAway: 2, outcome: "B", scorers: "Cengiz Ünder, Oh Hyeon-Gyu" },
 ];
 
 const OUTCOME_VAR: Record<DemoOutcome, string> = {

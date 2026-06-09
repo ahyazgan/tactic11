@@ -11,6 +11,7 @@ import * as React from "react";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoChatQA } from "@/lib/demo-data";
+import { engineLabel } from "@/lib/labels";
 import { ConsoleShell } from "../_console/shell";
 
 interface ChatMessage {
@@ -173,7 +174,7 @@ export default function ChatConsolePage() {
                       {m.tools.map((t, j) => (
                         <div key={j} style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--panel2)", border: "1px solid var(--line)", borderRadius: 8, padding: "6px 11px", fontSize: 12 }}>
                           <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--low)", boxShadow: "0 0 7px var(--low)" }} />
-                          <span style={{ fontFamily: "JetBrains Mono", fontWeight: 600, color: "var(--ink)" }}>{t}</span>
+                          <span title={t} style={{ fontWeight: 600, color: "var(--ink)" }}>{engineLabel(t)}</span>
                           <span style={{ marginLeft: "auto", fontFamily: "JetBrains Mono", fontSize: 10.5, color: "var(--dim)" }}>çağrıldı</span>
                         </div>
                       ))}

@@ -53,10 +53,10 @@ const WEEK_32: WeekData = {
     "xG 2.41–1.02 (fark +1.39); oyunun kontrolü baştan sona bizde.",
     "23', 51', 67' goller; 78' yenilen tek gol duran toptan.",
   ],
-  ready: 17, total: 24, risky: 1, criticalName: "Mert Demir", avgAcwr: 1.19, highAcwr: 2,
+  ready: 17, total: 24, risky: 1, criticalName: "Emmanuel Agbadou", avgAcwr: 1.19, highAcwr: 2,
   perfLines: [
-    "Doğan Yılmaz VAEP/90 0.51 — 2 gol katkısı.",
-    "Tolga Erdem 3 anahtar pas, sağ kanat üretimin merkezinde.",
+    "Oh Hyeon-Gyu VAEP/90 0.51 — 2 gol katkısı.",
+    "Milot Rashica 3 anahtar pas, sağ kanat üretimin merkezinde.",
     "Pres yoğunluğu (PPDA) sezon ortalamasının altında — agresif hafta.",
   ],
 };
@@ -67,10 +67,10 @@ const WEEK_33: WeekData = {
     "xG 1.84–0.71 (fark +1.13); deplasmanda verimli ve kontrollü.",
     "34', 72' goller; gol yemeden (clean sheet) tamamlandı.",
   ],
-  ready: 18, total: 24, risky: 2, criticalName: "Caner Öztürk", avgAcwr: 1.22, highAcwr: 3,
+  ready: 18, total: 24, risky: 2, criticalName: "Orkun Kökçü", avgAcwr: 1.22, highAcwr: 3,
   perfLines: [
-    "Arda Çelik VAEP/90 0.44 — kanatta etkili.",
-    "Serkan Polat orta sahada top kazanımında lider.",
+    "Jota Silva VAEP/90 0.44 — kanatta etkili.",
+    "Wilfred Ndidi orta sahada top kazanımında lider.",
     "İkinci yarı tempo korundu; geç gol güvence getirdi.",
   ],
 };

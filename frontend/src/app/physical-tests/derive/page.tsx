@@ -126,8 +126,8 @@ function SaveBtn({ payload, saveKey }: { payload: SavePayload | null; saveKey: s
   );
 }
 
-function Card({ icon, title, sub, children }: {
-  icon: string; title: string; sub: string; children: React.ReactNode;
+function Card({ icon, title, sub, explain, children }: {
+  icon: string; title: string; sub: string; explain?: string; children: React.ReactNode;
 }) {
   return (
     <div className="rc" style={{ margin: 0 }}>
@@ -135,6 +135,9 @@ function Card({ icon, title, sub, children }: {
         <i className={`ti ${icon}`} style={{ color: "var(--accent)" }} />{title}
         <span className="tiny" style={{ marginLeft: "auto", fontWeight: 400 }}>{sub}</span>
       </h3>
+      {explain && (
+        <p style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.45, margin: "0 0 10px" }}>{explain}</p>
+      )}
       {children}
     </div>
   );
@@ -333,7 +336,8 @@ function RSACard() {
       components: { sprint_times: times.map(r3), fatigue_index_pct: fi, best: r3(best), insufficient_recovery: flagged } };
   }
   return (
-    <Card icon="ti-run" title="Tekrarlı Sprint Yorgunluğu" sub="RSA · Yorgunluk İndeksi">
+    <Card icon="ti-run" title="Tekrarlı Sprint Yorgunluğu" sub="RSA · Yorgunluk İndeksi"
+      explain="Art arda sprintlerde hızın ne kadar düştüğünü ölçer. Yüksek yorgunluk indeksi (FI) = yetersiz toparlanma.">
       <TxtIn label="Sprint süreleri (sn, virgülle)" value={raw} set={setRaw} />
       {body}
       <SaveBtn payload={payload} saveKey="rsa" />
@@ -358,7 +362,8 @@ function CODCard() {
       components: { linear_10m: r2(l), deficit: def, poor_deceleration: poor } };
   }
   return (
-    <Card icon="ti-arrow-back-up" title="Yön Değiştirme Açığı" sub="COD Deficit · 505−10m">
+    <Card icon="ti-arrow-back-up" title="Yön Değiştirme Açığı" sub="COD Deficit · 505−10m"
+      explain="Düz koşuya kıyasla dönüş/frenlemede kaybedilen süre. Açık büyükse frenleme/deceleration mekaniği zayıf.">
       <NumIn label="505 süresi" value={cod} set={setCod} unit="sn" />
       <NumIn label="10m düz sprint" value={lin} set={setLin} unit="sn" />
       {body}
@@ -384,7 +389,8 @@ function RSICard() {
       components: { flight_time_s: r3(f), contact_time_s: r3(c) } };
   }
   return (
-    <Card icon="ti-arrows-up" title="Sıçrama Reaktif Gücü" sub="Drop Jump · RSI">
+    <Card icon="ti-arrows-up" title="Sıçrama Reaktif Gücü" sub="Drop Jump · RSI"
+      explain="Yere değme süresine göre patlayıcı sıçrama gücü (RSI). Yüksek RSI = daha reaktif ve elastik bacak.">
       <NumIn label="Havada kalma süresi" value={fl} set={setFl} unit="sn" />
       <NumIn label="Yere temas süresi" value={ct} set={setCt} unit="sn" />
       {body}
@@ -414,7 +420,8 @@ function AsymCard() {
       components: { left: r1(l), right: r1(r), asymmetry_pct: asym, stronger_side: side, flag: fl } };
   }
   return (
-    <Card icon="ti-scale" title="Bacak Denge / Asimetri" sub="Triple Hop sol-sağ">
+    <Card icon="ti-scale" title="Bacak Denge / Asimetri" sub="Triple Hop sol-sağ"
+      explain="Sağ ve sol bacak arasındaki güç farkı. %10 üstü fark sarı, %15 üstü kırmızı — yeniden-sakatlanma riski.">
       <NumIn label="Sol bacak" value={lf} set={setLf} step="1" unit="cm" />
       <NumIn label="Sağ bacak" value={rt} set={setRt} step="1" unit="cm" />
       {body}
@@ -441,7 +448,8 @@ function HQCard() {
       components: { quadriceps: r2(qv), hq_ratio: ratio, band } };
   }
   return (
-    <Card icon="ti-activity-heartbeat" title="Arka-Ön Bacak Dengesi" sub="H:Q · hamstring/quadriceps">
+    <Card icon="ti-activity-heartbeat" title="Arka-Ön Bacak Dengesi" sub="H:Q · hamstring/quadriceps"
+      explain="Arka bacak (hamstring) kuvvetinin ön bacağa (quadriceps) oranı = H:Q. Düşük oran hamstring sakatlık riskini artırır; hedeflenen denge ≥ 0.6.">
       <NumIn label="İzokinetik hamstring" value={h} set={setH} unit="Nm/kg" />
       <NumIn label="İzokinetik quadriceps" value={q} set={setQ} unit="Nm/kg" />
       {body}
@@ -465,7 +473,8 @@ function VO2YoyoCard() {
       components: { yoyo_ir1_distance_m: dv, source: "yoyo_ir1_bangsbo" } };
   }
   return (
-    <Card icon="ti-lungs" title="Dayanıklılık (VO2max) — Yo-Yo" sub="Yo-Yo IR1 · Bangsbo">
+    <Card icon="ti-lungs" title="Dayanıklılık (VO2max) — Yo-Yo" sub="Yo-Yo IR1 · Bangsbo"
+      explain="Aralıklı koşu testinden tahmini maksimal oksijen kapasitesi (VO2max). Yüksek değer = daha iyi aerobik dayanıklılık.">
       <NumIn label="Yo-Yo IR1 toplam mesafe" value={d} set={setD} step="20" unit="m" />
       {body}
       <SaveBtn payload={payload} saveKey="vo2yoyo" />
@@ -491,7 +500,8 @@ function VO2VIFTCard() {
       components: { age: av, weight_kg: wv, female, vo2max_est: vo2 } };
   }
   return (
-    <Card icon="ti-lungs" title="Dayanıklılık (VO2max) — 30-15 IFT" sub="VIFT · Buchheit">
+    <Card icon="ti-lungs" title="Dayanıklılık (VO2max) — 30-15 IFT" sub="VIFT · Buchheit"
+      explain="Son tamamlanan kademenin hızından (VIFT) tahmini VO2max ve aralıklı dayanıklılık. Antrenman hız bölgelerini belirler.">
       <NumIn label="VIFT (son kademe hızı)" value={v} set={setV} step="0.5" unit="km/sa" />
       <div style={{ display: "flex", gap: 8 }}>
         <div style={{ flex: 1 }}><NumIn label="Yaş" value={a} set={setA} step="1" /></div>
@@ -523,7 +533,8 @@ function AdductorCard() {
       components: { previous: r1(p), drop_pct: drop, flagged } };
   }
   return (
-    <Card icon="ti-stethoscope" title="Maç Sonrası Kasık Kuvveti" sub="MD+1 Adductor Squeeze">
+    <Card icon="ti-stethoscope" title="Maç Sonrası Kasık Kuvveti" sub="MD+1 Adductor Squeeze"
+      explain="Maç ertesi (MD+1) kasık (adduktor) sıkıştırma kuvvetindeki düşüş. %10 üstü düşüş kasık/pubis sakatlık göstergesidir.">
       <NumIn label="Güncel squeeze" value={cur} set={setCur} step="5" unit="N" />
       <NumIn label="Önceki ölçüm" value={prev} set={setPrev} step="5" unit="N" />
       {body}
@@ -551,7 +562,8 @@ function CMJCard() {
       components: { baseline_values: baseVals.map(r1), baseline_mean: r1(mean), drop_pct: drop, flagged } };
   }
   return (
-    <Card icon="ti-bolt" title="Maç Sonrası Sıçrama Yorgunluğu" sub="MD+1 CMJ · nöromusküler">
+    <Card icon="ti-bolt" title="Maç Sonrası Sıçrama Yorgunluğu" sub="MD+1 CMJ · nöromusküler"
+      explain="Maç ertesi (MD+1) dikey sıçrama yüksekliğindeki düşüş. %10 üstü düşüş nöromüsküler yorgunluğu gösterir.">
       <NumIn label="Güncel CMJ" value={cur} set={setCur} step="0.5" unit="cm" />
       <TxtIn label="Baseline CMJ (virgülle)" value={base} set={setBase} />
       {body}
@@ -575,7 +587,8 @@ function RTPCard() {
         cleared ? "sahaya çıkabilir" : `< %${RTP_GREEN_LIGHT_PCT} → sahaya çıkmasın`]} />;
   }
   return (
-    <Card icon="ti-traffic-lights" title="Sahaya Dönüş Hazırlığı" sub="Return-to-Play">
+    <Card icon="ti-traffic-lights" title="Sahaya Dönüş Hazırlığı" sub="Return-to-Play"
+      explain="Sakatlık sonrası performansın sağlıklı dönemdeki seviyeye (baseline) oranı. ≥%95 yeşil ışık = sahaya hazır.">
       <NumIn label="Dönüş mikro-test sonucu" value={cur} set={setCur} step="0.1" />
       <NumIn label="Sakatlık-öncesi baseline" value={base} set={setBase} step="0.1" />
       <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--dim)", marginBottom: 8 }}>

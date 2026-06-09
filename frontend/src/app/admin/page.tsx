@@ -10,6 +10,8 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { RequireRole } from "@/lib/auth";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { jobLabel } from "@/lib/labels";
+import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../_console/shell";
 
 interface JobRow {
@@ -88,6 +90,11 @@ function AdminConsoleContent() {
   const tokensPct = pct(usage?.anthropic_tokens_today, usage?.anthropic_token_limit);
   const callsPct = pct(usage?.api_football_calls_today, usage?.api_football_daily_limit);
   const rows = jobs ?? [];
+
+  const jobSort = useSort<"started_at" | "job_name" | "status" | "attempts">("started_at");
+  const sortedRows = [...rows].sort((a, b) =>
+    sortCompare(a[jobSort.key], b[jobSort.key], jobSort.dir),
+  );
   const failed = rows.filter((r) => r.status === "failed").length;
 
   const right = (
@@ -123,17 +130,23 @@ function AdminConsoleContent() {
       {jobsError && <div className="pgdesc">Job geçmişi alınamadı ya da yetki yok.</div>}
       <div className="tbl">
         <table>
-          <thead><tr><th>Başladı</th><th>Job</th><th className="c">Durum</th><th className="c">Deneme</th><th>Hata</th></tr></thead>
+          <thead><tr>
+            <SortableTh active={jobSort.key === "started_at"} dir={jobSort.dir} label="Başladı" onClick={() => jobSort.onSort("started_at")} />
+            <SortableTh active={jobSort.key === "job_name"} dir={jobSort.dir} label="Görev" onClick={() => jobSort.onSort("job_name")} />
+            <SortableTh active={jobSort.key === "status"} dir={jobSort.dir} label="Durum" align="c" onClick={() => jobSort.onSort("status")} />
+            <SortableTh active={jobSort.key === "attempts"} dir={jobSort.dir} label="Deneme" align="c" onClick={() => jobSort.onSort("attempts")} />
+            <th>Hata</th>
+          </tr></thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>Hiç job çalışmamış.</td></tr>
+              <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>Hiç görev çalışmamış.</td></tr>
             )}
-            {rows.slice(0, 30).map((r) => {
+            {sortedRows.slice(0, 30).map((r) => {
               const v = STATUS_VAR[r.status] ?? "var(--muted)";
               return (
                 <tr key={r.id}>
                   <td style={{ fontFamily: "JetBrains Mono", color: "var(--muted)", fontSize: 11, whiteSpace: "nowrap" }}>{new Date(r.started_at).toLocaleString("tr-TR")}</td>
-                  <td><span className="nm" style={{ fontFamily: "JetBrains Mono", fontSize: 11.5 }}>{r.job_name}</span></td>
+                  <td><span className="nm" title={r.job_name}>{jobLabel(r.job_name)}</span></td>
                   <td className="c"><span className="risk" style={{ color: v }}><span className="rd" style={{ background: v, boxShadow: `0 0 7px ${v}` }} />{r.status}</span></td>
                   <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{r.attempts}</td>
                   <td style={{ color: r.error ? "var(--crit)" : "var(--dim)", fontSize: 11.5 }}>{r.error ? r.error.slice(0, 60) : "—"}</td>

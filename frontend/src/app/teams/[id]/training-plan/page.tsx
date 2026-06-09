@@ -79,7 +79,7 @@ const DEMO_DRILLS: Drill[] = [
   {
     name: "İzole sağ kanat 1v1 + cut-in",
     focus: "Hücum · sağ koridor",
-    rationale: "Rakip sağ bek hücumda yüksek konumlanıyor; arkasındaki koridor maç başına ort. 6 kez açılıyor. Tolga Erdem (7) için içeri kat etme ve bitiricilik tekrarları — bu maçın anahtar eşleşmesi.",
+    rationale: "Rakip sağ bek hücumda yüksek konumlanıyor; arkasındaki koridor maç başına ort. 6 kez açılıyor. Milot Rashica (7) için içeri kat etme ve bitiricilik tekrarları — bu maçın anahtar eşleşmesi.",
     duration_min: "20",
   },
   {
@@ -114,8 +114,8 @@ const DEMO_AI_BRIEF =
   `belirleyici olacak.\n\n` +
   `Yük planı tapering mantığında: tepe MG-4'te (yüklenme), sonra maça doğru kademeli düşüş. MG-2 taktik gününde ` +
   `sağ kanat 1v1 ve far-post duran top senaryolarına ağırlık veriyoruz.\n\n` +
-  `Risk: Caner Öztürk (10) şüpheli — MG-4/3 bireysel program, MG-1 sabah testine göre karar. Berkay Doğan (14) taze ` +
-  `tutuluyor. Tolga Erdem (7) sağ kanatta tam yükle hazır; maçın anahtar eşleşmesi onun tarafında.`;
+  `Risk: Orkun Kökçü (10) şüpheli — MG-4/3 bireysel program, MG-1 sabah testine göre karar. Junior Olaitan (14) taze ` +
+  `tutuluyor. Milot Rashica (7) sağ kanatta tam yükle hazır; maçın anahtar eşleşmesi onun tarafında.`;
 
 const intensityColor: Record<string, string> = {
   "Yüksek": "var(--high)",

@@ -24,6 +24,7 @@ import {
   demoSquad,
   type Scenario,
 } from "@/lib/demo-data";
+import { engineLabel } from "@/lib/labels";
 import { ConsoleShell } from "../../../_console/shell";
 
 interface HalftimeBrief {
@@ -194,8 +195,8 @@ interface HtSub {
 }
 const HT_SUBS: HtSub[] = [
   {
-    out: "Caner Öztürk (10)",
-    in: "Berkay Doğan (14)",
+    out: "Orkun Kökçü (10)",
+    in: "Junior Olaitan (14)",
     urgency: "kritik",
     score: 0.86,
     reasons: [
@@ -205,8 +206,8 @@ const HT_SUBS: HtSub[] = [
     ],
   },
   {
-    out: "Onur Kaya (3)",
-    in: "Okan Yavuz (23)",
+    out: "Rıdvan Yılmaz (3)",
+    in: "Necip Uysal (23)",
     urgency: "yüksek",
     score: 0.71,
     reasons: [
@@ -216,8 +217,8 @@ const HT_SUBS: HtSub[] = [
     ],
   },
   {
-    out: "Kerem Aslan (4)",
-    in: "Mert Demir (5)",
+    out: "Tiago Djaló (4)",
+    in: "Emmanuel Agbadou (5)",
     urgency: "orta",
     score: 0.54,
     reasons: [
@@ -393,7 +394,7 @@ function DemoHalftimeView() {
       <div className="rc" style={{ margin: "0 0 14px" }}>
         <FirstHalfXgChart />
         <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 6 }}>
-          23&apos; Doğan Yılmaz golüyle öne geçtik, xG akışında üstündük; 45&apos; far-post korner golüyle beraberlik. Maç başa baş kapandı.
+          23&apos; Oh Hyeon-Gyu golüyle öne geçtik, xG akışında üstündük; 45&apos; far-post korner golüyle beraberlik. Maç başa baş kapandı.
         </div>
       </div>
 
@@ -406,15 +407,15 @@ function DemoHalftimeView() {
           duran toptaki far-post zaafımızdan geldi.
         </p>
         <p style={{ marginBottom: 10 }}>
-          <b>Ne çalıştı.</b> Sağ kanatta Tolga Erdem (7) rakip sol beke karşı net üstün (avantaj %{demoMatchups[0].advantage}); o koridordan
+          <b>Ne çalıştı.</b> Sağ kanatta Milot Rashica (7) rakip sol beke karşı net üstün (avantaj %{demoMatchups[0].advantage}); o koridordan
           giriş üretmeye devam. Yarı-alan baskısı ve 10 numaranın arasına sarkması rakibi geriye itti.
         </p>
         <p style={{ marginBottom: 10 }}>
-          <b>Risk.</b> Caner Öztürk (10) 38&apos;de arka adalesini gerdi ve kondisyonu kritik (58); akut/kronik yük 1.6. İkinci yarıya
-          çıkarmak sakatlık riski. Sol bek Onur Kaya (3) da yorgun ve rakip o kanadı sömürüyor.
+          <b>Risk.</b> Orkun Kökçü (10) 38&apos;de arka adalesini gerdi ve kondisyonu kritik (58); akut/kronik yük 1.6. İkinci yarıya
+          çıkarmak sakatlık riski. Sol bek Rıdvan Yılmaz (3) da yorgun ve rakip o kanadı sömürüyor.
         </p>
         <p style={{ margin: 0 }}>
-          <b>Plan.</b> Devrede Caner Öztürk → Berkay Doğan (14) değişikliğiyle taze yaratıcılık koy. Duran top savunmasını zonal&apos;dan
+          <b>Plan.</b> Devrede Orkun Kökçü → Junior Olaitan (14) değişikliğiyle taze yaratıcılık koy. Duran top savunmasını zonal&apos;dan
           adam-adamaya çevir (far-post). Sağ kanat 1v1&apos;i ısrarla zorla; gol beraberlik golünden önceki üstünlüğün doğal sonucu olacak.
         </p>
       </div>
@@ -458,7 +459,7 @@ function DemoHalftimeView() {
                   <td>
                     <span className="nm">{dec.headline}</span>
                     <span style={{ display: "block", fontSize: 11, color: "var(--dim)", marginTop: 2 }}>
-                      {dec.signals[0].engine} · {dec.signals[0].label}
+                      <span title={dec.signals[0].engine}>{engineLabel(dec.signals[0].engine)}</span> · {dec.signals[0].label}
                     </span>
                   </td>
                   <td><span className="pos">{dec.decisionType}</span></td>

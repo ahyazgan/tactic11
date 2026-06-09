@@ -11,6 +11,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoLive, demoDecisions, type LiveEvent, type LivePlayerImpact, type DecisionCard } from "@/lib/demo-data";
+import { engineLabel } from "@/lib/labels";
 import { ConsoleShell } from "../../../_console/shell";
 
 interface Confidence { score: number; label: string; drivers: string[] }
@@ -293,7 +294,7 @@ function NextBestActionPanel({ action }: { action: NextAction | null }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 5, paddingTop: 8, borderTop: "1px solid var(--line)" }}>
           {action.signals.map((s, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11.5 }}>
-              <span style={{ fontFamily: "JetBrains Mono", color: "var(--dim)", minWidth: 140 }}>{s.engine}</span>
+              <span title={s.engine} style={{ color: "var(--dim)", minWidth: 140 }}>{engineLabel(s.engine)}</span>
               <span style={{ color: "var(--muted)", flex: 1 }}>{s.label}</span>
               {s.magnitude != null && (
                 <span className="mbar" style={{ width: 48, display: "inline-block" }}>
@@ -367,7 +368,7 @@ function DecisionTimeline({ decisions, currentMinute }: { decisions: DecisionCar
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
             {card.signals.map((s, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11 }}>
-                <span style={{ fontFamily: "JetBrains Mono", color: "var(--dim)", minWidth: 150 }}>{s.engine}</span>
+                <span title={s.engine} style={{ color: "var(--dim)", minWidth: 150 }}>{engineLabel(s.engine)}</span>
                 <span style={{ color: "var(--muted)", flex: 1 }}>{s.label}</span>
                 <span style={{ fontSize: 10, color: "var(--dim)", fontFamily: "JetBrains Mono" }}>n={s.sampleSize}</span>
                 <span className="mbar" style={{ width: 44, display: "inline-block" }}>

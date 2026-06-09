@@ -15,6 +15,7 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoLive, DEMO_CLUB, DEMO_OPPONENT, type LivePlayerImpact } from "@/lib/demo-data";
+import { useSort, SortableTh } from "@/lib/sortable";
 import { ConsoleShell } from "../_console/shell";
 
 interface XgResp {
@@ -112,12 +113,12 @@ const PPDA_SEASON_AVG = 11.0; // takım sezon ortalaması (referans çizgi)
 interface Shot { x: number; y: number; xg: number; goal: boolean; team: "home" | "away"; player: string; minute: number }
 const DEMO_SHOTS: Shot[] = [
   // FK Demo (home) — toplam xG 1.22
-  { x: 88, y: 42, xg: 0.31, goal: false, team: "home", player: "Tolga Erdem", minute: 12 },
-  { x: 92, y: 52, xg: 0.46, goal: true, team: "home", player: "Doğan Yılmaz", minute: 23 },
-  { x: 78, y: 30, xg: 0.08, goal: false, team: "home", player: "Yusuf Şahin", minute: 34 },
-  { x: 84, y: 60, xg: 0.12, goal: false, team: "home", player: "Caner Öztürk", minute: 41 },
-  { x: 90, y: 48, xg: 0.19, goal: false, team: "home", player: "Arda Çelik", minute: 55 },
-  { x: 73, y: 38, xg: 0.06, goal: false, team: "home", player: "Doğan Yılmaz", minute: 62 },
+  { x: 88, y: 42, xg: 0.31, goal: false, team: "home", player: "Milot Rashica", minute: 12 },
+  { x: 92, y: 52, xg: 0.46, goal: true, team: "home", player: "Oh Hyeon-Gyu", minute: 23 },
+  { x: 78, y: 30, xg: 0.08, goal: false, team: "home", player: "Salih Uçan", minute: 34 },
+  { x: 84, y: 60, xg: 0.12, goal: false, team: "home", player: "Orkun Kökçü", minute: 41 },
+  { x: 90, y: 48, xg: 0.19, goal: false, team: "home", player: "Jota Silva", minute: 55 },
+  { x: 73, y: 38, xg: 0.06, goal: false, team: "home", player: "Oh Hyeon-Gyu", minute: 62 },
   // Rakip SK (away) — toplam xG 1.35
   { x: 86, y: 55, xg: 0.24, goal: false, team: "away", player: "Rakip #9", minute: 38 },
   { x: 94, y: 50, xg: 0.41, goal: true, team: "away", player: "Rakip #4", minute: 45 },
@@ -511,26 +512,6 @@ const segBtn = (active: boolean): React.CSSProperties => ({
   boxShadow: active ? "0 1px 3px rgba(0,0,0,.08)" : "none",
 });
 
-// --------------------------------------------------------------------------- //
-// Tablo sıralama — paylaşılan hook + tıklanabilir başlık. Tıkla → yön değiştir.
-// --------------------------------------------------------------------------- //
-function useSort<K extends string>(initialKey: K, initialDir: "asc" | "desc" = "desc") {
-  const [key, setKey] = React.useState<K>(initialKey);
-  const [dir, setDir] = React.useState<"asc" | "desc">(initialDir);
-  const onSort = (k: K) => {
-    if (k === key) setDir((d) => (d === "desc" ? "asc" : "desc"));
-    else { setKey(k); setDir("desc"); }
-  };
-  return { key, dir, onSort };
-}
-
-function SortableTh({ active, dir, label, align, onClick }: { active: boolean; dir: "asc" | "desc"; label: string; align?: "c" | "r"; onClick: () => void }) {
-  return (
-    <th className={align} onClick={onClick} style={{ cursor: "pointer", userSelect: "none", color: active ? "var(--accent)" : undefined, whiteSpace: "nowrap" }} title="Sıralamak için tıkla">
-      {label}{active ? (dir === "desc" ? " ▼" : " ▲") : <span style={{ opacity: 0.35 }}> ⇅</span>}
-    </th>
-  );
-}
 
 export default function XgConsolePage() {
   const [team, setTeam] = React.useState("");

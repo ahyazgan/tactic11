@@ -11,6 +11,7 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoPlayerRows } from "@/lib/demo-data";
+import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -77,6 +78,11 @@ export default function SquadConsolePage() {
     return true;
   });
 
+  const sort = useSort<"player_name" | "test_count" | "latest_test_date" | "risk_score">("risk_score");
+  const sortedShown = [...shown].sort((a, b) =>
+    sortCompare(a[sort.key] ?? "", b[sort.key] ?? "", sort.dir),
+  );
+
   const right = (
     <>
       <div className="rc">
@@ -137,16 +143,21 @@ export default function SquadConsolePage() {
       <div className="tbl">
         <table>
           <thead><tr>
-            <th className="c">#</th><th>Oyuncu</th><th className="c">Test</th>
-            <th className="c">Kondisyon</th><th className="c">Son Test</th><th className="c">Durum</th><th className="r">Risk</th>
+            <th className="c">#</th>
+            <SortableTh active={sort.key === "player_name"} dir={sort.dir} label="Oyuncu" onClick={() => sort.onSort("player_name")} />
+            <SortableTh active={sort.key === "test_count"} dir={sort.dir} label="Test" align="c" onClick={() => sort.onSort("test_count")} />
+            <th className="c">Kondisyon</th>
+            <SortableTh active={sort.key === "latest_test_date"} dir={sort.dir} label="Son Test" align="c" onClick={() => sort.onSort("latest_test_date")} />
+            <th className="c">Durum</th>
+            <SortableTh active={sort.key === "risk_score"} dir={sort.dir} label="Risk" align="r" onClick={() => sort.onSort("risk_score")} />
           </tr></thead>
           <tbody>
-            {shown.length === 0 && (
+            {sortedShown.length === 0 && (
               <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--dim)", padding: "18px" }}>
                 {players.length === 0 ? "Veri yok (backend bağlı değilse boş gelir)." : "Bu filtrede oyuncu yok."}
               </td></tr>
             )}
-            {shown.map((p, i) => {
+            {sortedShown.map((p, i) => {
               const cond = Math.round(100 - p.risk_score * 100);
               const rv = RISK_VAR[p.risk_label] ?? "var(--dim)";
               const st = statusOf(p.risk_label);
