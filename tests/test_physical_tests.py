@@ -1028,3 +1028,19 @@ def test_squad_comparison_unknown_protocol_404(client):
     c, _ = client
     r = c.get("/physical-tests/squad-comparison?protocol=bilinmeyen")
     assert r.status_code == 404
+
+
+def test_squad_readiness_includes_regression_flag(client):
+    c, _ = client
+    # 6 CMJ ölçümü, son 3'ü belirgin düşük → anomaly break → Regresyon bayrağı
+    vals = [52.0, 53.0, 51.0, 42.0, 41.0, 40.0]
+    for i, v in enumerate(vals, start=1):
+        r = c.post("/physical-tests/", json={
+            "player_id": "961", "player_name": "Regresyon Test",
+            "test_date": f"2026-06-0{i}", "protocol": "cmj", "value": v,
+        })
+        assert r.status_code == 201, r.text
+    body = c.get("/physical-tests/squad-readiness").json()
+    row = next((x for x in body if x["player_id"] == "961"), None)
+    assert row is not None
+    assert any(f["metric"] == "Regresyon" for f in row["decision"]["flags"])

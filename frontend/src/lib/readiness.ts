@@ -13,6 +13,7 @@ import { acwrForPlayer, type LoadSession } from "@/lib/load";
 import {
   latestWellnessFor, wellnessReadiness, wellnessZone, type WellnessEntry,
 } from "@/lib/wellness";
+import { detectRegression, demoRegressionSeriesFor, type RegressionSeries } from "@/lib/regression";
 
 export type Light = "kırmızı" | "sarı" | "yeşil";
 
@@ -68,6 +69,7 @@ export interface ReadinessInput {
   cmj?: { current: number; baseline: number[] };
   acwr?: number;
   wellness?: { sleep_quality: number; fatigue: number; muscle_soreness: number; stress: number; mood: number };
+  regression?: RegressionSeries[];
 }
 
 /** assess_readiness aynası — verilen her metrik flag'lenir, en kötü severity karar. */
@@ -193,6 +195,20 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       threshold: "≥%70 hazır · %55-70 izle · <%55 dikkat",
       action: sev === "yeşil" ? "öznel hazırlık iyi" : "uyku/yorgunluk/ağrı düşük — yükü/kadroyu değerlendir",
     });
+  }
+
+  if (input.regression?.length) {
+    const dropped = input.regression
+      .filter((x) => detectRegression(x.values, x.higherIsBetter))
+      .map((x) => x.protocol);
+    if (dropped.length) {
+      flags.push({
+        metric: "Regresyon", engine: "interpret_progression", severity: "sarı",
+        value: dropped.join(", "),
+        threshold: "ani düşüş (anomaly break ≥1σ, yön-duyarlı)",
+        action: "performansta ani düşüş — sakatlık/aşırı yük kontrolü, yükü gözden geçir",
+      });
+    }
   }
 
   flags.sort((a, b) => LIGHT_RANK[a.severity] - LIGHT_RANK[b.severity]);
@@ -332,18 +348,18 @@ export function squadReadiness(
         records.filter((r) => String(r.player_id) === String(player.player_id)));
       const acwr = acwrForPlayer(player.player_id, loads);
       const we = latestWellnessFor(player.player_id, wellness);
-      if (recInput || acwr != null || we) {
-        const input: ReadinessInput = { ...(recInput ?? {}) };
-        if (acwr != null) input.acwr = acwr;
-        if (we) {
-          input.wellness = {
-            sleep_quality: we.sleep_quality, fatigue: we.fatigue,
-            muscle_soreness: we.muscle_soreness, stress: we.stress, mood: we.mood,
-          };
-        }
-        return { player, decision: assessReadiness(input), source: "entered" };
+      const hasEntered = !!(recInput || acwr != null || we);
+      const input: ReadinessInput = hasEntered ? { ...(recInput ?? {}) } : demoInputFor(player);
+      if (acwr != null) input.acwr = acwr;
+      if (we) {
+        input.wellness = {
+          sleep_quality: we.sleep_quality, fatigue: we.fatigue,
+          muscle_soreness: we.muscle_soreness, stress: we.stress, mood: we.mood,
+        };
       }
-      return { player, decision: assessReadiness(demoInputFor(player)), source: "demo" };
+      // Regresyon serisi (demo: risk-tabanlı; gerçek modda backend test geçmişinden).
+      input.regression = demoRegressionSeriesFor(player.player_id);
+      return { player, decision: assessReadiness(input), source: hasEntered ? "entered" : "demo" };
     })
     .sort((a, b) =>
       LIGHT_RANK[a.decision.light] - LIGHT_RANK[b.decision.light]

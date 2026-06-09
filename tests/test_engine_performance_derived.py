@@ -489,3 +489,15 @@ def test_readiness_wellness_poor_is_red():
     d = assess_readiness(wellness=(2, 2, 2, 3, 2))  # readiness 11/35≈0.31 → dikkat
     assert d.light == "kırmızı"
     assert any(f.metric == "Wellness" and f.severity == "kırmızı" for f in d.flags)
+
+
+def test_readiness_regression_sudden_drop_flags():
+    # CMJ (yüksek iyi) son 3 ölçümde belirgin düşüş → regresyon (sarı)
+    d = assess_readiness(regression=[("cmj", [52, 51, 53, 52, 50, 42, 41, 40])])
+    assert any(f.metric == "Regresyon" and f.severity == "sarı" for f in d.flags)
+    assert d.light in ("sarı", "kırmızı")
+
+
+def test_readiness_regression_stable_no_flag():
+    d = assess_readiness(regression=[("cmj", [50, 51, 50, 52, 51, 50, 51, 50])])
+    assert not any(f.metric == "Regresyon" for f in d.flags)

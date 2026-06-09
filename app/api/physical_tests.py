@@ -843,10 +843,13 @@ def squad_readiness(
         .order_by(PhysicalTest.test_date.desc(), PhysicalTest.id.desc())
     ).scalars())
     by_player: dict[str, dict[str, PhysicalTest]] = {}
+    series_by_player: dict[str, dict[str, list[tuple[date, float]]]] = {}
     names: dict[str, str] = {}
     for r in test_rows:
         names.setdefault(r.player_id, r.player_name)
         by_player.setdefault(r.player_id, {}).setdefault(r.protocol, r)
+        series_by_player.setdefault(r.player_id, {}).setdefault(r.protocol, []).append(
+            (r.test_date, r.value))
 
     # Yük kayıtları → oyuncu başına günlük seri (gün başına AU toplamı) → ACWR.
     load_rows = list(session.execute(
@@ -887,6 +890,14 @@ def squad_readiness(
         we = latest_wellness.get(pid)
         if we is not None:
             kw["wellness"] = (we.sleep_quality, we.fatigue, we.muscle_soreness, we.stress, we.mood)
+        # Regresyon: protokol başına ≥6 noktalı kronolojik seri (anomaly break).
+        reg = [
+            (proto, [v for _, v in sorted(pairs, key=lambda x: x[0])])
+            for proto, pairs in series_by_player.get(pid, {}).items()
+            if len(pairs) >= 6
+        ]
+        if reg:
+            kw["regression"] = reg
         decision = perf.assess_readiness(**kw)
         out.append(SquadReadinessRowOut(
             player_id=pid, player_name=names.get(pid, pid),

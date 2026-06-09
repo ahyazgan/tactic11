@@ -942,6 +942,7 @@ def assess_readiness(
     cmj: tuple[float, list[float]] | None = None,        # (current, baseline_values)
     acwr: float | None = None,                           # akut:kronik yük
     wellness: tuple[int, int, int, int, int] | None = None,  # (uyku, yorgunluk, ağrı, stres, ruh hali) 1-7
+    regression: list[tuple[str, list[float]]] | None = None,  # [(protocol_key, tarihsel seri)]
 ) -> ReadinessDecision:
     """Türetilmiş test metriklerini tek hazırlık kararına sentezler.
 
@@ -1063,6 +1064,25 @@ def assess_readiness(
             action=("öznel hazırlık iyi" if sev == "yeşil"
                     else (wflags or "öznel hazırlık düşük") + " — yükü/kadroyu değerlendir"),
         ))
+
+    if regression:
+        # Test trendinde ani düşüş (interpret_progression: anomaly break, yön-duyarlı).
+        dropped: list[str] = []
+        for proto_key, series in regression:
+            try:
+                rep = interpret_progression(proto_key, series)
+            except ValueError:
+                continue
+            if rep.regression_alert:
+                proto = PROTOCOLS.get(proto_key)
+                dropped.append(proto.name if proto is not None else proto_key)
+        if dropped:
+            flags.append(ReadinessFlag(
+                metric="Regresyon", engine="interpret_progression", severity="sarı",
+                value=", ".join(dropped),
+                threshold="ani düşüş (anomaly break ≥1σ, yön-duyarlı)",
+                action="performansta ani düşüş — sakatlık/aşırı yük kontrolü, yükü gözden geçir",
+            ))
 
     flags.sort(key=lambda f: _LIGHT_RANK.get(f.severity, 9))
     red = sum(1 for f in flags if f.severity == "kırmızı")
