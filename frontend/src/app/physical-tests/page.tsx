@@ -108,17 +108,73 @@ const HRV_TREND = [82, 80, 79, 76, 71, 73, 78, 81, 80, 77, 72, 75, 79, AVG_HRV];
 // ── Hazırlık Kararı (karar verici) — assess_readiness motorunun kadro çıktısı.
 // Girilen test kaydı (Test Hesaplayıcı) varsa onu, yoksa demo profilini kullanır.
 
+// Her metriğin sade-dil karşılığı: kısaltma (RTP/H:Q…) ne anlama geliyor.
+// engine = kararlı anahtar (assess_readiness motor adı). name = kullanıcıya
+// gösterilen tam ad, hint = "bu ölçüm ne ölçer" tek cümlelik açıklama.
+const METRIC_INFO: Record<string, { name: string; hint: string }> = {
+  return_to_play_readiness: {
+    name: "Sahaya Dönüş Hazırlığı",
+    hint: "Sakatlık sonrası performans, sağlıklı dönemdeki seviyesine ne kadar yaklaştı.",
+  },
+  hamstring_quad_ratio: {
+    name: "Arka/Ön Bacak Kuvvet Dengesi",
+    hint: "Arka bacak (hamstring) ÷ ön bacak (quadriceps) kuvveti. Düşükse hamstring sakatlık riski artar.",
+  },
+  limb_asymmetry: {
+    name: "İki Bacak Arası Denge",
+    hint: "Sağ ve sol bacak arasındaki güç farkı. Yüksek fark yeniden-sakatlanma riskidir.",
+  },
+  repeated_sprint_fatigue_index: {
+    name: "Tekrarlı Sprint Dayanıklılığı",
+    hint: "Art arda sprintlerde hızın ne kadar düştüğü; yüksek değer yetersiz toparlanmadır.",
+  },
+  change_of_direction_deficit: {
+    name: "Yön Değiştirme Açığı",
+    hint: "Düz koşuya kıyasla dönüş/frenlemede kaybedilen süre.",
+  },
+  adductor_squeeze_drop: {
+    name: "Kasık Kuvveti",
+    hint: "Kasık (adduktor) sıkıştırma kuvvetindeki düşüş; kasık/pubis sakatlık göstergesi.",
+  },
+  cmj_neuromuscular_drop: {
+    name: "Dikey Sıçrama (Yorgunluk)",
+    hint: "Sıçrama yüksekliğindeki düşüş kasların yorgun olduğunu gösterir.",
+  },
+  acwr_band: {
+    name: "Akut:Kronik Yük Oranı",
+    hint: "Son haftanın yükü ÷ son 4 haftanın ortalaması. Ani yük sıçramasını yakalar.",
+  },
+  compute_wellness: {
+    name: "Öznel Hazırlık (Anket)",
+    hint: "Oyuncunun uyku, yorgunluk, kas ağrısı, stres ve moral öz-değerlendirmesi.",
+  },
+  interpret_progression: {
+    name: "Performans Düşüş Takibi",
+    hint: "Test geçmişinde beklenmedik ani düşüş olup olmadığı.",
+  },
+};
+
 function FlagRow({ f }: { f: ReadinessFlag }) {
   const v = LIGHT_VAR[f.severity];
+  const info = METRIC_INFO[f.engine];
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "150px auto 1fr", gap: 10, alignItems: "baseline", fontSize: 12, padding: "5px 0", borderTop: "1px solid var(--line)" }}>
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-        <span style={{ width: 8, height: 8, borderRadius: "50%", background: v, flexShrink: 0 }} />
-        <b>{f.metric}</b>
+    <div style={{ display: "grid", gridTemplateColumns: "200px auto 1fr", gap: 12, alignItems: "start", fontSize: 12, padding: "9px 0", borderTop: "1px solid var(--line)" }}>
+      <span style={{ display: "flex", alignItems: "flex-start", gap: 6, minWidth: 0 }}>
+        <span style={{ width: 8, height: 8, borderRadius: "50%", background: v, flexShrink: 0, marginTop: 4 }} />
+        <span style={{ minWidth: 0 }}>
+          <b style={{ display: "block", lineHeight: 1.3 }}>{info?.name ?? f.metric}</b>
+          <span style={{ fontSize: 10.5, color: "var(--dim)", textTransform: "uppercase", letterSpacing: 0.3 }}>{f.metric}</span>
+        </span>
       </span>
-      <span style={{ fontFamily: "JetBrains Mono", color: v, whiteSpace: "nowrap" }}>{f.value}</span>
-      <span style={{ color: "var(--muted)", lineHeight: 1.45 }}>
-        {f.action} <span style={{ color: "var(--dim)", fontSize: 11 }}>· eşik {f.threshold} · {f.engine}</span>
+      <span style={{ fontFamily: "JetBrains Mono", color: v, whiteSpace: "nowrap", marginTop: 1 }}>{f.value}</span>
+      <span style={{ color: "var(--muted)", lineHeight: 1.5 }}>
+        {f.action}
+        {info?.hint && (
+          <span style={{ display: "block", color: "var(--dim)", fontSize: 11, marginTop: 3 }}>{info.hint}</span>
+        )}
+        <span style={{ display: "block", color: "var(--dim)", fontSize: 11, marginTop: 3 }} title={f.engine}>
+          Eşik: {f.threshold}
+        </span>
       </span>
     </div>
   );

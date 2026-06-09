@@ -20,18 +20,6 @@ import { DEMO_MODE } from "@/lib/demo-mode";
 // Demo: canlı maç ekranına markasız sabit hedef (id "demo" → sayfa mock gösterir).
 const DEMO_LIVE_HREF = "/matches/demo/live";
 
-const FULL_TABS = [
-  { label: "Portal",      href: "/overview",        icon: "ti-home" },
-  { label: "Kadro",       href: "/squad",            icon: "ti-users" },
-  { label: "Maç",         href: "/matches",          icon: "ti-ball-football" },
-  { label: "Analiz",      href: "/xg",               icon: "ti-chart-bar" },
-  { label: "Scout",       href: "/scout",            icon: "ti-search" },
-];
-
-// Navigasyon HER ZAMAN tam menü (önizlemedeki KULÜP/ANALİZ/SİSTEM düzeni).
-// DEMO_MODE yalnızca veriyi + kulüp markasını etkiler; sidebar/sekmeleri DEĞİL.
-const TABS = FULL_TABS;
-
 const FULL_BTABS = [
   { ic: "ti-home",             label: "Portal",  href: "/overview" },
   { ic: "ti-users",            label: "Kadro",   href: "/squad" },
@@ -124,19 +112,6 @@ export function ConsoleShell({
           <span className="logo-name">manager2</span>
         </div>
 
-        <nav className="nav-tabs" aria-label="Ana navigasyon">
-          {TABS.map((t) => (
-            <Link
-              key={t.href}
-              href={t.href}
-              className={`ntab${t.href === active || (t.href !== "/overview" && active.startsWith(t.href)) ? " active" : ""}`}
-            >
-              <i className={`ti ${t.icon}`} aria-hidden="true" />
-              {t.label}
-            </Link>
-          ))}
-        </nav>
-
         <div className="nav-right">
           <div className="search-pill">
             <span className="sp-icon">⌕</span>
@@ -156,29 +131,7 @@ export function ConsoleShell({
       <div className="cbody">
 
         {/* Sol Sidebar */}
-        <nav className="sidebar" aria-label="Yan navigasyon">
-          {NAV.map((g) => (
-            <React.Fragment key={g.grp}>
-              <div className="sgrp">{g.grp}</div>
-              {g.items.map((it) => (
-                <Link
-                  key={it.href}
-                  href={it.href}
-                  className={`sni${it.href === active ? " active" : ""}`}
-                >
-                  <i className={`ti ${it.icon}`} aria-hidden="true" />
-                  <span className="sni-label">{it.label}</span>
-                  {it.badge != null && (
-                    <span className={`nbadge ${it.badgeKind ?? "count"}`}>{it.badge}</span>
-                  )}
-                  {it.label === "Fiziksel Durum" && navBadge != null && navBadge > 0 && (
-                    <span className="nbadge count">{navBadge}</span>
-                  )}
-                </Link>
-              ))}
-            </React.Fragment>
-          ))}
-        </nav>
+        <SidebarNav active={active} navBadge={navBadge} />
 
         {/* Orta */}
         <main className="center">
@@ -208,6 +161,79 @@ export function ConsoleShell({
 
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Sol sidebar — açılır/kapanır gruplar
+   Kapalı gruplar localStorage'da tutulur; aktif öğe içeren grup daima açık.
+───────────────────────────────────────────── */
+const SIDEBAR_COLLAPSE_KEY = "manager2_console_sidebar_collapsed";
+
+function SidebarNav({ active, navBadge }: { active: string; navBadge?: number }) {
+  const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
+
+  React.useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(SIDEBAR_COLLAPSE_KEY);
+      if (saved) setCollapsed(new Set(JSON.parse(saved) as string[]));
+    } catch {
+      /* yok say */
+    }
+  }, []);
+
+  const toggle = React.useCallback((grp: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(grp)) next.delete(grp);
+      else next.add(grp);
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSE_KEY, JSON.stringify([...next]));
+      } catch {
+        /* yok say */
+      }
+      return next;
+    });
+  }, []);
+
+  return (
+    <nav className="sidebar" aria-label="Yan navigasyon">
+      {NAV.map((g) => {
+        const hasActive = g.items.some((it) => it.href === active);
+        // Aktif sayfa içeren grup, kullanıcı kapatmış olsa da açık kalır.
+        const open = !collapsed.has(g.grp) || hasActive;
+        return (
+          <React.Fragment key={g.grp}>
+            <button
+              type="button"
+              className="sgrp"
+              aria-expanded={open}
+              onClick={() => toggle(g.grp)}
+            >
+              <span>{g.grp}</span>
+              <i className={`ti ti-chevron-down sgrp-chev${open ? "" : " closed"}`} aria-hidden="true" />
+            </button>
+            {open &&
+              g.items.map((it) => (
+                <Link
+                  key={it.href}
+                  href={it.href}
+                  className={`sni${it.href === active ? " active" : ""}`}
+                >
+                  <i className={`ti ${it.icon}`} aria-hidden="true" />
+                  <span className="sni-label">{it.label}</span>
+                  {it.badge != null && (
+                    <span className={`nbadge ${it.badgeKind ?? "count"}`}>{it.badge}</span>
+                  )}
+                  {it.label === "Fiziksel Durum" && navBadge != null && navBadge > 0 && (
+                    <span className="nbadge count">{navBadge}</span>
+                  )}
+                </Link>
+              ))}
+          </React.Fragment>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -322,12 +348,23 @@ const CSS = `
 .ovroot .sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
 .ovroot .sgrp{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;
   font-size:10.5px;font-weight:600;
   text-transform:uppercase;letter-spacing:1px;
   color:var(--dim);
   padding:14px 10px 5px;
+  background:transparent;border:0;
+  font-family:inherit;cursor:pointer;
+  transition:color .08s;
 }
+.ovroot .sgrp:hover{color:var(--muted)}
 .ovroot .sgrp:first-child{padding-top:5px}
+.ovroot .sgrp-chev{
+  font-size:14px;line-height:1;
+  transition:transform .15s ease;
+}
+.ovroot .sgrp-chev.closed{transform:rotate(-90deg)}
 
 .ovroot .sni{
   display:flex;align-items:center;gap:9px;

@@ -93,7 +93,7 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
 
   if (input.hq) {
     const ratio = Math.round((input.hq.hamstring / input.hq.quadriceps) * 1000) / 1000;
-    const band = ratio >= HQ_IDEAL ? "ideal" : ratio >= HQ_RISK ? "sınırda" : "yüksek_risk";
+    const band = ratio >= HQ_IDEAL ? "ideal" : ratio >= HQ_RISK ? "sınırda" : "yüksek risk";
     const sev: Light = band === "ideal" ? "yeşil" : band === "sınırda" ? "sarı" : "kırmızı";
     flags.push({
       metric: "H:Q", engine: "hamstring_quad_ratio", severity: sev,
