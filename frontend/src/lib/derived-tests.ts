@@ -26,6 +26,7 @@ export const PROTO_NAME: Record<string, string> = {
   cmj: "CMJ Sıçrama", sj: "Squat Jump", drop_jump_rsi: "Drop Jump RSI",
   sprint_5m: "5m Sprint", sprint_10m: "10m Sprint", sprint_30m: "30m Sprint",
   t505: "505 Çeviklik", yoyo_irl1: "Yo-Yo IR1", isokinetic_ham: "İzokinetik Hamstring",
+  isokinetic_quad: "İzokinetik Quadriceps",
   adductor_squeeze: "Adductor Squeeze", ift_30_15: "30-15 IFT (VIFT)", illinois: "Illinois",
   rsa: "RSA (tekrarlı sprint)", triple_hop: "Triple Hop", arrowhead: "Arrowhead",
   vo2max: "VO2max", ttest_agility: "T-Test Çeviklik",
@@ -33,6 +34,7 @@ export const PROTO_NAME: Record<string, string> = {
 
 export const PROTO_UNIT: Record<string, string> = {
   cmj: "cm", drop_jump_rsi: "RSI", t505: "sn", isokinetic_ham: "Nm/kg",
+  isokinetic_quad: "Nm/kg",
   adductor_squeeze: "N", ift_30_15: "km/sa", rsa: "sn", triple_hop: "cm", vo2max: "ml/kg/dk",
 };
 
@@ -44,5 +46,15 @@ export function loadDerivedRecords(): SavedRecord[] {
     return raw ? (JSON.parse(raw) as SavedRecord[]) : [];
   } catch {
     return [];
+  }
+}
+
+/** Kayıtları localStorage'a yaz (demo deposu — derive + CSV import ortak kullanır). */
+export function saveDerivedRecords(records: SavedRecord[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(LS_KEY, JSON.stringify(records));
+  } catch {
+    /* kota/erişim hatası — yoksay */
   }
 }

@@ -8,6 +8,7 @@
  */
 
 import { demoSquad, type SquadPlayer } from "@/lib/demo-data";
+import type { SavedRecord } from "@/lib/derived-tests";
 
 export type Light = "kırmızı" | "sarı" | "yeşil";
 
@@ -239,17 +240,87 @@ export function demoReadinessFor(playerId: number): ReadinessDecision {
   return assessReadiness(demoInputFor(p));
 }
 
+// ── Girilen test kayıtlarından (Test Hesaplayıcı) gerçek readiness girdisi ──
+// Test Hesaplayıcı'da kaydedilen türetilmiş metrikler `components`'te ham girdiyi
+// saklar; bunları assess_readiness girdisine çeviriyoruz. Böylece karar verici
+// deterministik demo profili yerine GERÇEK girilen veriyle çalışır.
+
+const numOf = (v: unknown): number | null =>
+  typeof v === "number" && Number.isFinite(v) ? v : null;
+
+const numArrOf = (v: unknown): number[] | null =>
+  Array.isArray(v) && v.every((x) => typeof x === "number") ? (v as number[]) : null;
+
+/** Bir oyuncunun kayıtlarından ReadinessInput kur (protokol başına en son). null = eşlenebilir kayıt yok. */
+export function inputFromRecords(records: SavedRecord[]): ReadinessInput | null {
+  if (!records.length) return null;
+  const latest = [...records].sort((a, b) => b.id - a.id);
+  const pick = (proto: string) => latest.find((r) => r.protocol === proto);
+  const input: ReadinessInput = {};
+  let any = false;
+
+  // H:Q: ya tek kayıtta (derive: components.quadriceps), ya da ayrı
+  // isokinetic_ham + isokinetic_quad kayıtlarından (CSV toplu import).
+  const hq = pick("isokinetic_ham");
+  if (hq) {
+    const quadRec = pick("isokinetic_quad");
+    const quad = numOf(hq.components.quadriceps) ?? (quadRec ? quadRec.value : null);
+    if (quad != null && quad > 0) { input.hq = { hamstring: hq.value, quadriceps: quad }; any = true; }
+  }
+
+  const asym = pick("triple_hop");
+  const left = asym && numOf(asym.components.left);
+  const right = asym && numOf(asym.components.right);
+  if (asym && left != null && right != null) { input.asymmetry = { left, right, label: "Triple Hop" }; any = true; }
+
+  const rsa = pick("rsa");
+  const times = rsa && numArrOf(rsa.components.sprint_times);
+  if (rsa && times && times.length >= 2) { input.rsa = times; any = true; }
+
+  const cod = pick("t505");
+  const lin = cod && numOf(cod.components.linear_10m);
+  if (cod && lin != null && lin > 0 && cod.value > 0) { input.cod = { codTime: cod.value, linear10m: lin }; any = true; }
+
+  const add = pick("adductor_squeeze");
+  const prev = add && numOf(add.components.previous);
+  if (add && prev != null && prev > 0) { input.adductor = { current: add.value, previous: prev }; any = true; }
+
+  const cmj = pick("cmj");
+  const base = cmj && numArrOf(cmj.components.baseline_values);
+  if (cmj && base && base.length) { input.cmj = { current: cmj.value, baseline: base }; any = true; }
+
+  return any ? input : null;
+}
+
+/** Oyuncunun girilen kayıtlarından hazırlık kararı. null = girilen veri yok (demo'ya düş). */
+export function enteredReadinessFor(playerId: number, records: SavedRecord[]): ReadinessDecision | null {
+  const mine = records.filter((r) => String(r.player_id) === String(playerId));
+  const input = inputFromRecords(mine);
+  return input ? assessReadiness(input) : null;
+}
+
 export interface SquadReadinessRow {
   player: SquadPlayer;
   decision: ReadinessDecision;
+  source: "entered" | "demo";   // karar gerçek girilen veriden mi, demo profilinden mi
 }
 
-/** Tüm kadro: kırmızı önce, sonra sarı/yeşil; eşitlikte risk skoru. */
-export function demoSquadReadiness(): SquadReadinessRow[] {
+/** Tüm kadro: girilen veri varsa onu, yoksa demo profilini kullan. Kırmızı önce. */
+export function squadReadiness(records: SavedRecord[] = []): SquadReadinessRow[] {
   return demoSquad
-    .map((player) => ({ player, decision: assessReadiness(demoInputFor(player)) }))
+    .map((player): SquadReadinessRow => {
+      const entered = enteredReadinessFor(player.player_id, records);
+      return entered
+        ? { player, decision: entered, source: "entered" }
+        : { player, decision: assessReadiness(demoInputFor(player)), source: "demo" };
+    })
     .sort((a, b) =>
       LIGHT_RANK[a.decision.light] - LIGHT_RANK[b.decision.light]
       || b.player.risk_score - a.player.risk_score,
     );
+}
+
+/** Geriye dönük uyum: girilen kayıt yokken tüm kadro demo profilinden. */
+export function demoSquadReadiness(): SquadReadinessRow[] {
+  return squadReadiness([]);
 }

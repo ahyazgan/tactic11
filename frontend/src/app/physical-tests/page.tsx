@@ -16,10 +16,11 @@ import {
   PROTO_NAME, PROTO_UNIT, loadDerivedRecords, type SavedRecord,
 } from "@/lib/derived-tests";
 import {
-  demoSquadReadiness, LIGHT_VAR, type ReadinessFlag,
+  squadReadiness, LIGHT_VAR, type ReadinessFlag, type SquadReadinessRow,
 } from "@/lib/readiness";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
+import { CsvImport } from "./CsvImport";
 
 type Band = "Hazır" | "İzlenmeli" | "Riskli";
 const BAND_META: Record<Band, { v: string; bg: string }> = {
@@ -86,10 +87,8 @@ const FASTEST = STATUS.reduce((b, s) => (s.sprint < b.sprint ? s : b), STATUS[0]
 // Takım ortalama HRV trendi (14 gün) — maç sonrası dip + toparlanma.
 const HRV_TREND = [82, 80, 79, 76, 71, 73, 78, 81, 80, 77, 72, 75, 79, AVG_HRV];
 
-// ── Hazırlık Kararı (karar verici) — assess_readiness motorunun kadro çıktısı ──
-const READINESS = demoSquadReadiness();
-const CANT_PLAY = READINESS.filter((r) => r.decision.light === "kırmızı").length;
-const MONITOR = READINESS.filter((r) => r.decision.light === "sarı").length;
+// ── Hazırlık Kararı (karar verici) — assess_readiness motorunun kadro çıktısı.
+// Girilen test kaydı (Test Hesaplayıcı) varsa onu, yoksa demo profilini kullanır.
 
 function FlagRow({ f }: { f: ReadinessFlag }) {
   const v = LIGHT_VAR[f.severity];
@@ -108,12 +107,13 @@ function FlagRow({ f }: { f: ReadinessFlag }) {
 }
 
 // Kadro karar panosu: kırmızı önce; satıra tıkla → o oyuncunun kanıt zinciri.
-function ReadinessBoard() {
-  const firstRed = READINESS.find((r) => r.decision.light === "kırmızı")?.player.player_id ?? null;
+// `source` = karar gerçek girilen testten mi (entered) yoksa demo profilinden mi.
+function ReadinessBoard({ rows }: { rows: SquadReadinessRow[] }) {
+  const firstRed = rows.find((r) => r.decision.light === "kırmızı")?.player.player_id ?? null;
   const [open, setOpen] = React.useState<number | null>(firstRed);
   return (
     <div className="rc" style={{ margin: "0 0 16px", padding: 0, overflow: "hidden" }}>
-      {READINESS.map(({ player, decision }, i) => {
+      {rows.map(({ player, decision, source }, i) => {
         const v = LIGHT_VAR[decision.light];
         const isOpen = open === player.player_id;
         return (
@@ -127,6 +127,9 @@ function ReadinessBoard() {
               <span style={{ minWidth: 0 }}>
                 <span className="nm">{player.player_name}</span>
                 <span style={{ color: "var(--muted)", marginLeft: 8, fontSize: 12 }}>{player.pos_detail}</span>
+                {source === "entered" && (
+                  <span title="Karar girilen gerçek testlerden" style={{ marginLeft: 8, fontSize: 9.5, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--accent)", border: "1px solid var(--accent)", borderRadius: 4, padding: "0 5px", verticalAlign: "middle" }}>girilen</span>
+                )}
                 <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{decision.summary}</div>
               </span>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, color: v, textTransform: "uppercase", whiteSpace: "nowrap" }}>
@@ -141,6 +144,9 @@ function ReadinessBoard() {
             {isOpen && (
               <div style={{ padding: "2px 14px 12px 17px", background: "var(--panel2)" }}>
                 {decision.flags.map((f, j) => <FlagRow key={j} f={f} />)}
+                <div style={{ fontSize: 10.5, color: "var(--dim)", marginTop: 8, fontFamily: "JetBrains Mono" }}>
+                  kaynak: {source === "entered" ? "girilen test kayıtları" : "demo risk profili (Test Hesaplayıcı'da kaydet → gerçek veriyle güncellenir)"}
+                </div>
               </div>
             )}
           </div>
@@ -185,6 +191,12 @@ export default function FizikselDurumPage() {
   // Test Hesaplayıcı'da kaydedilen türetilmiş metrikler (localStorage, client-only).
   const [derived, setDerived] = React.useState<SavedRecord[]>([]);
   React.useEffect(() => { setDerived(loadDerivedRecords()); }, []);
+
+  // Hazırlık kararı: girilen test kayıtları varsa onlardan, yoksa demo profilinden.
+  const readinessRows = React.useMemo(() => squadReadiness(derived), [derived]);
+  const cantPlay = readinessRows.filter((r) => r.decision.light === "kırmızı").length;
+  const monitor = readinessRows.filter((r) => r.decision.light === "sarı").length;
+  const enteredCount = readinessRows.filter((r) => r.source === "entered").length;
 
   const dist = [
     { label: "Hazır", v: "var(--low)", n: READY },
@@ -247,12 +259,12 @@ export default function FizikselDurumPage() {
         <div className="kpi"><div className="kl">Sahaya Hazır</div><div className="kn" style={{ color: "var(--low)" }}>{READY}<span className="pct">/{STATUS.length}</span></div><div className="kd">{WATCH} izlenmeli · {RISKY} riskli</div></div>
         <div className="kpi"><div className="kl">Ort. HRV</div><div className="kn" style={{ color: AVG_HRV >= 78 ? "var(--low)" : "var(--mid)" }}>{AVG_HRV}<span className="pct"> ms</span></div><div className="kd">kalp atış değişkenliği</div></div>
         <div className="kpi"><div className="kl">Ort. ACWR</div><div className="kn" style={{ color: AVG_ACWR > 1.3 ? "var(--high)" : "var(--low)" }}>{AVG_ACWR.toFixed(2)}</div><div className="kd">akut/kronik yük</div></div>
-        <div className="kpi"><div className="kl">Karar: Çıkamaz</div><div className="kn" style={{ color: CANT_PLAY ? "var(--crit)" : "var(--low)" }}>{CANT_PLAY}</div><div className="kd">{MONITOR} izle · karar verici</div></div>
+        <div className="kpi"><div className="kl">Karar: Çıkamaz</div><div className="kn" style={{ color: cantPlay ? "var(--crit)" : "var(--low)" }}>{cantPlay}</div><div className="kd">{monitor} izle · karar verici</div></div>
         <div className="kpi"><div className="kl">En Hızlı</div><div className="kn" style={{ fontSize: 18 }}>{FASTEST.name.split(" ")[0]}</div><div className="kd">10m {FASTEST.sprint.toFixed(2)}sn</div></div>
       </div>
 
-      <div className="st" style={{ marginTop: 0 }}><h2>Hazırlık Kararı</h2><span className="ep">karar verici · {CANT_PLAY} çıkamaz · {MONITOR} izle · satıra tıkla → gerekçe</span></div>
-      <ReadinessBoard />
+      <div className="st" style={{ marginTop: 0 }}><h2>Hazırlık Kararı</h2><span className="ep">karar verici · {cantPlay} çıkamaz · {monitor} izle · {enteredCount > 0 ? `${enteredCount} girilen veriden` : "demo profili"} · satıra tıkla → gerekçe</span></div>
+      <ReadinessBoard rows={readinessRows} />
 
       <div className="st"><h2>Takım HRV Trendi</h2><span className="ep">son 14 gün · maç sonrası dip</span></div>
       <div className="rc" style={{ margin: "0 0 16px" }}>
@@ -297,6 +309,8 @@ export default function FizikselDurumPage() {
       <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8 }}>
         HRV ms · Sprint 10m sn (düşük iyi) · CMJ cm · ACWR akut/kronik · Yük haftalık iç yük (0–100). Hücre rengi metriğin yönüne göre.
       </div>
+
+      <CsvImport onImported={() => setDerived(loadDerivedRecords())} />
 
       <div className="st"><h2>Test Hesaplayıcı Kayıtları</h2><span className="ep">{derived.length} kayıt · son girilenler</span></div>
       {derived.length === 0 ? (
