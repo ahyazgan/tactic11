@@ -29,6 +29,7 @@ import { CsvImport } from "./CsvImport";
 import { LoadEntry } from "./LoadEntry";
 import { GpsImport } from "./GpsImport";
 import { WellnessEntry } from "./WellnessEntry";
+import { SquadCompare } from "./SquadCompare";
 
 // Pano satırı — demo (tam SquadPlayer) ve API (yalnız id+ad) ortak şekli.
 interface BoardRow {
@@ -345,6 +346,8 @@ export default function FizikselDurumPage() {
       <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8 }}>
         HRV ms · Sprint 10m sn (düşük iyi) · CMJ cm · ACWR akut/kronik · Yük haftalık iç yük (0–100). Hücre rengi metriğin yönüne göre.
       </div>
+
+      <SquadCompare />
 
       <CsvImport onImported={() => { setDerived(loadDerivedRecords()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
 

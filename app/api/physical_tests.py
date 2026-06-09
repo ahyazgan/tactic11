@@ -1047,6 +1047,60 @@ def create_wellness(
     return record
 
 
+class SquadComparisonRowOut(BaseModel):
+    player_id: str
+    player_name: str
+    value: float
+    rating: str               # elit | iyi | ortalama | zayıf
+    percentile: float | None   # kadro içi (100 = en iyi)
+
+
+class SquadComparisonOut(BaseModel):
+    protocol: str
+    protocol_name: str
+    unit: str
+    higher_is_better: bool
+    n: int
+    rows: list[SquadComparisonRowOut]
+
+
+@router.get("/squad-comparison", response_model=SquadComparisonOut)
+def squad_comparison(
+    protocol: str,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> SquadComparisonOut:
+    """Bir protokolde kadro sıralaması: her oyuncunun SON değeri → norm rating +
+    kadro-içi yüzdelik. En iyi üstte (yön-duyarlı). `/{player_id}`'den ÖNCE."""
+    proto = perf.PROTOCOLS.get(protocol)
+    if proto is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"bilinmeyen protokol: {protocol}")
+    rows = list(session.execute(
+        select(PhysicalTest)
+        .where(PhysicalTest.tenant_id == user.tenant_id,
+               PhysicalTest.protocol == protocol)
+        .order_by(PhysicalTest.test_date.desc(), PhysicalTest.id.desc())
+    ).scalars())
+    latest: dict[str, PhysicalTest] = {}
+    for r in rows:
+        latest.setdefault(r.player_id, r)   # desc → ilk = en son
+    values = [r.value for r in latest.values()]
+    out_rows: list[SquadComparisonRowOut] = []
+    for pid, rec in latest.items():
+        s = perf.score_test(protocol, rec.value, reference_values=values)
+        out_rows.append(SquadComparisonRowOut(
+            player_id=pid, player_name=rec.player_name, value=rec.value,
+            rating=s.rating, percentile=s.squad_percentile,
+        ))
+    out_rows.sort(key=lambda x: x.value, reverse=proto.higher_is_better)
+    return SquadComparisonOut(
+        protocol=protocol, protocol_name=proto.name, unit=proto.unit,
+        higher_is_better=proto.higher_is_better, n=len(out_rows), rows=out_rows,
+    )
+
+
 @router.get("/{player_id}", response_model=list[PhysicalTestOut])
 def list_tests(
     player_id: str,

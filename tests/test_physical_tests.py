@@ -999,3 +999,32 @@ def test_squad_readiness_includes_wellness_red(client):
     assert row is not None
     assert any(f["metric"] == "Wellness" for f in row["decision"]["flags"])
     assert row["decision"]["light"] == "kırmızı"
+
+
+# --------------------------------------------------------------------------- #
+# Kadro karşılaştırma / yüzdelik (GET /squad-comparison)
+# --------------------------------------------------------------------------- #
+
+
+def test_squad_comparison_ranks_best_first(client):
+    c, _ = client
+    for pid, name, val in [("971", "Yüksek", 55.0), ("972", "Orta", 45.0), ("973", "Düşük", 35.0)]:
+        r = c.post("/physical-tests/", json={
+            "player_id": pid, "player_name": name, "test_date": "2026-06-08",
+            "protocol": "cmj", "value": val,
+        })
+        assert r.status_code == 201, r.text
+    body = c.get("/physical-tests/squad-comparison?protocol=cmj").json()
+    assert body["protocol"] == "cmj"
+    assert body["higher_is_better"] is True
+    assert body["n"] >= 3
+    vals = [row["value"] for row in body["rows"]]
+    assert vals == sorted(vals, reverse=True)   # CMJ yüksek iyi → azalan
+    assert body["rows"][0]["value"] == 55.0
+    assert body["rows"][0]["percentile"] is not None
+
+
+def test_squad_comparison_unknown_protocol_404(client):
+    c, _ = client
+    r = c.get("/physical-tests/squad-comparison?protocol=bilinmeyen")
+    assert r.status_code == 404
