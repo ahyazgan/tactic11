@@ -938,3 +938,26 @@ def test_squad_readiness_includes_acwr_from_loads(client):
     assert row is not None
     metrics = {f["metric"] for f in row["decision"]["flags"]}
     assert "ACWR" in metrics
+
+
+def test_session_load_gps_metrics_compute_au(client):
+    c, _ = client
+    # 10000*0.01 + 800*0.05 + 200*0.08 + 55*0.5 = 183.5 (compute_gps_load)
+    r = c.post("/physical-tests/session-load", json={
+        "player_id": "883", "player_name": "GPS Test", "session_date": "2026-06-08",
+        "source": "gps", "duration_min": 90, "total_distance_m": 10000,
+        "hsr_distance_m": 800, "sprint_distance_m": 200,
+        "accelerations": 30, "decelerations": 25,
+    })
+    assert r.status_code == 201, r.text
+    assert r.json()["load_au"] == 183.5
+
+
+def test_session_load_gps_player_load_passthrough(client):
+    c, _ = client
+    r = c.post("/physical-tests/session-load", json={
+        "player_id": "884", "player_name": "GPS PL", "session_date": "2026-06-08",
+        "source": "gps", "player_load": 650.0,
+    })
+    assert r.status_code == 201, r.text
+    assert r.json()["load_au"] == 650.0

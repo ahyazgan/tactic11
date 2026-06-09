@@ -35,7 +35,7 @@ from app.db import models
 from app.db.physical_test import PhysicalTest, TestProtocol
 from app.db.session import get_session
 from app.db.session_load import SessionLoad
-from app.engine.gps_load import srpe_session_load
+from app.engine.gps_load import GpsSession, compute_gps_load, srpe_session_load
 from app.engine.performance_test import compute as perf
 from app.engine.workload import compute_workload
 from app.engine.physical.load_risk import (
@@ -890,6 +890,14 @@ class SessionLoadIn(BaseModel):
     rpe: float | None = Field(None, gt=0, le=10, description="sRPE: Borg CR-10")
     duration_min: float | None = Field(None, gt=0, description="Seans süresi (dk)")
     load_au: float | None = Field(None, gt=0, description="Doğrudan iç-yük (AU); gps/elle. sRPE'de rpe×süre'den hesaplanır")
+    # GPS (Catapult/STATSports) ham metrikleri — source=gps'te load_au yerine
+    # bunlar verilirse compute_gps_load ile AU server'da hesaplanır.
+    total_distance_m: float | None = Field(None, ge=0)
+    hsr_distance_m: float | None = Field(None, ge=0, description="yüksek-hız koşu (m)")
+    sprint_distance_m: float | None = Field(None, ge=0)
+    accelerations: int | None = Field(None, ge=0)
+    decelerations: int | None = Field(None, ge=0)
+    player_load: float | None = Field(None, ge=0, description="cihaz player load (AU)")
     notes: str | None = Field(None)
 
 
@@ -922,12 +930,23 @@ def create_session_load(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="sRPE için rpe + duration_min gerekli")
         load_au = _derive_or_422(srpe_session_load, payload.rpe, payload.duration_min)
-    else:
-        if payload.load_au is None:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"source={payload.source} için load_au gerekli")
+    elif payload.total_distance_m is not None or payload.player_load is not None:
+        # GPS ham metrikleri → compute_gps_load → AU (server'da hesap = tek doğruluk).
+        load_au = compute_gps_load(GpsSession(
+            duration_min=payload.duration_min or 90.0,
+            total_distance_m=payload.total_distance_m or 0.0,
+            hsr_distance_m=payload.hsr_distance_m or 0.0,
+            sprint_distance_m=payload.sprint_distance_m or 0.0,
+            accelerations=payload.accelerations or 0,
+            decelerations=payload.decelerations or 0,
+            player_load=payload.player_load,
+        )).session_load
+    elif payload.load_au is not None:
         load_au = payload.load_au
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"source={payload.source} için load_au veya GPS metrikleri gerekli")
 
     record = SessionLoad(
         tenant_id=user.tenant_id,

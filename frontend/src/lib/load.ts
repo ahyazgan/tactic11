@@ -30,6 +30,29 @@ export interface LoadSession {
 export const srpeLoad = (rpe: number, durationMin: number) =>
   Math.round(rpe * durationMin * 10) / 10;
 
+// GPS iç-yük (AU) — engine compute_gps_load.session_load aynası. Cihaz
+// player_load varsa onu; yoksa ağırlıklı tahmin (mesafe/HSR/sprint/ivme).
+const GW_DISTANCE = 0.01, GW_HSR = 0.05, GW_SPRINT = 0.08, GW_HI_EVENT = 0.5;
+
+export interface GpsMetrics {
+  total_distance_m?: number;
+  hsr_distance_m?: number;
+  sprint_distance_m?: number;
+  accelerations?: number;
+  decelerations?: number;
+  player_load?: number | null;
+}
+
+export function gpsSessionLoad(m: GpsMetrics): number {
+  if (m.player_load != null && m.player_load > 0) return Math.round(m.player_load * 10) / 10;
+  const au =
+    (m.total_distance_m ?? 0) * GW_DISTANCE +
+    (m.hsr_distance_m ?? 0) * GW_HSR +
+    (m.sprint_distance_m ?? 0) * GW_SPRINT +
+    ((m.accelerations ?? 0) + (m.decelerations ?? 0)) * GW_HI_EVENT;
+  return Math.round(au * 10) / 10;
+}
+
 const ACUTE = 7;
 const CHRONIC = 28;
 const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);

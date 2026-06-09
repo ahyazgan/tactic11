@@ -26,6 +26,7 @@ import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 import { CsvImport } from "./CsvImport";
 import { LoadEntry } from "./LoadEntry";
+import { GpsImport } from "./GpsImport";
 
 // Pano satırı — demo (tam SquadPlayer) ve API (yalnız id+ad) ortak şekli.
 interface BoardRow {
@@ -293,6 +294,8 @@ export default function FizikselDurumPage() {
       <ReadinessBoard rows={readinessRows} />
 
       <LoadEntry onChanged={() => { setLoads(loadSessions()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
+
+      <GpsImport onChanged={() => { setLoads(loadSessions()); if (!DEMO_MODE) void squadSwr.mutate(); }} />
 
       <div className="st"><h2>Takım HRV Trendi</h2><span className="ep">son 14 gün · maç sonrası dip</span></div>
       <div className="rc" style={{ margin: "0 0 16px" }}>
