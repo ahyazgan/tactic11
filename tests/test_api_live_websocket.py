@@ -145,6 +145,12 @@ def test_snapshot_excludes_subbed_off_player_and_normalizes_vaep(session):
     if 100 in vaep_by_id:
         assert vaep_by_id[100]["minutes_played"] == 60.0
         assert vaep_by_id[100]["on_pitch"] is False
+    # Faz 6 #10-12: risk monitörü snapshot'a eklendi (kart/sakatlık/zaman).
+    assert "live_risk_monitor" in snap
+    rm = snap["live_risk_monitor"]
+    assert {"score_state", "time_management", "card_flags", "injury_flags",
+            "total_flags"} <= rm.keys()
+    assert rm["score_state"] in ("leading", "trailing", "level")
 
 
 def test_websocket_match_not_found(session, client):

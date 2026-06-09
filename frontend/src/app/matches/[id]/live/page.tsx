@@ -10,7 +10,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { DEMO_MODE } from "@/lib/demo-mode";
-import { demoLive, type LiveEvent, type LivePlayerImpact } from "@/lib/demo-data";
+import { demoLive, demoDecisions, type LiveEvent, type LivePlayerImpact, type DecisionCard } from "@/lib/demo-data";
 import { ConsoleShell } from "../../../_console/shell";
 
 interface Confidence { score: number; label: string; drivers: string[] }
@@ -75,6 +75,14 @@ interface Snapshot {
     dominance?: string;
     stability?: { primary?: string | null; repeats?: number; stable?: boolean };
   };
+  // Gizli karar motorları (backend zaten emit ediyor — ekrana taşınan):
+  tactical_triggers?: { type: string; urgency: string; recommendation: string }[];
+  live_matchup?: { struggling_defender?: number | null; hot_opponent?: number | null; alerts: string[] };
+  spatial_control?: { gap_between_lines?: number; superiority_flank?: string; shape_state?: string; alerts: string[] };
+  score_time_matrix?: { score_state?: string; posture?: string; closing_recipe?: string; alerts?: string[] };
+  sub_timing?: { package: string[]; rationale: string; advices: { player_id: number; verdict: string; impact: number }[] };
+  live_alerts?: { total: number; critical: number; warning: number; info: number; alerts: { type: string; severity: string; message: string; player_id?: number | null }[] };
+  live_risk_monitor?: { score_state: string; time_management: string; card_flags: RiskFlag[]; injury_flags: RiskFlag[]; total_flags: number };
   type?: string;
   error?: string;
   note?: string;
@@ -85,6 +93,358 @@ const TREND_DIR_VAR: Record<string, string> = {
   "rakibe doğru": "var(--crit)",
   "dengeli": "var(--muted)",
 };
+
+// =========================================================================== //
+// Gizli karar motorları — paylaşılan sunum panelleri (demo + WS aynı bileşeni
+// besler). Backend WS snapshot'ı bu sinyalleri zaten üretiyor; biz görselleştiriyoruz.
+// =========================================================================== //
+
+const SEV_VAR: Record<string, string> = {
+  critical: "var(--crit)", high: "var(--crit)", "kritik": "var(--crit)",
+  warning: "var(--high)", medium: "var(--high)", "yüksek": "var(--high)",
+  info: "var(--mid)", low: "var(--mid)", "orta": "var(--mid)",
+};
+const sevVar = (s?: string) => (s ? SEV_VAR[s.toLowerCase()] : undefined) ?? "var(--muted)";
+
+const TRIGGER_LABEL: Record<string, string> = {
+  formation: "Formasyon", press_height: "Pres Hattı", channel_shift: "Kanal Kaydır",
+};
+
+interface RiskFlag { player_external_id: number; risk_type: string; severity: string; message: string }
+interface AlertItem { type: string; severity: string; message: string; player_id?: number | null }
+interface TacticalTrigger { type: string; urgency: string; recommendation: string }
+interface SubTimingAdvice { player_id: number; verdict: string; impact: number }
+
+function TriggersPanel({ triggers }: { triggers: TacticalTrigger[] }) {
+  if (!triggers.length) return null;
+  return (
+    <>
+      <div className="st"><h2>Taktik Tetikler</h2><span className="ep">{triggers.length} aktif</span></div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 12, marginBottom: 14 }}>
+        {triggers.map((t, i) => {
+          const v = sevVar(t.urgency);
+          return (
+            <div className="rc" key={i} style={{ margin: 0, borderLeft: `2px solid ${v}` }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <b style={{ fontSize: 12.5 }}>{TRIGGER_LABEL[t.type] ?? t.type}</b>
+                <span style={{ fontSize: 10, textTransform: "uppercase", color: v }}>{t.urgency}</span>
+              </div>
+              <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>{t.recommendation}</div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+function ClosingPanel({ scoreState, posture, recipe }: { scoreState?: string; posture?: string; recipe?: string }) {
+  if (!recipe && !posture) return null;
+  return (
+    <div className="rc" style={{ margin: 0 }}>
+      <h3>Kapanış Reçetesi {scoreState && <span className="tiny">{scoreState}</span>}</h3>
+      {posture && <div style={{ fontSize: 12, color: "var(--low)", fontWeight: 600, marginBottom: 4 }}>{posture}</div>}
+      {recipe && <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.5 }}>{recipe}</div>}
+    </div>
+  );
+}
+
+function SpatialPanel({ gap, flank, shapeState, alerts }: { gap?: number; flank?: string; shapeState?: string; alerts: string[] }) {
+  if (gap == null && !flank && !alerts.length) return null;
+  return (
+    <div className="rc" style={{ margin: 0 }}>
+      <h3>Mekânsal Kontrol</h3>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 14, fontSize: 12, marginBottom: 6 }}>
+        {gap != null && <span style={{ color: "var(--muted)" }}>Hat boşluğu: <b style={{ color: "var(--ink)", fontFamily: "JetBrains Mono" }}>{gap}m</b></span>}
+        {flank && <span style={{ color: "var(--muted)" }}>Üstün kanat: <b style={{ color: "var(--low)" }}>{flank}</b></span>}
+      </div>
+      {shapeState && <div style={{ fontSize: 11.5, color: "var(--dim)", marginBottom: 4 }}>Şekil: {shapeState}</div>}
+      {alerts.map((a, i) => <div key={i} style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.45, marginTop: 4 }}>· {a}</div>)}
+    </div>
+  );
+}
+
+function MatchupPanel({ alerts }: { alerts: string[] }) {
+  if (!alerts.length) return null;
+  return (
+    <>
+      <div className="st"><h2>Bireysel Eşleşme Uyarıları</h2><span className="ep">{alerts.length}</span></div>
+      <div className="rc" style={{ margin: "0 0 14px" }}>
+        {alerts.map((a, i) => (
+          <div key={i} style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.5, padding: "7px 0", borderTop: i ? "1px solid var(--line)" : undefined }}>{a}</div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function SubTimingPanel({ pkg, rationale, advices }: { pkg: string[]; rationale?: string; advices: SubTimingAdvice[] }) {
+  if (!advices.length && !pkg.length) return null;
+  return (
+    <>
+      <div className="st"><h2>Değişiklik Zamanlaması</h2>{pkg.length > 0 && <span className="ep">paket: {pkg.join(" + ")}</span>}</div>
+      <div className="rc" style={{ margin: "0 0 14px" }}>
+        {rationale && <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.5, marginBottom: 8 }}>{rationale}</div>}
+        {advices.map((a, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, fontSize: 12, padding: "5px 0", borderTop: i ? "1px solid var(--line)" : undefined }}>
+            <span style={{ fontFamily: "JetBrains Mono" }}>#{a.player_id}</span>
+            <span style={{ color: "var(--ink)", flex: 1, textAlign: "center" }}>{a.verdict}</span>
+            <span style={{ fontFamily: "JetBrains Mono", color: "var(--low)" }}>etki +{a.impact.toFixed(2)}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function RiskPanel({ cardFlags, injuryFlags, timeManagement }: { cardFlags: RiskFlag[]; injuryFlags: RiskFlag[]; timeManagement?: string }) {
+  const flags = [...cardFlags, ...injuryFlags];
+  return (
+    <div className="rc">
+      <h3>Risk Monitörü <span className="tiny">{flags.length} bayrak</span></h3>
+      {flags.length === 0 && <div style={{ fontSize: 12, color: "var(--dim)" }}>Aktif kart/sakatlık riski yok.</div>}
+      {flags.map((f, i) => {
+        const v = sevVar(f.severity);
+        return (
+          <div className="alrt" key={i}>
+            <span className="ai" style={{ background: v }} />
+            <div className="am"><b>{f.risk_type === "card" ? "Kart riski" : "Sakatlık riski"}</b>
+              <span className="tm">{f.message}</span>
+            </div>
+          </div>
+        );
+      })}
+      {timeManagement && (
+        <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10, paddingTop: 8, borderTop: "1px solid var(--line)", lineHeight: 1.45 }}>
+          <b style={{ color: "var(--ink)" }}>Zaman yönetimi:</b> {timeManagement}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ALERT_ORDER: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+
+function AlertsFeedPanel({ alerts }: { alerts: AlertItem[] }) {
+  if (!alerts.length) return null;
+  const sorted = [...alerts].sort((a, b) => (ALERT_ORDER[a.severity] ?? 9) - (ALERT_ORDER[b.severity] ?? 9));
+  return (
+    <div className="rc">
+      <h3>Uyarı Akışı <span className="tiny">{alerts.length}</span></h3>
+      {sorted.map((a, i) => {
+        const v = sevVar(a.severity);
+        return (
+          <div className="alrt" key={i}>
+            <span className="ai" style={{ background: v }} />
+            <div className="am"><b style={{ textTransform: "uppercase", fontSize: 10, color: v }}>{a.severity}</b>
+              <span className="tm">{a.message}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function DataQualityLine({ status, score }: { status?: string; score?: number }) {
+  if (!status) return null;
+  const v = status === "ok" ? "var(--low)" : status === "degraded" ? "var(--mid)" : "var(--crit)";
+  return (
+    <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 8, fontFamily: "JetBrains Mono" }}>
+      veri kalitesi: <span style={{ color: v }}>{status}</span>{score != null ? ` (%${Math.round(score * 100)})` : ""}
+    </div>
+  );
+}
+
+// --------------------------------------------------------------------------- //
+// Sıradaki En İyi Hamle — tüm motorların tetiklenen sinyallerini tek bir
+// önceliklendirilmiş direktife indirger ("sistem karar veriyor → tek net hamle").
+// Hem demo (demoDecisions) hem WS (snapshot sinyalleri) bu bileşeni besler.
+// --------------------------------------------------------------------------- //
+
+interface NbaSignal { engine: string; label: string; magnitude?: number }
+interface NextAction {
+  headline: string;
+  decisionType?: string;
+  urgency: string;        // kritik|yüksek|orta | critical|high|medium
+  confidence?: number;    // 0..100
+  timing?: string;
+  signals: NbaSignal[];
+}
+
+function NextBestActionPanel({ action }: { action: NextAction | null }) {
+  if (!action) return null;
+  const v = sevVar(action.urgency);
+  return (
+    <div className="rc" style={{ margin: "0 0 14px", borderLeft: `3px solid ${v}`, background: "var(--panel2)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
+        <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 1, color: "var(--dim)", fontFamily: "JetBrains Mono" }}>
+          ▶ Sıradaki En İyi Hamle{action.decisionType ? ` · ${action.decisionType}` : ""}
+        </span>
+        <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {action.timing && <span style={{ fontSize: 11, color: "var(--low)", fontFamily: "JetBrains Mono" }}>{action.timing}</span>}
+          <span style={{ fontSize: 10, textTransform: "uppercase", color: v, border: `1px solid ${v}`, borderRadius: 5, padding: "1px 6px" }}>{action.urgency}</span>
+        </span>
+      </div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: "var(--ink)", lineHeight: 1.4, marginBottom: action.signals.length ? 8 : 0 }}>
+        {action.headline}
+      </div>
+      {action.signals.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 5, paddingTop: 8, borderTop: "1px solid var(--line)" }}>
+          {action.signals.map((s, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11.5 }}>
+              <span style={{ fontFamily: "JetBrains Mono", color: "var(--dim)", minWidth: 140 }}>{s.engine}</span>
+              <span style={{ color: "var(--muted)", flex: 1 }}>{s.label}</span>
+              {s.magnitude != null && (
+                <span className="mbar" style={{ width: 48, display: "inline-block" }}>
+                  <i style={{ width: `${Math.round(s.magnitude * 100)}%`, background: v }} />
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {action.confidence != null && (
+        <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 8, fontFamily: "JetBrains Mono" }}>model güveni %{action.confidence}</div>
+      )}
+    </div>
+  );
+}
+
+// --------------------------------------------------------------------------- //
+// Karar Zaman Şeridi — maçın karar anları dakika ekseninde; bir noktaya
+// tıklayınca o kararın kanıt zinciri (motor · sinyal · örneklem · güç) açılır.
+// "Sistem nasıl karar verdi"yi somutlaştırır. (demo: demoDecisions)
+// --------------------------------------------------------------------------- //
+
+const DTYPE_ICON: Record<string, string> = {
+  "Oyuncu Değişikliği": "🔁", "Taktik": "📐", "Risk": "⚠", "Duran Top": "🎯",
+};
+
+function DecisionTimeline({ decisions, currentMinute }: { decisions: DecisionCard[]; currentMinute: number }) {
+  const sorted = [...decisions].sort((a, b) => a.minute - b.minute);
+  // varsayılan seçili: şu ana kadar verilmiş en son karar
+  const activeIdx = sorted.reduce((acc, d, i) => (d.minute <= currentMinute ? i : acc), 0);
+  const [sel, setSel] = useState(activeIdx);
+  if (!sorted.length) return null;
+  const span = 90;
+  const card = sorted[Math.min(sel, sorted.length - 1)];
+  const v = sevVar(card.urgency);
+  const nowPct = Math.min(100, (currentMinute / span) * 100);
+  return (
+    <>
+      <div className="st"><h2>Karar Zaman Şeridi</h2><span className="ep">{sorted.length} karar · motor gerekçeli</span></div>
+      <div className="rc" style={{ margin: "0 0 14px" }}>
+        <div style={{ position: "relative", height: 34, marginBottom: 12 }}>
+          <div style={{ position: "absolute", top: 18, left: 0, right: 0, height: 2, background: "var(--line)" }} />
+          {/* geçmiş kısmı vurgula */}
+          <div style={{ position: "absolute", top: 18, left: 0, width: `${nowPct}%`, height: 2, background: "var(--border2)" }} />
+          {/* şimdi imleci */}
+          <div style={{ position: "absolute", top: 0, left: `${nowPct}%`, transform: "translateX(-50%)", fontSize: 9, color: "var(--accent)", fontFamily: "JetBrains Mono" }}>şimdi</div>
+          <div style={{ position: "absolute", top: 12, bottom: 0, left: `${nowPct}%`, width: 1, background: "var(--accent)" }} />
+          {sorted.map((d, i) => {
+            const dv = sevVar(d.urgency);
+            const left = Math.min(100, (d.minute / span) * 100);
+            const isSel = i === sel;
+            const future = d.minute > currentMinute;
+            return (
+              <button key={i} type="button" onClick={() => setSel(i)} title={`${d.minute}' — ${d.headline}`}
+                style={{ position: "absolute", top: isSel ? 9 : 11, left: `${left}%`, transform: "translateX(-50%)", width: isSel ? 20 : 16, height: isSel ? 20 : 16, borderRadius: "50%", border: `2px solid ${dv}`, background: isSel ? dv : "var(--panel)", cursor: "pointer", padding: 0, opacity: future ? 0.45 : 1, fontSize: 9, lineHeight: 1 }}>
+                <span style={{ position: "absolute", top: 22, left: "50%", transform: "translateX(-50%)", fontSize: 9, color: "var(--dim)", fontFamily: "JetBrains Mono" }}>{d.minute}&apos;</span>
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ borderLeft: `3px solid ${v}`, paddingLeft: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+            <b style={{ fontSize: 13.5 }}>{DTYPE_ICON[card.decisionType] ?? "•"} {card.minute}&apos; — {card.headline}</b>
+            <span style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+              <span style={{ fontSize: 10, textTransform: "uppercase", color: v }}>{card.urgency}</span>
+              <span style={{ fontSize: 10, color: "var(--dim)", fontFamily: "JetBrains Mono" }}>%{card.confidence}</span>
+            </span>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5, marginBottom: 8 }}>{card.rationale}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {card.signals.map((s, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11 }}>
+                <span style={{ fontFamily: "JetBrains Mono", color: "var(--dim)", minWidth: 150 }}>{s.engine}</span>
+                <span style={{ color: "var(--muted)", flex: 1 }}>{s.label}</span>
+                <span style={{ fontSize: 10, color: "var(--dim)", fontFamily: "JetBrains Mono" }}>n={s.sampleSize}</span>
+                <span className="mbar" style={{ width: 44, display: "inline-block" }}>
+                  <i style={{ width: `${Math.round(s.magnitude * 100)}%`, background: v }} />
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const URGENCY_RANK: Record<string, number> = { "kritik": 4, "yüksek": 3, "orta": 2, "düşük": 1 };
+
+// Demo: verilmiş kararlar arasından şu ana kadarki en yüksek öncelikli olanı seç.
+function demoNextAction(): NextAction | null {
+  const cur = demoLive.minute;
+  const cands = demoDecisions.filter((d) => d.minute <= cur);
+  if (!cands.length) return null;
+  const best = [...cands].sort(
+    (a, b) => (URGENCY_RANK[b.urgency] - URGENCY_RANK[a.urgency]) || (b.confidence - a.confidence) || (b.minute - a.minute),
+  )[0];
+  const timing = best.decisionType === "Oyuncu Değişikliği"
+    ? demoLive.subTiming.advices[0]?.verdict : undefined;
+  return {
+    headline: best.headline,
+    decisionType: best.decisionType,
+    urgency: best.urgency,
+    confidence: best.confidence,
+    timing,
+    signals: best.signals.map((s) => ({ engine: s.engine, label: s.label, magnitude: s.magnitude })),
+  };
+}
+
+// WS: canlı snapshot sinyallerini önceliklendir (kritik uyarı > yüksek sub >
+// yüksek taktik tetik). Momentum trendi + risk bayrakları gerekçe olarak eklenir.
+function wsNextAction(snap: Snapshot): NextAction | null {
+  const corro: NbaSignal[] = [];
+  const tm = snap.trend?.momentum;
+  if (tm?.direction && tm.direction !== "dengeli") {
+    corro.push({
+      engine: "momentum_tracker",
+      label: `Momentum ${tm.direction}${(tm.sustained_snapshots ?? 0) >= 2 ? ` · ${tm.sustained_snapshots} snapshot` : ""}`,
+      magnitude: tm.delta != null ? Math.min(1, Math.abs(tm.delta)) : undefined,
+    });
+  }
+  const rm = snap.live_risk_monitor;
+  if (rm && rm.total_flags > 0) {
+    corro.push({ engine: "live_risk_monitor", label: `${rm.total_flags} risk bayrağı (kart/sakatlık)` });
+  }
+
+  const crit = snap.live_alerts?.alerts?.find((a) => a.severity === "critical");
+  if (crit) {
+    return { headline: crit.message, decisionType: "Acil Uyarı", urgency: "critical", signals: corro };
+  }
+  const sub = (snap.live_sub_recommendation?.recommendations ?? []).find((r) => r.urgency_label === "high");
+  if (sub) {
+    return {
+      headline: `Değişiklik düşün — #${sub.player_external_id} (${sub.reasons[0] ?? "yüksek aciliyet"})`,
+      decisionType: "Oyuncu Değişikliği",
+      urgency: "yüksek",
+      confidence: snap.confidence?.live_sub_recommendation?.score != null
+        ? Math.round(snap.confidence.live_sub_recommendation.score * 100) : undefined,
+      signals: [
+        { engine: "sub_timing", label: `aciliyet skoru ${sub.urgency_score.toFixed(2)}`, magnitude: Math.min(1, sub.urgency_score) },
+        ...corro,
+      ],
+    };
+  }
+  const trig = (snap.tactical_triggers ?? []).find((t) => t.urgency === "high") ?? (snap.tactical_triggers ?? [])[0];
+  if (trig) {
+    return { headline: trig.recommendation, decisionType: "Taktik", urgency: trig.urgency, signals: corro };
+  }
+  return null;
+}
 
 function LiveWsView() {
   const params = useParams<{ id: string }>();
@@ -210,7 +570,18 @@ function LiveWsView() {
           </div>
         )}
         <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 10, fontFamily: "JetBrains Mono" }}>geçmiş: {history.length} kayıt · {interval}sn</div>
+        <DataQualityLine status={snapshot?.data_quality?.status} score={snapshot?.data_quality?.score} />
       </div>
+      {snapshot?.live_risk_monitor && (
+        <RiskPanel
+          cardFlags={snapshot.live_risk_monitor.card_flags ?? []}
+          injuryFlags={snapshot.live_risk_monitor.injury_flags ?? []}
+          timeManagement={snapshot.live_risk_monitor.time_management}
+        />
+      )}
+      {(snapshot?.live_alerts?.alerts?.length ?? 0) > 0 && (
+        <AlertsFeedPanel alerts={snapshot!.live_alerts!.alerts} />
+      )}
       {recs.length > 0 && (
         <div className="rc">
           <h3>Sub Önerileri <span className="tiny">top {recs.length}</span></h3>
@@ -267,6 +638,8 @@ function LiveWsView() {
             <div className="kpi"><div className="kl">Dominance</div><div className="kn" style={{ color: dom > 1 ? "var(--low)" : dom < -1 ? "var(--crit)" : "var(--ink)" }}>{snapshot.match_dominance?.dominance_score?.toFixed(2) ?? "—"}</div><div className="kd">{snapshot.match_dominance?.label ?? ""}</div></div>
           </div>
 
+          <NextBestActionPanel action={wsNextAction(snapshot)} />
+
           {snapshot.context?.one_liner && (
             <>
               <div className="st"><h2>Bağlam & Güven</h2></div>
@@ -298,6 +671,22 @@ function LiveWsView() {
             <div className="kpi"><div className="kl">Field Tilt (biz)</div><div className="kn" style={{ fontSize: 22 }}>{snapshot.field_tilt ? `%${Math.round((snapshot.field_tilt.team_a_tilt ?? 0) * 100)}` : "—"}</div></div>
             <div className="kpi"><div className="kl">xG Farkı</div><div className="kn" style={{ fontSize: 22 }}>{snapshot.match_dominance?.xg_diff?.toFixed(2) ?? "—"}</div></div>
           </div>
+
+          <TriggersPanel triggers={snapshot.tactical_triggers ?? []} />
+
+          {(snapshot.score_time_matrix || snapshot.spatial_control) && (
+            <>
+              <div className="st"><h2>Kapanış & Mekân</h2></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+                <ClosingPanel scoreState={snapshot.score_time_matrix?.score_state} posture={snapshot.score_time_matrix?.posture} recipe={snapshot.score_time_matrix?.closing_recipe} />
+                <SpatialPanel gap={snapshot.spatial_control?.gap_between_lines} flank={snapshot.spatial_control?.superiority_flank} shapeState={snapshot.spatial_control?.shape_state} alerts={snapshot.spatial_control?.alerts ?? []} />
+              </div>
+            </>
+          )}
+
+          <MatchupPanel alerts={snapshot.live_matchup?.alerts ?? []} />
+
+          <SubTimingPanel pkg={snapshot.sub_timing?.package ?? []} rationale={snapshot.sub_timing?.rationale} advices={snapshot.sub_timing?.advices ?? []} />
 
           {recs.length > 0 && (
             <>
@@ -543,7 +932,10 @@ function DemoLiveView() {
         <h3>Bağlantı <span className="tiny">replay (demo)</span></h3>
         <div style={{ fontSize: 13, color: "var(--low)", fontWeight: 700 }}>● Canlı (demo)</div>
         <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 6, fontFamily: "JetBrains Mono" }}>{d.minute}. dakika · momentum {d.momentumHolder}</div>
+        <DataQualityLine status={d.dataQuality.status} score={d.dataQuality.score} />
       </div>
+      <RiskPanel cardFlags={d.riskMonitor.card_flags} injuryFlags={d.riskMonitor.injury_flags} timeManagement={d.riskMonitor.time_management} />
+      <AlertsFeedPanel alerts={d.alerts.alerts} />
       <div className="rc">
         <h3>Değişiklik Önerileri <span className="tiny">top {d.subs.length}</span></h3>
         {d.subs.map((s, i) => {
@@ -579,6 +971,9 @@ function DemoLiveView() {
         </div>
       </div>
 
+      {/* Sentez: tüm motorların tek önceliklendirilmiş hamlesi */}
+      <NextBestActionPanel action={demoNextAction()} />
+
       {/* xG yarışı */}
       <div className="st" style={{ marginTop: 0 }}><h2>xG Yarışı</h2><span className="ep">{d.minute}. dakikaya kadar</span></div>
       <div className="rc" style={{ margin: "0 0 14px", height: 240 }}>
@@ -611,8 +1006,27 @@ function DemoLiveView() {
         <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 8 }}>Son 8 dakikada momentum <b style={{ color: AWAY_COLOR }}>{d.away}</b>'e geçti — üst üste 2 korner.</div>
       </div>
 
+      {/* Kararların zaman ekseni + kanıt zinciri */}
+      <DecisionTimeline decisions={demoDecisions} currentMinute={d.minute} />
+
+      {/* Gizli motor: canlı taktik tetikler */}
+      <TriggersPanel triggers={d.tacticalTriggers} />
+
+      {/* Gizli motor: kapanış reçetesi + mekânsal kontrol */}
+      <div className="st"><h2>Kapanış & Mekân</h2></div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+        <ClosingPanel scoreState={d.closing.score_state} posture={d.closing.posture} recipe={d.closing.closing_recipe} />
+        <SpatialPanel gap={d.spatial.gap_between_lines} flank={d.spatial.superiority_flank} shapeState={d.spatial.shape_state} alerts={d.spatial.alerts} />
+      </div>
+
+      {/* Gizli motor: bireysel eşleşme uyarıları */}
+      <MatchupPanel alerts={d.matchup.alerts} />
+
       {/* Faz B — sahadaki kadro & oyuncu etkisi */}
       <LineupImpact lineup={d.lineup} clock={d.minute} formation={d.formation} />
+
+      {/* Gizli motor: değişiklik zamanlaması */}
+      <SubTimingPanel pkg={d.subTiming.package} rationale={d.subTiming.rationale} advices={d.subTiming.advices} />
 
       {/* Olay akışı */}
       <div className="st"><h2>Olay Akışı</h2><span className="ep">{d.events.length} olay</span></div>

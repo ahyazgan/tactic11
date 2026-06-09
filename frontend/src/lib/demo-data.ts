@@ -351,6 +351,21 @@ export interface LivePlayerImpact {
   subbedInMinute?: number;  // sonradan girdiyse
   subbedOutMinute?: number; // çıktıysa (öneri havuzundan düşer)
 }
+// Gizli karar motorları — backend WS snapshot'ı bunları zaten üretiyor;
+// demo'da aynı şekillerle besleyip canlı konsola taşıyoruz (plan: "gizli
+// motorları ekrana taşı"). Alan adları WS snapshot ile uyumlu tutuldu.
+export interface LiveTacticalTrigger { type: string; urgency: string; recommendation: string }
+export interface LiveMatchup { struggling_defender?: number | null; hot_opponent?: number | null; alerts: string[] }
+export interface LiveSpatial { gap_between_lines?: number; superiority_flank?: string; shape_state?: string; alerts: string[] }
+export interface LiveClosingRecipe { score_state: string; posture: string; closing_recipe: string; alerts: string[] }
+export interface LiveSubTimingAdvice { player_id: number; verdict: string; impact: number }
+export interface LiveSubTiming { package: string[]; rationale: string; advices: LiveSubTimingAdvice[] }
+export interface LiveAlert { type: string; severity: string; message: string; player_id?: number | null }
+export interface LiveAlertsFeed { total: number; critical: number; warning: number; info: number; alerts: LiveAlert[] }
+export interface LiveDataQuality { score: number; status: string; density_per_min?: number; largest_gap_min?: number; freshness_min?: number; flags?: string[] }
+export interface LiveRiskFlag { player_external_id: number; risk_type: string; severity: string; message: string }
+export interface LiveRiskMonitor { score_state: string; time_management: string; card_flags: LiveRiskFlag[]; injury_flags: LiveRiskFlag[]; total_flags: number }
+
 export interface DemoLive {
   home: string;
   away: string;
@@ -364,6 +379,15 @@ export interface DemoLive {
   events: LiveEvent[];
   subs: LiveSubSuggestion[];
   lineup: LivePlayerImpact[];
+  // Gizli motorlar (ekrana taşınan):
+  tacticalTriggers: LiveTacticalTrigger[];
+  matchup: LiveMatchup;
+  spatial: LiveSpatial;
+  closing: LiveClosingRecipe;
+  subTiming: LiveSubTiming;
+  alerts: LiveAlertsFeed;
+  dataQuality: LiveDataQuality;
+  riskMonitor: LiveRiskMonitor;
 }
 
 // 0..67 dakika, 5'er dakikalık kümülatif xG + momentum serisi
@@ -436,6 +460,74 @@ export const demoLive: DemoLive = {
     { shirt: 7,  name: "Tolga Erdem",  pos: "RW", onPitch: true,  minutes: 67, vaep: 0.29, vaepPer90: 0.39 },
     { shirt: 11, name: "Hakan Arslan", pos: "LW", onPitch: false, minutes: 46, vaep: 0.05, vaepPer90: 0.10, subbedOutMinute: 46 },
   ],
+  // ── Gizli karar motorları (67'/1-1/momentum rakipte/Caner sakatlık sinyali) ──
+  tacticalTriggers: [
+    { type: "press_height", urgency: "medium", recommendation:
+      "Momentum 8 dakikadır rakipte — pres hattını düşür, orta blokta dengeyi yeniden kur." },
+    { type: "channel_shift", urgency: "medium", recommendation:
+      "Rakip sol koridorumuzdan (Onur Kaya, 3) sürekli giriyor — hücum yükünü sağ kanada (Tolga, 7) kaydır." },
+  ],
+  matchup: {
+    struggling_defender: 3,
+    hot_opponent: 23,
+    alerts: [
+      "DÜELLO: Onur Kaya (3) son 10 dakikada 4 düellodan 3'ünü kaybetti — yardımcı gönder ya da eşleşmeyi değiştir.",
+      "SICAK EL: Rakip #23 her topa giriyor (%42 dokunuş payı) — özel markaj düşün.",
+    ],
+  },
+  spatial: {
+    gap_between_lines: 18.4,
+    superiority_flank: "sağ (biz)",
+    shape_state: "orta blok dağınık",
+    alerts: [
+      "Hatlar arası boşluk açıldı (~18m) — rakip 10 numarası bu alana sızıyor.",
+      "Sağ kanatta sayısal üstünlük (Tolga + Burak) — geçiş anında bu tarafı kullan.",
+    ],
+  },
+  closing: {
+    score_state: "berabere",
+    posture: "dengeli — kazanmaya yönelik",
+    closing_recipe:
+      "Berabere @ 67' — kontrolü kaybetme; ikinci topları topla, kanat değişimiyle yeni alan ara. Riski 75. dakikadan sonra artır.",
+    alerts: [],
+  },
+  subTiming: {
+    package: ["Caner Öztürk (10)", "Onur Kaya (3)"],
+    rationale:
+      "Çifte değişiklik penceresi 68–72 dk: yaratıcılık (Caner) + savunma istikrarı (Onur) birlikte tazelensin; tek pencerede iki sorunu çöz.",
+    advices: [
+      { player_id: 10, verdict: "şimdi (68–70')", impact: 0.28 },
+      { player_id: 3, verdict: "yakında (72–75')", impact: 0.19 },
+    ],
+  },
+  alerts: {
+    total: 3, critical: 1, warning: 2, info: 0,
+    alerts: [
+      { type: "fatigue", severity: "critical", player_id: 10,
+        message: "Caner Öztürk (10) yorgunluk kritik (0.62) + sakatlık sinyali — değiştir." },
+      { type: "momentum_break", severity: "warning",
+        message: "Momentum 2 snapshot'tır rakibe doğru — kontrolü geri al." },
+      { type: "matchup", severity: "warning", player_id: 3,
+        message: "Sol koridor zayıf (Onur Kaya, 3 düello kaybı)." },
+    ],
+  },
+  dataQuality: {
+    score: 0.86, status: "ok", density_per_min: 7.2, largest_gap_min: 1.4,
+    freshness_min: 0.3, flags: [],
+  },
+  riskMonitor: {
+    score_state: "level",
+    time_management: "Normal tempo — 70. dakikadan sonra zaman yönetimi devreye girecek.",
+    card_flags: [
+      { player_external_id: 4, risk_type: "card", severity: "medium",
+        message: "Kerem Aslan (4) sarı kartlı — agresif girişlere dikkat, ikinci sarı riski." },
+    ],
+    injury_flags: [
+      { player_external_id: 10, risk_type: "injury", severity: "medium",
+        message: "Caner Öztürk (10) yorgunluk 0.62 — sakatlık riski, değişiklik düşün." },
+    ],
+    total_flags: 2,
+  },
 };
 
 // --------------------------------------------------------------------------- //

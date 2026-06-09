@@ -349,6 +349,36 @@ def _compute_live_snapshot(
             "alerts": list(stm.alerts),
         }
 
+        # Faz 6 #10-12: kart/sakatlık/zaman riski. player_states zaten hesaplanan
+        # sub-önerisinin fatigue_score'undan beslenir (ek maliyet yok). Kart verisi
+        # (sarı/düello) henüz ingest edilmiyor → şimdilik sakatlık+zaman aktif.
+        from app.engine.live_risk_monitor import compute_live_risk_monitor
+        _sub_recs = snapshot["live_sub_recommendation"].get("recommendations", [])
+        _player_states = [
+            {"player_id": r.get("player_external_id"),
+             "fatigue": r.get("fatigue_score", 0.0)}
+            for r in _sub_recs if r.get("player_external_id") is not None
+        ]
+        risk = compute_live_risk_monitor(
+            my_team_id, _player_states, current_minute=current_minute,
+            my_score=my_score, opponent_score=opp_score,
+        ).value
+        snapshot["live_risk_monitor"] = {
+            "score_state": risk.score_state,
+            "time_management": risk.time_management,
+            "total_flags": risk.total_flags,
+            "card_flags": [
+                {"player_external_id": f.player_external_id, "risk_type": f.risk_type,
+                 "severity": f.severity, "message": f.message}
+                for f in risk.card_flags
+            ],
+            "injury_flags": [
+                {"player_external_id": f.player_external_id, "risk_type": f.risk_type,
+                 "severity": f.severity, "message": f.message}
+                for f in risk.injury_flags
+            ],
+        }
+
         # Faz 5 #47: VAEP canlı momentum (player-level streaming)
         # Faz B: appearances varsa oyuncu-başına gerçek dakikaya normalize.
         snapshot["vaep"] = _compute_live_vaep(
