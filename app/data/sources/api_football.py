@@ -160,6 +160,9 @@ class APIFootball(DataSource):
         fouls = s.get("fouls") or {}
         cards = s.get("cards") or {}
         subs = s.get("substitutes") or {}
+        goals = s.get("goals") or {}
+        tackles = s.get("tackles") or {}
+        duels = s.get("duels") or {}
         minutes = games.get("minutes")
         if minutes is None:
             return None  # oynamamış oyuncu
@@ -191,6 +194,15 @@ class APIFootball(DataSource):
             second_yellow=cards.get("yellowred") if cards.get("yellowred") else None,
             substituted_in_minute=subs.get("in"),
             substituted_out_minute=subs.get("out"),
+            goals=goals.get("total"),
+            assists=goals.get("assists"),
+            goals_conceded=goals.get("conceded"),
+            saves=goals.get("saves"),
+            key_passes=passes.get("key"),
+            tackles_total=tackles.get("total"),
+            interceptions=tackles.get("interceptions"),
+            duels_total=duels.get("total"),
+            duels_won=duels.get("won"),
         )
 
     # Internals ------------------------------------------------------------

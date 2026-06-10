@@ -8,6 +8,17 @@
  * İçerik tek bir kurgusal maç gününe odaklı: Beşiktaş vs Antalyaspor.
  */
 
+import {
+  physicalGroupFromPercentiles,
+  statAttrGroups,
+  pctRank,
+  type AttrGroup,
+  type PlayerSeasonStats,
+} from "./attributes";
+
+// Özellik tipleri tek kaynaktan (attributes.ts) — eski import yolları bozulmasın.
+export type { AttrGroup, AttrSource, PlayerAttr, PlayerSeasonStats } from "./attributes";
+
 export const DEMO_CLUB = "Beşiktaş";
 export const DEMO_OPPONENT = "Antalyaspor";
 export const DEMO_ACCENT = "#3d7eff";
@@ -74,31 +85,6 @@ export const demoSquad: SquadPlayer[] = [
 // gerçek test kayıtlarını beslemek. Üretim deterministiktir (Math.random YOK).
 // =========================================================================== //
 
-export type AttrSource = "perf_lab" | "api_football";
-export interface PlayerAttr { name: string; value: number }     // value: 1..20
-export interface AttrGroup { group: string; source: AttrSource; attrs: PlayerAttr[] }
-
-const clamp20 = (v: number) => Math.max(1, Math.min(20, Math.round(v)));
-const toAttr = (pct: number) => clamp20(1 + pct * 19);            // 0..1 percentile → 1..20
-
-// --- Sezon maç istatistiği (API-Football "players" yanıtının sadeleştirilmişi) ---
-export interface PlayerSeasonStats {
-  player_id: number;
-  appearances: number;
-  minutes: number;
-  goals: number; assists: number;
-  shots: number; shots_on: number;
-  pass_accuracy: number;       // %
-  key_passes: number;
-  dribbles_att: number; dribbles_succ: number;
-  tackles: number; interceptions: number;
-  duels: number; duels_won: number;
-  aerials_won: number;
-  fouls: number;
-  // kaleci
-  saves: number; goals_conceded: number; clean_sheets: number;
-}
-
 // Mevki arketipi — per-90 taban oranlar (gerçekçi futbol dağılımları).
 type Arch = {
   goals: number; assists: number; shots: number; sotRate: number; passAcc: number;
@@ -157,22 +143,6 @@ function seasonStatsFor(p: SquadPlayer): PlayerSeasonStats {
 export const demoSeasonStats: PlayerSeasonStats[] = demoSquad.map(seasonStatsFor);
 const STATS_BY_ID = new Map(demoSeasonStats.map((s) => [s.player_id, s]));
 
-// per-90 + oran yardımcıları
-const p90 = (v: number, mins: number) => (mins > 0 ? v / (mins / 90) : 0);
-const ratio = (num: number, den: number) => (den > 0 ? num / den : 0);
-
-/** value'nun pool içindeki yüzdelik sırası (0..1). higher=true → büyük iyi. */
-function pctRank(value: number, pool: number[], higher: boolean): number {
-  if (pool.length <= 1) return 0.5;
-  const beaten = pool.filter((v) => (higher ? v <= value : v >= value)).length;
-  return beaten / pool.length;
-}
-/** Mutlak norm → 0..1 (kaleci nitelikleri için; küçük havuzda percentile bozulur). */
-function normPct(v: number, lo: number, hi: number, higher: boolean): number {
-  const t = (v - lo) / (hi - lo);
-  return Math.max(0, Math.min(1, higher ? t : 1 - t));
-}
-
 // Bir oyuncunun bir protokoldeki SON ölçümü (kulüp test verisi).
 function latestTestValue(playerId: number, proto: string): number | null {
   const series = demoHistoryFor(playerId).filter((t) => t.protocol === proto);
@@ -180,14 +150,16 @@ function latestTestValue(playerId: number, proto: string): number | null {
 }
 
 /**
- * Bir oyuncunun özellik grupları — gerçek-kaynak türetme.
- * Aynı id her zaman aynı sonucu verir (deterministik).
+ * Bir oyuncunun özellik grupları — gerçek-kaynak türetme (deterministik).
+ * Çekirdek mantık lib/attributes.ts'te; burada demo girdileri hazırlanır:
+ * fiziksel yüzdelikler demoHistoryFor test verisinden, sezon istatistiği
+ * demoSeasonStats'ten. Canlı mod aynı çekirdeği backend yanıtıyla besler.
  */
 export function demoAttributesFor(playerId: number): AttrGroup[] {
   const p = demoSquad.find((s) => s.player_id === playerId) ?? demoSquad[0];
   const isGk = p.position === "GK";
 
-  // ── FİZİKSEL: kulüp test ölçümleri → kadro içi percentile (kaynak: perf_lab) ──
+  // Fiziksel: kulüp test ölçümleri → kadro içi yüzdelik (kaynak: perf_lab).
   const PHYS = ["sprint_10m", "sprint_30m", "yoyo_irl1", "cmj", "vo2max"] as const;
   const physPool: Record<string, number[]> = { sprint_10m: [], sprint_30m: [], yoyo_irl1: [], cmj: [], vo2max: [] };
   const myTest: Record<string, number | null> = {};
@@ -198,103 +170,17 @@ export function demoAttributesFor(playerId: number): AttrGroup[] {
       if (sp.player_id === p.player_id) myTest[proto] = v;
     }
   }
-  const pp = (proto: typeof PHYS[number], higher: boolean) =>
-    myTest[proto] == null ? 0.5 : pctRank(myTest[proto]!, physPool[proto], higher);
-  const avg = (...xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const physGroup = physicalGroupFromPercentiles((proto, higher) =>
+    myTest[proto] == null ? 0.5 : pctRank(myTest[proto]!, physPool[proto], higher));
 
-  const physAttrs: PlayerAttr[] = [
-    { name: "Hız", value: toAttr(pp("sprint_30m", false)) },
-    { name: "İvmelenme", value: toAttr(pp("sprint_10m", false)) },
-    { name: "Dayanıklılık", value: toAttr(avg(pp("yoyo_irl1", true), pp("vo2max", true))) },
-    { name: "Güç", value: toAttr(pp("cmj", true)) },
-    { name: "Çeviklik", value: toAttr(avg(pp("sprint_10m", false), pp("cmj", true))) },
-    { name: "Zıplama", value: toAttr(pp("cmj", true)) },
-    { name: "Denge", value: toAttr(avg(pp("cmj", true), pp("yoyo_irl1", true))) },
-  ];
-  const physGroup: AttrGroup = { group: "Fiziksel", source: "perf_lab", attrs: physAttrs };
-
-  // ── KALECİ: kaleci istatistikleri → mutlak norm (kaynak: api_football) ──
-  if (isGk) {
-    const s = STATS_BY_ID.get(p.player_id)!;
-    const saves90 = p90(s.saves, s.minutes);
-    const conc90 = p90(s.goals_conceded, s.minutes);
-    const csRate = ratio(s.clean_sheets, s.appearances);
-    const aer90 = p90(s.aerials_won, s.minutes);
-    const gkAttrs: PlayerAttr[] = [
-      { name: "Refleksler", value: toAttr(normPct(saves90, 1.6, 4.4, true)) },
-      { name: "Bir-e-Bir", value: toAttr(normPct(saves90, 1.8, 4.2, true)) },
-      { name: "Hava Hakimiyeti", value: toAttr(normPct(aer90, 0.3, 1.6, true)) },
-      { name: "Elle Kontrol", value: toAttr(normPct(csRate, 0.12, 0.5, true)) },
-      { name: "Ayakla Oyun", value: toAttr(normPct(s.pass_accuracy, 60, 88, true)) },
-      { name: "Yumruklama", value: toAttr(normPct(aer90, 0.3, 1.5, true)) },
-      { name: "Savunmayı Yönetme", value: toAttr(avg(normPct(conc90, 1.6, 0.55, true), normPct(csRate, 0.12, 0.5, true))) },
-    ];
-    const gkMental: PlayerAttr[] = [
-      { name: "Karar Alma", value: toAttr(normPct(s.pass_accuracy, 62, 86, true)) },
-      { name: "Pozisyon Alma", value: toAttr(normPct(csRate, 0.12, 0.5, true)) },
-      { name: "Vizyon", value: toAttr(normPct(s.pass_accuracy, 60, 84, true)) },
-      { name: "Soğukkanlılık", value: toAttr(normPct(conc90, 1.6, 0.55, true)) },
-      { name: "Çalışkanlık", value: toAttr(normPct(saves90, 1.8, 4.2, true)) },
-      { name: "Konsantrasyon", value: toAttr(normPct(csRate, 0.12, 0.5, true)) },
-      { name: "Liderlik", value: toAttr(normPct(p.age + s.appearances * 0.2, 22, 36, true)) },
-    ];
-    return [
-      { group: "Kaleci", source: "api_football", attrs: gkAttrs },
-      { group: "Zihinsel", source: "api_football", attrs: gkMental },
-      physGroup,
-    ];
-  }
-
-  // ── TEKNİK + ZİHİNSEL: sezon istatistiği → emsal percentile (kaynak: api_football) ──
-  // Havuz = saha oyuncuları (kaleci hariç) → bir metriğin tüm kadroya göre yüzdelik
-  // sırası mevki-uygun yayılım üretir (forvet bitiricilikte üstte, stoper altta).
-  const OUT = demoSquad.filter((sp) => sp.position !== "GK");
+  // Teknik/Zihinsel (ya da Kaleci): sezon istatistiği → emsal yüzdelik.
   const me = STATS_BY_ID.get(p.player_id)!;
-  // Bir metrik fonksiyonunun, odak oyuncunun emsal içindeki percentile'ı.
-  const pm = (fn: (s: PlayerSeasonStats, pl: SquadPlayer) => number, higher = true) => {
-    const pool = OUT.map((sp) => fn(STATS_BY_ID.get(sp.player_id)!, sp));
-    return pctRank(fn(me, p), pool, higher);
-  };
-  // metrik kısayolları
-  const goals90 = (s: PlayerSeasonStats) => p90(s.goals, s.minutes);
-  const assists90 = (s: PlayerSeasonStats) => p90(s.assists, s.minutes);
-  const shots90 = (s: PlayerSeasonStats) => p90(s.shots, s.minutes);
-  const conv = (s: PlayerSeasonStats) => ratio(s.goals, s.shots);
-  const keyp90 = (s: PlayerSeasonStats) => p90(s.key_passes, s.minutes);
-  const drib90 = (s: PlayerSeasonStats) => p90(s.dribbles_succ, s.minutes);
-  const dribRate = (s: PlayerSeasonStats) => ratio(s.dribbles_succ, s.dribbles_att);
-  const pass = (s: PlayerSeasonStats) => s.pass_accuracy;
-  const tack90 = (s: PlayerSeasonStats) => p90(s.tackles, s.minutes);
-  const int90 = (s: PlayerSeasonStats) => p90(s.interceptions, s.minutes);
-  const duels90 = (s: PlayerSeasonStats) => p90(s.duels, s.minutes);
-  const aer90 = (s: PlayerSeasonStats) => p90(s.aerials_won, s.minutes);
-  const fouls90 = (s: PlayerSeasonStats) => p90(s.fouls, s.minutes);
-  const exp = (_s: PlayerSeasonStats, pl: SquadPlayer) => pl.age + _s.appearances * 0.2;
+  const outfieldPool = demoSquad
+    .filter((sp) => sp.position !== "GK")
+    .map((sp) => STATS_BY_ID.get(sp.player_id)!);
+  const statGroups = statAttrGroups(me, outfieldPool, { isGk, age: p.age });
 
-  const techAttrs: PlayerAttr[] = [
-    { name: "Bitiricilik", value: toAttr(avg(pm(conv), pm(goals90))) },
-    { name: "İlk Dokunuş", value: toAttr(avg(pm(pass), pm(dribRate))) },
-    { name: "Pas", value: toAttr(avg(pm(pass), pm(keyp90))) },
-    { name: "Dripling", value: toAttr(avg(pm(dribRate), pm(drib90))) },
-    { name: "Orta", value: toAttr(avg(pm(keyp90), pm(assists90))) },
-    { name: "Uzun Şut", value: toAttr(avg(pm(shots90), pm(goals90))) },
-    { name: "Top Kapma", value: toAttr(avg(pm(tack90), pm(int90))) },
-  ];
-  const mentalAttrs: PlayerAttr[] = [
-    { name: "Karar Alma", value: toAttr(avg(pm(pass), pm(fouls90, false))) },
-    { name: "Pozisyon Alma", value: toAttr(avg(pm(int90), pm(aer90))) },
-    { name: "Vizyon", value: toAttr(avg(pm(keyp90), pm(assists90))) },
-    { name: "Soğukkanlılık", value: toAttr(avg(pm(conv), pm(pass))) },
-    { name: "Çalışkanlık", value: toAttr(avg(pm(duels90), pm(tack90))) },
-    { name: "Konsantrasyon", value: toAttr(avg(pm(fouls90, false), pm(pass))) },
-    { name: "Liderlik", value: toAttr(pm(exp)) },
-  ];
-
-  return [
-    { group: "Teknik", source: "api_football", attrs: techAttrs },
-    { group: "Zihinsel", source: "api_football", attrs: mentalAttrs },
-    physGroup,
-  ];
+  return [...statGroups, physGroup];
 }
 
 // --------------------------------------------------------------------------- //

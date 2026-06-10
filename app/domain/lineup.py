@@ -49,3 +49,14 @@ class PlayerMatchStats(BaseModel):
     second_yellow: bool | None = None
     substituted_in_minute: int | None = None
     substituted_out_minute: int | None = None
+    # Sezon istatistiği zenginleştirmesi — API-Football fixtures/players aynı
+    # yanıtta verir; oyuncu özellik (1-20) türetimi bu alanlardan beslenir.
+    goals: int | None = None
+    assists: int | None = None
+    goals_conceded: int | None = None     # kaleci: o maçta yenen gol
+    saves: int | None = None              # kaleci kurtarışı
+    key_passes: int | None = None
+    tackles_total: int | None = None
+    interceptions: int | None = None
+    duels_total: int | None = None
+    duels_won: int | None = None

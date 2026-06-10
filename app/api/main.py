@@ -834,6 +834,136 @@ def player_form(
     return engine_result_to_dict(result)
 
 
+def _season_stats_aggregate(rows: list[models.PlayerAppearance]) -> dict[str, Any]:
+    """player_appearances satırlarını tek sezon-istatistiği sözlüğüne indirger.
+
+    Frontend `PlayerSeasonStats` şekliyle birebir (özellik türetimi girdi).
+    pass_accuracy pas hacmiyle ağırlıklı ortalamadır; clean_sheets kaleci
+    satırlarından (≥45 dk + 0 yenen gol) sayılır.
+    """
+    s = lambda key: sum((getattr(r, key) or 0) for r in rows)  # noqa: E731
+    minutes = sum(r.minutes for r in rows)
+    played = [r for r in rows if r.minutes > 0]
+    pass_w = sum((r.passes_total or 0) for r in rows if r.passes_accuracy is not None)
+    pass_acc = (
+        round(sum((r.passes_total or 0) * (r.passes_accuracy or 0)
+                  for r in rows if r.passes_accuracy is not None) / pass_w)
+        if pass_w > 0 else 0
+    )
+    clean_sheets = sum(
+        1 for r in rows
+        if (r.saves is not None or r.goals_conceded is not None)
+        and (r.goals_conceded or 0) == 0 and r.minutes >= 45
+    )
+    return {
+        "player_id": rows[0].player_external_id,
+        "appearances": len(played),
+        "minutes": minutes,
+        "goals": s("goals"),
+        "assists": s("assists"),
+        "shots": s("shots_total"),
+        "shots_on": s("shots_on"),
+        "pass_accuracy": pass_acc,
+        "key_passes": s("key_passes"),
+        "dribbles_att": s("dribbles_attempts"),
+        "dribbles_succ": s("dribbles_success"),
+        "tackles": s("tackles_total"),
+        "interceptions": s("interceptions"),
+        "duels": s("duels_total"),
+        "duels_won": s("duels_won"),
+        "aerials_won": 0,  # API-Football ayrıştırmıyor; duels üzerinden yaklaşık
+        "fouls": s("fouls_committed"),
+        "saves": s("saves"),
+        "goals_conceded": s("goals_conceded"),
+        "clean_sheets": clean_sheets,
+    }
+
+
+@protected.get(
+    "/players/{player_id}/season-stats",
+    tags=["team-analysis"],
+    summary="Oyuncu sezon istatistiği + takım emsalleri (özellik türetimi girdisi)",
+)
+def player_season_stats(
+    player_id: int,
+    window_days: int = Query(365, ge=30, le=730),
+    include_peers: bool = Query(
+        True, description="Takım arkadaşlarının toplamları da dönsün (percentile için)",
+    ),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """player_appearances toplamları — oyuncu + (ops.) takım emsal havuzu.
+
+    Frontend FM-tarzı 1-20 özellikleri bu veriden türetir: oyuncunun her
+    metrikteki değeri emsal havuzundaki yüzdelik sırasına göre ölçeklenir.
+    Emsal havuz = oyuncunun en son maçındaki takımının tüm oyuncuları.
+    """
+    rows = list(
+        session.execute(
+            select(models.PlayerAppearance).where(
+                models.PlayerAppearance.sport == football.SPORT_NAME,
+                models.PlayerAppearance.player_external_id == player_id,
+            )
+        ).scalars()
+    )
+    if not rows:
+        raise HTTPException(
+            status_code=404, detail=f"player {player_id} için appearance yok",
+        )
+    ref_tz = rows[0].kickoff.tzinfo
+    cutoff = datetime.now(ref_tz) - timedelta(days=window_days)
+    rows = [r for r in rows if r.kickoff >= cutoff] or rows  # pencere boşsa hepsi
+
+    latest = max(rows, key=lambda r: r.kickoff)
+    team_id = latest.team_external_id
+
+    player_agg = _season_stats_aggregate(sorted(rows, key=lambda r: r.kickoff))
+
+    peers: list[dict[str, Any]] = []
+    if include_peers and team_id is not None:
+        peer_rows = list(
+            session.execute(
+                select(models.PlayerAppearance).where(
+                    models.PlayerAppearance.sport == football.SPORT_NAME,
+                    models.PlayerAppearance.team_external_id == team_id,
+                    models.PlayerAppearance.kickoff >= cutoff,
+                )
+            ).scalars()
+        )
+        by_pid: dict[int, list[models.PlayerAppearance]] = {}
+        for r in peer_rows:
+            by_pid.setdefault(r.player_external_id, []).append(r)
+        # Oyuncu adı/pozisyonu (varsa) — frontend gösterimi için
+        pinfo = {
+            p.external_id: p for p in session.execute(
+                select(models.Player).where(
+                    models.Player.sport == football.SPORT_NAME,
+                    models.Player.external_id.in_(list(by_pid.keys())),
+                )
+            ).scalars()
+        }
+        for pid, prows in sorted(by_pid.items()):
+            agg = _season_stats_aggregate(sorted(prows, key=lambda r: r.kickoff))
+            info = pinfo.get(pid)
+            agg["name"] = info.name if info else None
+            agg["position"] = info.position if info else None
+            peers.append(agg)
+
+    me = next((p for p in peers if p["player_id"] == player_id), None)
+    if me is not None:
+        player_agg["name"] = me.get("name")
+        player_agg["position"] = me.get("position")
+
+    return {
+        "value": {
+            "player": player_agg,
+            "team_external_id": team_id,
+            "window_days": window_days,
+            "peers": peers,
+        }
+    }
+
+
 @protected.get(
     "/teams/{team_id}/schedule",
     tags=["team-analysis"],

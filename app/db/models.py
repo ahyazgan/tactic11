@@ -240,6 +240,16 @@ class PlayerAppearance(Base):
     position_played: Mapped[str | None] = mapped_column(String(5), nullable=True)
     formation_played: Mapped[str | None] = mapped_column(String(10), nullable=True)
     captain: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    # 0027 — sezon istatistiği zenginleştirmesi (oyuncu özellik türetimi için)
+    goals: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    assists: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    goals_conceded: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    saves: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    key_passes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tackles_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    interceptions: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    duels_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    duels_won: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class AgentOutput(Base):

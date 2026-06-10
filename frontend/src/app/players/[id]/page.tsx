@@ -26,6 +26,7 @@ import {
   type AttrGroup,
 } from "@/lib/demo-data";
 import { SourceMark } from "@/lib/data-source";
+import { statAttrGroups, type PlayerSeasonStats } from "@/lib/attributes";
 import { ConsoleShell } from "../../_console/shell";
 import { Gauge } from "../../_console/viz";
 
@@ -52,6 +53,12 @@ interface InjuryResp {
     load_factor: number; age_factor: number; frequency_factor: number; recommendation: string;
   };
 }
+// GET /players/{id}/season-stats — özellik türetimi girdisi (canlı mod).
+type SeasonStatsRow = PlayerSeasonStats & { name?: string | null; position?: string | null };
+interface SeasonStatsResp {
+  value: { player: SeasonStatsRow; team_external_id: number | null; peers: SeasonStatsRow[] };
+}
+interface PlayerInfoResp { age: number | null; position: string | null; name: string }
 
 const RISK_VAR: Record<string, string> = { Düşük: "var(--low)", Orta: "var(--mid)", Yüksek: "var(--high)", Kritik: "var(--crit)" };
 const RISK_PILL: Record<string, string> = { Düşük: "risk-low", Orta: "risk-mid", Yüksek: "risk-high", Kritik: "risk-crit" };
@@ -497,11 +504,28 @@ function PlayerProfileLive({ id }: { id: string }) {
   const risk = useSWR<RiskResp>(id ? `/physical-tests/${id}/risk` : null, apiFetch, { shouldRetryOnError: false });
   const rehab = useSWR<Rehab[]>(id ? `/players/${id}/rehab/active` : null, apiFetch, { shouldRetryOnError: false });
   const injury = useSWR<InjuryResp>(id ? `/admin/players/${id}/injury-risk` : null, apiFetch, { shouldRetryOnError: false });
+  const seasonStats = useSWR<SeasonStatsResp>(id ? `/players/${id}/season-stats` : null, apiFetch, { shouldRetryOnError: false });
+  const info = useSWR<PlayerInfoResp>(id ? `/players/${id}/info` : null, apiFetch, { shouldRetryOnError: false });
 
   const r = role.data?.value;
   const inj = injury.data?.value;
   const matches = sim.data?.value.top_matches ?? [];
   const rehabs = rehab.data ?? [];
+
+  // Özellikler (canlı): sezon istatistiği + saha-oyuncusu emsal havuzu →
+  // lib/attributes çekirdeği (demo ile aynı mantık, gerçek veri).
+  const ss = seasonStats.data?.value;
+  let liveAttrGroups: ReturnType<typeof statAttrGroups> | null = null;
+  if (ss && ss.player.minutes > 0) {
+    const posOf = (row: SeasonStatsRow) => (row.position ?? "").toUpperCase();
+    const isGk = posOf(ss.player).startsWith("G")
+      || (info.data?.position ?? "").toUpperCase().startsWith("G")
+      || ss.player.saves > 0;
+    const pool = ss.peers.filter((pe) => pe.minutes > 0 && pe.saves === 0 && !posOf(pe).startsWith("G"));
+    liveAttrGroups = statAttrGroups(ss.player, pool.length >= 2 ? pool : [ss.player], {
+      isGk, age: info.data?.age ?? null,
+    });
+  }
 
   const right = (
     <>
@@ -568,6 +592,28 @@ function PlayerProfileLive({ id }: { id: string }) {
               </div>
               <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>{risk.data.summary}</div>
               {risk.data.flags.length > 0 && <div style={{ fontSize: 11, color: "var(--high)", fontFamily: "JetBrains Mono", marginTop: 6 }}>{risk.data.flags.map((f) => f.protocol).join(" · ")}</div>}
+            </>
+          )}
+        </div>
+
+        {/* Oyuncu Özellikleri — sezon istatistiğinden türetilir (1-20) */}
+        <div className="rc" style={{ margin: 0, gridColumn: "1 / -1" }}>
+          <h3>Oyuncu Özellikleri <span className="tiny">sezon istatistiğinden · 1-20 skala</span></h3>
+          {seasonStats.isLoading && <div style={{ fontSize: 12, color: "var(--dim)" }}>Yükleniyor…</div>}
+          {seasonStats.error && (
+            <div style={{ fontSize: 12, color: "var(--dim)" }}>
+              Bu oyuncu için sezon istatistiği yok — maç verisi sync edilince dolar
+              (sync_league + fixture lineup ingest).
+            </div>
+          )}
+          {liveAttrGroups && (
+            <>
+              <div style={{ fontSize: 11, color: "var(--dim)", lineHeight: 1.5, marginBottom: 12 }}>
+                Değerler {ss?.player.appearances ?? 0} maçlık gerçek sezon istatistiğinden, takım
+                emsallerine göre 1-20 sıralanır. Fiziksel grup, test ölçümü girilince eklenir
+                (Performans Lab).
+              </div>
+              <AttributeColumns groups={liveAttrGroups} />
             </>
           )}
         </div>
