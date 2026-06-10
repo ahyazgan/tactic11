@@ -27,6 +27,7 @@ import {
 } from "@/lib/demo-data";
 import { SourceMark } from "@/lib/data-source";
 import { statAttrGroups, physicalGroupFromPercentiles, type PlayerSeasonStats } from "@/lib/attributes";
+import { PlayerAvatar } from "@/lib/player-avatar";
 import { ConsoleShell } from "../../_console/shell";
 import { Gauge } from "../../_console/viz";
 
@@ -332,7 +333,9 @@ function PlayerProfileDemo({ player }: { player: SquadPlayer }) {
       <div className="kpis" style={{ gridTemplateColumns: "repeat(5,1fr)" }}>
         <div className="kpi">
           <div className="kl">Pozisyon</div>
-          <div className="kn" style={{ fontSize: 20 }}>{player.position}</div>
+          <div className="kn" style={{ fontSize: 20, display: "flex", alignItems: "center", gap: 9 }}>
+            <PlayerAvatar name={player.player_name} position={player.position} size={30} />{player.position}
+          </div>
           <div className="kd">{player.pos_detail} · #{player.shirt}</div>
         </div>
         <div className="kpi">

@@ -19,6 +19,7 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { useProviderAccess, ProviderConnect, ProviderConnectedBar } from "@/lib/provider-access";
+import { PlayerAvatar } from "@/lib/player-avatar";
 import { ConsoleShell } from "../_console/shell";
 
 interface SimMatch {
@@ -311,9 +312,14 @@ function ScoutDemo() {
                 <tr key={c.external_id}>
                   <td className="pnum c">{i + 1}</td>
                   <td>
-                    <span className="nm">{c.name}</span>{" "}
-                    <span className="pos" style={{ marginLeft: 4, color: TIER_VAR[c.tier] }}>{c.tier}</span>
-                    <div style={{ fontSize: 10.5, color: "var(--dim)", marginTop: 2 }}>{c.pos_detail} · {POS_LABEL[c.pos]} · {c.goals}G {c.assists}A</div>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <PlayerAvatar name={c.name} position={c.pos} size={24} />
+                      <span>
+                        <span className="nm">{c.name}</span>{" "}
+                        <span className="pos" style={{ marginLeft: 4, color: TIER_VAR[c.tier] }}>{c.tier}</span>
+                        <div style={{ fontSize: 10.5, color: "var(--dim)", marginTop: 2 }}>{c.pos_detail} · {POS_LABEL[c.pos]} · {c.goals}G {c.assists}A</div>
+                      </span>
+                    </span>
                   </td>
                   <td>
                     <span style={{ fontWeight: 500, color: "var(--muted)" }}>{c.club}</span>

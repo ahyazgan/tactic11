@@ -10,6 +10,7 @@
 import * as React from "react";
 import { demoSquad } from "@/lib/demo-data";
 import { useProviderAccess, ProviderConnect, ProviderConnectedBar } from "@/lib/provider-access";
+import { PlayerAvatar } from "@/lib/player-avatar";
 import { ConsoleShell } from "../_console/shell";
 
 interface Target {
@@ -129,7 +130,7 @@ export default function TransferPage() {
               const c = fitColor(t.fit);
               return (
                 <tr key={t.player}>
-                  <td><span className="nm">{t.player}</span></td>
+                  <td><span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><PlayerAvatar name={t.player} size={22} /><span className="nm">{t.player}</span></span></td>
                   <td style={{ color: "var(--muted)" }}>{t.pos}</td>
                   <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{t.age}</td>
                   <td style={{ color: "var(--muted)" }}>{t.club}</td>

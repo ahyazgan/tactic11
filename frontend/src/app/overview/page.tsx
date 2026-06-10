@@ -12,9 +12,15 @@ import { useRouter } from "next/navigation";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
-import { demoPlayerRows, demoNextMatch, demoRecentForm, demoRatingTrend, demoBriefings, demoLive, type FormResult, type Briefing } from "@/lib/demo-data";
+import { demoPlayerRows, demoNextMatch, demoRecentForm, demoRatingTrend, demoBriefings, demoLive, demoSquad, type FormResult, type Briefing } from "@/lib/demo-data";
 import { SourceMark } from "@/lib/data-source";
 import { Crest } from "@/lib/teams";
+import { PlayerAvatar } from "@/lib/player-avatar";
+
+// Oyuncu id → pozisyon (avatar rengi; demoPlayerRows pozisyon taşımaz).
+const POS_BY_ID: Record<string, string> = Object.fromEntries(
+  demoSquad.map((p) => [String(p.player_id), p.position]),
+);
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -359,7 +365,7 @@ export default function OverviewConsolePage() {
               onClick={() => router.push(`/players/${a.player_id}`)}
               onKeyDown={(e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(`/players/${a.player_id}`); } }}
             >
-              <span className="ai" style={{ background: rv }} />
+              <PlayerAvatar name={a.player_name} position={POS_BY_ID[a.player_id]} size={26} style={{ marginRight: 9, boxShadow: `0 0 0 2px ${rv}` }} />
               <div className="am"><b>{a.player_name}</b> {a.risk_label.toLowerCase()} yük riski.
                 <span className="tm">risk {Math.round(a.risk_score * 100)}/100</span>
               </div>
@@ -496,7 +502,7 @@ export default function OverviewConsolePage() {
                   style={{ cursor: "pointer" }}
                 >
                   <td className="pnum c">{i + 1}</td>
-                  <td><span className="nm">{p.player_name}</span> <span className="nat">#{p.player_id}</span></td>
+                  <td><span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><PlayerAvatar name={p.player_name} position={POS_BY_ID[p.player_id]} size={20} /><span className="nm">{p.player_name}</span> <span className="nat">#{p.player_id}</span></span></td>
                   <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{p.test_count}</td>
                   <td className="c"><span className="cond"><i style={{ width: `${cond}%`, background: condColor(cond) }} /></span></td>
                   <td className="c" style={{ color: "var(--dim)", fontFamily: "JetBrains Mono", fontSize: "11px" }}>{p.latest_test_date ?? "—"}</td>

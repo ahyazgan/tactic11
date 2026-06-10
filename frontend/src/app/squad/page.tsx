@@ -11,7 +11,8 @@ import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
-import { demoPlayerRows } from "@/lib/demo-data";
+import { demoPlayerRows, demoSquad } from "@/lib/demo-data";
+import { PlayerAvatar } from "@/lib/player-avatar";
 import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
@@ -31,6 +32,11 @@ const RISK_VAR: Record<string, string> = {
   Orta: "var(--mid)",
   Düşük: "var(--low)",
 };
+
+// Oyuncu id → pozisyon (avatar rengi için; demoPlayerRows pozisyon taşımaz).
+const POS_BY_ID: Record<string, string> = Object.fromEntries(
+  demoSquad.map((p) => [String(p.player_id), p.position]),
+);
 
 /** Risk etiketinden kadro durumu türet. */
 function statusOf(label: string): { txt: string; v: string } {
@@ -179,7 +185,13 @@ export default function SquadConsolePage() {
                   style={{ cursor: "pointer" }}
                 >
                   <td className="pnum c">{i + 1}</td>
-                  <td><span className="nm">{p.player_name}</span> <span className="nat">#{p.player_id}</span></td>
+                  <td>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <PlayerAvatar name={p.player_name} position={POS_BY_ID[p.player_id]} size={22} />
+                      <span className="nm">{p.player_name}</span>
+                      <span className="nat">#{p.player_id}</span>
+                    </span>
+                  </td>
                   <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{p.test_count}</td>
                   <td className="c"><span className="cond"><i style={{ width: `${cond}%`, background: condColor(cond) }} /></span></td>
                   <td className="c" style={{ color: "var(--dim)", fontFamily: "JetBrains Mono", fontSize: "11px" }}>{p.latest_test_date ?? "—"}</td>

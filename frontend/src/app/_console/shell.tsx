@@ -445,7 +445,7 @@ const CSS = `
 }
 .ovroot .tbl{
   background:var(--white);border:1px solid var(--border);
-  border-radius:12px;overflow:hidden;
+  border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch;
 }
 .ovroot table{width:100%;border-collapse:collapse;font-size:12.5px}
 .ovroot thead th{
@@ -612,6 +612,10 @@ const CSS = `
   .ovroot .pgttl h1{font-size:18px}
   .ovroot .ntab{padding:6px 10px;font-size:12px}
   .ovroot .datebox{display:none}
+  /* Yoğun tablolar ezilmek yerine yatay kaydırılsın (.tbl overflow-x:auto). */
+  .ovroot .tbl table{min-width:560px}
+  /* Mobil alt tab bar (58px) içeriği örtmesin. */
+  .ovroot .center{padding-bottom:74px}
 }
 @media (max-width:560px){
   .ovroot .kpis{grid-template-columns:repeat(2,1fr)}
