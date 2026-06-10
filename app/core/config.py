@@ -39,6 +39,15 @@ class Settings(BaseSettings):
         alias="API_FOOTBALL_BASE_URL",
     )
 
+    # Sportmonks (ikinci veri kaynağı; token query-param + include ile çalışır,
+    # API-Football'dan zengin: gerçek xG + oyuncu-başı istatistik). Token yalnız
+    # backend'de tutulur, asla istemciye gitmez.
+    sportmonks_api_key: str = Field(default="", alias="SPORTMONKS_API_KEY")
+    sportmonks_base_url: str = Field(
+        default="https://api.sportmonks.com/v3/football",
+        alias="SPORTMONKS_BASE_URL",
+    )
+
     # Veritabanı
     database_url: str = Field(
         default="postgresql+psycopg://user:password@localhost:5432/manager2",
