@@ -3,8 +3,9 @@
  *
  * `true`: sayfalar canlı API'ye hiç dokunmaz, `demo-data.ts`'ten dolu veri gösterir
  *         (spinner / boş tablo / "veri yok" olmaz), sidebar maç ritmine göre sadeleşir.
- * `false`: tüm sayfalar eski canlı-API (SWR/WebSocket) davranışına döner.
+ * `false`: tüm sayfalar canlı-API (SWR/WebSocket) davranışına döner.
  *
- * Demo bittiğinde tek satırı `false` yapmak yeterli — sayfa kodu kırılmaz.
+ * Kontrol env'den: `.env.local` içinde NEXT_PUBLIC_DEMO_MODE=false → canlı mod.
+ * Dosya yoksa / değişken yoksa VARSAYILAN DEMO (Beşiktaş sunumu bozulmaz).
  */
-export const DEMO_MODE = true;
+export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
