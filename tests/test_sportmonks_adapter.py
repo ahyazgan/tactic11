@@ -7,7 +7,7 @@ Değerler kullanıcının sağladığı gerçek Gaziantep F.K. vs Beşiktaş (fi
 
 from __future__ import annotations
 
-from app.data.sources.sportmonks import Sportmonks, StandingRow
+from app.data.sources.sportmonks import Sportmonks, SquadMember, StandingRow
 from app.sports import football
 
 # Gerçek Sportmonks fixture şeklinin sadık, kompakt bir alt-kümesi (test girdisi).
@@ -510,3 +510,70 @@ def test_fixture_include_drops_xg_when_disabled():
     inc = sm._fixture_include()
     assert "xgfixture" not in inc and "xglineup" not in inc
     assert "lineups.details" in inc                  # oyuncu-başı stat hep var
+
+
+# ── parse_squad_season (sezon-stat kısayolu + foto) ───────────────────────────
+
+# Gerçek squads/seasons/{sid}/teams/{tid} (include=player;details) şekli:
+SQUAD_SEASON = [
+    {
+        "player_id": 5332062, "team_id": 2447, "season_id": 25536,
+        "position_id": 26, "jersey_number": 10,
+        "player": {
+            "id": 5332062, "display_name": "Thomas Jørgensen",
+            "date_of_birth": "1998-03-04", "nationality": {"name": "Denmark"},
+            "image_path": "https://cdn.sportmonks.com/images/soccer/players/30/5332062.png",
+        },
+        "details": [
+            {"type_id": 52, "value": {"total": 4}},       # goals
+            {"type_id": 79, "value": {"total": 8}},       # assists
+            {"type_id": 119, "value": {"total": 2590}},   # minutes
+            {"type_id": 321, "value": {"total": 31}},     # appearances
+            {"type_id": 194, "value": {"total": 9, "home": 5, "away": 4}},  # clean_sheets
+            {"type_id": 84, "value": {"total": 5}},       # yellow
+            {"type_id": 40, "value": {"total": 12}},      # CAPTAIN (özel)
+            {"type_id": 1584, "value": {"total": 83.44}}, # pass_accuracy (float)
+        ],
+    },
+    {  # foto/details yok ama player var → minimal kayıt
+        "player_id": 999, "position_id": 24,
+        "player": {"id": 999, "name": "Backup Keeper"},
+        "details": [{"type_id": 88, "value": {"total": 2}}],  # goals_conceded
+    },
+]
+
+
+def test_parse_squad_season_aggregates_and_photo():
+    members = Sportmonks.parse_squad_season(SQUAD_SEASON)
+    by_id = {m.player_external_id: m for m in members}
+    assert len(members) == 2
+
+    m = by_id[5332062]
+    assert isinstance(m, SquadMember)
+    assert m.name == "Thomas Jørgensen"
+    assert m.jersey == 10
+    assert m.position == football.POSITION_MIDFIELDER
+    assert m.nationality == "Denmark"
+    assert m.birth_date == "1998-03-04"
+    assert m.photo_url and m.photo_url.endswith("5332062.png")
+    assert m.captain is True
+    # sezon-toplam (int sayaçlar + float pass_accuracy)
+    assert m.season["goals"] == 4
+    assert m.season["assists"] == 8
+    assert m.season["minutes"] == 2590
+    assert m.season["appearances"] == 31
+    assert m.season["clean_sheets"] == 9
+    assert m.season["yellow_cards"] == 5
+    assert m.season["pass_accuracy"] == 83.44
+    assert "captain" not in m.season  # CAPTAIN ayrı alan, stat değil
+
+    gk = by_id[999]
+    assert gk.season["goals_conceded"] == 2
+    assert gk.captain is False
+    assert gk.photo_url is None
+
+
+def test_parse_squad_season_skips_broken():
+    data = ["x", {"player_id": 1}, SQUAD_SEASON[0]]  # player yok / dict değil → atla
+    members = Sportmonks.parse_squad_season(data)  # type: ignore[arg-type]
+    assert len(members) == 1

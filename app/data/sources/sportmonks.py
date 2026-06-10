@@ -89,6 +89,45 @@ _STANDING_DETAIL_BY_TYPE: dict[int, str] = {
 }
 
 
+# Sezon-squad details type_id → season-stats anahtarı (mevcut /season-stats
+# yanıt şekliyle uyumlu). Temel sayaçlar bu planda doğrulandı; pas/şut/rating
+# gibi zenginler üst planda gelir (Beşiktaş playground örneğinde mevcuttu).
+_SQUAD_SEASON_DETAIL_BY_TYPE: dict[int, str] = {
+    52: "goals",            # ✓ GOALS
+    79: "assists",          # ✓ ASSISTS
+    119: "minutes",         # ✓ MINUTES_PLAYED
+    321: "appearances",     # ✓ APPEARANCES
+    88: "goals_conceded",   # ✓ GOALS_CONCEDED
+    194: "clean_sheets",    # ✓ CLEANSHEET
+    84: "yellow_cards",     # ✓ YELLOWCARDS
+    83: "red_cards",        # ✓ REDCARDS
+    324: "own_goals",       # ✓ OWN_GOALS
+    # Zengin (üst plan) — aynı parser otomatik alır:
+    42: "shots", 86: "shots_on", 1584: "pass_accuracy", 117: "key_passes",
+    108: "dribbles_att", 109: "dribbles_succ", 78: "tackles",
+    100: "interceptions", 105: "duels", 106: "duels_won",
+    107: "aerials_won", 56: "fouls", 57: "saves",
+}
+
+
+@dataclass(frozen=True)
+class SquadMember:
+    """Kadro üyesi: master veri + foto + sezon-toplam istatistik (tek çağrıda).
+
+    season dict'i mevcut GET /players/{id}/season-stats player_agg şekliyle
+    uyumludur (eksik metrikler 0/None)."""
+
+    player_external_id: int
+    name: str
+    position: str | None = None
+    jersey: int | None = None
+    photo_url: str | None = None
+    birth_date: str | None = None  # ISO; yoksa None
+    nationality: str | None = None
+    captain: bool = False
+    season: dict[str, Any] = field(default_factory=dict)
+
+
 @dataclass(frozen=True)
 class StandingRow:
     """Puan durumu satırı (lig tablosu). Domain'e ait değil — sunum/UI yapısı."""
@@ -303,6 +342,41 @@ class Sportmonks(DataSource):
     def get_standings(self, season_id: int) -> list[StandingRow]:
         return self.parse_standings(self._get_standings(season_id))
 
+    def get_squad_season(self, team_id: int, season: int) -> list[SquadMember]:
+        """Takımın sezon kadrosu + sezon-toplam istatistik + foto (tek çağrı).
+
+        DataSource sözleşmesi sezon YILI alır → season_id'ye çözülür. Çözülemezse
+        boş liste."""
+        season_id = self._resolve_season_id_for_team(team_id, season)
+        if season_id is None:
+            return []
+        body = self._get_json(
+            f"squads/seasons/{season_id}/teams/{team_id}",
+            {"include": "player;details", "per_page": 100},
+        )
+        return self.parse_squad_season(body.get("data", []))
+
+    def _resolve_season_id_for_team(self, team_id: int, season_year: int) -> int | None:
+        """Takımın bir sezon-yılına ait season_id'si. team→seasons üzerinden.
+
+        Lig bilinmeden takımın sezonlarını çeker (bir takım birden çok ligde
+        olabilir; yıl eşleşmesi yeterli)."""
+        key = (-team_id, season_year)  # league cache'inden ayrı namespace
+        if key in self._season_id_cache:
+            return self._season_id_cache[key]
+        body = self._get_json(f"teams/{team_id}", {"include": "seasons"})
+        seasons = (body.get("data") or {}).get("seasons") or []
+        found: int | None = None
+        for s in seasons:
+            if _season_year_from_name(s.get("name")) == season_year:
+                found = _as_int(s.get("id"))
+                break
+        if found is None and seasons:
+            # yıl eşleşmedi → en güncel sezonu kullan (son eleman ya da en büyük id)
+            found = _as_int(max(seasons, key=lambda s: _as_int(s.get("id")) or 0).get("id"))
+        self._season_id_cache[key] = found
+        return found
+
     # ── DataSource ABC (sync sözleşmesi) ──────────────────────────────────────
     def get_leagues(self) -> list[League]:
         """Abone olunan ligler (current sezon yılıyla)."""
@@ -478,6 +552,71 @@ class Sportmonks(DataSource):
                 founded=_as_int(p.get("founded")),
             )
         return list(by_id.values())
+
+    @staticmethod
+    def _detail_value(value: Any) -> float | int | None:
+        """Sezon-detay value'su → sayı. {'total':N}/{'average':x}/{'expected':x}."""
+        if isinstance(value, dict):
+            for k in ("total", "average", "expected", "value"):
+                if k in value:
+                    return _as_float(value[k])
+            return None
+        return _as_float(value)
+
+    @staticmethod
+    def parse_squad_season(data: list[dict[str, Any]]) -> list[SquadMember]:
+        """Sezon-squad (squads/seasons/{sid}/teams/{tid}, include=player;details) →
+        SquadMember listesi. details[] sezon-TOPLAM stat (tek çağrı, backfill'siz).
+
+        İnt sayaçlar int'e yuvarlanır; pass_accuracy float kalır. Eksik metrik 0."""
+        out: list[SquadMember] = []
+        for e in data or []:
+            if not isinstance(e, dict):
+                continue
+            p = e.get("player")
+            if not isinstance(p, dict):
+                continue
+            pid = _as_int(p.get("id")) or _as_int(e.get("player_id"))
+            if pid is None:
+                continue
+            season: dict[str, Any] = {}
+            captain = False
+            for d in e.get("details", []):
+                tid = _as_int(d.get("type_id")) or -1
+                if tid == 40:  # CAPTAIN
+                    captain = True
+                    continue
+                key = _SQUAD_SEASON_DETAIL_BY_TYPE.get(tid)
+                if key is None:
+                    continue
+                num = Sportmonks._detail_value(d.get("value"))
+                if num is None:
+                    continue
+                season[key] = num if key == "pass_accuracy" else int(round(num))
+            dob = None
+            raw_dob = p.get("date_of_birth")
+            if raw_dob:
+                try:
+                    dob = str(datetime.strptime(str(raw_dob), "%Y-%m-%d").date())
+                except ValueError:
+                    dob = None
+            nat_obj = p.get("nationality")
+            nat = nat_obj.get("name") if isinstance(nat_obj, dict) else None
+            pos = _POSITION_MAP.get(
+                _as_int(p.get("position_id")) or _as_int(e.get("position_id")) or -1
+            )
+            out.append(SquadMember(
+                player_external_id=pid,
+                name=str(p.get("display_name") or p.get("name") or "unknown"),
+                position=pos,
+                jersey=_as_int(e.get("jersey_number")),
+                photo_url=p.get("image_path") or None,
+                birth_date=dob,
+                nationality=nat,
+                captain=captain,
+                season=season,
+            ))
+        return out
 
     @staticmethod
     def parse_leagues(data: list[dict[str, Any]]) -> list[League]:

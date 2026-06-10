@@ -49,6 +49,7 @@ from app.api.physical_tests import router as physical_tests_router
 from app.api.plan import router as plan_router
 from app.api.reports import router as reports_router
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
+from app.api.sportmonks_catalog import media_router, sportmonks_router
 from app.api.serialize import engine_result_to_dict
 from app.api.shared import router as shared_router
 from app.api.sprint3 import router as sprint3_router
@@ -1652,7 +1653,10 @@ protected.include_router(notifications_router)
 protected.include_router(notes_router)
 protected.include_router(reports_router)
 protected.include_router(physical_tests_router)
+protected.include_router(sportmonks_router)
 app.include_router(protected)
+# Medya proxy — AUTH YOK (<img src> header gönderemez); yalnız cdn.sportmonks.com.
+app.include_router(media_router)
 # WebSocket router — auth FastAPI WebSocket'ta header bazlı; pilot demo
 # için public route (production'da Cookie/Header-based auth eklenir).
 app.include_router(live_router)
