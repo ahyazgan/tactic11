@@ -9,6 +9,19 @@
 const TOKEN_KEY = "manager2_access_token";
 const REFRESH_KEY = "manager2_refresh_token";
 
+/**
+ * HTTP durum kodunu taşıyan hata — global SWR retry mantığı (5xx tekrar dener,
+ * 4xx denemez) status'a bakar. status null = ağ/parse hatası (retry edilir).
+ */
+export class ApiError extends Error {
+  status: number | null;
+  constructor(message: string, status: number | null) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(TOKEN_KEY);
@@ -98,19 +111,25 @@ export async function apiFetch<T = unknown>(
     const newToken = await getOrRefreshToken();
     if (!newToken) {
       clearAuthState();
-      throw new Error("Unauthorized");
+      throw new ApiError("Unauthorized", 401);
     }
     // Tek bir retry
     res = await rawFetch(path, init, newToken);
     if (res.status === 401) {
       clearAuthState();
-      throw new Error("Unauthorized after refresh");
+      throw new ApiError("Unauthorized after refresh", 401);
     }
+  }
+
+  if (res.status === 401) {
+    // (refresh denenmiş ama token yok senaryosu zaten yukarıda yakalandı;
+    // burası savunma amaçlı — 401'i retry edilmeyen ApiError yap.)
+    throw new ApiError("Unauthorized", 401);
   }
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
+    throw new ApiError(`HTTP ${res.status}: ${body.slice(0, 200)}`, res.status);
   }
   return res.json() as Promise<T>;
 }
