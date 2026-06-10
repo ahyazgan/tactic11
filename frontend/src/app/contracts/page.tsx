@@ -9,6 +9,7 @@ import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
+import { DemoLiveBanner } from "@/lib/demo-live-banner";
 import { ConsoleShell } from "../_console/shell";
 
 interface Alert {
@@ -90,6 +91,7 @@ export default function ContractsConsolePage() {
       navBadge={data?.critical_count}
       right={right}
     >
+      <DemoLiveBanner />
       <div className="st" style={{ marginTop: 0 }}>
         <h2>Ufuk</h2>
         <div className="seg">

@@ -8,7 +8,7 @@ edilmiş tahmin motoru + 11 specialized agent.
 
 | Metrik | Değer |
 |---|---|
-| Otomatik test | **514 yeşil** (CI'da %100 pass rate) |
+| Otomatik test | **1,432 yeşil** (CI'da %100 pass rate) |
 | Engine modülü | **16** (form, rating, opponent, predict, xG, load, tracking, calibration, schedule, matchup, fixture_difficulty, predict_ml, player_form, set_piece, player_similarity, formation_matcher) |
 | Agent (AI brief üretici) | **11** (PreMatch, PostMatch, MegaMatch, OpponentScout, InjuryLoad, Lineup, Substitution, Tactical, Weekly, ScoutWatchlist, MediaBrief) |
 | Tahmin modeli | Dixon-Coles + ML-kalibre ρ + logistic xG |
@@ -113,7 +113,7 @@ python scripts/pilot_demo.py --output md > slides/demo.md
 - **ML**: scikit-learn (LogisticRegression xG), pure-Python pure engine
 - **Auth**: JWT + bcrypt + 4 rol (admin/analyst/coach/viewer)
 - **Deploy**: Docker Compose tek komut, Hetzner Cloud €4.51/ay yeterli
-- **Test**: 514 otomatik test, GitHub Actions CI
+- **Test**: 1,432 otomatik test, GitHub Actions CI
 - **Lisans**: Codebase pilot kulübe license; Anthropic + StatsBomb kendi ToS
 
 ## İletişim

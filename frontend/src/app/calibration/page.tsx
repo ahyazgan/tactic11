@@ -7,6 +7,7 @@
 
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { DemoLiveBanner } from "@/lib/demo-live-banner";
 import { ConsoleShell } from "../_console/shell";
 
 interface AccuracyResponse {
@@ -52,6 +53,7 @@ export default function CalibrationConsolePage() {
       desc="Tahminlerin doğruluğunu ölçer. Brier ↓, log loss ↓ ve ECE ↓ daha iyidir."
       right={right}
     >
+      <DemoLiveBanner />
       {isLoading && <div className="pgdesc">Yükleniyor…</div>}
       {error && <div className="pgdesc">Veri alınamadı ya da yetki yok (admin).</div>}
 

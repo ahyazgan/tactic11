@@ -10,6 +10,7 @@
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { DemoLiveBanner } from "@/lib/demo-live-banner";
 import { ConsoleShell } from "../_console/shell";
 
 interface Channel {
@@ -78,6 +79,7 @@ export default function NotificationsConsolePage() {
       desc="Kritik risk, dönüş (RTP), sözleşme ve anomali uyarıları bu kanallardan gönderilir. Kanal yapılandırması env ile."
       right={right}
     >
+      <DemoLiveBanner />
       <div className="kpis" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
         <div className="kpi"><div className="kl">Kanal</div><div className="kn">{data?.total_channels ?? 0}</div><div className="kd">tanımlı</div></div>
         <div className="kpi"><div className="kl">Aktif</div><div className="kn" style={{ color: active ? "var(--low)" : "var(--high)" }}>{active}</div><div className="kd">yapılandırıldı</div></div>

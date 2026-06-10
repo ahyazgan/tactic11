@@ -817,6 +817,60 @@ export const demoChatQA: ChatQA[] = [
       "Üç sinyal aynı anda işaret ediyor: (1) Momentum izleyici son 8 dakikada xG akışını -34'e çekti — rakip üst üste 2 korner kullandı. (2) Orkun Kökçü'ün 52. dakikadaki sakatlık sinyali sonrası orta sahada pres yoğunluğunuz %22 düştü. (3) Sol bek Rıdvan Yılmaz yorgunluk bandında ve rakip sağ kanat o koridordan sürekli giriyor.\n\nNet öneri: Orkun Kökçü → Junior Olaitan değişikliği (kritik aciliyet) + sol beke taze oyuncu. Bu iki hamle momentum'u dengeler; model güveni %83.",
     tools: ["momentum_tracker", "context_engine", "sub_timing"],
   },
+  {
+    question: "Şampiyonluk yarışında durumumuz ne?",
+    answer:
+      "Lider Galatasaray'ın 2 puan gerisinde 2. sıradayız (76-78) ve 4 hafta kaldı. Averajda Galatasaray önde — yani puan kaybetme lüksümüz yok; onların tek puan kaybı bize ilk sırayı açar.\n\nKalan fikstür dengeli: Antalyaspor (iç) ve Konyaspor (iç) kazanılması gereken maçlar, Trabzonspor ve Göztepe deplasmanları sezonun kırılma noktası. Sezon simülasyonu şampiyonluk olasılığını %34 veriyor; 4'te 4 yaparsak %61'e çıkıyor.\n\nÖzet: kendi maçlarımızı kazan, Trabzon deplasmanından en az 1 puan çıkar — yarış son haftaya taşınır.",
+    tools: ["standings_model", "fixture_difficulty", "season_sim"],
+  },
+  {
+    question: "Kalan fikstürümüz zor mu?",
+    answer:
+      "4 lig maçı kaldı: Antalyaspor (iç, galibiyet %48), Konyaspor (iç, %55), Trabzonspor (dış, %38), Göztepe (dış, %52). Beklenen puan toplamı ~7.6/12.\n\nEn riskli maç açık ara Trabzonspor deplasmanı — hem form hem iç saha etkisi onlardan yana. Araya Türkiye Kupası yarı finali (Kayserispor, dış) giriyor; rotasyonu o maçta kullan, lig kadrosunu Trabzon'a sakla.\n\nGalatasaray'ın kalan fikstürü kâğıt üstünde bizimkinden hafif — bu yüzden tek maç bile bırakma payımız yok.",
+    tools: ["fixture_difficulty", "match_predictor"],
+  },
+  {
+    question: "Trabzonspor deplasmanında nasıl oynayalım?",
+    answer:
+      "Model galibiyet olasılığını %38'e koyuyor — sezonun en zor deplasmanı. Trabzonspor iç sahada yüksek tempo ve erken baskıyla başlıyor; ilk 20 dakikayı hasarsız atlatmak birincil hedef.\n\nÖneri: orta blok + hızlı geçiş. Topu kazandığımız an Rashica'nın sağ koridor hızı onların yüksek sol bekini cezalandırır. Duran toplarda dikkat — hava topu güçleri ligin en iyilerinden, Agbadou + Djaló ikilisi sahada kalmalı.\n\n60. dakikadan sonra ev sahibinin temposu düşüyor; taze kanat (Jota Silva) o pencerede maç kazandırır.",
+    tools: ["opponent_report", "match_predictor", "matchup_engine"],
+  },
+  {
+    question: "Kupa finalinde Galatasaray'ı nasıl yenebiliriz?",
+    answer:
+      "Finale çıkarsak model %46 veriyor — ligdeki güç farkından daha yakın, çünkü tek maç ve nötr senaryoda oynanacak.\n\nGalatasaray yüksek savunma hattıyla oynuyor: Oh Hyeon-Gyu'nun derinlik koşuları ve arkaya atılan toplar en net silahımız. İkinci anahtar duran top — zonal savunmalarında far-post örtüsü zayıf, köşelerde ikinci direk varyasyonu hazırlanmalı.\n\nOrta sahada topa sahip olmaya çalışmak tuzak; topu onlara bırakıp geçişle vurmak (kontra xG'miz ligin 2.'si) daha yüksek beklenen değer üretiyor.",
+    tools: ["opponent_report", "set_piece_analyzer", "xg_model"],
+  },
+  {
+    question: "Antalyaspor maçında kimleri dinlendirebilirim?",
+    answer:
+      "Dinlendirme adayları net: Orkun Kökçü zaten KRİTİK riskte — bu maçta hiç oynamamalı, yerine Junior Olaitan hazır (benzerlik %93). Rıdvan Yılmaz yüksek yük bandında; Necip Uysal sol bekte güvenli alternatif.\n\nSarı kart sınırındaki Tiago Djaló için Emir Han Topçu düşünülebilir — Antalyaspor'un tek santrforlu yapısına iki stoperle cevap vermek yeterli.\n\nTaze ve düşük riskli oyuncular: Jota Silva (kondisyon 93), Taylan Bulut (89), Devis Vásquez. Rakibin formu zayıf (7/15) — kontrollü rotasyon için doğru hafta.",
+    tools: ["squad_availability", "load_risk_monitor", "scout_similarity"],
+  },
+  {
+    question: "Savunmamız lig genelinde ne durumda?",
+    answer:
+      "28 yenilen golle ligin en iyi savunması biziz — Galatasaray 29, Fenerbahçe 33. Maç başına 0.85 gol yiyoruz.\n\nDaha önemlisi: beklenen gol (xGA) 41.0 iken 28 yedik — yani kaleci performansı (Ersin) ve blok savunma beklentinin ~13 gol üstünde. Bu farkın bir kısmı sürdürülebilir (organize savunma), bir kısmı regresyon riski taşıyor.\n\nUyarı: sol koridor (Rıdvan'ın yük durumu) son 5 maçta rakip girişlerinin %38'ini yedi — sezon sonuna kadar oraya destek planı şart.",
+    tools: ["xg_model", "defensive_metrics", "load_risk_monitor"],
+  },
+  {
+    question: "xG'ye göre gerçek gücümüz ne?",
+    answer:
+      "Sezon kümülatif xG farkımız +11.3 (52.3 üretilen − 41.0 yenilen beklentisi) — bu ligde 2. en iyi değer ve puan tablosundaki yerimizle uyumlu. Yani sıralamadaki yerimiz şans değil, sistem ürünü.\n\nHücumda 61 gol attık, xG beklentisi ~52 — bitiricilik beklentinin üstünde (özellikle Oh Hyeon-Gyu'nun xG fazlası +4.1). Savunmada da beklentiden az yedik.\n\nİki uçta da beklenti üstündeyiz; gelecek sezon planlamasında bu farkın normale dönme ihtimalini hesaba kat — kadro derinliği yatırımı şart.",
+    tools: ["xg_model", "season_sim"],
+  },
+  {
+    question: "Ligde en formda takımlar kim?",
+    answer:
+      "Son 5 maç puanına göre zirve formda iki takım var: biz (13/15 — 4 galibiyet 1 beraberlik) ve Galatasaray (13/15). Yarış tam da bu yüzden son haftaya gidiyor.\n\nFenerbahçe 10/15 ile temposunu düşürdü, Trabzonspor 11/15 ile iç sahada tehlikeli. Sıradaki rakibimiz Antalyaspor ise 7/15 ile orta formda — son maçında deplasmanda kazandı, küçümseme.\n\nForm trendi maç tahminlerinde fikstür gücüyle birlikte ağırlıklanıyor; bu hafta model bu yüzden bize %48 veriyor (nötr güçte %55 olurdu).",
+    tools: ["form_engine", "match_predictor"],
+  },
+  {
+    question: "Gelecek sezon için öncelikli transfer mevkisi ne olmalı?",
+    answer:
+      "İki mevki öne çıkıyor: (1) 10 numara — Orkun Kökçü 30 yaşında ve sezonun ikinci yarısını yüksek yük riskiyle geçirdi. Junior Olaitan hazır alternatif ama tek başına derinlik yetmez; shortlist'te Doruk Yalçın (19, akademi) uzun vade, Hakan Uğurlu (Başakşehir) düşük maliyetli kısa vade.\n\n(2) Sol bek — Rıdvan Yılmaz'ın yük profili tekrarlayan risk üretiyor; Necip Uysal rotasyonu taşıyor ama as kalitesinde ikinci bir isim gerekli.\n\nSözleşme tarafı: 2026'da bitenler için (kadroda 5 oyuncu) kararlar transfer penceresinden ÖNCE netleşmeli — uzatma + satış matrisini Transfer ekranında hazırladım.",
+    tools: ["scout_similarity", "squad_planner", "contract_risk"],
+  },
 ];
 
 // --------------------------------------------------------------------------- //
