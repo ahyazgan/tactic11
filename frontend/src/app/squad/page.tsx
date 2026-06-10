@@ -38,6 +38,36 @@ const POS_BY_ID: Record<string, string> = Object.fromEntries(
   demoSquad.map((p) => [String(p.player_id), p.position]),
 );
 
+// ── Kadro Derinliği (engine.squad_depth aynası) ──────────────────────────────
+// Eşikler app/engine/squad_depth/compute.py ile birebir: pozisyon başına ideal
+// minimum + yaşlanma eşiği 31. Demo demoSquad'tan; canlıda GET
+// /admin/teams/{id}/squad-depth aynı raporu döner.
+const DEPTH_MIN: Record<string, number> = { GK: 2, DF: 6, MF: 5, FW: 4 };
+const POS_FULL: Record<string, string> = { GK: "Kaleci", DF: "Defans", MF: "Orta Saha", FW: "Forvet" };
+const AGING_AGE = 31;
+
+interface PosDepth {
+  pos: string; label: string; count: number; min: number;
+  avgAge: number | null; aging: number;
+  status: "insufficient" | "adequate" | "surplus"; agingRisk: boolean;
+}
+const SQUAD_DEPTH: PosDepth[] = (["GK", "DF", "MF", "FW"] as const).map((pos) => {
+  const players = demoSquad.filter((p) => p.position === pos);
+  const count = players.length;
+  const ages = players.map((p) => p.age);
+  const avgAge = ages.length ? Math.round((ages.reduce((a, b) => a + b, 0) / ages.length) * 10) / 10 : null;
+  const aging = ages.filter((a) => a >= AGING_AGE).length;
+  const min = DEPTH_MIN[pos];
+  const status: PosDepth["status"] = count < min ? "insufficient" : count > min + 2 ? "surplus" : "adequate";
+  const agingRisk = count > 0 && aging / count >= 0.5 && status !== "surplus";
+  return { pos, label: POS_FULL[pos], count, min, avgAge, aging, status, agingRisk };
+});
+const DEPTH_STATUS_VAR: Record<PosDepth["status"], { v: string; txt: string }> = {
+  insufficient: { v: "var(--crit)", txt: "yetersiz" },
+  adequate: { v: "var(--low)", txt: "yeterli" },
+  surplus: { v: "var(--mid)", txt: "fazla" },
+};
+
 /** Risk etiketinden kadro durumu türet. */
 function statusOf(label: string): { txt: string; v: string } {
   if (label === "Kritik" || label === "Yüksek") return { txt: "Risk", v: "var(--high)" };
@@ -203,6 +233,42 @@ export default function SquadConsolePage() {
           </tbody>
         </table>
       </div>
+
+      {DEMO_MODE && (
+        <>
+          <div className="st"><h2>Kadro Derinliği</h2><span className="ep">pozisyon başına derinlik + yaşlanma riski</span></div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12 }}>
+            {SQUAD_DEPTH.map((d) => {
+              const s = DEPTH_STATUS_VAR[d.status];
+              const barPct = Math.min(100, (d.count / Math.max(d.min, d.count)) * 100);
+              return (
+                <div className="rc" key={d.pos} style={{ margin: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                    <span style={{ fontWeight: 700, fontSize: 13 }}>{d.label}</span>
+                    <span className="risk" style={{ color: s.v, padding: "2px 9px", fontSize: 10.5 }}>
+                      <span className="rd" style={{ background: s.v }} />{s.txt}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
+                    <span style={{ fontSize: 24, fontWeight: 800, fontFamily: "JetBrains Mono", color: s.v }}>{d.count}</span>
+                    <span style={{ fontSize: 12, color: "var(--dim)" }}>/ {d.min} ideal</span>
+                  </div>
+                  <div className="mbar" style={{ marginBottom: 8 }}><i style={{ width: `${barPct}%`, background: s.v }} /></div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--muted)" }}>
+                    <span>ort. yaş <b style={{ color: "var(--ink)", fontFamily: "JetBrains Mono" }}>{d.avgAge ?? "—"}</b></span>
+                    {d.agingRisk
+                      ? <span style={{ color: "var(--high)" }}>⚠ yaşlanma riski ({d.aging})</span>
+                      : <span style={{ color: "var(--dim)" }}>{d.aging} oyuncu 31+</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8 }}>
+            Eşikler: Kaleci 2 · Defans 6 · Orta Saha 5 · Forvet 4 ideal derinlik; yaşlanma riski = pozisyonun yarısı+ 31 yaş üstü ve derinlik fazla değil.
+          </div>
+        </>
+      )}
     </ConsoleShell>
   );
 }

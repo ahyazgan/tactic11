@@ -311,8 +311,10 @@ export default function WeeklyReportPage() {
           <button type="button" onClick={() => window.print()} style={{ padding: "8px 14px", borderRadius: 9, border: "1px solid var(--line)", background: "var(--panel)", color: "var(--ink)", fontWeight: 600, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit" }}>
             <i className="ti ti-file-type-pdf" style={{ marginRight: 6 }} />PDF indir
           </button>
-          <button type="button" onClick={() => setSent(true)} disabled={sent} style={{ padding: "8px 14px", borderRadius: 9, border: 0, background: sent ? "var(--low)" : "var(--besiktas)", color: "#fff", fontWeight: 700, fontSize: 12.5, cursor: sent ? "default" : "pointer", fontFamily: "inherit", opacity: sent ? 0.85 : 1 }}>
-            <i className={`ti ${sent ? "ti-check" : "ti-send"}`} style={{ marginRight: 6 }} />{sent ? "Gönderildi" : "Direktöre gönder"}
+          <button type="button" onClick={() => setSent(true)} disabled={sent}
+            title="Demo: gerçek e-posta gönderimi backend bağlanınca aktifleşir (SMTP)."
+            style={{ padding: "8px 14px", borderRadius: 9, border: 0, background: sent ? "var(--low)" : "var(--besiktas)", color: "#fff", fontWeight: 700, fontSize: 12.5, cursor: sent ? "default" : "pointer", fontFamily: "inherit", opacity: sent ? 0.85 : 1 }}>
+            <i className={`ti ${sent ? "ti-check" : "ti-send"}`} style={{ marginRight: 6 }} />{sent ? "Gönderildi (demo)" : "Direktöre gönder"}
           </button>
         </div>
       </div>
