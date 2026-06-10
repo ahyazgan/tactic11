@@ -25,7 +25,7 @@ export interface TeamMeta {
 // Gerçek Süper Lig (18 takım). Renkler kulüplerin gerçek renkleridir.
 export const SUPER_LIG: TeamMeta[] = [
   { name: "Galatasaray",      short: "GS",   city: "İstanbul", founded: 1905, primary: "#A4282E", secondary: "#F7B500", ink: "#F7B500", aliases: ["Galatasaray SK"] },
-  { name: "Beşiktaş",         short: "BJK",  city: "İstanbul", founded: 1903, primary: "#16181C", secondary: "#FFFFFF", ink: "#FFFFFF", aliases: ["Beşiktaş JK", "FK Demo"] },
+  { name: "Beşiktaş",         short: "BJK",  city: "İstanbul", founded: 1903, primary: "#16181C", secondary: "#FFFFFF", ink: "#FFFFFF", aliases: ["Beşiktaş JK"] },
   { name: "Fenerbahçe",       short: "FB",   city: "İstanbul", founded: 1907, primary: "#14254C", secondary: "#FFE000", ink: "#FFE000", aliases: ["Fenerbahçe SK"] },
   { name: "Trabzonspor",      short: "TS",   city: "Trabzon",  founded: 1967, primary: "#6E1330", secondary: "#2C6BBF", ink: "#FFFFFF" },
   { name: "Samsunspor",       short: "SAM",  city: "Samsun",   founded: 1965, primary: "#C8102E", secondary: "#FFFFFF", ink: "#FFFFFF" },
@@ -34,7 +34,7 @@ export const SUPER_LIG: TeamMeta[] = [
   { name: "Göztepe",          short: "GÖZ",  city: "İzmir",    founded: 1925, primary: "#B8121B", secondary: "#FFD200", ink: "#FFD200", aliases: ["Göztepe SK"] },
   { name: "Kasımpaşa",        short: "KSM",  city: "İstanbul", founded: 1921, primary: "#0B4DA2", secondary: "#FFFFFF", ink: "#FFFFFF" },
   { name: "Konyaspor",        short: "KON",  city: "Konya",    founded: 1922, primary: "#0E7C3A", secondary: "#FFFFFF", ink: "#FFFFFF" },
-  { name: "Antalyaspor",      short: "ANT",  city: "Antalya",  founded: 1966, primary: "#C8102E", secondary: "#FFFFFF", ink: "#FFFFFF", aliases: ["Rakip SK"] },
+  { name: "Antalyaspor",      short: "ANT",  city: "Antalya",  founded: 1966, primary: "#C8102E", secondary: "#FFFFFF", ink: "#FFFFFF" },
   { name: "Çaykur Rizespor",  short: "RİZ",  city: "Rize",     founded: 1953, primary: "#0A7A3F", secondary: "#1C73C2", ink: "#FFFFFF", aliases: ["Rizespor"] },
   { name: "Alanyaspor",       short: "ALY",  city: "Alanya",   founded: 1948, primary: "#E7691B", secondary: "#0B6B3A", ink: "#FFFFFF" },
   { name: "Sivasspor",        short: "SVS",  city: "Sivas",    founded: 1967, primary: "#B8121B", secondary: "#FFFFFF", ink: "#FFFFFF" },

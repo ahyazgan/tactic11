@@ -273,9 +273,6 @@ const CSS = `
   font-family:'Inter','Segoe UI',system-ui,sans-serif;
   font-size:13px;overflow:hidden;
 }
-/* Demo: kulüp arması nötr accent (kırmızı marka değil). */
-.ovroot.demo .crest{background:var(--accent)}
-
 /* ── NAVBAR ── */
 .ovroot .navbar{
   height:50px;
@@ -327,12 +324,6 @@ const CSS = `
   transition:border-color .1s;
 }
 .ovroot .club-chip:hover{border-color:var(--border2)}
-.ovroot .crest{
-  width:22px;height:22px;border-radius:5px;
-  background:var(--besiktas);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:10px;color:#fff;
-}
 .ovroot .cname{font-size:12px;font-weight:600;color:var(--ink);line-height:1.3}
 .ovroot .crole{font-size:10.5px;color:var(--dim)}
 
