@@ -16,7 +16,8 @@ from sqlalchemy.orm import Session
 
 from app.core.logging import get_logger
 from app.data.ingest.player_appearance import ingest_appearances_for_match
-from app.data.sources.api_football import APIFootball
+from app.data.sources.base import AppearanceSource
+from app.data.sources.factory import build_source
 from app.db import models
 from app.db.session import SessionLocal
 from app.sports import football
@@ -83,18 +84,19 @@ def backfill_appearances(
     force: bool = False,
     dry_run: bool = False,
     quota_stop_fraction: float = DEFAULT_QUOTA_FRACTION_STOP,
-    source: APIFootball | None = None,
+    source: AppearanceSource | None = None,
 ) -> dict[str, float]:
     """FT maçlar için appearance backfill çalıştır + rapor döndür.
 
-    source parametresi test enjeksiyonu içindir; verilmezse APIFootball().
+    source parametresi test enjeksiyonu içindir; verilmezse build_source()
+    (config DATA_SOURCE → Sportmonks ya da API-Football).
     """
     from app.core.config import get_settings
     settings = get_settings()
     quota_limit = settings.api_football_daily_limit
     quota_stop = int(quota_limit * quota_stop_fraction)
 
-    src = source or APIFootball()
+    src = source or build_source()
     started = time.time()
     processed = skipped = failed = 0
 

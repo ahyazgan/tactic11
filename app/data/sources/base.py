@@ -11,7 +11,21 @@ adapter aynı arayüze uyar.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import TYPE_CHECKING, Any, Protocol
+
+if TYPE_CHECKING:
+    from app.domain import LineupEntry, PlayerMatchStats
+
+
+class AppearanceSource(Protocol):
+    """Maç kadrosu + oyuncu istatistiği döndüren kaynak sözleşmesi.
+
+    Appearance ingest (lineup + per-player stats) bu Protocol'e bağlıdır; hem
+    `APIFootball` hem `Sportmonks` uygular → kaynak `DATA_SOURCE` ile değişse de
+    ingest/backfill hattı değişmez (somut sınıfa bağlı değil)."""
+
+    def get_fixture_lineups(self, fixture_id: int) -> list[LineupEntry]: ...
+    def get_fixture_player_stats(self, fixture_id: int) -> list[PlayerMatchStats]: ...
 
 
 class DataSource(ABC):

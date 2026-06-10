@@ -16,7 +16,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.logging import get_logger
-from app.data.sources.api_football import APIFootball
+from app.data.sources.base import AppearanceSource
 from app.db import models
 from app.domain import LineupEntry, PlayerMatchStats
 from app.sports import football
@@ -35,7 +35,7 @@ class AppearanceIngestReport:
 
 def ingest_appearances_for_match(
     session: Session,
-    source: APIFootball,
+    source: AppearanceSource,
     *,
     match_external_id: int,
     tenant_id: str,

@@ -47,6 +47,10 @@ class Settings(BaseSettings):
         default="https://api.sportmonks.com/v3/football",
         alias="SPORTMONKS_BASE_URL",
     )
+    # Aktif veri kaynağı (appearance ingest + backfill). "api_football" (varsayılan)
+    # ya da "sportmonks". sync_league lig/takım/fikstür çekimi ayrıca yapılır;
+    # bu yalnız maç kadro/istatistik ingest'inin kaynağını seçer.
+    data_source: str = Field(default="api_football", alias="DATA_SOURCE")
 
     # Veritabanı
     database_url: str = Field(
