@@ -16,6 +16,7 @@ boş kalır, kırılmaz).
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -71,6 +72,40 @@ _DETAIL_FIELD_BY_TYPE: dict[int, str] = {
     57: "saves",                    # (?) Saves (kaleci maçıyla teyit)
     88: "goals_conceded",           # ✓ Goals Conceded (squad yanıtı GOALS_CONCEDED)
 }
+
+
+# Standings details type_id → bizim alan (gerçek Süper Lig yanıtından doğrulandı).
+_STANDING_DETAIL_BY_TYPE: dict[int, str] = {
+    129: "played",          # OVERALL_MATCHES
+    130: "won",             # OVERALL_WINS
+    131: "draw",            # OVERALL_DRAWS
+    132: "lost",            # OVERALL_LOST
+    133: "goals_for",       # OVERALL_SCORED
+    134: "goals_against",   # OVERALL_CONCEDED
+    179: "goal_diff",       # OVERALL_GOAL_DIFFERENCE
+    187: "points",          # TOTAL_POINTS
+    7939: "xpoints",        # EXPECTED_POINTS (xPTS) — Sportmonks zengini
+}
+
+
+@dataclass(frozen=True)
+class StandingRow:
+    """Puan durumu satırı (lig tablosu). Domain'e ait değil — sunum/UI yapısı."""
+
+    position: int
+    team_external_id: int
+    team_name: str
+    played: int = 0
+    won: int = 0
+    draw: int = 0
+    lost: int = 0
+    goals_for: int = 0
+    goals_against: int = 0
+    goal_diff: int = 0
+    points: int = 0
+    xpoints: float | None = None
+    form: list[str] = field(default_factory=list)  # eski→yeni "W"/"D"/"L"
+    qualification: str | None = None  # rule.type.name (ör. "UEFA Champions League")
 
 
 def _as_int(v: Any) -> int | None:
@@ -170,6 +205,25 @@ class Sportmonks:
                 page += 1
         return out
 
+    def _get_standings(self, season_id: int) -> list[dict[str, Any]]:
+        """Sezon puan durumu ham listesi (standings/seasons/{id})."""
+        if not self._key:
+            raise RuntimeError(
+                "SPORTMONKS_API_KEY boş. .env'e anahtar girin ya da testte "
+                "parse_standings saf fonksiyonunu doğrudan kullanın."
+            )
+        url = f"{self._base_url}/standings/seasons/{season_id}"
+        params = {"api_token": self._key, "include": "participant;details;form;rule.type"}
+        s = get_settings()
+        log.info("sportmonks GET standings/seasons/%d", season_id)
+        with httpx.Client(timeout=s.http_timeout_seconds) as client:
+            r = client.get(url, params=params)
+            r.raise_for_status()
+            return r.json().get("data", []) or []
+
+    def get_standings(self, season_id: int) -> list[StandingRow]:
+        return self.parse_standings(self._get_standings(season_id))
+
     # ── Public (ingest sözleşmesi) ────────────────────────────────────────────
     def get_fixture_lineups(self, fixture_id: int) -> list[LineupEntry]:
         return self.parse_lineups(self.get_fixture(fixture_id))
@@ -257,6 +311,78 @@ class Sportmonks:
             except (KeyError, ValueError, TypeError) as e:  # noqa: PERF203
                 log.warning("schedule fixture atlandı id=%s: %s", f.get("id"), e)
         return out
+
+    @staticmethod
+    def parse_standings(data: list[dict[str, Any]]) -> list[StandingRow]:
+        """Puan durumu (standings/seasons/{id}) → StandingRow listesi (pozisyona göre).
+
+        details[] type_id'li metrikler; form[] sort_order ile sıralanır (eski→yeni).
+        Bozuk satır atlanır."""
+        rows: list[StandingRow] = []
+        for st in data or []:
+            if not isinstance(st, dict):
+                continue
+            pid = _as_int(st.get("participant_id"))
+            pos = _as_int(st.get("position"))
+            if pid is None or pos is None:
+                continue
+            part = st.get("participant") or {}
+            vals: dict[str, Any] = {}
+            for d in st.get("details", []):
+                field_name = _STANDING_DETAIL_BY_TYPE.get(_as_int(d.get("type_id")) or -1)
+                if field_name is None:
+                    continue
+                raw_v = d.get("value")
+                vals[field_name] = (
+                    _as_float(raw_v) if field_name == "xpoints" else _as_int(raw_v)
+                )
+            # Form: sort_order'a göre (eski→yeni), sadece harf
+            form_sorted = sorted(
+                (f for f in st.get("form", []) if isinstance(f, dict)),
+                key=lambda f: _as_int(f.get("sort_order")) or 0,
+            )
+            form = [str(f.get("form")) for f in form_sorted if f.get("form")]
+            qual = ((st.get("rule") or {}).get("type") or {}).get("name")
+            rows.append(StandingRow(
+                position=pos,
+                team_external_id=pid,
+                team_name=str(part.get("name") or "unknown"),
+                played=vals.get("played") or 0,
+                won=vals.get("won") or 0,
+                draw=vals.get("draw") or 0,
+                lost=vals.get("lost") or 0,
+                goals_for=vals.get("goals_for") or 0,
+                goals_against=vals.get("goals_against") or 0,
+                goal_diff=vals.get("goal_diff") or 0,
+                points=vals.get("points") or 0,
+                xpoints=vals.get("xpoints"),
+                form=form,
+                qualification=qual,
+            ))
+        rows.sort(key=lambda r: r.position)
+        return rows
+
+    @staticmethod
+    def parse_teams_from_standings(data: list[dict[str, Any]]) -> list[Team]:
+        """Puan durumundaki participant'lardan Team listesi (get_teams için).
+
+        Standings tüm ligi kapsar → ligin tam takım kimliği buradan çıkar."""
+        by_id: dict[int, Team] = {}
+        for st in data or []:
+            if not isinstance(st, dict):
+                continue
+            p = st.get("participant") or {}
+            tid = _as_int(p.get("id"))
+            if tid is None or tid in by_id:
+                continue
+            by_id[tid] = Team(
+                sport=football.SPORT_NAME,
+                external_id=tid,
+                name=str(p.get("name") or "unknown"),
+                country=None,
+                founded=_as_int(p.get("founded")),
+            )
+        return list(by_id.values())
 
     @staticmethod
     def parse_teams(raw: dict[str, Any]) -> list[Team]:

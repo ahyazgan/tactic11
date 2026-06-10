@@ -7,7 +7,7 @@ Değerler kullanıcının sağladığı gerçek Gaziantep F.K. vs Beşiktaş (fi
 
 from __future__ import annotations
 
-from app.data.sources.sportmonks import Sportmonks
+from app.data.sources.sportmonks import Sportmonks, StandingRow
 from app.sports import football
 
 # Gerçek Sportmonks fixture şeklinin sadık, kompakt bir alt-kümesi (test girdisi).
@@ -373,3 +373,93 @@ def test_parse_squad_skips_entries_without_player():
     players = Sportmonks.parse_squad(data)  # type: ignore[arg-type]
     assert len(players) == 1
     assert players[0].external_id == 37259977
+
+
+# ── parse_standings (puan durumu) ─────────────────────────────────────────────
+
+def _standing_detail(type_id: int, value):
+    return {"type_id": type_id, "value": value, "type": {"id": type_id}}
+
+
+# Gerçek standings/seasons/25682 yanıtının kompakt alt-kümesi (ilk 3 sıra):
+# Galatasaray 1. (77p, 24G-5B-5M, 77:30), Fenerbahçe 2. (74p), Trabzonspor 3. (69p)
+STANDINGS = [
+    {
+        "participant_id": 34, "position": 1, "points": 77,
+        "participant": {"id": 34, "name": "Galatasaray", "founded": 1905},
+        "rule": {"type": {"name": "UEFA Champions League"}},
+        "details": [
+            _standing_detail(129, 34), _standing_detail(130, 24),
+            _standing_detail(131, 5), _standing_detail(132, 5),
+            _standing_detail(133, 77), _standing_detail(134, 30),
+            _standing_detail(179, 47), _standing_detail(187, 77),
+            _standing_detail(7939, 64),
+        ],
+        "form": [
+            {"form": "W", "sort_order": 33}, {"form": "L", "sort_order": 34},
+            {"form": "W", "sort_order": 32},
+        ],
+    },
+    {
+        "participant_id": 88, "position": 2, "points": 74,
+        "participant": {"id": 88, "name": "Fenerbahçe", "founded": 1907},
+        "rule": {"type": {"name": "UEFA Champions League Qualifiers"}},
+        "details": [
+            _standing_detail(129, 34), _standing_detail(130, 21),
+            _standing_detail(131, 11), _standing_detail(132, 2),
+            _standing_detail(133, 77), _standing_detail(134, 37),
+            _standing_detail(179, 40), _standing_detail(187, 74),
+            _standing_detail(7939, 66),
+        ],
+        "form": [],
+    },
+    {
+        "participant_id": 688, "position": 3, "points": 69,
+        "participant": {"id": 688, "name": "Trabzonspor", "founded": 1967},
+        "rule": {"type": {"name": "UEFA Europa League Qualifiers"}},
+        "details": [
+            _standing_detail(129, 34), _standing_detail(130, 20),
+            _standing_detail(131, 9), _standing_detail(132, 5),
+            _standing_detail(133, 61), _standing_detail(134, 39),
+            _standing_detail(179, 22), _standing_detail(187, 69),
+            _standing_detail(7939, 53),
+        ],
+        "form": [],
+    },
+]
+
+
+def test_parse_standings_maps_table():
+    rows = Sportmonks.parse_standings(STANDINGS)
+    assert [r.position for r in rows] == [1, 2, 3]
+    gala = rows[0]
+    assert isinstance(gala, StandingRow)
+    assert gala.team_external_id == 34
+    assert gala.team_name == "Galatasaray"
+    assert gala.played == 34
+    assert gala.won == 24 and gala.draw == 5 and gala.lost == 5
+    assert gala.goals_for == 77 and gala.goals_against == 30
+    assert gala.goal_diff == 47
+    assert gala.points == 77
+    assert gala.xpoints == 64.0
+    assert gala.qualification == "UEFA Champions League"
+
+
+def test_parse_standings_form_ordered_old_to_new():
+    rows = Sportmonks.parse_standings(STANDINGS)
+    # sort_order 32,33,34 → eski→yeni: W, W, L
+    assert rows[0].form == ["W", "W", "L"]
+
+
+def test_parse_standings_sorts_by_position_and_skips_broken():
+    shuffled = [STANDINGS[2], STANDINGS[0], {"participant_id": None}, "x", STANDINGS[1]]
+    rows = Sportmonks.parse_standings(shuffled)  # type: ignore[list-item]
+    assert [r.position for r in rows] == [1, 2, 3]
+
+
+def test_parse_teams_from_standings():
+    teams = Sportmonks.parse_teams_from_standings(STANDINGS)
+    by_id = {t.external_id: t for t in teams}
+    assert len(teams) == 3
+    assert by_id[88].name == "Fenerbahçe"
+    assert by_id[688].founded == 1967
