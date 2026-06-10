@@ -5,7 +5,7 @@
  * 1. yarı sayıları (PPDA/tilt/xT/dominance), 1. yarı xG eğrisi, motor sinyalleri,
  * AI brief ve senaryo bazlı 2. yarı planı.
  *
- * DEMO_MODE: backend YOK — `demo-data.ts` evreninden (FK Demo vs Rakip SK)
+ * DEMO_MODE: backend YOK — `demo-data.ts` evreninden (Beşiktaş vs Antalyaspor)
  * dolu, inandırıcı bir devre arası brifingi türetilir.
  * DEMO kapalı: eski canlı-API görünümü (/admin/matches/{id}/halftime-brief).
  */
@@ -331,7 +331,7 @@ function DemoHalftimeView() {
         <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Topla oynama</span><span className="sv">%{Math.round(FH_STATS.possession * 100)}</span></div>
         <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Pas isabeti</span><span className="sv">%{Math.round(FH_STATS.pass_accuracy * 100)}</span></div>
         <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Şut (biz–rakip)</span><span className="sv">{FH_SHOTS_HOME}–{FH_SHOTS_AWAY}</span></div>
-        <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Momentum (45&apos;)</span><span className="sv" style={{ color: HOME_COLOR }}>FK Demo</span></div>
+        <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Momentum (45&apos;)</span><span className="sv" style={{ color: HOME_COLOR }}>Beşiktaş</span></div>
       </div>
 
       <div className="rc">

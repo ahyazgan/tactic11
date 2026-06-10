@@ -54,6 +54,16 @@ class Settings(BaseSettings):
     # xG modeli (Prompt 2) — trained artifact path; boş ise models/xg_v1.pkl
     xg_model_path: str = Field(default="", alias="XG_MODEL_PATH")
 
+    # Canlı feed sağlayıcısı — maç-içi konsolda hangi enterprise feed'in
+    # (StatsBomb/Opta/Stats Perform) API anahtarı "bağlı" görünür. Veri bugün
+    # StatsBomb open replay'inden gelir; bu sadece sunum/bağlantı katmanı.
+    # Geçerli: "statsbomb" | "opta" | "stats_perform".
+    live_feed_provider: str = Field(default="statsbomb", alias="LIVE_FEED_PROVIDER")
+    # Sağlayıcı API anahtarı. Boş ise sağlayıcıya özgü demo key kullanılır
+    # (replay demo'da .env gerektirmeden "bağlı" görünür). Snapshot'a yalnızca
+    # MASKELİ hâli düşer (tam key asla istemciye gönderilmez).
+    live_feed_api_key: str = Field(default="", alias="LIVE_FEED_API_KEY")
+
     # Kota koruması
     api_football_daily_limit: int = Field(default=100, alias="API_FOOTBALL_DAILY_LIMIT")
     api_football_monthly_limit: int = Field(default=2000, alias="API_FOOTBALL_MONTHLY_LIMIT")

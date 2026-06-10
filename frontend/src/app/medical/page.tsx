@@ -3,7 +3,7 @@
 /**
  * Tıbbi Merkez — sakatlık / rehabilitasyon / dönüş-riski konsolu. ConsoleShell çatısında.
  *
- * DEMO_MODE açıkken: canlı API'ye hiç dokunulmaz; FK Demo evreninden zengin,
+ * DEMO_MODE açıkken: canlı API'ye hiç dokunulmaz; Beşiktaş evreninden zengin,
  * inandırıcı Türkçe tıbbi içerik render edilir (boş-state / "ID gir" / spinner yok).
  * DEMO_MODE kapalıyken eski canlı-API davranışı (SWR + form) geri gelir.
  *
@@ -62,7 +62,7 @@ const fieldStyle: React.CSSProperties = {
 const labelStyle: React.CSSProperties = { display: "block", fontSize: "10.5px", color: "var(--muted)", margin: "8px 0 3px", textTransform: "uppercase", letterSpacing: "0.5px" };
 
 // --------------------------------------------------------------------------- //
-// DEMO VERİSİ (bu dosyaya özel inline const) — FK Demo evreni ile tutarlı.
+// DEMO VERİSİ (bu dosyaya özel inline const) — Beşiktaş evreni ile tutarlı.
 // "Bugün" 2026-06-08 (maç günü). Tarihler buna göre kurgulandı.
 // --------------------------------------------------------------------------- //
 
@@ -124,7 +124,7 @@ function progColor(v: number): string {
 
 export default function MedicalConsolePage() {
   // ───────────────────────────── DEMO MODU ─────────────────────────────
-  // Canlı API'ye hiç dokunma; FK Demo evreninden zengin tıbbi merkez render et.
+  // Canlı API'ye hiç dokunma; Beşiktaş evreninden zengin tıbbi merkez render et.
   if (DEMO_MODE) return <MedicalDemo />;
   return <MedicalLive />;
 }
@@ -163,7 +163,7 @@ function MedicalDemo() {
       <div className="rc">
         <h3>Sıradaki Dönüş <span className="tiny">return-to-play</span></h3>
         <div className="nm-vs"><span className="t">Kartal Yılmaz</span></div>
-        <div className="nm-when">Kadro değerlendirme · 2 gün · Rakip SK maçı</div>
+        <div className="nm-when">Kadro değerlendirme · 2 gün · Antalyaspor maçı</div>
         <div className="probbar">
           <i style={{ width: "88%", background: "var(--low)" }} />
           <i style={{ width: "12%", background: "var(--surface2)" }} />

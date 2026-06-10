@@ -4,7 +4,7 @@
  * Rakip Raporu — eşleşme grid: bizim güç × rakip zaaf (kanal bazlı).
  * ConsoleShell çatısında.
  *
- * DEMO_MODE açıkken canlı API'ye hiç dokunmaz; "Rakip SK" için dolu, gerçekçi
+ * DEMO_MODE açıkken canlı API'ye hiç dokunmaz; "Antalyaspor" için dolu, gerçekçi
  * scout raporu gösterir (dizilim, kanal eşleşmesi, zaaflar, tehdit, eşleşme avantajı).
  * DEMO kapalıyken eski canlı-API davranışı (iki takım ID gir → matchup-grid) korunur.
  *
@@ -15,6 +15,7 @@ import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { Crest } from "@/lib/teams";
 import { ConsoleShell } from "../_console/shell";
 
 interface ChannelM {
@@ -71,11 +72,11 @@ const inputStyle: React.CSSProperties = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DEMO EVRENİ — "Rakip SK" scout raporu (bu dosyaya özel, paylaşılan veriyi
-// değiştirmeden). İsimler/evren demo-data.ts ile tutarlı (FK Demo vs Rakip SK).
+// DEMO EVRENİ — "Antalyaspor" scout raporu (bu dosyaya özel, paylaşılan veriyi
+// değiştirmeden). İsimler/evren demo-data.ts ile tutarlı (Beşiktaş vs Antalyaspor).
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DEMO_OPP = "Rakip SK";
+const DEMO_OPP = "Antalyaspor";
 const DEMO_COMP = "Süper Lig — 34. Hafta";
 
 // Kanal bazlı eşleşme (bizim güç × rakip zaaf) — canlı GridResp ile aynı şekil.
@@ -320,6 +321,7 @@ export default function OpponentConsolePage() {
       desc={DEMO_MODE
         ? `${DEMO_OPP} scout raporu · ${DEMO_COMP}. Kanal bazlı eşleşme, dizilim, zaaflar ve tehdit.`
         : "Kanal bazlı eşleşme: bizim güç × rakip zaaf. Sömürülecek koridoru bulur."}
+      source={["statsbomb", "api_football"]}
       right={right}
     >
       {!DEMO_MODE && (
@@ -343,7 +345,7 @@ export default function OpponentConsolePage() {
       {DEMO_MODE && (
         <>
           <div className="kpis">
-            <div className="kpi"><div className="kl">Rakip</div><div className="kn" style={{ fontSize: 18 }}>{DEMO_OPP}</div><div className="kd">{demoMeta.formation} dizilim</div></div>
+            <div className="kpi"><div className="kl">Rakip</div><div className="kn" style={{ fontSize: 18, display: "flex", alignItems: "center", gap: 8 }}><Crest team={DEMO_OPP} size={24} />{DEMO_OPP}</div><div className="kd">{demoMeta.formation} dizilim</div></div>
             <div className="kpi"><div className="kl">Analiz</div><div className="kn">{demoMeta.matches_analyzed}</div><div className="kd">son maç</div></div>
             <div className="kpi"><div className="kl">Sömürülecek Koridor</div><div className="kn" style={{ color: "var(--low)" }}>{exploitCount}</div><div className="kd">en iyi: sağ kanat</div></div>
             <div className="kpi"><div className="kl">En Yüksek Eşleşme</div><div className="kn" style={{ color: "var(--low)" }}>{topScore}</div><div className="kd">sağ kanat skoru</div></div>

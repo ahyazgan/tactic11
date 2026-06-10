@@ -3,7 +3,7 @@
 /**
  * Kafa Kafaya (H2H) — iki takımın geçmiş karşılaşma özeti. ConsoleShell çatısında.
  *
- * DEMO_MODE açıkken: canlı API'ye dokunmaz; FK Demo vs Rakip SK için zengin
+ * DEMO_MODE açıkken: canlı API'ye dokunmaz; Beşiktaş vs Antalyaspor için zengin
  * geçmiş-karşılaşma dökümü (skor, gol dağılımı, son maçlar, form, kıyas barları)
  * gösterir. Demo kapalıyken: lig → takım kademeli seçim + /teams/{a}/vs/{b}.
  */
@@ -32,17 +32,17 @@ interface H2HResult {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DEMO EVRENİ — FK Demo vs Rakip SK kafa kafaya geçmişi (inline, paylaşımsız)
+// DEMO EVRENİ — Beşiktaş vs Antalyaspor kafa kafaya geçmişi (inline, paylaşımsız)
 // ─────────────────────────────────────────────────────────────────────────────
 
-type DemoOutcome = "G" | "B" | "M"; // FK Demo açısından: Galibiyet / Beraberlik / Mağlubiyet
+type DemoOutcome = "G" | "B" | "M"; // Beşiktaş açısından: Galibiyet / Beraberlik / Mağlubiyet
 
 interface DemoH2HMatch {
   date: string;
   competition: string;
   venue: "Ev" | "Dep";
-  scoreHome: number;  // FK Demo gol
-  scoreAway: number;  // Rakip SK gol
+  scoreHome: number;  // Beşiktaş gol
+  scoreAway: number;  // Antalyaspor gol
   outcome: DemoOutcome;
   scorers: string;
 }
@@ -88,7 +88,7 @@ const demoTotals = DEMO_MATCHES.reduce(
   { played: 0, winsA: 0, draws: 0, winsB: 0, goalsA: 0, goalsB: 0 },
 );
 
-// Son 6 maç formu (en yeni → en eski), FK Demo açısından.
+// Son 6 maç formu (en yeni → en eski), Beşiktaş açısından.
 const demoForm = DEMO_MATCHES.slice(0, 6).map((m) => m.outcome);
 
 // Kıyas barları — iki takımı yan yana koyan istatistikler (sahte ama tutarlı).
@@ -360,6 +360,7 @@ export default function H2HConsolePage() {
       title="Kafa Kafaya"
       sub="Geçmiş karşılaşmalar"
       desc="İki takımın tarihsel karşılaşma özeti — galibiyet, beraberlik, gol dağılımı."
+      source="api_football"
       right={right}
     >
       <div className="st" style={{ marginTop: 0 }}><h2>Takım Seç</h2></div>

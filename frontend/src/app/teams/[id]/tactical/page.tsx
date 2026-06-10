@@ -3,10 +3,10 @@
 /**
  * Takım Taktiksel Profili — dizilim + pres/blok metrikleri. ConsoleShell çatısında.
  *
- * DEMO_MODE: canlı API'ye (/admin/teams/{id}/tactical-profile) hiç dokunmaz; FK Demo
+ * DEMO_MODE: canlı API'ye (/admin/teams/{id}/tactical-profile) hiç dokunmaz; Beşiktaş
  * için zengin, tutarlı bir taktik profil gösterir (dizilim haritası, pres/blok KPI'ları,
  * koridor tercihi, build-up, geçiş hızı, son 10 maç trendi). Demo evreniyle (demoSquad
- * dizilimi, Rakip SK eşleşmesi, demoWeaknesses) uyumlu.
+ * dizilimi, Antalyaspor eşleşmesi, demoWeaknesses) uyumlu.
  * DEMO kapalı: eski canlı-API + chart bileşenleri davranışına döner.
  */
 
@@ -266,7 +266,7 @@ function LiveTacticalPage() {
 }
 
 /* ────────────────────────────────────────────────────────────────────────
-   DEMO — FK Demo taktiksel profili (backend yok, demo evreniyle uyumlu)
+   DEMO — Beşiktaş taktiksel profili (backend yok, demo evreniyle uyumlu)
 ──────────────────────────────────────────────────────────────────────── */
 
 // 4-2-3-1: demoSquad pozisyonlarıyla tutarlı (GK, 2 stoper + 2 bek, 2 ön libero,
@@ -504,7 +504,7 @@ function DemoTacticalPage() {
   const params = useParams<{ id: string }>();
   const teamId = params?.id ?? "1";
 
-  // Başlıkta id'yi kullan; demo evreni tek (FK Demo vs Rakip SK) olduğu için
+  // Başlıkta id'yi kullan; demo evreni tek (Beşiktaş vs Antalyaspor) olduğu için
   // metrikler kulüp geneli. Dizilim demoSquad pozisyonlarından türetildi.
   const starters = DEMO_FORMATION.map((s) => demoSquad.find((p) => p.shirt === s.shirt)).filter(Boolean);
   const critStarter = starters.find((p) => p && p.risk_label === "Kritik");

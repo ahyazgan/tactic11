@@ -148,6 +148,7 @@ export default function ChatConsolePage() {
       active="/chat"
       title="AI Asistan"
       sub="Co-pilot · gerçek kulüp verisiyle"
+      source="claude"
       right={right}
     >
       <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 132px)", border: "1px solid var(--line)", borderRadius: 9, background: "var(--panel)", overflow: "hidden" }}>

@@ -25,6 +25,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
+from app.api.live_provider import build_provider_status
 from app.api.replay_feed import ReplayFeed, StatsBombReplayFeed
 from app.api.serialize import engine_result_to_dict
 from app.core.logging import get_logger
@@ -209,6 +210,7 @@ def _compute_live_snapshot(
             "events_so_far": 0,
             "note": "Henüz event yok",
             "mode": feed.mode(),
+            "provider": build_provider_status(),
         }
 
     # As-of-minute koşan skor (final-skor sızıntısı yerine). Bu local'ler aşağıda
@@ -239,6 +241,7 @@ def _compute_live_snapshot(
                           + len(defs_so_far) + len(shots_so_far)),
         "score": f"{home_sc}-{away_sc}",
         "mode": feed.mode(),
+        "provider": build_provider_status(),
         "phase": current_phase(current_minute),
     }
     try:

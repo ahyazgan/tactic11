@@ -4,7 +4,7 @@
  * Set-piece Routine — duran top rutini önerileri + zone haritası. ConsoleShell çatısında.
  * SetPieceZoneMap görseli korunur.
  *
- * DEMO_MODE: canlı API'ye dokunmaz; FK Demo vs Rakip SK için zengin köşe/serbest
+ * DEMO_MODE: canlı API'ye dokunmaz; Beşiktaş vs Antalyaspor için zengin köşe/serbest
  * vuruş varyasyonları + far-post analizini demo-data evreninden (demoWeaknesses,
  * demoPlan, demoSquad) türetilmiş içerikle gösterir. Boş-state / "opponent_id gerekli"
  * / spinner yoktur. DEMO kapalı: GET /admin/teams/{id}/set-piece-routine.
@@ -61,7 +61,7 @@ const ZONE_TR: Record<string, string> = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────
-// DEMO EVRENİ — FK Demo vs Rakip SK duran top rutini
+// DEMO EVRENİ — Beşiktaş vs Antalyaspor duran top rutini
 // Çekirdek tema demo-data'dan gelir: demoWeaknesses[1] = "Zonal duran top zaafı"
 // (far-post örtülemiyor, son 8 maçta 4 gol), demoPlan.set_piece_hint = far-post.
 // Aşağıdaki yapı sayfanın canlı-API şekline (Recommendation/RoutineResponse) sadıktır.

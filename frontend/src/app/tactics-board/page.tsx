@@ -35,7 +35,7 @@ const FORMATIONS: Record<string, Token[]> = {
 };
 
 const SAVED = [
-  { name: "Rakip SK — yüksek pres", form: "4-3-3", date: "2026-06-06", tag: "Maç planı" },
+  { name: "Antalyaspor — yüksek pres", form: "4-3-3", date: "2026-06-06", tag: "Maç planı" },
   { name: "Geriye düşünce 3-5-2", form: "3-5-2", date: "2026-06-04", tag: "Senaryo" },
   { name: "Duran top — far post", form: "4-4-2", date: "2026-06-02", tag: "Duran top" },
 ];

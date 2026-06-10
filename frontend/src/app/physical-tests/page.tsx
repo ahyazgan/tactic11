@@ -154,28 +154,32 @@ const METRIC_INFO: Record<string, { name: string; hint: string }> = {
   },
 };
 
+// Işık → değer rozeti arka plan tonu (scannability için).
+const LIGHT_BG: Record<string, string> = {
+  "kırmızı": "var(--crit-bg)", "sarı": "var(--mid-bg)", "yeşil": "var(--low-bg)",
+};
+
 function FlagRow({ f }: { f: ReadinessFlag }) {
   const v = LIGHT_VAR[f.severity];
   const info = METRIC_INFO[f.engine];
+  const ok = f.severity === "yeşil";
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "200px auto 1fr", gap: 12, alignItems: "start", fontSize: 12, padding: "9px 0", borderTop: "1px solid var(--line)" }}>
-      <span style={{ display: "flex", alignItems: "flex-start", gap: 6, minWidth: 0 }}>
-        <span style={{ width: 8, height: 8, borderRadius: "50%", background: v, flexShrink: 0, marginTop: 4 }} />
-        <span style={{ minWidth: 0 }}>
-          <b style={{ display: "block", lineHeight: 1.3 }}>{info?.name ?? f.metric}</b>
-          <span style={{ fontSize: 10.5, color: "var(--dim)", textTransform: "uppercase", letterSpacing: 0.3 }}>{f.metric}</span>
-        </span>
-      </span>
-      <span style={{ fontFamily: "JetBrains Mono", color: v, whiteSpace: "nowrap", marginTop: 1 }}>{f.value}</span>
-      <span style={{ color: "var(--muted)", lineHeight: 1.5 }}>
-        {f.action}
-        {info?.hint && (
-          <span style={{ display: "block", color: "var(--dim)", fontSize: 11, marginTop: 3 }}>{info.hint}</span>
-        )}
-        <span style={{ display: "block", color: "var(--dim)", fontSize: 11, marginTop: 3 }} title={f.engine}>
-          Eşik: {f.threshold}
-        </span>
-      </span>
+    <div style={{ display: "flex", gap: 9, alignItems: "flex-start", padding: "9px 0", borderTop: "1px solid var(--line)" }}>
+      <span style={{ width: 8, height: 8, borderRadius: "50%", background: v, flexShrink: 0, marginTop: 5 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Satır 1: ad + teknik kod çipi + değer rozeti */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <b style={{ fontSize: 12.5 }}>{info?.name ?? f.metric}</b>
+          <span style={{ fontSize: 9.5, color: "var(--dim)", textTransform: "uppercase", letterSpacing: 0.4, border: "1px solid var(--line)", borderRadius: 4, padding: "0 5px", whiteSpace: "nowrap" }}>{f.metric}</span>
+          <span style={{ marginLeft: "auto", fontFamily: "JetBrains Mono", fontSize: 11.5, fontWeight: 700, color: v, background: LIGHT_BG[f.severity], padding: "1px 8px", borderRadius: 6, whiteSpace: "nowrap" }}>{f.value}</span>
+        </div>
+        {/* Satır 2: KARAR — ne yapmalı (yeşilde gizli, kritik renkte) */}
+        {!ok && <div style={{ color: v, fontSize: 12, fontWeight: 600, marginTop: 4, lineHeight: 1.4 }}>{f.action}</div>}
+        {/* Satır 3: ne ölçer + eşik — tek sönük satır */}
+        <div style={{ color: "var(--dim)", fontSize: 10.5, marginTop: 3, lineHeight: 1.45 }}>
+          {info?.hint}{info?.hint ? " · " : ""}<span title={f.engine}>eşik {f.threshold}</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -370,7 +374,7 @@ export default function FizikselDurumPage() {
 
       {tab === "karar" && (
         <>
-          <div className="st" style={{ marginTop: 0 }}><h2>Hazırlık Kararı</h2><span className="ep">karar verici · {cantPlay} çıkamaz · {monitor} izle · {enteredCount > 0 ? `${enteredCount} girilen veriden` : "demo profili"} · satıra tıkla → gerekçe</span></div>
+          <div className="st" style={{ marginTop: 0 }}><h2>Hazırlık Kararı</h2><span className="ep">{cantPlay} çıkamaz · {monitor} izle · satıra tıkla → gerekçe</span></div>
           <ReadinessBoard rows={readinessRows} />
         </>
       )}

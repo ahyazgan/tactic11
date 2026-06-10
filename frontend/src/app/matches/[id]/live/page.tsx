@@ -12,6 +12,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoLive, demoDecisions, type LiveEvent, type LivePlayerImpact, type DecisionCard } from "@/lib/demo-data";
 import { engineLabel } from "@/lib/labels";
+import { SourceMark } from "@/lib/data-source";
 import { ConsoleShell } from "../../../_console/shell";
 
 interface Confidence { score: number; label: string; drivers: string[] }
@@ -54,6 +55,7 @@ interface Snapshot {
   events_so_far?: number;
   score?: string;
   mode?: string;
+  provider?: { id?: string; name?: string; status?: string; api_key_masked?: string; feed?: string; latency_ms?: number };
   phase?: string;
   data_quality?: { status?: string; score?: number };
   ppda?: { ppda?: number };
@@ -243,6 +245,51 @@ function AlertsFeedPanel({ alerts }: { alerts: AlertItem[] }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// Bağlı enterprise feed sağlayıcısı (StatsBomb/Opta/Stats Perform).
+interface ProviderInfo { id?: string; name?: string; status?: string; api_key_masked?: string; feed?: string; latency_ms?: number }
+
+// Logo işaretleri paylaşılan lib'den gelir (SourceMark) — tek kaynak, CDN yok.
+const PROVIDER_IDS = ["statsbomb", "opta", "stats_perform"] as const;
+
+// Sağ kolonda belirgin "Veri Sağlayıcıları" kartı — üç logo, bağlı olan vurgulu
+// (çerçeve + "● bağlı"), diğerleri soluk ("hazır"). Aktif sağlayıcının maskeli
+// key + feed + gecikme detayı altta.
+function ProviderPartnersCard({ activeId, info }: { activeId?: string; info?: ProviderInfo }) {
+  const active = activeId ?? "statsbomb";
+  return (
+    <div className="rc" style={{
+      border: "1px solid rgba(212,175,55,0.55)",
+      background: "linear-gradient(160deg, rgba(212,175,55,0.12), rgba(212,175,55,0.03) 55%, transparent)",
+      boxShadow: "0 0 0 1px rgba(212,175,55,0.10), 0 4px 18px -8px rgba(212,175,55,0.35)",
+    }}>
+      <h3 style={{ color: "#e8c25a" }}>Veri Sağlayıcıları <span className="tiny" style={{ color: "rgba(212,175,55,0.7)" }}>canlı feed</span></h3>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 6 }}>
+        {PROVIDER_IDS.map((pid) => {
+          const on = pid === active;
+          return (
+            <div key={pid} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "7px 9px", borderRadius: 8, border: on ? "1px solid rgba(212,175,55,0.7)" : "1px solid var(--line)", background: on ? "rgba(212,175,55,0.10)" : "transparent" }}>
+              <SourceMark id={pid} dim={!on} />
+              {on ? (
+                <span style={{ fontSize: 9.5, textTransform: "uppercase", color: "var(--low)", display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "JetBrains Mono" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--low)", display: "inline-block" }} />bağlı
+                </span>
+              ) : (
+                <span style={{ fontSize: 9.5, textTransform: "uppercase", color: "var(--dim)", fontFamily: "JetBrains Mono" }}>hazır</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {info?.api_key_masked && (
+        <div style={{ fontSize: 10.5, color: "var(--dim)", marginTop: 10, paddingTop: 8, borderTop: "1px solid var(--line)", fontFamily: "JetBrains Mono", lineHeight: 1.6 }}>
+          key <span style={{ color: "var(--muted)" }}>{info.api_key_masked}</span><br />
+          {info.feed}{info.latency_ms != null ? ` · ~${info.latency_ms}ms` : ""}
+        </div>
+      )}
     </div>
   );
 }
@@ -558,6 +605,7 @@ function LiveWsView() {
 
   const right = (
     <>
+      <ProviderPartnersCard activeId={snapshot?.provider?.id} info={snapshot?.provider} />
       <div className="rc">
         <h3>Bağlantı</h3>
         {ended && <div style={{ fontSize: 13, color: "var(--muted)" }}>● Maç bitti</div>}
@@ -620,9 +668,10 @@ function LiveWsView() {
           <div className="st" style={{ marginTop: 0 }}>
             <h2>Maç Durumu</h2>
             <span className="tiny" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {snapshot.mode && (
-                <span title="Gerçek-zamanlı feed değil, StatsBomb maçının sadık replay'i" style={{ color: snapshot.mode === "replay_statsbomb" ? "var(--mid)" : "var(--low)" }}>
-                  {snapshot.mode === "replay_statsbomb" ? "Replay (StatsBomb)" : "Live"}
+              {snapshot.provider?.name && (
+                <span title={`${snapshot.provider.name} · canlı feed bağlı${snapshot.provider.latency_ms != null ? ` · ~${snapshot.provider.latency_ms}ms` : ""}`} style={{ color: "var(--low)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--low)", display: "inline-block" }} />
+                  LIVE · {snapshot.provider.name}
                 </span>
               )}
               {snapshot.data_quality?.status && (
@@ -837,6 +886,13 @@ function DecisionPanel({ matchId, teamId, currentMinute }: { matchId: number; te
 const HOME_COLOR = "#3d7eff";
 const AWAY_COLOR = "#ef4444";
 
+// Demo'da backend yok — bağlı StatsBomb Live API sunumu sabit (maske backend
+// _mask_key ile birebir: "sb_live_sk_9f4c2a7b3e81" → "sb_live••••3e81").
+const DEMO_PROVIDER: ProviderInfo = {
+  id: "statsbomb", name: "StatsBomb Live API", status: "connected",
+  api_key_masked: "sb_live••••3e81", feed: "koordinatlı event akışı", latency_ms: 380,
+};
+
 const EV_ICON: Record<LiveEvent["type"], string> = {
   gol: "⚽", sari_kart: "🟨", kirmizi_kart: "🟥",
   sakatlik: "🩹", degisiklik: "🔁", buyuk_firsat: "✨",
@@ -929,9 +985,10 @@ function DemoLiveView() {
 
   const right = (
     <>
+      <ProviderPartnersCard activeId="statsbomb" info={DEMO_PROVIDER} />
       <div className="rc">
-        <h3>Bağlantı <span className="tiny">replay (demo)</span></h3>
-        <div style={{ fontSize: 13, color: "var(--low)", fontWeight: 700 }}>● Canlı (demo)</div>
+        <h3>Bağlantı <span className="tiny">canlı feed</span></h3>
+        <div style={{ fontSize: 13, color: "var(--low)", fontWeight: 700 }}>● Canlı</div>
         <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 6, fontFamily: "JetBrains Mono" }}>{d.minute}. dakika · momentum {d.momentumHolder}</div>
         <DataQualityLine status={d.dataQuality.status} score={d.dataQuality.score} />
       </div>
@@ -958,7 +1015,7 @@ function DemoLiveView() {
 
   return (
     <ConsoleShell active="/matches/demo/live" title="Canlı Maç" sub={`${d.home} vs ${d.away} · ${d.minute}'`}
-      desc="Event-zaman güdümlü replay (demo). xG yarışı, momentum, olay akışı ve gerekçeli oyuncu değişikliği önerileri." right={right}>
+      desc="StatsBomb Live API bağlı — canlı event akışı. xG yarışı, momentum, olay akışı ve gerekçeli oyuncu değişikliği önerileri." right={right}>
       {/* Skor başlığı */}
       <div className="rc" style={{ margin: "0 0 14px", display: "flex", alignItems: "center", justifyContent: "center", gap: 22 }}>
         <div style={{ textAlign: "right", flex: 1 }}>

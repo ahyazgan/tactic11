@@ -4,7 +4,7 @@
  * Maç Detayı / Hub — skor + dizilim + tahmin (G/B/M) + maç konsollarına geçiş.
  * ConsoleShell çatısında.
  *
- * DEMO_MODE açıkken canlı API'ye hiç dokunulmaz; "FK Demo vs Rakip SK" evreninden
+ * DEMO_MODE açıkken canlı API'ye hiç dokunulmaz; "Beşiktaş vs Antalyaspor" evreninden
  * dolu, inandırıcı bir maç önizlemesi gösterilir (spinner / boş-state / takım-ID
  * prompt'u olmaz): tahmin, ilk 11 saha dizilimi, eşleşme avantajı, rakip zaafları
  * ve canlı/devre-arası/değişiklik konsollarına linkler. Demo kapatılırsa (DEMO_MODE
@@ -414,6 +414,7 @@ function MatchLive({ matchId }: { matchId: string }) {
       title={`Maç #${matchId}`}
       sub="Tahmin & konsollar"
       desc="ML tahmini (kazanma olasılıkları, beklenen skor) ve canlı maç konsollarına geçiş."
+      source={["statsbomb", "xg_model"]}
       right={right}
     >
       {error && <div className="pgdesc">Tahmin alınamadı: {String(error)}</div>}

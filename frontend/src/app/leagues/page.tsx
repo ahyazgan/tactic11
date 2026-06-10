@@ -4,7 +4,7 @@
  * Ligler — Süper Lig puan durumu. ConsoleShell çatısında.
  *
  * DEMO_MODE açıkken canlı API'ye dokunulmaz; aşağıdaki inline demo evreni
- * (Süper Lig — 34. Hafta, "FK Demo" lider yarışında) ile dolu, inandırıcı bir
+ * (Süper Lig — 34. Hafta, "Beşiktaş" lider yarışında) ile dolu, inandırıcı bir
  * puan durumu + form + KPI şeridi gösterilir (spinner / boş tablo / "ID gir" yok).
  * DEMO kapalıyken eski canlı-API (GET /leagues) davranışına döner.
  */
@@ -14,6 +14,7 @@ import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { Crest } from "@/lib/teams";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -45,26 +46,26 @@ interface StandingRow {
   form: FormResult[]; // son 5, soldan eskiye → sağda en yeni
 }
 
-// FK Demo zirve yarışında 2.; lig "Süper Lig — 34. Hafta" evreniyle tutarlı.
+// Beşiktaş zirve yarışında 2.; lig "Süper Lig — 34. Hafta" evreniyle tutarlı.
 const DEMO_STANDINGS: StandingRow[] = [
-  { pos: 1, team: "Anadolu Yıldızspor", short: "AYS", played: 34, win: 24, draw: 6, loss: 4, gf: 71, ga: 28, pts: 78, form: ["G", "G", "B", "G", "G"] },
-  { pos: 2, team: "FK Demo", short: "FKD", played: 34, win: 23, draw: 7, loss: 4, gf: 68, ga: 31, pts: 76, form: ["G", "B", "G", "G", "G"] },
-  { pos: 3, team: "Boğaziçi SK", short: "BSK", played: 34, win: 21, draw: 8, loss: 5, gf: 62, ga: 34, pts: 71, form: ["G", "G", "G", "B", "M"] },
-  { pos: 4, team: "Ege Fırtınası", short: "EGF", played: 34, win: 19, draw: 9, loss: 6, gf: 57, ga: 33, pts: 66, form: ["B", "G", "G", "G", "B"] },
-  { pos: 5, team: "Karadeniz Şimşek", short: "KŞK", played: 34, win: 18, draw: 8, loss: 8, gf: 54, ga: 40, pts: 62, form: ["G", "M", "G", "B", "G"] },
-  { pos: 6, team: "Başkent Kartalı", short: "BKK", played: 34, win: 16, draw: 9, loss: 9, gf: 49, ga: 42, pts: 57, form: ["B", "B", "G", "M", "G"] },
-  { pos: 7, team: "Rakip SK", short: "RSK", played: 34, win: 15, draw: 8, loss: 11, gf: 47, ga: 45, pts: 53, form: ["M", "G", "B", "G", "B"] },
-  { pos: 8, team: "Akdeniz Güneşi", short: "AKG", played: 34, win: 14, draw: 9, loss: 11, gf: 45, ga: 46, pts: 51, form: ["G", "B", "M", "B", "G"] },
-  { pos: 9, team: "Marmara Birlik", short: "MRB", played: 34, win: 13, draw: 10, loss: 11, gf: 43, ga: 44, pts: 49, form: ["B", "G", "B", "M", "B"] },
-  { pos: 10, team: "Toros Gücü", short: "TRG", played: 34, win: 12, draw: 10, loss: 12, gf: 41, ga: 47, pts: 46, form: ["M", "B", "G", "B", "M"] },
-  { pos: 11, team: "Fırat Demir", short: "FRD", played: 34, win: 12, draw: 8, loss: 14, gf: 39, ga: 49, pts: 44, form: ["M", "M", "B", "G", "B"] },
-  { pos: 12, team: "Kapadokya FK", short: "KPD", played: 34, win: 11, draw: 9, loss: 14, gf: 38, ga: 50, pts: 42, form: ["B", "M", "G", "M", "B"] },
-  { pos: 13, team: "Söğüt Yıldırım", short: "SĞY", played: 34, win: 10, draw: 10, loss: 14, gf: 36, ga: 51, pts: 40, form: ["M", "B", "M", "B", "G"] },
-  { pos: 14, team: "Çukurova SK", short: "ÇKR", played: 34, win: 9, draw: 11, loss: 14, gf: 35, ga: 52, pts: 38, form: ["B", "M", "B", "M", "B"] },
-  { pos: 15, team: "Trakya United", short: "TRK", played: 34, win: 9, draw: 9, loss: 16, gf: 33, ga: 55, pts: 36, form: ["M", "M", "B", "M", "G"] },
-  { pos: 16, team: "Demirpınar", short: "DMP", played: 34, win: 8, draw: 9, loss: 17, gf: 31, ga: 58, pts: 33, form: ["M", "B", "M", "M", "B"] },
-  { pos: 17, team: "Yeşil Vadispor", short: "YŞV", played: 34, win: 6, draw: 10, loss: 18, gf: 28, ga: 62, pts: 28, form: ["M", "M", "M", "B", "M"] },
-  { pos: 18, team: "Kuzey Limanspor", short: "KZL", played: 34, win: 5, draw: 7, loss: 22, gf: 24, ga: 71, pts: 22, form: ["M", "M", "B", "M", "M"] },
+  { pos: 1, team: "Galatasaray", short: "GS", played: 34, win: 24, draw: 6, loss: 4, gf: 71, ga: 28, pts: 78, form: ["G", "G", "B", "G", "G"] },
+  { pos: 2, team: "Beşiktaş", short: "BJK", played: 34, win: 23, draw: 7, loss: 4, gf: 68, ga: 31, pts: 76, form: ["G", "B", "G", "G", "G"] },
+  { pos: 3, team: "Fenerbahçe", short: "FB", played: 34, win: 21, draw: 8, loss: 5, gf: 62, ga: 34, pts: 71, form: ["G", "G", "G", "B", "M"] },
+  { pos: 4, team: "Trabzonspor", short: "TS", played: 34, win: 19, draw: 9, loss: 6, gf: 57, ga: 33, pts: 66, form: ["B", "G", "G", "G", "B"] },
+  { pos: 5, team: "Samsunspor", short: "SAM", played: 34, win: 18, draw: 8, loss: 8, gf: 54, ga: 40, pts: 62, form: ["G", "M", "G", "B", "G"] },
+  { pos: 6, team: "Başakşehir", short: "İBFK", played: 34, win: 16, draw: 9, loss: 9, gf: 49, ga: 42, pts: 57, form: ["B", "B", "G", "M", "G"] },
+  { pos: 7, team: "Eyüpspor", short: "EYP", played: 34, win: 15, draw: 8, loss: 11, gf: 47, ga: 45, pts: 53, form: ["M", "G", "B", "G", "B"] },
+  { pos: 8, team: "Göztepe", short: "GÖZ", played: 34, win: 14, draw: 9, loss: 11, gf: 45, ga: 46, pts: 51, form: ["G", "B", "M", "B", "G"] },
+  { pos: 9, team: "Kasımpaşa", short: "KSM", played: 34, win: 13, draw: 10, loss: 11, gf: 43, ga: 44, pts: 49, form: ["B", "G", "B", "M", "B"] },
+  { pos: 10, team: "Konyaspor", short: "KON", played: 34, win: 12, draw: 10, loss: 12, gf: 41, ga: 47, pts: 46, form: ["M", "B", "G", "B", "M"] },
+  { pos: 11, team: "Antalyaspor", short: "ANT", played: 34, win: 12, draw: 8, loss: 14, gf: 39, ga: 49, pts: 44, form: ["M", "M", "B", "G", "B"] },
+  { pos: 12, team: "Çaykur Rizespor", short: "RİZ", played: 34, win: 11, draw: 9, loss: 14, gf: 38, ga: 50, pts: 42, form: ["B", "M", "G", "M", "B"] },
+  { pos: 13, team: "Alanyaspor", short: "ALY", played: 34, win: 10, draw: 10, loss: 14, gf: 36, ga: 51, pts: 40, form: ["M", "B", "M", "B", "G"] },
+  { pos: 14, team: "Sivasspor", short: "SVS", played: 34, win: 9, draw: 11, loss: 14, gf: 35, ga: 52, pts: 38, form: ["B", "M", "B", "M", "B"] },
+  { pos: 15, team: "Kayserispor", short: "KAY", played: 34, win: 9, draw: 9, loss: 16, gf: 33, ga: 55, pts: 36, form: ["M", "M", "B", "M", "G"] },
+  { pos: 16, team: "Gaziantep FK", short: "GFK", played: 34, win: 8, draw: 9, loss: 17, gf: 31, ga: 58, pts: 33, form: ["M", "B", "M", "M", "B"] },
+  { pos: 17, team: "Hatayspor", short: "HTY", played: 34, win: 6, draw: 10, loss: 18, gf: 28, ga: 62, pts: 28, form: ["M", "M", "M", "B", "M"] },
+  { pos: 18, team: "Bodrum FK", short: "BOD", played: 34, win: 5, draw: 7, loss: 22, gf: 24, ga: 71, pts: 22, form: ["M", "M", "B", "M", "M"] },
 ];
 
 // Lider yarışı sağ-panel mini grafiği için ilk 4 takımın puanı.
@@ -139,7 +140,7 @@ export default function LeaguesConsolePage() {
   const standings = DEMO_STANDINGS;
 
   // KPI türevleri (demo evreninden).
-  const us = standings.find((s) => s.team === "FK Demo")!;
+  const us = standings.find((s) => s.team === "Beşiktaş")!;
   const leader = standings[0];
   const gap = leader.pts - us.pts; // lidere fark
   const totalGoals = standings.reduce((a, s) => a + s.gf, 0);
@@ -154,7 +155,7 @@ export default function LeaguesConsolePage() {
       <div className="rc">
         <h3>Lider Yarışı <span className="tiny">İlk 4</span></h3>
         {TITLE_RACE.map((t) => {
-          const mine = t.team === "FK Demo";
+          const mine = t.team === "Beşiktaş";
           return (
             <div key={t.team} style={{ marginBottom: 9 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 2 }}>
@@ -170,12 +171,12 @@ export default function LeaguesConsolePage() {
           );
         })}
         <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 4, lineHeight: 1.5 }}>
-          FK Demo lidere <b style={{ color: "var(--mid)" }}>{gap} puan</b> geride; 4 maç kaldı.
+          Beşiktaş lidere <b style={{ color: "var(--mid)" }}>{gap} puan</b> geride; 4 maç kaldı.
         </div>
       </div>
 
       <div className="rc">
-        <h3>FK Demo Sezonu <span className="tiny">{us.played} maç</span></h3>
+        <h3>Beşiktaş Sezonu <span className="tiny">{us.played} maç</span></h3>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <RiskDonut
             segments={[
@@ -222,6 +223,7 @@ export default function LeaguesConsolePage() {
       title="Ligler"
       sub="Süper Lig — 34. Hafta"
       desc="Sync edilmiş liglerin güncel puan durumu. Bir takıma tıkla → kadro/takım detayı."
+      source="api_football"
       right={right}
     >
       {!DEMO_MODE && isLoading && <div className="pgdesc">Yükleniyor…</div>}
@@ -230,7 +232,7 @@ export default function LeaguesConsolePage() {
       <div className="kpis">
         <div className="kpi"><div className="kl">Lig</div><div className="kn" style={{ fontSize: 20 }}>Süper Lig</div><div className="kd">Türkiye · 2025/26</div></div>
         <div className="kpi"><div className="kl">Hafta</div><div className="kn">34<span className="pct">/38</span></div><div className="kd">4 maç kaldı</div></div>
-        <div className="kpi"><div className="kl">FK Demo</div><div className="kn" style={{ color: "var(--accent)" }}>{us.pos}.</div><div className="kd"><span className="u">{us.pts} puan</span> · lidere {gap}</div></div>
+        <div className="kpi"><div className="kl">Beşiktaş</div><div className="kn" style={{ color: "var(--accent)" }}>{us.pos}.</div><div className="kd"><span className="u">{us.pts} puan</span> · lidere {gap}</div></div>
         <div className="kpi"><div className="kl">Averaj</div><div className="kn" style={{ color: "var(--low)" }}>+{us.gf - us.ga}</div><div className="kd">{us.gf} attı · {us.ga} yedi</div></div>
         <div className="kpi"><div className="kl">Maç Başı Gol</div><div className="kn">{avgGoals}</div><div className="kd">lig geneli ort.</div></div>
       </div>
@@ -256,7 +258,7 @@ export default function LeaguesConsolePage() {
           </thead>
           <tbody>
             {standings.map((s) => {
-              const mine = s.team === "FK Demo";
+              const mine = s.team === "Beşiktaş";
               const zc = zoneColor(s.pos);
               const zl = zoneLabel(s.pos);
               return (
@@ -270,7 +272,10 @@ export default function LeaguesConsolePage() {
                     <span className="pnum" style={{ color: s.pos <= 2 ? "var(--low)" : s.pos >= 16 ? "var(--crit)" : "var(--dim)" }}>{s.pos}</span>
                   </td>
                   <td>
-                    <span className="nm" style={{ color: mine ? "var(--accent)" : "var(--ink)" }}>{s.team}</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginRight: 4 }}>
+                      <Crest team={s.team} size={20} />
+                      <span className="nm" style={{ color: mine ? "var(--accent)" : "var(--ink)" }}>{s.team}</span>
+                    </span>
                     {zl && (
                       <span className="risk" style={{ marginLeft: 8, color: zc, padding: "2px 8px", fontSize: 10.5 }}>
                         <span className="rd" style={{ background: zc }} />{zl}

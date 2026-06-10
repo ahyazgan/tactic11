@@ -6,6 +6,7 @@
  */
 
 import * as React from "react";
+import { useProviderAccess, ProviderConnect, ProviderConnectedBar } from "@/lib/provider-access";
 import { ConsoleShell } from "../_console/shell";
 
 type Rec = "İmzala" | "İzlemeye devam" | "Geç";
@@ -56,6 +57,22 @@ const WATCHLIST = [
 ];
 
 export default function ScoutReportsPage() {
+  const access = useProviderAccess("scout");
+
+  if (!access.connected) {
+    return (
+      <ConsoleShell
+        active="/scout-reports"
+        title="Skaut Raporları"
+        sub="Bağlantı gerekli"
+        desc="Skaut gözlem notları ve izleme verileri için bir 3. parti scout sağlayıcıya bağlan."
+        right={<div className="rc"><h3>Neden bağlantı?</h3><div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.55 }}>Rapor, izleme listesi ve skaut ağı bir scout veri sağlayıcısından gelir. Sağlayıcını seçip ID + şifreni girince bölüm açılır.</div></div>}
+      >
+        <ProviderConnect kind="scout" onConnect={access.connect} />
+      </ConsoleShell>
+    );
+  }
+
   const right = (
     <>
       <div className="rc">
@@ -85,8 +102,10 @@ export default function ScoutReportsPage() {
       title="Skaut Raporları"
       sub="Gözlem · öneri"
       desc="Hedef oyuncular için skaut gözlem notları, izleme geçmişi ve transfer önerisi."
+      source={["statsbomb", "claude"]}
       right={right}
     >
+      <ProviderConnectedBar providerLabel={access.providerLabel} user={access.user} onDisconnect={access.disconnect} />
       <div className="kpis">
         <div className="kpi"><div className="kl">Toplam Rapor</div><div className="kn">{REPORTS.length}</div><div className="kd">aktif dosya</div></div>
         <div className="kpi"><div className="kl">İzlenen Oyuncu</div><div className="kn">{REPORTS.length}</div><div className="kd">{WATCHES} maç izlendi</div></div>

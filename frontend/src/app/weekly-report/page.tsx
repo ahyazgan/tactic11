@@ -47,9 +47,9 @@ interface WeekData {
 
 // Geçmiş haftalar — statik anlık görüntü (backend'de rapor kaydından gelir).
 const WEEK_32: WeekData = {
-  no: 32, range: "19–25 May", oppLabel: "Demir SK (E)", score: [3, 1], xgF: 2.41, xgA: 1.02,
+  no: 32, range: "19–25 May", oppLabel: "Gaziantep FK (E)", score: [3, 1], xgF: 2.41, xgA: 1.02,
   matchLines: [
-    "FK Demo 3–1 Demir SK (32. Hafta) — galibiyet.",
+    "Beşiktaş 3–1 Gaziantep FK (32. Hafta) — galibiyet.",
     "xG 2.41–1.02 (fark +1.39); oyunun kontrolü baştan sona bizde.",
     "23', 51', 67' goller; 78' yenilen tek gol duran toptan.",
   ],
@@ -61,9 +61,9 @@ const WEEK_32: WeekData = {
   ],
 };
 const WEEK_33: WeekData = {
-  no: 33, range: "26 May–01 Haz", oppLabel: "Yıldız FK (D)", score: [2, 0], xgF: 1.84, xgA: 0.71,
+  no: 33, range: "26 May–01 Haz", oppLabel: "Konyaspor (D)", score: [2, 0], xgF: 1.84, xgA: 0.71,
   matchLines: [
-    "FK Demo 2–0 Yıldız FK (33. Hafta, deplasman) — galibiyet.",
+    "Beşiktaş 2–0 Konyaspor (33. Hafta, deplasman) — galibiyet.",
     "xG 1.84–0.71 (fark +1.13); deplasmanda verimli ve kontrollü.",
     "34', 72' goller; gol yemeden (clean sheet) tamamlandı.",
   ],
@@ -289,6 +289,7 @@ export default function WeeklyReportPage() {
       title="Haftalık Rapor"
       sub="Otomatik digest · direktöre hazır"
       desc="Maç, sağlık, antrenman ve performans özetini gerçek verilerden tek sayfalık PDF olarak üretir; haftalık otomatik gönderilir."
+      source="claude"
       right={right}
     >
       <div className="kpis">

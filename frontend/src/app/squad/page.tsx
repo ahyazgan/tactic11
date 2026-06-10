@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import useSWR from "swr";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoPlayerRows } from "@/lib/demo-data";
@@ -45,6 +46,7 @@ function condColor(v: number): string {
 type Filter = "all" | "ready" | "risk";
 
 export default function SquadConsolePage() {
+  const router = useRouter();
   // Demo modunda canlı API'ye dokunma; dolu mock kadroyu göster (boş tablo olmaz).
   const { data } = useSWR<PlayerRow[]>(DEMO_MODE ? null : "/physical-tests/players", apiFetch, {
     shouldRetryOnError: false,
@@ -103,7 +105,15 @@ export default function SquadConsolePage() {
         {topRisk.map((p) => {
           const rv = RISK_VAR[p.risk_label] ?? "var(--dim)";
           return (
-            <div className="alrt" key={p.player_id}>
+            <div
+              className="alrt rowlink"
+              key={p.player_id}
+              role="link"
+              tabIndex={0}
+              title={`${p.player_name} — oyuncu profili`}
+              onClick={() => router.push(`/players/${p.player_id}`)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(`/players/${p.player_id}`); } }}
+            >
               <span className="ai" style={{ background: rv }} />
               <div className="am"><b>{p.player_name}</b> · {p.risk_label.toLowerCase()}
                 <span className="tm">risk {Math.round(p.risk_score * 100)}/100 · {p.test_count} test</span>
@@ -162,7 +172,12 @@ export default function SquadConsolePage() {
               const rv = RISK_VAR[p.risk_label] ?? "var(--dim)";
               const st = statusOf(p.risk_label);
               return (
-                <tr key={p.player_id}>
+                <tr
+                  key={p.player_id}
+                  onClick={() => router.push(`/players/${p.player_id}`)}
+                  title={`${p.player_name} — oyuncu profili & özellikleri`}
+                  style={{ cursor: "pointer" }}
+                >
                   <td className="pnum c">{i + 1}</td>
                   <td><span className="nm">{p.player_name}</span> <span className="nat">#{p.player_id}</span></td>
                   <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{p.test_count}</td>

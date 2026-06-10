@@ -3,7 +3,7 @@
 /**
  * Performans Testi — batarya & sezon performansı. ConsoleShell çatısında.
  *
- * DEMO_MODE: canlı API'ye hiç dokunmaz. FK Demo kadrosunun fiziksel-test
+ * DEMO_MODE: canlı API'ye hiç dokunmaz. Beşiktaş kadrosunun fiziksel-test
  * bataryası, sezon trendleri ve kadro karşılaştırması demo-data.ts'ten gösterilir
  * (boş protokol listesi / "veri yok" olmaz). Öne çıkan oyuncu = kritik riskli
  * Orkun Kökçü (#10); ölçümler demoHistoryFor + demoRiskFor'dan türetilir.
@@ -21,6 +21,7 @@ import useSWR from "swr";
 import { apiFetch, getAccessToken } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoSquad, demoHistoryFor, demoRiskFor } from "@/lib/demo-data";
+import { SourceMark } from "@/lib/data-source";
 import { ConsoleShell } from "../_console/shell";
 import { Gauge } from "../_console/viz";
 
@@ -81,18 +82,25 @@ export default function PerformancePage() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DEMO — Sezon Performansı & Batarya (backend yok, FK Demo evreni)
+   DEMO — Sezon Performansı & Batarya (backend yok, Beşiktaş evreni)
 ═══════════════════════════════════════════════════════════════════════════ */
 
 // Protokol kataloğu — demoHistoryFor'un ürettiği anahtarlarla birebir.
 // better: "low" → düşük değer daha iyi (sprint), "high" → yüksek değer daha iyi.
-interface ProtoMeta { key: string; name: string; short: string; unit: string; better: "low" | "high" }
+// name: anlaşılır ad (futbol diliyle); short: teknik test adı; plain: tek cümle
+// "bu test ne işe yarar" açıklaması (tabloda adın altında görünür).
+interface ProtoMeta { key: string; name: string; short: string; unit: string; better: "low" | "high"; plain: string }
 const DEMO_PROTOCOLS: ProtoMeta[] = [
-  { key: "sprint_10m", name: "Sprint 10 m", short: "10M", unit: "sn", better: "low" },
-  { key: "sprint_30m", name: "Sprint 30 m", short: "30M", unit: "sn", better: "low" },
-  { key: "yoyo_irl1", name: "Yo-Yo IRL1", short: "YOYO", unit: "sv", better: "high" },
-  { key: "cmj", name: "CMJ — Dikey Sıçrama", short: "CMJ", unit: "cm", better: "high" },
-  { key: "vo2max", name: "VO2max", short: "VO2", unit: "ml", better: "high" },
+  { key: "sprint_10m", name: "Çıkış Hızı", short: "10 m sprint", unit: "sn", better: "low",
+    plain: "İlk adım patlayıcılığı — kısa mesafede topa rakipten önce ulaşma." },
+  { key: "sprint_30m", name: "Düz Hız", short: "30 m sprint", unit: "sn", better: "low",
+    plain: "Maksimum koşu hızı — kontratak ve geri koşularda fark yaratır." },
+  { key: "yoyo_irl1", name: "Dayanıklılık", short: "Yo-Yo testi", unit: "seviye", better: "high",
+    plain: "Tekrarlı yüksek tempo koşu kapasitesi — 90 dakika pres gücü." },
+  { key: "cmj", name: "Sıçrama Gücü", short: "dikey sıçrama", unit: "cm", better: "high",
+    plain: "Bacak gücü — hava toplarında ve ani yön değişimlerinde belirleyici." },
+  { key: "vo2max", name: "Kondisyon Motoru", short: "VO2max", unit: "ml/kg/dk", better: "high",
+    plain: "Aerobik kapasite — maç boyu tempoyu taşıyabilme." },
 ];
 
 /** Bir oyuncunun bir protokoldeki son ölçüm + trend (5 ölçüm) zinciri. */
@@ -233,8 +241,12 @@ function PerformanceDemoConsole() {
             </div>
           </div>
         </div>
-        <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5, borderTop: "1px solid var(--line)", paddingTop: 10 }}>
-          {risk.summary}
+        <div style={{ borderTop: "1px solid var(--line)", paddingTop: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
+            <SourceMark id="claude" height={12} />
+            <span style={{ fontSize: 9.5, textTransform: "uppercase", letterSpacing: ".4px", color: "var(--dim)" }}>AI değerlendirme</span>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>{risk.summary}</div>
         </div>
       </div>
 
@@ -261,7 +273,7 @@ function PerformanceDemoConsole() {
       </div>
 
       <div className="rc">
-        <h3>En İyi Atletik Profil <span className="tiny">kondisyon</span></h3>
+        <h3>Formda Olanlar <span className="tiny">kondisyon ilk 5</span></h3>
         {topPerformers.map((p) => (
           <div className="alrt" key={p.player_id}>
             <span className="ai" style={{ background: "var(--low)" }} />
@@ -284,22 +296,23 @@ function PerformanceDemoConsole() {
     <ConsoleShell
       active="/performance"
       title="Performans"
-      sub="Batarya & sezon performansı"
-      desc="FK Demo kadrosunun fiziksel-test bataryası ve sezon trendi. Değerler kadro içi yüzde sırasına göre değerlendirilir; sağlık/performans verisi KVKK'da özel niteliklidir."
+      sub="Test karnesi & sezon gidişatı"
+      desc="Kadronun saha/lab test karnesi: her oyuncunun takım içindeki yeri, son 5 testteki gidişatı ve seviyesi. Sağlık/performans verisi KVKK'da özel niteliklidir."
+      source={["perf_lab", "claude"]}
       navBadge={criticalCount}
       right={right}
     >
       <div className="kpis">
-        <div className="kpi"><div className="kl">Test Kaydı</div><div className="kn">{totalTests.toLocaleString("tr-TR")}</div><div className="kd">son 5 pencere · {DEMO_PROTOCOLS.length} protokol</div></div>
+        <div className="kpi"><div className="kl">Test Kaydı</div><div className="kn">{totalTests.toLocaleString("tr-TR")}</div><div className="kd">{DEMO_PROTOCOLS.length} test türü × son 5 ölçüm</div></div>
         <div className="kpi"><div className="kl">Ort. Kondisyon</div><div className="kn">{avgCond}<span className="pct">%</span></div><div className="kd">{demoSquad.length} oyuncu</div></div>
-        <div className="kpi"><div className="kl">Elit Profil</div><div className="kn" style={{ color: "var(--low)" }}>{elitCount}</div><div className="kd">kondisyon ≥ 88</div></div>
-        <div className="kpi"><div className="kl">İzlemede</div><div className="kn" style={{ color: "var(--mid)" }}>{monitored}</div><div className="kd">orta/yüksek yük</div></div>
-        <div className="kpi"><div className="kl">Kritik Risk</div><div className="kn" style={{ color: criticalCount ? "var(--crit)" : "var(--low)" }}>{criticalCount}</div><div className="kd">batarya kırmızı</div></div>
+        <div className="kpi"><div className="kl">Zirve Formda</div><div className="kn" style={{ color: "var(--low)" }}>{elitCount}</div><div className="kd">kondisyon 88 ve üstü</div></div>
+        <div className="kpi"><div className="kl">Takipte</div><div className="kn" style={{ color: "var(--mid)" }}>{monitored}</div><div className="kd">yükü artmış — izleniyor</div></div>
+        <div className="kpi"><div className="kl">Kritik Risk</div><div className="kn" style={{ color: criticalCount ? "var(--crit)" : "var(--low)" }}>{criticalCount}</div><div className="kd">hemen dinlendirilmeli</div></div>
       </div>
 
-      {/* ── Odak oyuncu bataryası ── */}
+      {/* ── Odak oyuncu test karnesi ── */}
       <div className="st">
-        <h2>Batarya — {focus.player_name}</h2>
+        <h2>Test Karnesi — {focus.player_name}</h2>
         <div className="seg">
           {demoSquad.filter((p) => p.risk_label === "Kritik" || p.condition >= 90).slice(0, 4).map((p) => (
             <button key={p.player_id} className={p.player_id === focusId ? "on" : ""} onClick={() => setFocusId(p.player_id)}>
@@ -308,10 +321,16 @@ function PerformanceDemoConsole() {
           ))}
         </div>
       </div>
+      {/* Nasıl okunur — tek satır lejant */}
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap", margin: "0 0 10px", fontSize: 11.5, color: "var(--dim)" }}>
+        <span><b style={{ color: "var(--muted)" }}>Kadro Sırası:</b> %82 = takım arkadaşlarının %82&apos;sinden daha iyi sonuç</span>
+        <span><b style={{ color: "var(--muted)" }}>Gidişat:</b> <i style={{ display: "inline-block", width: 9, height: 9, borderRadius: 3, background: "var(--low)", verticalAlign: "middle" }} /> iyiye gidiyor · <i style={{ display: "inline-block", width: 9, height: 9, borderRadius: 3, background: "var(--crit)", verticalAlign: "middle" }} /> geriliyor</span>
+        <span><b style={{ color: "var(--muted)" }}>Seviye:</b> elit %80+ · iyi %55+ · ortalama %30+ · zayıf altı</span>
+      </div>
       <div className="tbl" style={{ marginBottom: 14 }}>
         <table>
           <thead><tr>
-            <th>Protokol</th><th className="r">Son Değer</th><th className="c">Trend (5 ölçüm)</th><th className="c">Kadro %</th><th className="c">Değerlendirme</th>
+            <th>Test</th><th className="r">Son Sonuç</th><th className="c">Gidişat (son 5)</th><th className="c">Kadro Sırası</th><th className="c">Seviye</th>
           </tr></thead>
           <tbody>
             {focusBattery.map((s, i) => {
@@ -320,10 +339,13 @@ function PerformanceDemoConsole() {
               const r = ratingFromPct(s.squad_percentile ?? 0);
               return (
                 <tr key={s.protocol_key}>
-                  <td><span className="nm">{s.protocol_name}</span> <span className="nat">{meta.short}</span></td>
+                  <td>
+                    <span className="nm">{s.protocol_name}</span> <span className="nat">{meta.short} · {meta.better === "low" ? "düşük sonuç iyi" : "yüksek sonuç iyi"}</span>
+                    <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 2, lineHeight: 1.4 }}>{meta.plain}</div>
+                  </td>
                   <td className="r" style={{ color: "var(--muted)" }}>{s.raw_value} <span style={{ color: "var(--dim)", fontWeight: 400 }}>{s.unit}</span></td>
                   <td className="c"><div style={{ display: "inline-block" }}><Spark values={series} better={meta.better} /></div></td>
-                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>%{s.squad_percentile}</td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }} title={`Takım arkadaşlarının %${s.squad_percentile}'inden daha iyi`}>%{s.squad_percentile}</td>
                   <td className="c"><span className={`risk ${r.cls}`}><span className="rd" style={{ background: "currentColor" }} />{r.txt}</span></td>
                 </tr>
               );
@@ -334,7 +356,7 @@ function PerformanceDemoConsole() {
 
       {risk.flags.length > 0 && (
         <>
-          <div className="st"><h2>Yük & Sakatlık Bayrakları</h2><span className="ep">live_risk_monitor · load_monitor</span></div>
+          <div className="st"><h2>Yük & Sakatlık Uyarıları</h2><span className="ep" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><SourceMark id="claude" height={12} /> risk motoru</span></div>
           <div className="rc" style={{ margin: "0 0 14px" }}>
             {risk.flags.map((f, i) => (
               <div className="alrt" key={i}>
@@ -356,12 +378,12 @@ function PerformanceDemoConsole() {
         </>
       )}
 
-      {/* ── Kadro protokol kıyası ── */}
-      <div className="st"><h2>Kadro Protokol Kıyası</h2><span className="ep">{demoSquad.length} oyuncu · son ölçüm</span></div>
+      {/* ── Kadro karşılaştırması ── */}
+      <div className="st"><h2>Kadro Karşılaştırması — hangi testte kim önde?</h2><span className="ep" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><SourceMark id="perf_lab" height={12} /> {demoSquad.length} oyuncu · son ölçüm</span></div>
       <div className="tbl">
         <table>
           <thead><tr>
-            <th>Protokol</th><th className="c">Kadro Ort.</th><th>En İyi</th><th>En Geride</th><th className="c">Aralık</th>
+            <th>Test</th><th className="c">Takım Ort.</th><th>Takımın En İyisi</th><th>En Geride Olan</th><th className="c">Makas</th>
           </tr></thead>
           <tbody>
             {benchmarks.map((b) => {
@@ -369,11 +391,11 @@ function PerformanceDemoConsole() {
               const range = Math.abs(b.best.v - b.worst.v);
               return (
                 <tr key={b.meta.key}>
-                  <td><span className="nm">{b.meta.name}</span> <span className="nat">{b.meta.better === "low" ? "düşük iyi" : "yüksek iyi"}</span></td>
+                  <td><span className="nm">{b.meta.name}</span> <span className="nat">{b.meta.short} · {b.meta.better === "low" ? "düşük sonuç iyi" : "yüksek sonuç iyi"}</span></td>
                   <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{fmt(b.avg)}</td>
                   <td><span className="nm" style={{ color: "var(--low)" }}>{b.best.p.player_name}</span> <span className="nat">{fmt(b.best.v)}</span></td>
                   <td><span style={{ color: "var(--muted)" }}>{b.worst.p.player_name}</span> <span className="nat">{fmt(b.worst.v)}</span></td>
-                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--dim)" }}>±{Math.round(range * 100) / 100}</td>
+                  <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--dim)" }} title="Takımın en iyisi ile en gerisi arasındaki fark">±{Math.round(range * 100) / 100}</td>
                 </tr>
               );
             })}
@@ -529,8 +551,9 @@ function PerformanceFormConsole() {
     <ConsoleShell
       active="/performance"
       title="Performans Testi"
-      sub="Veri girişi & batarya"
+      sub="Veri girişi & test karnesi"
       desc="Saha/laboratuvar veri girişi. Sağlık/performans verisi KVKK'da özel niteliklidir; erişim ve dışa aktarım denetim kaydına yazılır."
+      source="perf_lab"
       right={right}
     >
       <div className="st" style={{ marginTop: 0 }}><h2>Oyuncu</h2></div>

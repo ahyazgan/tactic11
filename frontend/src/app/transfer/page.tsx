@@ -9,6 +9,7 @@
 
 import * as React from "react";
 import { demoSquad } from "@/lib/demo-data";
+import { useProviderAccess, ProviderConnect, ProviderConnectedBar } from "@/lib/provider-access";
 import { ConsoleShell } from "../_console/shell";
 
 interface Target {
@@ -51,6 +52,23 @@ function expiryColor(y: string): string {
 }
 
 export default function TransferPage() {
+  const access = useProviderAccess("transfer");
+
+  // Kilitli: bölüm bir 3. parti transfer sağlayıcısına bağlanana dek karartılır.
+  if (!access.connected) {
+    return (
+      <ConsoleShell
+        active="/transfer"
+        title="Transfer"
+        sub="Bağlantı gerekli"
+        desc="Transfer pazarı ve piyasa değeri verileri için bir 3. parti sağlayıcıya bağlan."
+        right={<div className="rc"><h3>Neden bağlantı?</h3><div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.55 }}>Piyasa değeri, sözleşme ve shortlist verileri bir transfer veri sağlayıcısından gelir. Sağlayıcını seçip ID + şifreni girince bölüm açılır.</div></div>}
+      >
+        <ProviderConnect kind="transfer" onConnect={access.connect} />
+      </ConsoleShell>
+    );
+  }
+
   const right = (
     <>
       <div className="rc">
@@ -90,6 +108,7 @@ export default function TransferPage() {
       desc="Transfer hedefleri (piyasa değeri + uyum skoru) ve kendi kadronun sözleşme bitiş riski."
       right={right}
     >
+      <ProviderConnectedBar providerLabel={access.providerLabel} user={access.user} onDisconnect={access.disconnect} />
       <div className="kpis">
         <div className="kpi"><div className="kl">Sözleşmesi Biten</div><div className="kn" style={{ color: "var(--high)" }}>{EXPIRING.length}</div><div className="kd">≤ 2026 · kendi kadro</div></div>
         <div className="kpi"><div className="kl">Hedef Oyuncu</div><div className="kn">{TARGETS.length}</div><div className="kd">shortlist</div></div>

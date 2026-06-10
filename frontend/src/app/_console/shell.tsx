@@ -6,7 +6,7 @@
  * Inter font, 8-12px border-radius, pill badge'ler, temiz boşluk.
  *
  * DEMO_MODE: navbar + sidebar maçın ritmine göre sadeleşir (Maç Öncesi / Maç Günü
- * / Asistan), kulüp "FK Demo" olur. DEMO kapalı: tam navigasyon geri gelir.
+ * / Asistan), kulüp "Beşiktaş" olur. DEMO kapalı: tam navigasyon geri gelir.
  *
  * NOT: Sayfalar eski değişken adlarını (--panel/--line/--header/--grad ...) hâlâ
  * kullanıyor; aşağıdaki .ovroot bloğunda yeni FM26 paletine alias'lanır.
@@ -16,6 +16,8 @@ import * as React from "react";
 import Link from "next/link";
 
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { DataSourceStrip, type SourceId } from "@/lib/data-source";
+import { Crest } from "@/lib/teams";
 
 // Demo: canlı maç ekranına markasız sabit hedef (id "demo" → sayfa mock gösterir).
 const DEMO_LIVE_HREF = "/matches/demo/live";
@@ -95,12 +97,14 @@ export interface ConsoleShellProps {
   sub?: string;
   desc?: string;
   navBadge?: number;
+  /** Bu sayfanın verisini hangi kaynak(lar)dan aldığını başlık altında işaretler. */
+  source?: SourceId | SourceId[];
   right?: React.ReactNode;
   children: React.ReactNode;
 }
 
 export function ConsoleShell({
-  active, title, sub, desc, navBadge, right, children,
+  active, title, sub, desc, navBadge, source, right, children,
 }: ConsoleShellProps) {
   return (
     <div className={`ovroot${DEMO_MODE ? " demo" : ""}`}>
@@ -118,9 +122,9 @@ export function ConsoleShell({
             <span>Ara…</span>
           </div>
           <div className="club-chip">
-            <div className="crest">{DEMO_MODE ? "FK" : "B"}</div>
+            <Crest team="Beşiktaş" size={30} />
             <div>
-              <div className="cname">{DEMO_MODE ? "FK Demo" : "Beşiktaş JK"}</div>
+              <div className="cname">Beşiktaş JK</div>
               <div className="crole">teknik ekip</div>
             </div>
           </div>
@@ -141,6 +145,7 @@ export function ConsoleShell({
               {sub && <span className="pg-badge">{sub}</span>}
             </div>
             {desc && <p className="pgdesc">{desc}</p>}
+            {source && <DataSourceStrip sources={source} />}
           </div>
           {children}
         </main>
@@ -592,6 +597,14 @@ const CSS = `
 .ovroot .rc{transition:border-color .1s}
 .ovroot tbody tr{transition:background .08s}
 .ovroot .ntab,.ovroot .sni,.ovroot .seg button{transition:background .08s,color .08s}
+
+/* Tıklanır widget'lar (kontrol paneli kartları + satır linkleri) */
+.ovroot .clickable{cursor:pointer}
+.ovroot .clickable:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.ovroot .clickable:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ovroot .rowlink{cursor:pointer;border-radius:8px;transition:background .08s}
+.ovroot .rowlink:hover{background:var(--surface2)}
+.ovroot .rowlink:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
 /* Responsive */
 @media (max-width:1200px){

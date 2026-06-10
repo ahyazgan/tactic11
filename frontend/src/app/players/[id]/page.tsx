@@ -20,9 +20,12 @@ import {
   demoSquad,
   demoRiskFor,
   demoHistoryFor,
+  demoAttributesFor,
   type SquadPlayer,
   type RiskLabel,
+  type AttrGroup,
 } from "@/lib/demo-data";
+import { SourceMark } from "@/lib/data-source";
 import { ConsoleShell } from "../../_console/shell";
 import { Gauge } from "../../_console/viz";
 
@@ -149,6 +152,49 @@ function cmjSeries(playerId: number): { date: string; value: number }[] {
     .map((t) => ({ date: t.test_date.slice(5), value: t.value }));
 }
 
+// FM skalası renk bandı: 16-20 elit, 12-15 iyi, 8-11 ortalama, 1-7 zayıf.
+function attrVar(v: number): string {
+  return v >= 16 ? "var(--low)" : v >= 12 ? "var(--accent)" : v >= 8 ? "var(--mid)" : "var(--dim)";
+}
+
+/** Tek nitelik satırı: ad + bar + 1-20 değeri. */
+function AttrRow({ name, value }: { name: string; value: number }) {
+  const c = attrVar(value);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "3px 0" }}>
+      <span style={{ flex: 1, fontSize: 12, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+      <span className="mbar" style={{ width: 64, margin: 0, flexShrink: 0 }}><i style={{ width: `${(value / 20) * 100}%`, background: c }} /></span>
+      <span style={{ fontFamily: "JetBrains Mono", fontSize: 12.5, fontWeight: 700, color: c, width: 22, textAlign: "right", flexShrink: 0 }}>{value}</span>
+    </div>
+  );
+}
+
+/** Özellik grupları kartı içeriği — 3 kolon (Teknik|Kaleci / Zihinsel / Fiziksel).
+ *  Her grup verisinin geldiği kaynağı (Performans Lab / API-Football) rozetle gösterir. */
+function AttributeColumns({ groups }: { groups: AttrGroup[] }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 18 }}>
+      {groups.map((g) => {
+        const avg = g.attrs.reduce((s, a) => s + a.value, 0) / g.attrs.length;
+        return (
+          <div key={g.group}>
+            <div style={{ marginBottom: 6, paddingBottom: 5, borderBottom: "1px solid var(--line)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".5px", color: "var(--dim)" }}>{g.group}</span>
+                <span style={{ fontFamily: "JetBrains Mono", fontSize: 11.5, fontWeight: 700, color: attrVar(avg) }}>{avg.toFixed(1)}</span>
+              </div>
+              <div style={{ marginTop: 4 }} title={g.source === "perf_lab" ? "Kaynak: kulüp test ölçümleri" : "Kaynak: sezon maç istatistikleri"}>
+                <SourceMark id={g.source} height={11} />
+              </div>
+            </div>
+            {g.attrs.map((a) => <AttrRow key={a.name} name={a.name} value={a.value} />)}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /** Mini inline SVG çizgi grafiği (5 nokta). better="low" ise düşüş yeşil. */
 function Spark({ points, better, unit }: { points: { date: string; value: number }[]; better: "low" | "high"; unit: string }) {
   if (points.length === 0) return null;
@@ -200,6 +246,10 @@ function PlayerProfileDemo({ player }: { player: SquadPlayer }) {
   const similar = demoSimilar(player);
   const sprint = sprintSeries(player.player_id);
   const cmj = cmjSeries(player.player_id);
+  const attrGroups = demoAttributesFor(player.player_id);
+  const allAttrs = attrGroups.flatMap((g) => g.attrs);
+  const overall = allAttrs.reduce((s, a) => s + a.value, 0) / allAttrs.length;
+  const best3 = [...allAttrs].sort((a, b) => b.value - a.value).slice(0, 3);
 
   const riskScore100 = Math.round(risk.risk_score * 100);
   const riskVar = RISK_VAR[risk.risk_label] ?? "var(--muted)";
@@ -265,7 +315,7 @@ function PlayerProfileDemo({ player }: { player: SquadPlayer }) {
       active="/squad"
       title={`${player.player_name}`}
       sub={`#${player.shirt} · ${player.pos_detail}`}
-      desc={`${role.primary} · ${player.age} yaş · FK Demo. Rol/profil, fiziksel risk, tıbbi durum, yük riski ve test geçmişi tek bakışta.`}
+      desc={`${role.primary} · ${player.age} yaş · Beşiktaş. Rol/profil, fiziksel risk, tıbbi durum, yük riski ve test geçmişi tek bakışta.`}
       right={right}
     >
       {/* KPI şeridi */}
@@ -329,6 +379,28 @@ function PlayerProfileDemo({ player }: { player: SquadPlayer }) {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Oyuncu Özellikleri (FM tarzı 1-20) */}
+        <div className="rc" style={{ margin: 0, gridColumn: "1 / -1" }}>
+          <h3>
+            Oyuncu Özellikleri{" "}
+            <span className="tiny">
+              1-20 skala · genel <b style={{ color: attrVar(overall), fontFamily: "JetBrains Mono" }}>{overall.toFixed(1)}</b>
+            </span>
+          </h3>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+            {best3.map((a) => (
+              <span key={a.name} className="risk" style={{ color: attrVar(a.value), padding: "2px 9px", fontSize: 10.5 }}>
+                <span className="rd" style={{ background: attrVar(a.value) }} />{a.name} {a.value}
+              </span>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, color: "var(--dim)", lineHeight: 1.5, marginBottom: 12 }}>
+            Değerler ölçülen/gözlenen veriden türer (uydurma rating değil): <b style={{ color: "var(--muted)" }}>Fiziksel</b> = kulüp test ölçümleri,
+            {" "}<b style={{ color: "var(--muted)" }}>Teknik &amp; Zihinsel</b> = sezon maç istatistikleri — emsal oyunculara göre 1-20 sıralanır.
+          </div>
+          <AttributeColumns groups={attrGroups} />
         </div>
 
         {/* Test Geçmişi & Trend */}

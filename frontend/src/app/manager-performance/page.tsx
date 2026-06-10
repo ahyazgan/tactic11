@@ -4,7 +4,7 @@
  * TD Performansı — beklenen puan (xPts) vs gerçek puan + maç bazlı olasılıklar.
  * ConsoleShell çatısında.
  *
- * DEMO_MODE açıkken canlı API'ye dokunmaz; "FK Demo" evreni için dolu, gerçekçi
+ * DEMO_MODE açıkken canlı API'ye dokunmaz; "Beşiktaş" evreni için dolu, gerçekçi
  * mock sezon performansı gösterir (boş-state / "ID gir" / spinner olmaz).
  * Backend: GET /admin/manager-performance?team_external_id={id}&days={n}.
  */
@@ -57,16 +57,16 @@ const inputStyle: React.CSSProperties = {
 };
 
 /* ───────────────────────── DEMO EVRENİ (inline) ─────────────────────────
-   FK Demo'nun Süper Lig sezonu — son 18 maç, en yeni en üstte. Her maç için
+   Beşiktaş'ın Süper Lig sezonu — son 18 maç, en yeni en üstte. Her maç için
    olasılıklardan beklenen puan (xPts = 3·p_win + 1·p_draw) ve gerçek puan.
-   delta = gerçek − xPts. Rakipler tutarlı bir lig evreninden (Rakip SK dahil). */
+   delta = gerçek − xPts. Rakipler tutarlı bir lig evreninden (Antalyaspor dahil). */
 
 interface DemoMatch {
   match_id: number;
   date: string;        // "34. Hafta" gibi
   opponent: string;
   is_home: boolean;
-  score: [number, number]; // [FK Demo, rakip]
+  score: [number, number]; // [Beşiktaş, rakip]
   p_win: number;
   p_draw: number;
   p_loss: number;
@@ -74,24 +74,24 @@ interface DemoMatch {
 
 // p_win/p_draw/p_loss toplamı ~1. Gerçek puan skordan türetilir (3/1/0).
 const DEMO_MATCHES: DemoMatch[] = [
-  { match_id: 9034, date: "34. Hafta", opponent: "Rakip SK",      is_home: true,  score: [2, 1], p_win: 0.48, p_draw: 0.27, p_loss: 0.25 },
-  { match_id: 9033, date: "33. Hafta", opponent: "Demir FK",      is_home: false, score: [1, 1], p_win: 0.34, p_draw: 0.31, p_loss: 0.35 },
-  { match_id: 9032, date: "32. Hafta", opponent: "Liman Spor",    is_home: true,  score: [3, 0], p_win: 0.61, p_draw: 0.23, p_loss: 0.16 },
-  { match_id: 9031, date: "31. Hafta", opponent: "Yıldız United", is_home: false, score: [0, 2], p_win: 0.29, p_draw: 0.28, p_loss: 0.43 },
-  { match_id: 9030, date: "30. Hafta", opponent: "Anadolu AŞ",    is_home: true,  score: [1, 0], p_win: 0.55, p_draw: 0.26, p_loss: 0.19 },
-  { match_id: 9029, date: "29. Hafta", opponent: "Sahil SK",      is_home: false, score: [2, 2], p_win: 0.40, p_draw: 0.29, p_loss: 0.31 },
-  { match_id: 9028, date: "28. Hafta", opponent: "Kale Gücü",     is_home: true,  score: [2, 0], p_win: 0.58, p_draw: 0.24, p_loss: 0.18 },
-  { match_id: 9027, date: "27. Hafta", opponent: "Boğaz FK",      is_home: false, score: [1, 3], p_win: 0.26, p_draw: 0.27, p_loss: 0.47 },
-  { match_id: 9026, date: "26. Hafta", opponent: "Çelik Spor",    is_home: true,  score: [4, 1], p_win: 0.64, p_draw: 0.21, p_loss: 0.15 },
-  { match_id: 9025, date: "25. Hafta", opponent: "Orman United",  is_home: false, score: [0, 0], p_win: 0.32, p_draw: 0.33, p_loss: 0.35 },
-  { match_id: 9024, date: "24. Hafta", opponent: "Rakip SK",      is_home: false, score: [1, 2], p_win: 0.31, p_draw: 0.28, p_loss: 0.41 },
-  { match_id: 9023, date: "23. Hafta", opponent: "Demir FK",      is_home: true,  score: [2, 2], p_win: 0.50, p_draw: 0.26, p_loss: 0.24 },
-  { match_id: 9022, date: "22. Hafta", opponent: "Liman Spor",    is_home: false, score: [1, 0], p_win: 0.38, p_draw: 0.30, p_loss: 0.32 },
-  { match_id: 9021, date: "21. Hafta", opponent: "Yıldız United", is_home: true,  score: [3, 1], p_win: 0.53, p_draw: 0.25, p_loss: 0.22 },
-  { match_id: 9020, date: "20. Hafta", opponent: "Anadolu AŞ",    is_home: false, score: [2, 1], p_win: 0.36, p_draw: 0.29, p_loss: 0.35 },
-  { match_id: 9019, date: "19. Hafta", opponent: "Sahil SK",      is_home: true,  score: [1, 1], p_win: 0.57, p_draw: 0.24, p_loss: 0.19 },
-  { match_id: 9018, date: "18. Hafta", opponent: "Kale Gücü",     is_home: false, score: [0, 1], p_win: 0.33, p_draw: 0.30, p_loss: 0.37 },
-  { match_id: 9017, date: "17. Hafta", opponent: "Boğaz FK",      is_home: true,  score: [2, 0], p_win: 0.52, p_draw: 0.26, p_loss: 0.22 },
+  { match_id: 9034, date: "34. Hafta", opponent: "Antalyaspor",     is_home: true,  score: [2, 1], p_win: 0.48, p_draw: 0.27, p_loss: 0.25 },
+  { match_id: 9033, date: "33. Hafta", opponent: "Gaziantep FK",    is_home: false, score: [1, 1], p_win: 0.34, p_draw: 0.31, p_loss: 0.35 },
+  { match_id: 9032, date: "32. Hafta", opponent: "Kasımpaşa",       is_home: true,  score: [3, 0], p_win: 0.61, p_draw: 0.23, p_loss: 0.16 },
+  { match_id: 9031, date: "31. Hafta", opponent: "Konyaspor",       is_home: false, score: [0, 2], p_win: 0.29, p_draw: 0.28, p_loss: 0.43 },
+  { match_id: 9030, date: "30. Hafta", opponent: "Galatasaray",     is_home: true,  score: [1, 0], p_win: 0.55, p_draw: 0.26, p_loss: 0.19 },
+  { match_id: 9029, date: "29. Hafta", opponent: "Samsunspor",      is_home: false, score: [2, 2], p_win: 0.40, p_draw: 0.29, p_loss: 0.31 },
+  { match_id: 9028, date: "28. Hafta", opponent: "Başakşehir",      is_home: true,  score: [2, 0], p_win: 0.58, p_draw: 0.24, p_loss: 0.18 },
+  { match_id: 9027, date: "27. Hafta", opponent: "Çaykur Rizespor", is_home: false, score: [1, 3], p_win: 0.26, p_draw: 0.27, p_loss: 0.47 },
+  { match_id: 9026, date: "26. Hafta", opponent: "Sivasspor",       is_home: true,  score: [4, 1], p_win: 0.64, p_draw: 0.21, p_loss: 0.15 },
+  { match_id: 9025, date: "25. Hafta", opponent: "Göztepe",         is_home: false, score: [0, 0], p_win: 0.32, p_draw: 0.33, p_loss: 0.35 },
+  { match_id: 9024, date: "24. Hafta", opponent: "Antalyaspor",     is_home: false, score: [1, 2], p_win: 0.31, p_draw: 0.28, p_loss: 0.41 },
+  { match_id: 9023, date: "23. Hafta", opponent: "Gaziantep FK",    is_home: true,  score: [2, 2], p_win: 0.50, p_draw: 0.26, p_loss: 0.24 },
+  { match_id: 9022, date: "22. Hafta", opponent: "Kasımpaşa",       is_home: false, score: [1, 0], p_win: 0.38, p_draw: 0.30, p_loss: 0.32 },
+  { match_id: 9021, date: "21. Hafta", opponent: "Konyaspor",       is_home: true,  score: [3, 1], p_win: 0.53, p_draw: 0.25, p_loss: 0.22 },
+  { match_id: 9020, date: "20. Hafta", opponent: "Galatasaray",     is_home: false, score: [2, 1], p_win: 0.36, p_draw: 0.29, p_loss: 0.35 },
+  { match_id: 9019, date: "19. Hafta", opponent: "Samsunspor",      is_home: true,  score: [1, 1], p_win: 0.57, p_draw: 0.24, p_loss: 0.19 },
+  { match_id: 9018, date: "18. Hafta", opponent: "Başakşehir",      is_home: false, score: [0, 1], p_win: 0.33, p_draw: 0.30, p_loss: 0.37 },
+  { match_id: 9017, date: "17. Hafta", opponent: "Çaykur Rizespor", is_home: true,  score: [2, 0], p_win: 0.52, p_draw: 0.26, p_loss: 0.22 },
 ];
 
 function actualPtsOf(m: DemoMatch): number {

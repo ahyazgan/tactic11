@@ -5,7 +5,7 @@
  * ConsoleShell çatısında. Rota: /teams/[id]/training-plan?opponent_id=<N>.
  *
  * DEMO_MODE açıkken canlı API'ye (GET /admin/teams/{id}/training-plan) hiç dokunmaz;
- * FK Demo'nun "Rakip SK" maçına özel maça-özel planı gösterir: rakip taktik profili,
+ * Beşiktaş'ın "Antalyaspor" maçına özel maça-özel planı gösterir: rakip taktik profili,
  * haftalık mikro-döngü yük eğrisi (inline SVG), rakip zaaflarına bağlı önerilen drill'ler
  * ve eşleşme avantajları. URL'deki [id] sadece başlıkta kullanılır (tek demo evreni yeterli).
  * Backend bağlanınca gerçek takım/rakip id'sine göre canlı plana döner.
@@ -47,7 +47,7 @@ interface TrainingPlanResponse {
 // DEMO VERİSİ (yalnızca bu detay sayfasına özel, inline)
 // --------------------------------------------------------------------------- //
 
-// Rakip SK taktik profili — Rakip Raporu motorundan türetilmiş özet.
+// Antalyaspor taktik profili — Rakip Raporu motorundan türetilmiş özet.
 const DEMO_OPP_PROFILE: OpponentProfile = {
   ppda: 9.4,
   pressing_style: "Orta blok · seçici pres",

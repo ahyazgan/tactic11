@@ -1,15 +1,15 @@
 /**
- * Demo veri katmanı — markasız "FK Demo" kulübü için gerçekçi sahte veri.
+ * Demo veri katmanı — markasız "Beşiktaş" kulübü için gerçekçi sahte veri.
  *
  * Backend/internet GEREKTİRMEZ. `DEMO_MODE` açıkken sayfalar bu veriyi kullanır.
  * Tipler sayfaların beklediği canlı-API şekilleriyle uyumludur (PlayerRow,
  * PlayerSummary, PhysicalTest, RiskReport, PlanVsLive) + demo'ya özel zenginleştirmeler.
  *
- * İçerik tek bir kurgusal maç gününe odaklı: FK Demo vs Rakip SK.
+ * İçerik tek bir kurgusal maç gününe odaklı: Beşiktaş vs Antalyaspor.
  */
 
-export const DEMO_CLUB = "FK Demo";
-export const DEMO_OPPONENT = "Rakip SK";
+export const DEMO_CLUB = "Beşiktaş";
+export const DEMO_OPPONENT = "Antalyaspor";
 export const DEMO_ACCENT = "#3d7eff";
 
 // --------------------------------------------------------------------------- //
@@ -58,6 +58,245 @@ export const demoSquad: SquadPlayer[] = [
   { player_id: 24, player_name: "Emre Bilgin", position: "GK", pos_detail: "Kaleci", age: 19, condition: 95, risk_label: "Düşük", risk_score: 6, shirt: 30 },
 ];
 
+// =========================================================================== //
+// OYUNCU ÖZELLİKLERİ — gerçek-kaynak türetme (provenance etiketli, 1-20 FM ölçeği)
+//
+// Değerler UYDURMA bir rating setinden (FM/FIFA) DEĞİL, gerçek-tip veriden türer:
+//  • FİZİKSEL  → kulübün KENDİ ölçümleri (demoHistoryFor: sprint/CMJ/Yo-Yo/VO2)
+//               → kadro içi percentile → 1-20.  Kaynak: Performans Lab (perf_lab).
+//  • TEKNİK + ZİHİNSEL → sezon maç istatistikleri (demoSeasonStats; şekli
+//               API-Football "players" yanıtıyla aynı) → emsal percentile → 1-20.
+//               Kaynak: API-Football.
+//  • KALECİ    → kaleci istatistikleri (kurtarış/clean sheet/yenilen) mutlak norm.
+//
+// Backend bağlanınca AYNI fonksiyon gerçek veriyle çalışır: tek değişiklik
+// demoSeasonStats yerine canlı /players istatistiğini, demoHistoryFor yerine
+// gerçek test kayıtlarını beslemek. Üretim deterministiktir (Math.random YOK).
+// =========================================================================== //
+
+export type AttrSource = "perf_lab" | "api_football";
+export interface PlayerAttr { name: string; value: number }     // value: 1..20
+export interface AttrGroup { group: string; source: AttrSource; attrs: PlayerAttr[] }
+
+const clamp20 = (v: number) => Math.max(1, Math.min(20, Math.round(v)));
+const toAttr = (pct: number) => clamp20(1 + pct * 19);            // 0..1 percentile → 1..20
+
+// --- Sezon maç istatistiği (API-Football "players" yanıtının sadeleştirilmişi) ---
+export interface PlayerSeasonStats {
+  player_id: number;
+  appearances: number;
+  minutes: number;
+  goals: number; assists: number;
+  shots: number; shots_on: number;
+  pass_accuracy: number;       // %
+  key_passes: number;
+  dribbles_att: number; dribbles_succ: number;
+  tackles: number; interceptions: number;
+  duels: number; duels_won: number;
+  aerials_won: number;
+  fouls: number;
+  // kaleci
+  saves: number; goals_conceded: number; clean_sheets: number;
+}
+
+// Mevki arketipi — per-90 taban oranlar (gerçekçi futbol dağılımları).
+type Arch = {
+  goals: number; assists: number; shots: number; sotRate: number; passAcc: number;
+  keyP: number; dribAtt: number; dribRate: number; tackles: number; inter: number;
+  duels: number; duelRate: number; aerials: number; fouls: number;
+};
+const ARCH: Record<Position, Arch> = {
+  GK: { goals: 0, assists: .02, shots: .02, sotRate: .3, passAcc: 72, keyP: .05, dribAtt: .1, dribRate: .6, tackles: .1, inter: .3, duels: 1.2, duelRate: .55, aerials: .6, fouls: .1 },
+  DF: { goals: .06, assists: .07, shots: .45, sotRate: .33, passAcc: 84, keyP: .55, dribAtt: .8, dribRate: .55, tackles: 2.6, inter: 2.3, duels: 11, duelRate: .55, aerials: 3.0, fouls: 1.1 },
+  MF: { goals: .14, assists: .22, shots: 1.2, sotRate: .38, passAcc: 86, keyP: 1.8, dribAtt: 1.9, dribRate: .60, tackles: 2.2, inter: 1.6, duels: 10, duelRate: .52, aerials: 1.3, fouls: 1.2 },
+  FW: { goals: .48, assists: .20, shots: 2.7, sotRate: .42, passAcc: 76, keyP: 1.4, dribAtt: 3.3, dribRate: .55, tackles: .7, inter: .5, duels: 9, duelRate: .48, aerials: 1.7, fouls: 1.0 },
+};
+
+const SEASON_GAMES = 33;
+
+// Bir oyuncunun sezon istatistiği — arketip × dakika × deterministik kalite sapması.
+function seasonStatsFor(p: SquadPlayer): PlayerSeasonStats {
+  const a = ARCH[p.position];
+  // Genel kalite (-0.18..+0.22): kondisyon + oyuncuya özel seed.
+  const q = (p.condition - 78) / 100 + Math.sin(p.player_id * 1.9) * 0.12;
+  const wob = (i: number) => 1 + Math.sin(p.player_id * 2.3 + i * 1.7) * 0.14;   // ±14%
+  const apps = Math.round(Math.max(8, Math.min(SEASON_GAMES, SEASON_GAMES * (0.55 + p.condition / 220) * wob(0))));
+  const minutes = Math.round(apps * (62 + p.condition * 0.28) * wob(1));
+  const n90 = minutes / 90;
+  const r = (per90: number, i: number, mult = 1) => Math.max(0, per90 * n90 * (1 + q * mult) * wob(i));
+  const shots = r(a.shots, 2);
+  const dribAtt = r(a.dribAtt, 6);
+  const duels = r(a.duels, 9);
+  const isGk = p.position === "GK";
+  return {
+    player_id: p.player_id,
+    appearances: apps,
+    minutes,
+    goals: Math.round(r(a.goals, 3, 1.6)),
+    assists: Math.round(r(a.assists, 4, 1.3)),
+    shots: Math.round(shots),
+    shots_on: Math.round(shots * a.sotRate * (1 + q)),
+    pass_accuracy: Math.round(Math.max(55, Math.min(94, a.passAcc + q * 30 + Math.sin(p.player_id * 3.1) * 2))),
+    key_passes: Math.round(r(a.keyP, 5, 1.2)),
+    dribbles_att: Math.round(dribAtt),
+    dribbles_succ: Math.round(dribAtt * Math.max(0.35, Math.min(0.85, a.dribRate + q))),
+    tackles: Math.round(r(a.tackles, 7)),
+    interceptions: Math.round(r(a.inter, 8)),
+    duels: Math.round(duels),
+    duels_won: Math.round(duels * Math.max(0.4, Math.min(0.68, a.duelRate + q))),
+    aerials_won: Math.round(r(a.aerials, 10, 0.8)),
+    fouls: Math.round(r(a.fouls, 11, -0.6)),     // kaliteli oyuncu daha az faul
+    saves: isGk ? Math.round(r(3.1, 12) ) : 0,
+    goals_conceded: isGk ? Math.round(apps * Math.max(0.55, 1.35 - q * 1.4)) : 0,
+    clean_sheets: isGk ? Math.round(apps * Math.max(0.12, Math.min(0.5, 0.3 + q * 1.2))) : 0,
+  };
+}
+
+// Tüm kadronun sezon istatistiği (API-Football şekli). Gerçek modda bunun yerine
+// canlı /players verisi gelir; aşağıdaki türetme aynen çalışır.
+export const demoSeasonStats: PlayerSeasonStats[] = demoSquad.map(seasonStatsFor);
+const STATS_BY_ID = new Map(demoSeasonStats.map((s) => [s.player_id, s]));
+
+// per-90 + oran yardımcıları
+const p90 = (v: number, mins: number) => (mins > 0 ? v / (mins / 90) : 0);
+const ratio = (num: number, den: number) => (den > 0 ? num / den : 0);
+
+/** value'nun pool içindeki yüzdelik sırası (0..1). higher=true → büyük iyi. */
+function pctRank(value: number, pool: number[], higher: boolean): number {
+  if (pool.length <= 1) return 0.5;
+  const beaten = pool.filter((v) => (higher ? v <= value : v >= value)).length;
+  return beaten / pool.length;
+}
+/** Mutlak norm → 0..1 (kaleci nitelikleri için; küçük havuzda percentile bozulur). */
+function normPct(v: number, lo: number, hi: number, higher: boolean): number {
+  const t = (v - lo) / (hi - lo);
+  return Math.max(0, Math.min(1, higher ? t : 1 - t));
+}
+
+// Bir oyuncunun bir protokoldeki SON ölçümü (kulüp test verisi).
+function latestTestValue(playerId: number, proto: string): number | null {
+  const series = demoHistoryFor(playerId).filter((t) => t.protocol === proto);
+  return series.length ? series[series.length - 1].value : null;
+}
+
+/**
+ * Bir oyuncunun özellik grupları — gerçek-kaynak türetme.
+ * Aynı id her zaman aynı sonucu verir (deterministik).
+ */
+export function demoAttributesFor(playerId: number): AttrGroup[] {
+  const p = demoSquad.find((s) => s.player_id === playerId) ?? demoSquad[0];
+  const isGk = p.position === "GK";
+
+  // ── FİZİKSEL: kulüp test ölçümleri → kadro içi percentile (kaynak: perf_lab) ──
+  const PHYS = ["sprint_10m", "sprint_30m", "yoyo_irl1", "cmj", "vo2max"] as const;
+  const physPool: Record<string, number[]> = { sprint_10m: [], sprint_30m: [], yoyo_irl1: [], cmj: [], vo2max: [] };
+  const myTest: Record<string, number | null> = {};
+  for (const sp of demoSquad) {
+    for (const proto of PHYS) {
+      const v = latestTestValue(sp.player_id, proto);
+      if (v != null) physPool[proto].push(v);
+      if (sp.player_id === p.player_id) myTest[proto] = v;
+    }
+  }
+  const pp = (proto: typeof PHYS[number], higher: boolean) =>
+    myTest[proto] == null ? 0.5 : pctRank(myTest[proto]!, physPool[proto], higher);
+  const avg = (...xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+  const physAttrs: PlayerAttr[] = [
+    { name: "Hız", value: toAttr(pp("sprint_30m", false)) },
+    { name: "İvmelenme", value: toAttr(pp("sprint_10m", false)) },
+    { name: "Dayanıklılık", value: toAttr(avg(pp("yoyo_irl1", true), pp("vo2max", true))) },
+    { name: "Güç", value: toAttr(pp("cmj", true)) },
+    { name: "Çeviklik", value: toAttr(avg(pp("sprint_10m", false), pp("cmj", true))) },
+    { name: "Zıplama", value: toAttr(pp("cmj", true)) },
+    { name: "Denge", value: toAttr(avg(pp("cmj", true), pp("yoyo_irl1", true))) },
+  ];
+  const physGroup: AttrGroup = { group: "Fiziksel", source: "perf_lab", attrs: physAttrs };
+
+  // ── KALECİ: kaleci istatistikleri → mutlak norm (kaynak: api_football) ──
+  if (isGk) {
+    const s = STATS_BY_ID.get(p.player_id)!;
+    const saves90 = p90(s.saves, s.minutes);
+    const conc90 = p90(s.goals_conceded, s.minutes);
+    const csRate = ratio(s.clean_sheets, s.appearances);
+    const aer90 = p90(s.aerials_won, s.minutes);
+    const gkAttrs: PlayerAttr[] = [
+      { name: "Refleksler", value: toAttr(normPct(saves90, 1.6, 4.4, true)) },
+      { name: "Bir-e-Bir", value: toAttr(normPct(saves90, 1.8, 4.2, true)) },
+      { name: "Hava Hakimiyeti", value: toAttr(normPct(aer90, 0.3, 1.6, true)) },
+      { name: "Elle Kontrol", value: toAttr(normPct(csRate, 0.12, 0.5, true)) },
+      { name: "Ayakla Oyun", value: toAttr(normPct(s.pass_accuracy, 60, 88, true)) },
+      { name: "Yumruklama", value: toAttr(normPct(aer90, 0.3, 1.5, true)) },
+      { name: "Savunmayı Yönetme", value: toAttr(avg(normPct(conc90, 1.6, 0.55, true), normPct(csRate, 0.12, 0.5, true))) },
+    ];
+    const gkMental: PlayerAttr[] = [
+      { name: "Karar Alma", value: toAttr(normPct(s.pass_accuracy, 62, 86, true)) },
+      { name: "Pozisyon Alma", value: toAttr(normPct(csRate, 0.12, 0.5, true)) },
+      { name: "Vizyon", value: toAttr(normPct(s.pass_accuracy, 60, 84, true)) },
+      { name: "Soğukkanlılık", value: toAttr(normPct(conc90, 1.6, 0.55, true)) },
+      { name: "Çalışkanlık", value: toAttr(normPct(saves90, 1.8, 4.2, true)) },
+      { name: "Konsantrasyon", value: toAttr(normPct(csRate, 0.12, 0.5, true)) },
+      { name: "Liderlik", value: toAttr(normPct(p.age + s.appearances * 0.2, 22, 36, true)) },
+    ];
+    return [
+      { group: "Kaleci", source: "api_football", attrs: gkAttrs },
+      { group: "Zihinsel", source: "api_football", attrs: gkMental },
+      physGroup,
+    ];
+  }
+
+  // ── TEKNİK + ZİHİNSEL: sezon istatistiği → emsal percentile (kaynak: api_football) ──
+  // Havuz = saha oyuncuları (kaleci hariç) → bir metriğin tüm kadroya göre yüzdelik
+  // sırası mevki-uygun yayılım üretir (forvet bitiricilikte üstte, stoper altta).
+  const OUT = demoSquad.filter((sp) => sp.position !== "GK");
+  const me = STATS_BY_ID.get(p.player_id)!;
+  // Bir metrik fonksiyonunun, odak oyuncunun emsal içindeki percentile'ı.
+  const pm = (fn: (s: PlayerSeasonStats, pl: SquadPlayer) => number, higher = true) => {
+    const pool = OUT.map((sp) => fn(STATS_BY_ID.get(sp.player_id)!, sp));
+    return pctRank(fn(me, p), pool, higher);
+  };
+  // metrik kısayolları
+  const goals90 = (s: PlayerSeasonStats) => p90(s.goals, s.minutes);
+  const assists90 = (s: PlayerSeasonStats) => p90(s.assists, s.minutes);
+  const shots90 = (s: PlayerSeasonStats) => p90(s.shots, s.minutes);
+  const conv = (s: PlayerSeasonStats) => ratio(s.goals, s.shots);
+  const keyp90 = (s: PlayerSeasonStats) => p90(s.key_passes, s.minutes);
+  const drib90 = (s: PlayerSeasonStats) => p90(s.dribbles_succ, s.minutes);
+  const dribRate = (s: PlayerSeasonStats) => ratio(s.dribbles_succ, s.dribbles_att);
+  const pass = (s: PlayerSeasonStats) => s.pass_accuracy;
+  const tack90 = (s: PlayerSeasonStats) => p90(s.tackles, s.minutes);
+  const int90 = (s: PlayerSeasonStats) => p90(s.interceptions, s.minutes);
+  const duels90 = (s: PlayerSeasonStats) => p90(s.duels, s.minutes);
+  const aer90 = (s: PlayerSeasonStats) => p90(s.aerials_won, s.minutes);
+  const fouls90 = (s: PlayerSeasonStats) => p90(s.fouls, s.minutes);
+  const exp = (_s: PlayerSeasonStats, pl: SquadPlayer) => pl.age + _s.appearances * 0.2;
+
+  const techAttrs: PlayerAttr[] = [
+    { name: "Bitiricilik", value: toAttr(avg(pm(conv), pm(goals90))) },
+    { name: "İlk Dokunuş", value: toAttr(avg(pm(pass), pm(dribRate))) },
+    { name: "Pas", value: toAttr(avg(pm(pass), pm(keyp90))) },
+    { name: "Dripling", value: toAttr(avg(pm(dribRate), pm(drib90))) },
+    { name: "Orta", value: toAttr(avg(pm(keyp90), pm(assists90))) },
+    { name: "Uzun Şut", value: toAttr(avg(pm(shots90), pm(goals90))) },
+    { name: "Top Kapma", value: toAttr(avg(pm(tack90), pm(int90))) },
+  ];
+  const mentalAttrs: PlayerAttr[] = [
+    { name: "Karar Alma", value: toAttr(avg(pm(pass), pm(fouls90, false))) },
+    { name: "Pozisyon Alma", value: toAttr(avg(pm(int90), pm(aer90))) },
+    { name: "Vizyon", value: toAttr(avg(pm(keyp90), pm(assists90))) },
+    { name: "Soğukkanlılık", value: toAttr(avg(pm(conv), pm(pass))) },
+    { name: "Çalışkanlık", value: toAttr(avg(pm(duels90), pm(tack90))) },
+    { name: "Konsantrasyon", value: toAttr(avg(pm(fouls90, false), pm(pass))) },
+    { name: "Liderlik", value: toAttr(pm(exp)) },
+  ];
+
+  return [
+    { group: "Teknik", source: "api_football", attrs: techAttrs },
+    { group: "Zihinsel", source: "api_football", attrs: mentalAttrs },
+    physGroup,
+  ];
+}
+
 // --------------------------------------------------------------------------- //
 // OVERVIEW — /physical-tests/players şekli (PlayerRow)
 // --------------------------------------------------------------------------- //
@@ -87,7 +326,7 @@ export const demoOverviewKpis: OverviewKpi[] = [
   { label: "Kadro Hazırlığı", value: "%81", sub: "ort. kondisyon" },
   { label: "Sahaya Hazır", value: "20/24", sub: "4 oyuncu riskli" },
   { label: "Kritik Risk", value: "1", sub: "Orkun Kökçü (8)" },
-  { label: "Sıradaki Maç", value: "2 gün", sub: "Rakip SK (D)" },
+  { label: "Sıradaki Maç", value: "2 gün", sub: "Antalyaspor (D)" },
   { label: "Galibiyet Olasılığı", value: "%48", sub: "model tahmini" },
 ];
 
@@ -260,6 +499,8 @@ export interface NextMatch {
   win: number;   // 0..1
   draw: number;
   loss: number;
+  venue?: string;
+  aiPreview?: string;   // PreMatchReportAgent tek-cümle önizleme
 }
 
 export const demoNextMatch: NextMatch = {
@@ -271,7 +512,29 @@ export const demoNextMatch: NextMatch = {
   win: 0.48,
   draw: 0.27,
   loss: 0.25,
+  venue: "İç saha",
+  aiPreview: "Rakip sağ bek arkası zayıf; yüksek pres + sağ kanat 1v1 ile xG üstünlüğü bekleniyor.",
 };
+
+// Genel Bakış — Form & rating trendi (form/rating motorlarının demo karşılığı)
+export interface FormResult { opp: string; ha: "H" | "A"; gf: number; ga: number; r: "W" | "D" | "L" }
+export const demoRecentForm: FormResult[] = [
+  { opp: "Trabzonspor",     ha: "H", gf: 3, ga: 1, r: "W" },
+  { opp: "Kasımpaşa",       ha: "A", gf: 1, ga: 1, r: "D" },
+  { opp: "Eyüpspor",        ha: "H", gf: 2, ga: 0, r: "W" },
+  { opp: "Çaykur Rizespor", ha: "A", gf: 0, ga: 2, r: "L" },
+  { opp: "Gaziantep FK",    ha: "H", gf: 2, ga: 1, r: "W" },
+];
+// Model rating trendi (son 8 hafta) — sparkline için
+export const demoRatingTrend: number[] = [71, 70, 73, 72, 74, 73, 76, 78];
+
+// Genel Bakış — AI brifing akışı (AgentOutput tablosunun demo karşılığı)
+export interface Briefing { type: string; title: string; when: string; summary: string }
+export const demoBriefings: Briefing[] = [
+  { type: "Maç Öncesi", title: `${DEMO_OPPONENT} maçı önizleme`, when: "2s önce",  summary: "Rakip sağ koridoru zayıf; yüksek pres + kanat 1v1 ile xG üstünlüğü beklenir." },
+  { type: "Haftalık",   title: "Haftalık digest hazır",          when: "dün",      summary: "Son 3 maçta +1.8 xG farkı; kadro yükü kontrol altında, 2 oyuncu re-test." },
+  { type: "Scout",      title: "İzleme listesi güncellendi",      when: "2g önce",  summary: "Sol bek hedefi son 5 maçta progresif pas %18 arttı — öncelik yükseldi." },
+];
 
 export interface PlanVsLive {
   summary: string;
@@ -285,7 +548,7 @@ export interface PlanVsLive {
 }
 
 export const demoPlan: PlanVsLive = {
-  summary: "Rakip SK sağ bek arkasını boş bırakıyor; sol kanattan derinlik + 10 numara ile yarı-alan baskısı planlandı. Geçiş anlarında ön libero koruması kritik.",
+  summary: "Antalyaspor sağ bek arkasını boş bırakıyor; sol kanattan derinlik + 10 numara ile yarı-alan baskısı planlandı. Geçiş anlarında ön libero koruması kritik.",
   updated_at: "2026-06-08T18:42:00Z",
   plan_age_seconds: 540,
   status: "Hazır",
@@ -423,12 +686,12 @@ export const demoLive: DemoLive = {
     { minute: 12, type: "buyuk_firsat", team: "home", text: "Milot Rashica sağdan içeri kat etti, vuruş direkten döndü (xG 0.31)." },
     { minute: 23, type: "gol", team: "home", text: "GOL! Oh Hyeon-Gyu ceza sahasında topla buluştu ve ağları havalandırdı. 1-0." },
     { minute: 31, type: "sari_kart", team: "home", text: "Tiago Djaló geç müdahaleden sarı kart gördü." },
-    { minute: 38, type: "buyuk_firsat", team: "away", text: "Rakip SK kontra atağında kaleci Ersin Destanoğlu kurtardı." },
-    { minute: 45, type: "gol", team: "away", text: "GOL! Rakip SK köşe vuruşunda far-post'ta boş kaldı, kafa golü. 1-1." },
+    { minute: 38, type: "buyuk_firsat", team: "away", text: "Antalyaspor kontra atağında kaleci Ersin Destanoğlu kurtardı." },
+    { minute: 45, type: "gol", team: "away", text: "GOL! Antalyaspor köşe vuruşunda far-post'ta boş kaldı, kafa golü. 1-1." },
     { minute: 46, type: "degisiklik", team: "home", text: "Değişiklik: Cengiz Ünder (11) çıktı, Jota Silva (17) girdi — sol kanada tazelik." },
     { minute: 52, type: "sakatlik", team: "home", text: "Orkun Kökçü arka adalesini tuttu; sağlık ekibi sahada." },
     { minute: 58, type: "sari_kart", team: "away", text: "Rakip 6 numara taktik faulden sarı gördü." },
-    { minute: 64, type: "buyuk_firsat", team: "away", text: "Rakip SK üst üste 2 korner kullandı; momentum onlarda." },
+    { minute: 64, type: "buyuk_firsat", team: "away", text: "Antalyaspor üst üste 2 korner kullandı; momentum onlarda." },
   ],
   subs: [
     {
@@ -543,9 +806,9 @@ export const demoChatQA: ChatQA[] = [
     tools: ["load_risk_monitor", "physical_test_trend", "squad_availability"],
   },
   {
-    question: "Rakip SK'ya karşı hangi taktiği önerirsin?",
+    question: "Antalyaspor'a karşı hangi taktiği önerirsin?",
     answer:
-      "Rakip SK sağ bekini hücumda yüksek tutuyor; arkasındaki koridor maç başına ortalama 6 kez açılıyor. Milot Rashica'i (7) o tarafa koyup hız avantajını (%72) sömürmenizi öneriyorum.\n\nDuran toplarda büyük fırsat var: rakip zonal savunmada ikinci direği (far-post) örtemiyor — son 8 maçta 4 gol yedi. Köşelerde far-post varyasyonu hazırlayın.\n\nDikkat: ilk 15 dakika yüksek pres bekleniyor. Ön libero geç çıksın, kaleci-stoper ilk pasında uzun seçeneği açık tutun.",
+      "Antalyaspor sağ bekini hücumda yüksek tutuyor; arkasındaki koridor maç başına ortalama 6 kez açılıyor. Milot Rashica'i (7) o tarafa koyup hız avantajını (%72) sömürmenizi öneriyorum.\n\nDuran toplarda büyük fırsat var: rakip zonal savunmada ikinci direği (far-post) örtemiyor — son 8 maçta 4 gol yedi. Köşelerde far-post varyasyonu hazırlayın.\n\nDikkat: ilk 15 dakika yüksek pres bekleniyor. Ön libero geç çıksın, kaleci-stoper ilk pasında uzun seçeneği açık tutun.",
     tools: ["opponent_report", "matchup_engine", "set_piece_analyzer"],
   },
   {

@@ -85,9 +85,9 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       metric: "RTP", engine: "return_to_play_readiness",
       severity: cleared ? "yeşil" : "kırmızı",
       value: `baseline'ın %${fmt(pct)}'i`,
-      threshold: `≥%${fmt(RTP_GREEN)} yeşil ışık`,
-      action: cleared ? "sahaya hazır"
-        : "sahaya çıkmasın — rehabilitasyona devam, baseline'a ulaşsın",
+      threshold: `≥%${fmt(RTP_GREEN)} yeşil`,
+      action: cleared ? "Hazır"
+        : "Rehaba devam — baseline'a ulaşmadan oynatma.",
     });
   }
 
@@ -99,8 +99,8 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       metric: "H:Q", engine: "hamstring_quad_ratio", severity: sev,
       value: `${fmt(ratio)} (${band})`,
       threshold: `≥${fmt(HQ_IDEAL)} ideal · <${fmt(HQ_RISK)} risk`,
-      action: sev === "yeşil" ? "denge iyi"
-        : "eksantrik hamstring güçlendirme; <0.47 ise maç yükünü sınırla",
+      action: sev === "yeşil" ? "Denge iyi"
+        : "Eksantrik hamstring çalışması; <0.47'de yükü sınırla.",
     });
   }
 
@@ -115,8 +115,8 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       engine: "limb_asymmetry", severity: sev,
       value: `%${fmt(asym)} (güçlü: ${side})`,
       threshold: `>%${fmt(ASYM_WARN)} sarı · >%${fmt(ASYM_HIGH)} kırmızı`,
-      action: sev === "yeşil" ? "denge iyi"
-        : "tek-bacak düzeltici program; yeniden-sakatlanma riski",
+      action: sev === "yeşil" ? "Denge iyi"
+        : "Tek-bacak düzeltici program; tekrar sakatlanma riski.",
     });
   }
 
@@ -130,7 +130,7 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       severity: flagged ? "sarı" : "yeşil",
       value: `FI %${fmt(fi)}`,
       threshold: `>%${fmt(RSA_FLAG)} yetersiz toparlanma`,
-      action: flagged ? "tekrarlı sprint + toparlanma bloğu" : "anaerobik dayanıklılık iyi",
+      action: flagged ? "Tekrarlı sprint + toparlanma bloğu." : "Dayanıklılık iyi",
     });
   }
 
@@ -142,7 +142,7 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       severity: poor ? "sarı" : "yeşil",
       value: `${fmt(deficit)}sn açık`,
       threshold: `>${fmt(COD_FLAG)}sn zayıf frenleme`,
-      action: poor ? "frenleme/deceleration mekaniği çalışması" : "yön değiştirme iyi",
+      action: poor ? "Frenleme/deselerasyon çalışması." : "Yön değiştirme iyi",
     });
   }
 
@@ -154,7 +154,7 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       severity: flagged ? "sarı" : "yeşil",
       value: `%${fmt(drop)} düşüş`,
       threshold: `>%${fmt(ADDUCTOR_FLAG)} kasık/pubis riski`,
-      action: flagged ? "kasık yükünü azalt, MD+1 takip; kasık/pubis riski" : "kasık kuvveti iyi",
+      action: flagged ? "Kasık yükünü azalt; pubis riski." : "Kasık kuvveti iyi",
     });
   }
 
@@ -167,16 +167,16 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       severity: flagged ? "sarı" : "yeşil",
       value: `baseline'a göre %${fmt(drop)}`,
       threshold: `>%${fmt(CMJ_FLAG)} nöromusküler yorgunluk`,
-      action: flagged ? "yükü azalt; nöromusküler yorgunluk" : "toparlanma tam",
+      action: flagged ? "Yükü azalt — nöromusküler yorgunluk." : "Toparlanma tam",
     });
   }
 
   if (input.acwr != null) {
     let sev: Light, act: string;
-    if (input.acwr > ACWR_HIGH) { sev = "kırmızı"; act = "akut yük zirvede — rotasyon / erken çıkış planla"; }
-    else if (input.acwr > ACWR_MAX) { sev = "sarı"; act = "yük artışı dik — antrenman hacmini düşür"; }
-    else if (input.acwr < ACWR_MIN) { sev = "sarı"; act = "düşük yük — maç temposuna kademeli hazırla"; }
-    else { sev = "yeşil"; act = "yük dengeli"; }
+    if (input.acwr > ACWR_HIGH) { sev = "kırmızı"; act = "Akut yük zirvede — rotasyon / erken çıkış."; }
+    else if (input.acwr > ACWR_MAX) { sev = "sarı"; act = "Yük artışı dik — antrenman hacmini düşür."; }
+    else if (input.acwr < ACWR_MIN) { sev = "sarı"; act = "Düşük yük — maç temposuna kademeli hazırla."; }
+    else { sev = "yeşil"; act = "Yük dengeli"; }
     flags.push({
       metric: "ACWR", engine: "acwr_band", severity: sev,
       value: `${Math.round(input.acwr * 100) / 100}`,
@@ -193,7 +193,7 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       metric: "Wellness", engine: "compute_wellness", severity: sev,
       value: `hazırlık %${Math.round(readiness * 100)} (${zone})`,
       threshold: "≥%70 hazır · %55-70 izle · <%55 dikkat",
-      action: sev === "yeşil" ? "öznel hazırlık iyi" : "uyku/yorgunluk/ağrı düşük — yükü/kadroyu değerlendir",
+      action: sev === "yeşil" ? "Öznel hazırlık iyi" : "Uyku/yorgunluk düşük — yükü gözden geçir.",
     });
   }
 
@@ -205,8 +205,8 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
       flags.push({
         metric: "Regresyon", engine: "interpret_progression", severity: "sarı",
         value: dropped.join(", "),
-        threshold: "ani düşüş (anomaly break ≥1σ, yön-duyarlı)",
-        action: "performansta ani düşüş — sakatlık/aşırı yük kontrolü, yükü gözden geçir",
+        threshold: "ani düşüş (≥1σ kırılma)",
+        action: "Ani performans düşüşü — aşırı yük/sakatlık kontrolü.",
       });
     }
   }
@@ -223,14 +223,14 @@ export function assessReadiness(input: ReadinessInput): ReadinessDecision {
   } else if (red) {
     light = "kırmızı";
     const top = flags.filter((x) => x.severity === "kırmızı").map((x) => x.metric).join(", ");
-    summary = `${red} kırmızı bayrak (${top}) — sahaya çıkmasın.`;
+    summary = `${red} kırmızı: ${top}`;
   } else if (yellow) {
     light = "sarı";
     const top = flags.filter((x) => x.severity === "sarı").map((x) => x.metric).join(", ");
-    summary = `${yellow} sarı bayrak (${top}) — oynayabilir, yük yönetilmeli.`;
+    summary = `${yellow} sarı: ${top} — yük yönet`;
   } else {
     light = "yeşil";
-    summary = `${flags.length} metrik kontrol edildi, hepsi yeşil — tam maça hazır.`;
+    summary = `${flags.length} metrik · hepsi yeşil`;
   }
 
   return {

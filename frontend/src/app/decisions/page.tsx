@@ -121,7 +121,7 @@ function DemoDecisions() {
     >
       <div className="st" style={{ marginTop: 0 }}>
         <h2>Maç Boyunca Kararlar</h2>
-        <span className="ep">FK Demo vs Rakip SK</span>
+        <span className="ep">Beşiktaş vs Antalyaspor</span>
       </div>
       {cards.map((d) => <DecisionCardView key={d.minute} d={d} />)}
     </ConsoleShell>

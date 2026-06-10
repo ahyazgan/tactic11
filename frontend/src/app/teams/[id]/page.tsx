@@ -3,7 +3,7 @@
 /**
  * Takım Detayı — son form + rating + kadro/güç özeti. ConsoleShell çatısında.
  *
- * DEMO_MODE: backend'siz, dolu "FK Demo" takım profili (form serisi, rating,
+ * DEMO_MODE: backend'siz, dolu "Beşiktaş" takım profili (form serisi, rating,
  * pozisyon bazlı güç, kilit oyuncular, sıradaki maç). Canlı veri: GET
  * /teams/{id}/form, GET /teams/{id}/rating.
  */
@@ -47,7 +47,7 @@ function ResultDot({ r }: { r: "W" | "D" | "L" }) {
 }
 
 // --------------------------------------------------------------------------- //
-// DEMO: "FK Demo" takım profili (tek demo evreni — id sadece başlıkta).
+// DEMO: "Beşiktaş" takım profili (tek demo evreni — id sadece başlıkta).
 // --------------------------------------------------------------------------- //
 
 const DEMO_FORM: FormResponse = {
@@ -121,7 +121,7 @@ export default function TeamDetailConsolePage() {
   const params = useParams<{ id: string }>();
   const teamId = params.id;
 
-  // Demo modunda canlı API'ye dokunma; dolu "FK Demo" profilini göster.
+  // Demo modunda canlı API'ye dokunma; dolu "Beşiktaş" profilini göster.
   const { data: form } = useSWR<FormResponse>(DEMO_MODE ? null : `/teams/${teamId}/form`, apiFetch, { shouldRetryOnError: false });
   const { data: rating } = useSWR<RatingResponse>(DEMO_MODE ? null : `/teams/${teamId}/rating`, apiFetch, { shouldRetryOnError: false });
 
@@ -219,6 +219,7 @@ export default function TeamDetailConsolePage() {
       desc={DEMO_MODE
         ? `${DEMO_LEAGUE.competition} · ligde ${DEMO_LEAGUE.rank}. sırada. Son form, model rating'i ve kadro güç dağılımı.`
         : "Takımın son form dökümü ve model rating'i."}
+      source="api_football"
       right={right}
     >
       {DEMO_MODE && (

@@ -4,7 +4,7 @@
  * Lig Takımları — bir ligin takım listesi. ConsoleShell çatısında.
  *
  * DEMO_MODE açıkken canlı API'ye hiç dokunmaz; "Süper Lig — 34. Hafta" evreninin
- * dolu takım listesini (18 takım, FK Demo + Rakip SK dahil) puan/form/xG güç
+ * dolu takım listesini (18 takım, Beşiktaş + Antalyaspor dahil) puan/form/xG güç
  * metrikleriyle gösterir. Satıra tıkla → takım detayı (/teams/{id}). Boş-state /
  * "ID gir" prompt'u / spinner / "yetki yok" YOK.
  *
@@ -16,6 +16,7 @@ import useSWR from "swr";
 import { useParams, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { Crest } from "@/lib/teams";
 import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../../../_console/shell";
 import { RiskDonut, LegendRow } from "../../../_console/viz";
@@ -25,7 +26,7 @@ interface Team { sport: string; external_id: number; name: string; country: stri
 
 // --------------------------------------------------------------------------- //
 // DEMO EVRENİ — Süper Lig 34. Hafta takım listesi (bu dosyaya özel, inline)
-// "/teams" sıralamasıyla aynı evren: FK Demo zirve yarışında, Rakip SK sıradaki
+// "/teams" sıralamasıyla aynı evren: Beşiktaş zirve yarışında, Antalyaspor sıradaki
 // rakibimiz. Her takıma sabit teamId → satır /teams/{teamId} detayına gider.
 // --------------------------------------------------------------------------- //
 
@@ -47,29 +48,29 @@ interface DemoTeam {
   xgf: number;       // beklenen attığı gol (sezon)
   xga: number;       // beklenen yediği gol (sezon)
   form: Form[];      // son 5 maç (en yeni en sağda)
-  us?: boolean;      // FK Demo
+  us?: boolean;      // Beşiktaş
   next?: boolean;    // sıradaki rakibimiz
 }
 
 const DEMO_TEAMS: DemoTeam[] = [
-  { teamId: 201, rank: 1, name: "Anadolu Spor", short: "AND", city: "Ankara", founded: 1923, played: 33, win: 22, draw: 6, loss: 5, gf: 64, ga: 29, xgf: 60.4, xga: 31.2, form: ["G", "G", "B", "G", "G"] },
-  { teamId: 100, rank: 2, name: "FK Demo", short: "FKD", city: "İstanbul", founded: 1908, played: 33, win: 21, draw: 7, loss: 5, gf: 61, ga: 28, xgf: 58.9, xga: 27.6, form: ["G", "B", "G", "G", "G"], us: true },
-  { teamId: 202, rank: 3, name: "Marmara United", short: "MAR", city: "İstanbul", founded: 1911, played: 33, win: 20, draw: 6, loss: 7, gf: 58, ga: 33, xgf: 55.1, xga: 35.0, form: ["G", "G", "M", "G", "B"] },
-  { teamId: 203, rank: 4, name: "Ege Atletik", short: "EGE", city: "İzmir", founded: 1914, played: 33, win: 18, draw: 8, loss: 7, gf: 52, ga: 34, xgf: 50.7, xga: 36.4, form: ["B", "G", "G", "B", "G"] },
-  { teamId: 204, rank: 5, name: "Karadeniz FK", short: "KAR", city: "Trabzon", founded: 1967, played: 33, win: 17, draw: 7, loss: 9, gf: 49, ga: 38, xgf: 47.8, xga: 39.9, form: ["G", "M", "G", "G", "B"] },
-  { teamId: 205, rank: 6, name: "Başkent Gücü", short: "BAS", city: "Ankara", founded: 1945, played: 33, win: 16, draw: 8, loss: 9, gf: 47, ga: 40, xgf: 45.2, xga: 41.1, form: ["B", "B", "G", "M", "G"] },
-  { teamId: 206, rank: 7, name: "Toros SK", short: "TOR", city: "Antalya", founded: 1966, played: 33, win: 15, draw: 9, loss: 9, gf: 44, ga: 41, xgf: 43.6, xga: 42.0, form: ["G", "B", "M", "G", "B"] },
-  { teamId: 207, rank: 8, name: "Doğu Çelik", short: "DOG", city: "Kayseri", founded: 1966, played: 33, win: 14, draw: 9, loss: 10, gf: 42, ga: 42, xgf: 41.0, xga: 43.5, form: ["M", "G", "B", "G", "M"] },
-  { teamId: 208, rank: 9, name: "Akdeniz FK", short: "AKD", city: "Mersin", founded: 1925, played: 33, win: 13, draw: 10, loss: 10, gf: 40, ga: 43, xgf: 39.7, xga: 44.2, form: ["B", "M", "G", "B", "G"] },
-  { teamId: 209, rank: 10, name: "Yıldız Spor", short: "YIL", city: "Bursa", founded: 1963, played: 33, win: 12, draw: 11, loss: 10, gf: 39, ga: 41, xgf: 38.1, xga: 42.8, form: ["B", "G", "B", "M", "B"] },
-  { teamId: 101, rank: 11, name: "Rakip SK", short: "RKP", city: "İzmir", founded: 1912, played: 33, win: 12, draw: 9, loss: 12, gf: 41, ga: 44, xgf: 38.9, xga: 45.7, form: ["M", "B", "G", "M", "G"], next: true },
-  { teamId: 210, rank: 12, name: "Boğaz United", short: "BOG", city: "İstanbul", founded: 1933, played: 33, win: 11, draw: 10, loss: 12, gf: 37, ga: 45, xgf: 36.4, xga: 46.0, form: ["G", "M", "B", "M", "B"] },
-  { teamId: 211, rank: 13, name: "Step Atletik", short: "STP", city: "Konya", founded: 1922, played: 33, win: 10, draw: 11, loss: 12, gf: 35, ga: 46, xgf: 34.8, xga: 46.9, form: ["B", "M", "M", "B", "G"] },
-  { teamId: 212, rank: 14, name: "Volkan FK", short: "VOL", city: "Adana", founded: 1954, played: 33, win: 10, draw: 9, loss: 14, gf: 34, ga: 49, xgf: 33.2, xga: 50.3, form: ["M", "M", "B", "G", "M"] },
-  { teamId: 213, rank: 15, name: "Fırat Spor", short: "FIR", city: "Elazığ", founded: 1967, played: 33, win: 9, draw: 10, loss: 14, gf: 32, ga: 50, xgf: 31.9, xga: 51.1, form: ["M", "B", "M", "B", "M"] },
-  { teamId: 214, rank: 16, name: "Demir Çelik SK", short: "DMR", city: "Karabük", founded: 1969, played: 33, win: 8, draw: 9, loss: 16, gf: 30, ga: 54, xgf: 29.6, xga: 55.4, form: ["M", "G", "M", "M", "B"] },
-  { teamId: 215, rank: 17, name: "Granit FK", short: "GRA", city: "Eskişehir", founded: 1965, played: 33, win: 6, draw: 10, loss: 17, gf: 27, ga: 58, xgf: 26.8, xga: 57.9, form: ["M", "M", "B", "M", "M"] },
-  { teamId: 216, rank: 18, name: "Şafak United", short: "SAF", city: "Samsun", founded: 1965, played: 33, win: 5, draw: 8, loss: 20, gf: 24, ga: 63, xgf: 24.1, xga: 61.5, form: ["M", "M", "M", "B", "M"] },
+  { teamId: 201, rank: 1, name: "Galatasaray", short: "GS", city: "İstanbul", founded: 1905, played: 33, win: 22, draw: 6, loss: 5, gf: 64, ga: 29, xgf: 60.4, xga: 31.2, form: ["G", "G", "B", "G", "G"] },
+  { teamId: 100, rank: 2, name: "Beşiktaş", short: "BJK", city: "İstanbul", founded: 1903, played: 33, win: 21, draw: 7, loss: 5, gf: 61, ga: 28, xgf: 58.9, xga: 27.6, form: ["G", "B", "G", "G", "G"], us: true },
+  { teamId: 202, rank: 3, name: "Fenerbahçe", short: "FB", city: "İstanbul", founded: 1907, played: 33, win: 20, draw: 6, loss: 7, gf: 58, ga: 33, xgf: 55.1, xga: 35.0, form: ["G", "G", "M", "G", "B"] },
+  { teamId: 203, rank: 4, name: "Trabzonspor", short: "TS", city: "Trabzon", founded: 1967, played: 33, win: 18, draw: 8, loss: 7, gf: 52, ga: 34, xgf: 50.7, xga: 36.4, form: ["B", "G", "G", "B", "G"] },
+  { teamId: 204, rank: 5, name: "Samsunspor", short: "SAM", city: "Samsun", founded: 1965, played: 33, win: 17, draw: 7, loss: 9, gf: 49, ga: 38, xgf: 47.8, xga: 39.9, form: ["G", "M", "G", "G", "B"] },
+  { teamId: 205, rank: 6, name: "Başakşehir", short: "İBFK", city: "İstanbul", founded: 2014, played: 33, win: 16, draw: 8, loss: 9, gf: 47, ga: 40, xgf: 45.2, xga: 41.1, form: ["B", "B", "G", "M", "G"] },
+  { teamId: 206, rank: 7, name: "Eyüpspor", short: "EYP", city: "İstanbul", founded: 1919, played: 33, win: 15, draw: 9, loss: 9, gf: 44, ga: 41, xgf: 43.6, xga: 42.0, form: ["G", "B", "M", "G", "B"] },
+  { teamId: 207, rank: 8, name: "Göztepe", short: "GÖZ", city: "İzmir", founded: 1925, played: 33, win: 14, draw: 9, loss: 10, gf: 42, ga: 42, xgf: 41.0, xga: 43.5, form: ["M", "G", "B", "G", "M"] },
+  { teamId: 208, rank: 9, name: "Kasımpaşa", short: "KSM", city: "İstanbul", founded: 1921, played: 33, win: 13, draw: 10, loss: 10, gf: 40, ga: 43, xgf: 39.7, xga: 44.2, form: ["B", "M", "G", "B", "G"] },
+  { teamId: 209, rank: 10, name: "Konyaspor", short: "KON", city: "Konya", founded: 1922, played: 33, win: 12, draw: 11, loss: 10, gf: 39, ga: 41, xgf: 38.1, xga: 42.8, form: ["B", "G", "B", "M", "B"] },
+  { teamId: 101, rank: 11, name: "Antalyaspor", short: "ANT", city: "Antalya", founded: 1966, played: 33, win: 12, draw: 9, loss: 12, gf: 41, ga: 44, xgf: 38.9, xga: 45.7, form: ["M", "B", "G", "M", "G"], next: true },
+  { teamId: 210, rank: 12, name: "Çaykur Rizespor", short: "RİZ", city: "Rize", founded: 1953, played: 33, win: 11, draw: 10, loss: 12, gf: 37, ga: 45, xgf: 36.4, xga: 46.0, form: ["G", "M", "B", "M", "B"] },
+  { teamId: 211, rank: 13, name: "Alanyaspor", short: "ALY", city: "Alanya", founded: 1948, played: 33, win: 10, draw: 11, loss: 12, gf: 35, ga: 46, xgf: 34.8, xga: 46.9, form: ["B", "M", "M", "B", "G"] },
+  { teamId: 212, rank: 14, name: "Sivasspor", short: "SVS", city: "Sivas", founded: 1967, played: 33, win: 10, draw: 9, loss: 14, gf: 34, ga: 49, xgf: 33.2, xga: 50.3, form: ["M", "M", "B", "G", "M"] },
+  { teamId: 213, rank: 15, name: "Kayserispor", short: "KAY", city: "Kayseri", founded: 1966, played: 33, win: 9, draw: 10, loss: 14, gf: 32, ga: 50, xgf: 31.9, xga: 51.1, form: ["M", "B", "M", "B", "M"] },
+  { teamId: 214, rank: 16, name: "Gaziantep FK", short: "GFK", city: "Gaziantep", founded: 1969, played: 33, win: 8, draw: 9, loss: 16, gf: 30, ga: 54, xgf: 29.6, xga: 55.4, form: ["M", "G", "M", "M", "B"] },
+  { teamId: 215, rank: 17, name: "Hatayspor", short: "HTY", city: "Hatay", founded: 1967, played: 33, win: 6, draw: 10, loss: 17, gf: 27, ga: 58, xgf: 26.8, xga: 57.9, form: ["M", "M", "B", "M", "M"] },
+  { teamId: 216, rank: 18, name: "Bodrum FK", short: "BOD", city: "Bodrum", founded: 1931, played: 33, win: 5, draw: 8, loss: 20, gf: 24, ga: 63, xgf: 24.1, xga: 61.5, form: ["M", "M", "M", "B", "M"] },
 ];
 
 const LEAGUE = "Süper Lig";
@@ -202,7 +203,7 @@ function LeagueTeamsDemo() {
 
       <div className="rc">
         <h3>Sıradaki Rakip <span className="tiny">{LEAGUE} · 34. Hafta</span></h3>
-        <div className="nm-vs"><span className="t">{us.name}</span><span className="x">vs</span><span className="t away">{next.name}</span></div>
+        <div className="nm-vs"><span className="t" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Crest team={us.name} size={18} />{us.name}</span><span className="x">vs</span><span className="t away" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>{next.name}<Crest team={next.name} size={18} /></span></div>
         <div className="nm-when">Ev sahibi · {next.name} ligde {next.rank}. sırada</div>
         <div className="stat"><span>Bizim sıramız</span><span className="sv" style={{ color: "var(--low)" }}>{us.rank}.</span></div>
         <div className="stat"><span>Rakip sırası</span><span className="sv">{next.rank}.</span></div>
@@ -247,7 +248,7 @@ function LeagueTeamsDemo() {
     >
       <div className="kpis">
         <div className="kpi"><div className="kl">Takım</div><div className="kn">{teams.length}</div><div className="kd">ligde toplam</div></div>
-        <div className="kpi"><div className="kl">FK Demo</div><div className="kn" style={{ color: "var(--accent)" }}>{us.rank}<span className="pct">.</span></div><div className="kd"><span className="u">{points(us)} puan</span> · lidere {gapToLeader <= 0 ? 0 : gapToLeader}</div></div>
+        <div className="kpi"><div className="kl">Beşiktaş</div><div className="kn" style={{ color: "var(--accent)" }}>{us.rank}<span className="pct">.</span></div><div className="kd"><span className="u">{points(us)} puan</span> · lidere {gapToLeader <= 0 ? 0 : gapToLeader}</div></div>
         <div className="kpi"><div className="kl">Averajımız</div><div className="kn" style={{ color: us.gf - us.ga >= 0 ? "var(--low)" : "var(--crit)" }}>{us.gf - us.ga >= 0 ? "+" : ""}{us.gf - us.ga}</div><div className="kd">{us.gf} attık · {us.ga} yedik</div></div>
         <div className="kpi"><div className="kl">En İyi Hücum</div><div className="kn">{bestAttack.gf}</div><div className="kd">{bestAttack.name}</div></div>
         <div className="kpi"><div className="kl">En İyi Savunma</div><div className="kn">{bestDefense.ga}</div><div className="kd">{bestDefense.name}</div></div>
@@ -291,8 +292,10 @@ function LeagueTeamsDemo() {
                     <span style={{ width: 3, height: 14, borderRadius: 2, background: zc }} />{t.rank}
                   </span></td>
                   <td>
-                    <span className="pos" style={{ marginRight: 8 }}>{t.short}</span>
-                    <span className="nm" style={{ color: t.us ? "var(--accent)" : "var(--ink)" }}>{t.name}</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, marginRight: 4 }}>
+                      <Crest team={t.name} size={20} />
+                      <span className="nm" style={{ color: t.us ? "var(--accent)" : "var(--ink)" }}>{t.name}</span>
+                    </span>
                     {t.us && <span className="nat"> · biz</span>}
                     {t.next && <span className="nat"> · sıradaki rakip</span>}
                     {zl && !t.us && (
@@ -343,7 +346,7 @@ function LeagueTeamsDemo() {
                     style={{ cursor: "pointer", background: t.us ? "var(--accent-lt)" : undefined }}
                   >
                     <td className="pnum c">{i + 1}</td>
-                    <td><span className="nm">{t.name}</span>{t.us && <span className="nat"> · biz</span>}</td>
+                    <td><span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><Crest team={t.name} size={18} /><span className="nm">{t.name}</span></span>{t.us && <span className="nat"> · biz</span>}</td>
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ fontFamily: "JetBrains Mono", fontSize: 11, color: "var(--muted)", minWidth: 34 }}>{t.xgf.toFixed(1)}</span>

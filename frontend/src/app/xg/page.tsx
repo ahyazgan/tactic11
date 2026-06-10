@@ -4,7 +4,7 @@
  * Analiz — xG Performans. ConsoleShell çatısını kullanır.
  * Beklenen gol (xG) farkı + over/underperformance.
  *
- * DEMO_MODE açıkken canlı API'ye hiç dokunmaz; "FK Demo" evreni için dolu,
+ * DEMO_MODE açıkken canlı API'ye hiç dokunmaz; "Beşiktaş" evreni için dolu,
  * inandırıcı xG içeriği gösterir (boş-state / ID-prompt / spinner yok):
  * kümülatif xG eğrisi (SVG), maç-içi xG akışı + son maç tablosu.
  * Backend: GET /admin/teams/{team_id}/xg-difference?days={30..180}.
@@ -53,7 +53,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 // --------------------------------------------------------------------------- //
-// DEMO VERİSİ — "FK Demo" son 12 maç xG dökümü (inline, paylaşılan dosya değil).
+// DEMO VERİSİ — "Beşiktaş" son 12 maç xG dökümü (inline, paylaşılan dosya değil).
 // xG/skor tutarlı; overperformance = (att−yed) − (xG−xGA).
 // --------------------------------------------------------------------------- //
 
@@ -70,17 +70,17 @@ interface XgMatch {
 
 const DEMO_MATCHES: XgMatch[] = [
   { date: "06-08", opp: DEMO_OPPONENT,    ha: "İ", res: "B", gf: 1, ga: 1, xgf: 1.22, xga: 1.35 },
-  { date: "06-01", opp: "Yıldız FK",      ha: "D", res: "G", gf: 2, ga: 0, xgf: 1.84, xga: 0.71 },
-  { date: "05-25", opp: "Demir SK",       ha: "İ", res: "G", gf: 3, ga: 1, xgf: 2.41, xga: 1.02 },
-  { date: "05-18", opp: "Kartal Spor",    ha: "D", res: "M", gf: 0, ga: 2, xgf: 1.06, xga: 1.58 },
-  { date: "05-11", opp: "Liman FK",       ha: "İ", res: "G", gf: 2, ga: 1, xgf: 1.63, xga: 0.94 },
-  { date: "05-04", opp: "Şahin SK",       ha: "D", res: "B", gf: 1, ga: 1, xgf: 0.88, xga: 1.41 },
-  { date: "04-27", opp: "Bora United",    ha: "İ", res: "G", gf: 1, ga: 0, xgf: 1.71, xga: 0.62 },
-  { date: "04-20", opp: "Toros FK",       ha: "D", res: "M", gf: 1, ga: 3, xgf: 1.49, xga: 2.05 },
-  { date: "04-13", opp: "Yeşil Spor",     ha: "İ", res: "G", gf: 2, ga: 0, xgf: 1.92, xga: 0.78 },
-  { date: "04-06", opp: "Karadeniz FK",   ha: "D", res: "B", gf: 2, ga: 2, xgf: 1.55, xga: 1.49 },
-  { date: "03-30", opp: "Anadolu SK",     ha: "İ", res: "G", gf: 3, ga: 0, xgf: 2.18, xga: 0.55 },
-  { date: "03-23", opp: "Fırtına FK",     ha: "D", res: "M", gf: 0, ga: 1, xgf: 1.12, xga: 1.27 },
+  { date: "06-01", opp: "Konyaspor",      ha: "D", res: "G", gf: 2, ga: 0, xgf: 1.84, xga: 0.71 },
+  { date: "05-25", opp: "Gaziantep FK",   ha: "İ", res: "G", gf: 3, ga: 1, xgf: 2.41, xga: 1.02 },
+  { date: "05-18", opp: "Trabzonspor",    ha: "D", res: "M", gf: 0, ga: 2, xgf: 1.06, xga: 1.58 },
+  { date: "05-11", opp: "Kasımpaşa",      ha: "İ", res: "G", gf: 2, ga: 1, xgf: 1.63, xga: 0.94 },
+  { date: "05-04", opp: "Sivasspor",      ha: "D", res: "B", gf: 1, ga: 1, xgf: 0.88, xga: 1.41 },
+  { date: "04-27", opp: "Başakşehir",     ha: "İ", res: "G", gf: 1, ga: 0, xgf: 1.71, xga: 0.62 },
+  { date: "04-20", opp: "Eyüpspor",       ha: "D", res: "M", gf: 1, ga: 3, xgf: 1.49, xga: 2.05 },
+  { date: "04-13", opp: "Alanyaspor",     ha: "İ", res: "G", gf: 2, ga: 0, xgf: 1.92, xga: 0.78 },
+  { date: "04-06", opp: "Samsunspor",     ha: "D", res: "B", gf: 2, ga: 2, xgf: 1.55, xga: 1.49 },
+  { date: "03-30", opp: "Galatasaray",    ha: "İ", res: "G", gf: 3, ga: 0, xgf: 2.18, xga: 0.55 },
+  { date: "03-23", opp: "Çaykur Rizespor", ha: "D", res: "M", gf: 0, ga: 1, xgf: 1.12, xga: 1.27 },
 ];
 
 const RES_LABEL: Record<XgMatch["res"], { txt: string; cls: string }> = {
@@ -106,20 +106,20 @@ const DEMO_PPDA: PpdaPhase[] = [
 const PPDA_SEASON_AVG = 11.0; // takım sezon ortalaması (referans çizgi)
 
 // --------------------------------------------------------------------------- //
-// ŞUT HARİTASI — son maç (FK Demo 1–1 Rakip SK) şut dökümü. Koordinatlar 0..100:
+// ŞUT HARİTASI — son maç (Beşiktaş 1–1 Antalyaspor) şut dökümü. Koordinatlar 0..100:
 // x = hücum ekseni (100 = rakip kale çizgisi), y = genişlik (0 sol, 100 sağ).
 // xG toplamları demoLive ile tutarlı: home 1.22, away 1.35.
 // --------------------------------------------------------------------------- //
 interface Shot { x: number; y: number; xg: number; goal: boolean; team: "home" | "away"; player: string; minute: number }
 const DEMO_SHOTS: Shot[] = [
-  // FK Demo (home) — toplam xG 1.22
+  // Beşiktaş (home) — toplam xG 1.22
   { x: 88, y: 42, xg: 0.31, goal: false, team: "home", player: "Milot Rashica", minute: 12 },
   { x: 92, y: 52, xg: 0.46, goal: true, team: "home", player: "Oh Hyeon-Gyu", minute: 23 },
   { x: 78, y: 30, xg: 0.08, goal: false, team: "home", player: "Salih Uçan", minute: 34 },
   { x: 84, y: 60, xg: 0.12, goal: false, team: "home", player: "Orkun Kökçü", minute: 41 },
   { x: 90, y: 48, xg: 0.19, goal: false, team: "home", player: "Jota Silva", minute: 55 },
   { x: 73, y: 38, xg: 0.06, goal: false, team: "home", player: "Oh Hyeon-Gyu", minute: 62 },
-  // Rakip SK (away) — toplam xG 1.35
+  // Antalyaspor (away) — toplam xG 1.35
   { x: 86, y: 55, xg: 0.24, goal: false, team: "away", player: "Rakip #9", minute: 38 },
   { x: 94, y: 50, xg: 0.41, goal: true, team: "away", player: "Rakip #4", minute: 45 },
   { x: 80, y: 44, xg: 0.14, goal: false, team: "away", player: "Rakip #23", minute: 60 },
@@ -414,18 +414,18 @@ function ShotMap({ shots }: { shots: Shot[] }) {
 }
 
 // --------------------------------------------------------------------------- //
-// LİG xG SIRALAMASI (demo) — takımlar xG farkına (xGF − xGA) göre. FK Demo işaretli.
+// LİG xG SIRALAMASI (demo) — takımlar xG farkına (xGF − xGA) göre. Beşiktaş işaretli.
 // "Skor değil, üretilen şans" perspektifinden lig konumu.
 // --------------------------------------------------------------------------- //
 interface LeagueXgRow { team: string; xgf: number; xga: number; pts: number }
 const DEMO_LEAGUE: LeagueXgRow[] = [
-  { team: "Yıldız FK", xgf: 61.2, xga: 32.1, pts: 74 },
-  { team: "Demir SK", xgf: 55.8, xga: 38.4, pts: 68 },
+  { team: "Konyaspor", xgf: 61.2, xga: 32.1, pts: 74 },
+  { team: "Gaziantep FK", xgf: 55.8, xga: 38.4, pts: 68 },
   { team: DEMO_CLUB, xgf: 52.3, xga: 41.0, pts: 63 },
-  { team: "Kartal Spor", xgf: 48.1, xga: 44.7, pts: 58 },
-  { team: "Liman FK", xgf: 44.9, xga: 46.2, pts: 52 },
-  { team: "Toros FK", xgf: 41.0, xga: 49.8, pts: 47 },
-  { team: "Şahin SK", xgf: 38.7, xga: 53.1, pts: 41 },
+  { team: "Trabzonspor", xgf: 48.1, xga: 44.7, pts: 58 },
+  { team: "Kasımpaşa", xgf: 44.9, xga: 46.2, pts: 52 },
+  { team: "Eyüpspor", xgf: 41.0, xga: 49.8, pts: 47 },
+  { team: "Sivasspor", xgf: 38.7, xga: 53.1, pts: 41 },
 ];
 
 type LeagueSortKey = "xgf" | "xga" | "xgd" | "pts";
@@ -617,6 +617,7 @@ export default function XgConsolePage() {
       title="Performans Analizi"
       sub="xG · oyuncu katkısı · pres"
       desc="Beklenen gol (xG), oyuncu katkısı (VAEP/90), pres yoğunluğu (PPDA) ve şut kalitesiyle takım ve oyuncu verimliliğini bir arada gösterir."
+      source={["statsbomb", "xg_model"]}
       right={right}
     >
       {/* Demo: takım seçimi yerine sabit kulüp + dönem kontrolü */}
@@ -668,7 +669,7 @@ export default function XgConsolePage() {
             </>
           )}
 
-          {/* Maç-içi kümülatif xG eğrisi (son maç: FK Demo vs Rakip SK) */}
+          {/* Maç-içi kümülatif xG eğrisi (son maç: Beşiktaş vs Antalyaspor) */}
           {DEMO_MODE && (
             <>
               <div className="st">

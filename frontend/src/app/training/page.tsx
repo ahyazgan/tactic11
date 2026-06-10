@@ -4,7 +4,7 @@
  * Antrenman Planı — maça özel haftalık mikro-döngü (microcycle). ConsoleShell çatısında.
  *
  * DEMO_MODE açıkken canlı API'ye (/leagues, /teams) hiç dokunmaz; bu dosyada inline
- * tanımlı dolu mock veriyle FK Demo'nun "Rakip SK" maçına hazırlık programını gösterir:
+ * tanımlı dolu mock veriyle Beşiktaş'ın "Antalyaspor" maçına hazırlık programını gösterir:
  * haftalık yük eğrisi (SVG), gün-gün antrenman planı, antrenman odakları (rakip zaaflarına
  * göre) ve oyuncu-bazlı yük/uygunluk tablosu. Backend bağlanınca lig→takım seçimine döner.
  */
@@ -24,8 +24,8 @@ interface Team { external_id: number; name: string }
 // DEMO VERİSİ (yalnızca bu sayfaya özel, inline)
 // --------------------------------------------------------------------------- //
 
-const DEMO_CLUB = "FK Demo";
-const DEMO_OPPONENT = "Rakip SK";
+const DEMO_CLUB = "Beşiktaş";
+const DEMO_OPPONENT = "Antalyaspor";
 
 /** Maç gününe (MG) göre konumlandırılmış mikro-döngü. MG-1 = maçtan bir gün önce. */
 interface TrainingDay {

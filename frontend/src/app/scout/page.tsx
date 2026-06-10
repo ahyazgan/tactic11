@@ -5,7 +5,7 @@
  * Hedef oyuncu → cosine similarity ile top-N benzer profil + filtreler + izleme listesi.
  *
  * DEMO_MODE açıkken: canlı API'ye dokunmaz, zengin Türkçe scout demosu render eder
- * (FK Demo evreni — hedef Orkun Kökçü #10, transfer adayları + benzerlik tablosu).
+ * (Beşiktaş evreni — hedef Orkun Kökçü #10, transfer adayları + benzerlik tablosu).
  *
  * Backend (DEMO kapalı):
  *   GET    /admin/scout/similar/{player_external_id}
@@ -18,6 +18,7 @@ import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { useProviderAccess, ProviderConnect, ProviderConnectedBar } from "@/lib/provider-access";
 import { ConsoleShell } from "../_console/shell";
 
 interface SimMatch {
@@ -44,7 +45,7 @@ interface WatchResp {
 
 /* ─────────────────────────────────────────────
    DEMO EVRENİ — bu dosyaya özel inline scout verisi
-   (FK Demo · hedef profil: Orkun Kökçü #10, "10 Numara")
+   (Beşiktaş · hedef profil: Orkun Kökçü #10, "10 Numara")
 ───────────────────────────────────────────── */
 
 type DemoPos = "GK" | "DF" | "MF" | "FW";
@@ -82,21 +83,21 @@ const TARGET = {
 
 /** Aday havuzu — hedefe per-90 profil yakınlığına göre sıralı (16 oyuncu). */
 const CANDIDATES: ScoutCandidate[] = [
-  { external_id: 201, name: "Junior Olaitan",   pos: "MF", pos_detail: "10 Numara",   age: 23, club: "FK Demo",        league: "Süper Lig",   value: "€4.2M",  minutes: 1180, goals: 6,  assists: 9,  xg90: 0.28, xa90: 0.34, prog90: 7.1, similarity: 0.93, tier: "Rotasyon", note: "Kadro içi — hazır alternatif. Yaratıcılık ve pres kırma kalitesi yüksek." },
-  { external_id: 202, name: "Emir Kaplan",    pos: "MF", pos_detail: "Ön Libero",   age: 21, club: "Genç Yıldız FK", league: "Süper Lig",   value: "€6.8M",  minutes: 2340, goals: 4,  assists: 11, xg90: 0.21, xa90: 0.41, prog90: 8.4, similarity: 0.91, tier: "Gelecek",  note: "Yarı-alan ustası. Yaşına göre olgun karar verme; gelişim eğrisi dik." },
-  { external_id: 203, name: "Deniz Aktaş",    pos: "MF", pos_detail: "Merkez OS",   age: 25, club: "Liman SK",       league: "Süper Lig",   value: "€5.1M",  minutes: 2610, goals: 7,  assists: 8,  xg90: 0.31, xa90: 0.29, prog90: 6.7, similarity: 0.88, tier: "İlk 11",   note: "Gol katkısı dengeli; ceza sahasına geç giriş timing'i çok iyi." },
+  { external_id: 201, name: "Junior Olaitan",   pos: "MF", pos_detail: "10 Numara",   age: 23, club: "Beşiktaş",        league: "Süper Lig",   value: "€4.2M",  minutes: 1180, goals: 6,  assists: 9,  xg90: 0.28, xa90: 0.34, prog90: 7.1, similarity: 0.93, tier: "Rotasyon", note: "Kadro içi — hazır alternatif. Yaratıcılık ve pres kırma kalitesi yüksek." },
+  { external_id: 202, name: "Emir Kaplan",    pos: "MF", pos_detail: "Ön Libero",   age: 21, club: "Trabzonspor",    league: "Süper Lig",   value: "€6.8M",  minutes: 2340, goals: 4,  assists: 11, xg90: 0.21, xa90: 0.41, prog90: 8.4, similarity: 0.91, tier: "Gelecek",  note: "Yarı-alan ustası. Yaşına göre olgun karar verme; gelişim eğrisi dik." },
+  { external_id: 203, name: "Deniz Aktaş",    pos: "MF", pos_detail: "Merkez OS",   age: 25, club: "Kasımpaşa",      league: "Süper Lig",   value: "€5.1M",  minutes: 2610, goals: 7,  assists: 8,  xg90: 0.31, xa90: 0.29, prog90: 6.7, similarity: 0.88, tier: "İlk 11",   note: "Gol katkısı dengeli; ceza sahasına geç giriş timing'i çok iyi." },
   { external_id: 204, name: "Mateo Rincón",   pos: "MF", pos_detail: "10 Numara",   age: 24, club: "Atlético Vega",  league: "La Liga 2",   value: "€8.5M",  minutes: 2480, goals: 9,  assists: 7,  xg90: 0.36, xa90: 0.27, prog90: 7.9, similarity: 0.86, tier: "İlk 11",   note: "Yabancı bonservis. Bitiricilik üst düzey ama uyum süresi gerekebilir." },
-  { external_id: 205, name: "Kaan Erdoğan",   pos: "MF", pos_detail: "Merkez OS",   age: 27, club: "Dağ FK",         league: "Süper Lig",   value: "€3.9M",  minutes: 2890, goals: 5,  assists: 10, xg90: 0.19, xa90: 0.38, prog90: 9.2, similarity: 0.84, tier: "İlk 11",   note: "İlerletici pas hacmi lig lideri seviyesinde; düşük gol tehdidi." },
+  { external_id: 205, name: "Kaan Erdoğan",   pos: "MF", pos_detail: "Merkez OS",   age: 27, club: "Samsunspor",     league: "Süper Lig",   value: "€3.9M",  minutes: 2890, goals: 5,  assists: 10, xg90: 0.19, xa90: 0.38, prog90: 9.2, similarity: 0.84, tier: "İlk 11",   note: "İlerletici pas hacmi lig lideri seviyesinde; düşük gol tehdidi." },
   { external_id: 206, name: "Yiğit Sönmez",   pos: "MF", pos_detail: "10 Numara",   age: 20, club: "Akademi U21",    league: "PAF Ligi",    value: "€1.5M",  minutes: 1640, goals: 8,  assists: 6,  xg90: 0.33, xa90: 0.25, prog90: 6.1, similarity: 0.82, tier: "Gelecek",  note: "Akademi çıkışı; ucuz seçenek. Fiziksel olgunlaşması bekleniyor." },
   { external_id: 207, name: "Luka Petrović",  pos: "MF", pos_detail: "Ön Libero",   age: 26, club: "HNK Jadran",     league: "1. HNL",      value: "€7.2M",  minutes: 2720, goals: 3,  assists: 9,  xg90: 0.15, xa90: 0.33, prog90: 8.8, similarity: 0.80, tier: "İlk 11",   note: "Derin oyun kurucu; tempo değiştirme yeteneği. Defansif katkı bonus." },
-  { external_id: 208, name: "Onurcan Bilge",  pos: "FW", pos_detail: "Sol Kanat",   age: 22, club: "Sahil GK",       league: "Süper Lig",   value: "€4.6M",  minutes: 2010, goals: 11, assists: 5,  xg90: 0.42, xa90: 0.22, prog90: 7.4, similarity: 0.78, tier: "Rotasyon", note: "Kanattan içeri kat eden tip; sol ayak tehdidi. Daha çok gol odaklı." },
+  { external_id: 208, name: "Onurcan Bilge",  pos: "FW", pos_detail: "Sol Kanat",   age: 22, club: "Göztepe",        league: "Süper Lig",   value: "€4.6M",  minutes: 2010, goals: 11, assists: 5,  xg90: 0.42, xa90: 0.22, prog90: 7.4, similarity: 0.78, tier: "Rotasyon", note: "Kanattan içeri kat eden tip; sol ayak tehdidi. Daha çok gol odaklı." },
   { external_id: 209, name: "Tomáš Novák",    pos: "MF", pos_detail: "10 Numara",   age: 28, club: "SK Brno",        league: "Chance Liga", value: "€5.8M",  minutes: 2550, goals: 6,  assists: 8,  xg90: 0.27, xa90: 0.30, prog90: 7.0, similarity: 0.77, tier: "İlk 11",   note: "Deneyimli; lider profil. Yaş eğrisi düşüşe yakın, kısa sözleşme mantıklı." },
-  { external_id: 210, name: "Bora Şimşek",    pos: "MF", pos_detail: "Merkez OS",   age: 24, club: "Ova SK",         league: "Süper Lig",   value: "€3.2M",  minutes: 2380, goals: 4,  assists: 7,  xg90: 0.18, xa90: 0.28, prog90: 6.9, similarity: 0.75, tier: "Rotasyon", note: "Ekonomik; çift yönlü orta saha. Yaratıcılıkta tavan sınırlı." },
+  { external_id: 210, name: "Bora Şimşek",    pos: "MF", pos_detail: "Merkez OS",   age: 24, club: "Eyüpspor",       league: "Süper Lig",   value: "€3.2M",  minutes: 2380, goals: 4,  assists: 7,  xg90: 0.18, xa90: 0.28, prog90: 6.9, similarity: 0.75, tier: "Rotasyon", note: "Ekonomik; çift yönlü orta saha. Yaratıcılıkta tavan sınırlı." },
   { external_id: 211, name: "Renato Alvez",   pos: "FW", pos_detail: "Sol Kanat",   age: 23, club: "CD Marítimo",    league: "Liga 3",      value: "€6.1M",  minutes: 2190, goals: 10, assists: 8,  xg90: 0.38, xa90: 0.31, prog90: 8.0, similarity: 0.73, tier: "Gelecek",  note: "Yüksek tavan; dripling + gol. Scout izleme önerisi: 3 maç daha." },
-  { external_id: 212, name: "Hakan Uğurlu",   pos: "MF", pos_detail: "Ön Libero",   age: 29, club: "Kale FK",        league: "Süper Lig",   value: "€2.4M",  minutes: 2960, goals: 2,  assists: 6,  xg90: 0.11, xa90: 0.24, prog90: 9.6, similarity: 0.71, tier: "İlk 11",   note: "Pas metronomu; düşük maliyet. Hücum tehdidi zayıf, kurgu güçlü." },
+  { external_id: 212, name: "Hakan Uğurlu",   pos: "MF", pos_detail: "Ön Libero",   age: 29, club: "Başakşehir",     league: "Süper Lig",   value: "€2.4M",  minutes: 2960, goals: 2,  assists: 6,  xg90: 0.11, xa90: 0.24, prog90: 9.6, similarity: 0.71, tier: "İlk 11",   note: "Pas metronomu; düşük maliyet. Hücum tehdidi zayıf, kurgu güçlü." },
   { external_id: 213, name: "Doruk Yalçın",   pos: "MF", pos_detail: "10 Numara",   age: 19, club: "Akademi U19",    league: "PAF Ligi",    value: "€0.9M",  minutes: 980,  goals: 5,  assists: 4,  xg90: 0.30, xa90: 0.26, prog90: 5.8, similarity: 0.69, tier: "Gelecek",  note: "Çok genç; uzun vadeli yatırım. Kiralıkla pişmesi öneriliyor." },
   { external_id: 214, name: "Stefan Marković", pos: "FW", pos_detail: "Santrfor",  age: 25, club: "FK Partizan B",  league: "Prva Liga",   value: "€7.9M",  minutes: 2440, goals: 14, assists: 4,  xg90: 0.51, xa90: 0.18, prog90: 5.2, similarity: 0.66, tier: "İlk 11",   note: "Net santrfor profili; hedefe pozisyon olarak uzak ama gol açlığını kapatır." },
-  { external_id: 215, name: "Cenk Aytaç",     pos: "MF", pos_detail: "Merkez OS",   age: 26, club: "Tepe SK",        league: "1. Lig",      value: "€2.1M",  minutes: 3010, goals: 3,  assists: 9,  xg90: 0.16, xa90: 0.32, prog90: 7.3, similarity: 0.64, tier: "Rotasyon", note: "Alt ligden çıkış adayı; istikrarlı asist üretimi. Sıçrama riski var." },
+  { external_id: 215, name: "Cenk Aytaç",     pos: "MF", pos_detail: "Merkez OS",   age: 26, club: "Bodrum FK",      league: "1. Lig",      value: "€2.1M",  minutes: 3010, goals: 3,  assists: 9,  xg90: 0.16, xa90: 0.32, prog90: 7.3, similarity: 0.64, tier: "Rotasyon", note: "Alt ligden çıkış adayı; istikrarlı asist üretimi. Sıçrama riski var." },
   { external_id: 216, name: "Iker Mendoza",   pos: "MF", pos_detail: "10 Numara",   age: 31, club: "Real Costa",     league: "La Liga 2",   value: "€1.8M",  minutes: 2280, goals: 7,  assists: 10, xg90: 0.29, xa90: 0.36, prog90: 7.6, similarity: 0.61, tier: "Kiralık",  note: "Deneyim transferi; sözleşme sonu fırsat. Yaş nedeniyle kısa vadeli." },
 ];
 
@@ -134,6 +135,7 @@ const inputStyle: React.CSSProperties = {
    DEMO SAYFA
 ═══════════════════════════════════════════════ */
 function ScoutDemo() {
+  const access = useProviderAccess("scout");
   const [pos, setPos] = React.useState<PosFilter>("all");
   const [tier, setTier] = React.useState<TierFilter>("all");
   const [maxAge, setMaxAge] = React.useState<number>(35);
@@ -235,6 +237,7 @@ function ScoutDemo() {
       desc="Per-90 stat vektörü + cosine similarity ile hedef oyuncuya en yakın transfer adayları. Filtreyle pozisyon, kademe ve yaşa göre daralt."
       right={right}
     >
+      <ProviderConnectedBar providerLabel={access.providerLabel} user={access.user} onDisconnect={access.disconnect} />
       <div className="kpis">
         <div className="kpi"><div className="kl">Aday Havuzu</div><div className="kn">{poolSize}</div><div className="kd">taranan profil</div></div>
         <div className="kpi"><div className="kl">En Yüksek</div><div className="kn" style={{ color: "var(--low)" }}>{topSim}<span className="pct">%</span></div><div className="kd">{CANDIDATES[0].name}</div></div>
@@ -373,6 +376,7 @@ function ScoutDemo() {
    CANLI SAYFA (DEMO kapalı) — orijinal API davranışı
 ═══════════════════════════════════════════════ */
 function ScoutLive() {
+  const access = useProviderAccess("scout");
   const [query, setQuery] = React.useState("");
   const [search, setSearch] = React.useState("");
 
@@ -443,6 +447,7 @@ function ScoutLive() {
       desc="Per-90 stat vektörü + cosine similarity ile hedef oyuncuya en yakın profiller. Aday havuzu mevcut kadrodur."
       right={right}
     >
+      <ProviderConnectedBar providerLabel={access.providerLabel} user={access.user} onDisconnect={access.disconnect} />
       <div className="st" style={{ marginTop: 0 }}>
         <h2>Hedef Oyuncu</h2>
         <form onSubmit={(e) => { e.preventDefault(); setQuery(search.trim()); }} style={{ display: "flex", gap: 6 }}>
@@ -499,5 +504,22 @@ function ScoutLive() {
 }
 
 export default function ScoutConsolePage() {
+  const access = useProviderAccess("scout");
+
+  // Kilitli: oyuncu keşfi bir 3. parti scout sağlayıcısına bağlanana dek karartılır.
+  if (!access.connected) {
+    return (
+      <ConsoleShell
+        active="/scout"
+        title="Oyuncu Keşif"
+        sub="Bağlantı gerekli"
+        desc="Aday havuzu ve benzerlik analizi için bir 3. parti scout sağlayıcıya bağlan."
+        right={<div className="rc"><h3>Neden bağlantı?</h3><div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.55 }}>Aday havuzu, per-90 istatistikler ve benzerlik skorları bir scout veri sağlayıcısından gelir. Sağlayıcını seçip ID + şifreni girince bölüm açılır.</div></div>}
+      >
+        <ProviderConnect kind="scout" onConnect={access.connect} />
+      </ConsoleShell>
+    );
+  }
+
   return DEMO_MODE ? <ScoutDemo /> : <ScoutLive />;
 }

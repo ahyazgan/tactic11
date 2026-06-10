@@ -5,10 +5,10 @@
  * Son N maçın taktik metrikleri (PPDA, Field Tilt, Takım xT, Possession,
  * Match Dominance) çizgi grafiği + yön/eğim + en büyük tek-maç sıçraması.
  *
- * DEMO_MODE açıkken canlı API'ye / role kapısına hiç dokunmaz; "FK Demo"
+ * DEMO_MODE açıkken canlı API'ye / role kapısına hiç dokunmaz; "Beşiktaş"
  * evreni için dolu, inandırıcı taktik trend gösterir (boş-state / spinner /
  * "veri yok" yok). [id] parametresi yalnızca başlıkta kullanılır; tek demo
- * evreni (FK Demo vs lig rakipleri) yeterlidir.
+ * evreni (Beşiktaş vs lig rakipleri) yeterlidir.
  * Backend: GET /admin/teams/{team_id}/tactical-trend?last_n={N}.
  */
 
@@ -75,8 +75,8 @@ const METRICS: MetricDef[] = [
 ];
 
 // --------------------------------------------------------------------------- //
-// DEMO VERİSİ — "FK Demo" son 10 maç taktik dökümü (inline, paylaşılan dosya değil).
-// Kronolojik (eski → yeni); en yenisi maç günü FK Demo vs Rakip SK.
+// DEMO VERİSİ — "Beşiktaş" son 10 maç taktik dökümü (inline, paylaşılan dosya değil).
+// Kronolojik (eski → yeni); en yenisi maç günü Beşiktaş vs Antalyaspor.
 // --------------------------------------------------------------------------- //
 
 interface DemoTrendMatch {
@@ -96,19 +96,19 @@ interface DemoTrendMatch {
 // 10 maç, eskiden yeniye. Eğilim: sezon ortasında pres çözüldü (PPDA yükseldi),
 // son 4 maçta toparlanma var (PPDA düşüyor, xT/dominance artıyor).
 const DEMO_TREND_MATCHES: DemoTrendMatch[] = [
-  { match_id: 4101, date: "03-23", opp: "Fırtına FK",     ha: "D", res: "M", score: "0-1", ppda: 9.8,  field_tilt: 47, team_xt: 1.04, possession_share: 49, dominance_score: 44 },
-  { match_id: 4108, date: "03-30", opp: "Anadolu SK",     ha: "İ", res: "G", score: "3-0", ppda: 8.6,  field_tilt: 61, team_xt: 1.71, possession_share: 58, dominance_score: 67 },
-  { match_id: 4115, date: "04-06", opp: "Karadeniz FK",   ha: "D", res: "B", score: "2-2", ppda: 11.2, field_tilt: 52, team_xt: 1.28, possession_share: 51, dominance_score: 53 },
-  { match_id: 4122, date: "04-13", opp: "Yeşil Spor",     ha: "İ", res: "G", score: "2-0", ppda: 10.4, field_tilt: 56, team_xt: 1.49, possession_share: 55, dominance_score: 59 },
-  { match_id: 4129, date: "04-20", opp: "Toros FK",       ha: "D", res: "M", score: "1-3", ppda: 13.1, field_tilt: 44, team_xt: 1.12, possession_share: 47, dominance_score: 41 },
-  { match_id: 4136, date: "04-27", opp: "Bora United",    ha: "İ", res: "G", score: "1-0", ppda: 11.6, field_tilt: 58, team_xt: 1.36, possession_share: 56, dominance_score: 58 },
-  { match_id: 4143, date: "05-04", opp: "Şahin SK",       ha: "D", res: "B", score: "1-1", ppda: 12.4, field_tilt: 41, team_xt: 0.97, possession_share: 45, dominance_score: 47 },
-  { match_id: 4150, date: "05-11", opp: "Liman FK",       ha: "İ", res: "G", score: "2-1", ppda: 9.9,  field_tilt: 60, team_xt: 1.58, possession_share: 57, dominance_score: 63 },
-  { match_id: 4157, date: "05-18", opp: "Kartal Spor",    ha: "D", res: "M", score: "0-2", ppda: 10.8, field_tilt: 49, team_xt: 1.21, possession_share: 50, dominance_score: 49 },
-  { match_id: 4164, date: "06-01", opp: "Yıldız FK",      ha: "D", res: "G", score: "2-0", ppda: 8.9,  field_tilt: 63, team_xt: 1.84, possession_share: 59, dominance_score: 68 },
+  { match_id: 4101, date: "03-23", opp: "Çaykur Rizespor", ha: "D", res: "M", score: "0-1", ppda: 9.8,  field_tilt: 47, team_xt: 1.04, possession_share: 49, dominance_score: 44 },
+  { match_id: 4108, date: "03-30", opp: "Galatasaray",    ha: "İ", res: "G", score: "3-0", ppda: 8.6,  field_tilt: 61, team_xt: 1.71, possession_share: 58, dominance_score: 67 },
+  { match_id: 4115, date: "04-06", opp: "Samsunspor",     ha: "D", res: "B", score: "2-2", ppda: 11.2, field_tilt: 52, team_xt: 1.28, possession_share: 51, dominance_score: 53 },
+  { match_id: 4122, date: "04-13", opp: "Alanyaspor",     ha: "İ", res: "G", score: "2-0", ppda: 10.4, field_tilt: 56, team_xt: 1.49, possession_share: 55, dominance_score: 59 },
+  { match_id: 4129, date: "04-20", opp: "Eyüpspor",       ha: "D", res: "M", score: "1-3", ppda: 13.1, field_tilt: 44, team_xt: 1.12, possession_share: 47, dominance_score: 41 },
+  { match_id: 4136, date: "04-27", opp: "Başakşehir",     ha: "İ", res: "G", score: "1-0", ppda: 11.6, field_tilt: 58, team_xt: 1.36, possession_share: 56, dominance_score: 58 },
+  { match_id: 4143, date: "05-04", opp: "Sivasspor",      ha: "D", res: "B", score: "1-1", ppda: 12.4, field_tilt: 41, team_xt: 0.97, possession_share: 45, dominance_score: 47 },
+  { match_id: 4150, date: "05-11", opp: "Kasımpaşa",      ha: "İ", res: "G", score: "2-1", ppda: 9.9,  field_tilt: 60, team_xt: 1.58, possession_share: 57, dominance_score: 63 },
+  { match_id: 4157, date: "05-18", opp: "Trabzonspor",    ha: "D", res: "M", score: "0-2", ppda: 10.8, field_tilt: 49, team_xt: 1.21, possession_share: 50, dominance_score: 49 },
+  { match_id: 4164, date: "06-01", opp: "Konyaspor",      ha: "D", res: "G", score: "2-0", ppda: 8.9,  field_tilt: 63, team_xt: 1.84, possession_share: 59, dominance_score: 68 },
 ];
 
-/** En son (maç günü) FK Demo vs Rakip SK — listeye ekleyerek tam N maç yapar. */
+/** En son (maç günü) Beşiktaş vs Antalyaspor — listeye ekleyerek tam N maç yapar. */
 const DEMO_TODAY_MATCH: DemoTrendMatch = {
   match_id: 4171, date: "06-08", opp: DEMO_OPPONENT, ha: "İ", res: "B", score: "1-1",
   ppda: 9.4, field_tilt: 57, team_xt: 1.43, possession_share: 54, dominance_score: 58,
