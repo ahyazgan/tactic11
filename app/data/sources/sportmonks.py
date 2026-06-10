@@ -51,25 +51,25 @@ _EV_YELLOW = 19
 _EV_RED = 20
 
 # lineups[].details type_id → PlayerMatchStats alanı.
-# ✓ = kullanıcının yanıtında doğrudan görüldü. (?) = Sportmonks standart id,
-# canlı veriyle teyit edilecek; eksikse None kalır (kırılmaz).
+# ✓ = gerçek Süper Lig yanıtında doğrudan doğrulandı. (?) = Sportmonks standart
+# id, kaleci maçıyla teyit edilecek; eksikse None kalır (kırılmaz).
 _DETAIL_FIELD_BY_TYPE: dict[int, str] = {
     119: "minutes",                 # ✓ Minutes Played
-    118: "rating",                  # (?) Rating
+    118: "rating",                  # ✓ Rating
     80: "passes_total",             # ✓ Passes
     1584: "passes_accuracy",        # ✓ Accurate Passes Percentage
     42: "shots_total",              # ✓ Shots Total
     86: "shots_on",                 # ✓ Shots On Target
     108: "dribbles_attempts",       # ✓ Dribble Attempts
-    109: "dribbles_success",        # (?) Successful Dribbles
+    109: "dribbles_success",        # ✓ Successful Dribbles
     105: "duels_total",             # ✓ Total Duels
     106: "duels_won",               # ✓ Duels Won
     56: "fouls_committed",          # ✓ Fouls
-    78: "tackles_total",            # (?) Tackles
-    100: "interceptions",           # (?) Interceptions
-    117: "key_passes",              # (?) Key Passes
-    57: "saves",                    # (?) Saves (kaleci)
-    88: "goals_conceded",           # (?) Goals Conceded (kaleci)
+    78: "tackles_total",            # ✓ Tackles
+    100: "interceptions",           # ✓ Interceptions
+    117: "key_passes",              # ✓ Key Passes
+    57: "saves",                    # (?) Saves (kaleci maçıyla teyit)
+    88: "goals_conceded",           # (?) Goals Conceded (kaleci maçıyla teyit)
 }
 
 
@@ -179,7 +179,7 @@ class Sportmonks:
 
         return Match(
             sport=football.SPORT_NAME,
-            external_id=_as_int(raw["id"]),
+            external_id=_as_int(raw["id"]) or 0,
             league_external_id=_as_int(raw.get("league_id")) or 0,
             season=_season_start_year(kickoff),
             kickoff=kickoff,

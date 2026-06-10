@@ -63,6 +63,23 @@ FIXTURE = {
             "player_name": "Kristjan Asllani", "jersey_number": 20, "type_id": 11,
             "details": [{"type_id": 119, "data": {"value": 90}}],
         },
+        {  # Salih Uçan — ilk 11, tam istatistik (gerçek değerler)
+            "player_id": 129416, "team_id": 554, "position_id": 26,
+            "player_name": "Salih Uçan", "jersey_number": 8, "type_id": 11,
+            "details": [
+                {"type_id": 119, "data": {"value": 69}},     # minutes
+                {"type_id": 80, "data": {"value": 51}},      # passes
+                {"type_id": 1584, "data": {"value": 94}},    # accurate passes %
+                {"type_id": 106, "data": {"value": 3}},      # duels won
+                {"type_id": 105, "data": {"value": 4}},      # total duels
+                {"type_id": 117, "data": {"value": 2}},      # key passes
+                {"type_id": 118, "data": {"value": 7.32}},   # rating
+                {"type_id": 78, "data": {"value": 1}},       # tackles
+                {"type_id": 100, "data": {"value": 1}},      # interceptions
+                {"type_id": 109, "data": {"value": 2}},      # successful dribbles
+                {"type_id": 56, "data": {"value": 1}},       # fouls
+            ],
+        },
         {  # Oynamamış yedek — details yok → istatistikte atlanmalı
             "player_id": 999001, "team_id": 554, "position_id": 27,
             "player_name": "Oynamayan", "jersey_number": 30, "type_id": 12,
@@ -121,12 +138,12 @@ def test_parse_player_stats_maps_detail_type_ids():
 def test_player_stats_substitution_in_minute():
     stats = Sportmonks.parse_player_stats(FIXTURE)
     ndidi = next(s for s in stats if s.player_external_id == 5319)
-    # Sub konvansiyonu: player_id = giren → 69'da girdi
+    # Sub konvansiyonu: player_id = giren → Ndidi 69'da girdi
     assert ndidi.substituted_in_minute == 69
-    salih_out = next((s for s in stats if s.player_external_id == 129416), None)
-    # Salih Uçan lineup'ta yok (bu kompakt fixture'da) → stat üretilmez; ama
-    # çıkan-dakika indeksi yine de event'ten gelir (lineup'ta olsaydı dolardı).
-    assert salih_out is None
+    # related_player = çıkan → Salih Uçan 69'da çıktı (ilk 11'di)
+    salih = next(s for s in stats if s.player_external_id == 129416)
+    assert salih.substituted_out_minute == 69
+    assert salih.substituted_in_minute is None
 
 
 def test_player_stats_goals_assists_from_events():
@@ -136,6 +153,23 @@ def test_player_stats_goals_assists_from_events():
     assert by_id[540319].goals == 1
     assert by_id[37532950].goals == 1
     assert by_id[37532950].assists == 1
+
+
+def test_parse_player_stats_full_detail_mapping():
+    """Tüm doğrulanmış type_id'ler (tackle/interception/key pass/dribble/rating)."""
+    stats = Sportmonks.parse_player_stats(FIXTURE)
+    s = next(x for x in stats if x.player_external_id == 129416)  # Salih Uçan
+    assert s.minutes == 69
+    assert s.passes_total == 51
+    assert s.passes_accuracy == 94
+    assert s.duels_total == 4
+    assert s.duels_won == 3
+    assert s.key_passes == 2
+    assert s.rating == 7.32
+    assert s.tackles_total == 1
+    assert s.interceptions == 1
+    assert s.dribbles_success == 2
+    assert s.fouls_committed == 1
 
 
 def test_player_stats_skips_non_playing_bench():
