@@ -50,13 +50,19 @@ def _mask_key(key: str) -> str:
     return f"{key[:7]}••••{key[-4:]}"
 
 
-def build_provider_status(settings: Settings | None = None) -> dict[str, object]:
+def build_provider_status(
+    settings: Settings | None = None, *, source: str | None = None,
+) -> dict[str, object]:
     """Snapshot'a düşecek sağlayıcı bağlantı bloğunu üret.
 
     `live_feed_provider` config'inden sağlayıcıyı seçer (geçersizse default
     StatsBomb). `live_feed_api_key` set'liyse onu, değilse sağlayıcının demo
-    key'ini MASKELEYEREK koyar. `status` daima "connected" — replay demo'da
-    feed her zaman "bağlı" sunulur.
+    key'ini MASKELEYEREK koyar.
+
+    `source` = etkin feed kaynağı (feed.mode(), örn "replay_statsbomb").
+    Verilirse `status` dürüstçe türetilir: replay → "replay" (gerçek canlı
+    feed değil), aksi halde "connected". `is_demo_key` zaten gerçek anahtar
+    olup olmadığını belirtir — istemci bu üçüyle gerçeği görür.
     """
     s = settings or get_settings()
     pid = (s.live_feed_provider or _DEFAULT_PROVIDER).strip().lower()
@@ -66,10 +72,12 @@ def build_provider_status(settings: Settings | None = None) -> dict[str, object]
 
     configured = bool(s.live_feed_api_key)
     key = s.live_feed_api_key or str(meta["demo_key"])
+    is_replay = source is None or source.startswith("replay")
     return {
         "id": pid,
         "name": meta["name"],
-        "status": "connected",
+        "status": "replay" if is_replay else "connected",
+        "source": source or "replay",
         "api_key_masked": _mask_key(key),
         "feed": meta["feed"],
         "latency_ms": meta["nominal_latency_ms"],

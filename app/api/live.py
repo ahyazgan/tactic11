@@ -25,8 +25,9 @@ from typing import Any
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 
+from app.api.live_feed_factory import build_live_feed
 from app.api.live_provider import build_provider_status
-from app.api.replay_feed import ReplayFeed, StatsBombReplayFeed
+from app.api.replay_feed import ReplayFeed
 from app.api.serialize import engine_result_to_dict
 from app.core.logging import get_logger
 from app.db.session import get_session
@@ -210,7 +211,7 @@ def _compute_live_snapshot(
             "events_so_far": 0,
             "note": "Henüz event yok",
             "mode": feed.mode(),
-            "provider": build_provider_status(),
+            "provider": build_provider_status(source=feed.mode()),
         }
 
     # As-of-minute koşan skor (final-skor sızıntısı yerine). Bu local'ler aşağıda
@@ -241,7 +242,7 @@ def _compute_live_snapshot(
                           + len(defs_so_far) + len(shots_so_far)),
         "score": f"{home_sc}-{away_sc}",
         "mode": feed.mode(),
-        "provider": build_provider_status(),
+        "provider": build_provider_status(source=feed.mode()),
         "phase": current_phase(current_minute),
     }
     try:
@@ -534,8 +535,10 @@ async def matches_live(
     _alert_sent: set[str] = set()
     try:
         # Feed'i bağlantı başında BİR kez kur (event'ler bir kez yüklenir).
+        # Fabrika config'ten kaynağı seçer; bugün replay, gerçek sağlayıcı
+        # bağlanınca aynı WS döngüsü değişmeden onu kullanır.
         try:
-            feed: ReplayFeed = StatsBombReplayFeed(session, match_id)
+            feed: ReplayFeed = build_live_feed(session, match_id)
         except ValueError as e:
             await websocket.send_text(json.dumps({"error": str(e)}))
             return

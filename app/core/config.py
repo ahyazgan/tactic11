@@ -63,6 +63,12 @@ class Settings(BaseSettings):
     # (replay demo'da .env gerektirmeden "bağlı" görünür). Snapshot'a yalnızca
     # MASKELİ hâli düşer (tam key asla istemciye gönderilmez).
     live_feed_api_key: str = Field(default="", alias="LIVE_FEED_API_KEY")
+    # Canlı veri kaynağı modu. "replay" (varsayılan) = StatsBomb open event'leri
+    # event-zaman güdümlü replay. "live_api" = gerçek koordinatlı event akışı
+    # (Opta/StatsBomb Pro adapter'ı bağlandığında). Koordinatlı akış olmadan
+    # tactical motorlar (xT/VAEP) beslenemez; bu yüzden adapter gelene kadar
+    # "live_api" seçilse bile fabrika güvenli şekilde replay'e düşer.
+    live_feed_mode: str = Field(default="replay", alias="LIVE_FEED_MODE")
 
     # Kota koruması
     api_football_daily_limit: int = Field(default=100, alias="API_FOOTBALL_DAILY_LIMIT")
