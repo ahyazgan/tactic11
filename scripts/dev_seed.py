@@ -10,6 +10,47 @@ DEMO_MATCH_ID = 16029
 DEMO_TENANT = "t-default"
 
 
+def _sync_missing_columns(engine) -> list[str]:
+    """Dev sqlite şema senkronu — modelde olup DB'de olmayan kolonları ekle.
+
+    create_all yeni TABLO açar ama mevcut tabloya kolon EKLEMEZ; eski demo.db +
+    yeni migration kolonu = açılışta OperationalError (yaşandı: 0027'nin 9
+    appearance kolonu). Bu yardımcı yalnız EKLEME yapar (veri kaybı yok);
+    NOT NULL kolonlar sabit default'uyla, yoksa nullable eklenir. Prod'da
+    alembic kullanılır — bu sadece dev kolaylığı."""
+    from sqlalchemy import inspect, text
+
+    from app.db.base import Base
+
+    insp = inspect(engine)
+    existing_tables = set(insp.get_table_names())
+    added: list[str] = []
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing_tables:
+                continue  # yeni tabloyu create_all halleder
+            have = {c["name"] for c in insp.get_columns(table.name)}
+            for col in table.columns:
+                if col.name in have:
+                    continue
+                ddl = (
+                    f"ALTER TABLE {table.name} ADD COLUMN "
+                    f"{col.name} {col.type.compile(engine.dialect)}"
+                )
+                if not col.nullable:
+                    default = getattr(col.default, "arg", None)
+                    if isinstance(default, bool):
+                        ddl += f" NOT NULL DEFAULT {int(default)}"
+                    elif isinstance(default, (int, float)):
+                        ddl += f" NOT NULL DEFAULT {default}"
+                    elif isinstance(default, str):
+                        ddl += f" NOT NULL DEFAULT '{default}'"
+                    # sabit default'suz NOT NULL sqlite'a eklenemez → nullable kalır
+                conn.execute(text(ddl))
+                added.append(f"{table.name}.{col.name}")
+    return added
+
+
 def ensure_demo_data(match_id: int = DEMO_MATCH_ID, tenant: str = DEMO_TENANT) -> str:
     """Maç + event'ler `tenant` altında var mı garanti et. Durum string'i döner."""
     from app.db.base import Base
@@ -17,6 +58,9 @@ def ensure_demo_data(match_id: int = DEMO_MATCH_ID, tenant: str = DEMO_TENANT) -
     from app.db import models
 
     Base.metadata.create_all(engine)
+    synced = _sync_missing_columns(engine)
+    if synced:
+        print(f"[dev_seed] şema senkron: {len(synced)} kolon eklendi → {', '.join(synced)}")
 
     with SessionLocal() as s:
         match_row = s.execute(
