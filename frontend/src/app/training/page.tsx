@@ -14,6 +14,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { DEMO_CLUB, DEMO_OPPONENT } from "@/lib/demo-data";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -22,10 +23,8 @@ interface Team { external_id: number; name: string }
 
 // --------------------------------------------------------------------------- //
 // DEMO VERİSİ (yalnızca bu sayfaya özel, inline)
+// Kulüp/rakip adları tek kaynaktan (demo-data.ts) gelir.
 // --------------------------------------------------------------------------- //
-
-const DEMO_CLUB = "Beşiktaş";
-const DEMO_OPPONENT = "Antalyaspor";
 
 /** Maç gününe (MG) göre konumlandırılmış mikro-döngü. MG-1 = maçtan bir gün önce. */
 interface TrainingDay {

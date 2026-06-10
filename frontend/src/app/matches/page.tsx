@@ -15,6 +15,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { DEMO_CLUB } from "@/lib/demo-data";
 import { Crest } from "@/lib/teams";
 import { ConsoleShell } from "../_console/shell";
 
@@ -75,8 +76,6 @@ const DEMO_PAST: DemoPast[] = [
   { id: 8004, date: "27 Nis Paz", opponent: "Galatasaray", venue: "Deplasman", competition: "Süper Lig — 28. Hafta", scoreHome: 3, scoreAway: 1, result: "G", xgFor: 2.3, xgAgainst: 1.0 },
   { id: 8003, date: "20 Nis Paz", opponent: "Başakşehir", venue: "İç Saha", competition: "Süper Lig — 27. Hafta", scoreHome: 0, scoreAway: 0, result: "B", xgFor: 1.1, xgAgainst: 0.9 },
 ];
-
-const DEMO_CLUB = "Beşiktaş";
 
 const RESULT_VAR: Record<DemoResult, string> = {
   G: "var(--low)",
