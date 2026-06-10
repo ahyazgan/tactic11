@@ -178,6 +178,37 @@ def test_player_stats_skips_non_playing_bench():
     assert 999001 not in ids   # details yok → minutes None → atlandı
 
 
+def test_parse_players_master_data():
+    """lineups[].player + events[].player → Player (ad/pozisyon/doğum tarihi)."""
+    from datetime import date
+    fixture = {
+        "id": 19443213,
+        "lineups": [
+            {"player_id": 5319, "team_id": 554, "position_id": 26, "type_id": 12,
+             "player_name": "Wilfred Ndidi",
+             "player": {"id": 5319, "display_name": "Wilfred Ndidi",
+                        "position_id": 26, "date_of_birth": "1996-12-16"}},
+        ],
+        "events": [
+            {"type_id": 14, "player_id": 540319, "related_player_id": None, "minute": 7,
+             "player": {"id": 540319, "display_name": "Tiago Djaló",
+                        "position_id": 25, "date_of_birth": "2000-04-09"}},
+            # Aynı oyuncu tekrar → tekilleştirilmeli
+            {"type_id": 19, "player_id": 5319, "related_player_id": None, "minute": 31,
+             "player": {"id": 5319, "display_name": "Wilfred Ndidi",
+                        "position_id": 26, "date_of_birth": "1996-12-16"}},
+        ],
+    }
+    players = Sportmonks.parse_players(fixture)
+    by_id = {p.external_id: p for p in players}
+    assert len(players) == 2                       # tekilleştirildi
+    assert by_id[5319].name == "Wilfred Ndidi"
+    assert by_id[5319].position == football.POSITION_MIDFIELDER
+    assert by_id[5319].birth_date == date(1996, 12, 16)
+    assert by_id[540319].position == football.POSITION_DEFENDER
+    assert by_id[540319].birth_date == date(2000, 4, 9)
+
+
 def test_parse_teams():
     teams = Sportmonks.parse_teams(FIXTURE)
     by_id = {t.external_id: t for t in teams}

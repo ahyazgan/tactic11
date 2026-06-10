@@ -23,7 +23,7 @@ import httpx
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
-from app.domain import LineupEntry, Match, PlayerMatchStats, Team
+from app.domain import LineupEntry, Match, Player, PlayerMatchStats, Team
 from app.sports import football
 
 log = get_logger(__name__)
@@ -206,6 +206,52 @@ class Sportmonks:
                 founded=_as_int(p.get("founded")),
             ))
         return out
+
+    @staticmethod
+    def _player_to_domain(p: dict[str, Any]) -> Player | None:
+        """Sportmonks player objesi → Player domain (master veri).
+
+        nationality_id numerik (ülke adı tablosu yok) → şimdilik None. Foto
+        (image_path) Player modelinde yok; media proxy aşamasında ele alınır.
+        """
+        pid = _as_int(p.get("id"))
+        if pid is None:
+            return None
+        dob = None
+        raw_dob = p.get("date_of_birth")
+        if raw_dob:
+            try:
+                dob = datetime.strptime(str(raw_dob), "%Y-%m-%d").date()
+            except ValueError:
+                dob = None
+        return Player(
+            sport=football.SPORT_NAME,
+            external_id=pid,
+            name=str(p.get("display_name") or p.get("name") or "unknown"),
+            position=_POSITION_MAP.get(_as_int(p.get("position_id")) or -1),
+            birth_date=dob,
+            nationality=None,
+        )
+
+    @staticmethod
+    def parse_players(raw: dict[str, Any]) -> list[Player]:
+        """Fixture içindeki tüm oyuncu master kayıtları (lineups + events'ten).
+
+        Player tablosunu (ad/pozisyon/doğum tarihi → gerçek yaş + avatar)
+        besler. Aynı oyuncu birden çok yerde geçse de tekilleştirilir."""
+        by_id: dict[int, Player] = {}
+        sources: list[dict[str, Any]] = []
+        for ln in raw.get("lineups", []):
+            if isinstance(ln.get("player"), dict):
+                sources.append(ln["player"])
+        for ev in raw.get("events", []):
+            if isinstance(ev.get("player"), dict):
+                sources.append(ev["player"])
+        for p in sources:
+            dom = Sportmonks._player_to_domain(p)
+            if dom is not None and dom.external_id not in by_id:
+                by_id[dom.external_id] = dom
+        return list(by_id.values())
 
     @staticmethod
     def parse_lineups(raw: dict[str, Any]) -> list[LineupEntry]:
