@@ -463,3 +463,50 @@ def test_parse_teams_from_standings():
     assert len(teams) == 3
     assert by_id[88].name == "Fenerbahçe"
     assert by_id[688].founded == 1967
+
+
+# ── DataSource sözleşmesi: leagues + season-teams + sezon-yılı çözümü ──────────
+
+def test_parse_leagues_season_year_from_name():
+    data = [
+        {"id": 271, "name": "Superliga", "currentseason": {"id": 27897, "name": "2026/2027"}},
+        {"id": 600, "name": "Super Lig", "currentseason": {"id": 25682, "name": "2025/2026"}},
+        {"id": 1, "name": "Boş Sezon"},  # currentseason yok → season 0
+    ]
+    lgs = Sportmonks.parse_leagues(data)
+    by_id = {lg.external_id: lg for lg in lgs}
+    assert by_id[271].season == 2026
+    assert by_id[600].season == 2025
+    assert by_id[600].name == "Super Lig"
+    assert by_id[1].season == 0
+
+
+def test_parse_season_teams():
+    data = [
+        {"id": 2447, "name": "Viborg FF", "founded": 1896},
+        {"id": 1789, "name": "Odense BK", "founded": 1889},
+        {"id": 2447, "name": "Viborg FF (dup)", "founded": 1896},  # tekrar → tekilleşir
+        "garbage",
+    ]
+    teams = Sportmonks.parse_season_teams(data)  # type: ignore[arg-type]
+    by_id = {t.external_id: t for t in teams}
+    assert len(teams) == 2
+    assert by_id[2447].name == "Viborg FF"
+    assert by_id[1789].founded == 1889
+
+
+def test_sportmonks_is_datasource():
+    # DataSource ABC tam dolduruldu → sync hattı kabul eder
+    from app.data.sources.base import DataSource
+    sm = Sportmonks(api_key="x")
+    assert isinstance(sm, DataSource)
+    assert sm.name == "sportmonks"
+
+
+def test_fixture_include_drops_xg_when_disabled():
+    sm = Sportmonks(api_key="x")
+    assert "xgfixture" in sm._fixture_include()      # varsayılan: xG dahil
+    sm._xg_enabled = False
+    inc = sm._fixture_include()
+    assert "xgfixture" not in inc and "xglineup" not in inc
+    assert "lineups.details" in inc                  # oyuncu-başı stat hep var

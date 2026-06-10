@@ -24,7 +24,8 @@ import httpx
 
 from app.core.config import get_settings
 from app.core.logging import get_logger
-from app.domain import LineupEntry, Match, Player, PlayerMatchStats, Team
+from app.data.sources.base import DataSource
+from app.domain import League, LineupEntry, Match, Player, PlayerMatchStats, Team
 from app.sports import football
 
 log = get_logger(__name__)
@@ -127,15 +128,34 @@ def _season_start_year(kickoff: datetime) -> int:
     return kickoff.year if kickoff.month >= 7 else kickoff.year - 1
 
 
-class Sportmonks:
-    """Sportmonks Football API istemcisi (API-Football adapter'ıyla aynı sözleşme)."""
+def _season_year_from_name(name: Any) -> int | None:
+    """Sezon adı → başlangıç yılı. "2025/2026"→2025, "2025"→2025."""
+    if not name:
+        return None
+    head = str(name).strip().split("/")[0].strip()
+    return _as_int(head)
+
+
+class Sportmonks(DataSource):
+    """Sportmonks Football API istemcisi (API-Football adapter'ıyla aynı sözleşme).
+
+    DataSource ABC'sini doldurur (get_leagues/get_teams/get_team_matches) → sync
+    hattı `DATA_SOURCE=sportmonks` ile değişmeden çalışır. Ayrıca AppearanceSource
+    (lineup + player-stats) ve standings/squad gibi zengin uçları sağlar."""
+
+    name = _SOURCE_NAME
 
     # Tek fixture için yeterli include seti (lineups.details = oyuncu istatistiği,
     # xgfixture = gerçek xG). participants/state/scores/events karar+skor için.
-    FIXTURE_INCLUDE = (
-        "participants;league;state;scores;events;periods;"
-        "lineups.details;lineups.xglineup;xgfixture"
+    # Base include — her planda çalışır (kadro + oyuncu-başı detay dahil).
+    FIXTURE_BASE_INCLUDE = (
+        "participants;league;state;scores;events;periods;lineups.details"
     )
+    # xG include'ları — yalnız xG'li planlarda. Erişim yoksa Sportmonks TÜM
+    # isteği 403 yapar; bu yüzden ayrı tutulur ve 403'te otomatik düşülür.
+    FIXTURE_XG_INCLUDE = "lineups.xglineup;xgfixture"
+    # Geriye uyumluluk (eski testler/koda): tam include.
+    FIXTURE_INCLUDE = f"{FIXTURE_BASE_INCLUDE};{FIXTURE_XG_INCLUDE}"
 
     # Fikstür listesi (takım programı) için yeterli include — skor/karar/kimlik.
     # Oyuncu-başı detay gerekmez (o, fixture başına FIXTURE_INCLUDE ile çekilir).
@@ -146,26 +166,85 @@ class Sportmonks:
         self._key = api_key if api_key is not None else s.sportmonks_api_key
         self._base_url = (base_url or s.sportmonks_base_url).rstrip("/")
         self._fixture_cache: dict[int, dict[str, Any]] = {}
+        self._season_id_cache: dict[tuple[int, int], int | None] = {}
+        # xG include'larına erişim var mı? İlk 403'te False'a düşer (plan kapsamı).
+        self._xg_enabled = True
 
-    # ── HTTP ────────────────────────────────────────────────────────────────
-    def get_fixture(self, fixture_id: int) -> dict[str, Any]:
-        """Tek fixture'ı include'larla çek (instance cache: aynı id bir kez)."""
-        fid = int(fixture_id)
-        if fid in self._fixture_cache:
-            return self._fixture_cache[fid]
+    def _require_key(self) -> None:
         if not self._key:
             raise RuntimeError(
                 "SPORTMONKS_API_KEY boş. .env'e anahtar girin ya da testte "
-                "parse_* saf fonksiyonlarını doğrudan kullanın."
+                "saf parse_* fonksiyonlarını doğrudan kullanın."
             )
+
+    def _get_json(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
+        """Tek GET → tam JSON gövdesi (data + pagination + subscription)."""
+        self._require_key()
+        url = f"{self._base_url}/{path.lstrip('/')}"
+        s = get_settings()
+        with httpx.Client(timeout=s.http_timeout_seconds) as client:
+            r = client.get(url, params={"api_token": self._key, **params})
+            r.raise_for_status()
+            return r.json()
+
+    def _resolve_season_id(self, league_id: int, season_year: int) -> int | None:
+        """(lig, yıl) → Sportmonks season_id. Bulunamazsa None (sessiz).
+
+        DataSource sözleşmesi sezon YILI (2025) alır; Sportmonks season_id
+        (25682) ile çalışır. /leagues/{id}?include=seasons ile eşlenir + cache."""
+        key = (league_id, season_year)
+        if key in self._season_id_cache:
+            return self._season_id_cache[key]
+        body = self._get_json(f"leagues/{league_id}", {"include": "seasons"})
+        seasons = (body.get("data") or {}).get("seasons") or []
+        found: int | None = None
+        for s in seasons:
+            if _season_year_from_name(s.get("name")) == season_year:
+                found = _as_int(s.get("id"))
+                break
+        if found is None:
+            log.warning(
+                "sportmonks: lig %d için %d sezonu bulunamadı (abonelik/kapsam?)",
+                league_id, season_year,
+            )
+        self._season_id_cache[key] = found
+        return found
+
+    # ── HTTP ────────────────────────────────────────────────────────────────
+    def _fixture_include(self) -> str:
+        """Plan kapsamına göre include — xG erişimi yoksa base."""
+        if self._xg_enabled:
+            return f"{self.FIXTURE_BASE_INCLUDE};{self.FIXTURE_XG_INCLUDE}"
+        return self.FIXTURE_BASE_INCLUDE
+
+    def get_fixture(self, fixture_id: int) -> dict[str, Any]:
+        """Tek fixture'ı include'larla çek (instance cache: aynı id bir kez).
+
+        xG include'ına erişim yoksa (plan kapsamı) Sportmonks tüm isteği 403 yapar;
+        bu durumda xG düşülüp bir kez yeniden denenir ve instance bunu hatırlar."""
+        fid = int(fixture_id)
+        if fid in self._fixture_cache:
+            return self._fixture_cache[fid]
+        self._require_key()
         url = f"{self._base_url}/fixtures/{fid}"
-        params = {"api_token": self._key, "include": self.FIXTURE_INCLUDE}
         s = get_settings()
         log.info("sportmonks GET fixtures/%d", fid)
         with httpx.Client(timeout=s.http_timeout_seconds) as client:
-            r = client.get(url, params=params)
-            r.raise_for_status()
-            raw = r.json().get("data", {})
+            for attempt in range(2):
+                params = {"api_token": self._key, "include": self._fixture_include()}
+                r = client.get(url, params=params)
+                if r.status_code == 403 and self._xg_enabled:
+                    # xG'siz plan: include'ı düşür, bir kez daha dene.
+                    log.warning(
+                        "sportmonks: xG include'una erişim yok — xG'siz devam "
+                        "(plan kapsamı). Detay: %s",
+                        r.json().get("message", "")[:120],
+                    )
+                    self._xg_enabled = False
+                    continue
+                r.raise_for_status()
+                raw = r.json().get("data", {})
+                break
         self._fixture_cache[fid] = raw
         return raw
 
@@ -223,6 +302,22 @@ class Sportmonks:
 
     def get_standings(self, season_id: int) -> list[StandingRow]:
         return self.parse_standings(self._get_standings(season_id))
+
+    # ── DataSource ABC (sync sözleşmesi) ──────────────────────────────────────
+    def get_leagues(self) -> list[League]:
+        """Abone olunan ligler (current sezon yılıyla)."""
+        body = self._get_json("leagues", {"include": "currentSeason", "per_page": 100})
+        return self.parse_leagues(body.get("data", []))
+
+    def get_teams(self, league_id: int, season: int) -> list[Team]:
+        """Lig+sezon (yıl) takımları. season_id'ye çözüp /teams/seasons çeker.
+
+        Çözülemezse (abonelikte yoksa) boş liste — sync sessizce o ligi atlar."""
+        season_id = self._resolve_season_id(league_id, season)
+        if season_id is None:
+            return []
+        body = self._get_json(f"teams/seasons/{season_id}", {"per_page": 100})
+        return self.parse_season_teams(body.get("data", []))
 
     # ── Public (ingest sözleşmesi) ────────────────────────────────────────────
     def get_fixture_lineups(self, fixture_id: int) -> list[LineupEntry]:
@@ -381,6 +476,48 @@ class Sportmonks:
                 name=str(p.get("name") or "unknown"),
                 country=None,
                 founded=_as_int(p.get("founded")),
+            )
+        return list(by_id.values())
+
+    @staticmethod
+    def parse_leagues(data: list[dict[str, Any]]) -> list[League]:
+        """/leagues (include=currentSeason) → League listesi (sezon = current yıl).
+
+        League.season int yıl ister; currentseason.name "2026/2027" → 2026."""
+        out: list[League] = []
+        for lg in data or []:
+            if not isinstance(lg, dict):
+                continue
+            lid = _as_int(lg.get("id"))
+            if lid is None:
+                continue
+            cs = lg.get("currentseason") or lg.get("current_season") or {}
+            year = _season_year_from_name(cs.get("name")) or 0
+            out.append(League(
+                sport=football.SPORT_NAME,
+                external_id=lid,
+                name=str(lg.get("name") or "unknown"),
+                season=year,
+                country=None,
+            ))
+        return out
+
+    @staticmethod
+    def parse_season_teams(data: list[dict[str, Any]]) -> list[Team]:
+        """/teams/seasons/{id} → Team listesi (düz takım objeleri)."""
+        by_id: dict[int, Team] = {}
+        for t in data or []:
+            if not isinstance(t, dict):
+                continue
+            tid = _as_int(t.get("id"))
+            if tid is None or tid in by_id:
+                continue
+            by_id[tid] = Team(
+                sport=football.SPORT_NAME,
+                external_id=tid,
+                name=str(t.get("name") or "unknown"),
+                country=None,
+                founded=_as_int(t.get("founded")),
             )
         return list(by_id.values())
 
