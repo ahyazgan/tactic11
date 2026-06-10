@@ -13,9 +13,44 @@ import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoPlayerRows, demoSquad } from "@/lib/demo-data";
 import { PlayerAvatar } from "@/lib/player-avatar";
+import {
+  SM_SEASON,
+  SM_TEAM_ID,
+  smAge,
+  smMediaUrl,
+  type SmSquadMember,
+} from "@/lib/sportmonks";
 import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
+
+// Backend pozisyon kodu (G/D/M/F) → PlayerAvatar pozisyonu + TR etiket.
+const SM_POS: Record<string, { avatar: string; label: string }> = {
+  G: { avatar: "GK", label: "Kaleci" },
+  D: { avatar: "DF", label: "Defans" },
+  M: { avatar: "MF", label: "Orta Saha" },
+  F: { avatar: "FW", label: "Forvet" },
+};
+
+/** Canlı kadro satırındaki foto: proxy görseli varsa <img>, yoksa baş-harf rozeti. */
+function SquadPhoto({ m, size = 26 }: { m: SmSquadMember; size?: number }) {
+  const [broken, setBroken] = React.useState(false);
+  const url = smMediaUrl(m.photo_url);
+  if (!url || broken) {
+    return <PlayerAvatar name={m.name} position={m.position ? SM_POS[m.position]?.avatar : undefined} size={size} />;
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={url}
+      alt={m.name}
+      width={size}
+      height={size}
+      onError={() => setBroken(true)}
+      style={{ borderRadius: "50%", objectFit: "cover", background: "var(--panel)", border: "1px solid var(--line)" }}
+    />
+  );
+}
 
 interface PlayerRow {
   player_id: string;
@@ -87,6 +122,13 @@ export default function SquadConsolePage() {
   const { data } = useSWR<PlayerRow[]>(DEMO_MODE ? null : "/physical-tests/players", apiFetch, {
     shouldRetryOnError: false,
   });
+  // Canlı sezon kadrosu — Sportmonks (/sm/squad): foto + sezon-toplam istatistik.
+  // Erişim yoksa (503/502) bölüm hiç görünmez; mevcut risk tablosu etkilenmez.
+  const { data: smSquad } = useSWR<SmSquadMember[]>(
+    DEMO_MODE ? null : `/sm/squad?team_id=${SM_TEAM_ID}&season=${SM_SEASON}`,
+    apiFetch,
+    { shouldRetryOnError: false },
+  );
   const [filter, setFilter] = React.useState<Filter>("all");
 
   const players = DEMO_MODE ? (demoPlayerRows as PlayerRow[]) : (data ?? []);
@@ -233,6 +275,58 @@ export default function SquadConsolePage() {
           </tbody>
         </table>
       </div>
+
+      {!DEMO_MODE && smSquad && smSquad.length > 0 && (
+        <>
+          <div className="st">
+            <h2>Sezon Kadrosu</h2>
+            <span className="ep">GET /sm/squad · {smSquad.length} oyuncu · CANLI</span>
+          </div>
+          <div className="tbl">
+            <table>
+              <thead><tr>
+                <th className="c">#</th>
+                <th>Oyuncu</th>
+                <th className="c">Poz</th>
+                <th className="c">Yaş</th>
+                <th>Uyruk</th>
+                <th className="c">Maç</th>
+                <th className="c">Dk</th>
+                <th className="c">Gol</th>
+                <th className="c">Asist</th>
+                <th className="r">Sarı</th>
+              </tr></thead>
+              <tbody>
+                {[...smSquad]
+                  .sort((a, b) => (b.season.minutes ?? 0) - (a.season.minutes ?? 0))
+                  .map((m) => (
+                    <tr key={m.player_external_id}>
+                      <td className="pnum c">{m.jersey ?? "—"}</td>
+                      <td>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                          <SquadPhoto m={m} />
+                          <span className="nm">{m.name}</span>
+                          {m.captain && <span className="pos" title="Kaptan" style={{ color: "var(--accent)" }}>C</span>}
+                        </span>
+                      </td>
+                      <td className="c" style={{ color: "var(--muted)", fontSize: 11.5 }}>{m.position ? (SM_POS[m.position]?.label ?? m.position) : "—"}</td>
+                      <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{smAge(m.birth_date) ?? "—"}</td>
+                      <td style={{ color: "var(--muted)", fontSize: 11.5 }}>{m.nationality ?? "—"}</td>
+                      <td className="c" style={{ fontFamily: "JetBrains Mono" }}>{m.season.appearances ?? 0}</td>
+                      <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{m.season.minutes ?? 0}</td>
+                      <td className="c" style={{ fontFamily: "JetBrains Mono", color: (m.season.goals ?? 0) > 0 ? "var(--low)" : "var(--dim)" }}>{m.season.goals ?? 0}</td>
+                      <td className="c" style={{ fontFamily: "JetBrains Mono", color: (m.season.assists ?? 0) > 0 ? "var(--accent)" : "var(--dim)" }}>{m.season.assists ?? 0}</td>
+                      <td className="r" style={{ fontFamily: "JetBrains Mono", color: (m.season.yellow_cards ?? 0) >= 4 ? "var(--mid)" : "var(--dim)" }}>{m.season.yellow_cards ?? 0}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 6 }}>
+            Sezon toplamları Sportmonks'tan canlı; fotoğraflar kendi sunucumuz üzerinden (self-host proxy) gelir.
+          </div>
+        </>
+      )}
 
       {DEMO_MODE && (
         <>

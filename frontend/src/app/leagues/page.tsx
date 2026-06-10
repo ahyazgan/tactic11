@@ -15,6 +15,12 @@ import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { Crest } from "@/lib/teams";
+import {
+  SM_LEAGUE_ID,
+  SM_SEASON,
+  smFormTr,
+  type SmStandingsResp,
+} from "@/lib/sportmonks";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -67,9 +73,6 @@ const DEMO_STANDINGS: StandingRow[] = [
   { pos: 17, team: "Hatayspor", short: "HTY", played: 34, win: 6, draw: 10, loss: 18, gf: 28, ga: 62, pts: 28, form: ["M", "M", "M", "B", "M"] },
   { pos: 18, team: "Bodrum FK", short: "BOD", played: 34, win: 5, draw: 7, loss: 22, gf: 24, ga: 71, pts: 22, form: ["M", "M", "B", "M", "M"] },
 ];
-
-// Lider yarışı sağ-panel mini grafiği için ilk 4 takımın puanı.
-const TITLE_RACE = DEMO_STANDINGS.slice(0, 4);
 
 // Demo modunda lig listesi sekmesinde gösterilecek "sync edilmiş ligler".
 const DEMO_LEAGUES: League[] = [
@@ -135,26 +138,52 @@ export default function LeaguesConsolePage() {
     apiFetch,
     { shouldRetryOnError: false },
   );
+  // Canlı puan durumu — Sportmonks (/sm/standings). Erişim yoksa (503/502/404)
+  // demo tabloya düşer (sayfa asla boş kalmaz).
+  const { data: smData } = useSWR<SmStandingsResp>(
+    DEMO_MODE ? null : `/sm/standings?league_id=${SM_LEAGUE_ID}&season=${SM_SEASON}`,
+    apiFetch,
+    { shouldRetryOnError: false },
+  );
 
   const rows = DEMO_MODE ? DEMO_LEAGUES : (data ?? []);
-  const standings = DEMO_STANDINGS;
+  const liveStandings: StandingRow[] | null =
+    !DEMO_MODE && smData && smData.rows.length > 0
+      ? smData.rows.map((r) => ({
+          pos: r.position,
+          team: r.team_name,
+          short: r.team_name.slice(0, 3).toUpperCase(),
+          played: r.played,
+          win: r.won,
+          draw: r.draw,
+          loss: r.lost,
+          gf: r.goals_for,
+          ga: r.goals_against,
+          pts: r.points,
+          form: r.form.slice(-5).map(smFormTr),
+        }))
+      : null;
+  const standings = liveStandings ?? DEMO_STANDINGS;
+  const isLive = liveStandings !== null;
 
-  // KPI türevleri (demo evreninden).
-  const us = standings.find((s) => s.team === "Beşiktaş")!;
+  // KPI türevleri. Canlıda Beşiktaş tabloda olmayabilir (abonelik farklı lig
+  // verebilir) → lider satırına düş.
+  const us = standings.find((s) => s.team === "Beşiktaş") ?? standings[0];
   const leader = standings[0];
   const gap = leader.pts - us.pts; // lidere fark
   const totalGoals = standings.reduce((a, s) => a + s.gf, 0);
   const avgGoals = (totalGoals / (standings.length * us.played / 2)).toFixed(2);
   const usWinPct = Math.round((us.win / us.played) * 100);
 
-  // Lider yarışı için bar genişlikleri (en yüksek puan = %100).
-  const maxPts = TITLE_RACE[0].pts;
+  // Lider yarışı: aktif tablonun ilk 4'ü (canlıda gerçek, demoda mock).
+  const titleRace = standings.slice(0, 4);
+  const maxPts = titleRace[0].pts;
 
   const right = (
     <>
       <div className="rc">
         <h3>Lider Yarışı <span className="tiny">İlk 4</span></h3>
-        {TITLE_RACE.map((t) => {
+        {titleRace.map((t) => {
           const mine = t.team === "Beşiktaş";
           return (
             <div key={t.team} style={{ marginBottom: 9 }}>
@@ -171,12 +200,14 @@ export default function LeaguesConsolePage() {
           );
         })}
         <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 4, lineHeight: 1.5 }}>
-          Beşiktaş lidere <b style={{ color: "var(--mid)" }}>{gap} puan</b> geride; 4 maç kaldı.
+          {gap > 0
+            ? <>{us.team} lidere <b style={{ color: "var(--mid)" }}>{gap} puan</b> geride.</>
+            : <>{us.team} <b style={{ color: "var(--low)" }}>lider</b>.</>}
         </div>
       </div>
 
       <div className="rc">
-        <h3>Beşiktaş Sezonu <span className="tiny">{us.played} maç</span></h3>
+        <h3>{us.team} Sezonu <span className="tiny">{us.played} maç</span></h3>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <RiskDonut
             segments={[
@@ -230,16 +261,16 @@ export default function LeaguesConsolePage() {
       {!DEMO_MODE && error && <div className="pgdesc">Yüklenemedi ya da yetki yok.</div>}
 
       <div className="kpis">
-        <div className="kpi"><div className="kl">Lig</div><div className="kn" style={{ fontSize: 20 }}>Süper Lig</div><div className="kd">Türkiye · 2025/26</div></div>
-        <div className="kpi"><div className="kl">Hafta</div><div className="kn">34<span className="pct">/38</span></div><div className="kd">4 maç kaldı</div></div>
-        <div className="kpi"><div className="kl">Beşiktaş</div><div className="kn" style={{ color: "var(--accent)" }}>{us.pos}.</div><div className="kd"><span className="u">{us.pts} puan</span> · lidere {gap}</div></div>
-        <div className="kpi"><div className="kl">Averaj</div><div className="kn" style={{ color: "var(--low)" }}>+{us.gf - us.ga}</div><div className="kd">{us.gf} attı · {us.ga} yedi</div></div>
+        <div className="kpi"><div className="kl">Lig</div><div className="kn" style={{ fontSize: 20 }}>{DEMO_MODE ? "Süper Lig" : isLive ? `Lig #${SM_LEAGUE_ID}` : "Süper Lig"}</div><div className="kd">{DEMO_MODE ? "Türkiye · 2025/26" : `sezon ${SM_SEASON}/${(SM_SEASON + 1) % 100}`}</div></div>
+        <div className="kpi"><div className="kl">{isLive ? "Oynanan" : "Hafta"}</div><div className="kn">{isLive ? us.played : 34}{!isLive && <span className="pct">/38</span>}</div><div className="kd">{isLive ? "maç (canlı tablo)" : "4 maç kaldı"}</div></div>
+        <div className="kpi"><div className="kl">{us.team}</div><div className="kn" style={{ color: "var(--accent)" }}>{us.pos}.</div><div className="kd"><span className="u">{us.pts} puan</span>{gap > 0 ? ` · lidere ${gap}` : " · lider"}</div></div>
+        <div className="kpi"><div className="kl">Averaj</div><div className="kn" style={{ color: us.gf - us.ga >= 0 ? "var(--low)" : "var(--crit)" }}>{us.gf - us.ga >= 0 ? "+" : ""}{us.gf - us.ga}</div><div className="kd">{us.gf} attı · {us.ga} yedi</div></div>
         <div className="kpi"><div className="kl">Maç Başı Gol</div><div className="kn">{avgGoals}</div><div className="kd">lig geneli ort.</div></div>
       </div>
 
       <div className="st" style={{ marginTop: 4 }}>
         <h2>Puan Durumu</h2>
-        <span className="ep">{DEMO_MODE ? "Süper Lig · 18 takım" : "GET /leagues"}</span>
+        <span className="ep">{DEMO_MODE ? "Süper Lig · 18 takım" : isLive ? `GET /sm/standings · ${standings.length} takım · CANLI` : "GET /leagues (canlı tablo yok — demo)"}</span>
       </div>
       <div className="tbl">
         <table>

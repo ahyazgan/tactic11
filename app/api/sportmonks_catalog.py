@@ -109,14 +109,18 @@ def sm_squad(
     return out
 
 
-@sportmonks_router.get("/schedule", summary="Takım fikstürü (son N bitmiş maç)")
+@sportmonks_router.get("/schedule", summary="Takım programı (bitenler + yaklaşanlar)")
 def sm_schedule(
     team_id: int = Query(..., description="Sportmonks takım id"),
     last_n: int = Query(10, ge=1, le=50),
-) -> list[dict[str, Any]]:
+) -> dict[str, Any]:
     sm = _client()
-    matches = _safe(sm.get_team_matches, team_id, last_n)
-    return [m.model_dump(mode="json") for m in matches]
+    sched = _safe(sm.get_team_schedule, team_id, last_n)
+    return {
+        "finished": [m.model_dump(mode="json") for m in sched["finished"]],
+        "upcoming": [m.model_dump(mode="json") for m in sched["upcoming"]],
+        "team_names": {str(k): v for k, v in sched["team_names"].items()},
+    }
 
 
 # ── Medya proxy ───────────────────────────────────────────────────────────────

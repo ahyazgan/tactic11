@@ -288,12 +288,11 @@ class Sportmonks(DataSource):
         return raw
 
     def _get_team_fixtures(
-        self, team_id: int, *, days_back: int = 365,
+        self, team_id: int, *, days_back: int = 365, days_forward: int = 120,
     ) -> list[dict[str, Any]]:
-        """Takımın `days_back` günlük penceresindeki fixture'larını çek (data listesi).
-
-        Sportmonks: `fixtures/between/{from}/{to}/{teamId}`. Sayfalama varsa
-        tüm sayfalar toplanır (pagination.has_more)."""
+        """Takımın [bugün−days_back, bugün+days_forward] penceresindeki
+        fixture'ları (data listesi). Sportmonks: `fixtures/between/{from}/{to}/
+        {teamId}`. Sayfalama varsa tüm sayfalar toplanır (pagination.has_more)."""
         if not self._key:
             raise RuntimeError(
                 "SPORTMONKS_API_KEY boş. .env'e anahtar girin ya da testte "
@@ -301,7 +300,8 @@ class Sportmonks(DataSource):
             )
         today = datetime.now(tz=UTC).date()
         start = today - timedelta(days=days_back)
-        url = f"{self._base_url}/fixtures/between/{start}/{today}/{team_id}"
+        end = today + timedelta(days=days_forward)
+        url = f"{self._base_url}/fixtures/between/{start}/{end}/{team_id}"
         s = get_settings()
         out: list[dict[str, Any]] = []
         page = 1
@@ -414,6 +414,33 @@ class Sportmonks(DataSource):
         finished = [m for m in matches if m.status in football.FINISHED_STATUSES]
         finished.sort(key=lambda m: m.kickoff, reverse=True)
         return finished[: max(0, last_n)]
+
+    def get_team_schedule(self, team_id: int, last_n: int = 10) -> dict[str, Any]:
+        """Takım programı: bitenler + yaklaşanlar + takım adı haritası (tek pencere).
+
+        UI için tek çağrı: aynı fixtures/between yanıtından hem maçlar hem
+        participants adları çıkar (ekstra HTTP yok). Dönen yapı:
+        {"finished": [Match...yeni→eski, ≤last_n], "upcoming": [Match...yakın→uzak],
+         "team_names": {team_external_id: ad}}"""
+        raw_list = self._get_team_fixtures(team_id)
+        matches = self.parse_schedule(raw_list)
+        names: dict[int, str] = {}
+        for f in raw_list:
+            if not isinstance(f, dict):
+                continue
+            for p in f.get("participants") or []:
+                pid = _as_int(p.get("id"))
+                if pid is not None and p.get("name"):
+                    names[pid] = str(p["name"])
+        finished = [m for m in matches if m.status in football.FINISHED_STATUSES]
+        finished.sort(key=lambda m: m.kickoff, reverse=True)
+        upcoming = [m for m in matches if m.status not in football.FINISHED_STATUSES]
+        upcoming.sort(key=lambda m: m.kickoff)
+        return {
+            "finished": finished[: max(0, last_n)],
+            "upcoming": upcoming,
+            "team_names": names,
+        }
 
     # ── Saf parser'lar (test girişi = ham fixture JSON) ───────────────────────
     @staticmethod

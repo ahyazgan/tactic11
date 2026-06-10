@@ -17,6 +17,7 @@ import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { DEMO_CLUB } from "@/lib/demo-data";
 import { Crest } from "@/lib/teams";
+import { SM_TEAM_ID, type SmMatch, type SmScheduleResp } from "@/lib/sportmonks";
 import { ConsoleShell } from "../_console/shell";
 
 interface ScheduleResp {
@@ -127,12 +128,19 @@ function FormSpark({ data }: { data: { xgFor: number; xgAgainst: number; result:
 }
 
 export default function MatchesConsolePage() {
-  const [team, setTeam] = React.useState("611");
-  const [search, setSearch] = React.useState("611");
+  const [team, setTeam] = React.useState(String(SM_TEAM_ID));
+  const [search, setSearch] = React.useState(String(SM_TEAM_ID));
 
   // Demo modunda canlı API'ye dokunma; dolu mock fikstürü göster.
   const { data, error, isLoading } = useSWR<ScheduleResp>(
     DEMO_MODE ? null : team ? `/teams/${team}/schedule` : null,
+    apiFetch,
+    { shouldRetryOnError: false },
+  );
+  // Canlı program — Sportmonks (/sm/schedule): bitenler + yaklaşanlar + adlar.
+  // Erişim yoksa eski /teams/{id}/schedule davranışına düşer.
+  const { data: smSched } = useSWR<SmScheduleResp>(
+    DEMO_MODE ? null : team ? `/sm/schedule?team_id=${team}&last_n=10` : null,
     apiFetch,
     { shouldRetryOnError: false },
   );
@@ -270,6 +278,151 @@ export default function MatchesConsolePage() {
                     <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)", fontSize: 11.5 }}>{m.xgFor.toFixed(1)} / {m.xgAgainst.toFixed(1)}</td>
                     <td className="r">
                       <span className="risk" style={{ color: rv }}><span className="rd" style={{ background: rv, boxShadow: `0 0 7px ${rv}` }} />{RESULT_TXT[m.result]}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </ConsoleShell>
+    );
+  }
+
+  // --- CANLI yol — Sportmonks programı (gerçek skor + takım adları) ---
+  if (smSched && (smSched.finished.length > 0 || smSched.upcoming.length > 0)) {
+    const tid = Number(team);
+    const nameOf = (id: number) => smSched.team_names[String(id)] ?? `#${id}`;
+    const resultFor = (m: SmMatch): DemoResult => {
+      const hs = m.home_score ?? 0;
+      const as = m.away_score ?? 0;
+      if (hs === as) return "B";
+      const weAreHome = m.home_team_external_id === tid;
+      return (weAreHome ? hs > as : as > hs) ? "G" : "M";
+    };
+    const wins = smSched.finished.filter((m) => resultFor(m) === "G").length;
+    const draws = smSched.finished.filter((m) => resultFor(m) === "B").length;
+    const losses = smSched.finished.filter((m) => resultFor(m) === "M").length;
+    const next = smSched.upcoming[0] ?? null;
+    const nextF = next ? fmt(next.kickoff) : null;
+    // Form rozetleri: en yeni 5 bitmiş maç, kronolojik (eski→yeni).
+    const formChrono = [...smSched.finished.slice(0, 5)].reverse();
+
+    const right = (
+      <>
+        <div className="rc">
+          <h3>Sıradaki Maç <span className="tiny">{nextF ? `${nextF.date} · ${nextF.time}` : "—"}</span></h3>
+          {next ? (
+            <>
+              <div className="nm-vs">
+                <span className="t">{nameOf(next.home_team_external_id)}</span>
+                <span className="x">vs</span>
+                <span className="t away">{nameOf(next.away_team_external_id)}</span>
+              </div>
+              <div className="nm-when">{next.status === "NS" ? "Başlamadı" : next.status} · sezon {next.season}/{(next.season + 1) % 100}</div>
+            </>
+          ) : (
+            <div className="nm-when">Yaklaşan maç yok (sezon arası olabilir).</div>
+          )}
+        </div>
+
+        <div className="rc">
+          <h3>Son {formChrono.length} Maç Formu <span className="tiny">CANLI</span></h3>
+          <div style={{ display: "flex", gap: 5, justifyContent: "center", marginTop: 4 }}>
+            {formChrono.map((m) => {
+              const r = resultFor(m);
+              return (
+                <span key={m.external_id} title={`${nameOf(m.home_team_external_id)} ${m.home_score}-${m.away_score} ${nameOf(m.away_team_external_id)}`} style={{ width: 20, height: 20, borderRadius: 6, background: RESULT_VAR[r], color: "#fff", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{r}</span>
+              );
+            })}
+          </div>
+          <div className="stat" style={{ marginTop: 10 }}><span>G / B / M</span><span className="sv">{wins}-{draws}-{losses}</span></div>
+          <div className="stat"><span>Toplanan Puan</span><span className="sv">{wins * 3 + draws}</span></div>
+        </div>
+      </>
+    );
+
+    return (
+      <ConsoleShell
+        active="/matches"
+        title="Maç"
+        sub={`${nameOf(tid)} — Fikstür & Sonuçlar`}
+        desc="Sportmonks canlı program: yaklaşan maçlar ve gerçek sonuçlar."
+        right={right}
+      >
+        <div className="st" style={{ marginTop: 0 }}>
+          <h2>Takım Programı</h2>
+          <form onSubmit={(e) => { e.preventDefault(); setTeam(search.trim()); }} style={{ display: "flex", gap: 6 }}>
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Takım ID" inputMode="numeric" style={inputStyle} />
+            <button type="submit" style={{ ...inputStyle, width: "auto", cursor: "pointer", color: "var(--muted)" }}>Getir</button>
+          </form>
+        </div>
+
+        <div className="kpis" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+          <div className="kpi"><div className="kl">Takım</div><div className="kn" style={{ fontSize: 18 }}>{nameOf(tid)}</div><div className="kd">Sportmonks #{tid}</div></div>
+          <div className="kpi"><div className="kl">Yaklaşan</div><div className="kn">{smSched.upcoming.length}</div><div className="kd">programda</div></div>
+          <div className="kpi"><div className="kl">Sıradaki</div><div className="kn" style={{ fontSize: 18 }}>{nextF ? nextF.date : "—"}</div><div className="kd">{nextF ? nextF.time : "tarih yok"}</div></div>
+          <div className="kpi"><div className="kl">Son {smSched.finished.length} Maç</div><div className="kn">{wins}<span className="pct">G</span> {draws}<span className="pct">B</span> {losses}<span className="pct">M</span></div><div className="kd">{wins * 3 + draws} puan</div></div>
+        </div>
+
+        {smSched.upcoming.length > 0 && (
+          <>
+            <div className="st"><h2>Yaklaşan Maçlar</h2><span className="ep">GET /sm/schedule · CANLI</span></div>
+            <div className="tbl">
+              <table>
+                <thead><tr>
+                  <th className="c">#</th><th>Tarih</th><th className="c">Saat</th><th>Eşleşme</th><th className="r">Durum</th>
+                </tr></thead>
+                <tbody>
+                  {smSched.upcoming.map((m, i) => {
+                    const f = fmt(m.kickoff);
+                    const home = m.home_team_external_id === tid;
+                    return (
+                      <tr key={m.external_id}>
+                        <td className="pnum c">{i + 1}</td>
+                        <td><span className="nm">{f.date}</span></td>
+                        <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{f.time}</td>
+                        <td>
+                          <span className="nm">{nameOf(m.home_team_external_id)}</span>
+                          <span className="nat" style={{ margin: "0 6px" }}>vs</span>
+                          <span className="nat">{nameOf(m.away_team_external_id)}</span>
+                          <span className="pos" style={{ marginLeft: 8 }}>{home ? "İÇ" : "DEP"}</span>
+                        </td>
+                        <td className="r" style={{ color: "var(--dim)", fontSize: 11.5 }}>{m.status === "NS" ? "Programda" : m.status}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        <div className="st"><h2>Son Sonuçlar</h2><span className="ep">{wins}G · {draws}B · {losses}M · CANLI</span></div>
+        <div className="tbl">
+          <table>
+            <thead><tr>
+              <th className="c">#</th><th>Tarih</th><th>Eşleşme</th><th className="c">Skor</th><th className="r">Sonuç</th>
+            </tr></thead>
+            <tbody>
+              {smSched.finished.map((m, i) => {
+                const f = fmt(m.kickoff);
+                const r = resultFor(m);
+                const rv = RESULT_VAR[r];
+                const home = m.home_team_external_id === tid;
+                return (
+                  <tr key={m.external_id}>
+                    <td className="pnum c">{i + 1}</td>
+                    <td><span className="nm">{f.date}</span></td>
+                    <td>
+                      <span className="nm">{nameOf(m.home_team_external_id)}</span>
+                      <span className="nat" style={{ margin: "0 6px" }}>vs</span>
+                      <span className="nat">{nameOf(m.away_team_external_id)}</span>
+                      <span className="pos" style={{ marginLeft: 8 }}>{home ? "İÇ" : "DEP"}</span>
+                    </td>
+                    <td className="c" style={{ fontFamily: "JetBrains Mono", fontWeight: 700 }}>{m.home_score ?? "-"}-{m.away_score ?? "-"}</td>
+                    <td className="r">
+                      <span className="risk" style={{ color: rv }}><span className="rd" style={{ background: rv, boxShadow: `0 0 7px ${rv}` }} />{RESULT_TXT[r]}</span>
                     </td>
                   </tr>
                 );
