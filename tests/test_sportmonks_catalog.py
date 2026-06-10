@@ -34,6 +34,30 @@ def test_media_guard_rejects_absolute_url():
     assert ei.value.status_code == 400
 
 
+def test_memo_caches_within_ttl_and_skips_errors():
+    cat._RESP_CACHE.clear()
+    calls = {"n": 0}
+
+    def produce():
+        calls["n"] += 1
+        return {"v": calls["n"]}
+
+    assert cat._memo("standings", "k1", produce) == {"v": 1}
+    assert cat._memo("standings", "k1", produce) == {"v": 1}  # cache hit
+    assert calls["n"] == 1
+    # Farklı anahtar ayrı üretim
+    assert cat._memo("standings", "k2", produce) == {"v": 2}
+
+    # Hata cache'lenmez — sonraki çağrı yeniden dener
+    def boom():
+        raise HTTPException(status_code=502, detail="x")
+
+    with pytest.raises(HTTPException):
+        cat._memo("squad", "err", boom)
+    assert "squad:err" not in cat._RESP_CACHE
+    cat._RESP_CACHE.clear()
+
+
 def test_client_503_when_sportmonks_disabled(monkeypatch):
     from app.core import config
 
