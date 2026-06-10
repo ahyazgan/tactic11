@@ -11,6 +11,7 @@
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../_console/shell";
 
 interface LogEntry {
@@ -45,6 +46,24 @@ function sensColor(s: string): string {
 
 const DAYS = [7, 30, 90];
 
+// ── Demo örnek verisi ─────────────────────────────────────────────────────────
+// Backend'te erişim kaydı yokken sayfa boş kalmasın: KVKK panosunun nasıl
+// göründüğünü anlatan gerçekçi kayıtlar (hekim sağlık notuna, analist fiziksel
+// teste erişiyor). Canlı kayıt varsa daima o gösterilir.
+const DEMO_LOG: LogEntry[] = [
+  { user_id: "dr.kaya", subject_type: "player", subject_id: 7, data_category: "saglik_notu", sensitivity: "özel nitelikli", action: "read", endpoint: "/players/7/medical", at: "2026-06-08T09:14:02" },
+  { user_id: "dr.kaya", subject_type: "player", subject_id: 11, data_category: "sakatlik_gecmisi", sensitivity: "özel nitelikli", action: "read", endpoint: "/players/11/medical", at: "2026-06-08T09:11:40" },
+  { user_id: "analist.demir", subject_type: "player", subject_id: 7, data_category: "fiziksel_test", sensitivity: "kişisel", action: "read", endpoint: "/physical-tests/7", at: "2026-06-07T17:32:18" },
+  { user_id: "analist.demir", subject_type: "player", subject_id: 14, data_category: "fiziksel_test", sensitivity: "kişisel", action: "read", endpoint: "/physical-tests/14", at: "2026-06-07T17:30:05" },
+  { user_id: "kondisyoner.arslan", subject_type: "player", subject_id: 3, data_category: "gps_yuku", sensitivity: "kişisel", action: "write", endpoint: "/physical-tests/load-entries", at: "2026-06-07T11:02:51" },
+  { user_id: "dr.kaya", subject_type: "player", subject_id: 19, data_category: "saglik_notu", sensitivity: "özel nitelikli", action: "write", endpoint: "/players/19/medical", at: "2026-06-06T15:48:33" },
+  { user_id: "analist.demir", subject_type: "player", subject_id: 21, data_category: "performans_raporu", sensitivity: "kişisel", action: "read", endpoint: "/players/21/season-stats", at: "2026-06-06T10:21:07" },
+  { user_id: "td.ozkan", subject_type: "player", subject_id: 7, data_category: "performans_raporu", sensitivity: "kişisel", action: "read", endpoint: "/players/7/season-stats", at: "2026-06-05T19:05:44" },
+];
+const DEMO_ANOMALIES: Anomaly[] = [
+  { user_id: "analist.demir", distinct_subjects: 14, data_category: "fiziksel_test" },
+];
+
 const inputStyle: React.CSSProperties = {
   background: "var(--panel)",
   border: "1px solid var(--line)",
@@ -69,8 +88,15 @@ export default function ComplianceConsolePage() {
   const audit = useSWR<AuditResp>(`/admin/compliance/audit?days=${days}`, apiFetch, {
     shouldRetryOnError: false,
   });
-  const entries = log.data?.entries ?? [];
-  const anomalies = audit.data?.anomalies ?? [];
+  // Demo modunda canlı kayıt yoksa örnek pano (boş tablo yerine). Özne filtresi
+  // örnek veride de çalışır.
+  const useDemo = DEMO_MODE && (!log.data || log.data.total === 0);
+  const demoEntries = subjectQ
+    ? DEMO_LOG.filter((e) => String(e.subject_id) === subjectQ)
+    : DEMO_LOG;
+  const entries = useDemo ? demoEntries : (log.data?.entries ?? []);
+  const anomalies = useDemo ? DEMO_ANOMALIES : (audit.data?.anomalies ?? []);
+  const totalCount = useDemo ? demoEntries.length : (log.data?.total ?? 0);
 
   const right = (
     <div className="rc">
@@ -115,14 +141,14 @@ export default function ComplianceConsolePage() {
       </div>
 
       <div className="kpis" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
-        <div className="kpi"><div className="kl">Erişim Kaydı</div><div className="kn">{log.data?.total ?? 0}</div><div className="kd">son {days} gün</div></div>
+        <div className="kpi"><div className="kl">Erişim Kaydı</div><div className="kn">{totalCount}</div><div className="kd">son {days} gün</div></div>
         <div className="kpi"><div className="kl">Anomali</div><div className="kn" style={{ color: anomalies.length ? "var(--crit)" : "var(--low)" }}>{anomalies.length}</div><div className="kd">toplu erişim</div></div>
         <div className="kpi"><div className="kl">Dönem</div><div className="kn">{days}<span className="pct">g</span></div><div className="kd">seçili aralık</div></div>
       </div>
 
-      <div className="st"><h2>Erişim Kayıtları</h2><span className="ep">GET /admin/compliance/access-log</span></div>
-      {log.isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {log.error && <div className="pgdesc">Kayıt alınamadı ya da yetki yok (admin).</div>}
+      <div className="st"><h2>Erişim Kayıtları</h2><span className="ep">{useDemo ? "örnek veri (backend'te kayıt yok)" : "GET /admin/compliance/access-log"}</span></div>
+      {log.isLoading && !useDemo && <div className="pgdesc">Yükleniyor…</div>}
+      {log.error && !useDemo && <div className="pgdesc">Kayıt alınamadı ya da yetki yok (admin).</div>}
       <div className="tbl">
         <table>
           <thead><tr>

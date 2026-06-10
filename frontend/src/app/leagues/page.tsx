@@ -295,7 +295,10 @@ export default function LeaguesConsolePage() {
               return (
                 <tr
                   key={s.team}
+                  role="link"
+                  tabIndex={0}
                   onClick={() => router.push(`/leagues/1001/teams`)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(`/leagues/1001/teams`); } }}
                   style={{ cursor: "pointer", background: mine ? "var(--accent-lt)" : undefined }}
                 >
                   <td className="c" style={{ position: "relative" }}>

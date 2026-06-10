@@ -252,7 +252,10 @@ export default function SquadConsolePage() {
               return (
                 <tr
                   key={p.player_id}
+                  role="link"
+                  tabIndex={0}
                   onClick={() => router.push(`/players/${p.player_id}`)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); router.push(`/players/${p.player_id}`); } }}
                   title={`${p.player_name} — oyuncu profili & özellikleri`}
                   style={{ cursor: "pointer" }}
                 >

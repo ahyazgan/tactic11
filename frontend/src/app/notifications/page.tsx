@@ -10,6 +10,7 @@
 import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
 import { DemoLiveBanner } from "@/lib/demo-live-banner";
 import { ConsoleShell } from "../_console/shell";
 
@@ -23,8 +24,21 @@ interface StatusResp {
   channels: Channel[];
 }
 
+// Demo örnek durumu — env'de kanal yapılandırılmamışken sayfa boş kalmasın.
+// Canlı status kanal listeliyorsa daima o gösterilir.
+const DEMO_STATUS: StatusResp = {
+  total_channels: 4,
+  active_channels: ["telegram", "email"],
+  channels: [
+    { name: "telegram", configured: true },
+    { name: "email (SMTP)", configured: true },
+    { name: "whatsapp (Twilio)", configured: false },
+    { name: "sms", configured: false },
+  ],
+};
+
 export default function NotificationsConsolePage() {
-  const { data, isLoading, error } = useSWR<StatusResp>(
+  const { data: liveData, isLoading, error } = useSWR<StatusResp>(
     "/admin/notifications/status",
     apiFetch,
     { shouldRetryOnError: false },
@@ -32,9 +46,21 @@ export default function NotificationsConsolePage() {
   const [busy, setBusy] = React.useState(false);
   const [result, setResult] = React.useState<string | null>(null);
 
+  // Demo modunda kanal yapılandırması yoksa örnek durum göster.
+  const useDemo = DEMO_MODE && (!liveData || (liveData.channels?.length ?? 0) === 0);
+  const data = useDemo ? DEMO_STATUS : liveData;
+
   async function sendTest() {
     setBusy(true);
     setResult(null);
+    if (useDemo) {
+      // Örnek-veri modunda gerçek gönderim yapılmaz; dürüstçe simülasyon de.
+      setTimeout(() => {
+        setResult("Demo simülasyonu: 2 kanala örnek bildirim gönderildi (gerçek gönderim için SMTP/Telegram env ayarları gerekir).");
+        setBusy(false);
+      }, 500);
+      return;
+    }
     try {
       const res = await apiFetch<Record<string, unknown>>("/admin/notifications/test", {
         method: "POST",
@@ -86,9 +112,9 @@ export default function NotificationsConsolePage() {
         <div className="kpi"><div className="kl">Pasif</div><div className="kn" style={{ color: "var(--dim)" }}>{(data?.total_channels ?? 0) - active}</div><div className="kd">eksik konfig</div></div>
       </div>
 
-      <div className="st"><h2>Kanallar</h2><span className="ep">GET /admin/notifications/status</span></div>
-      {isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {error && <div className="pgdesc">Durum alınamadı ya da yetki yok.</div>}
+      <div className="st"><h2>Kanallar</h2><span className="ep">{useDemo ? "örnek veri (env'de kanal yapılandırılmadı)" : "GET /admin/notifications/status"}</span></div>
+      {isLoading && !useDemo && <div className="pgdesc">Yükleniyor…</div>}
+      {error && !useDemo && <div className="pgdesc">Durum alınamadı ya da yetki yok.</div>}
       <div className="tbl">
         <table>
           <thead><tr><th>Kanal</th><th className="r">Durum</th></tr></thead>

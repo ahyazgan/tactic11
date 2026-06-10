@@ -19,6 +19,8 @@ import {
   type SquadPlayer,
   type Position,
 } from "@/lib/demo-data";
+import { demoTeamById, demoTeamPoints, type DemoTeamRow } from "@/lib/demo-teams";
+import { Crest } from "@/lib/teams";
 import { ConsoleShell } from "../../_console/shell";
 import { RiskDonut, LegendRow } from "../../_console/viz";
 
@@ -47,42 +49,87 @@ function ResultDot({ r }: { r: "W" | "D" | "L" }) {
 }
 
 // --------------------------------------------------------------------------- //
-// DEMO: "Beşiktaş" takım profili (tek demo evreni — id sadece başlıkta).
+// DEMO: takım profili — TIKLANAN takımın lig satırından (lib/demo-teams)
+// deterministik türetilir. Bilinmeyen id → Beşiktaş (100). Böylece puan
+// tablosunda Galatasaray'a tıklayınca gerçekten Galatasaray profili açılır
+// (önceden id yok sayılıp hep statik Beşiktaş gösteriliyordu — üstelik o statik
+// veri lig tablosundaki sırayla da çelişiyordu).
 // --------------------------------------------------------------------------- //
 
-const DEMO_FORM: FormResponse = {
-  value: {
-    matches_played: 10,
-    wins: 6,
-    draws: 2,
-    losses: 2,
-    goals_for: 19,
-    goals_against: 11,
-    points_per_game: 2.0,
-    // En yeni en sağda: son maç galibiyet.
-    last_results: ["W", "L", "W", "W", "D", "W", "L", "D", "W", "W"],
-  },
-  confidence: { score: 0.82, label: "yüksek", drivers: ["10 maçlık örneklem", "tutarlı xG farkı", "ev/deplasman dengeli"] },
-};
+type WDL = "W" | "D" | "L";
+const FORM_TO_WDL: Record<"G" | "B" | "M", WDL> = { G: "W", B: "D", M: "L" };
 
-const DEMO_RATING: RatingResponse = {
-  value: { rating: 1.42, home_rating: 1.71, away_rating: 1.08, matches_considered: 18 },
-  confidence: { score: 0.79, label: "yüksek", drivers: ["18 maç değerlendirildi", "xG tabanlı", "ev avantajı belirgin"] },
-};
+interface DemoProfile {
+  row: DemoTeamRow;
+  form: FormResponse;
+  rating: RatingResponse;
+  league: { competition: string; rank: number; teams: number; points: number; xgFor: number; xgAgainst: number };
+  xgDiff: number[];
+}
 
-// Lig sıralaması bağlamı (rozet/şerit için).
-const DEMO_LEAGUE = {
-  competition: "Süper Lig — 34. Hafta",
-  rank: 4,
-  teams: 18,
-  points: 58,
-  xgFor: 1.74,
-  xgAgainst: 1.06,
-  cleanSheets: 4,
-};
+/** Lig satırı → son-10 sonuç dizisi: son 5 gerçek form; önceki 5 sezon
+ *  oranlarından deterministik (teamId tohumlu) sentez. */
+function last10Results(row: DemoTeamRow): WDL[] {
+  const recent = row.form.map((f) => FORM_TO_WDL[f]); // en yeni en sağda
+  const wOld = Math.min(5, Math.round((row.win / row.played) * 5));
+  const lOld = Math.min(5 - wOld, Math.round((row.loss / row.played) * 5));
+  const dOld = 5 - wOld - lOld;
+  const older: WDL[] = [
+    ...Array<WDL>(wOld).fill("W"),
+    ...Array<WDL>(dOld).fill("D"),
+    ...Array<WDL>(lOld).fill("L"),
+  ];
+  const rot = row.teamId % 5; // takıma özgü sıra (hepsi WWDLL gibi durmasın)
+  const rotated = [...older.slice(rot), ...older.slice(0, rot)];
+  return [...rotated, ...recent];
+}
 
-// xG farkı serisi (son 10 maç, + bize) — inline SVG sparkline için.
-const DEMO_XGDIFF: number[] = [0.4, -0.2, 0.9, 0.6, 0.1, 1.1, -0.5, 0.2, 0.8, 0.7];
+function demoProfileFor(row: DemoTeamRow): DemoProfile {
+  const results = last10Results(row);
+  const wins = results.filter((r) => r === "W").length;
+  const draws = results.filter((r) => r === "D").length;
+  const losses = results.filter((r) => r === "L").length;
+  const gf10 = Math.round((row.gf / row.played) * 10);
+  const ga10 = Math.round((row.ga / row.played) * 10);
+  const ppg = (wins * 3 + draws) / 10;
+  const netXg = (row.xgf - row.xga) / row.played;
+  const xgDiff = results.map((r, i) => {
+    const jitter = (((row.teamId * 7 + i * 13) % 10) / 20) - 0.25; // ±0.25
+    return Math.round(((r === "W" ? 0.7 : r === "D" ? 0.05 : -0.6) + jitter) * 100) / 100;
+  });
+  return {
+    row,
+    form: {
+      value: {
+        matches_played: 10,
+        wins, draws, losses,
+        goals_for: gf10,
+        goals_against: ga10,
+        points_per_game: Math.round(ppg * 10) / 10,
+        last_results: results,
+      },
+      confidence: { score: 0.8, label: "yüksek", drivers: ["10 maçlık örneklem", "sezon oranlarıyla tutarlı", "xG tabanlı"] },
+    },
+    rating: {
+      value: {
+        rating: Math.round(netXg * 100) / 100,
+        home_rating: Math.round((netXg + 0.3) * 100) / 100,
+        away_rating: Math.round((netXg - 0.3) * 100) / 100,
+        matches_considered: row.played,
+      },
+      confidence: { score: 0.78, label: "yüksek", drivers: [`${row.played} maç değerlendirildi`, "xG tabanlı", "ev avantajı dahil"] },
+    },
+    league: {
+      competition: "Süper Lig — 34. Hafta",
+      rank: row.rank,
+      teams: 18,
+      points: demoTeamPoints(row),
+      xgFor: Math.round((row.xgf / row.played) * 100) / 100,
+      xgAgainst: Math.round((row.xga / row.played) * 100) / 100,
+    },
+    xgDiff,
+  };
+}
 
 const POS_LABEL: Record<Position, string> = { GK: "Kaleci", DF: "Defans", MF: "Orta Saha", FW: "Forvet" };
 const POS_COLOR: Record<Position, string> = { GK: "var(--dim)", DF: "var(--low)", MF: "var(--accent)", FW: "var(--high)" };
@@ -121,16 +168,26 @@ export default function TeamDetailConsolePage() {
   const params = useParams<{ id: string }>();
   const teamId = params.id;
 
-  // Demo modunda canlı API'ye dokunma; dolu "Beşiktaş" profilini göster.
+  // Demo modunda canlı API'ye dokunma; TIKLANAN takımın profilini türet.
   const { data: form } = useSWR<FormResponse>(DEMO_MODE ? null : `/teams/${teamId}/form`, apiFetch, { shouldRetryOnError: false });
   const { data: rating } = useSWR<RatingResponse>(DEMO_MODE ? null : `/teams/${teamId}/rating`, apiFetch, { shouldRetryOnError: false });
 
-  const formData = DEMO_MODE ? DEMO_FORM : form;
-  const ratingData = DEMO_MODE ? DEMO_RATING : rating;
+  const demoRow = DEMO_MODE ? (demoTeamById(teamId) ?? demoTeamById(100)!) : null;
+  const profile = demoRow ? demoProfileFor(demoRow) : null;
+
+  const formData = DEMO_MODE ? profile!.form : form;
+  const ratingData = DEMO_MODE ? profile!.rating : rating;
   const f = formData?.value;
   const rt = ratingData?.value;
 
-  const teamName = DEMO_MODE ? DEMO_CLUB : `Takım #${teamId}`;
+  const teamName = DEMO_MODE ? demoRow!.name : `Takım #${teamId}`;
+  // Kadro/oyuncu bölümleri yalnız kendi kulübümüz için (demo evreninde diğer
+  // takımların oyuncu listesi tutulmaz — yanıltıcı tekrar göstermeyelim).
+  const isUs = DEMO_MODE ? demoRow!.name === DEMO_CLUB : false;
+  const DEMO_LEAGUE = profile?.league ?? {
+    competition: "", rank: 0, teams: 18, points: 0, xgFor: 0, xgAgainst: 0,
+  };
+  const DEMO_XGDIFF = profile?.xgDiff ?? [];
 
   // Kadro/güç özeti (yalnızca demo evreninde).
   const byPos: Position[] = ["GK", "DF", "MF", "FW"];
@@ -161,7 +218,27 @@ export default function TeamDetailConsolePage() {
         ) : <div style={{ fontSize: "12px", color: "var(--dim)" }}>Yükleniyor…</div>}
       </div>
 
-      {DEMO_MODE && (
+      {DEMO_MODE && !isUs && demoRow && (
+        <div className="rc">
+          <h3>Sezon Kartı <span className="tiny">{demoRow.short}</span></h3>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <Crest team={demoRow.name} size={34} />
+            <div>
+              <div style={{ fontWeight: 700 }}>{demoRow.name}</div>
+              <div style={{ fontSize: 11.5, color: "var(--dim)" }}>{demoRow.city} · {demoRow.founded}</div>
+            </div>
+          </div>
+          <div className="stat"><span>Lig sırası</span><span className="sv">{demoRow.rank}.</span></div>
+          <div className="stat"><span>Puan</span><span className="sv">{DEMO_LEAGUE.points}</span></div>
+          <div className="stat"><span>Atılan / Yenen</span><span className="sv">{demoRow.gf} / {demoRow.ga}</span></div>
+          <div className="stat"><span>Sezon xG / xGA</span><span className="sv">{demoRow.xgf.toFixed(1)} / {demoRow.xga.toFixed(1)}</span></div>
+          <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 8, lineHeight: 1.5 }}>
+            Oyuncu listesi demo evreninde yalnız kendi kulübün ({DEMO_CLUB}) için tutulur.
+          </div>
+        </div>
+      )}
+
+      {DEMO_MODE && isUs && (
         <>
           <div className="rc">
             <h3>Kadro Gücü <span className="tiny">{demoSquad.length} oyuncu</span></h3>
@@ -228,7 +305,11 @@ export default function TeamDetailConsolePage() {
           <div className="kpi"><div className="kl">Rating</div><div className="kn" style={{ color: "var(--low)" }}>{rt?.rating.toFixed(2)}</div><div className="kd">maç başı net xG</div></div>
           <div className="kpi"><div className="kl">Son 10 Form</div><div className="kn">{f?.wins}-{f?.draws}-{f?.losses}</div><div className="kd">PPG {f?.points_per_game.toFixed(1)}</div></div>
           <div className="kpi"><div className="kl">xG / Maç</div><div className="kn">{DEMO_LEAGUE.xgFor.toFixed(2)}</div><div className="kd">karşı {DEMO_LEAGUE.xgAgainst.toFixed(2)}</div></div>
-          <div className="kpi"><div className="kl">Kadro Hazırlığı</div><div className="kn">{squadCond}<span className="pct">%</span></div><div className="kd">ort. kondisyon</div></div>
+          {isUs ? (
+            <div className="kpi"><div className="kl">Kadro Hazırlığı</div><div className="kn">{squadCond}<span className="pct">%</span></div><div className="kd">ort. kondisyon</div></div>
+          ) : (
+            <div className="kpi"><div className="kl">Averaj</div><div className="kn" style={{ color: (demoRow!.gf - demoRow!.ga) >= 0 ? "var(--low)" : "var(--crit)" }}>{(demoRow!.gf - demoRow!.ga) >= 0 ? "+" : ""}{demoRow!.gf - demoRow!.ga}</div><div className="kd">{demoRow!.gf} attı · {demoRow!.ga} yedi</div></div>
+          )}
         </div>
       )}
 
@@ -270,7 +351,7 @@ export default function TeamDetailConsolePage() {
         </div>
       )}
 
-      {DEMO_MODE && (
+      {DEMO_MODE && isUs && (
         <>
           <div className="st"><h2>Hatlara Göre Güç</h2><span className="ep">kondisyon vekili</span></div>
           <div className="tbl">
