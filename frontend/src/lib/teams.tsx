@@ -91,12 +91,32 @@ export interface CrestProps {
 }
 
 /**
- * Kulüp arması — inline SVG rozet (zemin = ana renk, halka = ikincil renk,
- * ortada monogram). Self-host, CDN yok, keskin/ölçeklenir.
+ * Kulüp arması — varsa gerçek logo, yoksa inline SVG rozet (zemin = ana renk, halka = ikincil renk,
+ * ortada monogram).
  */
+const LOGO_FILES: Record<string, string> = {
+  "GS": "gs", "BJK": "bjk", "FB": "fb", "TS": "ts", "SAM": "sam",
+  "İBFK": "ibfk", "EYP": "eyp", "GÖZ": "goz", "KSM": "ksm", "KON": "kon",
+  "ANT": "ant", "RİZ": "riz", "ALY": "aly", "KAY": "kay", "GFK": "gfk"
+};
+
 export function Crest({ team, size = 22, title, className, style }: CrestProps) {
   const m = typeof team === "string" ? teamMeta(team) : team;
   const label = title ?? m.name;
+
+  if (LOGO_FILES[m.short]) {
+    return (
+      <img
+        src={`/logos/${LOGO_FILES[m.short]}.png`}
+        alt={label}
+        width={size}
+        height={size}
+        className={className}
+        style={{ display: "inline-block", flexShrink: 0, verticalAlign: "middle", objectFit: "contain", ...style }}
+      />
+    );
+  }
+
   const r = size / 2;
   const len = m.short.length;
   // Monogram font boyutu uzunluğa göre — daireye sığsın.
