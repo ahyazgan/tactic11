@@ -1044,3 +1044,67 @@ def test_squad_readiness_includes_regression_flag(client):
     row = next((x for x in body if x["player_id"] == "961"), None)
     assert row is not None
     assert any(f["metric"] == "Regresyon" for f in row["decision"]["flags"])
+
+
+# --------------------------------------------------------------------------- #
+# Fiziksel özellik yüzdelikleri (GET /{id}/attribute-percentiles) — oyuncu
+# özelliği (FM 1-20) fiziksel grubunu besler.
+# --------------------------------------------------------------------------- #
+
+
+def _post_test(c, pid, proto, value, date="2026-06-08"):
+    r = c.post("/physical-tests/", json={
+        "player_id": pid, "player_name": f"P{pid}", "test_date": date,
+        "protocol": proto, "value": value,
+    })
+    assert r.status_code == 201, r.text
+
+
+def test_attribute_percentiles_404_without_data(client):
+    c, _ = client
+    r = c.get("/physical-tests/40404/attribute-percentiles")
+    assert r.status_code == 404
+
+
+def test_attribute_percentiles_direction_aware(client):
+    c, _ = client
+    # cmj (yüksek=iyi): 60 > 50 > 40 → en yüksek kadronun en iyisi (pct=1.0)
+    _post_test(c, "501", "cmj", 60)
+    _post_test(c, "502", "cmj", 50)
+    _post_test(c, "503", "cmj", 40)
+    # sprint_10m (düşük=iyi): 1.70 en iyi → pct=1.0
+    _post_test(c, "501", "sprint_10m", 1.70)
+    _post_test(c, "502", "sprint_10m", 1.80)
+    _post_test(c, "503", "sprint_10m", 1.90)
+
+    r = c.get("/physical-tests/501/attribute-percentiles")
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["player_id"] == "501"
+    assert set(body["available"]) == {"cmj", "sprint_10m"}
+    # En iyi oyuncu her iki protokolde de 1.0
+    assert body["percentiles"]["cmj"] == 1.0
+    assert body["percentiles"]["sprint_10m"] == 1.0
+
+    # En kötü oyuncu (503): cmj en düşük → ~0.33; sprint en yavaş → ~0.33
+    r3 = c.get("/physical-tests/503/attribute-percentiles").json()
+    assert r3["percentiles"]["cmj"] < 0.5
+    assert r3["percentiles"]["sprint_10m"] < 0.5
+
+
+def test_attribute_percentiles_uses_latest_value(client):
+    c, _ = client
+    _post_test(c, "601", "cmj", 30, date="2026-06-01")
+    _post_test(c, "601", "cmj", 55, date="2026-06-08")   # son ölçüm
+    _post_test(c, "602", "cmj", 40)
+    r = c.get("/physical-tests/601/attribute-percentiles").json()
+    # 55 (son) > 40 → en iyi
+    assert r["percentiles"]["cmj"] == 1.0
+
+
+def test_attribute_percentiles_requires_auth():
+    from app.api.main import app as real_app
+    real_app.dependency_overrides.clear()
+    c = TestClient(real_app)
+    r = c.get("/physical-tests/1/attribute-percentiles")
+    assert r.status_code in (401, 403)

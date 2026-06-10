@@ -26,7 +26,7 @@ import {
   type AttrGroup,
 } from "@/lib/demo-data";
 import { SourceMark } from "@/lib/data-source";
-import { statAttrGroups, type PlayerSeasonStats } from "@/lib/attributes";
+import { statAttrGroups, physicalGroupFromPercentiles, type PlayerSeasonStats } from "@/lib/attributes";
 import { ConsoleShell } from "../../_console/shell";
 import { Gauge } from "../../_console/viz";
 
@@ -59,6 +59,9 @@ interface SeasonStatsResp {
   value: { player: SeasonStatsRow; team_external_id: number | null; peers: SeasonStatsRow[] };
 }
 interface PlayerInfoResp { age: number | null; position: string | null; name: string }
+// GET /physical-tests/{id}/attribute-percentiles — fiziksel grup girdisi.
+type PhysProto = "sprint_10m" | "sprint_30m" | "yoyo_irl1" | "cmj" | "vo2max";
+interface AttrPercentilesResp { percentiles: Record<string, number>; available: string[] }
 
 const RISK_VAR: Record<string, string> = { Düşük: "var(--low)", Orta: "var(--mid)", Yüksek: "var(--high)", Kritik: "var(--crit)" };
 const RISK_PILL: Record<string, string> = { Düşük: "risk-low", Orta: "risk-mid", Yüksek: "risk-high", Kritik: "risk-crit" };
@@ -506,6 +509,7 @@ function PlayerProfileLive({ id }: { id: string }) {
   const injury = useSWR<InjuryResp>(id ? `/admin/players/${id}/injury-risk` : null, apiFetch, { shouldRetryOnError: false });
   const seasonStats = useSWR<SeasonStatsResp>(id ? `/players/${id}/season-stats` : null, apiFetch, { shouldRetryOnError: false });
   const info = useSWR<PlayerInfoResp>(id ? `/players/${id}/info` : null, apiFetch, { shouldRetryOnError: false });
+  const physPct = useSWR<AttrPercentilesResp>(id ? `/physical-tests/${id}/attribute-percentiles` : null, apiFetch, { shouldRetryOnError: false });
 
   const r = role.data?.value;
   const inj = injury.data?.value;
@@ -525,6 +529,15 @@ function PlayerProfileLive({ id }: { id: string }) {
     liveAttrGroups = statAttrGroups(ss.player, pool.length >= 2 ? pool : [ss.player], {
       isGk, age: info.data?.age ?? null,
     });
+    // Fiziksel grup: kulüp test ölçümlerinden (perf_lab). Yalnız test verisi
+    // olan oyuncularda; backend yön-duyarlı yüzdelik döner (1=kadronun en iyisi).
+    const pcts = physPct.data?.percentiles;
+    if (pcts && Object.keys(pcts).length > 0) {
+      liveAttrGroups = [
+        ...liveAttrGroups,
+        physicalGroupFromPercentiles((proto: PhysProto) => pcts[proto] ?? 0.5),
+      ];
+    }
   }
 
   const right = (

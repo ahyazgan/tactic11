@@ -1112,6 +1112,81 @@ def squad_comparison(
     )
 
 
+# Oyuncu özelliği (FM 1-20) fiziksel grubunu besleyen protokoller. Frontend
+# lib/attributes.ts physicalGroupFromPercentiles ile birebir.
+_ATTR_PHYS_PROTOCOLS = ("sprint_10m", "sprint_30m", "yoyo_irl1", "cmj", "vo2max")
+
+
+class AttrPercentilesOut(BaseModel):
+    """Bir oyuncunun fiziksel test protokollerindeki kadro-içi yüzdelik sırası.
+
+    percentiles[proto] ∈ 0..1, YÖN-DUYARLI (1 = kadronun en iyisi; sprint'te
+    düşük süre daha iyi olduğundan oran ona göre çevrilir). Frontend bu
+    değerleri doğrudan 1-20 özelliğe ölçekler.
+    """
+
+    player_id: str
+    percentiles: dict[str, float]
+    available: list[str]
+
+
+@router.get("/{player_id}/attribute-percentiles", response_model=AttrPercentilesOut)
+def attribute_percentiles(
+    player_id: str,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> AttrPercentilesOut:
+    """Oyuncunun fiziksel test protokollerinde kadro-içi yön-duyarlı yüzdeliği.
+
+    Oyuncu özelliği (Hız/İvmelenme/Dayanıklılık/Güç...) gerçek test ölçümünden
+    bu uçla türetilir. Her protokol için kadrodaki tüm oyuncuların SON değeri
+    havuz; yüzdelik = oyuncunun yendiği emsal oranı (sprint'te düşük=iyi).
+    """
+    _log_access(
+        session, player_id=player_id, action="read_attribute_percentiles",
+        endpoint=f"/physical-tests/{player_id}/attribute-percentiles", user_id=user.id,
+    )
+    percentiles: dict[str, float] = {}
+    available: list[str] = []
+    for proto_key in _ATTR_PHYS_PROTOCOLS:
+        proto = perf.PROTOCOLS.get(proto_key)
+        if proto is None:
+            continue
+        rows = list(session.execute(
+            select(PhysicalTest)
+            .where(PhysicalTest.tenant_id == user.tenant_id,
+                   PhysicalTest.protocol == proto_key)
+            .order_by(PhysicalTest.test_date.desc(), PhysicalTest.id.desc())
+        ).scalars())
+        latest: dict[str, float] = {}
+        for r in rows:
+            latest.setdefault(r.player_id, r.value)   # desc → ilk = en son
+        if player_id not in latest:
+            continue
+        pool = list(latest.values())
+        my = latest[player_id]
+        if len(pool) <= 1:
+            pct = 0.5
+        else:
+            # Yön-duyarlı: higher_is_better → büyük değer üstte; sprint → küçük üstte.
+            if proto.higher_is_better:
+                beaten = sum(1 for v in pool if v <= my)
+            else:
+                beaten = sum(1 for v in pool if v >= my)
+            pct = beaten / len(pool)
+        percentiles[proto_key] = round(pct, 4)
+        available.append(proto_key)
+
+    if not available:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"player {player_id} için fiziksel test verisi yok",
+        )
+    return AttrPercentilesOut(
+        player_id=player_id, percentiles=percentiles, available=available,
+    )
+
+
 @router.get("/{player_id}", response_model=list[PhysicalTestOut])
 def list_tests(
     player_id: str,
