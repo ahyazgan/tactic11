@@ -215,3 +215,161 @@ def test_parse_teams():
     assert by_id[554].name == "Beşiktaş"
     assert by_id[554].founded == 1903
     assert by_id[4192].founded == 1988
+
+
+# ── parse_schedule (takım programı / fikstür listesi) ─────────────────────────
+
+# Gerçek "fixtures between" yanıtının kompakt alt-kümesi (3 fixture):
+# 1) Rizespor 2-2 Beşiktaş (lig 600, 2026-05-15) — beraberlik
+# 2) Beşiktaş 4-1 Rizespor (Türkiye Kupası 606, 2026-03-04) — ev sahibi galip
+# 3) Beşiktaş 1-0 Rizespor (lig 600, 2025-12-20) — ev sahibi galip
+SCHEDULE = [
+    {
+        "id": 19443228,
+        "league_id": 600,
+        "starting_at": "2026-05-15 17:00:00",
+        "starting_at_timestamp": 1778864400,
+        "state": {"developer_name": "FT"},
+        "participants": [
+            {"id": 554, "name": "Beşiktaş", "meta": {"location": "away"}},
+            {"id": 1041, "name": "Rizespor", "meta": {"location": "home"}},
+        ],
+        "scores": [
+            {"description": "CURRENT", "participant_id": 554, "score": {"goals": 2}},
+            {"description": "CURRENT", "participant_id": 1041, "score": {"goals": 2}},
+        ],
+    },
+    {
+        "id": 19609286,
+        "league_id": 606,
+        "starting_at": "2026-03-04 17:30:00",
+        "starting_at_timestamp": 1772645400,
+        "state": {"developer_name": "FT"},
+        "participants": [
+            {"id": 1041, "name": "Rizespor", "meta": {"location": "away"}},
+            {"id": 554, "name": "Beşiktaş", "meta": {"location": "home"}},
+        ],
+        "scores": [
+            {"description": "CURRENT", "participant_id": 554, "score": {"goals": 4}},
+            {"description": "CURRENT", "participant_id": 1041, "score": {"goals": 1}},
+        ],
+    },
+    {
+        "id": 19443076,
+        "league_id": 600,
+        "starting_at": "2025-12-20 17:00:00",
+        "starting_at_timestamp": 1766250000,
+        "state": {"developer_name": "FT"},
+        "participants": [
+            {"id": 1041, "name": "Rizespor", "meta": {"location": "away"}},
+            {"id": 554, "name": "Beşiktaş", "meta": {"location": "home"}},
+        ],
+        "scores": [
+            {"description": "CURRENT", "participant_id": 554, "score": {"goals": 1}},
+            {"description": "CURRENT", "participant_id": 1041, "score": {"goals": 0}},
+        ],
+    },
+]
+
+
+def test_parse_schedule_maps_each_fixture():
+    matches = Sportmonks.parse_schedule(SCHEDULE)
+    assert len(matches) == 3
+    by_id = {m.external_id: m for m in matches}
+
+    # 1) beraberlik 2-2, lig 600
+    assert by_id[19443228].league_external_id == 600
+    assert by_id[19443228].home_team_external_id == 1041   # Rizespor ev
+    assert by_id[19443228].away_team_external_id == 554     # Beşiktaş deplasman
+    assert by_id[19443228].home_score == 2
+    assert by_id[19443228].away_score == 2
+
+    # 2) kupa 606, Beşiktaş ev sahibi 4-1
+    assert by_id[19609286].league_external_id == 606
+    assert by_id[19609286].home_team_external_id == 554
+    assert by_id[19609286].home_score == 4
+    assert by_id[19609286].away_score == 1
+
+    # 3) lig 600, Beşiktaş ev sahibi 1-0
+    assert by_id[19443076].home_score == 1
+    assert by_id[19443076].away_score == 0
+    assert all(m.status == "FT" for m in matches)
+
+
+def test_parse_schedule_skips_broken_rows():
+    data = [
+        {"id": None},                       # id yok → atla
+        "garbage",                          # dict değil → atla
+        SCHEDULE[0],                        # geçerli
+    ]
+    matches = Sportmonks.parse_schedule(data)  # type: ignore[arg-type]
+    assert len(matches) == 1
+    assert matches[0].external_id == 19443228
+
+
+# ── parse_squad (takım kadrosu) ───────────────────────────────────────────────
+
+# Gerçek squads/teams/554 yanıtının kompakt alt-kümesi (3 oyuncu):
+SQUAD = [
+    {
+        "player_id": 37259977, "team_id": 554, "position_id": 25, "jersey_number": 39,
+        "player": {
+            "id": 37259977, "name": "David Jurásek", "display_name": "David Jurásek",
+            "position_id": 25, "date_of_birth": "2000-08-07",
+            "nationality": {"id": 245, "name": "Czech Republic"},
+        },
+    },
+    {
+        "player_id": 37650803, "team_id": 554, "position_id": 25, "jersey_number": 22,
+        "player": {
+            "id": 37650803, "name": "Taylan Bulut", "display_name": "Taylan Bulut",
+            "position_id": 25, "date_of_birth": "2006-01-19",
+            "nationality": {"id": 11, "name": "Germany"},
+        },
+    },
+    {
+        "player_id": 1441, "team_id": 554, "position_id": 25, "jersey_number": 3,
+        "player": {
+            "id": 1441, "name": "Gabriel Armando de Abreu", "display_name": "Gabriel Paulista",
+            "position_id": 25, "date_of_birth": "1990-11-26",
+            "nationality": {"id": 5, "name": "Brazil"},
+        },
+    },
+]
+
+
+def test_parse_squad_master_data():
+    players = Sportmonks.parse_squad(SQUAD)
+    by_id = {p.external_id: p for p in players}
+    assert len(players) == 3
+
+    # display_name tercih edilir
+    assert by_id[1441].name == "Gabriel Paulista"
+    # gerçek uyruk adı (nested nationality)
+    assert by_id[37259977].nationality == "Czech Republic"
+    assert by_id[37650803].nationality == "Germany"
+    # pozisyon kodu (25 → Defender) + doğum tarihi
+    assert by_id[1441].position == football.POSITION_DEFENDER
+    bd = by_id[37650803].birth_date
+    assert bd is not None and bd.year == 2006
+
+
+def test_parse_squad_position_fallback_to_root():
+    # player objesinde position_id yoksa kök kayıttan alınır
+    data = [{
+        "player_id": 99, "position_id": 27,  # 27 = Forward (kökte)
+        "player": {"id": 99, "name": "Test FW", "date_of_birth": "1999-01-01"},
+    }]
+    players = Sportmonks.parse_squad(data)
+    assert players[0].position == football.POSITION_FORWARD
+
+
+def test_parse_squad_skips_entries_without_player():
+    data = [
+        {"player_id": 1},          # nested player yok → atla
+        "garbage",                 # dict değil → atla
+        SQUAD[0],                  # geçerli
+    ]
+    players = Sportmonks.parse_squad(data)  # type: ignore[arg-type]
+    assert len(players) == 1
+    assert players[0].external_id == 37259977

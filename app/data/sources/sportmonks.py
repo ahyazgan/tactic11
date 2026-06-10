@@ -16,7 +16,7 @@ boş kalır, kırılmaz).
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import httpx
@@ -69,7 +69,7 @@ _DETAIL_FIELD_BY_TYPE: dict[int, str] = {
     100: "interceptions",           # ✓ Interceptions
     117: "key_passes",              # ✓ Key Passes
     57: "saves",                    # (?) Saves (kaleci maçıyla teyit)
-    88: "goals_conceded",           # (?) Goals Conceded (kaleci maçıyla teyit)
+    88: "goals_conceded",           # ✓ Goals Conceded (squad yanıtı GOALS_CONCEDED)
 }
 
 
@@ -102,6 +102,10 @@ class Sportmonks:
         "lineups.details;lineups.xglineup;xgfixture"
     )
 
+    # Fikstür listesi (takım programı) için yeterli include — skor/karar/kimlik.
+    # Oyuncu-başı detay gerekmez (o, fixture başına FIXTURE_INCLUDE ile çekilir).
+    SCHEDULE_INCLUDE = "participants;league;state;scores"
+
     def __init__(self, api_key: str | None = None, base_url: str | None = None) -> None:
         s = get_settings()
         self._key = api_key if api_key is not None else s.sportmonks_api_key
@@ -130,6 +134,42 @@ class Sportmonks:
         self._fixture_cache[fid] = raw
         return raw
 
+    def _get_team_fixtures(
+        self, team_id: int, *, days_back: int = 365,
+    ) -> list[dict[str, Any]]:
+        """Takımın `days_back` günlük penceresindeki fixture'larını çek (data listesi).
+
+        Sportmonks: `fixtures/between/{from}/{to}/{teamId}`. Sayfalama varsa
+        tüm sayfalar toplanır (pagination.has_more)."""
+        if not self._key:
+            raise RuntimeError(
+                "SPORTMONKS_API_KEY boş. .env'e anahtar girin ya da testte "
+                "parse_schedule saf fonksiyonunu doğrudan kullanın."
+            )
+        today = datetime.now(tz=UTC).date()
+        start = today - timedelta(days=days_back)
+        url = f"{self._base_url}/fixtures/between/{start}/{today}/{team_id}"
+        s = get_settings()
+        out: list[dict[str, Any]] = []
+        page = 1
+        log.info("sportmonks GET fixtures/between team=%d", team_id)
+        with httpx.Client(timeout=s.http_timeout_seconds) as client:
+            while True:
+                params = {
+                    "api_token": self._key,
+                    "include": self.SCHEDULE_INCLUDE,
+                    "page": page,
+                }
+                r = client.get(url, params=params)
+                r.raise_for_status()
+                body = r.json()
+                out.extend(body.get("data", []) or [])
+                pag = body.get("pagination") or {}
+                if not pag.get("has_more") or page >= 50:
+                    break
+                page += 1
+        return out
+
     # ── Public (ingest sözleşmesi) ────────────────────────────────────────────
     def get_fixture_lineups(self, fixture_id: int) -> list[LineupEntry]:
         return self.parse_lineups(self.get_fixture(fixture_id))
@@ -139,6 +179,18 @@ class Sportmonks:
 
     def get_match(self, fixture_id: int) -> Match:
         return self.parse_match(self.get_fixture(fixture_id))
+
+    def get_team_matches(self, team_id: int, last_n: int) -> list[Match]:
+        """Bir takımın son `last_n` (oynanmış) maçı — en yeni önce.
+
+        Sportmonks `fixtures/between/{from}/{to}/{teamId}` ile tarih penceresi
+        çekilir; bitmiş maçlar kickoff'a göre azalan sıralanıp ilk last_n alınır.
+        """
+        raw_list = self._get_team_fixtures(team_id)
+        matches = self.parse_schedule(raw_list)
+        finished = [m for m in matches if m.status in football.FINISHED_STATUSES]
+        finished.sort(key=lambda m: m.kickoff, reverse=True)
+        return finished[: max(0, last_n)]
 
     # ── Saf parser'lar (test girişi = ham fixture JSON) ───────────────────────
     @staticmethod
@@ -191,6 +243,22 @@ class Sportmonks:
         )
 
     @staticmethod
+    def parse_schedule(data: list[dict[str, Any]]) -> list[Match]:
+        """Fikstür listesi (takım programı) → Match listesi.
+
+        Her eleman tek fixture objesidir (parse_match ile aynı yapı). Kimliği
+        çözülemeyen (id yok) ya da bozuk kayıtlar atlanır — liste kırılmaz."""
+        out: list[Match] = []
+        for f in data or []:
+            if not isinstance(f, dict) or f.get("id") is None:
+                continue
+            try:
+                out.append(Sportmonks.parse_match(f))
+            except (KeyError, ValueError, TypeError) as e:  # noqa: PERF203
+                log.warning("schedule fixture atlandı id=%s: %s", f.get("id"), e)
+        return out
+
+    @staticmethod
     def parse_teams(raw: dict[str, Any]) -> list[Team]:
         """Fixture participants'tan Team listesi (sync için temel kimlik)."""
         out: list[Team] = []
@@ -211,8 +279,9 @@ class Sportmonks:
     def _player_to_domain(p: dict[str, Any]) -> Player | None:
         """Sportmonks player objesi → Player domain (master veri).
 
-        nationality_id numerik (ülke adı tablosu yok) → şimdilik None. Foto
-        (image_path) Player modelinde yok; media proxy aşamasında ele alınır.
+        Uyruk: `nationality` nested objesi varsa (squad include eder) adı alınır;
+        yoksa None (fixture lineups yalnız nationality_id verir). Foto (image_path)
+        Player modelinde yok; media proxy aşamasında ele alınır.
         """
         pid = _as_int(p.get("id"))
         if pid is None:
@@ -224,14 +293,40 @@ class Sportmonks:
                 dob = datetime.strptime(str(raw_dob), "%Y-%m-%d").date()
             except ValueError:
                 dob = None
+        nat = None
+        nat_obj = p.get("nationality")
+        if isinstance(nat_obj, dict):
+            nat = nat_obj.get("name") or None
         return Player(
             sport=football.SPORT_NAME,
             external_id=pid,
             name=str(p.get("display_name") or p.get("name") or "unknown"),
             position=_POSITION_MAP.get(_as_int(p.get("position_id")) or -1),
             birth_date=dob,
-            nationality=None,
+            nationality=nat,
         )
+
+    @staticmethod
+    def parse_squad(data: list[dict[str, Any]]) -> list[Player]:
+        """Takım kadrosu (squads/teams/{id}) → Player master listesi.
+
+        Her eleman bir oyuncu-sezon kaydıdır; `player` nested objesinden master
+        veri (ad/pozisyon/doğum/uyruk) türetilir. position_id kök seviyede de var
+        (player objesinde yoksa fallback). Aynı oyuncu tekilleştirilir."""
+        by_id: dict[int, Player] = {}
+        for entry in data or []:
+            if not isinstance(entry, dict):
+                continue
+            p = entry.get("player")
+            if not isinstance(p, dict):
+                continue
+            # position_id player'da yoksa kök kayıttan al
+            if p.get("position_id") is None and entry.get("position_id") is not None:
+                p = {**p, "position_id": entry.get("position_id")}
+            dom = Sportmonks._player_to_domain(p)
+            if dom is not None and dom.external_id not in by_id:
+                by_id[dom.external_id] = dom
+        return list(by_id.values())
 
     @staticmethod
     def parse_players(raw: dict[str, Any]) -> list[Player]:
