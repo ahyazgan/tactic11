@@ -565,3 +565,34 @@ register(JobSpec(
         "için lineup + pre_match agent çalıştır. Idempotent (gün başına bir kez)."
     ),
 ))
+
+
+def appearance_backfill_handler(
+    *, tenant_id: str | None = None, limit: int | None = 30,
+) -> None:
+    """FT maçlar için lineup + player-stats ingest (quota-aware, idempotent).
+
+    Oyuncu sezon istatistiği (/players/{id}/season-stats) ve FM-tarzı özellik
+    türetimi bu veriden beslenir. Gece çalıştırılırsa gün içindeki maçların
+    kadro/istatistikleri ertesi sabah panelde hazır olur.
+    """
+    from app.data.ingest.backfill import backfill_appearances
+    from app.db.tenant_context import DEFAULT_TENANT_ID
+
+    report = backfill_appearances(
+        tenant_id=tenant_id or DEFAULT_TENANT_ID, limit=limit,
+    )
+    log.info(
+        "job appearance_backfill: candidates=%s processed=%s failed=%s",
+        report["candidates"], report["processed"], report["failed"],
+    )
+
+
+register(JobSpec(
+    name="appearance_backfill",
+    handler=appearance_backfill_handler,
+    description=(
+        "Bitmiş maçlar için lineup + oyuncu istatistik ingest'i — sezon "
+        "istatistiği ve özellik türetimi beslenir. Quota-aware, idempotent."
+    ),
+))
