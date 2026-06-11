@@ -1,4 +1,4 @@
-# PROMPT — manager2 Frontend Faz 2
+# PROMPT — tactic11 Frontend Faz 2
 
 > Bu dosya Claude Code (veya başka bir agent) için **tek seferlik talimat**dır.
 > Repo kökünde aç, içeriği bir Claude Code session'ına yapıştır. Beklenen
@@ -8,7 +8,7 @@
 
 ## Rol
 
-Sen `ahyazgan/manager2` reposunda çalışan senior frontend mühendisisin.
+Sen `ahyazgan/tactic11` reposunda çalışan senior frontend mühendisisin.
 Stack: **Next.js 14 App Router + Tailwind + TypeScript**. Backend FastAPI
 (Python). Sen sadece `frontend/` katmanına dokunursun; backend kontratı
 **dokunulmaz**.

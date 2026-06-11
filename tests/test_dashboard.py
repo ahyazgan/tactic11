@@ -26,7 +26,7 @@ def test_dashboard_returns_html(client):
     assert r.status_code == 200
     assert r.headers["content-type"].startswith("text/html")
     body = r.text
-    assert "manager2" in body
+    assert "tactic11" in body
     assert "X-API-Key" in body
     # Sürdürülen endpoint'ler dashboard.js içinde referans alınmalı
     assert "/admin/db-stats" in body

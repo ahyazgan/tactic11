@@ -21,7 +21,7 @@ from app.notifications.base import NotificationChannel, NotificationResult
 log = get_logger(__name__)
 
 # Mesaj konusu (ilk satır özet olarak kullanılır, yoksa bu sabit).
-DEFAULT_SUBJECT = "manager2 bildirim"
+DEFAULT_SUBJECT = "tactic11 bildirim"
 
 
 def _subject_from_text(text: str) -> str:

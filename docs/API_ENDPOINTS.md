@@ -1,4 +1,4 @@
-# manager2 — API Endpoint Referansı
+# tactic11 — API Endpoint Referansı
 
 Otomatik üretildi (2026-06-07). `app/api/*.py` router'larından.
 Toplam **121** endpoint. Ekran/sözlük

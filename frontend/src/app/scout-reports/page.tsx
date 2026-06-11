@@ -24,13 +24,13 @@ interface Report {
 
 const REPORTS: Report[] = [
   { player: "Mateo Ferreira", pos: "Sol Kanat", age: 19, club: "CA Rosario", scout: "H. Demir", date: "2026-06-05", rating: 4.5, watches: 6, rec: "İmzala",
-    summary: "Sol ayağı çok güçlü, 1v1'de %68 başarı. İçeri kat edip bitiriyor; savunmada efor değişken. Tolga'nın rotasyon/halefi profili." },
+    summary: "Sol ayağı çok güçlü, 1v1'de %68 başarı. İçeri kat edip bitiriyor; savunmada efor değişken. Cengiz Ünder'in rotasyon/halefi profili." },
   { player: "Luka Novak", pos: "Ön Libero", age: 23, club: "NK Maribor", scout: "A. Yıldız", date: "2026-06-03", rating: 4.0, watches: 4, rec: "İmzala",
-    summary: "Pas %91, top kazanımı maç başına 7.2. Tempo kontrolü iyi; uzun pas dağarcığı sınırlı. Serkan'ın yanına ideal denge oyuncusu." },
+    summary: "Pas %91, top kazanımı maç başına 7.2. Tempo kontrolü iyi; uzun pas dağarcığı sınırlı. Ndidi'nin yanına ideal denge oyuncusu." },
   { player: "Diego Sánchez", pos: "Santrfor", age: 21, club: "Dep. Cali", scout: "H. Demir", date: "2026-05-29", rating: 3.5, watches: 3, rec: "İzlemeye devam",
     summary: "Ceza sahası içi içgüdüsü yüksek (xG fazlası +0.18). Sırtı dönük oyunda zayıf. Bir sezon daha izlenmeli, fiyat/performans iyi." },
   { player: "Kwame Mensah", pos: "Stoper", age: 20, club: "Asante Kotoko", scout: "M. Kaya", date: "2026-05-24", rating: 4.0, watches: 5, rec: "İmzala",
-    summary: "Hava hakimiyeti %79, hız çok iyi (10m 1.71). Sol ayak kullanımı gelişmeli. Eren'in (33) yaş sorununa uzun vadeli çözüm." },
+    summary: "Hava hakimiyeti %79, hız çok iyi (10m 1.71). Sol ayak kullanımı gelişmeli. Uduokhai'nin (33) yaş sorununa uzun vadeli çözüm." },
   { player: "Tom Bauer", pos: "Sağ Bek", age: 24, club: "SV Wehen", scout: "A. Yıldız", date: "2026-05-20", rating: 3.0, watches: 2, rec: "Geç",
     summary: "Hücum katkısı sınırlı, orta kalitesi düşük. Savunmada disiplinli ama profilimize (yüksek bek) uymuyor." },
 ];

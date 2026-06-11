@@ -418,14 +418,17 @@ function ShotMap({ shots }: { shots: Shot[] }) {
 // "Skor değil, üretilen şans" perspektifinden lig konumu.
 // --------------------------------------------------------------------------- //
 interface LeagueXgRow { team: string; xgf: number; xga: number; pts: number }
+// Puanlar leagues/page.tsx kanonik puan durumuyla TUTARLI (iki sayfa çelişmesin).
+// xGF/xGA gerçek gole yakın ama birebir değil — xG'nin amacı zaten bu farkı göstermek.
 const DEMO_LEAGUE: LeagueXgRow[] = [
-  { team: "Konyaspor", xgf: 61.2, xga: 32.1, pts: 74 },
-  { team: "Gaziantep FK", xgf: 55.8, xga: 38.4, pts: 68 },
-  { team: DEMO_CLUB, xgf: 52.3, xga: 41.0, pts: 63 },
-  { team: "Trabzonspor", xgf: 48.1, xga: 44.7, pts: 58 },
-  { team: "Kasımpaşa", xgf: 44.9, xga: 46.2, pts: 52 },
-  { team: "Eyüpspor", xgf: 41.0, xga: 49.8, pts: 47 },
-  { team: "Sivasspor", xgf: 38.7, xga: 53.1, pts: 41 },
+  { team: "Galatasaray", xgf: 66.5, xga: 30.4, pts: 78 },
+  { team: DEMO_CLUB, xgf: 63.8, xga: 33.2, pts: 76 },
+  { team: "Fenerbahçe", xgf: 60.1, xga: 35.8, pts: 71 },
+  { team: "Trabzonspor", xgf: 53.4, xga: 36.1, pts: 66 },
+  { team: "Samsunspor", xgf: 50.2, xga: 42.5, pts: 62 },
+  { team: "Başakşehir", xgf: 46.8, xga: 44.3, pts: 57 },
+  { team: "Eyüpspor", xgf: 44.1, xga: 47.9, pts: 53 },
+  { team: "Kasımpaşa", xgf: 40.5, xga: 46.8, pts: 49 },
 ];
 
 type LeagueSortKey = "xgf" | "xga" | "xgd" | "pts";

@@ -28,8 +28,8 @@ def test_is_configured_true_when_complete() -> None:
 def test_subject_from_text_strips_markdown() -> None:
     assert _subject_from_text("# Başlık\nikinci satır") == "Başlık"
     assert _subject_from_text("**kalın** uyarı") == "kalın** uyarı".lstrip("*")
-    assert _subject_from_text("") == "manager2 bildirim"
-    assert _subject_from_text("   \n  ") == "manager2 bildirim"
+    assert _subject_from_text("") == "tactic11 bildirim"
+    assert _subject_from_text("   \n  ") == "tactic11 bildirim"
 
 
 def test_subject_truncated() -> None:

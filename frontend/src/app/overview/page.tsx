@@ -21,6 +21,11 @@ import { PlayerAvatar } from "@/lib/player-avatar";
 const POS_BY_ID: Record<string, string> = Object.fromEntries(
   demoSquad.map((p) => [String(p.player_id), p.position]),
 );
+
+// Oyuncu id → forma numarası (ekranda iç id DEĞİL forma gösterilir).
+const SHIRT_BY_ID: Record<string, number> = Object.fromEntries(
+  demoSquad.map((p) => [String(p.player_id), p.shirt]),
+);
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -420,7 +425,7 @@ export default function OverviewConsolePage() {
         <div className="demobar">
           <span style={{ fontSize: 15 }}>🔌</span>
           <span><b>Demo modu</b> — veri sunucusu (backend) bağlı değil, sayılar 0 görünüyor. Bağlanınca tüm ekranlar gerçek veriyle dolar.</span>
-          <a className="db-cta" href="https://github.com/ahyazgan/manager2#-canlıya-alma-3-dakika" target="_blank" rel="noreferrer">Nasıl bağlanır?</a>
+          <a className="db-cta" href="https://github.com/ahyazgan/tactic11#-canlıya-alma-3-dakika" target="_blank" rel="noreferrer">Nasıl bağlanır?</a>
         </div>
       )}
 
@@ -502,7 +507,7 @@ export default function OverviewConsolePage() {
                   style={{ cursor: "pointer" }}
                 >
                   <td className="pnum c">{i + 1}</td>
-                  <td><span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><PlayerAvatar name={p.player_name} position={POS_BY_ID[p.player_id]} size={20} /><span className="nm">{p.player_name}</span> <span className="nat">#{p.player_id}</span></span></td>
+                  <td><span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><PlayerAvatar name={p.player_name} position={POS_BY_ID[p.player_id]} size={20} /><span className="nm">{p.player_name}</span> <span className="nat">#{SHIRT_BY_ID[p.player_id] ?? p.player_id}</span></span></td>
                   <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{p.test_count}</td>
                   <td className="c"><span className="cond"><i style={{ width: `${cond}%`, background: condColor(cond) }} /></span></td>
                   <td className="c" style={{ color: "var(--dim)", fontFamily: "JetBrains Mono", fontSize: "11px" }}>{p.latest_test_date ?? "—"}</td>

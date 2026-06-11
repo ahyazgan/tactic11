@@ -1,4 +1,4 @@
-# manager2 frontend — Next.js 14 App Router
+# tactic11 frontend — Next.js 14 App Router
 
 **Durum:** Scaffold + giriş + maç listesi + chat widget. **Tam ürün için
 ~3 hafta tam zamanlı geliştirme gerekir** (Prompt 5 brief).

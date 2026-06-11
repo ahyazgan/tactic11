@@ -226,8 +226,8 @@ export default function PhysicalPanelPage() {
       <div className="topbar">
         <div className="brand">
           <Link href="/" className="pp-back" title="Uygulamaya dön">←</Link>
-          <div className="mark">m2</div>
-          <h1>manager2 <span>/ Performans Modülü</span></h1>
+          <div className="mark">t11</div>
+          <h1>tactic11 <span>/ Performans Modülü</span></h1>
           <nav style={{ display: "flex", gap: 2, marginLeft: 18 }}>
             <span
               style={{

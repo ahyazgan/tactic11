@@ -26,7 +26,7 @@ log = get_logger(__name__)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="manager2 scheduler daemon")
+    parser = argparse.ArgumentParser(description="tactic11 scheduler daemon")
     parser.add_argument("--interval", type=int, default=30, help="Tick aralığı, saniye")
     parser.add_argument("--once", action="store_true", help="Tek tarama yap ve çık (cron modu)")
     args = parser.parse_args()

@@ -3,33 +3,33 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-  /* Kulüp marka rengi — tenant'a göre runtime'da override edilebilir. */
-  --brand: #e30613;
-  /* Tema paleti — KOYU (varsayılan). Tailwind token'ları bunları okur. */
-  --c-bg: #14171c;
-  --c-surface: #1a1d24;
-  --c-surface2: #21252e;
-  --c-elevated: #272c37;
-  --c-border: #2c3038;
-  --c-borderlt: #3a3f4a;
-  --c-text: #e4e7ec;
-  --c-textmut: #9aa1ad;
-  --c-textdim: #6b7280;
+  color-scheme: light;
+  /* Kulüp marka rengi — adaçayı & koyu yeşil tema (tenant override edilebilir). */
+  --brand: #1e6b41;
+  /* Tema paleti — ADAÇAYI (açık yeşilimsi). Tailwind token'ları bunları okur. */
+  --c-bg: #eaf0ea;
+  --c-surface: #ffffff;
+  --c-surface2: #e1eae1;
+  --c-elevated: #d3e0d3;
+  --c-border: #d5e0d5;
+  --c-borderlt: #bccdbc;
+  --c-text: #1b261e;
+  --c-textmut: #53635a;
+  --c-textdim: #86978c;
 }
 
-/* Tema paleti — AÇIK. <html class="light"> ile aktifleşir. */
+/* Tema paleti — AÇIK. <html class="light"> ile aktifleşir (adaçayı ile aynı). */
 html.light {
   color-scheme: light;
-  --c-bg: #f3f5f9;
+  --c-bg: #eaf0ea;
   --c-surface: #ffffff;
-  --c-surface2: #eef1f6;
-  --c-elevated: #e5e9f0;
-  --c-border: #d7dce5;
-  --c-borderlt: #c3cad6;
-  --c-text: #1a1f2e;
-  --c-textmut: #5a6276;
-  --c-textdim: #8b94a8;
+  --c-surface2: #e1eae1;
+  --c-elevated: #d3e0d3;
+  --c-border: #d5e0d5;
+  --c-borderlt: #bccdbc;
+  --c-text: #1b261e;
+  --c-textmut: #53635a;
+  --c-textdim: #86978c;
 }
 
 /* NOT: .ovroot artık kendi FM26 açık paletini shell.tsx içinde tanımlıyor
@@ -75,8 +75,8 @@ html.light .pp-root .card {
 }
 
 /* Mobilde alt tab bar varken tema düğmesini yukarı al (üst üste binmesin). */
-@media (max-width: 900px) {
-  button[aria-label="Tema değiştir"] { bottom: 70px !important; }
+@media (max-width: 767px) {
+  button[aria-label="Tema değiştir"] { bottom: 76px !important; }
 }
 
 html, body { background: theme('colors.bg'); color: theme('colors.text'); }
@@ -110,9 +110,9 @@ input[type="submit"][data-touch="true"] {
   h2 { font-size: 1rem !important; }
 }
 
-/* PWA: telefon/tablet DİKEYKEN yatay çevirmeyi iste (uygulama yatay tasarlandı).
-   Yatayda (ve PC'de width>1024) overlay gözükmez → uygulama açılır. */
-@media (orientation: portrait) and (max-width: 1024px) {
+/* PWA: yalnız TELEFON dikeyken yatay çevirmeyi iste.
+   Tabletler (≥768px) dikeyde de çalışır — çekmece menü + tek akış düzen. */
+@media (orientation: portrait) and (max-width: 767px) {
   body::before {
     content: "↻  Lütfen cihazınızı yatay çevirin";
     position: fixed;

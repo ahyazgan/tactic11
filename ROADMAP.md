@@ -66,7 +66,7 @@ dışarı hesap. DB/API/LLM bilmez.
 - [x] `scheduler/runner.py` — `run_job(name, **kwargs)` retry + exponential backoff;
       bir çağrı = bir `job_runs` satırı; status/attempts/error denetlenebilir
 - [x] `scripts/run_job.py` — dış cron buradan tetikler (`--list`, `--max-attempts`)
-- Cron örneği: `0 6 * * * cd /opt/manager2 && venv/bin/python scripts/run_job.py sync_league --league 203 --season 2024`
+- Cron örneği: `0 6 * * * cd /opt/tactic11 && venv/bin/python scripts/run_job.py sync_league --league 203 --season 2024`
 
 ---
 

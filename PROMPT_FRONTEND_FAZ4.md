@@ -1,4 +1,4 @@
-# PROMPT — manager2 Frontend Faz 4 (Saha-içi Uygulanabilir)
+# PROMPT — tactic11 Frontend Faz 4 (Saha-içi Uygulanabilir)
 
 > FAZ2 + FAZ3 tamamlandıktan sonra çalıştırılır. Bu turda backend'in
 > 4 saha-içi sınıfı (player_feedback, training_plan, substitution_chess,
@@ -10,7 +10,7 @@
 
 ## Rol
 
-`ahyazgan/manager2` frontend mühendisisin. Stack: **Next.js 14 App Router
+`ahyazgan/tactic11` frontend mühendisisin. Stack: **Next.js 14 App Router
 + Tailwind + TypeScript**. Backend dokunulmaz.
 
 ## Mutlak kurallar

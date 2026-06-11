@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#0c0e14"/>
-  <rect x="64" y="64" width="384" height="384" rx="64" fill="#141823" stroke="#262d3d" stroke-width="4"/>
-  <text x="256" y="300" font-family="Arial, sans-serif" font-size="200" font-weight="900" fill="#ffffff" text-anchor="middle">m2</text>
-  <rect x="160" y="350" width="192" height="14" rx="7" fill="#e30613"/>
+  <!-- tactic11 favicon/PWA ikonu — "Taktik Oku" amblemi (yatay logonun kare hâli). -->
+  <rect width="512" height="512" rx="117" fill="#1e6b41"/>
+  <circle cx="149" cy="373" r="36" fill="#ffffff"/>
+  <path d="M149 373 C 208 245, 277 229, 352 155" stroke="#ffffff" stroke-width="28" stroke-dasharray="48 36" stroke-linecap="round" fill="none"/>
+  <polygon points="389,112 288,155 347,219" fill="#ffffff"/>
 </svg>

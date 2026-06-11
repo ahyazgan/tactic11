@@ -211,7 +211,7 @@ export interface OverviewKpi { label: string; value: string; sub: string }
 export const demoOverviewKpis: OverviewKpi[] = [
   { label: "Kadro Hazırlığı", value: "%81", sub: "ort. kondisyon" },
   { label: "Sahaya Hazır", value: "20/24", sub: "4 oyuncu riskli" },
-  { label: "Kritik Risk", value: "1", sub: "Orkun Kökçü (8)" },
+  { label: "Kritik Risk", value: "1", sub: "Orkun Kökçü (10)" },
   { label: "Sıradaki Maç", value: "2 gün", sub: "Antalyaspor (D)" },
   { label: "Galibiyet Olasılığı", value: "%48", sub: "model tahmini" },
 ];
@@ -614,7 +614,7 @@ export const demoLive: DemoLive = {
     { type: "press_height", urgency: "medium", recommendation:
       "Momentum 8 dakikadır rakipte — pres hattını düşür, orta blokta dengeyi yeniden kur." },
     { type: "channel_shift", urgency: "medium", recommendation:
-      "Rakip sol koridorumuzdan (Rıdvan Yılmaz, 3) sürekli giriyor — hücum yükünü sağ kanada (Tolga, 7) kaydır." },
+      "Rakip sol koridorumuzdan (Rıdvan Yılmaz, 3) sürekli giriyor — hücum yükünü sağ kanada (Milot Rashica, 7) kaydır." },
   ],
   matchup: {
     struggling_defender: 3,
@@ -630,7 +630,7 @@ export const demoLive: DemoLive = {
     shape_state: "orta blok dağınık",
     alerts: [
       "Hatlar arası boşluk açıldı (~18m) — rakip 10 numarası bu alana sızıyor.",
-      "Sağ kanatta sayısal üstünlük (Tolga + Burak) — geçiş anında bu tarafı kullan.",
+      "Sağ kanatta sayısal üstünlük (Rashica + Murillo) — geçiş anında bu tarafı kullan.",
     ],
   },
   closing: {

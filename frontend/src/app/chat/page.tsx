@@ -158,17 +158,17 @@ export default function ChatConsolePage() {
             {messages.length === 0 && (
               <div style={{ textAlign: "center", color: "var(--muted)", fontSize: 13, marginTop: 40 }}>
                 <div style={{ fontSize: 30, marginBottom: 8 }}>⚽</div>
-                manager2 AI gerçek kulüp verinizle çalışır.<br />Bir şey sorun ya da sağdan başlayın.
+                tactic11 AI gerçek kulüp verinizle çalışır.<br />Bir şey sorun ya da sağdan başlayın.
               </div>
             )}
             {messages.map((m, i) => (
               <div key={i} style={{ marginBottom: 22, display: "flex", gap: 12 }}>
                 <div style={{ ...avatarBase, ...(m.role === "assistant" ? aiAvatar : { background: "var(--besiktas)" }) }}>
-                  {m.role === "user" ? "S" : "m2"}
+                  {m.role === "user" ? "S" : "t11"}
                 </div>
                 <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
                   <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--dim)", marginBottom: 4 }}>
-                    {m.role === "user" ? "Teknik Ekip" : "manager2 AI"}
+                    {m.role === "user" ? "Teknik Ekip" : "tactic11 AI"}
                   </div>
                   {m.tools && m.tools.length > 0 && (
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, margin: "8px 0" }}>
@@ -187,7 +187,7 @@ export default function ChatConsolePage() {
             ))}
             {loading && (
               <div style={{ marginBottom: 22, display: "flex", gap: 12 }}>
-                <div style={{ ...avatarBase, ...aiAvatar }}>m2</div>
+                <div style={{ ...avatarBase, ...aiAvatar }}>t11</div>
                 <div style={{ paddingTop: 6, fontSize: 13, color: "var(--muted)" }}>düşünüyor…</div>
               </div>
             )}
@@ -218,7 +218,7 @@ export default function ChatConsolePage() {
               </button>
             </div>
             <div style={{ textAlign: "center", fontSize: 10.5, color: "var(--dim)", marginTop: 10, fontFamily: "JetBrains Mono" }}>
-              manager2 AI gerçek kulüp verinizle çalışır · yanıtlar audit log&apos;a kaydedilir
+              tactic11 AI gerçek kulüp verinizle çalışır · yanıtlar audit log&apos;a kaydedilir
             </div>
           </div>
         </div>

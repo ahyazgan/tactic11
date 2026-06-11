@@ -1,5 +1,5 @@
-// manager2 PWA service worker — minimal, network-first.
-const CACHE = "manager2-v2";
+// tactic11 PWA service worker — minimal, network-first.
+const CACHE = "tactic11-v2";
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) =>
   e.waitUntil(

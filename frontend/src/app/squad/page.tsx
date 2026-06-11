@@ -73,6 +73,11 @@ const POS_BY_ID: Record<string, string> = Object.fromEntries(
   demoSquad.map((p) => [String(p.player_id), p.position]),
 );
 
+// Oyuncu id → forma numarası (ekranda iç id DEĞİL forma gösterilir).
+const SHIRT_BY_ID: Record<string, number> = Object.fromEntries(
+  demoSquad.map((p) => [String(p.player_id), p.shirt]),
+);
+
 // ── Kadro Derinliği (engine.squad_depth aynası) ──────────────────────────────
 // Eşikler app/engine/squad_depth/compute.py ile birebir: pozisyon başına ideal
 // minimum + yaşlanma eşiği 31. Demo demoSquad'tan; canlıda GET
@@ -264,7 +269,7 @@ export default function SquadConsolePage() {
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
                       <PlayerAvatar name={p.player_name} position={POS_BY_ID[p.player_id]} size={22} />
                       <span className="nm">{p.player_name}</span>
-                      <span className="nat">#{p.player_id}</span>
+                      <span className="nat">#{SHIRT_BY_ID[p.player_id] ?? p.player_id}</span>
                     </span>
                   </td>
                   <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{p.test_count}</td>

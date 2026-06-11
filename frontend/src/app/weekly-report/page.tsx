@@ -377,7 +377,7 @@ export default function WeeklyReportPage() {
           </div>
         )}
         <div style={{ padding: "12px 22px", borderTop: "1px solid var(--line)", fontSize: 11, color: "var(--dim)", display: "flex", justifyContent: "space-between" }}>
-          <span>manager2 · gerçek verilerden otomatik üretildi</span>
+          <span>tactic11 · gerçek verilerden otomatik üretildi</span>
           <span>Sonraki gönderim: Pazartesi 09:00</span>
         </div>
       </div>

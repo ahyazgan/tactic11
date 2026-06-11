@@ -309,7 +309,7 @@ function DemoTacticalContent({ rawId }: { rawId: string }) {
   const POS_LABEL: Record<Position, string> = { GK: "Kaleci", DF: "Defans", MF: "Orta Saha", FW: "Forvet" };
 
   // Sağ panel: koridor dağılımı (donut) + pres direnci + eşleşme.
-  const laneColors = ["var(--accent)", "#7c5ce0", "#a78bfa", "#c4b5fd"];
+  const laneColors = ["var(--accent)", "#0f7e8c", "#b07d18", "#8fae9c"];
   const right = (
     <>
       <div className="rc">

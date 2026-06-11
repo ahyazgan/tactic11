@@ -73,7 +73,7 @@ export function TopBar() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 h-12 bg-surface border-b border-border z-30 flex items-center px-4 gap-3">
-        <div className="font-semibold text-text text-[13px]">manager2</div>
+        <div className="font-semibold text-text text-[13px]">tactic11</div>
         <div className="text-textdim">·</div>
         <div className="text-[11px] text-textmut">
           {user?.tenant_slug ?? user?.tenant_id ?? "—"}

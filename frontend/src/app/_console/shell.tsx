@@ -18,6 +18,7 @@ import Link from "next/link";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { DataSourceStrip, type SourceId } from "@/lib/data-source";
 import { Crest } from "@/lib/teams";
+import { demoLive } from "@/lib/demo-data";
 
 // Demo: canlı maç ekranına markasız sabit hedef (id "demo" → sayfa mock gösterir).
 const DEMO_LIVE_HREF = "/matches/demo/live";
@@ -106,36 +107,77 @@ export interface ConsoleShellProps {
 export function ConsoleShell({
   active, title, sub, desc, navBadge, source, right, children,
 }: ConsoleShellProps) {
+  // Tablet/mobil: sidebar çekmece (drawer) olarak açılır.
+  const [menuOpen, setMenuOpen] = React.useState(false);
+
   return (
-    <div className={`ovroot${DEMO_MODE ? " demo" : ""}`}>
+    <div className={`ovroot${DEMO_MODE ? " demo" : ""}${menuOpen ? " nav-open" : ""}`}>
 
       {/* ── FM26 Navbar ── */}
       <header className="navbar">
+        <button
+          type="button"
+          className="menu-btn"
+          aria-label={menuOpen ? "Menüyü kapat" : "Menüyü aç"}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          <i className={`ti ${menuOpen ? "ti-x" : "ti-menu-2"}`} aria-hidden="true" />
+        </button>
         <div className="logo">
-          <div className="logo-badge">m2</div>
-          <span className="logo-name">manager2</span>
+          {/* tactic11 yatay logo — "Taktik Oku" (logo-onizleme #5). Inline SVG:
+              sayfa fontunu ve tema renklerini (--ink/--accent) otomatik alır. */}
+          <svg
+            viewBox="0 0 178 48"
+            role="img"
+            aria-label="tactic11"
+            style={{ height: 32, width: "auto", display: "block" }}
+          >
+            <text
+              x="4" y="29"
+              fontFamily="Inter,'Segoe UI',sans-serif"
+              fontSize="27" fontWeight="800" letterSpacing="-1.2"
+            >
+              <tspan fill="var(--ink)">tactic</tspan>
+              <tspan fill="var(--accent)">11</tspan>
+            </text>
+            <circle cx="8" cy="40" r="3" fill="var(--accent)" />
+            <path
+              d="M8 40 C 40 33, 100 47, 148 38"
+              stroke="var(--accent)" strokeWidth="2.4"
+              strokeDasharray="6 4.5" strokeLinecap="round" fill="none"
+            />
+            <polygon points="158,35.5 146,33.5 148.5,42.5" fill="var(--accent)" />
+          </svg>
         </div>
 
         <div className="nav-right">
-          <div className="search-pill">
-            <span className="sp-icon">⌕</span>
-            <span>Ara…</span>
-          </div>
-          <div className="club-chip">
-            <Crest team="Beşiktaş" size={30} />
-            <div>
-              <div className="cname">Beşiktaş JK</div>
-              <div className="crole">teknik ekip</div>
-            </div>
-          </div>
+          {DEMO_MODE && (
+            <Link href={DEMO_LIVE_HREF} className="live-strip" title={`Canlı maç — konsola git`}>
+              <span className="ls-dot" aria-hidden="true" />
+              <span className="ls-tag">CANLI</span>
+              <Crest team={demoLive.home} size={18} />
+              <span className="ls-score">{demoLive.score[0]}–{demoLive.score[1]}</span>
+              <Crest team={demoLive.away} size={18} />
+              <span className="ls-min">{demoLive.minute}&apos;</span>
+            </Link>
+          )}
         </div>
       </header>
+
+      {/* Çekmece açıkken arka plan karartması (tıklayınca kapanır) */}
+      {menuOpen && <div className="nav-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />}
 
       {/* ── Gövde ── */}
       <div className="cbody">
 
         {/* Sol Sidebar */}
-        <SidebarNav active={active} navBadge={navBadge} />
+        <div className="sidebar-wrap" onClick={(e) => {
+          // Çekmece modunda bir linke dokununca menüyü kapat.
+          if ((e.target as HTMLElement).closest("a")) setMenuOpen(false);
+        }}>
+          <SidebarNav active={active} navBadge={navBadge} />
+        </div>
 
         {/* Orta */}
         <main className="center">
@@ -247,27 +289,29 @@ function SidebarNav({ active, navBadge }: { active: string; navBadge?: number })
 ───────────────────────────────────────────── */
 const CSS = `
 .ovroot{
+  /* ADAÇAYI & KOYU YEŞİL TEMA (önizleme #14) — açık yeşilimsi zemin,
+     beyaz kartlar, koyu yeşil vurgu. */
   --white:#ffffff;
-  --bg:#f4f5f7;
-  --surface:#ffffff;
-  --surface2:#f0f1f4;
-  --border:#e2e4e9;
-  --border2:#ced1d9;
-  --ink:#0d0f14;
-  --muted:#5a6070;
-  --dim:#8e96a3;
-  --accent:#5c35d4;
-  --accent-lt:#ede9fb;
-  --accent-dk:#4526b0;
-  --low:#16a34a;--low-bg:#dcfce7;
-  --mid:#d97706;--mid-bg:#fef3c7;
-  --high:#ea580c;--high-bg:#ffedd5;
-  --crit:#dc2626;--crit-bg:#fee2e2;
+  --bg:#eaf0ea;
+  --surface:#f7faf7;
+  --surface2:#e1eae1;
+  --border:#d5e0d5;
+  --border2:#bccdbc;
+  --ink:#1b261e;
+  --muted:#53635a;
+  --dim:#86978c;
+  --accent:#1e6b41;
+  --accent-lt:#d8ecdd;
+  --accent-dk:#1a5d39;
+  --low:#1e6b41;--low-bg:#d8ecdd;
+  --mid:#ad7a14;--mid-bg:#f3e9cc;
+  --high:#c2410c;--high-bg:#f8e0cf;
+  --crit:#bb2d26;--crit-bg:#f7dedb;
   --besiktas:#e30613;
   /* Geriye-uyum alias'ları — sayfalar bu eski adları kullanıyor. */
-  --panel:#ffffff;--panel2:#f0f1f4;--panel3:#e5e9f0;
-  --line:#e2e4e9;--line2:#ced1d9;
-  --header:#ffffff;--grad:linear-gradient(180deg,#ffffff,#f4f5f7);
+  --panel:#ffffff;--panel2:#e1eae1;--panel3:#d3e0d3;
+  --line:#d5e0d5;--line2:#bccdbc;
+  --header:#ffffff;--grad:linear-gradient(180deg,#ffffff,#eaf0ea);
   position:fixed;inset:0;
   background:var(--bg);color:var(--ink);
   font-family:'Inter','Segoe UI',system-ui,sans-serif;
@@ -282,14 +326,27 @@ const CSS = `
   padding:0 16px;gap:0;flex-shrink:0;
   position:relative;z-index:10;
 }
-.ovroot .logo{display:flex;align-items:center;gap:9px;margin-right:24px;flex-shrink:0}
-.ovroot .logo-badge{
-  width:30px;height:30px;border-radius:9px;
-  background:var(--accent);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;color:#fff;font-size:13px;letter-spacing:-0.5px;
+/* Hamburger — yalnız tablet/mobilde görünür */
+.ovroot .menu-btn{
+  display:none;align-items:center;justify-content:center;
+  width:40px;height:40px;margin-right:6px;flex-shrink:0;
+  background:transparent;border:1px solid transparent;border-radius:10px;
+  color:var(--ink);font-size:21px;cursor:pointer;
+  transition:background .12s,border-color .12s;
 }
-.ovroot .logo-name{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-0.3px}
+.ovroot .menu-btn:hover{background:var(--surface2);border-color:var(--border)}
+.ovroot .menu-btn:active{transform:scale(.94)}
+
+/* Çekmece karartması */
+.ovroot .nav-backdrop{
+  display:none;position:fixed;inset:50px 0 0 0;z-index:60;
+  background:rgba(0,0,0,.45);
+  animation:fadeIn .2s ease both;
+}
+
+.ovroot .sidebar-wrap{display:contents}
+
+.ovroot .logo{display:flex;align-items:center;margin-right:24px;flex-shrink:0}
 
 /* Nav tabs */
 .ovroot .nav-tabs{display:flex;gap:2px;height:100%;align-items:center;overflow-x:auto}
@@ -307,25 +364,37 @@ const CSS = `
 
 /* Sağ araçlar */
 .ovroot .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.ovroot .search-pill{
-  display:flex;align-items:center;gap:6px;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:20px;padding:6px 14px;cursor:pointer;
-  font-size:12.5px;color:var(--dim);
-  transition:border-color .1s;
+
+/* Canlı maç şeridi (FM26 stili, sağ üst) */
+.ovroot .live-strip{
+  display:flex;align-items:center;gap:7px;
+  background:var(--crit-bg);border:1px solid #fca5a5;
+  border-radius:20px;padding:4px 12px 4px 10px;
+  text-decoration:none;cursor:pointer;
+  transition:border-color .12s,box-shadow .12s;
 }
-.ovroot .search-pill:hover{border-color:var(--border2)}
-.ovroot .sp-icon{font-size:15px}
+.ovroot .live-strip:hover{border-color:var(--crit);box-shadow:0 2px 8px rgba(220,38,38,.18)}
+.ovroot .live-strip:focus-visible{outline:2px solid var(--crit);outline-offset:2px}
+.ovroot .ls-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--crit);flex-shrink:0;
+  box-shadow:0 0 0 0 rgba(220,38,38,.5);animation:ls-pulse 1.6s ease-out infinite;
+}
+@keyframes ls-pulse{
+  0%{box-shadow:0 0 0 0 rgba(220,38,38,.5)}
+  70%{box-shadow:0 0 0 6px rgba(220,38,38,0)}
+  100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}
+}
+.ovroot .ls-tag{
+  font-size:9.5px;font-weight:800;letter-spacing:.5px;color:var(--crit);
+  text-transform:uppercase;
+}
+.ovroot .ls-score{font-size:13px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.ovroot .ls-min{font-size:11px;font-weight:700;color:var(--crit);font-variant-numeric:tabular-nums;margin-left:1px}
+/* Dar ekranda küçült: sadece nokta + skor + dk kalsın */
+@media (max-width:760px){
+  .ovroot .live-strip .ls-tag{display:none}
+}
 .ovroot .datebox{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
-.ovroot .club-chip{
-  display:flex;align-items:center;gap:8px;
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:10px;padding:5px 11px;cursor:pointer;
-  transition:border-color .1s;
-}
-.ovroot .club-chip:hover{border-color:var(--border2)}
-.ovroot .cname{font-size:12px;font-weight:600;color:var(--ink);line-height:1.3}
-.ovroot .crole{font-size:10.5px;color:var(--dim)}
 
 /* ── GÖVDE ── */
 .ovroot .cbody{
@@ -569,11 +638,11 @@ const CSS = `
 /* Demo şerit */
 .ovroot .demobar{
   display:flex;align-items:center;gap:10px;
-  background:#fffbeb;border:1px solid #fcd34d;border-left:3px solid #f59e0b;
+  background:#fdf6e0;border:1px solid #ecd9a0;border-left:3px solid #d9a514;
   border-radius:10px;padding:10px 12px;margin-bottom:16px;
-  font-size:12.5px;color:#92400e;
+  font-size:12.5px;color:#7a5b10;
 }
-.ovroot .demobar b{color:#78350f}
+.ovroot .demobar b{color:#5c440b}
 .ovroot .demobar .db-cta{
   margin-left:auto;color:var(--accent);text-decoration:none;
   font-size:11.5px;font-weight:600;
@@ -581,55 +650,107 @@ const CSS = `
   padding:5px 11px;border-radius:8px;white-space:nowrap;
   transition:background .1s;
 }
-.ovroot .demobar .db-cta:hover{background:#ddd4f9}
+.ovroot .demobar .db-cta:hover{background:#d2e7d2}
 
-/* Mikro etkileşim */
-.ovroot .kpi{transition:border-color .1s,box-shadow .1s}
-.ovroot .rc{transition:border-color .1s}
-.ovroot tbody tr{transition:background .08s}
-.ovroot .ntab,.ovroot .sni,.ovroot .seg button{transition:background .08s,color .08s}
+/* ─────────────────────────────────────────────
+   ANIMASYONLAR — giriş + mikro etkileşim
+───────────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{0%{opacity:0;transform:scale(.96)}100%{opacity:1;transform:none}}
+
+/* Sayfa içeriği yumuşak belirsin */
+.ovroot .pghdr{animation:fadeIn .35s ease both}
+.ovroot .center{animation:fadeIn .3s ease both}
+
+/* KPI kartları kademeli (stagger) belirir */
+.ovroot .kpis .kpi{animation:fadeUp .45s cubic-bezier(.2,.7,.2,1) both}
+.ovroot .kpis .kpi:nth-child(1){animation-delay:.03s}
+.ovroot .kpis .kpi:nth-child(2){animation-delay:.08s}
+.ovroot .kpis .kpi:nth-child(3){animation-delay:.13s}
+.ovroot .kpis .kpi:nth-child(4){animation-delay:.18s}
+.ovroot .kpis .kpi:nth-child(5){animation-delay:.23s}
+.ovroot .kpis .kpi:nth-child(6){animation-delay:.28s}
+
+/* Kartlar/sağ panel widget'ları belirir */
+.ovroot .rc,.ovroot .st{animation:fadeUp .5s cubic-bezier(.2,.7,.2,1) both}
+.ovroot .live-strip{animation:popIn .4s cubic-bezier(.2,.8,.2,1) both}
+
+/* Mikro etkileşim — hover yükselme + yumuşak gölge */
+.ovroot .kpi{transition:transform .16s ease,border-color .14s,box-shadow .16s}
+.ovroot .kpi:hover{transform:translateY(-3px);border-color:var(--border2);box-shadow:0 8px 20px rgba(70,80,55,.14)}
+.ovroot .rc{transition:transform .16s ease,border-color .14s,box-shadow .16s}
+.ovroot .rc:hover{box-shadow:0 6px 16px rgba(70,80,55,.12)}
+.ovroot tbody tr{transition:background .12s}
+.ovroot .ntab,.ovroot .sni,.ovroot .seg button{transition:background .12s,color .12s,transform .12s}
+.ovroot .ntab:active,.ovroot .sni:active{transform:scale(.97)}
+.ovroot .sni.active{box-shadow:inset 2px 0 0 var(--accent)}
+
+/* Hareketi azalt tercihi olanlar için animasyonları kapat */
+@media (prefers-reduced-motion:reduce){
+  .ovroot *,.ovroot *::before,.ovroot *::after{animation:none!important;transition:none!important}
+}
 
 /* Tıklanır widget'lar (kontrol paneli kartları + satır linkleri) */
-.ovroot .clickable{cursor:pointer}
-.ovroot .clickable:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.ovroot .clickable{cursor:pointer;transition:transform .16s ease,border-color .14s,box-shadow .16s}
+.ovroot .clickable:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 8px 20px rgba(70,80,55,.14)}
 .ovroot .clickable:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ovroot .rowlink{cursor:pointer;border-radius:8px;transition:background .08s}
 .ovroot .rowlink:hover{background:var(--surface2)}
 .ovroot .rowlink:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
-/* Responsive */
-@media (max-width:1200px){
-  .ovroot .cbody{grid-template-columns:180px 1fr 248px}
+/* ─────────────────────────────────────────────
+   RESPONSIVE — tablet & mobil
+───────────────────────────────────────────── */
+
+/* Geniş tablet yatay (iPad Pro vb.): kolonlar daralır */
+@media (max-width:1280px){
+  .ovroot .cbody{grid-template-columns:184px 1fr 244px}
   .ovroot .kpis{grid-template-columns:repeat(3,1fr)}
 }
-@media (max-width:900px){
-  .ovroot .cbody{display:block;overflow-y:auto;height:calc(100vh - 50px)}
-  .ovroot .sidebar{display:none}
-  .ovroot .center{height:auto;overflow:visible;padding:14px}
+
+/* Tablet (dikey iPad / küçük yatay): sidebar çekmeceye dönüşür,
+   sağ panel içeriğin altına iner, tek akış kaydırma. */
+@media (max-width:1024px){
+  .ovroot .menu-btn{display:flex}
+  .ovroot .nav-backdrop{display:block}
+  .ovroot .cbody{display:block;overflow-y:auto;height:calc(100vh - 50px);-webkit-overflow-scrolling:touch}
+  .ovroot .sidebar{
+    position:fixed;left:0;top:50px;bottom:0;width:260px;z-index:70;
+    border-right:1px solid var(--border);
+    box-shadow:6px 0 24px rgba(70,80,55,.22);
+    transform:translateX(-104%);
+    transition:transform .24s cubic-bezier(.2,.8,.2,1);
+  }
+  .ovroot.nav-open .sidebar{transform:none}
+  .ovroot .center{height:auto;overflow:visible;padding:16px}
   .ovroot .right{border-left:0;border-top:1px solid var(--border);overflow:visible}
+  .ovroot .kpis{grid-template-columns:repeat(3,1fr)}
+  .ovroot .datebox{display:none}
+  /* Yoğun tablolar ezilmek yerine yatay kaydırılsın (.tbl overflow-x:auto). */
+  .ovroot .tbl table{min-width:560px}
+}
+
+/* Telefon / küçük tablet dikey */
+@media (max-width:767px){
   .ovroot .kpis{grid-template-columns:repeat(2,1fr)}
   .ovroot .kpi .kn{font-size:22px}
   .ovroot .pgttl h1{font-size:18px}
   .ovroot .ntab{padding:6px 10px;font-size:12px}
-  .ovroot .datebox{display:none}
-  /* Yoğun tablolar ezilmek yerine yatay kaydırılsın (.tbl overflow-x:auto). */
-  .ovroot .tbl table{min-width:560px}
-  /* Mobil alt tab bar (58px) içeriği örtmesin. */
-  .ovroot .center{padding-bottom:74px}
+  .ovroot .center{padding:14px;padding-bottom:78px}
 }
 @media (max-width:560px){
-  .ovroot .kpis{grid-template-columns:repeat(2,1fr)}
-  .ovroot .logo-name{display:none}
+  .ovroot .logo svg{height:26px!important}
 }
 
-/* Mobil alt tab bar */
+/* Mobil alt tab bar — yalnız telefonda (tablette hamburger var) */
 .ovroot .btabs{display:none}
-@media (max-width:900px){
+@media (max-width:767px){
   .ovroot .btabs{
-    display:flex;position:fixed;left:0;right:0;bottom:0;height:58px;
+    display:flex;position:fixed;left:0;right:0;bottom:0;height:60px;
     background:var(--white);border-top:1px solid var(--border);
     z-index:50;padding-bottom:env(safe-area-inset-bottom,0px);
-    box-shadow:0 -4px 16px rgba(0,0,0,.06);
+    box-shadow:0 -4px 16px rgba(70,80,55,.14);
   }
   .ovroot .btab{
     flex:1;display:flex;flex-direction:column;align-items:center;
@@ -638,6 +759,19 @@ const CSS = `
   }
   .ovroot .btab .bi{font-size:18px;line-height:1}
   .ovroot .btab.active{color:var(--accent)}
-  .ovroot .center{padding-bottom:72px}
+}
+
+/* Dokunmatik cihaz (parmak): hedefleri 44px'e büyüt, hover yerine bas-geri-bırak */
+@media (pointer:coarse){
+  .ovroot .sni{padding:11px 12px;font-size:13.5px;min-height:44px}
+  .ovroot .sni i{font-size:18px}
+  .ovroot .sgrp{padding:16px 12px 7px;min-height:34px}
+  .ovroot .ntab{padding:10px 14px;min-height:40px}
+  .ovroot .seg button{min-height:38px;padding:8px 14px}
+  .ovroot tbody td{padding:13px 14px}
+  .ovroot .menu-btn{width:44px;height:44px}
+  .ovroot .btabs{height:64px}
+  /* Hover-kalıcı efektler dokunmatikte yapışmasın */
+  .ovroot .kpi:hover,.ovroot .clickable:hover{transform:none}
 }
 `;

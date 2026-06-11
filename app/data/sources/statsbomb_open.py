@@ -75,7 +75,7 @@ class StatsBombOpen:
     """StatsBomb Open Data adapter — GitHub raw ingest.
 
     `name = "statsbomb_open"`; DataSource ABC ile uyumlu değil çünkü domain
-    şekli farklı (per-match event listesi). Manager2'nin DataSource base'i
+    şekli farklı (per-match event listesi). tactic11'nin DataSource base'i
     league/team/match için — bu adapter shot event'lerine odaklı.
     """
 

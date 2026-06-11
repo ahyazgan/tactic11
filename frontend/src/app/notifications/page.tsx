@@ -65,7 +65,7 @@ export default function NotificationsConsolePage() {
       const res = await apiFetch<Record<string, unknown>>("/admin/notifications/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: "manager2 test bildirimi" }),
+        body: JSON.stringify({ text: "tactic11 test bildirimi" }),
       });
       const n = Object.keys(res ?? {}).length;
       setResult(`Test gönderildi — ${n} kanal yanıtladı.`);

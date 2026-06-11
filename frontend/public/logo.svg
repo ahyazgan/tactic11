@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 178 48">
+  <!-- tactic11 yatay logo — "Taktik Oku" konsepti. Açık zemin sürümü. -->
+  <text x="4" y="29" font-family="Inter,'Segoe UI',sans-serif" font-size="27" font-weight="800" letter-spacing="-1.2"><tspan fill="#1b261e">tactic</tspan><tspan fill="#1e6b41">11</tspan></text>
+  <circle cx="8" cy="40" r="3" fill="#1e6b41"/>
+  <path d="M8 40 C 40 33, 100 47, 148 38" stroke="#1e6b41" stroke-width="2.4" stroke-dasharray="6 4.5" stroke-linecap="round" fill="none"/>
+  <polygon points="158,35.5 146,33.5 148.5,42.5" fill="#1e6b41"/>
+</svg>

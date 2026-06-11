@@ -1,4 +1,4 @@
-# manager2 — Ekran Envanteri (tasarım promptu ↔ gerçek repo)
+# tactic11 — Ekran Envanteri (tasarım promptu ↔ gerçek repo)
 
 Tasarım promptundaki 10 ekranın repodaki **gerçek** durumu. Amaç: neyin zaten
 var olduğunu (yeniden yazma!), neyin gerçekten eksik olduğunu netleştirmek.

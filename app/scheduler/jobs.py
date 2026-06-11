@@ -153,7 +153,7 @@ def morning_brief_handler(*, horizon_days: int = 1) -> None:
 
     Cron ile günde bir kez (örn. 06:00 lokal) çalışacak şekilde tasarlandı:
 
-        0 6 * * * cd /opt/manager2 && \\
+        0 6 * * * cd /opt/tactic11 && \\
             venv/bin/python scripts/run_job.py morning_brief
 
     `horizon_days=1` default; daha geniş pencere istersen üst seviye job'u

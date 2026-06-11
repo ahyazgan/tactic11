@@ -88,12 +88,12 @@ jobs:
           context: .
           push: false
           load: true
-          tags: manager2:ci
+          tags: tactic11:ci
           # NOT: gha cache (type=gha) docker driver'da desteklenmez; reliability
           # için layer cache'ten feragat edildi (smoke build hızlı zaten).
       - name: smoke — image starts
         run: |
           # Container short-lived: just verify entrypoint module imports.
           # DATABASE_URL fake (no real DB) — uvicorn boot olmaz ama import OK olmalı.
-          docker run --rm --entrypoint python manager2:ci -c \
+          docker run --rm --entrypoint python tactic11:ci -c \
             "import app.api.main; print('import ok, version=', app.api.main.APP_VERSION)"

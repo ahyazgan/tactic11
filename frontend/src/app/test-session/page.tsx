@@ -297,7 +297,7 @@ export default function TestSessionPage() {
               ←
             </button>
           )}
-          <div className="ts-mark">m2</div>
+          <div className="ts-mark">t11</div>
           <div className="ts-title">
             Test Oturumu
             {selectedProtocol && <span> · {selectedProtocol.name}</span>}

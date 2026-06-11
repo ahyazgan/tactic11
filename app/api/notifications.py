@@ -34,13 +34,13 @@ def notifications_test(
 ) -> dict:
     """Tüm kanallara test mesajı at — payload: `{"text": "..."}` (opsiyonel).
 
-    Default mesaj 'manager2 test notification — {timestamp}'.
+    Default mesaj 'tactic11 test notification — {timestamp}'.
     Yanıt her kanal için NotificationResult dict'i.
     """
     from datetime import UTC, datetime
 
     text = (payload or {}).get("text") or (
-        "manager2 test notification — "
+        "tactic11 test notification — "
         + datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
     )
     n = build_default_notifier()

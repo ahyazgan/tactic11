@@ -1,4 +1,4 @@
-# manager2 — Pilot Programı (Detaylı Pitch)
+# tactic11 — Pilot Programı (Detaylı Pitch)
 
 **Süper Lig kulübü teknik direktör, analiz şefi, sportif direktör** için
 veri-tabanlı karar destek platformu. Tek-cümle: AI co-pilot + kalibre

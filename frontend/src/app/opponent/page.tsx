@@ -125,13 +125,15 @@ const demoFormation: FormationDot[] = [
   { x: 50, y: 80, n: 9, role: "Santrfor" },
 ];
 
-// Tehdit oyuncuları (rakibin bizi en çok zorlayabileceği isimler)
-interface Threat { name: string; shirt: number; role: string; metric: string; level: "yüksek" | "orta" | "düşük" }
+// Tehdit oyuncuları (rakibin bizi en çok zorlayabileceği profiller).
+// Not: demo evreninde rakip oyuncular mevki + forma no ile anonim gösterilir
+// (gerçek kadro entegrasyonu sağlayıcı bağlanınca isimleri doldurur).
+interface Threat { shirt: number; role: string; metric: string; level: "yüksek" | "orta" | "düşük" }
 const demoThreats: Threat[] = [
-  { name: "Mateo Kovač", shirt: 9, role: "Santrfor", metric: "12 gol · 0.58 xG/maç · hava topu %61", level: "yüksek" },
-  { name: "Davide Russo", shirt: 10, role: "10 Numara", metric: "9 asist · maç başına 2.4 kilit pas", level: "yüksek" },
-  { name: "Luka Petrović", shirt: 7, role: "Sağ Kanat", metric: "dakikada 1.8 dripling · %64 başarı", level: "orta" },
-  { name: "Andrés Molina", shirt: 6, role: "Ön Libero", metric: "top kazanma lideri ama 60. dk sonrası -%30", level: "orta" },
+  { shirt: 9, role: "Santrfor", metric: "12 gol · 0.58 xG/maç · hava topu %61", level: "yüksek" },
+  { shirt: 10, role: "10 Numara", metric: "9 asist · maç başına 2.4 kilit pas", level: "yüksek" },
+  { shirt: 7, role: "Sağ Kanat", metric: "dakikada 1.8 dripling · %64 başarı", level: "orta" },
+  { shirt: 6, role: "Ön Libero", metric: "top kazanma lideri ama 60. dk sonrası -%30", level: "orta" },
 ];
 
 // Rakip zaafları (scout)
@@ -149,8 +151,8 @@ const demoDuels: DuelM[] = [
   { ours: "Milot Rashica (7) — Sağ Kanat", theirs: "Sol Bek", advantage: 72, note: "1v1 hız ve dripling üstünlüğü" },
   { ours: "Salih Uçan (8) — Merkez", theirs: "6 Numara", advantage: 63, note: "Pres kırma ve ileri pas kalitesi" },
   { ours: "Oh Hyeon-Gyu (9) — Santrfor", theirs: "Stoper ikilisi", advantage: 58, note: "Hava topu ve derinlik tehdidi" },
-  { ours: "Ersin Destanoğlu (1) — Kaleci", theirs: "Santrfor (Kovač)", advantage: 47, note: "Hava toplarında dikkat — far-post" },
-  { ours: "Rıdvan Yılmaz (3) — Sol Bek", theirs: "Sağ Kanat (Petrović)", advantage: 38, note: "Savunmada zorlanabilir — destek gerekli" },
+  { ours: "Ersin Destanoğlu (1) — Kaleci", theirs: "Santrfor (#9)", advantage: 47, note: "Hava toplarında dikkat — far-post" },
+  { ours: "Rıdvan Yılmaz (3) — Sol Bek", theirs: "Sağ Kanat (#7)", advantage: 38, note: "Savunmada zorlanabilir — destek gerekli" },
 ];
 
 // Maç bazlı kümülatif xG/şut hikâyesi (son 5 maç rakip yediği/attığı) — inline SVG çizgi.
@@ -281,7 +283,7 @@ export default function OpponentConsolePage() {
               return (
                 <div className="alrt" key={t.shirt}>
                   <span className="ai" style={{ background: tv }} />
-                  <div className="am"><b>{t.name}</b> <span style={{ color: "var(--dim)" }}>#{t.shirt} · {t.role}</span>
+                  <div className="am"><b>#{t.shirt} {t.role}</b>
                     <span className="tm">{t.metric}</span>
                   </div>
                 </div>

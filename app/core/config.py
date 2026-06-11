@@ -54,7 +54,7 @@ class Settings(BaseSettings):
 
     # Veritabanı
     database_url: str = Field(
-        default="postgresql+psycopg://user:password@localhost:5432/manager2",
+        default="postgresql+psycopg://user:password@localhost:5432/tactic11",
         alias="DATABASE_URL",
     )
 

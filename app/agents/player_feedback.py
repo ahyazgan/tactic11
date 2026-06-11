@@ -1,6 +1,6 @@
 """PlayerFeedbackAgent — bireysel oyuncu maç-sonu coach feedback.
 
-Manager2'nin en yüksek ürün diferansiyatörü: Opta/Wyscout takım analizi
+tactic11'nin en yüksek ürün diferansiyatörü: Opta/Wyscout takım analizi
 verir, oyuncu-bazlı aksiyonel feedback vermez.
 
 Context: {"match_external_id": int, "player_external_id": int}

@@ -1,4 +1,4 @@
-# manager2 — Futbol Zekâsı Sözlüğü
+# tactic11 — Futbol Zekâsı Sözlüğü
 
 Platformun ekranlarında, raporlarında ve AI asistanında kullanılan ortak
 taktik/analitik dil. Her terim: kısa tanım → platformdaki veri/motor karşılığı →

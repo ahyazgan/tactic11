@@ -22,8 +22,8 @@ export function DemoLiveBanner() {
     }}>
       <i className="ti ti-broadcast" style={{ fontSize: 16, color: "var(--accent)", flexShrink: 0 }} />
       <span>
-        <b>Demo modunda bu ekran canlıdır</b> — veriler doğrudan sunucudan gelir.
-        Backend bağlı değilse boş ya da hata görünmesi normaldir.
+        <b>Canlı veri ekranı</b> — bu bölüm doğrudan kulüp sunucusuna bağlanır;
+        bağlantı yokken örnek verilerle çalışır.
       </span>
     </div>
   );

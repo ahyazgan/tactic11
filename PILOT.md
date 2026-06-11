@@ -1,4 +1,4 @@
-# manager2 — Süper Lig Pilot Programı
+# tactic11 — Süper Lig Pilot Programı
 
 **Kim için:** Süper Lig kulüpleri (teknik direktör + analist ekibi), bahis/fantasy
 operatörleri, spor medya yayın kuruluşları.

@@ -306,5 +306,5 @@ def test_endpoint_test_uses_custom_text() -> None:
 def test_endpoint_test_default_text_has_timestamp() -> None:
     from app.api.notifications import notifications_test
     out = notifications_test(payload={})
-    assert "manager2" in out["text"]
+    assert "tactic11" in out["text"]
     assert "UTC" in out["text"]

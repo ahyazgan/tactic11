@@ -1,12 +1,11 @@
+"use client";
+
 /**
- * Oyuncu avatarı — baş-harf rozeti (foto yok). Takım arması Crest'in oyuncu
- * karşılığı: inline SVG, CDN/asset çekmez (self-host kuralı). Renk pozisyona
- * göre (GK/DF/MF/FW) — listede oyuncuyu hızlı ayırt etmek için.
- *
- * Gerçek oyuncu fotoğrafı ileride eklenirse (API-Football photo URL) bu bileşen
- * `src` alırsa <img>'a düşebilir; şimdilik foto yok, baş-harf yeterli ve markasız.
+ * Oyuncu avatarı — varsa gerçek oyuncu fotoğrafı, yoksa baş-harf rozeti.
+ * Renk pozisyona göre (GK/DF/MF/FW) — listede oyuncuyu hızlı ayırt etmek için.
  */
 
+import React, { useState } from "react";
 import type { CSSProperties } from "react";
 
 export type AvatarPos = "GK" | "DF" | "MF" | "FW" | string;
@@ -19,6 +18,10 @@ const POS_COLOR: Record<string, { bg: string; ink: string }> = {
   FW: { bg: "#b91c1c", ink: "#fff" },   // kırmızı
 };
 const FALLBACK = { bg: "#475569", ink: "#fff" };
+
+// Oyuncu fotoğrafları kaldırıldı — herkes baş-harf rozetiyle gösterilir.
+// Foto geri istenirse public/players/<id>.png ekleyip aşağıya "İsim": "id" satırı yaz.
+const PLAYER_MAP: Record<string, string> = {};
 
 /** İsimden 1-2 harfli baş-harf (Türkçe büyütme). */
 function initialsOf(name: string): string {
@@ -43,13 +46,30 @@ export interface PlayerAvatarProps {
   style?: CSSProperties;
 }
 
-/** Oyuncu baş-harf rozeti (daire). */
+/** Oyuncu avatarı: varsa foto, yoksa baş-harf rozeti (daire). */
 export function PlayerAvatar({
   name, position, size = 26, title, className, style,
 }: PlayerAvatarProps) {
+  const [error, setError] = useState(false);
   const c = colorFor(position);
   const txt = initialsOf(name);
   const fs = txt.length <= 1 ? size * 0.46 : size * 0.4;
+  const pid = PLAYER_MAP[name];
+
+  if (pid && !error) {
+    return (
+      <img
+        src={`/players/${pid}.png`}
+        alt={title ?? name}
+        width={size}
+        height={size}
+        className={className}
+        style={{ display: "inline-block", flexShrink: 0, verticalAlign: "middle", objectFit: "cover", borderRadius: "50%", ...style }}
+        onError={() => setError(true)}
+      />
+    );
+  }
+
   return (
     <svg
       width={size}

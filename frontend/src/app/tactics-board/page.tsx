@@ -82,7 +82,7 @@ function Pitch({ tokens }: { tokens: Token[] }) {
       {/* oyuncular */}
       {tokens.map((t) => (
         <g key={t.n}>
-          <circle cx={px(t.x)} cy={py(t.y)} r="15" fill="#5c35d4" stroke="#fff" strokeWidth="2" />
+          <circle cx={px(t.x)} cy={py(t.y)} r="15" fill="#1b1b1f" stroke="#fff" strokeWidth="2" />
           <text x={px(t.x)} y={py(t.y) + 4} textAnchor="middle" fill="#fff" style={{ fontSize: 12, fontWeight: 700, fontFamily: "JetBrains Mono" }}>{t.n}</text>
           <text x={px(t.x)} y={py(t.y) + 27} textAnchor="middle" fill="rgba(255,255,255,0.9)" style={{ fontSize: 9, fontWeight: 600 }}>{t.role}</text>
         </g>
