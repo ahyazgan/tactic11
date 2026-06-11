@@ -8,6 +8,7 @@ import { SwRegister } from "./sw-register";
 const THEME_SCRIPT = `(function(){try{if(localStorage.getItem("m2-theme")==="dark")document.documentElement.classList.remove("light");else document.documentElement.classList.add("light")}catch(e){document.documentElement.classList.add("light")}})()`;
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://tactic11.com"),
   title: "tactic11 — Teknik Ekip Konsolu",
   description: "Veriyle karar destek — kulüp teknik ekibi için co-pilot.",
   applicationName: "tactic11",
@@ -15,6 +16,19 @@ export const metadata: Metadata = {
     capable: true,
     title: "tactic11",
     statusBarStyle: "black-translucent",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "tactic11",
+    title: "tactic11 — Teknik Ekip Konsolu",
+    description: "Veriyle karar destek — kulüp teknik ekibi için co-pilot.",
+    url: "https://tactic11.com",
+    locale: "tr_TR",
+  },
+  twitter: {
+    card: "summary",
+    title: "tactic11 — Teknik Ekip Konsolu",
+    description: "Veriyle karar destek — kulüp teknik ekibi için co-pilot.",
   },
 };
 
