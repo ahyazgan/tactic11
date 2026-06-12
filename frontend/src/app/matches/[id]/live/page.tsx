@@ -8,12 +8,17 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoLive, demoDecisions, type LiveEvent, type LivePlayerImpact, type DecisionCard } from "@/lib/demo-data";
+import { demoTrackRecord } from "@/lib/track-record";
+import { demoWinProbCurve, demoWinProbNow } from "@/lib/live-win-probability";
 import { engineLabel } from "@/lib/labels";
 import { SourceMark } from "@/lib/data-source";
 import { ConsoleShell } from "../../../_console/shell";
+import { TrackRecordBadge } from "../../../_console/track-record";
+import { WinProbBody } from "../../../_console/win-prob";
 
 interface Confidence { score: number; label: string; drivers: string[] }
 
@@ -381,7 +386,13 @@ function DecisionTimeline({ decisions, currentMinute }: { decisions: DecisionCar
   const nowPct = Math.min(100, (currentMinute / span) * 100);
   return (
     <>
-      <div className="st"><h2>Karar Zaman Şeridi</h2><span className="ep">{sorted.length} karar · motor gerekçeli</span></div>
+      <div className="st">
+        <h2>Karar Zaman Şeridi</h2>
+        <span className="ep" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          {sorted.length} karar · motor gerekçeli
+          {DEMO_MODE && <Link href="/calibration" style={{ textDecoration: "none" }}><TrackRecordBadge tr={demoTrackRecord()} compact /></Link>}
+        </span>
+      </div>
       <div className="rc" style={{ margin: "0 0 14px" }}>
         <div style={{ position: "relative", height: 34, marginBottom: 12 }}>
           <div style={{ position: "absolute", top: 18, left: 0, right: 0, height: 2, background: "var(--line)" }} />
@@ -1045,6 +1056,18 @@ function DemoLiveView() {
             <Line type="monotone" dataKey="away" name={d.away} stroke={AWAY_COLOR} strokeWidth={2.5} dot={false} />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Canlı kazanma olasılığı — maç simülasyonunun in-game hali */}
+      <div className="st"><h2>Canlı Kazanma Olasılığı</h2><span className="ep">skor + kalan süre + xG · Poisson</span></div>
+      <div className="rc" style={{ margin: "0 0 14px" }}>
+        <WinProbBody
+          curve={demoWinProbCurve()}
+          now={demoWinProbNow()}
+          homeName={d.home}
+          awayName={d.away}
+          goals={d.events.filter((e) => e.type === "gol").map((e) => ({ minute: e.minute, team: e.team }))}
+        />
       </div>
 
       {/* Momentum */}

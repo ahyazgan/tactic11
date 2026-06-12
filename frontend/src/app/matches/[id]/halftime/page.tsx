@@ -25,6 +25,9 @@ import {
   type Scenario,
 } from "@/lib/demo-data";
 import { engineLabel } from "@/lib/labels";
+import {
+  halftimeSubs, halftimeMoves, halftimeBrief, type HtMove,
+} from "@/lib/halftime-advice";
 import { ConsoleShell } from "../../../_console/shell";
 
 interface HalftimeBrief {
@@ -125,7 +128,7 @@ function HalftimeApiView() {
       sub={`İY ${data.halftime_score}`}
       desc={`Maç #${data.match_external_id} · vs #${data.opponent_team_external_id} (${data.my_side === "home" ? "ev" : "dep"}) · ${data.events_loaded} event`}
     >
-      <div className="kpis" style={{ gridTemplateColumns: "repeat(6,1fr)" }}>
+      <div className="kpis" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
         <div className="kpi"><div className="kl">PPDA</div><div className="kn" style={{ fontSize: 20 }}>{data.stats?.ppda.toFixed(2) ?? "—"}</div><div className="kd">{data.stats?.pressing_style ?? ""}</div></div>
         <div className="kpi"><div className="kl">Field Tilt</div><div className="kn" style={{ fontSize: 20 }}>{data.stats ? `%${Math.round(data.stats.field_tilt_my_share * 100)}` : "—"}</div></div>
         <div className="kpi"><div className="kl">Team xT</div><div className="kn" style={{ fontSize: 20 }}>{data.stats?.team_xt_total.toFixed(2) ?? "—"}</div></div>
@@ -147,8 +150,9 @@ function HalftimeApiView() {
 // DEMO görünümü — backend YOK; 1. yarı özeti + motor sinyalleri + 2. yarı planı.
 // =========================================================================== //
 
-const HOME_COLOR = "#3d7eff";
-const AWAY_COLOR = "#ef4444";
+// Tema renkleri (hardcoded mavi/kırmızı yerine): biz = marka yeşili, rakip = turuncu.
+const HOME_COLOR = "var(--accent)";
+const AWAY_COLOR = "var(--high)";
 
 // 1. yarı (≤45') kümülatif xG eğrisi — canlı demo serisinden süzülür.
 const FIRST_HALF = demoLive.series.filter((p) => p.minute <= 45);
@@ -184,49 +188,6 @@ const URG_VAR: Record<string, string> = {
   orta: "var(--mid)",
   düşük: "var(--low)",
 };
-
-// 45. dakika değişiklik önerileri — kondisyon/risk + maç bağlamından türetildi.
-interface HtSub {
-  out: string;
-  in: string;
-  urgency: "kritik" | "yüksek" | "orta";
-  score: number;
-  reasons: string[];
-}
-const HT_SUBS: HtSub[] = [
-  {
-    out: "Orkun Kökçü (10)",
-    in: "Junior Olaitan (14)",
-    urgency: "kritik",
-    score: 0.86,
-    reasons: [
-      "Kondisyon kritik eşikte (58) — arka adale 38. dk'da gerildi",
-      "Akut/kronik yük oranı 1.6 (eşik üstü)",
-      "Taze 10 numara ile 2. yarı yaratıcılığı korunur",
-    ],
-  },
-  {
-    out: "Rıdvan Yılmaz (3)",
-    in: "Necip Uysal (23)",
-    urgency: "yüksek",
-    score: 0.71,
-    reasons: [
-      "Sol bek yorgunluk bandında (kondisyon 69)",
-      "Rakip sağ kanat bu koridordan ilk yarı 6 kez girdi",
-      "Savunma istikrarı için erken müdahale",
-    ],
-  },
-  {
-    out: "Tiago Djaló (4)",
-    in: "Emmanuel Agbadou (5)",
-    urgency: "orta",
-    score: 0.54,
-    reasons: [
-      "31. dk sarı kart — ikinci sarı riski",
-      "Hava topu duellosu için taze stoper avantajlı",
-    ],
-  },
-];
 
 // Rakip set-piece pattern — beraberlik golü far-post zaafından geldi.
 const SET_PIECE = {
@@ -301,10 +262,17 @@ function ScenarioCard({ s }: { s: Scenario }) {
   );
 }
 
+const MOVE_ICON: Record<HtMove["kind"], string> = { sub: "🔁", attack: "🎯", defense: "🛡️", tempo: "⏱️" };
+
 function DemoHalftimeView() {
   const params = useParams<{ id: string }>();
   const matchId = params.id;
   const d = demoLive;
+
+  // ── Devre arası reçetesi — İLK YARI verisinden CANLI hesaplanır (sabit değil) ──
+  const htSubs = halftimeSubs();
+  const htMoves = halftimeMoves(htSubs);
+  const brief = halftimeBrief(htSubs);
 
   // İlk yarı motor sinyalleri (devre arasında masaya konacak en kritik kararlar).
   const htDecisions = demoDecisions.filter((dec) => dec.minute <= 45);
@@ -331,13 +299,15 @@ function DemoHalftimeView() {
         <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Topla oynama</span><span className="sv">%{Math.round(FH_STATS.possession * 100)}</span></div>
         <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Pas isabeti</span><span className="sv">%{Math.round(FH_STATS.pass_accuracy * 100)}</span></div>
         <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Şut (biz–rakip)</span><span className="sv">{FH_SHOTS_HOME}–{FH_SHOTS_AWAY}</span></div>
-        <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Momentum (45&apos;)</span><span className="sv" style={{ color: HOME_COLOR }}>Beşiktaş</span></div>
+        <div className="stat"><span style={{ fontSize: 11.5, color: "var(--muted)" }}>Momentum (45&apos;)</span><span className="sv" style={{ color: FIRST_HALF[FIRST_HALF.length - 1].momentum >= 0 ? HOME_COLOR : AWAY_COLOR }}>{FIRST_HALF[FIRST_HALF.length - 1].momentum >= 0 ? "+" : ""}{FIRST_HALF[FIRST_HALF.length - 1].momentum} {FIRST_HALF[FIRST_HALF.length - 1].momentum >= 0 ? d.home : d.away}</span></div>
       </div>
 
       <div className="rc">
         <h3>En Kritik Karar <span className="tiny">45. dk</span></h3>
-        {(() => {
-          const c = HT_SUBS[0];
+        {htSubs.length === 0 ? (
+          <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Saha-içi acil değişiklik gerektiren oyuncu yok.</div>
+        ) : (() => {
+          const c = htSubs[0];
           return (
             <>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
@@ -378,7 +348,7 @@ function DemoHalftimeView() {
     >
       {/* 1. yarı KPI'ları */}
       <div className="st" style={{ marginTop: 0 }}><h2>1. Yarı Sayılar</h2><span className="ep">≤ 45. dakika</span></div>
-      <div className="kpis" style={{ gridTemplateColumns: "repeat(6,1fr)" }}>
+      <div className="kpis" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" }}>
         <div className="kpi"><div className="kl">PPDA</div><div className="kn" style={{ fontSize: 22 }}>{FH_STATS.ppda.toFixed(1)}</div><div className="kd">{FH_STATS.pressing_style}</div></div>
         <div className="kpi"><div className="kl">Field Tilt</div><div className="kn" style={{ fontSize: 22, color: "var(--low)" }}>%{Math.round(FH_STATS.field_tilt * 100)}</div><div className="kd">saha hakimiyeti</div></div>
         <div className="kpi"><div className="kl">Team xT</div><div className="kn" style={{ fontSize: 22 }}>{FH_STATS.team_xt.toFixed(2)}</div><div className="kd">tehdit üretimi</div></div>
@@ -398,32 +368,37 @@ function DemoHalftimeView() {
         </div>
       </div>
 
-      {/* AI Brief */}
-      <div className="st"><h2>AI Brief — TD için 2. yarı önerisi</h2><span className="ep">model güveni %83</span></div>
+      {/* 2. Yarı Öncelikli Hamleler — ilk yarı verisinden CANLI hesaplanır */}
+      <div className="st"><h2>2. Yarı Öncelikli Hamleler</h2><span className="ep">ilk yarı verisinden · önceliklendirilmiş</span></div>
+      <div className="rc" style={{ margin: "0 0 14px", padding: 0, overflow: "hidden" }}>
+        {htMoves.map((m, i) => {
+          const v = URG_VAR[m.urgency] ?? "var(--muted)";
+          return (
+            <div key={m.id} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 12, alignItems: "center", padding: "11px 14px", borderTop: i ? "1px solid var(--line)" : undefined, borderLeft: `3px solid ${v}` }}>
+              <span style={{ fontSize: 17 }}>{MOVE_ICON[m.kind]}</span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>{m.title}</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.45, marginTop: 2 }}>{m.detail}</div>
+              </div>
+              <span className="risk" style={{ color: v, fontSize: 10, flexShrink: 0 }}><span className="rd" style={{ background: v }} />{m.urgency}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* AI Brief — hesaplanan (ilk yarı özeti + en acil değişiklik + en iyi eşleşme) */}
+      <div className="st"><h2>AI Brief — TD için 2. yarı önerisi</h2><span className="ep">otomatik · ilk yarı verisinden</span></div>
       <div className="rc" style={{ margin: "0 0 14px", lineHeight: 1.65, fontSize: 13 }}>
-        <p style={{ marginBottom: 10 }}>
-          <b>Özet.</b> İlk yarıyı 1-1 kapattık ama oyunun büyük bölümünde biz üstündük: field tilt %{Math.round(FH_STATS.field_tilt * 100)},
-          xG {HT_HOME_XG.toFixed(2)}–{HT_AWAY_XG.toFixed(2)}, dominance +{FH_STATS.dominance.toFixed(2)}. Beraberlik golü oyun akışından değil,
-          duran toptaki far-post zaafımızdan geldi.
-        </p>
-        <p style={{ marginBottom: 10 }}>
-          <b>Ne çalıştı.</b> Sağ kanatta Milot Rashica (7) rakip sol beke karşı net üstün (avantaj %{demoMatchups[0].advantage}); o koridordan
-          giriş üretmeye devam. Yarı-alan baskısı ve 10 numaranın arasına sarkması rakibi geriye itti.
-        </p>
-        <p style={{ marginBottom: 10 }}>
-          <b>Risk.</b> Orkun Kökçü (10) 38&apos;de arka adalesini gerdi ve kondisyonu kritik (58); akut/kronik yük 1.6. İkinci yarıya
-          çıkarmak sakatlık riski. Sol bek Rıdvan Yılmaz (3) da yorgun ve rakip o kanadı sömürüyor.
-        </p>
-        <p style={{ margin: 0 }}>
-          <b>Plan.</b> Devrede Orkun Kökçü → Junior Olaitan (14) değişikliğiyle taze yaratıcılık koy. Duran top savunmasını zonal&apos;dan
-          adam-adamaya çevir (far-post). Sağ kanat 1v1&apos;i ısrarla zorla; gol beraberlik golünden önceki üstünlüğün doğal sonucu olacak.
-        </p>
+        <p style={{ marginBottom: 10 }}><b>Özet.</b> {brief.summary}</p>
+        <p style={{ marginBottom: 10 }}><b>Ne çalıştı.</b> {brief.whatWorked}</p>
+        <p style={{ marginBottom: 10 }}><b>Risk.</b> {brief.risk}</p>
+        <p style={{ margin: 0 }}><b>Plan.</b> {brief.plan}</p>
       </div>
 
       {/* 45. dk değişiklik önerileri */}
-      <div className="st"><h2>45. dk Değişiklik Önerileri</h2><span className="ep">{HT_SUBS.length} öneri</span></div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 14 }}>
-        {HT_SUBS.map((s, i) => {
+      <div className="st"><h2>45. dk Değişiklik Önerileri</h2><span className="ep">{htSubs.length} öneri · risk endeksinden</span></div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 14 }}>
+        {htSubs.map((s, i) => {
           const v = URG_VAR[s.urgency] ?? "var(--muted)";
           return (
             <div className="rc" key={i} style={{ margin: 0, borderLeft: `2px solid ${v}` }}>
@@ -474,7 +449,7 @@ function DemoHalftimeView() {
 
       {/* Rakibin zayıf kanalı */}
       <div className="st"><h2>Rakibin Zayıf Noktaları</h2><span className="ep">2. yarı hedef</span></div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 14 }}>
         {demoWeaknesses.map((wk, i) => {
           const v = SEV_VAR[wk.severity] ?? "var(--muted)";
           return (
@@ -490,7 +465,7 @@ function DemoHalftimeView() {
       </div>
 
       {/* En iyi eşleşme + set-piece uyarısı (iki kolon) */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 12, marginBottom: 14 }}>
         <div>
           <div className="st" style={{ marginTop: 0 }}><h2>Sömürülecek Eşleşme</h2></div>
           <div className="rc" style={{ margin: 0 }}>
@@ -517,7 +492,7 @@ function DemoHalftimeView() {
 
       {/* 2. yarı senaryo planı */}
       <div className="st"><h2>2. Yarı Planı — Senaryolar</h2><span className="ep">durum bazlı</span></div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 14 }}>
         {demoScenarios.map((s) => <ScenarioCard key={s.state} s={s} />)}
       </div>
 

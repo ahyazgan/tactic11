@@ -42,6 +42,13 @@ const ENGINE_LABELS: Record<string, string> = {
   load_risk_monitor: "Yük & risk izleme",
   physical_test_trend: "Fiziksel test trendi",
   squad_availability: "Kadro uygunluğu",
+  injury_risk_index: "Birleşik sakatlık risk endeksi",
+  lineup_advice: "Kadro reçetesi (önerilen 11)",
+  match_simulation: "Maç simülasyonu (Poisson · Dixon-Coles)",
+  track_record: "Tahmin track record'u",
+  calibration: "Kalibrasyon",
+  weekly_insights: "Haftalık içgörü motoru",
+  player_development: "Oyuncu gelişim projeksiyonu",
   // Taktik / oyun
   build_up: "Oyun kurma",
   compactness: "Hat kompaktlığı",

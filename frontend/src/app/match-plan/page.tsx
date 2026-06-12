@@ -7,11 +7,16 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoPlan, demoWeaknesses, demoMatchups, demoScenarios, DEMO_OPPONENT } from "@/lib/demo-data";
+import { demoNextMatchSimulation } from "@/lib/match-simulation";
+import { demoTrackRecord } from "@/lib/track-record";
 import { ConsoleShell } from "../_console/shell";
+import { MatchSimBody } from "../_console/match-sim";
+import { TrackRecordBadge } from "../_console/track-record";
 
 interface PlanVsLive {
   summary: string;
@@ -98,6 +103,23 @@ export default function MatchPlanConsolePage() {
             </div>
             <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.5 }}>{d.summary}</div>
           </div>
+
+          {DEMO_MODE && (
+            <>
+              <div className="st">
+                <h2>Maç Simülasyonu</h2>
+                <span className="ep">Poisson · Dixon-Coles olasılık modeli</span>
+              </div>
+              <div className="rc" style={{ margin: "0 0 12px" }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+                  <Link href="/calibration" style={{ textDecoration: "none" }}>
+                    <TrackRecordBadge tr={demoTrackRecord()} type="match" />
+                  </Link>
+                </div>
+                <MatchSimBody sim={demoNextMatchSimulation()} />
+              </div>
+            </>
+          )}
 
           <div className="st"><h2>Eşleşme Reçetesi</h2></div>
           <div className="rc" style={{ margin: "0 0 12px", fontSize: 13, color: "var(--ink)" }}>{d.matchup_recommendation ?? "—"}</div>

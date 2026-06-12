@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { AppShell } from "./shell-client";
 import { SwRegister } from "./sw-register";
 
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <AppShell>{children}</AppShell>
         <SwRegister />
+        <Analytics />
       </body>
     </html>
   );

@@ -42,6 +42,7 @@ interface NavGroup { grp: string; items: NavItem[] }
 
 const FULL_NAV: NavGroup[] = [
   { grp: "Genel", items: [
+    { label: "Komuta Merkezi", href: "/command",       icon: "ti-brain", badge: "AI", badgeKind: "ai" },
     { label: "Kontrol Paneli", href: "/overview",      icon: "ti-layout-dashboard" },
     { label: "Canlı Maç",      href: DEMO_LIVE_HREF,    icon: "ti-ball-football", badge: "CANLI", badgeKind: "live" },
   ]},

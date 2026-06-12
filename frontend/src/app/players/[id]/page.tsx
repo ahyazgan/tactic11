@@ -28,8 +28,14 @@ import {
 import { SourceMark } from "@/lib/data-source";
 import { statAttrGroups, physicalGroupFromPercentiles, type PlayerSeasonStats } from "@/lib/attributes";
 import { PlayerAvatar } from "@/lib/player-avatar";
+import { computeRiskFor, LEVEL_VAR, LEVEL_LABEL } from "@/lib/injury-risk";
+import { demoTrackRecord } from "@/lib/track-record";
+import { computeDevelopmentFor } from "@/lib/player-development";
 import { ConsoleShell } from "../../_console/shell";
 import { Gauge } from "../../_console/viz";
+import { RiskIndexBody } from "../../_console/risk";
+import { TrackRecordBadge } from "../../_console/track-record";
+import { DevelopmentBody } from "../../_console/development";
 
 const ROLE_LABEL: Record<string, string> = {
   deep_playmaker: "Derin Oyun Kurucu (Regista)",
@@ -101,13 +107,14 @@ function demoLoad(p: SquadPlayer): {
   acwr: number; acwrFlag: string; load: number; age: number; freq: number;
   riskLevel: keyof typeof INJURY_LEVEL; recommendation: string;
 } {
-  const byLabel: Record<RiskLabel, { acwr: number; flag: string; level: keyof typeof INJURY_LEVEL }> = {
-    "Kritik": { acwr: 1.62, flag: "danger", level: "severe" },
-    "Yüksek": { acwr: 1.41, flag: "danger", level: "high" },
-    "Orta": { acwr: 1.18, flag: "safe", level: "moderate" },
-    "Düşük": { acwr: 0.97, flag: "safe", level: "low" },
+  const byLabel: Record<RiskLabel, { level: keyof typeof INJURY_LEVEL }> = {
+    "Kritik": { level: "severe" }, "Yüksek": { level: "high" },
+    "Orta": { level: "moderate" }, "Düşük": { level: "low" },
   };
   const b = byLabel[p.risk_label];
+  // ACWR: risk endeksiyle (demoRiskInputFor) AYNI formül — sayfada tek değer.
+  const acwr = Math.round((0.85 + (p.risk_score / 100) * 0.8) * 100) / 100;
+  const acwrFlag = acwr > 1.3 ? "danger" : acwr < 0.8 ? "undertrained" : "safe";
   const load = Math.round(p.risk_score * 0.85 + (100 - p.condition) * 0.25);
   const age = Math.round(Math.max(0, (p.age - 24)) * 6 + 14);
   const freq = Math.round(p.risk_score * 0.6 + 18);
@@ -118,7 +125,7 @@ function demoLoad(p: SquadPlayer): {
     low: "Tam maç yüküne hazır — mevcut programa devam, rutin haftalık takip yeterli.",
   };
   return {
-    acwr: b.acwr, acwrFlag: b.flag, load, age, freq, riskLevel: b.level,
+    acwr, acwrFlag, load, age, freq, riskLevel: b.level,
     recommendation: recByLevel[b.level],
   };
 }
@@ -253,11 +260,13 @@ function PlayerProfileDemo({ player }: { player: SquadPlayer }) {
   const role = demoRole(player);
   const risk = demoRiskFor(player.player_id);
   const load = demoLoad(player);
+  const riskIndex = computeRiskFor(player.player_id);
   const rehabs = demoRehab(player);
   const similar = demoSimilar(player);
   const sprint = sprintSeries(player.player_id);
   const cmj = cmjSeries(player.player_id);
   const attrGroups = demoAttributesFor(player.player_id);
+  const dev = computeDevelopmentFor(player.player_id);
   const allAttrs = attrGroups.flatMap((g) => g.attrs);
   const overall = allAttrs.reduce((s, a) => s + a.value, 0) / allAttrs.length;
   const best3 = [...allAttrs].sort((a, b) => b.value - a.value).slice(0, 3);
@@ -345,8 +354,8 @@ function PlayerProfileDemo({ player }: { player: SquadPlayer }) {
         </div>
         <div className="kpi">
           <div className="kl">Sakatlık Riski</div>
-          <div className="kn" style={{ color: riskVar }}>{riskScore100}<span className="pct">/100</span></div>
-          <div className="kd" style={{ color: riskVar }}>{risk.risk_label.toLowerCase()}</div>
+          <div className="kn" style={{ color: LEVEL_VAR[riskIndex.level] }}>{riskIndex.score}<span className="pct">/100</span></div>
+          <div className="kd" style={{ color: LEVEL_VAR[riskIndex.level] }}>{LEVEL_LABEL[riskIndex.level].toLowerCase()} · {riskIndex.evaluated} sinyal</div>
         </div>
         <div className="kpi">
           <div className="kl">ACWR</div>
@@ -360,7 +369,7 @@ function PlayerProfileDemo({ player }: { player: SquadPlayer }) {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
         {/* Rol & Profil */}
         <div className="rc" style={{ margin: 0 }}>
           <h3>Rol &amp; Profil <span className="tiny">player-role</span></h3>
@@ -416,6 +425,14 @@ function PlayerProfileDemo({ player }: { player: SquadPlayer }) {
           <AttributeColumns groups={attrGroups} />
         </div>
 
+        {/* Gelişim Projeksiyonu — yaş eğrisi + tavan + scout reçetesi */}
+        {dev && (
+          <div className="rc" style={{ margin: 0, gridColumn: "1 / -1" }}>
+            <h3>Gelişim Projeksiyonu <span className="tiny">yaş eğrisi · {dev.currentAge} yaş · potansiyel & kariyer arkı</span></h3>
+            <DevelopmentBody dev={dev} />
+          </div>
+        )}
+
         {/* Test Geçmişi & Trend */}
         <div className="rc" style={{ margin: 0, gridColumn: "1 / -1" }}>
           <h3>Test Geçmişi &amp; Trend <span className="tiny">son 5 ölçüm</span></h3>
@@ -460,29 +477,15 @@ function PlayerProfileDemo({ player }: { player: SquadPlayer }) {
           </div>
         </div>
 
-        {/* Sakatlık Riski (Yük) */}
+        {/* Birleşik Sakatlık Risk Endeksi — 7 sinyal füzyonu (ACWR+H:Q+asimetri+CMJ+wellness+yaş+trend) */}
         <div className="rc" style={{ margin: 0, gridColumn: "1 / -1" }}>
-          <h3>Sakatlık Riski (Yük) <span className="tiny">injury-risk</span></h3>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <span style={{ fontSize: 24, fontWeight: 800, fontFamily: "JetBrains Mono", color: lvl.v }}>{Math.round(load.load * 0.5 + riskScore100 * 0.5)}<span style={{ fontSize: 12, color: "var(--dim)" }}>/100</span></span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: lvl.v }}>{lvl.label}</span>
-            <span style={{ fontSize: 11, fontFamily: "JetBrains Mono", color: "var(--muted)" }}>ACWR {load.acwr.toFixed(2)} · {ACWR_FLAG[load.acwrFlag]}</span>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginTop: 12 }}>
-            {([
-              { label: "Yük faktörü", v: load.load },
-              { label: "Yaş faktörü", v: load.age },
-              { label: "Sıklık faktörü", v: load.freq },
-            ] as const).map((f) => (
-              <div key={f.label}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--muted)", marginBottom: 2 }}>
-                  <span>{f.label}</span><span style={{ fontFamily: "JetBrains Mono", fontWeight: 700 }}>{f.v}</span>
-                </div>
-                <div className="mbar"><i style={{ width: `${Math.min(100, f.v)}%`, background: f.v >= 70 ? "var(--high)" : f.v >= 45 ? "var(--mid)" : "var(--low)" }} /></div>
-              </div>
-            ))}
-          </div>
-          <div style={{ fontSize: 12.5, color: "var(--ink)", marginTop: 10, lineHeight: 1.5 }}>{load.recommendation}</div>
+          <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            Birleşik Sakatlık Risk Endeksi <span className="tiny">injury-risk · ağırlıklı füzyon</span>
+            <span style={{ marginLeft: "auto" }}>
+              <Link href="/calibration" style={{ textDecoration: "none" }}><TrackRecordBadge tr={demoTrackRecord()} type="injury" compact /></Link>
+            </span>
+          </h3>
+          <RiskIndexBody risk={riskIndex} />
         </div>
 
         {/* Öneriler */}
@@ -578,7 +581,7 @@ function PlayerProfileLive({ id }: { id: string }) {
       desc="Rol tipolojisi, fiziksel risk, tıbbi durum ve yük riski tek bakışta."
       right={right}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
         {/* Rol & Profil */}
         <div className="rc" style={{ margin: 0 }}>
           <h3>Rol &amp; Profil <span className="tiny">player-role</span></h3>

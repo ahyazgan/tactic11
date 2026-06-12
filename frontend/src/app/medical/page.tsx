@@ -18,6 +18,7 @@ import * as React from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { topRiskPlayers, LEVEL_VAR, LEVEL_LABEL } from "@/lib/injury-risk";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
@@ -109,14 +110,16 @@ const DEMO_RTP: RtpRow[] = [
   { player: "Orkun Kökçü", shirt: 10, phase: "Akut faz — istirahat", eta: "2026-06-20", days: 12, conf: 44, v: "var(--crit)" },
 ];
 
-// Yük / re-injury risk uyarıları (sağ kolon).
+// Yük / re-injury risk uyarıları (sağ kolon) — birleşik risk endeksinden HESAPLANIR
+// (lib/injury-risk). En riskli oyuncular + her birinin öncelikli aksiyonu; oyuncu
+// profili sayfasıyla TEK kaynaktan tutarlı (elle yazılmış sabit liste değil).
 interface LoadAlert { player: string; note: string; v: string; tag: string }
-const DEMO_LOAD_ALERTS: LoadAlert[] = [
-  { player: "Orkun Kökçü (10)", note: "Tekrar sakatlık riski yüksek — ACWR 1.6, akut faz. Dönüşte dakika sınırı şart.", v: "var(--crit)", tag: "kritik" },
-  { player: "Rıdvan Yılmaz (3)", note: "Aşil yükü hassas; antrenmanda sıçrama hacmini sınırla.", v: "var(--high)", tag: "yüksek" },
-  { player: "Felix Uduokhai (15)", note: "Kuvvet simetrisi %12 — dönüş öncesi <%10 hedefine indir.", v: "var(--high)", tag: "yüksek" },
-  { player: "El Bilal Touré (19)", note: "Kademeli yük artışı iyi gidiyor; bu hafta tam antrenman.", v: "var(--mid)", tag: "izleme" },
-];
+const DEMO_LOAD_ALERTS: LoadAlert[] = topRiskPlayers(4).map(({ player, risk }) => ({
+  player: `${player.player_name} (${player.shirt})`,
+  note: risk.recommendation,
+  v: LEVEL_VAR[risk.level],
+  tag: LEVEL_LABEL[risk.level].toLowerCase(),
+}));
 
 function progColor(v: number): string {
   return v >= 80 ? "var(--low)" : v >= 50 ? "var(--mid)" : "var(--high)";

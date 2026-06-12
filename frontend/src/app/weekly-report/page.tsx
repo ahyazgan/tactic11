@@ -12,6 +12,8 @@
 
 import * as React from "react";
 import { ConsoleShell } from "../_console/shell";
+import { InsightFeed } from "../_console/insights";
+import { weeklyInsights } from "@/lib/weekly-insights";
 import { demoLive, DEMO_CLUB, DEMO_OPPONENT } from "@/lib/demo-data";
 import { squadReadiness, type ReadinessDecision } from "@/lib/readiness";
 import { loadSessions, type LoadSession } from "@/lib/load";
@@ -298,6 +300,14 @@ export default function WeeklyReportPage() {
         <div className="kpi"><div className="kl">Sahaya Hazır</div><div className="kn" style={{ color: "var(--low)" }}>{wk.ready}<span className="pct">/{wk.total}</span></div><div className="kd">{prevW ? <Delta now={wk.ready} prev={prevW.ready} goodUp /> : "—"} hafta</div></div>
         <div className="kpi"><div className="kl">Ort. ACWR</div><div className="kn" style={{ fontSize: 22, color: wk.avgAcwr > 1.3 ? "var(--mid)" : "var(--low)" }}>{fmt2(wk.avgAcwr)}</div><div className="kd">{prevW ? <Delta now={wk.avgAcwr} prev={prevW.avgAcwr} goodUp={false} digits={2} /> : "—"}</div></div>
         <div className="kpi"><div className="kl">Kritik Uyarı</div><div className="kn" style={{ color: wk.risky > 0 ? "var(--crit)" : "var(--low)" }}>{wk.risky}</div><div className="kd">{wk.risky > 0 ? wk.criticalName : "yok"}</div></div>
+      </div>
+
+      <div className="st" style={{ marginTop: 0 }}>
+        <h2>Bu Haftanın Kritik İçgörüleri</h2>
+        <span className="ep">4 motordan otomatik · önceliklendirilmiş</span>
+      </div>
+      <div className="rc" style={{ margin: "0 0 14px" }}>
+        <InsightFeed data={weeklyInsights(DEMO_OPPONENT)} />
       </div>
 
       <div className="st" style={{ marginTop: 0 }}>

@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
-import { demoPlayerRows, demoNextMatch, demoRecentForm, demoRatingTrend, demoBriefings, demoLive, demoSquad, type FormResult, type Briefing } from "@/lib/demo-data";
+import { demoPlayerRows, demoNextMatch, demoRecentForm, demoRatingTrend, demoLive, demoSquad, type FormResult, type Briefing } from "@/lib/demo-data";
 import { SourceMark } from "@/lib/data-source";
 import { Crest } from "@/lib/teams";
 import { PlayerAvatar } from "@/lib/player-avatar";
@@ -26,8 +26,13 @@ const POS_BY_ID: Record<string, string> = Object.fromEntries(
 const SHIRT_BY_ID: Record<string, number> = Object.fromEntries(
   demoSquad.map((p) => [String(p.player_id), p.shirt]),
 );
+import { demoTrackRecord } from "@/lib/track-record";
+import { demoNextMatchSimulation } from "@/lib/match-simulation";
+import { weeklyInsights } from "@/lib/weekly-insights";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
+import { TrackRecordBadge } from "../_console/track-record";
+import { InsightFeedCompact } from "../_console/insights";
 
 // Küçük inline sparkline (bağımlılıksız) — rating trendi gibi seriler için.
 function Sparkline({ values, color = "var(--accent)", width = 132, height = 34 }: { values: number[]; color?: string; width?: number; height?: number }) {
@@ -290,10 +295,12 @@ export default function OverviewConsolePage() {
     { value: dcrit, color: "var(--crit)" },
   ];
 
-  // Sıradaki maç kartı — demo ve gerçek değerleri tek yerde birleştir.
-  const nmWin = DEMO_MODE ? demoNextMatch.win : realWin;
-  const nmDraw = DEMO_MODE ? demoNextMatch.draw : realDraw;
-  const nmLoss = DEMO_MODE ? demoNextMatch.loss : realLoss;
+  // Sıradaki maç kartı — demo'da olasılıklar simülasyon motorundan (Poisson-Dixon-Coles),
+  // statik değerler değil; canlıda backend predict'ten.
+  const nmSim = DEMO_MODE ? demoNextMatchSimulation() : null;
+  const nmWin = nmSim ? nmSim.probHomeWin : realWin;
+  const nmDraw = nmSim ? nmSim.probDraw : realDraw;
+  const nmLoss = nmSim ? nmSim.probAwayWin : realLoss;
   const nmHome = DEMO_MODE ? "Beşiktaş" : (myTeam?.name ?? "—");
   const nmAway = DEMO_MODE ? demoNextMatch.away : oppName;
   const nmHeader = DEMO_MODE
@@ -343,6 +350,11 @@ export default function OverviewConsolePage() {
           <div className="pi"><div className="pv" style={{ color: "var(--muted)" }}>{pct(nmDraw)}</div><div className="pl">Berabere</div></div>
           <div className="pi"><div className="pv" style={{ color: "var(--high)" }}>{pct(nmLoss)}</div><div className="pl">Mağlubiyet</div></div>
         </div>
+        {DEMO_MODE && (
+          <div style={{ marginTop: 9, display: "flex", justifyContent: "center" }} onClick={(e) => e.stopPropagation()}>
+            <Link href="/calibration" style={{ textDecoration: "none" }}><TrackRecordBadge tr={demoTrackRecord()} type="match" compact /></Link>
+          </div>
+        )}
         {DEMO_MODE && demoNextMatch.aiPreview && (
           <div style={{ marginTop: 11, paddingTop: 10, borderTop: "1px solid var(--line)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 5 }}>
@@ -452,7 +464,10 @@ export default function OverviewConsolePage() {
       {DEMO_MODE ? (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
           <FormTrendCard form={demoRecentForm} rating={demoRatingTrend} href={teamHref} />
-          <BriefingFeed items={demoBriefings} hrefFor={briefHref} />
+          <div className="rc" style={{ margin: 0 }}>
+            <h3>Bu Haftanın İçgörüleri <span className="tiny" style={{ display: "inline-flex", gap: 5, alignItems: "center" }}><SourceMark id="claude" height={13} /> 4 motordan otomatik</span></h3>
+            <InsightFeedCompact data={weeklyInsights()} limit={4} />
+          </div>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>

@@ -22,8 +22,11 @@ import {
   demoWeaknesses,
   demoPlan,
 } from "@/lib/demo-data";
+import { defensiveSetPiece, type SpRiskLevel } from "@/lib/set-piece";
 import { SetPieceZoneMap } from "@/components/charts/SetPieceZoneMap";
 import { ConsoleShell } from "../../../_console/shell";
+
+const SP_RISK_VAR: Record<SpRiskLevel, string> = { "düşük": "var(--low)", "orta": "var(--mid)", "yüksek": "var(--crit)" };
 
 interface Recommendation {
   target_zone: string;
@@ -213,6 +216,7 @@ function SetPieceRoutineContent() {
   const value = demoRoutine(spType);
   const recs = value.top_recommendations;
   const best = recs[0];
+  const def = defensiveSetPiece();
 
   const scoresByZone: Record<string, number> = {};
   recs.forEach((r) => { scoresByZone[r.target_zone] = Math.min(1, r.routine_score); });
@@ -374,6 +378,54 @@ function SetPieceRoutineContent() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* ───────────── DURAN TOP SAVUNMASI — bizim zaafımız + markaj reçetesi ───────────── */}
+      <div className="st" style={{ marginTop: 18 }}><h2>Duran Top Savunması</h2><span className="ep">bizim zaafımız + markaj reçetesi</span></div>
+      <div className="kpis" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))" }}>
+        <div className="kpi"><div className="kl">Zaaf Bölgesi</div><div className="kn" style={{ fontSize: 17, color: "var(--crit)" }}>{def.weakZoneLabel}</div><div className="kd">son {def.matchesN} maçta {def.concededLastN} gol</div></div>
+        <div className="kpi"><div className="kl">Risk Seviyesi</div><div className="kn" style={{ color: SP_RISK_VAR[def.riskLevel] }}>{def.riskLevel}</div><div className="kd">zaaf × rakip tehdidi</div></div>
+        <div className="kpi"><div className="kl">Rakip Tehdidi</div><div className="kn" style={{ color: "var(--mid)" }}>{Math.round(def.opponentThreat * 100)}<span className="pct">%</span></div><div className="kd">{DEMO_OPPONENT} duran top</div></div>
+        <div className="kpi"><div className="kl">Beklenen Yenen xG</div><div className="kn" style={{ color: SP_RISK_VAR[def.riskLevel] }}>{def.expectedConcedeXg.toFixed(2)}</div><div className="kd">bu maç · duran toptan</div></div>
+      </div>
+
+      <div className="rc" style={{ borderLeft: `3px solid ${SP_RISK_VAR[def.riskLevel]}` }}>
+        <h3 style={{ marginBottom: 6 }}>Önerilen Markaj Şeması</h3>
+        <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 600, marginBottom: 6 }}>{def.scheme}</div>
+        <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.55 }}>{def.recommendation}</div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 12, marginTop: 12 }}>
+        {/* Bölge yeme riskimiz */}
+        <div className="rc" style={{ margin: 0 }}>
+          <h3>Bölge Yeme Riskimiz <span className="tiny">zonal boşluklar</span></h3>
+          {def.zoneRisks.map((z) => {
+            const c = z.risk >= 0.6 ? "var(--crit)" : z.risk >= 0.35 ? "var(--mid)" : "var(--low)";
+            return (
+              <div key={z.zone} style={{ marginBottom: 7 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, marginBottom: 2 }}>
+                  <span style={{ color: "var(--ink)" }}>{z.label}</span>
+                  <span style={{ fontFamily: "JetBrains Mono", fontWeight: 700, color: c }}>{Math.round(z.risk * 100)}%</span>
+                </div>
+                <div className="mbar"><i style={{ width: `${z.risk * 100}%`, background: c }} /></div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Markaj görev dağılımı */}
+        <div className="rc" style={{ margin: 0 }}>
+          <h3>Markaj Görev Dağılımı <span className="tiny">hava topu gücüne göre</span></h3>
+          {def.markers.map((m, i) => (
+            <div className="stat" key={m.shirt} style={{ alignItems: "flex-start" }}>
+              <span style={{ fontSize: 11.5, color: "var(--muted)", flex: 1, paddingRight: 8 }}>
+                <span className="nm" style={{ color: i === 0 ? "var(--crit)" : "var(--ink)" }}>{m.player}</span> <span className="nat">#{m.shirt}</span>
+                <span style={{ display: "block", marginTop: 3, color: "var(--dim)", fontSize: 11, lineHeight: 1.4 }}>{m.assignment}</span>
+              </span>
+              <span className="sv" style={{ fontSize: 11.5, whiteSpace: "nowrap", color: "var(--ink)" }} title="hava topu gücü (1-20)">hava {m.aerial.toFixed(1)}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </ConsoleShell>
   );

@@ -11,8 +11,21 @@ import * as React from "react";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoChatQA } from "@/lib/demo-data";
+import { answerQuestion, type AssistantContext } from "@/lib/assistant";
 import { engineLabel } from "@/lib/labels";
 import { ConsoleShell } from "../_console/shell";
+
+// Motor-güdümlü örnek sorular — canlı motorlardan (risk/kadro/maç/track-record/haftalık) cevaplanır.
+const ENGINE_STARTERS = [
+  "Orkun Kökçü'nün sakatlık riski ne?",
+  "Orkun mu Rıdvan mı daha riskli?",
+  "Jota Silva'nın gelişim potansiyeli ne?",
+  "En yüksek potansiyelli oyuncular kim?",
+  "Antalyaspor'a karşı kimi dinlendireyim?",
+  "Antalyaspor maçını kazanır mıyız?",
+  "Bu haftanın öncelikleri ne?",
+  "Model tahminleri ne kadar tutuyor?",
+];
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -21,7 +34,7 @@ interface ChatMessage {
 }
 
 const STARTERS = DEMO_MODE
-  ? demoChatQA.map((qa) => qa.question)
+  ? [...ENGINE_STARTERS, ...demoChatQA.slice(0, 6).map((qa) => qa.question)]
   : [
     "Galatasaray maçına nasıl çıkmalıyız?",
     "Rafa Silva'yı dinlendirsek mi?",
@@ -29,7 +42,7 @@ const STARTERS = DEMO_MODE
     "Duran toplarda neden zayıfız?",
   ];
 const CHIPS = DEMO_MODE
-  ? demoChatQA.map((qa) => qa.question)
+  ? ENGINE_STARTERS
   : [
     "Duran top planı çıkar",
     "Kimler kart riskinde?",
@@ -37,25 +50,38 @@ const CHIPS = DEMO_MODE
     "Sıradaki rakip brifingi",
   ];
 
-// Demo: açılışta dolu örnek diyalog (ilk soru-cevap), gerisi başlangıç sorularında.
+// Demo: açılışta dolu örnek diyalog — ilk cevabı CANLI motordan üret (gerçek
+// hesaplanan çıktı + gerçek motor izleri), böylece copilot hemen kendini gösterir.
 const demoInitialMessages: ChatMessage[] = DEMO_MODE
-  ? [
-    { role: "user", text: demoChatQA[0].question },
-    { role: "assistant", text: demoChatQA[0].answer, tools: demoChatQA[0].tools },
-  ]
+  ? (() => {
+    const q = "Bu hafta en riskli oyuncularım kim?";
+    const a = answerQuestion(q);
+    return [
+      { role: "user", text: q },
+      a.matched
+        ? { role: "assistant", text: a.text, tools: a.tools }
+        : { role: "assistant", text: demoChatQA[0].answer, tools: demoChatQA[0].tools },
+    ];
+  })()
   : [];
 
-/** Demo: soruyu hazır cevaplarla eşle (yoksa nazik bir genel cevap). */
-function demoAnswer(msg: string): { text: string; tools: string[] } {
+/** Demo: önce CANLI motorlara yönlendir (risk/kadro/maç/gelişim/karşılaştırma/…);
+ *  ctx ile takip soruları çözülür. Eşleşmezse demoChatQA'ya, o da yoksa genel cevaba düşer. */
+function demoAnswer(msg: string, ctx: AssistantContext): { text: string; tools: string[]; context: AssistantContext } {
+  const live = answerQuestion(msg, ctx);
+  const nextCtx = live.context ?? ctx;
+  if (live.matched) return { text: live.text, tools: live.tools, context: nextCtx };
+
   const lower = msg.toLocaleLowerCase("tr");
   const hit = demoChatQA.find(
     (qa) => qa.question.toLocaleLowerCase("tr") === lower
       || lower.includes(qa.question.toLocaleLowerCase("tr").slice(0, 12)),
   );
-  if (hit) return { text: hit.answer, tools: hit.tools };
+  if (hit) return { text: hit.answer, tools: hit.tools, context: nextCtx };
   return {
-    text: "Demo modunda bu soru için hazır bir yanıt yok. Sağdaki başlangıç sorularından birini deneyin — risk, rakip taktiği ve momentum üzerine gerçek sayılarla cevap veriyorum.",
+    text: "Bunu doğrudan motorlara bağlayamadım. Şunları deneyebilirsin: bir oyuncunun sakatlık riski ya da gelişim potansiyeli, iki oyuncuyu karşılaştırma, sıradaki maç tahmini, kimi dinlendirmem gerektiği, modelin isabet oranı ya da bu haftanın öncelikleri.",
     tools: ["context_engine"],
+    context: nextCtx,
   };
 }
 
@@ -65,6 +91,7 @@ export default function ChatConsolePage() {
   const [conversationId, setConversationId] = React.useState<number | null>(null);
   const [loading, setLoading] = React.useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const ctxRef = React.useRef<AssistantContext>({});   // takip soruları için sohbet bağlamı
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -78,7 +105,8 @@ export default function ChatConsolePage() {
     setLoading(true);
     // Demo: backend'e gitme, hazır cevabı kısa bir gecikmeyle göster.
     if (DEMO_MODE) {
-      const ans = demoAnswer(msg);
+      const ans = demoAnswer(msg, ctxRef.current);
+      ctxRef.current = ans.context;   // bağlamı bir sonraki tura taşı
       window.setTimeout(() => {
         setMessages((m) => [...m, { role: "assistant", text: ans.text, tools: ans.tools }]);
         setLoading(false);
@@ -113,9 +141,10 @@ export default function ChatConsolePage() {
     setMessages(DEMO_MODE ? demoInitialMessages : []);
     setConversationId(null);
     setInput("");
+    ctxRef.current = {};
   }
 
-  const aiAvatar: React.CSSProperties = { background: "linear-gradient(135deg,#3b82f6,#6366f1)" };
+  const aiAvatar: React.CSSProperties = { background: "var(--accent)" };
   const avatarBase: React.CSSProperties = {
     width: 28, height: 28, borderRadius: 7, flexShrink: 0, display: "flex",
     alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 12, color: "#fff",
@@ -210,6 +239,7 @@ export default function ChatConsolePage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                 rows={1}
+                aria-label="Asistana mesaj yaz"
                 placeholder="Takımınız hakkında bir şey sorun…"
                 style={{ flex: 1, background: "transparent", color: "var(--ink)", fontSize: 14, resize: "none", outline: "none", maxHeight: 110, lineHeight: 1.5, border: 0, fontFamily: "inherit" }}
               />

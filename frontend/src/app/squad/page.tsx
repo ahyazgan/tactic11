@@ -11,7 +11,8 @@ import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
-import { demoPlayerRows, demoSquad } from "@/lib/demo-data";
+import { demoPlayerRows, demoSquad, DEMO_OPPONENT } from "@/lib/demo-data";
+import { recommendedXI, squadAvailability } from "@/lib/lineup-advice";
 import { PlayerAvatar } from "@/lib/player-avatar";
 import {
   SM_SEASON,
@@ -23,6 +24,7 @@ import {
 import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../_console/shell";
 import { RiskDonut, LegendRow } from "../_console/viz";
+import { LineupAdviceBody, AvailabilityTable } from "../_console/lineup";
 
 // Backend pozisyon kodu (G/D/M/F) → PlayerAvatar pozisyonu + TR etiket.
 const SM_POS: Record<string, { avatar: string; label: string }> = {
@@ -137,6 +139,8 @@ export default function SquadConsolePage() {
   const [filter, setFilter] = React.useState<Filter>("all");
 
   const players = DEMO_MODE ? (demoPlayerRows as PlayerRow[]) : (data ?? []);
+  // Maç reçetesi (önerilen 11 + uygunluk) — yalnız demo'da, tek kez hesapla.
+  const squadAvail = DEMO_MODE ? squadAvailability() : [];
   const risky = players.filter((p) => p.risk_label === "Yüksek" || p.risk_label === "Kritik").length;
   const ready = players.filter((p) => p.risk_label === "Düşük").length;
   const watch = players.filter((p) => p.risk_label === "Orta").length;
@@ -338,6 +342,14 @@ export default function SquadConsolePage() {
 
       {DEMO_MODE && (
         <>
+          <div className="st"><h2>Maç Reçetesi: Önerilen Kadro</h2><span className="ep">{DEMO_OPPONENT} · risk endeksi + kondisyon füzyonu</span></div>
+          <div className="rc" style={{ margin: "0 0 12px" }}>
+            <LineupAdviceBody advice={recommendedXI(DEMO_OPPONENT, squadAvail)} />
+          </div>
+
+          <div className="st"><h2>Oyuncu Uygunluk & Yük Reçetesi</h2><span className="ep">verdi + bu hafta antrenman yükü ayarı</span></div>
+          <div style={{ marginBottom: 12 }}><AvailabilityTable rows={squadAvail} /></div>
+
           <div className="st"><h2>Kadro Derinliği</h2><span className="ep">pozisyon başına derinlik + yaşlanma riski</span></div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 12 }}>
             {SQUAD_DEPTH.map((d) => {
