@@ -2896,7 +2896,16 @@ def live_decision_endpoint(
         momentum_score=momentum_score,
     ))
 
-    # Faz 8: bağlam motoru (orkestra şefi) — 8 sinyali tek karara indirger
+    # G.3 yıldız beslemesi — star_player_id verilmişse hesapla
+    if star_id is not None:
+        from app.engine.star_feed import compute_star_feed
+        _safe("star_feed", lambda: compute_star_feed(
+            my_team_id, star_player_id=star_id,
+            passes=loaded.passes, shots=loaded.shots,
+            current_minute=current_minute,
+        ))
+
+    # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
     out.update(run_context_pipeline(
         session, match, my_team_id, current_minute, out, p, d, s,

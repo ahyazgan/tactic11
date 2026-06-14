@@ -162,6 +162,70 @@ def build_candidates(
                 sample_size=0, magnitude=urg,
             ))
 
+    # closing_strategy (closing — K kategorisi reçete + risk eşiği)
+    cs = out.get("closing_strategy")
+    if _is_dict(cs):
+        urgency_level = cs.get("urgency_level", "low")
+        risk = cs.get("risk_reward", {}) or {}
+        take_risk = bool(risk.get("take_risk"))
+        # fire koşulu: urgency yüksek/kritik VEYA risk eşiği fırlamış
+        fired = urgency_level in ("high", "critical") or take_risk
+        if fired:
+            urg = {"critical": 0.95, "high": 0.8,
+                   "moderate": 0.55, "low": 0.3}.get(urgency_level, 0.5)
+            recipe = cs.get("recipe", {}) or {}
+            headline = (
+                cs.get("key_message")
+                or f"Kapanış: tempo={recipe.get('tempo', '?')}, "
+                   f"ikame={recipe.get('sub_priority', '?')}"
+            )
+            # sample_size = skor+dakika her zaman tam bilinir → tam destek (12)
+            cands.append(CandidateSignal(
+                key="closing_strategy", signal_type="closing",
+                headline=headline, urgency=urg, fired=True,
+                minute=current_minute, sample_size=12, magnitude=urg,
+            ))
+
+    # foul_pressure (friction — I.1 ritim kırma + hakem kart eşiği)
+    fp = out.get("foul_pressure")
+    if _is_dict(fp):
+        opp_tactical = bool(fp.get("tactical_fouling_alert"))
+        our_high = bool(fp.get("our_high_foul_alert"))
+        ref_pressure = fp.get("referee_card_pressure", "low")
+        flags = fp.get("player_flags", []) or []
+        critical_flag = any(f.get("risk_level") == "critical" for f in flags)
+        fired = opp_tactical or our_high or critical_flag or ref_pressure == "high"
+        if fired:
+            urg = 0.85 if critical_flag else (
+                0.7 if ref_pressure == "high" else (
+                    0.65 if opp_tactical else 0.55))
+            cands.append(CandidateSignal(
+                key="foul_pressure", signal_type="friction",
+                headline=fp.get("tactical_advice", "Faul ritmi anormal"),
+                urgency=urg, fired=True, minute=current_minute,
+                sample_size=int(fp.get("our_fouls_window", 0))
+                            + int(fp.get("opp_fouls_window", 0)),
+                magnitude=urg,
+            ))
+
+    # star_feed (feed — G.3 yıldız beslemesi)
+    sf = out.get("star_feed")
+    if _is_dict(sf):
+        state = sf.get("involvement_state", "balanced")
+        action = sf.get("suggested_action", "OK")
+        fired = state in ("starved", "well-fed")
+        if fired:
+            urg = {"starved": 0.75, "well-fed": 0.55}.get(state, 0.4)
+            cands.append(CandidateSignal(
+                key="star_feed", signal_type="feed",
+                headline=sf.get("tactical_advice", "Yıldız beslemesi anormal"),
+                urgency=urg, fired=True, minute=current_minute,
+                sample_size=int(sf.get("team_passes_window", 0)),
+                magnitude=urg,
+                detail={"suggested_action": action,
+                        "pass_share_pct": sf.get("pass_share_pct", 0.0)},
+            ))
+
     return cands
 
 
