@@ -316,7 +316,11 @@ function Scoreboard({
   );
 }
 
-function PrimaryBanner({ ctx }: { ctx: ContextDecision | undefined }) {
+function PrimaryBanner({
+  ctx, onApply, applyState,
+}: { ctx: ContextDecision | undefined;
+     onApply?: () => void;
+     applyState?: "idle" | "saving" | "saved" | "error" }) {
   const p = ctx?.primary;
   const urgency = p?.urgency ?? 0;
   const conf = Math.round((p?.confidence ?? 0) * 100);
@@ -379,6 +383,34 @@ function PrimaryBanner({ ctx }: { ctx: ContextDecision | undefined }) {
         <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.65 }}>
           {p.rationale}
         </div>
+        {onApply && (
+          <div style={{ marginTop: 14, display: "flex",
+            alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              onClick={onApply}
+              disabled={applyState === "saving" || applyState === "saved"}
+              style={{
+                padding: "8px 16px",
+                background: applyState === "saved" ? "var(--low)" : tone,
+                color: "var(--panel)", border: "none", borderRadius: 4,
+                cursor: applyState === "saved" ? "default" : "pointer",
+                fontWeight: 700, fontSize: 12.5, letterSpacing: 0.3,
+                opacity: applyState === "saving" ? 0.6 : 1,
+              }}
+            >
+              {applyState === "saving" ? "Kaydediliyor…"
+                : applyState === "saved" ? "✓ Kaydedildi"
+                : applyState === "error" ? "⚠ Hata · Tekrar dene"
+                : "✓ Bu kararı uygula & yansıt"}
+            </button>
+            {applyState !== "saved" && (
+              <span style={{ fontSize: 11, color: "var(--muted)" }}>
+                /decisions/track'e geçer · outcome maç sonunda ölçülür
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -766,7 +798,9 @@ export default function LiveDecisionPage() {
   const [liveMode, setLiveMode] = useState(false);
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
+  const [applyState, setApplyState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const lastMinuteRef = useRef<number | null>(null);
+  const lastAppliedRef = useRef<{ minute: number; headline: string } | null>(null);
   const lastNotifyRef = useRef<{ minute: number; at: number }>(
     { minute: -1, at: 0 },
   );
@@ -851,6 +885,57 @@ export default function LiveDecisionPage() {
   function resetTimeline() {
     setTimeline([]);
     lastMinuteRef.current = null;
+    lastAppliedRef.current = null;
+    setApplyState("idle");
+  }
+
+  // Dakika değişince apply state reset (her dakika için yeni karar)
+  useEffect(() => {
+    const p = data?.context?.primary;
+    const last = lastAppliedRef.current;
+    if (!last) return;
+    if (last.minute !== minute || last.headline !== (p?.headline ?? "")) {
+      setApplyState("idle");
+    }
+  }, [minute, data]);
+
+  async function handleApply() {
+    const p = data?.context?.primary;
+    if (!p) return;
+    setApplyState("saving");
+    // decision_type mapping (theme_label → backend tip)
+    const themeToType: Record<string, string> = {
+      "oyuncu değişikliği": "substitution",
+      "taktiksel ayar": "tactical_instruction",
+      "duran top": "tactical_instruction",
+      "oyun yönetimi": "tactical_instruction",
+    };
+    const decisionType = themeToType[p.theme_label ?? ""] ?? "other";
+    try {
+      if (DEMO_MODE) {
+        // Demo: backend yok, sadece UI feedback
+        await new Promise((r) => setTimeout(r, 400));
+        setApplyState("saved");
+      } else {
+        await apiFetch(`/admin/matches/${matchId}/decisions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            team_external_id: teamId,
+            minute,
+            period: minute < 45 ? 1 : 2,
+            decision_type: decisionType,
+            notes: p.headline,
+            recommended: true,
+            confidence: p.confidence,
+          }),
+        });
+        setApplyState("saved");
+      }
+      lastAppliedRef.current = { minute, headline: p.headline ?? "" };
+    } catch {
+      setApplyState("error");
+    }
   }
 
   const right = (
@@ -1013,7 +1098,11 @@ export default function LiveDecisionPage() {
         urgency={data?.context?.primary?.urgency ?? 0}
         momentum={data?.momentum?.score ?? 0}
       />
-      <PrimaryBanner ctx={data?.context} />
+      <PrimaryBanner
+        ctx={data?.context}
+        onApply={data?.context?.primary ? handleApply : undefined}
+        applyState={applyState}
+      />
 
       <div className="st" style={{ marginTop: 8, marginBottom: 8 }}>
         <h2>Engine Çıktıları</h2>
