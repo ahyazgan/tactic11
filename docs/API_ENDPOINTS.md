@@ -65,7 +65,13 @@ bağlamı için `SCREEN_INVENTORY.md` ve `FOOTBALL_GLOSSARY.md`.
 | `GET` | `/admin/teams/{team_id}/season-calendar` | Sezon takvimi + fikstür zorluğu — Faz 5 #30 |
 | `GET` | `/admin/players/{player_id}/transfer-targets` | Benzer profilde transfer hedefleri — Faz 5 #35 |
 | `GET` | `/admin/teams/{team_id}/decision-dashboard` | Karar geçmişi + isabet özeti (tüm maçlar) — Faz 5 #39 |
-| `GET` | `/admin/matches/{match_id}/live-decision` | Maç-içi karar paneli (momentum/sub/tactical/risk + spatial/matchup/score-time) — Faz 6+7 |
+| `GET` | `/admin/matches/{match_id}/live-decision` | Maç-içi karar paneli (10 engine + context_engine) — Faz 6+7+K/I/G |
+| `GET` | `/admin/matches/{match_id}/closing-strategy` | Kapanış reçetesi + risk/getiri eşiği (K) |
+| `GET` | `/admin/matches/{match_id}/star-feed` | Yıldız oyuncu besleme monitörü (G.3); `?star_player_id=X` |
+| `POST` | `/admin/matches/{match_id}/foul-pressure` | Takım faul biriktirme + hakem kart eşiği (I.1); payload boş→ingest'ten okur |
+| `GET` | `/admin/matches/with-events` | Live decision match selector — ingest'li maçlar (event_count + foul_count) |
+| `GET` | `/admin/decisions/recent` | Karar takip ekranı için: son N karar + summary (hit_rate, by_type) |
+| `POST` | `/admin/decisions/{id}/outcome` | Karar sonucunu işle (positive/negative/neutral) — feedback loop |
 | `POST` | `/admin/matches/{match_id}/opponent-reaction` | Rakip sub okuma + momentum kırma önerisi — Faz 6 #13/#14 |
 | `POST` | `/admin/matches/{match_id}/live-risk` | Canlı kart/sakatlık/zaman riski — Faz 6 #10/#11/#12 |
 | `POST` | `/admin/matches/{match_id}/set-piece` | Duran top fırsatı + penaltı atıcı durumu — Faz 7 #7/#8 |

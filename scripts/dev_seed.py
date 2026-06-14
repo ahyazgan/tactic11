@@ -53,9 +53,9 @@ def _sync_missing_columns(engine) -> list[str]:
 
 def ensure_demo_data(match_id: int = DEMO_MATCH_ID, tenant: str = DEMO_TENANT) -> str:
     """Maç + event'ler `tenant` altında var mı garanti et. Durum string'i döner."""
+    from app.db import models
     from app.db.base import Base
     from app.db.session import SessionLocal, engine
-    from app.db import models
 
     Base.metadata.create_all(engine)
     synced = _sync_missing_columns(engine)
@@ -83,16 +83,53 @@ def ensure_demo_data(match_id: int = DEMO_MATCH_ID, tenant: str = DEMO_TENANT) -
         ).first()
 
     if match_row is not None and event_count is not None:
-        # Maç + event hazır; Faz B kadro verisi eksikse onu backfill et (tek ağ).
+        # Maç + event hazır; faul ingest var mı? Eski demo.db'ler yeni event_type=foul
+        # path'i öncesinden — backfill et (idempotent re-ingest sadece yeni satır ekler).
+        foul_row = None
+        with SessionLocal() as s2:
+            foul_row = s2.execute(
+                models.EventRow.__table__.select().where(
+                    models.EventRow.match_external_id == match_id,
+                    models.EventRow.tenant_id == tenant,
+                    models.EventRow.event_type == "foul",
+                ).limit(1)
+            ).first()
+        foul_status = ""
+        if foul_row is None:
+            foul_status = " + " + _backfill_fouls(match_id, tenant)
+        # Faz B kadro verisi eksikse onu da backfill et.
         if appearance_count is None:
             status = _backfill_appearances(match_id, tenant)
-            return f"hazır (match {match_id} / {tenant}) + {status}"
-        return f"hazır (match {match_id} / {tenant} mevcut)"
+            return f"hazır (match {match_id} / {tenant}) + {status}{foul_status}"
+        return f"hazır (match {match_id} / {tenant} mevcut){foul_status}"
 
     # Eksik → StatsBomb'dan indir (ağ gerekir, tek seferlik).
     from scripts.demo_real_statsbomb import run_demo
     run_demo(match_id=match_id, tenant_id=tenant)
     return f"indirildi (match {match_id} / {tenant})"
+
+
+def _backfill_fouls(match_id: int, tenant: str) -> str:
+    """Eski demo.db: event'ler ingest'lendi ama foul path o zaman yoktu.
+
+    Idempotent ingest re-run: pass/shot/carry/def zaten source_event_id ile
+    skip edilir; sadece yeni event_type='foul' satırları eklenir.
+    """
+    from app.data.ingest.event import ingest_events_for_match
+    from app.data.sources.statsbomb_open import StatsBombOpen
+    from app.db.session import SessionLocal
+
+    with SessionLocal() as s:
+        s.info["tenant_id"] = tenant
+        try:
+            report = ingest_events_for_match(
+                s, source=StatsBombOpen(), match_external_id=match_id,
+                tenant_id=tenant,
+            )
+            s.commit()
+            return f"foul backfill: +{report.fouls} faul (toplam +{report.rows_inserted})"
+        except (ConnectionError, RuntimeError) as exc:
+            return f"foul backfill atlandı (ağ?): {exc}"
 
 
 def _backfill_appearances(match_id: int, tenant: str) -> str:

@@ -119,12 +119,63 @@ function DemoDecisions() {
       desc="Orkestra şefi (context_engine) birden çok sinyali aynı anda okur ve tek bir önceliklendirilmiş karar üretir. Her kartın altında AYNI ANDA ateşlenen sinyaller var."
       right={right}
     >
-      <div className="st" style={{ marginTop: 0 }}>
+      <DecisionsHubTiles />
+      <div className="st" style={{ marginTop: 24 }}>
         <h2>Maç Boyunca Kararlar</h2>
         <span className="ep">Beşiktaş vs Antalyaspor</span>
       </div>
       {cards.map((d) => <DecisionCardView key={d.minute} d={d} />)}
     </ConsoleShell>
+  );
+}
+
+function DecisionsHubTiles() {
+  const tiles = [
+    {
+      href: "/decisions/live",
+      icon: "⚡",
+      title: "Maç-içi Karar",
+      desc: "10 engine birleşik canlı panel + ŞİMDİ ne yapayım önerisi · Replay 60→95",
+      accent: "var(--crit)",
+    },
+    {
+      href: "/decisions/track",
+      icon: "📊",
+      title: "Karar Takip",
+      desc: "Geçmiş kararlar + isabet trendi · pozitif/negatif sonuç oranı",
+      accent: "var(--low)",
+    },
+  ];
+  return (
+    <div style={{
+      display: "grid", gap: 12, marginBottom: 8, marginTop: 0,
+      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    }}>
+      {tiles.map((t) => (
+        <a key={t.href} href={t.href} className="rc" style={{
+          textDecoration: "none", color: "inherit", padding: "14px 16px",
+          display: "flex", alignItems: "center", gap: 12,
+          borderLeft: `3px solid ${t.accent}`,
+          transition: "transform 120ms ease, box-shadow 120ms ease",
+        }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(-2px)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLAnchorElement).style.transform = "translateY(0)";
+          }}
+        >
+          <span style={{ fontSize: 28, lineHeight: 1 }}>{t.icon}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)",
+              marginBottom: 3 }}>{t.title}</div>
+            <div style={{ fontSize: 11.5, color: "var(--muted)",
+              lineHeight: 1.5 }}>{t.desc}</div>
+          </div>
+          <span style={{ fontSize: 20, color: t.accent, fontWeight: 700 }}>→</span>
+        </a>
+      ))}
+    </div>
   );
 }
 

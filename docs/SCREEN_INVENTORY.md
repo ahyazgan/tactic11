@@ -43,6 +43,32 @@ kavramları (bkz. `FOOTBALL_GLOSSARY.md`).
 `/leagues`, `/matches`, `/h2h`, `/decisions`, `/calibration`, `/admin`, `/players`,
 `/training` — hepsi mevcut DESIGN.md sistemiyle.
 
+## Karar Merkezi (Haziran 2026 — feat/closing-strategy)
+
+`/decisions` altı tam dolu üçlü ekran seti — orkestra şefi (context_engine)
+10 sinyali tek karara indirgiyor; canlı + geçmiş + isabet döngüsü kapalı.
+
+| # | Ekran | Route | Durum | Not |
+|---|-------|-------|-------|-----|
+| 11 | Kararlar (Hub) | `/decisions` | **VAR** | 2 büyük tile (Maç-içi + Takip) + demo karar kartları |
+| 12 | Maç-içi Karar | `/decisions/live` | **VAR** | Scoreboard (skor+dakika+momentum tilt bar) → ŞİMDİ banner (critical pulse) → 7 engine kart (Momentum/Kapanış/İkame/Trigger/Risk/Yıldız/Faul) + tooltips + Timeline (▶ Replay 60→95) + Canlı mod (5sn refresh) + Bildirim (Notification API) + Karar Yansıt (POST decision) |
+| 13 | Karar Takip | `/decisions/track` | **VAR** | İsabet (SVG rolling-N sparkline) + 4 summary kart + tablo (Tarih/Maç/Dk/Tip/Not/Güven/Öneri/Sonuç pill) + inline ✓/✗/○ pending mark |
+
+**Yeni endpointler:**
+- `GET /admin/matches/{id}/live-decision?my_team_id=...&current_minute=...&star_player_id=...` — 10 engine birleşik panel + context_engine primary/secondary
+- `GET /admin/matches/{id}/closing-strategy` — K kategorisi standalone
+- `GET /admin/matches/{id}/star-feed?star_player_id=X` — G.3 standalone
+- `POST /admin/matches/{id}/foul-pressure` — I.1 payload OR DB-fed
+- `GET /admin/matches/with-events?limit=N` — match selector için ingest'li maçlar
+- `GET /admin/decisions/recent?limit=N&team_external_id=X` — track sayfası için summary + decisions
+- `POST /admin/decisions/{id}/outcome` — inline outcome mark
+
+**Yeni engine'ler:** `closing_strategy` (K), `foul_pressure` (I.1), `star_feed` (G.3) — hepsi pure compute + audit + EngineResult.
+
+**Veri ingest:** StatsBomb event type=22 (Foul Committed) + type=24 (Bad Behaviour) artık parse'lanıyor. dev_seed eski demo.db'lerde foul backfill yapıyor (idempotent re-ingest).
+
+---
+
 ## Gece çalışma sırası (öneri)
 1. Scout (7) ve Tıbbi Merkez (9) — referans gerekmez, FM primitifleriyle, gerçek
    endpoint'lere bağlı. (Görsel onay sabah.)
