@@ -37,6 +37,9 @@ THEME_BY_TYPE: dict[str, str] = {
     "opponent": "manage_game",
     "friction": "manage_game",
     "feed": "adjust_shape",
+    "hot_hand": "adjust_shape",
+    "set_piece_opportunity": "set_piece",
+    "referee": "manage_game",
 }
 THEME_LABEL: dict[str, str] = {
     "change_personnel": "oyuncu değişikliği",

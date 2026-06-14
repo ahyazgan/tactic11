@@ -274,6 +274,56 @@ def test_foul_pressure_reads_ingested_fouls(session, client):
     assert v["referee_card_pressure"] == "low"
 
 
+def test_hot_hand_endpoint(session, client):
+    """live-decision panele otomatik dahil + standalone çağrılabilir."""
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/hot-hand?my_team_id=11&current_minute=70",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert "hot_streak" in v
+    assert "shots_window" in v
+
+
+def test_hot_hand_404(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get("/admin/matches/99999/hot-hand?my_team_id=11&current_minute=70")
+    assert r.status_code == 404
+
+
+def test_set_piece_opportunity_endpoint(session, client):
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/set-piece-opportunity"
+        "?my_team_id=11&current_minute=70",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert "total_set_pieces" in v
+    assert "tactical_advice" in v
+
+
+def test_referee_tendency_endpoint(client):
+    r = client.post(
+        "/admin/referee/tendency",
+        json={
+            "referee_id": "r-001", "referee_name": "Cüneyt Çakır",
+            "prior_matches": [
+                {"yellows_total": 7, "reds_total": 0, "fouls_total": 28}
+                for _ in range(6)
+            ],
+        },
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["severity"] == "strict"
+
+
 def test_decisions_recent_summary_and_list(session, client):
     """3 karar: 2 pozitif + 1 negatif → hit_rate=0.667, summary doğru."""
     from datetime import UTC, datetime, timedelta
