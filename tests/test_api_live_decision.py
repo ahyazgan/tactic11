@@ -175,3 +175,58 @@ def test_closing_strategy_404(session, client):
         "?my_team_id=11&current_minute=80",
     )
     assert r.status_code == 404
+
+
+def test_foul_pressure_endpoint(session, client):
+    """Rakip ritim kırma + sarılı oyuncu → iki sinyal birden."""
+    _seed_match_events(session)
+    r = client.post(
+        "/admin/matches/9300/foul-pressure"
+        "?my_team_id=11&current_minute=75&total_yellows_match=7",
+        json={
+            "foul_events": [
+                {"team_id": 22, "minute": 62.0},
+                {"team_id": 22, "minute": 64.0},
+                {"team_id": 22, "minute": 67.0},
+                {"team_id": 22, "minute": 70.0},
+                {"team_id": 22, "minute": 73.0},
+                {"team_id": 11, "minute": 60.0, "player_id": 99},
+                {"team_id": 11, "minute": 65.0, "player_id": 99},
+                {"team_id": 11, "minute": 70.0, "player_id": 99},
+            ],
+            "player_yellow_cards": {"99": 1},
+        },
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["tactical_fouling_alert"] is True
+    assert v["referee_card_pressure"] == "high"
+    assert len(v["player_flags"]) == 1
+    assert v["player_flags"][0]["risk_level"] == "critical"
+
+
+def test_foul_pressure_404(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.post(
+        "/admin/matches/99999/foul-pressure"
+        "?my_team_id=11&current_minute=75",
+        json={"foul_events": []},
+    )
+    assert r.status_code == 404
+
+
+def test_foul_pressure_empty_payload(session, client):
+    """Payload yok → normal advice + 0 faul."""
+    _seed_match_events(session)
+    r = client.post(
+        "/admin/matches/9300/foul-pressure?my_team_id=11&current_minute=70",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["our_fouls_total"] == 0
+    assert v["opp_fouls_total"] == 0
+    assert "normal" in v["tactical_advice"].lower()

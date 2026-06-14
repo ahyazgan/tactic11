@@ -3019,6 +3019,52 @@ def closing_strategy_endpoint(
     return engine_result_to_dict(result)
 
 
+@router.post(
+    "/matches/{match_id}/foul-pressure",
+    tags=["admin"],
+    summary="Takım faul biriktirme + hakem kart eşiği (I.1)",
+)
+def foul_pressure_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    window_min: float = Query(default=15.0, ge=5, le=45),
+    total_yellows_match: int = Query(default=0, ge=0, le=20),
+    payload: dict[str, Any] | None = None,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Faul event listesinden ritim-kırma + hakem kart eşiği + oyuncu kart riski.
+
+    payload: {
+        "foul_events": [{"minute": float, "team_id": int, "player_id"?: int}],
+        "player_yellow_cards": {player_id_str: yellow_count}
+    }
+    """
+    from app.engine.foul_pressure import compute_foul_pressure
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    home_id = match.home_team_external_id
+    opp_id = (match.away_team_external_id if my_team_id == home_id else home_id)
+    p = payload or {}
+    foul_events = p.get("foul_events", [])
+    yellow_raw = p.get("player_yellow_cards", {}) or {}
+    yellow_states = {int(k): int(v) for k, v in yellow_raw.items()}
+    result = compute_foul_pressure(
+        my_team_id, opp_id, foul_events,
+        current_minute=current_minute, window_min=window_min,
+        player_yellow_cards=yellow_states,
+        total_yellows_match=total_yellows_match,
+    )
+    return engine_result_to_dict(result)
+
+
 # --------------------------------------------------------------------------- #
 # Faz 7 — payload-reçete endpoint'leri (set-piece / friction / referee)
 # --------------------------------------------------------------------------- #
