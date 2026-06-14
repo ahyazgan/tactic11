@@ -3311,6 +3311,34 @@ def set_piece_opportunity_endpoint(
     return engine_result_to_dict(result)
 
 
+@router.get(
+    "/matches/{match_id}/clip",
+    tags=["admin"],
+    summary="Karar etrafındaki video clip metası (stub — CLIP_BASE_URL env)",
+)
+def clip_for_decision_endpoint(
+    match_id: int,
+    minute: float = Query(..., ge=0, le=130),
+    decision_type: str = Query(default="other"),
+    tenant_id: str = Query(default="default"),
+    back_seconds: int | None = Query(default=None, ge=5, le=180),
+    forward_seconds: int = Query(default=5, ge=0, le=60),
+) -> dict[str, Any]:
+    """Bir kararın ±N sn video clip metası.
+
+    `CLIP_BASE_URL` env set'liyse gerçek URL; değilse stub
+    (available=false). Frontend "▶ İzle" butonu bu meta'yı tüketir.
+    """
+    from app.engine.clip_assembler import compute_clip_for_decision
+
+    result = compute_clip_for_decision(
+        match_external_id=match_id, minute=minute,
+        decision_type=decision_type, tenant_id=tenant_id,
+        back_seconds=back_seconds, forward_seconds=forward_seconds,
+    )
+    return engine_result_to_dict(result)
+
+
 @router.post(
     "/referee/tendency",
     tags=["admin"],
