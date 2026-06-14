@@ -324,6 +324,33 @@ def test_referee_tendency_endpoint(client):
     assert v["severity"] == "strict"
 
 
+def test_clip_for_decision_stub(session, client):
+    """CLIP_BASE_URL set değil → stub, available=False."""
+    r = client.get(
+        "/admin/matches/9300/clip?minute=70&decision_type=substitution",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["available"] is False
+    assert v["video_url"] is None
+    assert v["clip_id"].startswith("clip-9300-")
+    assert v["duration_seconds"] == 25  # 20 back + 5 forward (substitution)
+
+
+def test_clip_for_decision_with_env(session, client, monkeypatch):
+    """CLIP_BASE_URL set → gerçek URL üretilir."""
+    monkeypatch.setenv("CLIP_BASE_URL", "https://video.example.com/clips")
+    r = client.get(
+        "/admin/matches/9300/clip"
+        "?minute=70&decision_type=substitution&tenant_id=t-bjk",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["available"] is True
+    assert "t-bjk" in v["video_url"]
+    assert v["source"] == "broadcast"
+
+
 def test_decisions_recent_summary_and_list(session, client):
     """3 karar: 2 pozitif + 1 negatif → hit_rate=0.667, summary doğru."""
     from datetime import UTC, datetime, timedelta

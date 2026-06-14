@@ -316,11 +316,95 @@ function Scoreboard({
   );
 }
 
+function ClipModal({
+  meta, onClose,
+}: { meta: ClipMeta; onClose: () => void }) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 100,
+        background: "rgba(0,0,0,0.55)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: 20,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="rc"
+        style={{
+          maxWidth: 560, width: "100%", padding: 0, overflow: "hidden",
+          background: "var(--panel)",
+        }}
+      >
+        <div style={{
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "12px 16px", borderBottom: "1px solid var(--line)",
+          background: "var(--panel2)",
+        }}>
+          <span style={{ fontSize: 16 }}>▶</span>
+          <div>
+            <div style={{ fontWeight: 700, color: "var(--ink)",
+              fontSize: 13 }}>Karar anı klibi</div>
+            <div style={{ fontSize: 11, color: "var(--muted)",
+              fontFamily: "JetBrains Mono, monospace" }}>
+              {meta.poster_minute_label} · {meta.duration_seconds}sn ·
+              {" "}{meta.clip_id}
+            </div>
+          </div>
+          <button
+            type="button" onClick={onClose}
+            aria-label="Kapat"
+            style={{
+              marginLeft: "auto", padding: "4px 10px",
+              border: "1px solid var(--line)", borderRadius: 4,
+              background: "transparent", cursor: "pointer", fontSize: 14,
+              color: "var(--muted)",
+            }}
+          >✕</button>
+        </div>
+        <div style={{
+          aspectRatio: "16/9", background: "var(--ink)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          color: "var(--panel)", padding: 20, textAlign: "center",
+          backgroundImage: meta.thumbnail_url
+            ? `url(${meta.thumbnail_url})` : undefined,
+          backgroundSize: "cover", backgroundPosition: "center",
+        }}>
+          {!meta.available && (
+            <div>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>🎬</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>
+                Video kaynağı bağlanmadı
+              </div>
+              <div style={{ fontSize: 11, opacity: 0.7, lineHeight: 1.5,
+                maxWidth: 360, margin: "0 auto" }}>
+                Broadcast / CMS bağlandığında bu pencerede {meta.duration_seconds}
+                sn'lik karar anı oynar (kaynak: {meta.source}).
+                <br />Backend: CLIP_BASE_URL env.
+              </div>
+            </div>
+          )}
+          {meta.available && meta.video_url && (
+            <video
+              src={meta.video_url} controls autoPlay
+              style={{ width: "100%", height: "100%" }}
+            >
+              Video desteklenmiyor — <a href={meta.video_url}>indir</a>.
+            </video>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PrimaryBanner({
-  ctx, onApply, applyState,
+  ctx, onApply, applyState, onWatchClip,
 }: { ctx: ContextDecision | undefined;
      onApply?: () => void;
-     applyState?: "idle" | "saving" | "saved" | "error" }) {
+     applyState?: "idle" | "saving" | "saved" | "error";
+     onWatchClip?: () => void }) {
   const p = ctx?.primary;
   const urgency = p?.urgency ?? 0;
   const conf = Math.round((p?.confidence ?? 0) * 100);
@@ -383,27 +467,45 @@ function PrimaryBanner({
         <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.65 }}>
           {p.rationale}
         </div>
-        {onApply && (
+        {(onApply || onWatchClip) && (
           <div style={{ marginTop: 14, display: "flex",
-            alignItems: "center", gap: 10 }}>
-            <button
-              type="button"
-              onClick={onApply}
-              disabled={applyState === "saving" || applyState === "saved"}
-              style={{
-                padding: "8px 16px",
-                background: applyState === "saved" ? "var(--low)" : tone,
-                color: "var(--panel)", border: "none", borderRadius: 4,
-                cursor: applyState === "saved" ? "default" : "pointer",
-                fontWeight: 700, fontSize: 12.5, letterSpacing: 0.3,
-                opacity: applyState === "saving" ? 0.6 : 1,
-              }}
-            >
-              {applyState === "saving" ? "Kaydediliyor…"
-                : applyState === "saved" ? "✓ Kaydedildi"
-                : applyState === "error" ? "⚠ Hata · Tekrar dene"
-                : "✓ Bu kararı uygula & yansıt"}
-            </button>
+            alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            {onApply && (
+              <button
+                type="button"
+                onClick={onApply}
+                disabled={applyState === "saving" || applyState === "saved"}
+                style={{
+                  padding: "8px 16px",
+                  background: applyState === "saved" ? "var(--low)" : tone,
+                  color: "var(--panel)", border: "none", borderRadius: 4,
+                  cursor: applyState === "saved" ? "default" : "pointer",
+                  fontWeight: 700, fontSize: 12.5, letterSpacing: 0.3,
+                  opacity: applyState === "saving" ? 0.6 : 1,
+                }}
+              >
+                {applyState === "saving" ? "Kaydediliyor…"
+                  : applyState === "saved" ? "✓ Kaydedildi"
+                  : applyState === "error" ? "⚠ Hata · Tekrar dene"
+                  : "✓ Bu kararı uygula & yansıt"}
+              </button>
+            )}
+            {onWatchClip && (
+              <button
+                type="button"
+                onClick={onWatchClip}
+                style={{
+                  padding: "8px 14px", background: "var(--panel2)",
+                  color: "var(--ink)", border: "1px solid var(--line)",
+                  borderRadius: 4, cursor: "pointer",
+                  fontWeight: 600, fontSize: 12.5,
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                }}
+                title="Karar anının video kesidini aç"
+              >
+                <span style={{ fontSize: 14 }}>▶</span> İzle
+              </button>
+            )}
             {applyState !== "saved" && (
               <span style={{ fontSize: 11, color: "var(--muted)" }}>
                 /decisions/track'e geçer · outcome maç sonunda ölçülür
@@ -781,6 +883,16 @@ function TimelineStrip({
 // Sayfa
 // --------------------------------------------------------------------------- //
 
+interface ClipMeta {
+  clip_id: string;
+  video_url: string | null;
+  thumbnail_url: string | null;
+  duration_seconds: number;
+  poster_minute_label: string;
+  available: boolean;
+  source: string;
+}
+
 interface TimelineEntry {
   minute: number;
   headline: string;
@@ -799,6 +911,8 @@ export default function LiveDecisionPage() {
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const [applyState, setApplyState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [clipMeta, setClipMeta] = useState<ClipMeta | null>(null);
+  const [clipOpen, setClipOpen] = useState(false);
   const lastMinuteRef = useRef<number | null>(null);
   const lastAppliedRef = useRef<{ minute: number; headline: string } | null>(null);
   const lastNotifyRef = useRef<{ minute: number; at: number }>(
@@ -898,6 +1012,41 @@ export default function LiveDecisionPage() {
       setApplyState("idle");
     }
   }, [minute, data]);
+
+  async function handleWatchClip() {
+    const p = data?.context?.primary;
+    const themeToType: Record<string, string> = {
+      "oyuncu değişikliği": "substitution",
+      "taktiksel ayar": "tactical_instruction",
+      "duran top": "set_piece",
+      "oyun yönetimi": "tactical_instruction",
+    };
+    const decisionType = themeToType[p?.theme_label ?? ""] ?? "other";
+    if (DEMO_MODE) {
+      // Stub meta — backend yok, deterministic clip_id ile placeholder
+      const startSec = Math.max(0, Math.round(minute * 60) - 30);
+      const endSec = Math.round(minute * 60) + 5;
+      setClipMeta({
+        clip_id: `clip-9300-${Math.round(minute * 60)}-${decisionType.slice(0, 3)}`,
+        video_url: null, thumbnail_url: null,
+        duration_seconds: endSec - startSec,
+        poster_minute_label: `${Math.floor(minute)}' ${Math.round((minute % 1) * 60).toString().padStart(2, "0")}"`,
+        available: false, source: "stub",
+      });
+      setClipOpen(true);
+      return;
+    }
+    try {
+      const res = await apiFetch<{ value: ClipMeta }>(
+        `/admin/matches/${matchId}/clip`
+        + `?minute=${minute}&decision_type=${decisionType}`,
+      );
+      setClipMeta(res.value);
+      setClipOpen(true);
+    } catch {
+      setClipMeta(null);
+    }
+  }
 
   async function handleApply() {
     const p = data?.context?.primary;
@@ -1102,7 +1251,14 @@ export default function LiveDecisionPage() {
         ctx={data?.context}
         onApply={data?.context?.primary ? handleApply : undefined}
         applyState={applyState}
+        onWatchClip={data?.context?.primary ? handleWatchClip : undefined}
       />
+      {clipOpen && clipMeta && (
+        <ClipModal
+          meta={clipMeta}
+          onClose={() => setClipOpen(false)}
+        />
+      )}
 
       <div className="st" style={{ marginTop: 8, marginBottom: 8 }}>
         <h2>Engine Çıktıları</h2>
