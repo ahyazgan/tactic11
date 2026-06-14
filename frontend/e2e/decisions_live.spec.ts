@@ -32,4 +32,37 @@ test.describe("Decisions live (DEMO_MODE)", () => {
       timeout: 3000,
     });
   });
+
+  test("replay button cycles through minutes and builds timeline", async ({ page }) => {
+    await page.goto("/decisions/live");
+    // Slider'ı 60'a çek + replay başlat
+    const slider = page.locator('input[type="range"]');
+    await slider.fill("60");
+    const replayBtn = page.getByRole("button", { name: /Replay/i });
+    await replayBtn.click();
+    // 2-3 tick (≥1.8s) sonra timeline en az 2 entry olmalı
+    await page.waitForTimeout(2000);
+    // Pause
+    await page.getByRole("button", { name: /Duraklat/i }).click();
+    // Karar Geçmişi başlığı görünür
+    await expect(page.getByText("Karar Geçmişi")).toBeVisible();
+    // En az 2 timeline kartı (minute label'leri farklı)
+    const minuteLabels = page.locator("text=/^[567][0-9]'$/");
+    const count = await minuteLabels.count();
+    expect(count).toBeGreaterThanOrEqual(2);
+  });
+
+  test("urgency transitions across phases (low → high → critical)", async ({ page }) => {
+    await page.goto("/decisions/live");
+    const slider = page.locator('input[type="range"]');
+    // Early (60): banner null, "izleme modu" mesajı
+    await slider.fill("60");
+    await expect(page.getByText(/izleme modu|net karar yok/i)).toBeVisible();
+    // Late (80): "Berabere · son 15 dk"
+    await slider.fill("80");
+    await expect(page.getByText(/son 15 dk/i)).toBeVisible();
+    // Stoppage (92): "uzatma → acil"
+    await slider.fill("92");
+    await expect(page.getByText(/uzatma|acil/i)).toBeVisible();
+  });
 });
