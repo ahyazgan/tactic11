@@ -2888,6 +2888,14 @@ def live_decision_endpoint(
         draw_is_enough=draw_is_enough, must_win=must_win,
     ))
 
+    # K kategorisi: kapanış reçetesi + risk/getiri eşiği
+    from app.engine.closing_strategy import compute_closing_strategy
+    _safe("closing_strategy", lambda: compute_closing_strategy(
+        my_team_id, current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+        momentum_score=momentum_score,
+    ))
+
     # Faz 8: bağlam motoru (orkestra şefi) — 8 sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
     out.update(run_context_pipeline(
@@ -2967,6 +2975,46 @@ def live_risk_endpoint(
     result = compute_live_risk_monitor(
         my_team_id, states, current_minute=current_minute,
         my_score=my_score or 0, opponent_score=opp_score or 0,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/matches/{match_id}/closing-strategy",
+    tags=["admin"],
+    summary="Kapanış reçetesi + risk/getiri eşiği (K kategorisi)",
+)
+def closing_strategy_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    momentum_score: float = Query(default=0.0, ge=-1.0, le=1.0),
+    match_total_minutes: float = Query(default=90.0, ge=60, le=130),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """TD'nin 'önde 1-0, 80. dk, ne yapayım?' sorusuna doğrudan cevap.
+
+    (skor_diff, dakika) → tempo + pozisyon + ikame + duran top + risk eşiği.
+    Pure compute; momentum opsiyonel input olarak reçeteyi inceltir.
+    """
+    from app.engine.closing_strategy import compute_closing_strategy
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    home_id = match.home_team_external_id
+    my_score = match.home_score if my_team_id == home_id else match.away_score
+    opp_score = match.away_score if my_team_id == home_id else match.home_score
+    result = compute_closing_strategy(
+        my_team_id, current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+        match_total_minutes=match_total_minutes,
+        momentum_score=momentum_score,
     )
     return engine_result_to_dict(result)
 

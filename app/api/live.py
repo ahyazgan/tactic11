@@ -353,6 +353,32 @@ def _compute_live_snapshot(
             "alerts": list(stm.alerts),
         }
 
+        # K kategorisi: kapanış reçetesi + risk/getiri eşiği (momentum'la zenginleştirilmiş)
+        from app.engine.closing_strategy import compute_closing_strategy
+        cs = compute_closing_strategy(
+            my_team_id, current_minute=current_minute,
+            my_score=my_score, opponent_score=opp_score,
+            momentum_score=mom.momentum_score,
+        ).value
+        snapshot["closing_strategy"] = {
+            "score_state": cs.score_state,
+            "closing_phase": cs.closing_phase,
+            "urgency_level": cs.urgency_level,
+            "key_message": cs.key_message,
+            "recipe": {
+                "tempo": cs.recipe.tempo,
+                "positioning": cs.recipe.positioning,
+                "sub_priority": cs.recipe.sub_priority,
+                "set_pieces": cs.recipe.set_pieces,
+                "extra_note": cs.recipe.extra_note,
+            },
+            "risk_reward": {
+                "take_risk": cs.risk_reward.take_risk,
+                "rationale": cs.risk_reward.rationale,
+                "threshold_breached": cs.risk_reward.threshold_breached,
+            },
+        }
+
         # Faz 6 #10-12: kart/sakatlık/zaman riski. player_states zaten hesaplanan
         # sub-önerisinin fatigue_score'undan beslenir (ek maliyet yok). Kart verisi
         # (sarı/düello) henüz ingest edilmiyor → şimdilik sakatlık+zaman aktif.

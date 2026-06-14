@@ -132,3 +132,46 @@ def test_live_risk_404(session, client):
         json={"player_states": []},
     )
     assert r.status_code == 404
+
+
+def test_closing_strategy_endpoint(session, client):
+    """Geride 1-2, 80. dk → tempo=agresif + risk=true."""
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/closing-strategy"
+        "?my_team_id=11&current_minute=80",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["score_state"] == "trailing"  # 1-2 → trailing
+    assert v["closing_phase"] == "late"
+    assert v["recipe"]["tempo"] == "agresif"
+    assert v["risk_reward"]["take_risk"] is True
+
+
+def test_closing_strategy_in_live_decision_panel(session, client):
+    """live-decision birleşik panelinde closing_strategy var."""
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/live-decision"
+        "?my_team_id=11&current_minute=80",
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert "closing_strategy" in body
+    cs = body["closing_strategy"]
+    assert "recipe" in cs
+    assert "risk_reward" in cs
+
+
+def test_closing_strategy_404(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get(
+        "/admin/matches/99999/closing-strategy"
+        "?my_team_id=11&current_minute=80",
+    )
+    assert r.status_code == 404
