@@ -11,7 +11,7 @@
  */
 
 import { useState } from "react";
-import useSWR from "swr";
+import useSWR, { mutate as swrMutate } from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../../_console/shell";
@@ -211,7 +211,10 @@ function SummaryCards({
   );
 }
 
-function DecisionsTable({ rows }: { rows: DecisionRow[] }) {
+function DecisionsTable({
+  rows, onMarkOutcome,
+}: { rows: DecisionRow[];
+     onMarkOutcome?: (id: number, outcome: "positive" | "negative" | "neutral") => void }) {
   if (rows.length === 0) {
     return (
       <div className="rc" style={{ textAlign: "center", color: "var(--dim)",
@@ -260,20 +263,49 @@ function DecisionsTable({ rows }: { rows: DecisionRow[] }) {
                 {r.recommended ? "✓" : "—"}
               </td>
               <td className="c">
-                <span style={{
-                  display: "inline-block", padding: "3px 9px",
-                  borderRadius: 999, fontSize: 11, fontWeight: 700,
-                  color: outcomeColor(r.outcome),
-                  border: `1px solid ${outcomeColor(r.outcome)}`,
-                  background: r.outcome === "positive"
-                    ? "color-mix(in srgb, var(--low) 8%, transparent)"
-                    : r.outcome === "negative"
-                    ? "color-mix(in srgb, var(--crit) 8%, transparent)"
-                    : "transparent",
-                  whiteSpace: "nowrap",
-                }}>
-                  {outcomeLabel(r.outcome)}
-                </span>
+                {r.outcome === "pending" && onMarkOutcome ? (
+                  <div style={{ display: "inline-flex", gap: 4 }}>
+                    <button type="button" title="Doğru çıktı"
+                      onClick={() => onMarkOutcome(r.id, "positive")}
+                      style={{
+                        border: "1px solid var(--low)", color: "var(--low)",
+                        background: "transparent", borderRadius: 4,
+                        padding: "2px 7px", fontSize: 11, cursor: "pointer",
+                        fontWeight: 700,
+                      }}>✓</button>
+                    <button type="button" title="Yanlış çıktı"
+                      onClick={() => onMarkOutcome(r.id, "negative")}
+                      style={{
+                        border: "1px solid var(--crit)", color: "var(--crit)",
+                        background: "transparent", borderRadius: 4,
+                        padding: "2px 7px", fontSize: 11, cursor: "pointer",
+                        fontWeight: 700,
+                      }}>✗</button>
+                    <button type="button" title="Nötr"
+                      onClick={() => onMarkOutcome(r.id, "neutral")}
+                      style={{
+                        border: "1px solid var(--mid)", color: "var(--mid)",
+                        background: "transparent", borderRadius: 4,
+                        padding: "2px 7px", fontSize: 11, cursor: "pointer",
+                        fontWeight: 700,
+                      }}>○</button>
+                  </div>
+                ) : (
+                  <span style={{
+                    display: "inline-block", padding: "3px 9px",
+                    borderRadius: 999, fontSize: 11, fontWeight: 700,
+                    color: outcomeColor(r.outcome),
+                    border: `1px solid ${outcomeColor(r.outcome)}`,
+                    background: r.outcome === "positive"
+                      ? "color-mix(in srgb, var(--low) 8%, transparent)"
+                      : r.outcome === "negative"
+                      ? "color-mix(in srgb, var(--crit) 8%, transparent)"
+                      : "transparent",
+                    whiteSpace: "nowrap",
+                  }}>
+                    {outcomeLabel(r.outcome)}
+                  </span>
+                )}
               </td>
             </tr>
           ))}
@@ -306,6 +338,10 @@ function TypeBreakdown({ counts }: { counts: Record<string, number> }) {
 export default function DecisionsTrackPage() {
   const [limit, setLimit] = useState(30);
   const [teamFilter, setTeamFilter] = useState<string>("");
+  // DEMO_MODE: inline outcome mark için lokal patch (ekran tazelenince geri döner)
+  const [demoOverrides, setDemoOverrides] = useState<
+    Record<number, "positive" | "negative" | "neutral">
+  >({});
 
   const apiPath = !DEMO_MODE
     ? `/admin/decisions/recent?limit=${limit}`
@@ -314,7 +350,48 @@ export default function DecisionsTrackPage() {
   const { data: liveData, error, isLoading } = useSWR<RecentDecisionsResponse>(
     apiPath, apiFetch, { revalidateOnFocus: false, shouldRetryOnError: false },
   );
-  const data = DEMO_MODE ? demoData() : liveData;
+  const rawData = DEMO_MODE ? demoData() : liveData;
+  // DEMO_MODE overrides uygula → summary'yi yeniden hesapla
+  const data = (() => {
+    if (!rawData) return rawData;
+    if (Object.keys(demoOverrides).length === 0) return rawData;
+    const patched = rawData.decisions.map((d) =>
+      demoOverrides[d.id] ? { ...d, outcome: demoOverrides[d.id] } : d,
+    );
+    const positive = patched.filter((d) => d.outcome === "positive").length;
+    const negative = patched.filter((d) => d.outcome === "negative").length;
+    const neutral = patched.filter((d) => d.outcome === "neutral").length;
+    const pending = patched.filter((d) => d.outcome === "pending").length;
+    const resolved = positive + negative + neutral;
+    return {
+      ...rawData,
+      decisions: patched,
+      summary: {
+        ...rawData.summary,
+        positive, negative, neutral, pending, resolved,
+        hit_rate: resolved > 0 ? Number((positive / resolved).toFixed(3)) : null,
+      },
+    };
+  })();
+
+  async function handleMarkOutcome(
+    id: number, outcome: "positive" | "negative" | "neutral",
+  ) {
+    if (DEMO_MODE) {
+      setDemoOverrides((prev) => ({ ...prev, [id]: outcome }));
+      return;
+    }
+    try {
+      await apiFetch(`/admin/decisions/${id}/outcome`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ outcome }),
+      });
+      if (apiPath) swrMutate(apiPath);
+    } catch {
+      // sessizce yut — SWR refresh tetiklenmedi, kullanıcı tekrar dener
+    }
+  }
 
   const right = (
     <>
@@ -387,7 +464,7 @@ export default function DecisionsTrackPage() {
         <h2>Son Kararlar</h2>
         <span className="ep">en yeni önce, max {limit}</span>
       </div>
-      <DecisionsTable rows={rows} />
+      <DecisionsTable rows={rows} onMarkOutcome={handleMarkOutcome} />
     </ConsoleShell>
   );
 }
