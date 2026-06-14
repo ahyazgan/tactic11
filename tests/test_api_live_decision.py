@@ -274,6 +274,78 @@ def test_foul_pressure_reads_ingested_fouls(session, client):
     assert v["referee_card_pressure"] == "low"
 
 
+def test_decisions_recent_summary_and_list(session, client):
+    """3 karar: 2 pozitif + 1 negatif → hit_rate=0.667, summary doğru."""
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.commit()
+    for i, outcome in enumerate(["positive", "positive", "negative"]):
+        session.add(models.Decision(
+            sport=football.SPORT_NAME, tenant_id="t-default",
+            match_external_id=100 + i, team_external_id=11,
+            minute=60.0 + i * 5, period=2,
+            decision_type="substitution",
+            recommended=True, confidence=0.75,
+            outcome=outcome,
+            created_at=now - timedelta(minutes=i),
+        ))
+    session.commit()
+    r = client.get("/admin/decisions/recent?limit=20")
+    assert r.status_code == 200
+    body = r.json()
+    s = body["summary"]
+    assert s["total"] == 3
+    assert s["positive"] == 2
+    assert s["negative"] == 1
+    assert s["pending"] == 0
+    assert s["hit_rate"] == 0.667
+    assert "substitution" in s["by_decision_type"]
+    assert len(body["decisions"]) == 3
+    # En yeni önce (created_at desc) → i=0 (en eski) son sırada
+    assert body["decisions"][0]["match_id"] == 100  # newest = i=0
+
+
+def test_decisions_recent_filter_by_team(session, client):
+    from datetime import UTC, datetime
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.commit()
+    for tid in (11, 11, 22):
+        session.add(models.Decision(
+            sport=football.SPORT_NAME, tenant_id="t-default",
+            match_external_id=200, team_external_id=tid,
+            minute=70.0, period=2, decision_type="formation_change",
+            outcome="pending", created_at=now,
+        ))
+    session.commit()
+    r = client.get("/admin/decisions/recent?team_external_id=11")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["summary"]["total"] == 2
+    assert all(d["team_id"] == 11 for d in body["decisions"])
+
+
+def test_decisions_recent_empty(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get("/admin/decisions/recent")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["summary"]["total"] == 0
+    assert body["summary"]["hit_rate"] is None
+    assert body["decisions"] == []
+
+
 def test_matches_with_events_lists_ingested_only(session, client):
     """Sadece event'i olan maçlar listelenir; boş maç dışlanır."""
     _seed_match_events(session)

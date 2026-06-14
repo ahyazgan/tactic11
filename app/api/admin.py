@@ -2998,6 +2998,81 @@ def live_risk_endpoint(
 
 
 @router.get(
+    "/decisions/recent",
+    tags=["admin"],
+    summary="Tüm maçlardaki son N kararı + isabet özet (karar takip ekranı)",
+)
+def decisions_recent_endpoint(
+    limit: int = Query(default=30, ge=1, le=200),
+    team_external_id: int | None = Query(default=None),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Karar takip ekranı için: son N karar + global isabet özet.
+
+    summary: toplam, recommended, by_outcome, by_decision_type, hit_rate.
+    decisions: en yeni karar önce, kullanıcıya gösterilecek alanlarla.
+    """
+    from sqlalchemy import func
+    where = [models.Decision.sport == football.SPORT_NAME]
+    if team_external_id is not None:
+        where.append(models.Decision.team_external_id == team_external_id)
+
+    rows = list(session.execute(
+        select(models.Decision).where(*where)
+        .order_by(models.Decision.created_at.desc()).limit(limit)
+    ).scalars())
+
+    # Global özet (sınırsız, sadece outcome bilinen kararlar üzerinden)
+    outcome_counts = dict(session.execute(
+        select(
+            models.Decision.outcome, func.count(models.Decision.id),
+        ).where(*where).group_by(models.Decision.outcome)
+    ).all())
+    type_counts = dict(session.execute(
+        select(
+            models.Decision.decision_type, func.count(models.Decision.id),
+        ).where(*where).group_by(models.Decision.decision_type)
+    ).all())
+
+    positive = int(outcome_counts.get("positive", 0))
+    negative = int(outcome_counts.get("negative", 0))
+    neutral = int(outcome_counts.get("neutral", 0))
+    pending = int(outcome_counts.get("pending", 0))
+    resolved = positive + negative + neutral
+    hit_rate = round(positive / resolved, 3) if resolved > 0 else None
+
+    return {
+        "summary": {
+            "total": int(sum(outcome_counts.values())),
+            "resolved": resolved,
+            "pending": pending,
+            "positive": positive, "negative": negative, "neutral": neutral,
+            "hit_rate": hit_rate,
+            "by_decision_type": {k or "?": int(v) for k, v in type_counts.items()},
+        },
+        "decisions": [
+            {
+                "id": r.id,
+                "match_id": r.match_external_id,
+                "team_id": r.team_external_id,
+                "minute": r.minute,
+                "decision_type": r.decision_type,
+                "subject_player_id": r.subject_player_external_id,
+                "related_player_id": r.related_player_external_id,
+                "notes": r.notes,
+                "recommended": r.recommended,
+                "confidence": r.confidence,
+                "outcome": r.outcome,
+                "outcome_value": r.outcome_value,
+                "outcome_notes": r.outcome_notes,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in rows
+        ],
+    }
+
+
+@router.get(
     "/matches/with-events",
     tags=["admin"],
     summary="Live decision için seçilebilir maçlar — ingest'li event'i olanlar",
