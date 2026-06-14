@@ -1069,7 +1069,7 @@ export default function LiveDecisionPage() {
 
   if (!DEMO_MODE && isLoading) {
     return (
-      <ConsoleShell active="/decisions" title="Maç-içi Karar"
+      <ConsoleShell active="/decisions/live" title="Maç-içi Karar"
         sub="GET /admin/matches/{id}/live-decision" right={right}>
         <div className="pgdesc">Yükleniyor…</div>
       </ConsoleShell>
@@ -1077,7 +1077,7 @@ export default function LiveDecisionPage() {
   }
   if (!DEMO_MODE && error) {
     return (
-      <ConsoleShell active="/decisions" title="Maç-içi Karar" right={right}>
+      <ConsoleShell active="/decisions/live" title="Maç-içi Karar" right={right}>
         <div className="pgdesc">Yüklenemedi: {String(error).slice(0, 200)}</div>
       </ConsoleShell>
     );
@@ -1085,7 +1085,7 @@ export default function LiveDecisionPage() {
 
   return (
     <ConsoleShell
-      active="/decisions"
+      active="/decisions/live"
       title="Maç-içi Karar"
       sub={`Dakika ${minute}' · Skor ${data?.score ?? "—"}`}
       desc="Orkestra şefi 10 engine'in çakışan sinyallerini tek 'ŞİMDİ şunu yap' kararına indirger. Kartlar her engine'in ham çıktısını gösterir."

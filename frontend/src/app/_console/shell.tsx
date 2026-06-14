@@ -76,6 +76,8 @@ const FULL_NAV: NavGroup[] = [
   // "Diğer" — mockup IA'sında olmayan ama mevcut (eski) sayfalar; URL'leri korunur.
   { grp: "Diğer", items: [
     { label: "Kararlar",            href: "/decisions",           icon: "ti-brain" },
+    { label: "Maç-içi Karar",       href: "/decisions/live",      icon: "ti-bolt" },
+    { label: "Karar Takip",         href: "/decisions/track",     icon: "ti-chart-histogram" },
     { label: "Kafa Kafaya",         href: "/h2h",                 icon: "ti-swords" },
     { label: "Ligler",              href: "/leagues",             icon: "ti-trophy" },
     { label: "Takımlar",            href: "/teams",               icon: "ti-shield" },
