@@ -208,9 +208,12 @@ def _run(
         # Ingest events
         print("\n  StatsBomb events ingest...")
         result = ingest_events_for_match(
-            session, match_id=match_id, tenant_id=tenant_id,
+            session, source=StatsBombOpen(),
+            match_external_id=match_id, tenant_id=tenant_id,
         )
-        print(f"  → {result.events_written} event yazıldı.")
+        print(f"  → {result.rows_inserted} event eklendi "
+              f"({result.shots} şut, {result.passes} pas, "
+              f"{result.defensive_actions} def, {result.fouls} faul).")
 
         # Run replay ticks
         for tick in ticks:
