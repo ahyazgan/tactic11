@@ -33,6 +33,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/physical-tests", label: "Performans", roles: ["admin", "coach", "analyst"] },
   { href: "/medical", label: "Tıbbi Merkez", roles: ["admin", "coach", "analyst"] },
   { href: "/decisions", label: "Kararlar", roles: ["admin", "coach", "analyst"] },
+  { href: "/decisions/live", label: "Maç-içi Karar", roles: ["admin", "coach", "analyst"] },
   { href: "/xg", label: "xG Analiz", roles: ["admin", "coach", "analyst"] },
   { href: "/calibration", label: "Kalibrasyon" },
   { href: "/chat", label: "Asistan" },
