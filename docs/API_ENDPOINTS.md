@@ -69,6 +69,9 @@ bağlamı için `SCREEN_INVENTORY.md` ve `FOOTBALL_GLOSSARY.md`.
 | `GET` | `/admin/matches/{match_id}/closing-strategy` | Kapanış reçetesi + risk/getiri eşiği (K) |
 | `GET` | `/admin/matches/{match_id}/star-feed` | Yıldız oyuncu besleme monitörü (G.3); `?star_player_id=X` |
 | `POST` | `/admin/matches/{match_id}/foul-pressure` | Takım faul biriktirme + hakem kart eşiği (I.1); payload boş→ingest'ten okur |
+| `GET` | `/admin/matches/{match_id}/hot-hand` | Sıcak el yakalama (G.2) — son N dk şut hacmi × xG vs baseline |
+| `GET` | `/admin/matches/{match_id}/set-piece-opportunity` | Standart top fırsat sinyali (H.1) — corners + offensive FK + fouls drawn |
+| `POST` | `/admin/referee/tendency` | Hakem eğilim profili (J.1) — payload `prior_matches` listesi |
 | `GET` | `/admin/matches/with-events` | Live decision match selector — ingest'li maçlar (event_count + foul_count) |
 | `GET` | `/admin/decisions/recent` | Karar takip ekranı için: son N karar + summary (hit_rate, by_type) |
 | `POST` | `/admin/decisions/{id}/outcome` | Karar sonucunu işle (positive/negative/neutral) — feedback loop |

@@ -211,6 +211,7 @@ def _run(
             session, source=StatsBombOpen(),
             match_external_id=match_id, tenant_id=tenant_id,
         )
+        session.commit()  # ingest flush yapar; commit etmeden context close → rollback
         print(f"  → {result.rows_inserted} event eklendi "
               f"({result.shots} şut, {result.passes} pas, "
               f"{result.defensive_actions} def, {result.fouls} faul).")
