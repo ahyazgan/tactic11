@@ -2906,6 +2906,7 @@ def live_decision_endpoint(
         ))
 
     # I.1 faul ritmi + hakem — ingest edilmiş faul event'leri varsa otomatik
+    fouls_so_far: list = []
     if loaded.fouls:
         from app.engine.foul_pressure import compute_foul_pressure
         fouls_so_far = [f for f in loaded.fouls if f.minute <= current_minute]
@@ -2913,6 +2914,22 @@ def live_decision_endpoint(
             my_team_id, opp_id, fouls_so_far,
             current_minute=current_minute,
         ))
+
+    # G.2 sıcak el — şut listesi var
+    from app.engine.hot_hand import compute_hot_hand
+    _safe("hot_hand", lambda: compute_hot_hand(
+        my_team_id, s, current_minute=current_minute,
+    ))
+
+    # H.1 set-piece fırsatı — pass + shot + foul gerekiyor
+    from app.engine.set_piece_opportunity import (
+        compute_set_piece_opportunity,
+    )
+    _safe("set_piece_opportunity", lambda: compute_set_piece_opportunity(
+        my_team_id, current_minute=current_minute,
+        passes=p, shots=s, fouls=fouls_so_far,
+        opponent_external_id=opp_id,
+    ))
 
     # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
@@ -3213,6 +3230,106 @@ def star_feed_endpoint(
         my_team_id, star_player_id=star_player_id,
         passes=loaded.passes, shots=loaded.shots,
         current_minute=current_minute, window_min=window_min,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/matches/{match_id}/hot-hand",
+    tags=["admin"],
+    summary="Sıcak el yakalama (G.2)",
+)
+def hot_hand_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    window_min: float = Query(default=15.0, ge=5, le=45),
+    baseline_min: float = Query(default=30.0, ge=10, le=90),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.data.loaders import load_match_events
+    from app.engine.hot_hand import compute_hot_hand
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Event ingest yok"}
+    result = compute_hot_hand(
+        my_team_id, loaded.shots,
+        current_minute=current_minute, window_min=window_min,
+        baseline_min=baseline_min,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/matches/{match_id}/set-piece-opportunity",
+    tags=["admin"],
+    summary="Standart top fırsat sinyali (H.1)",
+)
+def set_piece_opportunity_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    window_min: float = Query(default=20.0, ge=5, le=60),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.data.loaders import load_match_events
+    from app.engine.set_piece_opportunity import (
+        compute_set_piece_opportunity,
+    )
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    home_id = match.home_team_external_id
+    opp_id = (match.away_team_external_id if my_team_id == home_id else home_id)
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Event ingest yok"}
+    fouls_so_far = [f for f in loaded.fouls if f.minute <= current_minute]
+    result = compute_set_piece_opportunity(
+        my_team_id, current_minute=current_minute, window_min=window_min,
+        passes=[x for x in loaded.passes if x.minute <= current_minute],
+        shots=[x for x in loaded.shots if x.minute <= current_minute],
+        fouls=fouls_so_far, opponent_external_id=opp_id,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/referee/tendency",
+    tags=["admin"],
+    summary="Hakem eğilim profili (J.1) — payload prior_matches",
+)
+def referee_tendency_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        referee_id?: str, referee_name?: str,
+        prior_matches: [{yellows_total, reds_total, fouls_total?, penalties?, yellows_home?}]
+    }"""
+    from app.engine.referee_tendency import compute_referee_tendency
+
+    prior = payload.get("prior_matches", [])
+    result = compute_referee_tendency(
+        prior,
+        referee_id=payload.get("referee_id"),
+        referee_name=payload.get("referee_name"),
     )
     return engine_result_to_dict(result)
 

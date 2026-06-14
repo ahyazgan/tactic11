@@ -208,6 +208,50 @@ def build_candidates(
                 magnitude=urg,
             ))
 
+    # hot_hand (hot_hand — G.2 sıcak el)
+    hh = out.get("hot_hand")
+    if _is_dict(hh):
+        is_hot = bool(hh.get("hot_streak"))
+        if is_hot:
+            cands.append(CandidateSignal(
+                key="hot_hand", signal_type="hot_hand",
+                headline=hh.get("tactical_advice", "Sıcak el — şut açıklarını zorla"),
+                urgency=0.7, fired=True, minute=current_minute,
+                sample_size=int(hh.get("shots_window", 0)),
+                magnitude=min(1.0, float(hh.get("shot_volume_ratio", 0)) / 2.0),
+            ))
+
+    # set_piece_opportunity (set_piece — H.1)
+    spo = out.get("set_piece_opportunity")
+    if _is_dict(spo):
+        high_freq = bool(spo.get("high_frequency"))
+        low_conv = bool(spo.get("low_conversion"))
+        fired = high_freq
+        if fired:
+            cands.append(CandidateSignal(
+                key="set_piece_opportunity", signal_type="set_piece_opportunity",
+                headline=spo.get("tactical_advice", "Standart top sıcak"),
+                urgency=0.75 if low_conv else 0.55, fired=True,
+                minute=current_minute,
+                sample_size=int(spo.get("total_set_pieces", 0)),
+                magnitude=0.8 if low_conv else 0.5,
+            ))
+
+    # referee_tendency (referee — J.1)
+    rt = out.get("referee_tendency")
+    if _is_dict(rt):
+        sev = rt.get("severity", "unknown")
+        fired = sev in ("strict", "lenient")
+        if fired:
+            cands.append(CandidateSignal(
+                key="referee_tendency", signal_type="referee",
+                headline=rt.get("tactical_advice", f"Hakem {sev}"),
+                urgency=0.55 if sev == "strict" else 0.35,
+                fired=True, minute=current_minute,
+                sample_size=int(rt.get("matches_analyzed", 0)),
+                magnitude=abs(float(rt.get("severity_score", 1.0)) - 1.0),
+            ))
+
     # star_feed (feed — G.3 yıldız beslemesi)
     sf = out.get("star_feed")
     if _is_dict(sf):
