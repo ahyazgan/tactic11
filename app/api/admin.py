@@ -3019,6 +3019,48 @@ def closing_strategy_endpoint(
     return engine_result_to_dict(result)
 
 
+@router.get(
+    "/matches/{match_id}/star-feed",
+    tags=["admin"],
+    summary="Yıldız oyuncu besleme monitörü (G.3)",
+)
+def star_feed_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    star_player_id: int = Query(..., description="Yıldız oyuncu external_id"),
+    current_minute: float = Query(..., ge=0, le=120),
+    window_min: float = Query(default=15.0, ge=5, le=45),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Yıldız oyuncunun takım pasındaki payı + xT katkısı + son üçte varlığı.
+
+    "Yıldıza top gitmiyor" şüphesini sayıyla doğrular; involvement_state
+    (starved/underfed/balanced/well-fed) + somut taktik tavsiye üretir.
+    Pure compute; loaded events üzerinden window agregasyonu.
+    """
+    from app.data.loaders import load_match_events
+    from app.engine.star_feed import compute_star_feed
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Event ingest yok"}
+    result = compute_star_feed(
+        my_team_id, star_player_id=star_player_id,
+        passes=loaded.passes, shots=loaded.shots,
+        current_minute=current_minute, window_min=window_min,
+    )
+    return engine_result_to_dict(result)
+
+
 @router.post(
     "/matches/{match_id}/foul-pressure",
     tags=["admin"],

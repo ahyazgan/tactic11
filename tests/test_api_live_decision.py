@@ -230,3 +230,43 @@ def test_foul_pressure_empty_payload(session, client):
     assert v["our_fouls_total"] == 0
     assert v["opp_fouls_total"] == 0
     assert "normal" in v["tactical_advice"].lower()
+
+
+def test_star_feed_endpoint(session, client):
+    """Seed match'te tek oyuncu (id=1) tüm pasları atıyor → well-fed."""
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/star-feed"
+        "?my_team_id=11&star_player_id=1&current_minute=70&window_min=15",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    # Seed'te tüm paslar player_id=1 → yıldız = %100
+    assert v["pass_share_pct"] == 100.0
+    assert v["involvement_state"] == "well-fed"
+
+
+def test_star_feed_starved_when_other_player(session, client):
+    """Yıldız = farklı oyuncu → starved."""
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/star-feed"
+        "?my_team_id=11&star_player_id=999&current_minute=70&window_min=15",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["involvement_state"] == "starved"
+    assert "HİÇ pas" in v["tactical_advice"]
+
+
+def test_star_feed_404(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get(
+        "/admin/matches/99999/star-feed"
+        "?my_team_id=11&star_player_id=1&current_minute=70",
+    )
+    assert r.status_code == 404
