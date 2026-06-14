@@ -33,7 +33,7 @@ from app.data.sources.statsbomb_open import (
     STATSBOMB_PITCH_LENGTH,
     STATSBOMB_PITCH_WIDTH,
 )
-from app.domain import Carry, DefensiveAction, PassEvent
+from app.domain import Carry, DefensiveAction, FoulEvent, PassEvent
 from app.sports import football
 
 log = get_logger(__name__)
@@ -47,6 +47,15 @@ BLOCK_EVENT_TYPE_ID = 6
 CLEARANCE_EVENT_TYPE_ID = 9
 BALL_RECOVERY_EVENT_TYPE_ID = 2
 CARRY_EVENT_TYPE_ID = 43
+FOUL_COMMITTED_EVENT_TYPE_ID = 22
+BAD_BEHAVIOUR_EVENT_TYPE_ID = 24
+
+# StatsBomb card.id → bizim CardColor
+_CARD_MAP: dict[int, str] = {
+    5: "yellow",         # Yellow Card
+    6: "second_yellow",  # Second Yellow
+    7: "red",            # Red Card
+}
 
 
 # pass.type.id → bizim PassType
@@ -247,10 +256,72 @@ def event_to_defensive_action(
         return None
 
 
+def is_foul_event(event: dict[str, Any]) -> bool:
+    """Foul Committed (type 22) veya Bad Behaviour (type 24, kart yiyen).
+
+    Bad Behaviour pozisyon dışında kart (örn. yan hakem itirazına kırmızı);
+    foul_pressure açısından kart sayımına dahil ama lokasyon yok.
+    """
+    type_id = int((event.get("type") or {}).get("id", 0))
+    return type_id in (FOUL_COMMITTED_EVENT_TYPE_ID, BAD_BEHAVIOUR_EVENT_TYPE_ID)
+
+
+def event_to_foul(
+    event: dict[str, Any], *, match_id: int,
+) -> FoulEvent | None:
+    """Foul/Bad Behaviour event → FoulEvent. Lokasyon yoksa default (50,50)."""
+    if not is_foul_event(event):
+        return None
+    try:
+        type_id = int((event.get("type") or {}).get("id", 0))
+        loc = _normalize_xy(event.get("location"))
+        # Bad Behaviour'da location yok; default pitch ortası
+        x, y = (loc if loc is not None else (50.0, 50.0))
+
+        # Kart: foul_committed.card veya bad_behaviour.card
+        card_color: str | None = None
+        advantage = False
+        if type_id == FOUL_COMMITTED_EVENT_TYPE_ID:
+            fc = event.get("foul_committed") or {}
+            card_block = fc.get("card") or {}
+            card_id = int(card_block.get("id", 0))
+            card_color = _CARD_MAP.get(card_id)
+            advantage = bool(fc.get("advantage"))
+        elif type_id == BAD_BEHAVIOUR_EVENT_TYPE_ID:
+            bb = event.get("bad_behaviour") or {}
+            card_block = bb.get("card") or {}
+            card_id = int(card_block.get("id", 0))
+            card_color = _CARD_MAP.get(card_id)
+
+        player = event.get("player") or {}
+        team = event.get("team") or {}
+        pid = int(player.get("id", 0))
+        tid = int(team.get("id", 0))
+        # Bad Behaviour'da player/team eksik olabilir (taktik faul vb.)
+        if pid == 0 or tid == 0:
+            return None
+
+        return FoulEvent(
+            sport=football.SPORT_NAME,
+            match_external_id=int(match_id),
+            player_external_id=pid,
+            team_external_id=tid,
+            minute=float(event.get("minute", 0)),
+            period=int(event.get("period", 1)),
+            x=round(x, 2), y=round(y, 2),
+            card=card_color,  # type: ignore[arg-type]
+            advantage_played=advantage,
+            possession_id=event.get("possession"),
+        )
+    except (KeyError, ValueError, TypeError) as e:
+        log.warning("statsbomb foul parse fail: %s", e)
+        return None
+
+
 def parse_all_events(
     events_json: list[dict[str, Any]], *, match_id: int,
 ) -> dict[str, list]:
-    """Bir maç'ın tüm event'lerini parse et — pass/carry/defansif/shot ayrıştır.
+    """Bir maç'ın tüm event'lerini parse et — pass/carry/defansif/shot/foul ayrıştır.
 
     Caller (ingest pipeline) bu sözlüğü tüketir. Shot için
     `statsbomb_open.shots_from_events_json` zaten var.
@@ -260,6 +331,7 @@ def parse_all_events(
     passes: list[PassEvent] = []
     carries: list[Carry] = []
     defensive: list[DefensiveAction] = []
+    fouls: list[FoulEvent] = []
     for ev in events_json:
         if is_pass_event(ev):
             p = event_to_pass(ev, match_id=match_id)
@@ -273,10 +345,15 @@ def parse_all_events(
             d = event_to_defensive_action(ev, match_id=match_id)
             if d is not None:
                 defensive.append(d)
+        elif is_foul_event(ev):
+            f = event_to_foul(ev, match_id=match_id)
+            if f is not None:
+                fouls.append(f)
     shots = shots_from_events_json(events_json, match_id=match_id)
     return {
         "shots": shots,
         "passes": passes,
         "carries": carries,
         "defensive_actions": defensive,
+        "fouls": fouls,
     }

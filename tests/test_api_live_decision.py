@@ -132,3 +132,321 @@ def test_live_risk_404(session, client):
         json={"player_states": []},
     )
     assert r.status_code == 404
+
+
+def test_closing_strategy_endpoint(session, client):
+    """Geride 1-2, 80. dk → tempo=agresif + risk=true."""
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/closing-strategy"
+        "?my_team_id=11&current_minute=80",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["score_state"] == "trailing"  # 1-2 → trailing
+    assert v["closing_phase"] == "late"
+    assert v["recipe"]["tempo"] == "agresif"
+    assert v["risk_reward"]["take_risk"] is True
+
+
+def test_closing_strategy_in_live_decision_panel(session, client):
+    """live-decision birleşik panelinde closing_strategy var."""
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/live-decision"
+        "?my_team_id=11&current_minute=80",
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert "closing_strategy" in body
+    cs = body["closing_strategy"]
+    assert "recipe" in cs
+    assert "risk_reward" in cs
+
+
+def test_closing_strategy_404(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get(
+        "/admin/matches/99999/closing-strategy"
+        "?my_team_id=11&current_minute=80",
+    )
+    assert r.status_code == 404
+
+
+def test_foul_pressure_endpoint(session, client):
+    """Rakip ritim kırma + sarılı oyuncu → iki sinyal birden."""
+    _seed_match_events(session)
+    r = client.post(
+        "/admin/matches/9300/foul-pressure"
+        "?my_team_id=11&current_minute=75&total_yellows_match=7",
+        json={
+            "foul_events": [
+                {"team_id": 22, "minute": 62.0},
+                {"team_id": 22, "minute": 64.0},
+                {"team_id": 22, "minute": 67.0},
+                {"team_id": 22, "minute": 70.0},
+                {"team_id": 22, "minute": 73.0},
+                {"team_id": 11, "minute": 60.0, "player_id": 99},
+                {"team_id": 11, "minute": 65.0, "player_id": 99},
+                {"team_id": 11, "minute": 70.0, "player_id": 99},
+            ],
+            "player_yellow_cards": {"99": 1},
+        },
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["tactical_fouling_alert"] is True
+    assert v["referee_card_pressure"] == "high"
+    assert len(v["player_flags"]) == 1
+    assert v["player_flags"][0]["risk_level"] == "critical"
+
+
+def test_foul_pressure_404(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.post(
+        "/admin/matches/99999/foul-pressure"
+        "?my_team_id=11&current_minute=75",
+        json={"foul_events": []},
+    )
+    assert r.status_code == 404
+
+
+def test_foul_pressure_empty_payload(session, client):
+    """Payload yok + ingest edilmiş faul yok → normal advice + 0 faul."""
+    _seed_match_events(session)
+    r = client.post(
+        "/admin/matches/9300/foul-pressure?my_team_id=11&current_minute=70",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["our_fouls_total"] == 0
+    assert v["opp_fouls_total"] == 0
+    assert "normal" in v["tactical_advice"].lower()
+
+
+def test_foul_pressure_reads_ingested_fouls(session, client):
+    """Payload boş ama DB'de foul EventRow var → engine onları okur."""
+    _seed_match_events(session)
+    # 5 rakip faul + 1 sarı bizden
+    from datetime import UTC, datetime
+    now = datetime.now(UTC)
+    for i in range(5):
+        session.add(models.EventRow(
+            sport=football.SPORT_NAME, tenant_id="t-default",
+            source="statsbomb_open", source_event_id=f"foul-opp-{i}",
+            match_external_id=9300, team_external_id=22,
+            player_external_id=100 + i, event_type="foul",
+            minute=float(62 + i), period=2,
+            start_x=60.0, start_y=40.0, end_x=None, end_y=None,
+            outcome="foul", body_part=None, pattern=None,
+            possession_id=None, is_goal=None, key_pass=None,
+            raw_json=None, created_at=now,
+        ))
+    session.add(models.EventRow(
+        sport=football.SPORT_NAME, tenant_id="t-default",
+        source="statsbomb_open", source_event_id="foul-our-1",
+        match_external_id=9300, team_external_id=11,
+        player_external_id=200, event_type="foul",
+        minute=60.0, period=2,
+        start_x=60.0, start_y=40.0, end_x=None, end_y=None,
+        outcome="yellow", body_part=None, pattern=None,
+        possession_id=None, is_goal=None, key_pass=None,
+        raw_json=None, created_at=now,
+    ))
+    session.commit()
+    r = client.post(
+        "/admin/matches/9300/foul-pressure?my_team_id=11&current_minute=75",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["opp_fouls_total"] == 5
+    assert v["our_fouls_total"] == 1
+    assert v["tactical_fouling_alert"] is True
+    # 1 sarı maçta → low (eşik moderate=4)
+    assert v["referee_card_pressure"] == "low"
+
+
+def test_decisions_recent_summary_and_list(session, client):
+    """3 karar: 2 pozitif + 1 negatif → hit_rate=0.667, summary doğru."""
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.commit()
+    for i, outcome in enumerate(["positive", "positive", "negative"]):
+        session.add(models.Decision(
+            sport=football.SPORT_NAME, tenant_id="t-default",
+            match_external_id=100 + i, team_external_id=11,
+            minute=60.0 + i * 5, period=2,
+            decision_type="substitution",
+            recommended=True, confidence=0.75,
+            outcome=outcome,
+            created_at=now - timedelta(minutes=i),
+        ))
+    session.commit()
+    r = client.get("/admin/decisions/recent?limit=20")
+    assert r.status_code == 200
+    body = r.json()
+    s = body["summary"]
+    assert s["total"] == 3
+    assert s["positive"] == 2
+    assert s["negative"] == 1
+    assert s["pending"] == 0
+    assert s["hit_rate"] == 0.667
+    assert "substitution" in s["by_decision_type"]
+    assert len(body["decisions"]) == 3
+    # En yeni önce (created_at desc) → i=0 (en eski) son sırada
+    assert body["decisions"][0]["match_id"] == 100  # newest = i=0
+
+
+def test_decisions_recent_filter_by_team(session, client):
+    from datetime import UTC, datetime
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.commit()
+    for tid in (11, 11, 22):
+        session.add(models.Decision(
+            sport=football.SPORT_NAME, tenant_id="t-default",
+            match_external_id=200, team_external_id=tid,
+            minute=70.0, period=2, decision_type="formation_change",
+            outcome="pending", created_at=now,
+        ))
+    session.commit()
+    r = client.get("/admin/decisions/recent?team_external_id=11")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["summary"]["total"] == 2
+    assert all(d["team_id"] == 11 for d in body["decisions"])
+
+
+def test_decisions_recent_empty(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get("/admin/decisions/recent")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["summary"]["total"] == 0
+    assert body["summary"]["hit_rate"] is None
+    assert body["decisions"] == []
+
+
+def test_matches_with_events_lists_ingested_only(session, client):
+    """Sadece event'i olan maçlar listelenir; boş maç dışlanır."""
+    _seed_match_events(session)
+    # Bir tane daha maç ekle — event'siz
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Match(
+        sport=football.SPORT_NAME, external_id=9999,
+        league_external_id=203, season=2024,
+        kickoff=now - timedelta(days=2), status="FT",
+        home_team_external_id=33, away_team_external_id=44,
+        home_score=0, away_score=0, tenant_id="t-default",
+    ))
+    session.commit()
+    r = client.get("/admin/matches/with-events")
+    assert r.status_code == 200
+    body = r.json()
+    ids = [m["match_id"] for m in body["matches"]]
+    assert 9300 in ids       # event'li
+    assert 9999 not in ids   # event'siz
+    m = next(x for x in body["matches"] if x["match_id"] == 9300)
+    assert m["event_count"] == 30
+    assert m["home_team_external_id"] == 11
+    assert m["away_team_external_id"] == 22
+
+
+def test_matches_with_events_empty_when_no_events(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get("/admin/matches/with-events")
+    assert r.status_code == 200
+    assert r.json() == {"matches": [], "total": 0}
+
+
+def test_live_decision_panel_includes_foul_pressure_when_ingested(session, client):
+    """Live decision panel ingest'lenmiş foul'ları otomatik içerir."""
+    _seed_match_events(session)
+    # 5 rakip foul ekle
+    from datetime import UTC, datetime
+    now = datetime.now(UTC)
+    for i in range(5):
+        session.add(models.EventRow(
+            sport=football.SPORT_NAME, tenant_id="t-default",
+            source="statsbomb_open", source_event_id=f"foul-{i}",
+            match_external_id=9300, team_external_id=22,
+            player_external_id=100, event_type="foul",
+            minute=float(62 + i), period=2,
+            start_x=60.0, start_y=40.0, end_x=None, end_y=None,
+            outcome="foul", body_part=None, pattern=None,
+            possession_id=None, is_goal=None, key_pass=None,
+            raw_json=None, created_at=now,
+        ))
+    session.commit()
+    r = client.get(
+        "/admin/matches/9300/live-decision"
+        "?my_team_id=11&current_minute=75",
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert "foul_pressure" in body
+    assert body["foul_pressure"]["opp_fouls_total"] == 5
+
+
+def test_star_feed_endpoint(session, client):
+    """Seed match'te tek oyuncu (id=1) tüm pasları atıyor → well-fed."""
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/star-feed"
+        "?my_team_id=11&star_player_id=1&current_minute=70&window_min=15",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    # Seed'te tüm paslar player_id=1 → yıldız = %100
+    assert v["pass_share_pct"] == 100.0
+    assert v["involvement_state"] == "well-fed"
+
+
+def test_star_feed_starved_when_other_player(session, client):
+    """Yıldız = farklı oyuncu → starved."""
+    _seed_match_events(session)
+    r = client.get(
+        "/admin/matches/9300/star-feed"
+        "?my_team_id=11&star_player_id=999&current_minute=70&window_min=15",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["involvement_state"] == "starved"
+    assert "HİÇ pas" in v["tactical_advice"]
+
+
+def test_star_feed_404(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get(
+        "/admin/matches/99999/star-feed"
+        "?my_team_id=11&star_player_id=1&current_minute=70",
+    )
+    assert r.status_code == 404

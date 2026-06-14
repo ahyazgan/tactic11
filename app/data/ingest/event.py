@@ -28,9 +28,11 @@ from app.core.logging import get_logger
 from app.data.sources.statsbomb_event_parser import (
     event_to_carry,
     event_to_defensive_action,
+    event_to_foul,
     event_to_pass,
     is_carry_event,
     is_defensive_action_event,
+    is_foul_event,
     is_pass_event,
 )
 from app.data.sources.statsbomb_open import (
@@ -54,6 +56,7 @@ class EventIngestReport:
     passes: int
     carries: int
     defensive_actions: int
+    fouls: int = 0
 
 
 def _shot_to_row(shot, tenant_id: str, source_event_id: str | None,
@@ -139,6 +142,33 @@ def _def_to_row(d, tenant_id: str, source_event_id: str | None,
     )
 
 
+def _foul_to_row(f, tenant_id: str, source_event_id: str | None,
+                 now: datetime) -> models.EventRow:
+    """FoulEvent → EventRow. event_type='foul', outcome=card_color veya 'foul'.
+
+    Outcome: yellow|second_yellow|red varsa kart; yoksa 'foul'.
+    Pattern: advantage_played varsa 'advantage', yoksa None.
+    """
+    return models.EventRow(
+        sport=football.SPORT_NAME, tenant_id=tenant_id,
+        source="statsbomb_open", source_event_id=source_event_id,
+        match_external_id=f.match_external_id,
+        team_external_id=f.team_external_id,
+        player_external_id=f.player_external_id,
+        event_type="foul",
+        minute=f.minute, period=f.period,
+        start_x=f.x, start_y=f.y,
+        end_x=None, end_y=None,
+        outcome=f.card if f.card else "foul",
+        body_part=None,
+        pattern="advantage" if f.advantage_played else None,
+        possession_id=f.possession_id,
+        is_goal=None, key_pass=None,
+        raw_json=None,
+        created_at=now,
+    )
+
+
 def _dispatch(
     ev: dict[str, Any], match_external_id: int, tenant_id: str,
     source_event_id: str | None, now: datetime,
@@ -164,6 +194,11 @@ def _dispatch(
         if d is None:
             return None
         return "defensive_action", _def_to_row(d, tenant_id, source_event_id, now)
+    if is_foul_event(ev):
+        f = event_to_foul(ev, match_id=match_external_id)
+        if f is None:
+            return None
+        return "foul", _foul_to_row(f, tenant_id, source_event_id, now)
     return None
 
 
@@ -192,7 +227,7 @@ def ingest_events_for_match(
         ).scalars()
     )
 
-    counts = {"shot": 0, "pass": 0, "carry": 0, "defensive_action": 0}
+    counts = {"shot": 0, "pass": 0, "carry": 0, "defensive_action": 0, "foul": 0}
     inserted = 0
     skipped = 0
     now = datetime.now(UTC)
@@ -222,11 +257,13 @@ def ingest_events_for_match(
         passes=counts["pass"],
         carries=counts["carry"],
         defensive_actions=counts["defensive_action"],
+        fouls=counts["foul"],
     )
     log.info(
         "event ingest match=%d tenant=%s inserted=%d skipped=%d "
-        "(shots=%d passes=%d carries=%d def=%d)",
+        "(shots=%d passes=%d carries=%d def=%d fouls=%d)",
         match_external_id, tenant_id, inserted, skipped,
-        report.shots, report.passes, report.carries, report.defensive_actions,
+        report.shots, report.passes, report.carries,
+        report.defensive_actions, report.fouls,
     )
     return report

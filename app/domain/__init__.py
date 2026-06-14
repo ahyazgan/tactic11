@@ -1,8 +1,10 @@
 from app.domain.appearance import PlayerAppearance
 from app.domain.event import (
+    CardColor,
     Carry,
     DefensiveAction,
     DefensiveActionType,
+    FoulEvent,
     PassEvent,
     PassTechnique,
     PassType,
@@ -18,9 +20,11 @@ from app.domain.tracking import PlayerPosition, TrackingFrame
 
 __all__ = [
     "BodyPart",
+    "CardColor",
     "Carry",
     "DefensiveAction",
     "DefensiveActionType",
+    "FoulEvent",
     "League",
     "LineupEntry",
     "Match",

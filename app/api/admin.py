@@ -2888,7 +2888,33 @@ def live_decision_endpoint(
         draw_is_enough=draw_is_enough, must_win=must_win,
     ))
 
-    # Faz 8: bağlam motoru (orkestra şefi) — 8 sinyali tek karara indirger
+    # K kategorisi: kapanış reçetesi + risk/getiri eşiği
+    from app.engine.closing_strategy import compute_closing_strategy
+    _safe("closing_strategy", lambda: compute_closing_strategy(
+        my_team_id, current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+        momentum_score=momentum_score,
+    ))
+
+    # G.3 yıldız beslemesi — star_player_id verilmişse hesapla
+    if star_id is not None:
+        from app.engine.star_feed import compute_star_feed
+        _safe("star_feed", lambda: compute_star_feed(
+            my_team_id, star_player_id=star_id,
+            passes=loaded.passes, shots=loaded.shots,
+            current_minute=current_minute,
+        ))
+
+    # I.1 faul ritmi + hakem — ingest edilmiş faul event'leri varsa otomatik
+    if loaded.fouls:
+        from app.engine.foul_pressure import compute_foul_pressure
+        fouls_so_far = [f for f in loaded.fouls if f.minute <= current_minute]
+        _safe("foul_pressure", lambda: compute_foul_pressure(
+            my_team_id, opp_id, fouls_so_far,
+            current_minute=current_minute,
+        ))
+
+    # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
     out.update(run_context_pipeline(
         session, match, my_team_id, current_minute, out, p, d, s,
@@ -2967,6 +2993,281 @@ def live_risk_endpoint(
     result = compute_live_risk_monitor(
         my_team_id, states, current_minute=current_minute,
         my_score=my_score or 0, opponent_score=opp_score or 0,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/decisions/recent",
+    tags=["admin"],
+    summary="Tüm maçlardaki son N kararı + isabet özet (karar takip ekranı)",
+)
+def decisions_recent_endpoint(
+    limit: int = Query(default=30, ge=1, le=200),
+    team_external_id: int | None = Query(default=None),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Karar takip ekranı için: son N karar + global isabet özet.
+
+    summary: toplam, recommended, by_outcome, by_decision_type, hit_rate.
+    decisions: en yeni karar önce, kullanıcıya gösterilecek alanlarla.
+    """
+    from sqlalchemy import func
+    where = [models.Decision.sport == football.SPORT_NAME]
+    if team_external_id is not None:
+        where.append(models.Decision.team_external_id == team_external_id)
+
+    rows = list(session.execute(
+        select(models.Decision).where(*where)
+        .order_by(models.Decision.created_at.desc()).limit(limit)
+    ).scalars())
+
+    # Global özet (sınırsız, sadece outcome bilinen kararlar üzerinden)
+    outcome_counts = dict(session.execute(
+        select(
+            models.Decision.outcome, func.count(models.Decision.id),
+        ).where(*where).group_by(models.Decision.outcome)
+    ).all())
+    type_counts = dict(session.execute(
+        select(
+            models.Decision.decision_type, func.count(models.Decision.id),
+        ).where(*where).group_by(models.Decision.decision_type)
+    ).all())
+
+    positive = int(outcome_counts.get("positive", 0))
+    negative = int(outcome_counts.get("negative", 0))
+    neutral = int(outcome_counts.get("neutral", 0))
+    pending = int(outcome_counts.get("pending", 0))
+    resolved = positive + negative + neutral
+    hit_rate = round(positive / resolved, 3) if resolved > 0 else None
+
+    return {
+        "summary": {
+            "total": int(sum(outcome_counts.values())),
+            "resolved": resolved,
+            "pending": pending,
+            "positive": positive, "negative": negative, "neutral": neutral,
+            "hit_rate": hit_rate,
+            "by_decision_type": {k or "?": int(v) for k, v in type_counts.items()},
+        },
+        "decisions": [
+            {
+                "id": r.id,
+                "match_id": r.match_external_id,
+                "team_id": r.team_external_id,
+                "minute": r.minute,
+                "decision_type": r.decision_type,
+                "subject_player_id": r.subject_player_external_id,
+                "related_player_id": r.related_player_external_id,
+                "notes": r.notes,
+                "recommended": r.recommended,
+                "confidence": r.confidence,
+                "outcome": r.outcome,
+                "outcome_value": r.outcome_value,
+                "outcome_notes": r.outcome_notes,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+            }
+            for r in rows
+        ],
+    }
+
+
+@router.get(
+    "/matches/with-events",
+    tags=["admin"],
+    summary="Live decision için seçilebilir maçlar — ingest'li event'i olanlar",
+)
+def matches_with_events_endpoint(
+    limit: int = Query(default=20, ge=1, le=100),
+    sport: str = Query(default=football.SPORT_NAME),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """En son N maç + event/foul sayıları + skor + takım id'leri.
+
+    Frontend `/decisions/live` match selector dropdown'u için. Sadece
+    EventRow'da en az 1 satırı olan maçlar listelenir; boş maçlar atlanır.
+    Sıralama: en yeni kickoff önce.
+    """
+    from sqlalchemy import func
+    # Match × EventRow.match_external_id JOIN sayım
+    event_counts = dict(session.execute(
+        select(
+            models.EventRow.match_external_id,
+            func.count(models.EventRow.id),
+        ).where(
+            models.EventRow.sport == sport,
+        ).group_by(models.EventRow.match_external_id)
+    ).all())
+    if not event_counts:
+        return {"matches": [], "total": 0}
+
+    foul_counts = dict(session.execute(
+        select(
+            models.EventRow.match_external_id,
+            func.count(models.EventRow.id),
+        ).where(
+            models.EventRow.sport == sport,
+            models.EventRow.event_type == "foul",
+        ).group_by(models.EventRow.match_external_id)
+    ).all())
+
+    rows = session.execute(
+        select(models.Match).where(
+            models.Match.sport == sport,
+            models.Match.external_id.in_(list(event_counts.keys())),
+        ).order_by(models.Match.kickoff.desc()).limit(limit)
+    ).scalars().all()
+    matches = [
+        {
+            "match_id": m.external_id,
+            "league_external_id": m.league_external_id,
+            "season": m.season,
+            "kickoff": m.kickoff.isoformat() if m.kickoff else None,
+            "status": m.status,
+            "home_team_external_id": m.home_team_external_id,
+            "away_team_external_id": m.away_team_external_id,
+            "home_score": m.home_score, "away_score": m.away_score,
+            "event_count": int(event_counts.get(m.external_id, 0)),
+            "foul_count": int(foul_counts.get(m.external_id, 0)),
+        }
+        for m in rows
+    ]
+    return {"matches": matches, "total": len(matches)}
+
+
+@router.get(
+    "/matches/{match_id}/closing-strategy",
+    tags=["admin"],
+    summary="Kapanış reçetesi + risk/getiri eşiği (K kategorisi)",
+)
+def closing_strategy_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    momentum_score: float = Query(default=0.0, ge=-1.0, le=1.0),
+    match_total_minutes: float = Query(default=90.0, ge=60, le=130),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """TD'nin 'önde 1-0, 80. dk, ne yapayım?' sorusuna doğrudan cevap.
+
+    (skor_diff, dakika) → tempo + pozisyon + ikame + duran top + risk eşiği.
+    Pure compute; momentum opsiyonel input olarak reçeteyi inceltir.
+    """
+    from app.engine.closing_strategy import compute_closing_strategy
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    home_id = match.home_team_external_id
+    my_score = match.home_score if my_team_id == home_id else match.away_score
+    opp_score = match.away_score if my_team_id == home_id else match.home_score
+    result = compute_closing_strategy(
+        my_team_id, current_minute=current_minute,
+        my_score=my_score or 0, opponent_score=opp_score or 0,
+        match_total_minutes=match_total_minutes,
+        momentum_score=momentum_score,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/matches/{match_id}/star-feed",
+    tags=["admin"],
+    summary="Yıldız oyuncu besleme monitörü (G.3)",
+)
+def star_feed_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    star_player_id: int = Query(..., description="Yıldız oyuncu external_id"),
+    current_minute: float = Query(..., ge=0, le=120),
+    window_min: float = Query(default=15.0, ge=5, le=45),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Yıldız oyuncunun takım pasındaki payı + xT katkısı + son üçte varlığı.
+
+    "Yıldıza top gitmiyor" şüphesini sayıyla doğrular; involvement_state
+    (starved/underfed/balanced/well-fed) + somut taktik tavsiye üretir.
+    Pure compute; loaded events üzerinden window agregasyonu.
+    """
+    from app.data.loaders import load_match_events
+    from app.engine.star_feed import compute_star_feed
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        return {"match_id": match_id, "events_loaded": 0,
+                "note": "Event ingest yok"}
+    result = compute_star_feed(
+        my_team_id, star_player_id=star_player_id,
+        passes=loaded.passes, shots=loaded.shots,
+        current_minute=current_minute, window_min=window_min,
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/matches/{match_id}/foul-pressure",
+    tags=["admin"],
+    summary="Takım faul biriktirme + hakem kart eşiği (I.1)",
+)
+def foul_pressure_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=120),
+    window_min: float = Query(default=15.0, ge=5, le=45),
+    total_yellows_match: int = Query(default=0, ge=0, le=20),
+    payload: dict[str, Any] | None = None,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Faul event listesinden ritim-kırma + hakem kart eşiği + oyuncu kart riski.
+
+    payload: {
+        "foul_events": [{"minute": float, "team_id": int, "player_id"?: int}],
+        "player_yellow_cards": {player_id_str: yellow_count}
+    }
+    """
+    from app.engine.foul_pressure import compute_foul_pressure
+
+    match = session.execute(
+        select(models.Match).where(
+            models.Match.sport == football.SPORT_NAME,
+            models.Match.external_id == match_id,
+        )
+    ).scalar_one_or_none()
+    if match is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} yok")
+    home_id = match.home_team_external_id
+    opp_id = (match.away_team_external_id if my_team_id == home_id else home_id)
+    p = payload or {}
+    yellow_raw = p.get("player_yellow_cards", {}) or {}
+    yellow_states = {int(k): int(v) for k, v in yellow_raw.items()} or None
+    # Önce payload — değilse ingest edilmiş foul'ları DB'den çek
+    foul_events: list = p.get("foul_events", [])
+    if not foul_events:
+        from app.data.loaders import load_match_events
+        loaded = load_match_events(session, match_id)
+        foul_events = [
+            f for f in loaded.fouls if f.minute <= current_minute
+        ]
+    # Payload'da total_yellows_match=0 verilmişse auto'ya bırak (None)
+    tym = total_yellows_match if total_yellows_match > 0 else None
+    result = compute_foul_pressure(
+        my_team_id, opp_id, foul_events,
+        current_minute=current_minute, window_min=window_min,
+        player_yellow_cards=yellow_states,
+        total_yellows_match=tym,
     )
     return engine_result_to_dict(result)
 
