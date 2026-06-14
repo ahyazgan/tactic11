@@ -28,6 +28,10 @@ const DEFAULT_STAR_ID = 5503;
 const REPLAY_TICK_MS = 900;
 const REPLAY_MINUTE_STEP = 5;
 const TIMELINE_MAX = 6;
+// CANLI mod auto-refresh aralığı (SWR refresh)
+const LIVE_REFRESH_MS = 5000;
+// Kritik urgency için notification cooldown — aynı dakika için spam etme
+const NOTIFY_COOLDOWN_MS = 30000;
 
 // --------------------------------------------------------------------------- //
 // Tipler — backend live-decision response shape (loose, hata-toleranslı)
@@ -625,8 +629,13 @@ export default function LiveDecisionPage() {
   const [teamId, setTeamId] = useState(DEFAULT_TEAM_ID);
   const [starId, setStarId] = useState(DEFAULT_STAR_ID);
   const [playing, setPlaying] = useState(false);
+  const [liveMode, setLiveMode] = useState(false);
+  const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const lastMinuteRef = useRef<number | null>(null);
+  const lastNotifyRef = useRef<{ minute: number; at: number }>(
+    { minute: -1, at: 0 },
+  );
 
   // DEMO_MODE: yerel veri; CANLI: backend
   const apiPath = !DEMO_MODE
@@ -634,7 +643,10 @@ export default function LiveDecisionPage() {
       + `?my_team_id=${teamId}&current_minute=${minute}&star_player_id=${starId}`
     : null;
   const { data: liveData, error, isLoading } = useSWR<LiveDecisionResponse>(
-    apiPath, apiFetch, { revalidateOnFocus: false, shouldRetryOnError: false },
+    apiPath, apiFetch, {
+      revalidateOnFocus: false, shouldRetryOnError: false,
+      refreshInterval: liveMode ? LIVE_REFRESH_MS : 0,
+    },
   );
 
   const data = DEMO_MODE ? demoSnapshot(minute) : liveData;
@@ -654,6 +666,36 @@ export default function LiveDecisionPage() {
     }, REPLAY_TICK_MS);
     return () => clearInterval(id);
   }, [playing]);
+
+  // Canlı mod (DEMO_MODE): SWR yerine dakikayı yavaşça (LIVE_REFRESH_MS) ilerlet
+  useEffect(() => {
+    if (!liveMode || !DEMO_MODE) return undefined;
+    const id = setInterval(() => {
+      setMinute((m) => {
+        const next = Math.min(95, m + 1);
+        if (next >= 95) setLiveMode(false);
+        return next;
+      });
+    }, LIVE_REFRESH_MS);
+    return () => clearInterval(id);
+  }, [liveMode]);
+
+  // Browser notification — critical urgency için tek seferlik (cooldown'lu)
+  useEffect(() => {
+    if (!notifyEnabled) return;
+    const p = data?.context?.primary;
+    if (!p || (p.urgency ?? 0) < 0.85) return;
+    const now = Date.now();
+    const last = lastNotifyRef.current;
+    if (last.minute === minute && now - last.at < NOTIFY_COOLDOWN_MS) return;
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    new Notification(`⚠ ${minute}' KRİTİK KARAR`, {
+      body: p.headline ?? "ŞİMDİ aksiyon gerekli",
+      tag: `live-decision-${minute}`,
+      icon: "/icon.svg",
+    });
+    lastNotifyRef.current = { minute, at: now };
+  }, [data, minute, notifyEnabled]);
 
   // Timeline: her yeni dakika kararını biriktir (aynı dakika tekrarlamasın)
   useEffect(() => {
@@ -719,6 +761,54 @@ export default function LiveDecisionPage() {
               ↺
             </button>
           </div>
+          <label style={{
+            display: "flex", alignItems: "center", gap: 8, fontSize: 11.5,
+            padding: "6px 10px", background: liveMode ? "var(--panel2)" : "transparent",
+            borderRadius: 4, border: "1px solid var(--line)", cursor: "pointer",
+          }}>
+            <input
+              type="checkbox" checked={liveMode}
+              onChange={(e) => {
+                setLiveMode(e.target.checked);
+                if (e.target.checked) setPlaying(false);
+              }}
+            />
+            <span>
+              <b>Canlı mod</b>
+              <span style={{ color: "var(--muted)", marginLeft: 6 }}>
+                ({DEMO_MODE ? "+1 dk/5sn" : "5sn'de bir yenile"})
+              </span>
+            </span>
+            {liveMode && (
+              <span style={{ marginLeft: "auto", fontSize: 9, color: "var(--crit)",
+                fontWeight: 700, letterSpacing: 0.5 }}>● LIVE</span>
+            )}
+          </label>
+          <label style={{
+            display: "flex", alignItems: "center", gap: 8, fontSize: 11.5,
+            padding: "6px 10px", borderRadius: 4,
+            border: "1px solid var(--line)", cursor: "pointer",
+          }}>
+            <input
+              type="checkbox" checked={notifyEnabled}
+              onChange={async (e) => {
+                if (e.target.checked && typeof Notification !== "undefined") {
+                  const perm = Notification.permission === "default"
+                    ? await Notification.requestPermission()
+                    : Notification.permission;
+                  setNotifyEnabled(perm === "granted");
+                } else {
+                  setNotifyEnabled(false);
+                }
+              }}
+            />
+            <span>
+              <b>Bildirim</b>
+              <span style={{ color: "var(--muted)", marginLeft: 6 }}>
+                (critical kararlarda)
+              </span>
+            </span>
+          </label>
           {!DEMO_MODE && (
             <>
               <MatchSelector
@@ -790,7 +880,14 @@ export default function LiveDecisionPage() {
         <span className="ep">7 ham sinyal · context engine bunları birleştirir</span>
       </div>
 
-      <div style={{
+      <style>{`
+        @media (max-width: 640px) {
+          .live-decision-grid { grid-template-columns: 1fr !important; }
+          .live-decision-grid > div { min-width: 0 !important; }
+          input[type="range"] { height: 32px; }
+        }
+      `}</style>
+      <div className="live-decision-grid" style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))",
         gap: 12,

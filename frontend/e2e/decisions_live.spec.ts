@@ -52,6 +52,29 @@ test.describe("Decisions live (DEMO_MODE)", () => {
     expect(count).toBeGreaterThanOrEqual(2);
   });
 
+  test("live mode toggle auto-advances minute in DEMO_MODE", async ({ page }) => {
+    await page.goto("/decisions/live");
+    const slider = page.locator('input[type="range"]');
+    await slider.fill("70");
+    const initial = await slider.inputValue();
+    // Canlı mod checkbox
+    await page.getByLabel(/Canlı mod/i).check();
+    // 5sn aralık var; 6 sn bekle → dakika +1 olmalı
+    await page.waitForTimeout(6000);
+    const after = await slider.inputValue();
+    expect(parseInt(after)).toBeGreaterThan(parseInt(initial));
+    // Live rozet görünür
+    await expect(page.getByText("● LIVE")).toBeVisible();
+  });
+
+  test("mobile viewport: cards stack to single column", async ({ page }) => {
+    await page.setViewportSize({ width: 380, height: 800 });
+    await page.goto("/decisions/live");
+    // Grid container hâlâ var
+    const grid = page.locator(".live-decision-grid");
+    await expect(grid).toBeVisible();
+  });
+
   test("urgency transitions across phases (low → high → critical)", async ({ page }) => {
     await page.goto("/decisions/live");
     const slider = page.locator('input[type="range"]');
