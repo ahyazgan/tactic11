@@ -274,6 +274,43 @@ def test_foul_pressure_reads_ingested_fouls(session, client):
     assert v["referee_card_pressure"] == "low"
 
 
+def test_matches_with_events_lists_ingested_only(session, client):
+    """Sadece event'i olan maçlar listelenir; boş maç dışlanır."""
+    _seed_match_events(session)
+    # Bir tane daha maç ekle — event'siz
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Match(
+        sport=football.SPORT_NAME, external_id=9999,
+        league_external_id=203, season=2024,
+        kickoff=now - timedelta(days=2), status="FT",
+        home_team_external_id=33, away_team_external_id=44,
+        home_score=0, away_score=0, tenant_id="t-default",
+    ))
+    session.commit()
+    r = client.get("/admin/matches/with-events")
+    assert r.status_code == 200
+    body = r.json()
+    ids = [m["match_id"] for m in body["matches"]]
+    assert 9300 in ids       # event'li
+    assert 9999 not in ids   # event'siz
+    m = next(x for x in body["matches"] if x["match_id"] == 9300)
+    assert m["event_count"] == 30
+    assert m["home_team_external_id"] == 11
+    assert m["away_team_external_id"] == 22
+
+
+def test_matches_with_events_empty_when_no_events(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get("/admin/matches/with-events")
+    assert r.status_code == 200
+    assert r.json() == {"matches": [], "total": 0}
+
+
 def test_live_decision_panel_includes_foul_pressure_when_ingested(session, client):
     """Live decision panel ingest'lenmiş foul'ları otomatik içerir."""
     _seed_match_events(session)

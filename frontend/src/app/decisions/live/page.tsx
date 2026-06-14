@@ -454,6 +454,91 @@ function TacticalTriggersCard({
   );
 }
 
+interface MatchListItem {
+  match_id: number;
+  league_external_id: number;
+  season: number;
+  kickoff: string | null;
+  home_team_external_id: number;
+  away_team_external_id: number;
+  home_score: number | null;
+  away_score: number | null;
+  event_count: number;
+  foul_count: number;
+}
+
+function MatchSelector({
+  value, onSelect,
+}: { value: number; onSelect: (m: MatchListItem) => void }) {
+  const { data, error, isLoading } = useSWR<{ matches: MatchListItem[]; total: number }>(
+    "/admin/matches/with-events?limit=30", apiFetch,
+    { revalidateOnFocus: false, shouldRetryOnError: false },
+  );
+  const matches = data?.matches ?? [];
+
+  if (isLoading) {
+    return (
+      <label style={{ fontSize: 11.5 }}>
+        Maç:
+        <div style={{ marginTop: 2, padding: 6, color: "var(--muted)" }}>
+          Yükleniyor…
+        </div>
+      </label>
+    );
+  }
+  if (error || matches.length === 0) {
+    return (
+      <label style={{ fontSize: 11.5 }}>
+        Maç (manuel):
+        <input type="number" value={value}
+          onChange={(e) => onSelect({
+            match_id: parseInt(e.target.value) || 0,
+            league_external_id: 0, season: 0, kickoff: null,
+            home_team_external_id: 0, away_team_external_id: 0,
+            home_score: null, away_score: null,
+            event_count: 0, foul_count: 0,
+          })}
+          style={{ width: "100%", marginTop: 2, padding: 6,
+            background: "var(--panel2)", color: "var(--ink)",
+            border: "1px solid var(--line)", borderRadius: 4 }} />
+        <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 2 }}>
+          Ingest'li maç bulunamadı — manuel id gir
+        </div>
+      </label>
+    );
+  }
+  return (
+    <label style={{ fontSize: 11.5 }}>
+      Maç ({matches.length}):
+      <select
+        value={value}
+        onChange={(e) => {
+          const m = matches.find((x) => x.match_id === parseInt(e.target.value));
+          if (m) onSelect(m);
+        }}
+        style={{ width: "100%", marginTop: 2, padding: 6,
+          background: "var(--panel2)", color: "var(--ink)",
+          border: "1px solid var(--line)", borderRadius: 4 }}
+      >
+        {matches.find((m) => m.match_id === value) === undefined && (
+          <option value={value}>#{value} (özel)</option>
+        )}
+        {matches.map((m) => {
+          const date = m.kickoff ? m.kickoff.slice(0, 10) : "—";
+          const score = (m.home_score !== null && m.away_score !== null)
+            ? `${m.home_score}-${m.away_score}` : "—";
+          return (
+            <option key={m.match_id} value={m.match_id}>
+              {date} · #{m.match_id} · {m.home_team_external_id} vs {m.away_team_external_id}
+              {" · "}{score} · {m.event_count} ev · {m.foul_count} foul
+            </option>
+          );
+        })}
+      </select>
+    </label>
+  );
+}
+
 function TimelineStrip({
   entries, currentMinute,
 }: { entries: { minute: number; headline: string; theme_label: string;
@@ -636,13 +721,14 @@ export default function LiveDecisionPage() {
           </div>
           {!DEMO_MODE && (
             <>
-              <label style={{ fontSize: 11.5 }}>Match ID:
-                <input type="number" value={matchId}
-                  onChange={(e) => setMatchId(parseInt(e.target.value) || 0)}
-                  style={{ width: "100%", marginTop: 2, padding: 6,
-                    background: "var(--panel2)", color: "var(--ink)",
-                    border: "1px solid var(--line)", borderRadius: 4 }} />
-              </label>
+              <MatchSelector
+                value={matchId}
+                onSelect={(m) => {
+                  setMatchId(m.match_id);
+                  setTeamId(m.home_team_external_id);
+                  resetTimeline();
+                }}
+              />
               <label style={{ fontSize: 11.5 }}>Bizim takım external_id:
                 <input type="number" value={teamId}
                   onChange={(e) => setTeamId(parseInt(e.target.value) || 0)}

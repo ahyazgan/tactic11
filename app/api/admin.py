@@ -2998,6 +2998,69 @@ def live_risk_endpoint(
 
 
 @router.get(
+    "/matches/with-events",
+    tags=["admin"],
+    summary="Live decision için seçilebilir maçlar — ingest'li event'i olanlar",
+)
+def matches_with_events_endpoint(
+    limit: int = Query(default=20, ge=1, le=100),
+    sport: str = Query(default=football.SPORT_NAME),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """En son N maç + event/foul sayıları + skor + takım id'leri.
+
+    Frontend `/decisions/live` match selector dropdown'u için. Sadece
+    EventRow'da en az 1 satırı olan maçlar listelenir; boş maçlar atlanır.
+    Sıralama: en yeni kickoff önce.
+    """
+    from sqlalchemy import func
+    # Match × EventRow.match_external_id JOIN sayım
+    event_counts = dict(session.execute(
+        select(
+            models.EventRow.match_external_id,
+            func.count(models.EventRow.id),
+        ).where(
+            models.EventRow.sport == sport,
+        ).group_by(models.EventRow.match_external_id)
+    ).all())
+    if not event_counts:
+        return {"matches": [], "total": 0}
+
+    foul_counts = dict(session.execute(
+        select(
+            models.EventRow.match_external_id,
+            func.count(models.EventRow.id),
+        ).where(
+            models.EventRow.sport == sport,
+            models.EventRow.event_type == "foul",
+        ).group_by(models.EventRow.match_external_id)
+    ).all())
+
+    rows = session.execute(
+        select(models.Match).where(
+            models.Match.sport == sport,
+            models.Match.external_id.in_(list(event_counts.keys())),
+        ).order_by(models.Match.kickoff.desc()).limit(limit)
+    ).scalars().all()
+    matches = [
+        {
+            "match_id": m.external_id,
+            "league_external_id": m.league_external_id,
+            "season": m.season,
+            "kickoff": m.kickoff.isoformat() if m.kickoff else None,
+            "status": m.status,
+            "home_team_external_id": m.home_team_external_id,
+            "away_team_external_id": m.away_team_external_id,
+            "home_score": m.home_score, "away_score": m.away_score,
+            "event_count": int(event_counts.get(m.external_id, 0)),
+            "foul_count": int(foul_counts.get(m.external_id, 0)),
+        }
+        for m in rows
+    ]
+    return {"matches": matches, "total": len(matches)}
+
+
+@router.get(
     "/matches/{match_id}/closing-strategy",
     tags=["admin"],
     summary="Kapanış reçetesi + risk/getiri eşiği (K kategorisi)",
