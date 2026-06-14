@@ -18,6 +18,7 @@ interface NavItem {
   href: string;
   label: string;
   roles?: ("admin" | "analyst" | "coach" | "viewer")[];
+  indent?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -33,8 +34,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/physical-tests", label: "Performans", roles: ["admin", "coach", "analyst"] },
   { href: "/medical", label: "Tıbbi Merkez", roles: ["admin", "coach", "analyst"] },
   { href: "/decisions", label: "Kararlar", roles: ["admin", "coach", "analyst"] },
-  { href: "/decisions/live", label: "Maç-içi Karar", roles: ["admin", "coach", "analyst"] },
-  { href: "/decisions/track", label: "Karar Takip", roles: ["admin", "coach", "analyst"] },
+  { href: "/decisions/live", label: "Maç-içi Karar", roles: ["admin", "coach", "analyst"], indent: true },
+  { href: "/decisions/track", label: "Karar Takip", roles: ["admin", "coach", "analyst"], indent: true },
   { href: "/xg", label: "xG Analiz", roles: ["admin", "coach", "analyst"] },
   { href: "/calibration", label: "Kalibrasyon" },
   { href: "/chat", label: "Asistan" },
@@ -90,17 +91,25 @@ export function Sidebar() {
         {visibleItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
+          const exactMatch = pathname === item.href;
+          // Parent /decisions: alt-link aktifken parent vurgulanmasın
+          const indented = item.indent;
+          const active = indented ? exactMatch : isActive;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "block px-4 py-2 text-[13px] border-l-2 transition-colors",
-                isActive
+                "block py-2 text-[13px] border-l-2 transition-colors",
+                indented ? "pl-8 pr-4 text-[12px]" : "px-4",
+                active
                   ? "bg-surface2 text-text border-accent font-medium"
                   : "border-transparent text-textmut hover:text-text hover:bg-surface2",
               )}
             >
+              {indented && (
+                <span className="mr-1.5 text-textdim" aria-hidden>↳</span>
+              )}
               {t(item.label)}
             </Link>
           );

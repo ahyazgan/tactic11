@@ -110,7 +110,51 @@ function outcomeLabel(outcome: string | null): string {
   return "—";
 }
 
-function SummaryCards({ summary }: { summary: RecentDecisionsResponse["summary"] }) {
+/**
+ * HitRateSparkline — kronolojik olarak rolling-window isabet trendi.
+ * Karar listesi yeni-önce sıralı; reverse + her tick'te rolling mean.
+ */
+function HitRateSparkline({ rows }: { rows: DecisionRow[] }) {
+  const resolved = rows
+    .slice().reverse()  // chrono order
+    .filter((r) => r.outcome && r.outcome !== "pending");
+  if (resolved.length < 2) return null;
+  const window = Math.max(3, Math.min(8, Math.floor(resolved.length / 2)));
+  const points: number[] = [];
+  for (let i = 0; i < resolved.length; i++) {
+    const slice = resolved.slice(Math.max(0, i - window + 1), i + 1);
+    const pos = slice.filter((r) => r.outcome === "positive").length;
+    points.push(pos / slice.length);
+  }
+  const w = 100, h = 28;
+  const path = points.map((p, i) => {
+    const x = (i / (points.length - 1)) * w;
+    const y = h - (p * h);
+    return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(" ");
+  const last = points[points.length - 1];
+  const tone = last >= 0.66 ? "var(--low)"
+    : last >= 0.4 ? "var(--mid)" : "var(--crit)";
+  return (
+    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}
+        style={{ overflow: "visible" }}>
+        <line x1="0" y1={h * 0.5} x2={w} y2={h * 0.5}
+          stroke="var(--line)" strokeDasharray="2 3" />
+        <path d={path} fill="none" stroke={tone} strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={w} cy={h - (last * h)} r="3" fill={tone} />
+      </svg>
+      <span style={{ fontSize: 10, color: "var(--muted)" }}>
+        rolling-{window}
+      </span>
+    </div>
+  );
+}
+
+function SummaryCards({
+  summary, rows,
+}: { summary: RecentDecisionsResponse["summary"]; rows: DecisionRow[] }) {
   const hr = summary.hit_rate;
   const hrPct = hr !== null ? `%${Math.round(hr * 100)}` : "—";
   const hrTone = hr === null ? "var(--dim)"
@@ -126,12 +170,15 @@ function SummaryCards({ summary }: { summary: RecentDecisionsResponse["summary"]
           color: "var(--muted)", letterSpacing: 0.7, fontWeight: 700 }}>
           İsabet
         </div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: hrTone, marginTop: 4 }}>
+        <div style={{ fontSize: 30, fontWeight: 900, color: hrTone,
+          marginTop: 4, fontFamily: "JetBrains Mono, monospace",
+          lineHeight: 1 }}>
           {hrPct}
         </div>
-        <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
+        <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
           {summary.resolved} sonuçlanmış karar üzerinden
         </div>
+        <HitRateSparkline rows={rows} />
       </div>
       <div className="rc">
         <div style={{ fontSize: 10, textTransform: "uppercase",
@@ -212,9 +259,21 @@ function DecisionsTable({ rows }: { rows: DecisionRow[] }) {
               <td className="c" style={{ fontSize: 11.5 }}>
                 {r.recommended ? "✓" : "—"}
               </td>
-              <td className="c" style={{ fontSize: 11.5,
-                color: outcomeColor(r.outcome), fontWeight: 700 }}>
-                {outcomeLabel(r.outcome)}
+              <td className="c">
+                <span style={{
+                  display: "inline-block", padding: "3px 9px",
+                  borderRadius: 999, fontSize: 11, fontWeight: 700,
+                  color: outcomeColor(r.outcome),
+                  border: `1px solid ${outcomeColor(r.outcome)}`,
+                  background: r.outcome === "positive"
+                    ? "color-mix(in srgb, var(--low) 8%, transparent)"
+                    : r.outcome === "negative"
+                    ? "color-mix(in srgb, var(--crit) 8%, transparent)"
+                    : "transparent",
+                  whiteSpace: "nowrap",
+                }}>
+                  {outcomeLabel(r.outcome)}
+                </span>
               </td>
             </tr>
           ))}
@@ -323,7 +382,7 @@ export default function DecisionsTrackPage() {
       desc="Maç-içi panelden uygulanan kararların geçmişi + isabet özet. Outcome reconcile job'u tarafından doldurulur (FT olan maçlarda)."
       right={right}
     >
-      {summary && <SummaryCards summary={summary} />}
+      {summary && <SummaryCards summary={summary} rows={rows} />}
       <div className="st" style={{ marginTop: 8, marginBottom: 8 }}>
         <h2>Son Kararlar</h2>
         <span className="ep">en yeni önce, max {limit}</span>

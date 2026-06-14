@@ -247,16 +247,93 @@ function demoSnapshot(minute: number): LiveDecisionResponse {
 // Kart bileşenleri
 // --------------------------------------------------------------------------- //
 
+function Scoreboard({
+  minute, score, urgency, momentum,
+}: { minute: number; score: string;
+     urgency: number; momentum: number }) {
+  const [home, away] = score.split("-").map((s) => parseInt(s.trim()) || 0);
+  const tone = urgency >= 0.8 ? "var(--crit)"
+    : urgency >= 0.55 ? "var(--high)"
+    : urgency >= 0.35 ? "var(--mid)" : "var(--low)";
+  // Momentum tilt bar: -1 (rakip) .. +1 (biz). Görsel olarak 0-100% bar.
+  const tiltPct = Math.max(0, Math.min(100, 50 + momentum * 50));
+  const phaseLabel = minute < 45 ? "1. Yarı"
+    : minute < 50 ? "Devre Arası"
+    : minute < 90 ? "2. Yarı" : "Uzatma";
+  return (
+    <div className="rc" style={{
+      marginBottom: 16, padding: 0, overflow: "hidden",
+      borderTop: `3px solid ${tone}`,
+    }}>
+      <div style={{
+        display: "grid", gridTemplateColumns: "1fr auto 1fr",
+        alignItems: "center", padding: "16px 18px",
+        background: "linear-gradient(180deg, var(--panel) 0%, var(--panel2) 100%)",
+        gap: 16,
+      }}>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 10, textTransform: "uppercase",
+            color: "var(--muted)", letterSpacing: 0.7, fontWeight: 700,
+            marginBottom: 2 }}>BİZ</div>
+          <div style={{ fontSize: 36, fontWeight: 900, color: "var(--ink)",
+            lineHeight: 1, fontFamily: "JetBrains Mono, monospace" }}>{home}</div>
+        </div>
+        <div style={{ textAlign: "center", padding: "0 12px" }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 700,
+            letterSpacing: 0.5, marginBottom: 4 }}>{phaseLabel}</div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: tone,
+            fontFamily: "JetBrains Mono, monospace", lineHeight: 1 }}>
+            {minute}&apos;
+          </div>
+        </div>
+        <div>
+          <div style={{ fontSize: 10, textTransform: "uppercase",
+            color: "var(--muted)", letterSpacing: 0.7, fontWeight: 700,
+            marginBottom: 2 }}>RAKİP</div>
+          <div style={{ fontSize: 36, fontWeight: 900, color: "var(--ink)",
+            lineHeight: 1, fontFamily: "JetBrains Mono, monospace" }}>{away}</div>
+        </div>
+      </div>
+      {/* Momentum tilt mini-bar — saha boyutu görsel proxy */}
+      <div style={{ height: 6, background: "var(--panel2)",
+        position: "relative", borderTop: "1px solid var(--line)" }}>
+        <div style={{
+          position: "absolute", left: 0, top: 0, height: "100%",
+          width: `${tiltPct}%`,
+          background: tiltPct > 60 ? "var(--low)"
+            : tiltPct < 40 ? "var(--high)" : "var(--mid)",
+          transition: "width 600ms ease",
+        }} />
+        <div style={{ position: "absolute", left: "50%", top: -2, bottom: -2,
+          width: 1, background: "var(--ink)", opacity: 0.4 }} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between",
+        padding: "4px 18px", fontSize: 9.5, color: "var(--muted)",
+        textTransform: "uppercase", letterSpacing: 0.5 }}>
+        <span>Biz baskın</span><span>Momentum</span><span>Rakip baskın</span>
+      </div>
+    </div>
+  );
+}
+
 function PrimaryBanner({ ctx }: { ctx: ContextDecision | undefined }) {
   const p = ctx?.primary;
   const urgency = p?.urgency ?? 0;
   const conf = Math.round((p?.confidence ?? 0) * 100);
+  const isCritical = urgency >= 0.85;
   const tone = urgency >= 0.8 ? "var(--crit)"
     : urgency >= 0.55 ? "var(--high)" : "var(--mid)";
   if (!p) {
     return (
-      <div className="rc" style={{ marginBottom: 16, borderLeft: "3px solid var(--dim)" }}>
+      <div className="rc" style={{
+        marginBottom: 16, borderLeft: "3px solid var(--dim)",
+        padding: "16px 18px", display: "flex", alignItems: "center", gap: 12,
+      }}>
+        <span style={{ fontSize: 22 }}>👀</span>
         <div style={{ fontSize: 13, color: "var(--muted)" }}>
+          <b style={{ color: "var(--ink)", display: "block", marginBottom: 2 }}>
+            İzleme modu
+          </b>
           {ctx?.one_liner || "Henüz net bir aksiyon yok — planı koru, izlemeye devam"}
         </div>
       </div>
@@ -266,13 +343,25 @@ function PrimaryBanner({ ctx }: { ctx: ContextDecision | undefined }) {
     <div className="rc" style={{
       marginBottom: 16, padding: 0, overflow: "hidden",
       borderLeft: `4px solid ${tone}`,
+      animation: isCritical ? "decisionPulse 1.6s ease-in-out infinite" : undefined,
     }}>
+      <style>{`
+        @keyframes decisionPulse {
+          0%, 100% { box-shadow: 0 0 0 0 ${tone}33; }
+          50% { box-shadow: 0 0 0 8px ${tone}00; }
+        }
+      `}</style>
       <div style={{
-        padding: "12px 16px", borderBottom: "1px solid var(--line)",
-        background: "var(--panel2)", display: "flex", alignItems: "center", gap: 12,
+        padding: "10px 16px", borderBottom: "1px solid var(--line)",
+        background: "var(--panel2)", display: "flex", alignItems: "center", gap: 10,
       }}>
-        <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 0.8,
-          color: "var(--muted)", fontWeight: 700 }}>ŞİMDİ ŞUNU YAP</span>
+        <span style={{ fontSize: 14, lineHeight: 1 }}>
+          {isCritical ? "⚠" : urgency >= 0.55 ? "🔔" : "💡"}
+        </span>
+        <span style={{ fontSize: 11, textTransform: "uppercase",
+          letterSpacing: 0.8, color: tone, fontWeight: 800 }}>
+          {isCritical ? "ŞİMDİ — KRİTİK" : "ŞİMDİ ŞUNU YAP"}
+        </span>
         <span style={{ marginLeft: "auto", fontSize: 10, textTransform: "uppercase",
           color: tone, border: `1px solid ${tone}`, borderRadius: 999,
           padding: "2px 9px", fontWeight: 700, letterSpacing: 0.6 }}>
@@ -282,12 +371,12 @@ function PrimaryBanner({ ctx }: { ctx: ContextDecision | undefined }) {
           güven: <b style={{ color: "var(--ink)" }}>{p.confidence_label} (%{conf})</b>
         </span>
       </div>
-      <div style={{ padding: "16px" }}>
-        <div style={{ fontSize: 17, fontWeight: 800, color: "var(--ink)",
-          lineHeight: 1.4, marginBottom: 8 }}>
+      <div style={{ padding: "18px" }}>
+        <div style={{ fontSize: 19, fontWeight: 800, color: "var(--ink)",
+          lineHeight: 1.35, marginBottom: 10, letterSpacing: -0.2 }}>
           {p.headline}
         </div>
-        <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.6 }}>
+        <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.65 }}>
           {p.rationale}
         </div>
       </div>
@@ -296,16 +385,31 @@ function PrimaryBanner({ ctx }: { ctx: ContextDecision | undefined }) {
 }
 
 function EngineCard({
-  title, accent, children,
-}: { title: string; accent?: string; children: React.ReactNode }) {
+  title, icon, accent, children,
+}: { title: string; icon?: string; accent?: string;
+     children: React.ReactNode }) {
   return (
     <div className="rc" style={{
       marginBottom: 12,
       borderLeft: accent ? `3px solid ${accent}` : undefined,
-    }}>
-      <h3 style={{ fontSize: 11.5, textTransform: "uppercase",
-        letterSpacing: 0.7, color: "var(--muted)", margin: "0 0 10px",
-        fontWeight: 700 }}>{title}</h3>
+      transition: "transform 120ms ease, box-shadow 120ms ease",
+    }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8,
+        margin: "0 0 10px" }}>
+        {icon && (
+          <span style={{ fontSize: 14, lineHeight: 1 }}>{icon}</span>
+        )}
+        <h3 style={{ fontSize: 11.5, textTransform: "uppercase",
+          letterSpacing: 0.7, color: "var(--muted)", margin: 0,
+          fontWeight: 700 }}>{title}</h3>
+      </div>
       <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.6 }}>
         {children}
       </div>
@@ -318,7 +422,7 @@ function MomentumCard({ data }: { data?: MomentumOut }) {
   const score = data.score ?? 0;
   const tone = score > 0.2 ? "var(--low)" : score < -0.2 ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Momentum" accent={tone}>
+    <EngineCard title="Momentum" icon="📈" accent={tone}>
       <div><b>Sahip:</b> {data.holder ?? "—"} ({score >= 0 ? "+" : ""}{score.toFixed(2)})</div>
       {data.press_breaking && <div style={{ color: "var(--high)" }}>⚠ Pres kırılıyor</div>}
       {data.xg_swing_alert && <div style={{ color: "var(--crit)" }}>⚠ xG swing</div>}
@@ -336,7 +440,7 @@ function ClosingCard({ data }: { data?: ClosingStrategy }) {
   const tone = data.urgency_level === "critical" ? "var(--crit)"
     : data.urgency_level === "high" ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Kapanış reçetesi" accent={tone}>
+    <EngineCard title="Kapanış reçetesi" icon="⏱" accent={tone}>
       <div style={{ fontWeight: 700, marginBottom: 6 }}>{data.key_message}</div>
       <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.7 }}>
         <div>tempo: <b style={{ color: "var(--ink)" }}>{data.recipe?.tempo}</b></div>
@@ -364,7 +468,7 @@ function StarFeedCard({ data }: { data?: StarFeed }) {
   const tone = state === "starved" ? "var(--high)"
     : state === "well-fed" ? "var(--mid)" : "var(--low)";
   return (
-    <EngineCard title="Yıldız beslemesi" accent={tone}>
+    <EngineCard title="Yıldız beslemesi" icon="⭐" accent={tone}>
       <div><b>Durum:</b> {state} ({data.pass_share_pct?.toFixed(1)}% pas)</div>
       <div><b>Aksiyon:</b> {data.suggested_action}</div>
       <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--muted)" }}>
@@ -380,7 +484,7 @@ function FoulPressureCard({ data }: { data?: FoulPressure }) {
   const tone = ref === "high" ? "var(--crit)"
     : data.tactical_fouling_alert ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Faul ritmi + hakem" accent={tone}>
+    <EngineCard title="Faul ritmi + hakem" icon="🟨" accent={tone}>
       <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 6 }}>
         Hakem kart eşiği: <b style={{ color: "var(--ink)" }}>{ref}</b>
         {data.tactical_fouling_alert && " · rakip ritim kırıyor"}
@@ -397,7 +501,7 @@ function RiskMonitorCard({ data }: { data?: RiskMonitor }) {
   const inj = data.injury_flags ?? [];
   const tone = (cards.length || inj.length) ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Risk & zaman yönetimi" accent={tone}>
+    <EngineCard title="Risk & zaman yönetimi" icon="🩹" accent={tone}>
       <div style={{ marginBottom: 8, fontSize: 12 }}>{data.time_management}</div>
       {cards.map((f, i) => (
         <div key={"c" + i} style={{ fontSize: 11.5, color: "var(--high)" }}>
@@ -421,7 +525,7 @@ function SubTimingCard({ data }: { data?: SubTimingOut }) {
   const nowList = (data.advices ?? []).filter((a) => a.verdict === "now");
   const tone = nowList.length ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="İkame zamanlaması" accent={tone}>
+    <EngineCard title="İkame zamanlaması" icon="🔄" accent={tone}>
       <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 6 }}>
         {data.rationale}
       </div>
@@ -444,7 +548,7 @@ function TacticalTriggersCard({
 }: { data?: { type: string; urgency: string; recommendation: string }[] }) {
   if (!data || data.length === 0) return null;
   return (
-    <EngineCard title="Taktiksel trigger'lar" accent="var(--mid)">
+    <EngineCard title="Taktiksel trigger'lar" icon="🎯" accent="var(--mid)">
       {data.map((t, i) => (
         <div key={i} style={{ marginBottom: 6 }}>
           <span style={{ fontSize: 10, textTransform: "uppercase",
@@ -873,6 +977,12 @@ export default function LiveDecisionPage() {
       right={right}
     >
       <TimelineStrip entries={timeline} currentMinute={minute} />
+      <Scoreboard
+        minute={minute}
+        score={data?.score ?? "0-0"}
+        urgency={data?.context?.primary?.urgency ?? 0}
+        momentum={data?.momentum?.score ?? 0}
+      />
       <PrimaryBanner ctx={data?.context} />
 
       <div className="st" style={{ marginTop: 8, marginBottom: 8 }}>
