@@ -385,12 +385,13 @@ function PrimaryBanner({ ctx }: { ctx: ContextDecision | undefined }) {
 }
 
 function EngineCard({
-  title, icon, accent, children,
+  title, icon, accent, tooltip, children,
 }: { title: string; icon?: string; accent?: string;
-     children: React.ReactNode }) {
+     tooltip?: string; children: React.ReactNode }) {
+  const [hover, setHover] = useState(false);
   return (
     <div className="rc" style={{
-      marginBottom: 12,
+      marginBottom: 12, position: "relative",
       borderLeft: accent ? `3px solid ${accent}` : undefined,
       transition: "transform 120ms ease, box-shadow 120ms ease",
     }}
@@ -409,6 +410,28 @@ function EngineCard({
         <h3 style={{ fontSize: 11.5, textTransform: "uppercase",
           letterSpacing: 0.7, color: "var(--muted)", margin: 0,
           fontWeight: 700 }}>{title}</h3>
+        {tooltip && (
+          <span
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            style={{
+              marginLeft: "auto", fontSize: 12, color: "var(--dim)",
+              cursor: "help", border: "1px solid var(--line)",
+              borderRadius: 999, width: 18, height: 18, lineHeight: "16px",
+              textAlign: "center", fontWeight: 700,
+            }}
+            aria-label={tooltip}
+          >?</span>
+        )}
+        {hover && tooltip && (
+          <div style={{
+            position: "absolute", top: 36, right: 8, zIndex: 10,
+            maxWidth: 260, padding: "8px 10px",
+            background: "var(--ink)", color: "var(--panel)",
+            fontSize: 11, lineHeight: 1.5, borderRadius: 4,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
+          }}>{tooltip}</div>
+        )}
       </div>
       <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.6 }}>
         {children}
@@ -422,7 +445,8 @@ function MomentumCard({ data }: { data?: MomentumOut }) {
   const score = data.score ?? 0;
   const tone = score > 0.2 ? "var(--low)" : score < -0.2 ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Momentum" icon="📈" accent={tone}>
+    <EngineCard title="Momentum" icon="📈" accent={tone}
+      tooltip="Son 10 dakikada hangi takım xT + şut + possession dalgasında baskın. Pres kırılma = bizim defansif aksiyonumuz aniden düştü mü.">
       <div><b>Sahip:</b> {data.holder ?? "—"} ({score >= 0 ? "+" : ""}{score.toFixed(2)})</div>
       {data.press_breaking && <div style={{ color: "var(--high)" }}>⚠ Pres kırılıyor</div>}
       {data.xg_swing_alert && <div style={{ color: "var(--crit)" }}>⚠ xG swing</div>}
@@ -440,7 +464,8 @@ function ClosingCard({ data }: { data?: ClosingStrategy }) {
   const tone = data.urgency_level === "critical" ? "var(--crit)"
     : data.urgency_level === "high" ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Kapanış reçetesi" icon="⏱" accent={tone}>
+    <EngineCard title="Kapanış reçetesi" icon="⏱" accent={tone}
+      tooltip="(skor_diff, dakika) → tempo + dizilim + ikame + duran top reçetesi. 'Önde 1-0, 80. dk, ne yapayım?' sorusunun pure-compute cevabı.">
       <div style={{ fontWeight: 700, marginBottom: 6 }}>{data.key_message}</div>
       <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.7 }}>
         <div>tempo: <b style={{ color: "var(--ink)" }}>{data.recipe?.tempo}</b></div>
@@ -468,7 +493,8 @@ function StarFeedCard({ data }: { data?: StarFeed }) {
   const tone = state === "starved" ? "var(--high)"
     : state === "well-fed" ? "var(--mid)" : "var(--low)";
   return (
-    <EngineCard title="Yıldız beslemesi" icon="⭐" accent={tone}>
+    <EngineCard title="Yıldız beslemesi" icon="⭐" accent={tone}
+      tooltip="Yıldız oyuncunun takım pasındaki payı + son üçte varlığı + xT katkısı. starved=aç, well-fed=çok besleniyor.">
       <div><b>Durum:</b> {state} ({data.pass_share_pct?.toFixed(1)}% pas)</div>
       <div><b>Aksiyon:</b> {data.suggested_action}</div>
       <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--muted)" }}>
@@ -484,7 +510,8 @@ function FoulPressureCard({ data }: { data?: FoulPressure }) {
   const tone = ref === "high" ? "var(--crit)"
     : data.tactical_fouling_alert ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Faul ritmi + hakem" icon="🟨" accent={tone}>
+    <EngineCard title="Faul ritmi + hakem" icon="🟨" accent={tone}
+      tooltip="Rakip ofansif faul yoğunluğu + bizim faul yığını + hakem kart eşiği. 3+ faul/10dk → ritim kırma sinyali.">
       <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 6 }}>
         Hakem kart eşiği: <b style={{ color: "var(--ink)" }}>{ref}</b>
         {data.tactical_fouling_alert && " · rakip ritim kırıyor"}
@@ -501,7 +528,8 @@ function RiskMonitorCard({ data }: { data?: RiskMonitor }) {
   const inj = data.injury_flags ?? [];
   const tone = (cards.length || inj.length) ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Risk & zaman yönetimi" icon="🩹" accent={tone}>
+    <EngineCard title="Risk & zaman yönetimi" icon="🩹" accent={tone}
+      tooltip="Sarı kart + yüksek düello sayısı = kart riski. fatigue ≥ 0.65 = sakatlık riski. Skor + dakika = zaman yönetimi reçetesi.">
       <div style={{ marginBottom: 8, fontSize: 12 }}>{data.time_management}</div>
       {cards.map((f, i) => (
         <div key={"c" + i} style={{ fontSize: 11.5, color: "var(--high)" }}>
@@ -525,7 +553,8 @@ function SubTimingCard({ data }: { data?: SubTimingOut }) {
   const nowList = (data.advices ?? []).filter((a) => a.verdict === "now");
   const tone = nowList.length ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="İkame zamanlaması" icon="🔄" accent={tone}>
+    <EngineCard title="İkame zamanlaması" icon="🔄" accent={tone}
+      tooltip="Oyuncu yorgunluk projeksiyonu × skor durumu → 'şimdi/10dk sonra/bekle' verdict + paket önerisi.">
       <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 6 }}>
         {data.rationale}
       </div>
@@ -548,7 +577,8 @@ function TacticalTriggersCard({
 }: { data?: { type: string; urgency: string; recommendation: string }[] }) {
   if (!data || data.length === 0) return null;
   return (
-    <EngineCard title="Taktiksel trigger'lar" icon="🎯" accent="var(--mid)">
+    <EngineCard title="Taktiksel trigger'lar" icon="🎯" accent="var(--mid)"
+      tooltip="Dizilim değişimi, pres yüksekliği, kanat shift gibi ön-tanımlı kurallar bu dakikada ateşlendi mi.">
       {data.map((t, i) => (
         <div key={i} style={{ marginBottom: 6 }}>
           <span style={{ fontSize: 10, textTransform: "uppercase",
