@@ -196,7 +196,10 @@ def test_parse_all_events_separates_types():
 
 def test_parse_all_events_handles_empty():
     result = parse_all_events([], match_id=99)
-    assert result == {"shots": [], "passes": [], "carries": [], "defensive_actions": []}
+    assert result == {
+        "shots": [], "passes": [], "carries": [],
+        "defensive_actions": [], "fouls": [],
+    }
 
 
 def test_pass_handles_missing_end_location():

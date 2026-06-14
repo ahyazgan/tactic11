@@ -2905,6 +2905,15 @@ def live_decision_endpoint(
             current_minute=current_minute,
         ))
 
+    # I.1 faul ritmi + hakem — ingest edilmiş faul event'leri varsa otomatik
+    if loaded.fouls:
+        from app.engine.foul_pressure import compute_foul_pressure
+        fouls_so_far = [f for f in loaded.fouls if f.minute <= current_minute]
+        _safe("foul_pressure", lambda: compute_foul_pressure(
+            my_team_id, opp_id, fouls_so_far,
+            current_minute=current_minute,
+        ))
+
     # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
     out.update(run_context_pipeline(
@@ -3104,14 +3113,23 @@ def foul_pressure_endpoint(
     home_id = match.home_team_external_id
     opp_id = (match.away_team_external_id if my_team_id == home_id else home_id)
     p = payload or {}
-    foul_events = p.get("foul_events", [])
     yellow_raw = p.get("player_yellow_cards", {}) or {}
-    yellow_states = {int(k): int(v) for k, v in yellow_raw.items()}
+    yellow_states = {int(k): int(v) for k, v in yellow_raw.items()} or None
+    # Önce payload — değilse ingest edilmiş foul'ları DB'den çek
+    foul_events: list = p.get("foul_events", [])
+    if not foul_events:
+        from app.data.loaders import load_match_events
+        loaded = load_match_events(session, match_id)
+        foul_events = [
+            f for f in loaded.fouls if f.minute <= current_minute
+        ]
+    # Payload'da total_yellows_match=0 verilmişse auto'ya bırak (None)
+    tym = total_yellows_match if total_yellows_match > 0 else None
     result = compute_foul_pressure(
         my_team_id, opp_id, foul_events,
         current_minute=current_minute, window_min=window_min,
         player_yellow_cards=yellow_states,
-        total_yellows_match=total_yellows_match,
+        total_yellows_match=tym,
     )
     return engine_result_to_dict(result)
 

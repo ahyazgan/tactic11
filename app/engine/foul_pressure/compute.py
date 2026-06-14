@@ -131,23 +131,47 @@ def _build_advice(
     return " · ".join(parts)
 
 
+def _ev_attrs(ev: Any) -> tuple[float, int, int | None, str | None]:
+    """FoulEvent veya dict event → (minute, team_id, player_id, card).
+
+    İki giriş şeklini destekle: domain.FoulEvent (typed) veya dict
+    (eski payload-based endpoint için backward compat).
+    """
+    if hasattr(ev, "team_external_id"):
+        return (
+            float(ev.minute),
+            int(ev.team_external_id),
+            int(ev.player_external_id) if ev.player_external_id else None,
+            ev.card,
+        )
+    minute = float(ev.get("minute", 0.0))
+    team_id = int(ev.get("team_id", 0))
+    pid = ev.get("player_id")
+    pid_i = int(pid) if pid is not None else None
+    card = ev.get("card")
+    return minute, team_id, pid_i, card
+
+
 def compute_foul_pressure(
     team_external_id: int,
     opponent_external_id: int,
-    foul_events: Iterable[dict[str, Any]],
+    foul_events: Iterable[Any],
     *,
     current_minute: float,
     window_min: float = DEFAULT_WINDOW_MIN,
     player_yellow_cards: dict[int, int] | None = None,
-    total_yellows_match: int = 0,
+    total_yellows_match: int | None = None,
 ) -> EngineResult[FoulPressureReport]:
     """Faul biriktirme + ritim kırma + hakem kart eşiği.
 
-    foul_events: [{minute: float, team_id: int, player_id?: int, x?: float}]
-    player_yellow_cards: {player_id: yellow_count} — bizim takım için
-    total_yellows_match: maçtaki toplam sarı sayısı (iki takım)
+    foul_events: FoulEvent listesi VEYA dict listesi
+                 [{minute, team_id, player_id?, card?}]
+    player_yellow_cards: {player_id: yellow_count} — verilmezse event'lerden türetilir
+    total_yellows_match: None verilirse event listesinden sayılır (otomatik)
     """
-    yellow_states = player_yellow_cards or {}
+    yellow_states = dict(player_yellow_cards or {})
+    auto_count_yellows = total_yellows_match is None
+    total_yellows = 0 if auto_count_yellows else int(total_yellows_match)
     window_lo = current_minute - window_min
 
     # Takım-düzeyi sayım
@@ -159,23 +183,28 @@ def compute_foul_pressure(
     our_player_fouls: dict[int, int] = {}
 
     for ev in foul_events:
-        minute = float(ev.get("minute", 0.0))
-        team_id = int(ev.get("team_id", 0))
+        minute, team_id, pid, card = _ev_attrs(ev)
         in_window = window_lo <= minute <= current_minute
+        # Kart sayımı (her iki takım) — auto mode'da event'lerden hesapla
+        if auto_count_yellows and card in ("yellow", "second_yellow", "red"):
+            total_yellows += 1
+        # Bizim takım oyuncusunun sarısını otomatik state'e ekle
+        if (team_id == team_external_id and pid is not None
+                and card in ("yellow", "second_yellow")
+                and pid not in (player_yellow_cards or {})):
+            yellow_states[pid] = yellow_states.get(pid, 0) + 1
 
         if team_id == team_external_id:
             our_fouls_total += 1
             if in_window:
                 our_fouls_window += 1
-            pid = ev.get("player_id")
             if pid is not None:
-                our_player_fouls[int(pid)] = (
-                    our_player_fouls.get(int(pid), 0) + 1
-                )
+                our_player_fouls[pid] = our_player_fouls.get(pid, 0) + 1
         elif team_id == opponent_external_id:
             opp_fouls_total += 1
             if in_window:
                 opp_fouls_window += 1
+    total_yellows_match = total_yellows
 
     our_rate = _rate_per_10min(our_fouls_window, window_min)
     opp_rate = _rate_per_10min(opp_fouls_window, window_min)

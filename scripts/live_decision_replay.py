@@ -166,11 +166,15 @@ def _tick_panel(
     if sf.involvement_state in ("starved", "well-fed"):
         print(f"               └ {sf.tactical_advice}")
 
-    # Faul/yellow event'leri ingest edilmediği için boş; engine yine de çağrılır
+    # I.1: ingest edilmiş faul event'lerini kullan (yoksa engine boşa çalışır)
+    fouls_so_far = [f for f in loaded.fouls if f.minute <= minute]
     fp = compute_foul_pressure(
-        my_team_id, opp_id, [], current_minute=minute,
+        my_team_id, opp_id, fouls_so_far, current_minute=minute,
     ).value
-    print(f"  Foul pres.   │ {fp.tactical_advice}")
+    print(f"  Foul pres.   │ {len(fouls_so_far)} faul "
+          f"(rakip:{fp.opp_fouls_window}/15dk, hakem:{fp.referee_card_pressure})")
+    if fp.tactical_fouling_alert or fp.our_high_foul_alert or fp.escalation_alert:
+        print(f"               └ {fp.tactical_advice}")
 
 
 def _run(

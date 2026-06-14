@@ -220,7 +220,7 @@ def test_foul_pressure_404(session, client):
 
 
 def test_foul_pressure_empty_payload(session, client):
-    """Payload yok → normal advice + 0 faul."""
+    """Payload yok + ingest edilmiş faul yok → normal advice + 0 faul."""
     _seed_match_events(session)
     r = client.post(
         "/admin/matches/9300/foul-pressure?my_team_id=11&current_minute=70",
@@ -230,6 +230,77 @@ def test_foul_pressure_empty_payload(session, client):
     assert v["our_fouls_total"] == 0
     assert v["opp_fouls_total"] == 0
     assert "normal" in v["tactical_advice"].lower()
+
+
+def test_foul_pressure_reads_ingested_fouls(session, client):
+    """Payload boş ama DB'de foul EventRow var → engine onları okur."""
+    _seed_match_events(session)
+    # 5 rakip faul + 1 sarı bizden
+    from datetime import UTC, datetime
+    now = datetime.now(UTC)
+    for i in range(5):
+        session.add(models.EventRow(
+            sport=football.SPORT_NAME, tenant_id="t-default",
+            source="statsbomb_open", source_event_id=f"foul-opp-{i}",
+            match_external_id=9300, team_external_id=22,
+            player_external_id=100 + i, event_type="foul",
+            minute=float(62 + i), period=2,
+            start_x=60.0, start_y=40.0, end_x=None, end_y=None,
+            outcome="foul", body_part=None, pattern=None,
+            possession_id=None, is_goal=None, key_pass=None,
+            raw_json=None, created_at=now,
+        ))
+    session.add(models.EventRow(
+        sport=football.SPORT_NAME, tenant_id="t-default",
+        source="statsbomb_open", source_event_id="foul-our-1",
+        match_external_id=9300, team_external_id=11,
+        player_external_id=200, event_type="foul",
+        minute=60.0, period=2,
+        start_x=60.0, start_y=40.0, end_x=None, end_y=None,
+        outcome="yellow", body_part=None, pattern=None,
+        possession_id=None, is_goal=None, key_pass=None,
+        raw_json=None, created_at=now,
+    ))
+    session.commit()
+    r = client.post(
+        "/admin/matches/9300/foul-pressure?my_team_id=11&current_minute=75",
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["opp_fouls_total"] == 5
+    assert v["our_fouls_total"] == 1
+    assert v["tactical_fouling_alert"] is True
+    # 1 sarı maçta → low (eşik moderate=4)
+    assert v["referee_card_pressure"] == "low"
+
+
+def test_live_decision_panel_includes_foul_pressure_when_ingested(session, client):
+    """Live decision panel ingest'lenmiş foul'ları otomatik içerir."""
+    _seed_match_events(session)
+    # 5 rakip foul ekle
+    from datetime import UTC, datetime
+    now = datetime.now(UTC)
+    for i in range(5):
+        session.add(models.EventRow(
+            sport=football.SPORT_NAME, tenant_id="t-default",
+            source="statsbomb_open", source_event_id=f"foul-{i}",
+            match_external_id=9300, team_external_id=22,
+            player_external_id=100, event_type="foul",
+            minute=float(62 + i), period=2,
+            start_x=60.0, start_y=40.0, end_x=None, end_y=None,
+            outcome="foul", body_part=None, pattern=None,
+            possession_id=None, is_goal=None, key_pass=None,
+            raw_json=None, created_at=now,
+        ))
+    session.commit()
+    r = client.get(
+        "/admin/matches/9300/live-decision"
+        "?my_team_id=11&current_minute=75",
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert "foul_pressure" in body
+    assert body["foul_pressure"]["opp_fouls_total"] == 5
 
 
 def test_star_feed_endpoint(session, client):

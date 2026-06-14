@@ -95,3 +95,29 @@ class PossessionSequence(BaseModel):
     ended_with_shot: bool = False
     ended_with_goal: bool = False
     start_zone: str | None = None  # "defensive_third" | "middle_third" | "attacking_third"
+
+
+CardColor = Literal["yellow", "second_yellow", "red"]
+
+
+class FoulEvent(BaseModel):
+    """Faul + kart eventi — foul_pressure + live_risk_monitor için ana girdi.
+
+    StatsBomb event-spec: type.id=22 (Foul Committed). foul.card varsa
+    kart bilgisi de ekli. Bir faul kart yokken de var olabilir.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    sport: str
+    match_external_id: int
+    player_external_id: int       # faulu yapan oyuncu
+    team_external_id: int          # faulu yapan takım
+    minute: float
+    period: int
+    x: float = Field(ge=0.0, le=100.0)
+    y: float = Field(ge=0.0, le=100.0)
+    card: CardColor | None = None  # None = sözel uyarı / sadece faul
+    advantage_played: bool = False  # hakem avantaj çalıştı mı
+    possession_id: int | None = None
+
