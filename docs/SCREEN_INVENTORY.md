@@ -55,15 +55,18 @@ kavramları (bkz. `FOOTBALL_GLOSSARY.md`).
 | 13 | Karar Takip | `/decisions/track` | **VAR** | İsabet (SVG rolling-N sparkline) + 4 summary kart + tablo (Tarih/Maç/Dk/Tip/Not/Güven/Öneri/Sonuç pill) + inline ✓/✗/○ pending mark |
 
 **Yeni endpointler:**
-- `GET /admin/matches/{id}/live-decision?my_team_id=...&current_minute=...&star_player_id=...` — 10 engine birleşik panel + context_engine primary/secondary
+- `GET /admin/matches/{id}/live-decision?my_team_id=...&current_minute=...&star_player_id=...` — 13 engine birleşik panel + context_engine primary/secondary
 - `GET /admin/matches/{id}/closing-strategy` — K kategorisi standalone
 - `GET /admin/matches/{id}/star-feed?star_player_id=X` — G.3 standalone
 - `POST /admin/matches/{id}/foul-pressure` — I.1 payload OR DB-fed
+- `GET /admin/matches/{id}/hot-hand` — G.2 sıcak el (loaded.shots × baseline)
+- `GET /admin/matches/{id}/set-piece-opportunity` — H.1 (corners+FK+fouls)
+- `POST /admin/referee/tendency` — J.1 hakem eğilimi (prior_matches payload)
 - `GET /admin/matches/with-events?limit=N` — match selector için ingest'li maçlar
 - `GET /admin/decisions/recent?limit=N&team_external_id=X` — track sayfası için summary + decisions
 - `POST /admin/decisions/{id}/outcome` — inline outcome mark
 
-**Yeni engine'ler:** `closing_strategy` (K), `foul_pressure` (I.1), `star_feed` (G.3) — hepsi pure compute + audit + EngineResult.
+**Yeni engine'ler:** `closing_strategy` (K), `foul_pressure` (I.1), `star_feed` (G.3), `hot_hand` (G.2), `set_piece_opportunity` (H.1), `referee_tendency` (J.1) — hepsi pure compute + audit + EngineResult.
 
 **Veri ingest:** StatsBomb event type=22 (Foul Committed) + type=24 (Bad Behaviour) artık parse'lanıyor. dev_seed eski demo.db'lerde foul backfill yapıyor (idempotent re-ingest).
 
