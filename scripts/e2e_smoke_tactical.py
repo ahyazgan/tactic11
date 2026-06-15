@@ -149,6 +149,15 @@ def main() -> int:
                 {"player_id": 2, "name": "B", "kpis": {"rating": 6.5, "xt": 0.3}},
             ],
         }, lambda v: v["winner_name"] == "A"),
+        ("/admin/performance/clutch", {
+            "samples": [
+                {"match_id": 1, "rating": 6.0, "flags": {}},
+                {"match_id": 2, "rating": 6.2, "flags": {}},
+                {"match_id": 3, "rating": 8.5, "flags": {"big_match": True}},
+                {"match_id": 4, "rating": 8.6, "flags": {"big_match": True}},
+                {"match_id": 5, "rating": 8.7, "flags": {"big_match": True}},
+            ],
+        }, lambda v: v["label"] == "clutch"),
         ("/admin/performance/anomaly", {
             "points": [
                 {"match_id": 1, "rating": 7.5},

@@ -23,6 +23,30 @@ interface ConsistencyResult {
   };
 }
 
+interface SituationBreakdown {
+  dimension: string;
+  n_in: number;
+  n_out: number;
+  mean_in: number;
+  mean_out: number;
+  factor: number;
+  delta: number;
+}
+
+interface ClutchResult {
+  value: {
+    sample_count: number;
+    overall_mean: number;
+    clutch_mean: number;
+    clutch_factor: number;
+    label: string;
+    per_situation: SituationBreakdown[];
+    strongest_clutch: string | null;
+    weakest_clutch: string | null;
+    summary: string;
+  };
+}
+
 interface AnomalyEvent {
   type: string;
   match_id_seen: number;
@@ -152,6 +176,21 @@ function parseSeries(input: string): number[] {
     .filter((v) => !Number.isNaN(v));
 }
 
+const CLUTCH_PRESET = JSON.stringify(
+  [
+    { match_id: 1, rating: 7.0, flags: {} },
+    { match_id: 2, rating: 7.1, flags: {} },
+    { match_id: 3, rating: 6.8, flags: { close_game: true } },
+    { match_id: 4, rating: 8.5, flags: { big_match: true } },
+    { match_id: 5, rating: 8.7, flags: { big_match: true, knockout: true } },
+    { match_id: 6, rating: 8.6, flags: { big_match: true, close_game: true } },
+    { match_id: 7, rating: 7.2, flags: {} },
+    { match_id: 8, rating: 7.0, flags: { late_minute: true } },
+  ],
+  null,
+  2,
+);
+
 const TEAM_PRESET = JSON.stringify(
   [
     { player_id: 1, name: "Forvet A", ratings: [7.4, 7.6, 7.8, 8.0, 8.2] },
@@ -197,6 +236,27 @@ export default function PerformansPage() {
 
   const [anomaly, setAnomaly] = useState<AnomalyResult | null>(null);
   const [anomalyLoading, setAnomalyLoading] = useState(false);
+
+  const [clutchJson, setClutchJson] = useState(CLUTCH_PRESET);
+  const [clutch, setClutch] = useState<ClutchResult | null>(null);
+  const [clutchLoading, setClutchLoading] = useState(false);
+  const [clutchErr, setClutchErr] = useState<string | null>(null);
+
+  async function runClutch() {
+    setClutchErr(null);
+    setClutchLoading(true);
+    try {
+      const samples = JSON.parse(clutchJson);
+      const res = await apiFetch<ClutchResult>("/admin/performance/clutch", {
+        method: "POST", body: JSON.stringify({ samples }),
+      });
+      setClutch(res);
+    } catch (e) {
+      setClutchErr(String(e));
+    } finally {
+      setClutchLoading(false);
+    }
+  }
 
   const values = useMemo(() => parseSeries(seriesText), [seriesText]);
 
@@ -484,7 +544,114 @@ export default function PerformansPage() {
         </Panel>
       )}
 
-      <Panel title="5. Kadro Formu (engine.team_form_health — R)">
+      <Panel title="5. Clutch Performans (engine.clutch_performance — T)">
+        <label className="flex flex-col text-xs mb-3">
+          <span className="text-muted mb-1">
+            Maç örnekleri (JSON — rating + önem flag'ları: big_match,
+            close_game, late_minute, knockout, opp_strong)
+          </span>
+          <textarea
+            rows={8}
+            className="bg-bg border border-border rounded px-2 py-1 text-xs font-mono"
+            value={clutchJson}
+            onChange={(e) => setClutchJson(e.target.value)}
+          />
+        </label>
+        <button
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          onClick={runClutch}
+          disabled={clutchLoading}
+        >
+          {clutchLoading ? "Hesaplanıyor…" : "Clutch hesapla"}
+        </button>
+        {clutchErr && <p className="text-bad text-sm mt-2">{clutchErr}</p>}
+
+        {clutch && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <StatTile label="Genel mean" value={clutch.value.overall_mean.toFixed(2)} />
+              <StatTile label="Kritik mean" value={clutch.value.clutch_mean.toFixed(2)} />
+              <StatTile
+                label="Clutch factor"
+                value={clutch.value.clutch_factor.toFixed(2)}
+                delta={clutch.value.clutch_factor - 1.0}
+              />
+              <StatTile label="Örnek" value={String(clutch.value.sample_count)} />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs uppercase text-muted">Etiket:</span>
+              <Pill
+                variant={
+                  clutch.value.label === "clutch"
+                    ? "win"
+                    : clutch.value.label === "chokes"
+                    ? "loss"
+                    : "neutral"
+                }
+              >
+                {clutch.value.label.toUpperCase()}
+              </Pill>
+            </div>
+
+            <p className="text-sm">{clutch.value.summary}</p>
+
+            {clutch.value.strongest_clutch && (
+              <p className="text-xs">
+                <span className="text-muted">En güçlü boyut:</span>{" "}
+                <span className="text-good font-semibold">{clutch.value.strongest_clutch}</span>
+              </p>
+            )}
+            {clutch.value.weakest_clutch && (
+              <p className="text-xs">
+                <span className="text-muted">En zayıf boyut:</span>{" "}
+                <span className="text-bad font-semibold">{clutch.value.weakest_clutch}</span>
+              </p>
+            )}
+
+            {clutch.value.per_situation.length > 0 && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs border border-border">
+                  <thead className="bg-surface2">
+                    <tr>
+                      <th className="p-2 text-left">Boyut</th>
+                      <th className="p-2 text-right">n in</th>
+                      <th className="p-2 text-right">n out</th>
+                      <th className="p-2 text-right">Mean in</th>
+                      <th className="p-2 text-right">Mean out</th>
+                      <th className="p-2 text-right">Factor</th>
+                      <th className="p-2 text-right">Δ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clutch.value.per_situation.map((b) => (
+                      <tr key={b.dimension} className="border-t border-border">
+                        <td className="p-2 font-mono">{b.dimension}</td>
+                        <td className="p-2 text-right tabular-nums">{b.n_in}</td>
+                        <td className="p-2 text-right tabular-nums">{b.n_out}</td>
+                        <td className="p-2 text-right tabular-nums">{b.mean_in.toFixed(2)}</td>
+                        <td className="p-2 text-right tabular-nums">{b.mean_out.toFixed(2)}</td>
+                        <td
+                          className={`p-2 text-right tabular-nums ${b.factor >= 1.10 ? "text-good" : b.factor < 0.95 ? "text-bad" : ""}`}
+                        >
+                          {b.factor.toFixed(2)}
+                        </td>
+                        <td
+                          className={`p-2 text-right tabular-nums ${b.delta > 0 ? "text-good" : b.delta < 0 ? "text-bad" : ""}`}
+                        >
+                          {b.delta > 0 ? "+" : ""}
+                          {b.delta.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </Panel>
+
+      <Panel title="6. Kadro Formu (engine.team_form_health — R)">
         <label className="flex flex-col text-xs mb-3">
           <span className="text-muted mb-1">
             Oyuncular (JSON — her oyuncunun rating serisi)
@@ -607,7 +774,7 @@ export default function PerformansPage() {
         )}
       </Panel>
 
-      <Panel title="6. Karşılaştırma (engine.player_comparison)">
+      <Panel title="7. Karşılaştırma (engine.player_comparison)">
         <label className="flex flex-col text-xs mb-3">
           <span className="text-muted mb-1">Oyuncular (JSON — 2-6 oyuncu)</span>
           <textarea

@@ -3772,6 +3772,34 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/performance/clutch",
+    tags=["admin"],
+    summary="Oyuncu clutch performans (kritik anlarda performans katsayısı)",
+)
+def performance_clutch_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {samples: [{match_id, rating, flags: {big_match, close_game,
+                  late_minute, knockout, opp_strong}}, ...]}.
+    """
+    from app.engine.clutch_performance import (
+        ClutchSample,
+        compute_clutch_performance,
+    )
+
+    raw = payload.get("samples", []) or []
+    samples = [
+        ClutchSample(
+            match_id=int(s.get("match_id", 0)),
+            rating=float(s.get("rating", 0.0)),
+            flags={k: bool(v) for k, v in (s.get("flags") or {}).items()},
+        )
+        for s in raw
+    ]
+    return engine_result_to_dict(compute_clutch_performance(samples))
+
+
+@router.post(
     "/performance/anomaly",
     tags=["admin"],
     summary="Oyuncu performans anomali tespiti (sakatlık/fatigue erken uyarı)",
