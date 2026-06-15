@@ -20,6 +20,33 @@ interface ConsistencyResult {
   };
 }
 
+interface PlayerSnapshot {
+  player_id: number;
+  name: string;
+  mean_rating: number;
+  consistency_label: string;
+  direction: string;
+  reliability: number;
+  z_recent_5: number;
+}
+
+interface TeamFormResult {
+  value: {
+    player_count: number;
+    team_avg_rating: number;
+    team_health_score: number;
+    pct_improving: number;
+    pct_declining: number;
+    pct_stable: number;
+    pct_high_consistency: number;
+    pct_volatile: number;
+    snapshots: PlayerSnapshot[];
+    top_performers: PlayerSnapshot[];
+    concerns: PlayerSnapshot[];
+    summary: string;
+  };
+}
+
 interface ComparisonResult {
   value: {
     player_count: number;
@@ -101,6 +128,19 @@ function parseSeries(input: string): number[] {
     .filter((v) => !Number.isNaN(v));
 }
 
+const TEAM_PRESET = JSON.stringify(
+  [
+    { player_id: 1, name: "Forvet A", ratings: [7.4, 7.6, 7.8, 8.0, 8.2] },
+    { player_id: 2, name: "Forvet B", ratings: [6.5, 6.7, 6.9, 7.0, 7.0] },
+    { player_id: 3, name: "Orta saha", ratings: [7.0, 7.0, 7.0, 7.0, 7.0] },
+    { player_id: 4, name: "Defans A", ratings: [7.5, 7.3, 7.0, 6.7, 6.4] },
+    { player_id: 5, name: "Defans B", ratings: [5.8, 5.6, 5.4, 5.2, 5.0] },
+    { player_id: 6, name: "Kanat", ratings: [6.0, 8.0, 5.0, 9.0, 6.0] },
+  ],
+  null,
+  2,
+);
+
 const COMPARE_PRESET = JSON.stringify(
   [
     { player_id: 1, name: "Striker A",
@@ -126,7 +166,28 @@ export default function PerformansPage() {
   const [compareLoading, setCompareLoading] = useState(false);
   const [compareErr, setCompareErr] = useState<string | null>(null);
 
+  const [teamJson, setTeamJson] = useState(TEAM_PRESET);
+  const [teamForm, setTeamForm] = useState<TeamFormResult | null>(null);
+  const [teamLoading, setTeamLoading] = useState(false);
+  const [teamErr, setTeamErr] = useState<string | null>(null);
+
   const values = useMemo(() => parseSeries(seriesText), [seriesText]);
+
+  async function runTeamForm() {
+    setTeamErr(null);
+    setTeamLoading(true);
+    try {
+      const players = JSON.parse(teamJson);
+      const res = await apiFetch<TeamFormResult>("/admin/performance/team-form-health", {
+        method: "POST", body: JSON.stringify({ players }),
+      });
+      setTeamForm(res);
+    } catch (e) {
+      setTeamErr(String(e));
+    } finally {
+      setTeamLoading(false);
+    }
+  }
 
   async function runComparison() {
     setCompareErr(null);
@@ -325,7 +386,125 @@ export default function PerformansPage() {
         </Panel>
       )}
 
-      <Panel title="4. Karşılaştırma (engine.player_comparison)">
+      <Panel title="4. Kadro Formu (engine.team_form_health — R)">
+        <label className="flex flex-col text-xs mb-3">
+          <span className="text-muted mb-1">
+            Oyuncular (JSON — her oyuncunun rating serisi)
+          </span>
+          <textarea
+            rows={10}
+            className="bg-bg border border-border rounded px-2 py-1 text-xs font-mono"
+            value={teamJson}
+            onChange={(e) => setTeamJson(e.target.value)}
+          />
+        </label>
+        <button
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          onClick={runTeamForm}
+          disabled={teamLoading}
+        >
+          {teamLoading ? "Hesaplanıyor…" : "Kadro formu hesapla"}
+        </button>
+        {teamErr && <p className="text-bad text-sm mt-2">{teamErr}</p>}
+
+        {teamForm && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <StatTile
+                label="Health"
+                value={`${teamForm.value.team_health_score.toFixed(0)}/100`}
+              />
+              <StatTile label="Avg rating" value={teamForm.value.team_avg_rating.toFixed(2)} />
+              <StatTile label="Oyuncu" value={String(teamForm.value.player_count)} />
+              <StatTile
+                label="% Yükselişte"
+                value={`${teamForm.value.pct_improving.toFixed(0)}%`}
+              />
+              <StatTile
+                label="% Düşüşte"
+                value={`${teamForm.value.pct_declining.toFixed(0)}%`}
+              />
+              <StatTile
+                label="% Sabit"
+                value={`${teamForm.value.pct_stable.toFixed(0)}%`}
+              />
+              <StatTile
+                label="% Tutarlı"
+                value={`${teamForm.value.pct_high_consistency.toFixed(0)}%`}
+              />
+              <StatTile
+                label="% Değişken"
+                value={`${teamForm.value.pct_volatile.toFixed(0)}%`}
+              />
+            </div>
+
+            <p className="text-sm">{teamForm.value.summary}</p>
+
+            {teamForm.value.top_performers.length > 0 && (
+              <div>
+                <div className="text-xs uppercase text-muted mb-1">Top Performans</div>
+                <div className="flex flex-wrap gap-2">
+                  {teamForm.value.top_performers.map((p) => (
+                    <Pill key={p.player_id} variant="win">
+                      {p.name} · {p.reliability.toFixed(0)}
+                    </Pill>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {teamForm.value.concerns.length > 0 && (
+              <div>
+                <div className="text-xs uppercase text-muted mb-1">Endişeli oyuncular</div>
+                <div className="flex flex-wrap gap-2">
+                  {teamForm.value.concerns.map((p) => (
+                    <Pill key={p.player_id} variant="loss">
+                      {p.name} · düşüşte ({p.reliability.toFixed(0)})
+                    </Pill>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border border-border">
+                <thead className="bg-surface2">
+                  <tr>
+                    <th className="p-2 text-left">Oyuncu</th>
+                    <th className="p-2 text-right">Mean</th>
+                    <th className="p-2 text-left">Tutarlılık</th>
+                    <th className="p-2 text-left">Yön</th>
+                    <th className="p-2 text-right">Reliability</th>
+                    <th className="p-2 text-right">Son 5 z</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teamForm.value.snapshots.map((s) => (
+                    <tr key={s.player_id} className="border-t border-border">
+                      <td className="p-2 font-semibold">{s.name}</td>
+                      <td className="p-2 text-right tabular-nums">{s.mean_rating.toFixed(2)}</td>
+                      <td className="p-2">
+                        <Pill variant={LABEL_VARIANT[s.consistency_label] || "neutral"}>
+                          {s.consistency_label}
+                        </Pill>
+                      </td>
+                      <td className="p-2">
+                        <Pill variant={DIRECTION_VARIANT[s.direction] || "neutral"}>
+                          {s.direction}
+                        </Pill>
+                      </td>
+                      <td className="p-2 text-right tabular-nums">{s.reliability.toFixed(0)}</td>
+                      <td className="p-2 text-right tabular-nums">{s.z_recent_5.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </Panel>
+
+      <Panel title="5. Karşılaştırma (engine.player_comparison)">
         <label className="flex flex-col text-xs mb-3">
           <span className="text-muted mb-1">Oyuncular (JSON — 2-6 oyuncu)</span>
           <textarea

@@ -3772,6 +3772,35 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/performance/team-form-health",
+    tags=["admin"],
+    summary="Takım kadro formu — O+P aggregate, health 0-100",
+)
+def team_form_health_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {players: [{player_id, name, ratings: [7.0, ...],
+                  position_group?}, ...]}.
+    """
+    from app.engine.team_form_health import (
+        PlayerSeries,
+        compute_team_form_health,
+    )
+
+    raw = payload.get("players", []) or []
+    series = [
+        PlayerSeries(
+            player_id=int(p.get("player_id", 0)),
+            name=str(p.get("name", "")),
+            ratings=tuple(float(r) for r in (p.get("ratings") or [])),
+            position_group=str(p.get("position_group", "")),
+        )
+        for p in raw
+    ]
+    return engine_result_to_dict(compute_team_form_health(series))
+
+
+@router.post(
     "/performance/comparison",
     tags=["admin"],
     summary="Multi-oyuncu KPI karşılaştırma (radar + ranking + winner)",
