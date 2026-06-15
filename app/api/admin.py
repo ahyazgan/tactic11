@@ -3772,6 +3772,43 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/tactical/opportunity-window",
+    tags=["admin"],
+    summary="Maç-içi snapshot serisinden 'şimdi hamle yap' pencereleri",
+)
+def opportunity_window_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {snapshots: [{minute, our_press_intensity?, opp_press_intensity?,
+                              opp_distance_covered?, opp_sub_count_used?,
+                              opp_yellow_count?, opp_red_imminent?,
+                              our_xg_recent_5min?, opp_xg_recent_5min?}, ...]}
+    """
+    from app.engine.opportunity_window import (
+        TacticalSnapshot,
+        compute_opportunity_windows,
+    )
+
+    raw = payload.get("snapshots", []) or []
+    snaps = [
+        TacticalSnapshot(
+            minute=float(s.get("minute", 0)),
+            our_press_intensity=float(s.get("our_press_intensity", 0.5)),
+            opp_press_intensity=float(s.get("opp_press_intensity", 0.5)),
+            opp_distance_covered=float(s.get("opp_distance_covered", 0.7)),
+            opp_sub_count_used=int(s.get("opp_sub_count_used", 0)),
+            opp_yellow_count=int(s.get("opp_yellow_count", 0)),
+            opp_red_imminent=bool(s.get("opp_red_imminent", False)),
+            our_xg_recent_5min=float(s.get("our_xg_recent_5min", 0.0)),
+            opp_xg_recent_5min=float(s.get("opp_xg_recent_5min", 0.0)),
+        )
+        for s in raw
+    ]
+    result = compute_opportunity_windows(snaps)
+    return engine_result_to_dict(result)
+
+
+@router.post(
     "/tactical/threat-pathway",
     tags=["admin"],
     summary="Pas/atak akışından lane bazlı tehlike haritası + advice",
