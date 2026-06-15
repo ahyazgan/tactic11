@@ -3772,6 +3772,58 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/performance/consistency",
+    tags=["admin"],
+    summary="Oyuncu rating tutarlılığı (mean, sd, cv, reliability)",
+)
+def performance_consistency_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {samples: [{match_id, value, minute_played?}, ...]}."""
+    from app.engine.performance_consistency import (
+        PerformanceSample,
+        compute_performance_consistency,
+    )
+
+    raw = payload.get("samples", []) or []
+    samples = [
+        PerformanceSample(
+            match_id=int(s.get("match_id", 0)),
+            value=float(s.get("value", 0.0)),
+            minute_played=float(s.get("minute_played", 90.0)),
+        )
+        for s in raw
+    ]
+    return engine_result_to_dict(compute_performance_consistency(samples))
+
+
+@router.post(
+    "/performance/trajectory",
+    tags=["admin"],
+    summary="Oyuncu performans yönü (slope + projeksiyon + peak/dip)",
+)
+def performance_trajectory_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {points: [{match_id, value, game_index}, ...]}."""
+    from app.engine.performance_trajectory import (
+        TrajectoryPoint,
+        compute_performance_trajectory,
+    )
+
+    raw = payload.get("points", []) or []
+    points = [
+        TrajectoryPoint(
+            match_id=int(p.get("match_id", 0)),
+            value=float(p.get("value", 0.0)),
+            game_index=int(p.get("game_index", i)),
+        )
+        for i, p in enumerate(raw)
+    ]
+    return engine_result_to_dict(compute_performance_trajectory(points))
+
+
+@router.post(
     "/tactical/in-match-decision",
     tags=["admin"],
     summary="Anlık maç durumundan TD için sıralı karar listesi",
