@@ -348,3 +348,66 @@ def stub_match_preview(home_team_id: int, away_team_id: int) -> str:
         f"[stub:match_preview] {home_team_id} vs {away_team_id} — "
         "ANTHROPIC_API_KEY tanımlı değil."
     )
+
+
+def stub_live_digest(
+    *, match_id: int, current_minute: float, score: str,
+    primary_headline: str | None,
+) -> str:
+    """Maç-içi snapshot için stub brief (no api key)."""
+    if not primary_headline:
+        return (
+            f"[stub:live_digest] {match_id} · {current_minute:.0f}' · {score} — "
+            "İzleme modu, net aksiyon yok."
+        )
+    return (
+        f"[stub:live_digest] {match_id} · {current_minute:.0f}' · {score} — "
+        f"ŞİMDİ: {primary_headline}"
+    )
+
+
+def build_live_digest_prompt(
+    snapshot: dict[str, object], *, match_id: int,
+    current_minute: float, score: str,
+) -> str:
+    """Snapshot dict → AI prompt'u (TR brief için)."""
+    ctx = snapshot.get("context") or {}
+    primary = (ctx.get("primary") or {}) if isinstance(ctx, dict) else {}
+    secondary = (ctx.get("secondary") or []) if isinstance(ctx, dict) else []
+    mom = snapshot.get("momentum") or {}
+    closing = snapshot.get("closing_strategy") or {}
+    fp = snapshot.get("foul_pressure") or {}
+    sf = snapshot.get("star_feed") or {}
+
+    parts = [
+        f"Maç {match_id} · {current_minute:.0f}. dakika · skor {score}.",
+        "",
+        f"ORKESTRA PRİMARİ: {primary.get('headline') or '(yok)'}",
+        f"  tema: {primary.get('theme_label', '—')} · "
+        f"güven: {primary.get('confidence_label', '—')} ({primary.get('confidence', 0)})",
+        f"  gerekçe: {primary.get('rationale', '—')}",
+        "",
+        f"İKİNCİL ({len(secondary)}):",
+    ]
+    for s in (secondary[:3] if isinstance(secondary, list) else []):
+        if isinstance(s, dict):
+            parts.append(
+                f"  - [{s.get('theme_label', '?')}] {s.get('headline', '—')}",
+            )
+    parts.extend([
+        "",
+        "HAM SİNYALLER:",
+        f"  momentum: {mom.get('holder', '?')} ({mom.get('score', 0)}); "
+        f"press_breaking={mom.get('press_breaking', False)}",
+        f"  kapanış: {closing.get('key_message', '—')}",
+        f"  faul/hakem: {fp.get('tactical_advice', '—')}",
+        f"  yıldız: {sf.get('involvement_state', '—')} "
+        f"({sf.get('pass_share_pct', 0)}% pas)",
+        "",
+        "GÖREVİN: Bu snapshot'tan 2-3 cümlelik Türkçe maç-içi brief üret. "
+        "Önce ana karar (TD ne yapmalı), sonra gerekçe (hangi sinyallerin "
+        "çakıştığı), son olarak risk/uyarı (varsa). Sayıları mümkünse "
+        "kelimeyle ifade et (örn. %78 → 'yüksek güvenle'). Bullet kullanma, "
+        "akıcı paragraf.",
+    ])
+    return "\n".join(parts)

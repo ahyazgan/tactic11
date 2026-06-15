@@ -98,6 +98,21 @@ interface LiveDecisionResponse {
 // Demo veri (DEMO_MODE on)
 // --------------------------------------------------------------------------- //
 
+function demoLiveBrief(minute: number, primaryHeadline: string | null): string {
+  if (!primaryHeadline) {
+    return (
+      `[demo] ${Math.floor(minute)}. dakika · skor 1-1. İzleme modunda — `
+      + "net bir aksiyon yok, planı koruyup momentumu izlemeye devam et."
+    );
+  }
+  return (
+    `[demo] ${Math.floor(minute)}. dakika · skor 1-1 · ${primaryHeadline}. `
+    + "Karar 3 farklı sinyalin aynı anda işaret etmesinden geliyor; "
+    + "güven yüksek (~%78). Uygulamadan önce sahaya bak: fiziksel "
+    + "uyarısı veya pozisyon çakışması var mı kontrol et."
+  );
+}
+
 function demoSnapshot(minute: number): LiveDecisionResponse {
   // Replay senaryo: 60'a kadar normal → 70+ momentum opp + pres breaking
   // → 75+ closing high urgency + foul tactical → 85+ critical + take_risk
@@ -311,6 +326,37 @@ function Scoreboard({
         padding: "4px 18px", fontSize: 9.5, color: "var(--muted)",
         textTransform: "uppercase", letterSpacing: 0.5 }}>
         <span>Biz baskın</span><span>Momentum</span><span>Rakip baskın</span>
+      </div>
+    </div>
+  );
+}
+
+function AiBriefPanel({ brief }: { brief: string | null | undefined }) {
+  if (!brief) return null;
+  const isStub = brief.startsWith("[stub:") || brief.startsWith("[demo]");
+  return (
+    <div className="rc" style={{
+      marginBottom: 16, padding: "12px 16px",
+      borderLeft: "3px solid var(--accent)",
+      background: "var(--panel)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8,
+        marginBottom: 8 }}>
+        <span style={{ fontSize: 14 }}>🤖</span>
+        <h3 style={{ fontSize: 11.5, textTransform: "uppercase",
+          letterSpacing: 0.7, color: "var(--muted)", margin: 0,
+          fontWeight: 700 }}>AI maç-içi brief</h3>
+        {isStub && (
+          <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--dim)",
+            textTransform: "uppercase", letterSpacing: 0.5 }}>
+            stub
+          </span>
+        )}
+      </div>
+      <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.6,
+        fontStyle: isStub ? "italic" : "normal",
+        opacity: isStub ? 0.85 : 1 }}>
+        {brief}
       </div>
     </div>
   );
@@ -883,6 +929,13 @@ function TimelineStrip({
 // Sayfa
 // --------------------------------------------------------------------------- //
 
+interface LiveDigest {
+  ai_brief: string;
+  primary_headline: string | null;
+  current_minute: number;
+  score: string;
+}
+
 interface ClipMeta {
   clip_id: string;
   video_url: string | null;
@@ -931,7 +984,22 @@ export default function LiveDecisionPage() {
     },
   );
 
+  // AI brief (LiveDecisionDigestAgent) — primary değişince yeniden çağrılır
+  const digestPath = !DEMO_MODE
+    ? `/admin/matches/${matchId}/live-digest`
+      + `?my_team_id=${teamId}&current_minute=${minute}&star_player_id=${starId}`
+    : null;
+  const { data: digestData } = useSWR<{ output: LiveDigest }>(
+    digestPath, apiFetch, {
+      revalidateOnFocus: false, shouldRetryOnError: false,
+      refreshInterval: liveMode ? LIVE_REFRESH_MS : 0,
+    },
+  );
+
   const data = DEMO_MODE ? demoSnapshot(minute) : liveData;
+  const aiBrief = DEMO_MODE
+    ? demoLiveBrief(minute, data?.context?.primary?.headline ?? null)
+    : digestData?.output?.ai_brief;
 
   // ▶ Replay otomasyonu — REPLAY_TICK_MS aralıkla dakika ilerletir
   useEffect(() => {
@@ -1253,6 +1321,7 @@ export default function LiveDecisionPage() {
         applyState={applyState}
         onWatchClip={data?.context?.primary ? handleWatchClip : undefined}
       />
+      <AiBriefPanel brief={aiBrief} />
       {clipOpen && clipMeta && (
         <ClipModal
           meta={clipMeta}
