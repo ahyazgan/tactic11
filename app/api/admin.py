@@ -3604,6 +3604,50 @@ def return_to_play_plan_endpoint(
 
 
 @router.post(
+    "/teams/{team_id}/style-fingerprint",
+    tags=["admin"],
+    summary="Takım 8-vektör taktik kimlik (cosine arketip eşleme)",
+)
+def style_fingerprint_endpoint(
+    team_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Son N maç stat'ından 8-vektör → en yakın arketip.
+
+    payload: {
+        "stats": [
+            {"ppda": float, "field_tilt_pct": float, "direct_play_pct": float,
+             "counter_threat": float, "set_piece_share_pct": float,
+             "width_pct": float, "high_line_risk": float, "press_height": float}
+        ]
+    }
+    """
+    from app.engine.style_fingerprint import (
+        TeamMatchStat,
+        compute_style_fingerprint,
+    )
+
+    raw = payload.get("stats", []) or []
+    stats = [
+        TeamMatchStat(
+            ppda=float(s.get("ppda", 12)),
+            field_tilt_pct=float(s.get("field_tilt_pct", 50)),
+            direct_play_pct=float(s.get("direct_play_pct", 22)),
+            counter_threat=float(s.get("counter_threat", 0.35)),
+            set_piece_share_pct=float(s.get("set_piece_share_pct", 20)),
+            width_pct=float(s.get("width_pct", 55)),
+            high_line_risk=float(s.get("high_line_risk", 0.4)),
+            press_height=float(s.get("press_height", 0.5)),
+        )
+        for s in raw
+    ]
+    result = compute_style_fingerprint(stats)
+    body = engine_result_to_dict(result)
+    body["team_id"] = team_id
+    return body
+
+
+@router.post(
     "/tactical/concepts",
     tags=["admin"],
     summary="Aktif taktiksel konseptler — snapshot içinden tespit",
