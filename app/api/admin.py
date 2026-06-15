@@ -3771,6 +3771,195 @@ def list_formations_endpoint() -> dict[str, Any]:
     }
 
 
+# --------------------------------------------------------------------------- #
+# Maçı Notla — manuel oyuncu notu kaydı + performans serisi
+# --------------------------------------------------------------------------- #
+
+
+@router.post(
+    "/ratings/match",
+    tags=["admin"],
+    summary="Bir maçın oyuncu notlarını kaydet (Maçı Notla — idempotent upsert)",
+)
+def save_match_ratings_endpoint(
+    payload: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """payload: {
+        match_external_id: int,
+        kickoff?: ISO datetime,
+        ratings: [{player_external_id, rating, minute_played?, opp_rating?,
+                   fatigue_proxy?, flags?: {big_match,...}, note?}, ...]
+    }
+    """
+    from datetime import datetime as _dt
+
+    from app.ratings.service import RatingInput, save_match_ratings
+
+    match_id = payload.get("match_external_id")
+    if match_id is None:
+        raise HTTPException(status_code=422, detail="match_external_id zorunlu")
+    raw = payload.get("ratings", []) or []
+    ratings = [
+        RatingInput(
+            player_external_id=int(r["player_external_id"]),
+            rating=float(r.get("rating", 0.0)),
+            minute_played=float(r.get("minute_played", 90.0)),
+            opp_rating=(
+                float(r["opp_rating"]) if r.get("opp_rating") is not None else None
+            ),
+            fatigue_proxy=(
+                float(r["fatigue_proxy"])
+                if r.get("fatigue_proxy") is not None else None
+            ),
+            flags={k: bool(v) for k, v in (r.get("flags") or {}).items()} or None,
+            note=r.get("note"),
+        )
+        for r in raw
+    ]
+    kickoff = None
+    if payload.get("kickoff"):
+        kickoff = _dt.fromisoformat(str(payload["kickoff"]).replace("Z", "+00:00"))
+    result = save_match_ratings(
+        session, match_external_id=int(match_id),
+        ratings=ratings, kickoff=kickoff,
+    )
+    session.commit()
+    return {"match_external_id": int(match_id), **result, "total": len(ratings)}
+
+
+@router.get(
+    "/ratings/match/{match_id}",
+    tags=["admin"],
+    summary="Bir maçın kayıtlı oyuncu notları",
+)
+def get_match_ratings_endpoint(
+    match_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.ratings.service import list_match_ratings, rating_to_dict
+
+    rows = list_match_ratings(session, match_external_id=match_id)
+    return {
+        "match_external_id": match_id,
+        "ratings": [rating_to_dict(r) for r in rows],
+    }
+
+
+@router.get(
+    "/ratings/player/{player_id}",
+    tags=["admin"],
+    summary="Bir oyuncunun kayıtlı not serisi (kronolojik)",
+)
+def get_player_ratings_endpoint(
+    player_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.ratings.service import list_player_ratings, rating_to_dict
+
+    rows = list_player_ratings(session, player_external_id=player_id)
+    return {
+        "player_external_id": player_id,
+        "count": len(rows),
+        "ratings": [rating_to_dict(r) for r in rows],
+    }
+
+
+@router.get(
+    "/ratings/player/{player_id}/performance",
+    tags=["admin"],
+    summary="Kayıtlı seriden O+P+S+T+U motorlarını tek çağrıda çalıştır",
+)
+def player_performance_from_ratings_endpoint(
+    player_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Oyuncunun kayıtlı not serisini tüm performans motorlarına geçirir.
+
+    JSON yapıştırmaya gerek yok — Maçı Notla'da kaydedilen seri otomatik
+    consistency/trajectory/anomaly/clutch/opponent_adjusted'a beslenir.
+    """
+    from app.engine.clutch_performance import (
+        ClutchSample,
+        compute_clutch_performance,
+    )
+    from app.engine.opponent_adjusted_rating import (
+        PerformanceVsOpponent,
+        compute_opponent_adjusted_rating,
+    )
+    from app.engine.performance_anomaly import (
+        PerformancePoint,
+        compute_performance_anomaly,
+    )
+    from app.engine.performance_consistency import (
+        PerformanceSample,
+        compute_performance_consistency,
+    )
+    from app.engine.performance_trajectory import (
+        TrajectoryPoint,
+        compute_performance_trajectory,
+    )
+    from app.ratings.service import list_player_ratings
+
+    rows = list_player_ratings(session, player_external_id=player_id)
+    if not rows:
+        return {"player_external_id": player_id, "count": 0, "results": {}}
+
+    samples = [
+        PerformanceSample(match_id=r.match_external_id, value=r.rating)
+        for r in rows
+    ]
+    points = [
+        TrajectoryPoint(match_id=r.match_external_id, value=r.rating, game_index=i)
+        for i, r in enumerate(rows)
+    ]
+    anomaly_points = [
+        PerformancePoint(
+            match_id=r.match_external_id, rating=r.rating,
+            minute_played=r.minute_played, fatigue_proxy=r.fatigue_proxy,
+        )
+        for r in rows
+    ]
+    results: dict[str, Any] = {
+        "consistency": engine_result_to_dict(
+            compute_performance_consistency(samples),
+        ),
+        "trajectory": engine_result_to_dict(
+            compute_performance_trajectory(points),
+        ),
+        "anomaly": engine_result_to_dict(
+            compute_performance_anomaly(anomaly_points),
+        ),
+    }
+    import json as _json
+
+    clutch_samples = [
+        ClutchSample(
+            match_id=r.match_external_id, rating=r.rating,
+            flags=_json.loads(r.flags_json) if r.flags_json else {},
+        )
+        for r in rows
+    ]
+    results["clutch"] = engine_result_to_dict(
+        compute_clutch_performance(clutch_samples),
+    )
+    adj_samples = [
+        PerformanceVsOpponent(
+            match_id=r.match_external_id, rating=r.rating,
+            opp_rating=r.opp_rating if r.opp_rating is not None else 7.0,
+        )
+        for r in rows
+    ]
+    results["opponent_adjusted"] = engine_result_to_dict(
+        compute_opponent_adjusted_rating(adj_samples),
+    )
+    return {
+        "player_external_id": player_id,
+        "count": len(rows),
+        "results": results,
+    }
+
+
 @router.post(
     "/performance/opponent-adjusted-rating",
     tags=["admin"],

@@ -633,3 +633,58 @@ class Decision(Base):
     notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
     by_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PlayerMatchRating(Base):
+    """Analistin maç-sonrası verdiği 1-10 oyuncu notu (manuel giriş).
+
+    "Maçı Notla" ekranının kalıcı kaydı. Tüm performans motorlarını
+    (consistency/trajectory/anomaly/clutch/opponent_adjusted/team_form_health)
+    bu seriden besler — event/tracking verisi olmadan da çalışır.
+
+    Idempotency: aynı (tenant, sport, match, player) yeniden notlanırsa
+    yeni satır yok; rating + bağlam + updated_at güncellenir.
+
+    Maç bağlamı (opp_rating, flags) her oyuncu satırında denormalize tutulur;
+    böylece tek oyuncu sorgusu maç bağlamını da getirir (join'siz).
+    """
+
+    __tablename__ = "player_match_ratings"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id", "sport", "match_external_id", "player_external_id",
+            name="uq_player_match_rating_unique",
+        ),
+        Index(
+            "ix_player_match_rating_player",
+            "tenant_id", "sport", "player_external_id",
+        ),
+        Index(
+            "ix_player_match_rating_match",
+            "tenant_id", "sport", "match_external_id",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"),
+    )
+    sport: Mapped[str] = mapped_column(String(32))
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    player_external_id: Mapped[int] = mapped_column(Integer)
+    # Kronolojik sıralama için maç tarihi (anomaly/trajectory game_index)
+    kickoff: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+    )
+    rating: Mapped[float] = mapped_column(Float)            # 1..10
+    minute_played: Mapped[float] = mapped_column(Float, default=90.0)
+    # opponent_adjusted_rating (U) için rakip kompozit rating
+    opp_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # performance_anomaly (S) için yorgunluk proxy 0..1
+    fatigue_proxy: Mapped[float | None] = mapped_column(Float, nullable=True)
+    # clutch_performance (T) için maç bağlam flag'ları (JSON)
+    flags_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    note: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    by_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
