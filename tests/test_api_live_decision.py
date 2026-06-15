@@ -308,6 +308,24 @@ def test_set_piece_opportunity_endpoint(session, client):
     assert "tactical_advice" in v
 
 
+def test_return_to_play_endpoint(client):
+    r = client.post(
+        "/admin/players/7/return-to-play",
+        json={"tests": [
+            {"test_name": "cmj", "current": 38.0, "pre_injury_baseline": 40.0},
+            {"test_name": "sprint10", "current": 1.78,
+             "pre_injury_baseline": 1.75, "higher_is_better": False},
+            {"test_name": "y_balance", "current": 70.0,
+             "pre_injury_baseline": 100.0, "weight": 1.5},
+        ]},
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["phase"] in (1, 2, 3, 4, 5)
+    assert "advice" in v
+    assert v["test_count"] == 3
+
+
 def test_referee_tendency_endpoint(client):
     r = client.post(
         "/admin/referee/tendency",

@@ -3404,6 +3404,46 @@ def clip_for_decision_endpoint(
 
 
 @router.post(
+    "/players/{player_id}/return-to-play",
+    tags=["admin"],
+    summary="Çoklu test sentezli sakatlık-dönüşü plan (faz + dakika tavanı)",
+)
+def return_to_play_plan_endpoint(
+    player_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Multi-test RTP plan.
+
+    payload: {
+        "tests": [
+            {"test_name": str, "current": float,
+             "pre_injury_baseline": float,
+             "higher_is_better"?: bool (default True),
+             "weight"?: float (default 1.0)}
+        ]
+    }
+    """
+    from app.engine.return_to_play import (
+        TestResultInput,
+        compute_return_to_play_plan,
+    )
+
+    tests_raw = payload.get("tests", []) or []
+    tests = [
+        TestResultInput(
+            test_name=str(t.get("test_name", "")),
+            current=float(t.get("current", 0)),
+            pre_injury_baseline=float(t.get("pre_injury_baseline", 0)),
+            higher_is_better=bool(t.get("higher_is_better", True)),
+            weight=float(t.get("weight", 1.0)),
+        )
+        for t in tests_raw
+    ]
+    result = compute_return_to_play_plan(player_id, tests)
+    return engine_result_to_dict(result)
+
+
+@router.post(
     "/referee/tendency",
     tags=["admin"],
     summary="Hakem eğilim profili (J.1) — payload prior_matches",
