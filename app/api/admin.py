@@ -3404,6 +3404,57 @@ def clip_for_decision_endpoint(
 
 
 @router.post(
+    "/teams/{team_id}/congestion-risk",
+    tags=["admin"],
+    summary="Fikstür yoğunluğu skor (rest × travel × multi-comp)",
+)
+def congestion_risk_endpoint(
+    team_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Fikstür penceresi yoğunluk analizi.
+
+    payload: {
+        "window_days"?: int (default 28),
+        "fixtures": [
+            {"kickoff": "ISO datetime", "is_home": bool,
+             "competition": "league|cup|europa|champions",
+             "travel_km"?: float}
+        ]
+    }
+    """
+    from datetime import datetime as _dt
+
+    from app.engine.congestion_risk import (
+        FixtureItem,
+        compute_congestion_risk,
+    )
+
+    raw = payload.get("fixtures", []) or []
+    items: list[FixtureItem] = []
+    for f in raw:
+        try:
+            ko = _dt.fromisoformat(str(f.get("kickoff", "")).replace("Z", "+00:00"))
+        except (ValueError, TypeError) as e:  # noqa: PERF203
+            raise HTTPException(
+                status_code=400,
+                detail=f"kickoff parse hatası: {e}",
+            ) from e
+        items.append(FixtureItem(
+            kickoff=ko,
+            is_home=bool(f.get("is_home", True)),
+            competition=str(f.get("competition", "league")),
+            travel_km=float(f.get("travel_km", 0.0)),
+        ))
+    result = compute_congestion_risk(
+        items, window_days=int(payload.get("window_days", 28)),
+    )
+    body = engine_result_to_dict(result)
+    body["team_id"] = team_id
+    return body
+
+
+@router.post(
     "/teams/{team_id}/minutes-management",
     tags=["admin"],
     summary="Sezon dakika yönetimi + maraton penceresi planı",

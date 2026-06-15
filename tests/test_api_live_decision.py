@@ -308,6 +308,29 @@ def test_set_piece_opportunity_endpoint(session, client):
     assert "tactical_advice" in v
 
 
+def test_congestion_risk_endpoint(client):
+    from datetime import datetime as _dt, timedelta as _td
+    base = _dt.utcnow() + _td(days=1)
+    r = client.post(
+        "/admin/teams/11/congestion-risk",
+        json={
+            "window_days": 14,
+            "fixtures": [
+                {"kickoff": (base + _td(days=0)).isoformat(),
+                 "competition": "league", "travel_km": 100},
+                {"kickoff": (base + _td(days=3)).isoformat(),
+                 "competition": "cup", "travel_km": 200},
+                {"kickoff": (base + _td(days=6)).isoformat(),
+                 "competition": "league", "travel_km": 150},
+            ],
+        },
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["fixtures_count"] == 3
+    assert v["phase"] in ("low", "moderate", "high", "critical")
+
+
 def test_minutes_management_endpoint(client):
     r = client.post(
         "/admin/teams/11/minutes-management",
