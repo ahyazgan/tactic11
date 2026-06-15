@@ -195,6 +195,29 @@ def main() -> int:
             print(f"        body: {r.text[:300]}")
 
     print()
+    print("=== Maçı Notla round-trip ===")
+    # Kaydet → seri → performans (event verisi olmadan)
+    for i in range(6):
+        client.post("/admin/ratings/match", json={
+            "match_external_id": 50000 + i,
+            "ratings": [{
+                "player_external_id": 77,
+                "rating": 6.5 + i * 0.25,
+                "opp_rating": 7.5,
+            }],
+        }, headers=h)
+    rp = client.get("/admin/ratings/player/77/performance", headers=h)
+    rp_ok = (
+        rp.status_code == 200
+        and rp.json()["count"] == 6
+        and rp.json()["results"]["trajectory"]["value"]["direction"] == "improving"
+    )
+    print(f"  [{'PASS' if rp_ok else 'FAIL'}] ratings save→performance → improving")
+    if not rp_ok:
+        fails += 1
+        print(f"        body: {rp.text[:300]}")
+
+    print()
     print("=== Agent integration ===")
     s = next(get_session())
     cm = ClaudeCommentator(AnthropicClient())

@@ -20,6 +20,8 @@ const QUICK_LINKS: { href: string; label: string; desc: string }[] = [
     desc: "Maç planı + fırsat penceresi + TD karar danışmanı" },
   { href: "/performans", label: "Performans Analizi",
     desc: "Oyuncu tutarlılığı + trajectory + RTM uyarısı" },
+  { href: "/mac-notla", label: "Maçı Notla",
+    desc: "Oyuncuları 1-10 notla → performans motorlarını besle" },
   { href: "/teams/217/trend", label: "Sezon Trendi",
     desc: "PPDA/tilt/xT slope + biggest shift" },
   { href: "/training", label: "Antrenman Planı",
