@@ -16,6 +16,8 @@ const QUICK_LINKS: { href: string; label: string; desc: string }[] = [
     desc: "WebSocket push + sub önerisi" },
   { href: "/teams/217/tactical", label: "Takım Taktiksel",
     desc: "30 engine batch çıktısı" },
+  { href: "/taktik-komuta", label: "Taktik Komuta",
+    desc: "Maç planı + fırsat penceresi + TD karar danışmanı" },
   { href: "/teams/217/trend", label: "Sezon Trendi",
     desc: "PPDA/tilt/xT slope + biggest shift" },
   { href: "/training", label: "Antrenman Planı",
