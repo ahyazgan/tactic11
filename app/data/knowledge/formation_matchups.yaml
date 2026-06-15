@@ -1,0 +1,185 @@
+# Formation Matchup Matrix
+#
+# (our_formation × opp_formation) → 8-vektör maç beklentisi + 3 spesifik
+# taktik ipucu. Engine 'formation_matchup' bu YAML'ı tüketir.
+#
+# Vektör boyutları (0..1):
+#   our_xt_expected     — bizim hücumda beklenen tehdit
+#   opp_xt_expected     — rakibin hücumda beklenen tehdit
+#   our_ppda_advantage  — pres baskınlığı (1 = bizim baskın)
+#   midfield_control    — orta saha kontrolü (1 = bizim)
+#   width_clash         — kanat çatışması yoğunluğu
+#   set_piece_clash     — duran top önemi
+#   transition_speed    — geçiş tempo (1 = hızlı kontra ön plan)
+#   space_behind_lines  — savunma arkasındaki açık (1 = rakipte açık çok)
+
+formations:
+  # Ana 8 formasyon — başlık + tipik kullanım
+  - id: "4-3-3"
+    label: "4-3-3 Dengeli"
+    typical_for: ["pep_possession", "klopp_press", "ten_hag_modern_pos"]
+  - id: "4-2-3-1"
+    label: "4-2-3-1 Kompakt"
+    typical_for: ["italian_zonal", "ten_hag_modern_pos"]
+  - id: "4-4-2"
+    label: "4-4-2 Klasik"
+    typical_for: ["atletico_compact", "lecce_direct"]
+  - id: "4-4-2-diamond"
+    label: "4-4-2 Elmas"
+    typical_for: ["bvb_counter"]
+  - id: "3-5-2"
+    label: "3-5-2 Wing-Back"
+    typical_for: ["conte_3_5_2_wing"]
+  - id: "3-4-3"
+    label: "3-4-3 Hücumcu"
+    typical_for: ["pep_possession", "klopp_press"]
+  - id: "5-3-2"
+    label: "5-3-2 Kilitleme"
+    typical_for: ["atletico_compact", "italian_zonal"]
+  - id: "5-4-1"
+    label: "5-4-1 Düşük Blok"
+    typical_for: ["atletico_compact"]
+
+matchups:
+  # ── 4-3-3 vs * ────────────────────────────────────────────────────────
+  - our: "4-3-3"
+    opp: "4-2-3-1"
+    expectation: [0.55, 0.55, 0.50, 0.55, 0.65, 0.45, 0.55, 0.45]
+    advice:
+      - "Kanat 1v1 çoğunluğu: dış winger genişlik versin"
+      - "Orta sahada 3v3 sayısal eşitlik — 6n'a baskı dikkat"
+      - "Rakip 10 numarayı 6n geri çekerek izole et"
+  - our: "4-3-3"
+    opp: "4-4-2"
+    expectation: [0.60, 0.50, 0.55, 0.60, 0.55, 0.40, 0.50, 0.55]
+    advice:
+      - "Orta sahada 3v2 — biraz baskınlık"
+      - "Rakip 2 forveti 2 stoper rahat marke eder, çıkışı 6n üzerinden kur"
+      - "Yan koridorlarda fullback'in pozisyon almasına dikkat"
+  - our: "4-3-3"
+    opp: "4-4-2-diamond"
+    expectation: [0.45, 0.55, 0.45, 0.45, 0.70, 0.50, 0.55, 0.45]
+    advice:
+      - "Orta sahada 3v4 — sayısal dezavantaj; kanatlardan switch"
+      - "Diamond'ın açığı kanat — winger uzun şerit oyunu"
+      - "Hızlı topta 6n çevirme paslar"
+  - our: "4-3-3"
+    opp: "3-5-2"
+    expectation: [0.50, 0.50, 0.55, 0.55, 0.75, 0.45, 0.45, 0.50]
+    advice:
+      - "Wing-back'lerin yüksek pozisyonu fullback'lere boşluk açar"
+      - "10 numara olmayan rakipte 6n özgür — hücum başlatıcı"
+      - "Karşı kontrada 3'lü savunmaya 1v1 zorla"
+  - our: "4-3-3"
+    opp: "5-3-2"
+    expectation: [0.40, 0.45, 0.55, 0.65, 0.45, 0.55, 0.35, 0.30]
+    advice:
+      - "Düşük block'a karşı switch of play + cut-back"
+      - "Half-space inverted FB"
+      - "Uzaktan şut + ikinci top hazırlığı"
+
+  # ── 4-2-3-1 vs * ──────────────────────────────────────────────────────
+  - our: "4-2-3-1"
+    opp: "4-3-3"
+    expectation: [0.50, 0.55, 0.45, 0.50, 0.60, 0.45, 0.55, 0.50]
+    advice:
+      - "Çift pivot 6n'la rakip 8'leri kapat"
+      - "10 numara serbest oyuncu olarak konum al"
+      - "Forvet alanına dikey pas yolu aç"
+  - our: "4-2-3-1"
+    opp: "4-4-2"
+    expectation: [0.55, 0.50, 0.55, 0.60, 0.50, 0.40, 0.45, 0.55]
+    advice:
+      - "10 numara 4-4 hatları arasında konumlanır"
+      - "Çift pivot rakibin 2 forvetine doğrudan baskı"
+      - "Wing-up dengeyi sağla"
+  - our: "4-2-3-1"
+    opp: "3-4-3"
+    expectation: [0.55, 0.55, 0.45, 0.50, 0.60, 0.45, 0.55, 0.55]
+    advice:
+      - "Bek + winger ikilisi wing-back'le savaş"
+      - "Çift pivot derinde dur — rakibin 10'unu izole et"
+
+  # ── 5-3-2 / 5-4-1 düşük blok vs * ────────────────────────────────────
+  - our: "5-3-2"
+    opp: "4-3-3"
+    expectation: [0.30, 0.55, 0.30, 0.45, 0.50, 0.55, 0.50, 0.25]
+    advice:
+      - "5'li savunma stabilite, 2 forvet kontra için hazır"
+      - "Kanat sıkışmasında wing-back kompakt yardım"
+      - "Top kazanırken anında 2 forvete uzun pas"
+  - our: "5-3-2"
+    opp: "4-2-3-1"
+    expectation: [0.35, 0.50, 0.35, 0.45, 0.55, 0.55, 0.45, 0.25]
+    advice:
+      - "10 numarayı 6n çek-pres"
+      - "Çift forvet 4'lü hattı zorla — fullback geri çekilirse alan"
+  - our: "5-4-1"
+    opp: "4-3-3"
+    expectation: [0.25, 0.55, 0.25, 0.35, 0.50, 0.60, 0.55, 0.20]
+    advice:
+      - "Tek forvet hold-up için fizik şart"
+      - "Düşük block + 4-4 orta saha zonal"
+      - "Set-piece çok kritik — gol kaynağı"
+
+  # ── 3-5-2 vs * ────────────────────────────────────────────────────────
+  - our: "3-5-2"
+    opp: "4-4-2"
+    expectation: [0.55, 0.50, 0.55, 0.65, 0.65, 0.45, 0.50, 0.50]
+    advice:
+      - "Orta sahada 5v4 — kontrol bizim"
+      - "Wing-back'ler 1v1 kanat avantajı"
+      - "2 forvet 4 stopere karşı izole; vites değişimi"
+  - our: "3-5-2"
+    opp: "4-3-3"
+    expectation: [0.50, 0.55, 0.45, 0.55, 0.70, 0.45, 0.55, 0.45]
+    advice:
+      - "Wing-back vs winger duels yoğun"
+      - "3'lü savunma kanatta sayı kaybı — 6n yardım"
+      - "Mezzala/8 numaralar rakip 6n'asına basın"
+
+  # ── 3-4-3 vs * ────────────────────────────────────────────────────────
+  - our: "3-4-3"
+    opp: "4-2-3-1"
+    expectation: [0.55, 0.50, 0.55, 0.55, 0.65, 0.45, 0.55, 0.55]
+    advice:
+      - "Wing-back yüksek — fullback'i sıkıştır"
+      - "3 hücumcu rakip 10'a baskı, çıkışı zorla"
+      - "Defansif geçişte 3'lü savunma + 6n geri çekiş şart"
+
+  # ── 4-4-2 / 4-4-2 diamond vs * ───────────────────────────────────────
+  - our: "4-4-2"
+    opp: "4-3-3"
+    expectation: [0.45, 0.55, 0.45, 0.45, 0.55, 0.45, 0.55, 0.45]
+    advice:
+      - "Orta saha 2v3 — sayısal dezavantaj; 2 forvet pres'le yardım"
+      - "Kanat 1v1 yoğun — fullback overlap"
+      - "Hızlı top kazanım sonrası uzun pas hedefi"
+  - our: "4-4-2-diamond"
+    opp: "4-3-3"
+    expectation: [0.55, 0.50, 0.55, 0.60, 0.50, 0.45, 0.50, 0.50]
+    advice:
+      - "Elmas orta saha 4v3 — kontrol bizim"
+      - "Kanat genişliği bek + dış 8 numara"
+      - "10 numara serbest, 6 numara rakibin 9'una pres"
+
+  # ── Same formation aynası (4-3-3 vs 4-3-3 vb.) ───────────────────────
+  - our: "4-3-3"
+    opp: "4-3-3"
+    expectation: [0.50, 0.50, 0.50, 0.50, 0.60, 0.45, 0.50, 0.50]
+    advice:
+      - "Aynı formasyon — bireysel kalite + duels belirleyici"
+      - "İlk basında öncelik kazanan tarafta avantaj"
+      - "Set-piece kalitesi öne çıkar"
+  - our: "4-4-2"
+    opp: "4-4-2"
+    expectation: [0.50, 0.50, 0.50, 0.50, 0.55, 0.50, 0.50, 0.50]
+    advice:
+      - "Klasik vs klasik — orta saha 2v2 düello"
+      - "Fizik + temas avantajı belirleyici"
+  - our: "3-5-2"
+    opp: "3-5-2"
+    expectation: [0.50, 0.50, 0.50, 0.55, 0.70, 0.50, 0.50, 0.50]
+    advice:
+      - "Wing-back vs wing-back yoğun çatışma"
+      - "Orta sahada 5v5 — bireysel duels"
