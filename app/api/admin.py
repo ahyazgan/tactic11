@@ -3772,6 +3772,46 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/performance/anomaly",
+    tags=["admin"],
+    summary="Oyuncu performans anomali tespiti (sakatlık/fatigue erken uyarı)",
+)
+def performance_anomaly_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        points: [{match_id, rating, minute_played?, fatigue_proxy?}, ...],
+        k_sd?: 1.5,
+        decline_window?: 3
+    }
+    """
+    from app.engine.performance_anomaly import (
+        PerformancePoint,
+        compute_performance_anomaly,
+    )
+
+    raw = payload.get("points", []) or []
+    points = [
+        PerformancePoint(
+            match_id=int(p.get("match_id", 0)),
+            rating=float(p.get("rating", 0.0)),
+            minute_played=float(p.get("minute_played", 90.0)),
+            fatigue_proxy=(
+                float(p["fatigue_proxy"])
+                if p.get("fatigue_proxy") is not None
+                else None
+            ),
+        )
+        for p in raw
+    ]
+    return engine_result_to_dict(compute_performance_anomaly(
+        points,
+        k_sd=float(payload.get("k_sd", 1.5)),
+        decline_window=int(payload.get("decline_window", 3)),
+    ))
+
+
+@router.post(
     "/performance/team-form-health",
     tags=["admin"],
     summary="Takım kadro formu — O+P aggregate, health 0-100",

@@ -149,6 +149,16 @@ def main() -> int:
                 {"player_id": 2, "name": "B", "kpis": {"rating": 6.5, "xt": 0.3}},
             ],
         }, lambda v: v["winner_name"] == "A"),
+        ("/admin/performance/anomaly", {
+            "points": [
+                {"match_id": 1, "rating": 7.5},
+                {"match_id": 2, "rating": 7.3},
+                {"match_id": 3, "rating": 7.7},
+                {"match_id": 4, "rating": 7.6},
+                {"match_id": 5, "rating": 7.5},
+                {"match_id": 6, "rating": 5.0},  # sudden drop
+            ],
+        }, lambda v: any(e["type"] == "sudden_drop" for e in v["events"])),
         ("/admin/performance/team-form-health", {
             "players": [
                 {"player_id": 1, "name": "Up", "ratings": [5, 6, 7, 8, 9]},

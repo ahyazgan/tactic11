@@ -23,6 +23,27 @@ interface ConsistencyResult {
   };
 }
 
+interface AnomalyEvent {
+  type: string;
+  match_id_seen: number;
+  severity: string;
+  z_or_factor: number;
+  rationale: string;
+  recommended_action: string;
+  confidence: number;
+}
+
+interface AnomalyResult {
+  value: {
+    sample_count: number;
+    baseline_mean: number;
+    baseline_sd: number;
+    events: AnomalyEvent[];
+    summary: string;
+    overall_risk: string;
+  };
+}
+
 interface PlayerSnapshot {
   player_id: number;
   name: string;
@@ -174,6 +195,9 @@ export default function PerformansPage() {
   const [teamLoading, setTeamLoading] = useState(false);
   const [teamErr, setTeamErr] = useState<string | null>(null);
 
+  const [anomaly, setAnomaly] = useState<AnomalyResult | null>(null);
+  const [anomalyLoading, setAnomalyLoading] = useState(false);
+
   const values = useMemo(() => parseSeries(seriesText), [seriesText]);
 
   async function runTeamForm() {
@@ -215,25 +239,34 @@ export default function PerformansPage() {
     }
     setErr(null);
     setLoading(true);
+    setAnomalyLoading(true);
     try {
       const samples = values.map((v, i) => ({ match_id: i + 1, value: v }));
       const points = values.map((v, i) => ({
         match_id: i + 1, value: v, game_index: i,
       }));
-      const [c, t] = await Promise.all([
+      const anomalyPoints = values.map((v, i) => ({
+        match_id: i + 1, rating: v,
+      }));
+      const [c, t, a] = await Promise.all([
         apiFetch<ConsistencyResult>("/admin/performance/consistency", {
           method: "POST", body: JSON.stringify({ samples }),
         }),
         apiFetch<TrajectoryResult>("/admin/performance/trajectory", {
           method: "POST", body: JSON.stringify({ points }),
         }),
+        apiFetch<AnomalyResult>("/admin/performance/anomaly", {
+          method: "POST", body: JSON.stringify({ points: anomalyPoints }),
+        }),
       ]);
       setConsistency(c);
       setTrajectory(t);
+      setAnomaly(a);
     } catch (e) {
       setErr(String(e));
     } finally {
       setLoading(false);
+      setAnomalyLoading(false);
     }
   }
 
@@ -397,7 +430,61 @@ export default function PerformansPage() {
         </Panel>
       )}
 
-      <Panel title="4. Kadro Formu (engine.team_form_health — R)">
+      {anomaly && (
+        <Panel title="4. Anomali Tespiti (engine.performance_anomaly — S)">
+          {anomalyLoading && <p className="text-xs text-muted">Tarama…</p>}
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-xs uppercase text-muted">Genel risk:</span>
+            <Pill
+              variant={
+                anomaly.value.overall_risk === "high"
+                  ? "loss"
+                  : anomaly.value.overall_risk === "medium"
+                  ? "warn"
+                  : "win"
+              }
+            >
+              {anomaly.value.overall_risk.toUpperCase()}
+            </Pill>
+            <span className="text-xs text-muted">
+              baseline μ={anomaly.value.baseline_mean.toFixed(2)} σ={anomaly.value.baseline_sd.toFixed(2)}
+            </span>
+          </div>
+          <p className="text-sm mb-3">{anomaly.value.summary}</p>
+
+          {anomaly.value.events.length === 0 ? (
+            <p className="text-xs text-muted">Anomali bulunamadı — baseline'da kalıyor.</p>
+          ) : (
+            <div className="space-y-2">
+              {anomaly.value.events.map((ev, i) => (
+                <div key={i} className="border border-border rounded p-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Pill
+                      variant={
+                        ev.severity === "high"
+                          ? "loss"
+                          : ev.severity === "medium"
+                          ? "warn"
+                          : "neutral"
+                      }
+                    >
+                      {ev.severity.toUpperCase()}
+                    </Pill>
+                    <span className="text-xs uppercase text-accent font-mono">{ev.type}</span>
+                    <span className="text-xs text-muted">
+                      match #{ev.match_id_seen} · conf {ev.confidence.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted mb-1">{ev.rationale}</div>
+                  <div className="text-sm">{ev.recommended_action}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Panel>
+      )}
+
+      <Panel title="5. Kadro Formu (engine.team_form_health — R)">
         <label className="flex flex-col text-xs mb-3">
           <span className="text-muted mb-1">
             Oyuncular (JSON — her oyuncunun rating serisi)
@@ -520,7 +607,7 @@ export default function PerformansPage() {
         )}
       </Panel>
 
-      <Panel title="5. Karşılaştırma (engine.player_comparison)">
+      <Panel title="6. Karşılaştırma (engine.player_comparison)">
         <label className="flex flex-col text-xs mb-3">
           <span className="text-muted mb-1">Oyuncular (JSON — 2-6 oyuncu)</span>
           <textarea
