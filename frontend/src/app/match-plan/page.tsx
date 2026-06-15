@@ -36,6 +36,58 @@ const SCENARIO: Record<string, { label: string; v: string }> = {
   unknown: { label: "BİLİNMİYOR", v: "var(--muted)" },
 };
 
+interface PreMatchBrief {
+  summary: string;
+  output: {
+    match_external_id: number;
+    ai_brief: string;
+    home_team_external_id?: number;
+    away_team_external_id?: number;
+    [k: string]: unknown;
+  };
+}
+
+function PreMatchBriefCard({ matchId }: { matchId: string }): React.ReactElement | null {
+  const { data, error, isLoading } = useSWR<PreMatchBrief>(
+    `/admin/matches/${matchId}/pre-match-brief?last_n=5`, apiFetch,
+    { revalidateOnFocus: false, shouldRetryOnError: false },
+  );
+  if (isLoading) {
+    return (
+      <div className="rc" style={{ margin: "12px 0", padding: "10px 14px" }}>
+        <span style={{ color: "var(--muted)", fontSize: 12 }}>
+          PreMatchReportAgent brief yükleniyor…
+        </span>
+      </div>
+    );
+  }
+  if (error || !data) return null;
+  const isStub = data.output.ai_brief?.startsWith("[stub:");
+  return (
+    <div className="rc" style={{
+      margin: "12px 0", padding: "12px 16px",
+      borderLeft: "3px solid var(--accent)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8,
+        marginBottom: 6 }}>
+        <span style={{ fontSize: 14 }}>🤖</span>
+        <h3 style={{ fontSize: 11.5, textTransform: "uppercase",
+          letterSpacing: 0.7, color: "var(--muted)", margin: 0,
+          fontWeight: 700 }}>Maç-öncesi AI brief</h3>
+        {isStub && (
+          <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--dim)",
+            textTransform: "uppercase", letterSpacing: 0.5 }}>stub</span>
+        )}
+      </div>
+      <div style={{ fontSize: 13, color: "var(--ink)", lineHeight: 1.6,
+        fontStyle: isStub ? "italic" : "normal",
+        opacity: isStub ? 0.85 : 1 }}>
+        {data.output.ai_brief}
+      </div>
+    </div>
+  );
+}
+
 const inputStyle: React.CSSProperties = {
   background: "var(--panel)",
   border: "1px solid var(--line)",
@@ -93,6 +145,7 @@ export default function MatchPlanConsolePage() {
       {!DEMO_MODE && !query && <div className="pgdesc">Canlı senaryo için bir maç ID gir.</div>}
       {!DEMO_MODE && query && plan.isLoading && <div className="pgdesc">Yükleniyor…</div>}
       {!DEMO_MODE && query && plan.error && <div className="pgdesc">Bu maç için kayıtlı plan yok ya da maç bulunamadı.</div>}
+      {!DEMO_MODE && query && <PreMatchBriefCard matchId={query} />}
 
       {d && scen && (
         <>

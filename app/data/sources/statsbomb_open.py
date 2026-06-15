@@ -80,23 +80,47 @@ class StatsBombOpen:
     """
 
     name = "statsbomb_open"
+    # Sınıf-düzeyi devre kesici — pod ömrü boyunca paylaşılır (runtime lazy assign)
+    _breaker: object | None = None
 
     def __init__(self, base_url: str | None = None, timeout: float = HTTP_TIMEOUT):
         self._base_url = (base_url or STATSBOMB_RAW_BASE).rstrip("/")
         self._timeout = timeout
+        if StatsBombOpen._breaker is None:
+            from app.data.sources._resilience import CircuitBreaker
+            StatsBombOpen._breaker = CircuitBreaker(
+                failure_threshold=5, cooldown_seconds=60.0,
+            )
+
+    @staticmethod
+    def _is_retryable(e: Exception) -> bool:
+        """Timeout/transport + 5xx geçici. 4xx retry edilmez."""
+        if isinstance(e, (httpx.TimeoutException, httpx.TransportError)):
+            return True
+        msg = str(e)
+        return any(code in msg for code in (" 500", " 502", " 503", " 504"))
 
     def _fetch_json(self, path: str) -> Any:
-        """GitHub raw'dan JSON çek. HTTP 4xx → RuntimeError; 5xx + network → retry yok."""
+        """GitHub raw'dan JSON çek. Retry (3 attempt + backoff) + circuit breaker."""
+        from app.data.sources._resilience import call_with_retry
+
         url = f"{self._base_url}/{path}"
         log.info("statsbomb fetch: %s", path)
-        with httpx.Client(timeout=self._timeout) as client:
-            r = client.get(url)
-            if r.status_code != 200:
-                raise RuntimeError(
-                    f"StatsBomb fetch fail {path}: HTTP {r.status_code} — "
-                    f"{r.text[:200]}"
-                )
-            return r.json()
+
+        def _once() -> Any:
+            with httpx.Client(timeout=self._timeout) as client:
+                r = client.get(url)
+                if r.status_code != 200:
+                    raise RuntimeError(
+                        f"StatsBomb fetch fail {path}: HTTP {r.status_code} — "
+                        f"{r.text[:200]}"
+                    )
+                return r.json()
+
+        return call_with_retry(
+            _once, attempts=3, breaker=StatsBombOpen._breaker,
+            is_retryable=self._is_retryable,
+        )
 
     def get_competitions(self) -> list[dict[str, Any]]:
         return self._fetch_json("competitions.json")

@@ -308,6 +308,144 @@ def test_set_piece_opportunity_endpoint(session, client):
     assert "tactical_advice" in v
 
 
+def test_pre_match_brief_endpoint(session, client):
+    """Maç + tarihten önce 5 maç → ai_brief stub + summary döner."""
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.add(models.Match(
+        sport=football.SPORT_NAME, external_id=900100,
+        league_external_id=203, season=2024,
+        kickoff=now + timedelta(days=2), status="NS",
+        home_team_external_id=701, away_team_external_id=702,
+        home_score=None, away_score=None, tenant_id="t-default",
+    ))
+    session.commit()
+    r = client.get("/admin/matches/900100/pre-match-brief?last_n=3")
+    assert r.status_code == 200
+    body = r.json()
+    assert "summary" in body
+    assert body["output"]["match_external_id"] == 900100
+    assert "ai_brief" in body["output"]
+
+
+def test_pre_match_brief_404(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get("/admin/matches/999999/pre-match-brief")
+    assert r.status_code == 404
+
+
+def test_weekly_digest_endpoint(session, client):
+    """Lig yoksa 404; minimal seed varsa 200 + summary döner."""
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    # Minimal: 1 lig + 2 takım + 1 maç
+    session.add(models.League(
+        sport=football.SPORT_NAME, external_id=99, name="Test Lig",
+        country="TR", season=2024,
+    ))
+    for tid in (101, 102):
+        session.add(models.Team(
+            sport=football.SPORT_NAME, external_id=tid, name=f"T{tid}",
+        ))
+    session.add(models.Match(
+        sport=football.SPORT_NAME, external_id=900001,
+        league_external_id=99, season=2024,
+        kickoff=now - timedelta(days=3), status="FT",
+        home_team_external_id=101, away_team_external_id=102,
+        home_score=2, away_score=1, tenant_id="t-default",
+    ))
+    session.commit()
+    r = client.get("/admin/leagues/99/weekly-digest?lookback_days=14")
+    assert r.status_code == 200
+    body = r.json()
+    assert "summary" in body
+    assert body["output"]["league_external_id"] == 99
+
+
+def test_weekly_digest_endpoint_404_on_missing_league(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get("/admin/leagues/99999/weekly-digest")
+    assert r.status_code == 404
+
+
+def test_congestion_risk_endpoint(client):
+    from datetime import datetime as _dt
+    from datetime import timedelta as _td
+    base = _dt.utcnow() + _td(days=1)
+    r = client.post(
+        "/admin/teams/11/congestion-risk",
+        json={
+            "window_days": 14,
+            "fixtures": [
+                {"kickoff": (base + _td(days=0)).isoformat(),
+                 "competition": "league", "travel_km": 100},
+                {"kickoff": (base + _td(days=3)).isoformat(),
+                 "competition": "cup", "travel_km": 200},
+                {"kickoff": (base + _td(days=6)).isoformat(),
+                 "competition": "league", "travel_km": 150},
+            ],
+        },
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["fixtures_count"] == 3
+    assert v["phase"] in ("low", "moderate", "high", "critical")
+
+
+def test_minutes_management_endpoint(client):
+    r = client.post(
+        "/admin/teams/11/minutes-management",
+        json={
+            "matches_next_2_weeks": 4,
+            "players": [
+                {"player_external_id": 7, "age": 28,
+                 "weekly_minutes_recent": [90, 90, 85, 90]},
+                {"player_external_id": 14, "age": 33,
+                 "weekly_minutes_recent": [60, 60, 60, 60]},
+            ],
+        },
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["marathon_window"] is True
+    assert v["total_players"] == 2
+    # Yüksek yüklü 28 yaş + maraton → rest_advised
+    assert v["rest_count"] >= 1
+
+
+def test_return_to_play_endpoint(client):
+    r = client.post(
+        "/admin/players/7/return-to-play",
+        json={"tests": [
+            {"test_name": "cmj", "current": 38.0, "pre_injury_baseline": 40.0},
+            {"test_name": "sprint10", "current": 1.78,
+             "pre_injury_baseline": 1.75, "higher_is_better": False},
+            {"test_name": "y_balance", "current": 70.0,
+             "pre_injury_baseline": 100.0, "weight": 1.5},
+        ]},
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["phase"] in (1, 2, 3, 4, 5)
+    assert "advice" in v
+    assert v["test_count"] == 3
+
+
 def test_referee_tendency_endpoint(client):
     r = client.post(
         "/admin/referee/tendency",
@@ -375,6 +513,64 @@ def test_clip_for_decision_with_env(session, client, monkeypatch):
     assert v["available"] is True
     assert "t-bjk" in v["video_url"]
     assert v["source"] == "broadcast"
+
+
+def test_decisions_recent_cache_hit_miss(session, client):
+    """1. çağrı miss, 2. çağrı aynı tenant+team+limit için hit (30sn TTL)."""
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.add(models.Decision(
+        sport=football.SPORT_NAME, tenant_id="t-default",
+        match_external_id=100, team_external_id=11,
+        minute=70.0, period=2, decision_type="substitution",
+        outcome="positive", created_at=now - timedelta(minutes=1),
+    ))
+    session.commit()
+
+    r1 = client.get("/admin/decisions/recent?limit=20")
+    assert r1.status_code == 200
+    assert r1.json()["_cache"] == "miss"
+
+    r2 = client.get("/admin/decisions/recent?limit=20")
+    assert r2.status_code == 200
+    assert r2.json()["_cache"] == "hit"
+    # Cache body summary aynı
+    assert r1.json()["summary"]["total"] == r2.json()["summary"]["total"]
+
+
+def test_decisions_recent_cache_key_varies_by_filter(session, client):
+    """team_external_id filter farklıysa cache miss (ayrı key)."""
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.add(models.Decision(
+        sport=football.SPORT_NAME, tenant_id="t-default",
+        match_external_id=200, team_external_id=11,
+        minute=70.0, period=2, decision_type="substitution",
+        outcome="pending", created_at=now - timedelta(minutes=1),
+    ))
+    session.commit()
+    a = client.get("/admin/decisions/recent?team_external_id=11&limit=20")
+    b = client.get("/admin/decisions/recent?team_external_id=22&limit=20")
+    assert a.json()["_cache"] == "miss"
+    assert b.json()["_cache"] == "miss"  # farklı team → farklı key
+
+
+def test_matches_with_events_cache_hit_miss(session, client):
+    """matches-with-events de cache'leniyor (60sn TTL)."""
+    _seed_match_events(session)
+    r1 = client.get("/admin/matches/with-events?limit=10")
+    assert r1.status_code == 200
+    assert r1.json()["_cache"] == "miss"
+    r2 = client.get("/admin/matches/with-events?limit=10")
+    assert r2.json()["_cache"] == "hit"
 
 
 def test_decisions_recent_summary_and_list(session, client):

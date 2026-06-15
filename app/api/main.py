@@ -179,14 +179,41 @@ _HSTS_ENABLED = get_settings().app_env == "prod"
 
 
 def _apply_security_headers(response) -> None:
-    """OWASP temel güvenlik header'ları (CSP hariç — /dashboard inline JS kullanır)."""
+    """OWASP temel güvenlik header'ları.
+
+    CSP: /dashboard inline JS kullandığı için 'unsafe-inline' bırakıldı;
+    base policy yine de XSS yüzeyini daraltır (eval/object/base block).
+    Strict mode için ileride per-route nonce stratejisi.
+    """
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-    response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+    response.headers.setdefault(
+        "Permissions-Policy", "geolocation=(), microphone=(), camera=()",
+    )
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' https:; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "object-src 'none'",
+    )
+    response.headers.setdefault(
+        "Cross-Origin-Opener-Policy", "same-origin",
+    )
+    response.headers.setdefault(
+        "Cross-Origin-Resource-Policy", "same-origin",
+    )
     if _HSTS_ENABLED:
         response.headers.setdefault(
-            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains; preload",
         )
 
 

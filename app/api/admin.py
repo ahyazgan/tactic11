@@ -3028,8 +3028,18 @@ def decisions_recent_endpoint(
 
     summary: toplam, recommended, by_outcome, by_decision_type, hit_rate.
     decisions: en yeni karar önce, kullanıcıya gösterilecek alanlarla.
+
+    Cache: 30sn TTL (tenant_id + team + limit → key). Outcome mark sonrası
+    user SWR mutate çağırır; bu cache'i bypass etmez ama 30sn'de sıfırlanır.
     """
     from sqlalchemy import func
+    tenant_id = session.info.get("tenant_id", "default")
+    cache_key = f"decisions-recent:{tenant_id}:{team_external_id or 'all'}:{limit}"
+    cached = cache_get(session, source="admin_decisions_recent", key=cache_key)
+    if isinstance(cached, dict) and "summary" in cached:
+        cached["_cache"] = "hit"
+        return cached
+
     where = [models.Decision.sport == football.SPORT_NAME]
     if team_external_id is not None:
         where.append(models.Decision.team_external_id == team_external_id)
@@ -3058,7 +3068,7 @@ def decisions_recent_endpoint(
     resolved = positive + negative + neutral
     hit_rate = round(positive / resolved, 3) if resolved > 0 else None
 
-    return {
+    body = {
         "summary": {
             "total": int(sum(outcome_counts.values())),
             "resolved": resolved,
@@ -3087,6 +3097,12 @@ def decisions_recent_endpoint(
             for r in rows
         ],
     }
+    cache_set(
+        session, source="admin_decisions_recent", key=cache_key,
+        value=body, ttl_seconds=30,
+    )
+    body["_cache"] = "miss"
+    return body
 
 
 @router.get(
@@ -3104,8 +3120,17 @@ def matches_with_events_endpoint(
     Frontend `/decisions/live` match selector dropdown'u için. Sadece
     EventRow'da en az 1 satırı olan maçlar listelenir; boş maçlar atlanır.
     Sıralama: en yeni kickoff önce.
+
+    Cache: 60sn TTL — match listesi ingest sıklığına bağlı.
     """
     from sqlalchemy import func
+    tenant_id = session.info.get("tenant_id", "default")
+    cache_key = f"matches-with-events:{tenant_id}:{sport}:{limit}"
+    cached = cache_get(session, source="admin_matches_with_events", key=cache_key)
+    if isinstance(cached, dict) and "matches" in cached:
+        cached["_cache"] = "hit"
+        return cached
+
     # Match × EventRow.match_external_id JOIN sayım
     event_counts = dict(session.execute(
         select(
@@ -3149,7 +3174,13 @@ def matches_with_events_endpoint(
         }
         for m in rows
     ]
-    return {"matches": matches, "total": len(matches)}
+    body = {"matches": matches, "total": len(matches)}
+    cache_set(
+        session, source="admin_matches_with_events", key=cache_key,
+        value=body, ttl_seconds=60,
+    )
+    body["_cache"] = "miss"
+    return body
 
 
 @router.get(
@@ -3369,6 +3400,206 @@ def clip_for_decision_endpoint(
         decision_type=decision_type, tenant_id=tenant_id,
         back_seconds=back_seconds, forward_seconds=forward_seconds,
     )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/matches/{match_id}/pre-match-brief",
+    tags=["admin"],
+    summary="Maç-öncesi brief (form+h2h+AI sentezi)",
+)
+def pre_match_brief_endpoint(
+    match_id: int,
+    last_n: int = Query(default=5, ge=1, le=20),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """PreMatchReportAgent çıktısı — UI maç-planı / match-plan sayfası tüketir."""
+    from app.agents.pre_match_report import PreMatchReportAgent
+
+    agent = PreMatchReportAgent(last_n=last_n)
+    try:
+        result = agent.run(session, context={
+            "match_external_id": match_id,
+        })
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    return {"summary": result.summary, "output": result.output_json}
+
+
+@router.get(
+    "/leagues/{league_id}/weekly-digest",
+    tags=["admin"],
+    summary="Lig haftalık özeti (form + rating + fixture_difficulty + predict)",
+)
+def weekly_digest_endpoint(
+    league_id: int,
+    lookback_days: int = Query(default=7, ge=1, le=30),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """WeeklyDigestAgent çıktısı — UI /weekly-report sayfası bunu tüketir."""
+    from app.agents.weekly_digest import WeeklyDigestAgent
+
+    league = session.execute(
+        select(models.League).where(
+            models.League.sport == football.SPORT_NAME,
+            models.League.external_id == league_id,
+        )
+    ).scalar_one_or_none()
+    if league is None:
+        raise HTTPException(
+            status_code=404, detail=f"league {league_id} yok",
+        )
+    agent = WeeklyDigestAgent()
+    try:
+        result = agent.run(session, context={
+            "league_external_id": league_id,
+            "lookback_days": lookback_days,
+        })
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    return {"summary": result.summary, "output": result.output_json}
+
+
+@router.post(
+    "/teams/{team_id}/congestion-risk",
+    tags=["admin"],
+    summary="Fikstür yoğunluğu skor (rest × travel × multi-comp)",
+)
+def congestion_risk_endpoint(
+    team_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Fikstür penceresi yoğunluk analizi.
+
+    payload: {
+        "window_days"?: int (default 28),
+        "fixtures": [
+            {"kickoff": "ISO datetime", "is_home": bool,
+             "competition": "league|cup|europa|champions",
+             "travel_km"?: float}
+        ]
+    }
+    """
+    from datetime import datetime as _dt
+
+    from app.engine.congestion_risk import (
+        FixtureItem,
+        compute_congestion_risk,
+    )
+
+    raw = payload.get("fixtures", []) or []
+    items: list[FixtureItem] = []
+    for f in raw:
+        try:
+            ko = _dt.fromisoformat(str(f.get("kickoff", "")).replace("Z", "+00:00"))
+        except (ValueError, TypeError) as e:  # noqa: PERF203
+            raise HTTPException(
+                status_code=400,
+                detail=f"kickoff parse hatası: {e}",
+            ) from e
+        items.append(FixtureItem(
+            kickoff=ko,
+            is_home=bool(f.get("is_home", True)),
+            competition=str(f.get("competition", "league")),
+            travel_km=float(f.get("travel_km", 0.0)),
+        ))
+    result = compute_congestion_risk(
+        items, window_days=int(payload.get("window_days", 28)),
+    )
+    body = engine_result_to_dict(result)
+    body["team_id"] = team_id
+    return body
+
+
+@router.post(
+    "/teams/{team_id}/minutes-management",
+    tags=["admin"],
+    summary="Sezon dakika yönetimi + maraton penceresi planı",
+)
+def minutes_management_endpoint(
+    team_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Çoklu oyuncu dakika planlama.
+
+    payload: {
+        "matches_next_2_weeks"?: int (override; verilmezse player avg'den),
+        "players": [
+            {"player_external_id": int, "age": int,
+             "weekly_minutes_recent": [float, ...],
+             "days_since_last_injury"?: int,
+             "matches_next_2_weeks"?: int (default 2)}
+        ]
+    }
+    """
+    from app.engine.minutes_management import (
+        PlayerMinutesInput,
+        compute_minutes_management,
+    )
+
+    raw = payload.get("players", []) or []
+    players = [
+        PlayerMinutesInput(
+            player_external_id=int(p.get("player_external_id", 0)),
+            age=int(p.get("age", 25)),
+            weekly_minutes_recent=[
+                float(x) for x in (p.get("weekly_minutes_recent") or [])
+            ],
+            days_since_last_injury=(
+                int(p["days_since_last_injury"])
+                if p.get("days_since_last_injury") is not None else None
+            ),
+            matches_next_2_weeks=int(p.get("matches_next_2_weeks", 2)),
+        )
+        for p in raw
+    ]
+    override = payload.get("matches_next_2_weeks")
+    result = compute_minutes_management(
+        players,
+        matches_next_2_weeks=int(override) if override is not None else None,
+    )
+    body = engine_result_to_dict(result)
+    body["team_id"] = team_id
+    return body
+
+
+@router.post(
+    "/players/{player_id}/return-to-play",
+    tags=["admin"],
+    summary="Çoklu test sentezli sakatlık-dönüşü plan (faz + dakika tavanı)",
+)
+def return_to_play_plan_endpoint(
+    player_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Multi-test RTP plan.
+
+    payload: {
+        "tests": [
+            {"test_name": str, "current": float,
+             "pre_injury_baseline": float,
+             "higher_is_better"?: bool (default True),
+             "weight"?: float (default 1.0)}
+        ]
+    }
+    """
+    from app.engine.return_to_play import (
+        TestResultInput,
+        compute_return_to_play_plan,
+    )
+
+    tests_raw = payload.get("tests", []) or []
+    tests = [
+        TestResultInput(
+            test_name=str(t.get("test_name", "")),
+            current=float(t.get("current", 0)),
+            pre_injury_baseline=float(t.get("pre_injury_baseline", 0)),
+            higher_is_better=bool(t.get("higher_is_better", True)),
+            weight=float(t.get("weight", 1.0)),
+        )
+        for t in tests_raw
+    ]
+    result = compute_return_to_play_plan(player_id, tests)
     return engine_result_to_dict(result)
 
 

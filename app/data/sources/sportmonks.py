@@ -183,6 +183,8 @@ class Sportmonks(DataSource):
     (lineup + player-stats) ve standings/squad gibi zengin uçları sağlar."""
 
     name = _SOURCE_NAME
+    # Sınıf-düzeyi devre kesici — pod ömrü boyunca paylaşılır
+    _breaker: object | None = None  # CircuitBreaker; runtime lazy assign
 
     # Tek fixture için yeterli include seti (lineups.details = oyuncu istatistiği,
     # xgfixture = gerçek xG). participants/state/scores/events karar+skor için.
@@ -218,13 +220,35 @@ class Sportmonks(DataSource):
 
     def _get_json(self, path: str, params: dict[str, Any]) -> dict[str, Any]:
         """Tek GET → tam JSON gövdesi (data + pagination + subscription)."""
+        from app.data.sources._resilience import CircuitBreaker, call_with_retry
+
         self._require_key()
         url = f"{self._base_url}/{path.lstrip('/')}"
         s = get_settings()
-        with httpx.Client(timeout=s.http_timeout_seconds) as client:
-            r = client.get(url, params={"api_token": self._key, **params})
-            r.raise_for_status()
-            return r.json()
+        if Sportmonks._breaker is None:
+            Sportmonks._breaker = CircuitBreaker(
+                failure_threshold=5, cooldown_seconds=60.0,
+            )
+
+        def _is_retryable(e: Exception) -> bool:
+            if isinstance(e, (httpx.TimeoutException, httpx.TransportError)):
+                return True
+            if isinstance(e, httpx.HTTPStatusError):
+                return 500 <= e.response.status_code < 600
+            return False
+
+        def _once() -> dict[str, Any]:
+            with httpx.Client(timeout=s.http_timeout_seconds) as client:
+                r = client.get(url, params={"api_token": self._key, **params})
+                r.raise_for_status()
+                return r.json()
+
+        return call_with_retry(
+            _once,
+            attempts=s.http_retry_attempts,
+            breaker=Sportmonks._breaker,
+            is_retryable=_is_retryable,
+        )
 
     def _resolve_season_id(self, league_id: int, season_year: int) -> int | None:
         """(lig, yıl) → Sportmonks season_id. Bulunamazsa None (sessiz).
