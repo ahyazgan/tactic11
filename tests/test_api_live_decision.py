@@ -308,8 +308,51 @@ def test_set_piece_opportunity_endpoint(session, client):
     assert "tactical_advice" in v
 
 
+def test_weekly_digest_endpoint(session, client):
+    """Lig yoksa 404; minimal seed varsa 200 + summary döner."""
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    # Minimal: 1 lig + 2 takım + 1 maç
+    session.add(models.League(
+        sport=football.SPORT_NAME, external_id=99, name="Test Lig",
+        country="TR", season=2024,
+    ))
+    for tid in (101, 102):
+        session.add(models.Team(
+            sport=football.SPORT_NAME, external_id=tid, name=f"T{tid}",
+        ))
+    session.add(models.Match(
+        sport=football.SPORT_NAME, external_id=900001,
+        league_external_id=99, season=2024,
+        kickoff=now - timedelta(days=3), status="FT",
+        home_team_external_id=101, away_team_external_id=102,
+        home_score=2, away_score=1, tenant_id="t-default",
+    ))
+    session.commit()
+    r = client.get("/admin/leagues/99/weekly-digest?lookback_days=14")
+    assert r.status_code == 200
+    body = r.json()
+    assert "summary" in body
+    assert body["output"]["league_external_id"] == 99
+
+
+def test_weekly_digest_endpoint_404_on_missing_league(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get("/admin/leagues/99999/weekly-digest")
+    assert r.status_code == 404
+
+
 def test_congestion_risk_endpoint(client):
-    from datetime import datetime as _dt, timedelta as _td
+    from datetime import datetime as _dt
+    from datetime import timedelta as _td
     base = _dt.utcnow() + _td(days=1)
     r = client.post(
         "/admin/teams/11/congestion-risk",

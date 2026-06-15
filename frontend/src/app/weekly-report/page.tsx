@@ -11,9 +11,12 @@
  */
 
 import * as React from "react";
+import useSWR from "swr";
 import { ConsoleShell } from "../_console/shell";
 import { InsightFeed } from "../_console/insights";
 import { weeklyInsights } from "@/lib/weekly-insights";
+import { apiFetch } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoLive, DEMO_CLUB, DEMO_OPPONENT } from "@/lib/demo-data";
 import { squadReadiness, type ReadinessDecision } from "@/lib/readiness";
 import { loadSessions, type LoadSession } from "@/lib/load";
@@ -31,6 +34,69 @@ const fmt2 = (n: number) => (Math.round(n * 100) / 100).toFixed(2);
 const sgn = (n: number, d = 0) => (n >= 0 ? "+" : "") + n.toFixed(d);
 
 /** Karar flag'lerinden ACWR sayısal değerini çek (ör. "1.54" → 1.54). */
+interface WeeklyDigestResponse {
+  summary: string;
+  output: {
+    league_external_id: number;
+    lookback_days?: number;
+    teams_analyzed?: number;
+    [k: string]: unknown;
+  };
+}
+
+const DIGEST_LEAGUE_ID = 203;  // varsayılan Süper Lig — UI dropdown ileride
+
+function BackendDigestPanel(): React.ReactElement | null {
+  const apiPath = !DEMO_MODE
+    ? `/admin/leagues/${DIGEST_LEAGUE_ID}/weekly-digest?lookback_days=7`
+    : null;
+  const { data, error, isLoading } = useSWR<WeeklyDigestResponse>(
+    apiPath, apiFetch, { revalidateOnFocus: false, shouldRetryOnError: false },
+  );
+  if (DEMO_MODE) return null;  // demo'da gizle (asıl sayfa zaten dolu)
+  if (isLoading) {
+    return (
+      <div className="rc" style={{ marginBottom: 16, padding: "10px 14px" }}>
+        <span style={{ color: "var(--muted)", fontSize: 12 }}>
+          Backend digest yükleniyor…
+        </span>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="rc" style={{ marginBottom: 16, padding: "10px 14px",
+        borderLeft: "3px solid var(--high)" }}>
+        <span style={{ color: "var(--muted)", fontSize: 12 }}>
+          Backend digest yüklenemedi (lig {DIGEST_LEAGUE_ID})
+        </span>
+      </div>
+    );
+  }
+  if (!data) return null;
+  return (
+    <div className="rc" style={{
+      marginBottom: 16, padding: "12px 16px",
+      borderLeft: "3px solid var(--accent)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8,
+        marginBottom: 6 }}>
+        <span style={{ fontSize: 14 }}>📰</span>
+        <h3 style={{ fontSize: 11.5, textTransform: "uppercase",
+          letterSpacing: 0.7, color: "var(--muted)", margin: 0,
+          fontWeight: 700 }}>Backend Lig Digest</h3>
+        <span style={{ marginLeft: "auto", fontSize: 10,
+          color: "var(--dim)" }}>
+          lig {data.output.league_external_id} · {data.output.teams_analyzed ?? "?"} takım
+        </span>
+      </div>
+      <div style={{ fontSize: 12.5, color: "var(--ink)", lineHeight: 1.6 }}>
+        {data.summary}
+      </div>
+    </div>
+  );
+}
+
 function acwrOf(decision: ReadinessDecision): number | null {
   const f = decision.flags.find((x) => x.metric === "ACWR");
   if (!f) return null;
@@ -294,6 +360,7 @@ export default function WeeklyReportPage() {
       source="claude"
       right={right}
     >
+      <BackendDigestPanel />
       <div className="kpis">
         <div className="kpi"><div className="kl">Hafta</div><div className="kn" style={{ fontSize: 20 }}>{wk.no}.</div><div className="kd">{wk.range}</div></div>
         <div className="kpi"><div className="kl">Maç Sonucu</div><div className="kn" style={{ fontSize: 20 }}>{wk.score[0]}–{wk.score[1]}</div><div className="kd">{wk.oppLabel}</div></div>

@@ -3403,6 +3403,40 @@ def clip_for_decision_endpoint(
     return engine_result_to_dict(result)
 
 
+@router.get(
+    "/leagues/{league_id}/weekly-digest",
+    tags=["admin"],
+    summary="Lig haftalık özeti (form + rating + fixture_difficulty + predict)",
+)
+def weekly_digest_endpoint(
+    league_id: int,
+    lookback_days: int = Query(default=7, ge=1, le=30),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """WeeklyDigestAgent çıktısı — UI /weekly-report sayfası bunu tüketir."""
+    from app.agents.weekly_digest import WeeklyDigestAgent
+
+    league = session.execute(
+        select(models.League).where(
+            models.League.sport == football.SPORT_NAME,
+            models.League.external_id == league_id,
+        )
+    ).scalar_one_or_none()
+    if league is None:
+        raise HTTPException(
+            status_code=404, detail=f"league {league_id} yok",
+        )
+    agent = WeeklyDigestAgent()
+    try:
+        result = agent.run(session, context={
+            "league_external_id": league_id,
+            "lookback_days": lookback_days,
+        })
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    return {"summary": result.summary, "output": result.output_json}
+
+
 @router.post(
     "/teams/{team_id}/congestion-risk",
     tags=["admin"],
