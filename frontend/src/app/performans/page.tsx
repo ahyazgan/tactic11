@@ -20,6 +20,33 @@ interface ConsistencyResult {
   };
 }
 
+interface ComparisonResult {
+  value: {
+    player_count: number;
+    kpis_compared: string[];
+    per_player: {
+      player_id: number;
+      name: string;
+      aggregate_score: number;
+      strongest_kpi: string | null;
+      weakest_kpi: string | null;
+      overall_rank: number;
+    }[];
+    per_kpi: {
+      kpi: string;
+      values: Record<string, number>;
+      normalized: Record<string, number>;
+      rank: Record<string, number>;
+      best_player_id: number;
+      worst_player_id: number;
+    }[];
+    winner_id: number | null;
+    winner_name: string | null;
+    reasoning: string;
+    summary: string;
+  };
+}
+
 interface TrajectoryResult {
   value: {
     sample_count: number;
@@ -74,6 +101,19 @@ function parseSeries(input: string): number[] {
     .filter((v) => !Number.isNaN(v));
 }
 
+const COMPARE_PRESET = JSON.stringify(
+  [
+    { player_id: 1, name: "Striker A",
+      kpis: { rating: 7.4, xt_per_90: 0.35, goals_per_90: 0.55, xa_per_90: 0.20 } },
+    { player_id: 2, name: "Striker B",
+      kpis: { rating: 7.1, xt_per_90: 0.48, goals_per_90: 0.40, xa_per_90: 0.30 } },
+    { player_id: 3, name: "Striker C",
+      kpis: { rating: 6.8, xt_per_90: 0.20, goals_per_90: 0.65, xa_per_90: 0.10 } },
+  ],
+  null,
+  2,
+);
+
 export default function PerformansPage() {
   const [seriesText, setSeriesText] = useState(SAMPLE_PRESETS.improving);
   const [consistency, setConsistency] = useState<ConsistencyResult | null>(null);
@@ -81,7 +121,28 @@ export default function PerformansPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  const [compareJson, setCompareJson] = useState(COMPARE_PRESET);
+  const [comparison, setComparison] = useState<ComparisonResult | null>(null);
+  const [compareLoading, setCompareLoading] = useState(false);
+  const [compareErr, setCompareErr] = useState<string | null>(null);
+
   const values = useMemo(() => parseSeries(seriesText), [seriesText]);
+
+  async function runComparison() {
+    setCompareErr(null);
+    setCompareLoading(true);
+    try {
+      const players = JSON.parse(compareJson);
+      const res = await apiFetch<ComparisonResult>("/admin/performance/comparison", {
+        method: "POST", body: JSON.stringify({ players }),
+      });
+      setComparison(res);
+    } catch (e) {
+      setCompareErr(String(e));
+    } finally {
+      setCompareLoading(false);
+    }
+  }
 
   async function runAnalysis() {
     if (values.length < 2) {
@@ -263,6 +324,99 @@ export default function PerformansPage() {
           )}
         </Panel>
       )}
+
+      <Panel title="4. Karşılaştırma (engine.player_comparison)">
+        <label className="flex flex-col text-xs mb-3">
+          <span className="text-muted mb-1">Oyuncular (JSON — 2-6 oyuncu)</span>
+          <textarea
+            rows={10}
+            className="bg-bg border border-border rounded px-2 py-1 text-xs font-mono"
+            value={compareJson}
+            onChange={(e) => setCompareJson(e.target.value)}
+          />
+        </label>
+        <button
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          onClick={runComparison}
+          disabled={compareLoading}
+        >
+          {compareLoading ? "Karşılaştırma…" : "Karşılaştır"}
+        </button>
+        {compareErr && <p className="text-bad text-sm mt-2">{compareErr}</p>}
+
+        {comparison && (
+          <div className="space-y-3">
+            <p className="text-sm">{comparison.value.summary}</p>
+            {comparison.value.winner_name && (
+              <p className="text-sm">
+                <Pill variant="win">Kazanan</Pill>{" "}
+                <span className="font-semibold">{comparison.value.winner_name}</span> —{" "}
+                <span className="text-muted">{comparison.value.reasoning}</span>
+              </p>
+            )}
+
+            {/* Per-player ranking */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border border-border">
+                <thead className="bg-surface2">
+                  <tr>
+                    <th className="p-2 text-left">#</th>
+                    <th className="p-2 text-left">Oyuncu</th>
+                    <th className="p-2 text-right">Aggregate</th>
+                    <th className="p-2 text-left">Strongest</th>
+                    <th className="p-2 text-left">Weakest</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparison.value.per_player.map((p) => (
+                    <tr key={p.player_id} className="border-t border-border">
+                      <td className="p-2">{p.overall_rank}</td>
+                      <td className="p-2 font-semibold">{p.name}</td>
+                      <td className="p-2 text-right tabular-nums">{p.aggregate_score.toFixed(3)}</td>
+                      <td className="p-2 text-xs text-good">{p.strongest_kpi || "—"}</td>
+                      <td className="p-2 text-xs text-bad">{p.weakest_kpi || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Per-KPI breakdown */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border border-border">
+                <thead className="bg-surface2">
+                  <tr>
+                    <th className="p-2 text-left">KPI</th>
+                    {comparison.value.per_player.map((p) => (
+                      <th key={p.player_id} className="p-2 text-right">{p.name}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparison.value.per_kpi.map((k) => (
+                    <tr key={k.kpi} className="border-t border-border">
+                      <td className="p-2 font-mono">{k.kpi}</td>
+                      {comparison.value.per_player.map((p) => {
+                        const raw = k.values[p.player_id];
+                        const rank = k.rank[p.player_id];
+                        const isBest = k.best_player_id === p.player_id;
+                        return (
+                          <td
+                            key={p.player_id}
+                            className={`p-2 text-right tabular-nums ${isBest ? "text-good font-semibold" : ""}`}
+                          >
+                            {raw?.toFixed(2)} <span className="text-muted">#{rank}</span>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </Panel>
 
       {consistency && trajectory && (
         <Panel title="3. Sentez (kompozit yorum)">

@@ -3772,6 +3772,42 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/performance/comparison",
+    tags=["admin"],
+    summary="Multi-oyuncu KPI karşılaştırma (radar + ranking + winner)",
+)
+def performance_comparison_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        players: [{player_id, name, kpis: {...}, position_group?}, ...],
+        kpis?: ["rating", "xt_per_90", ...],
+        weights?: {rating: 1.0, ...}
+    }
+    """
+    from app.engine.player_comparison import (
+        PlayerProfile,
+        compute_player_comparison,
+    )
+
+    raw = payload.get("players", []) or []
+    players = [
+        PlayerProfile(
+            player_id=int(p.get("player_id", 0)),
+            name=str(p.get("name", "")),
+            kpis={k: float(v) for k, v in (p.get("kpis") or {}).items()},
+            position_group=str(p.get("position_group", "")),
+        )
+        for p in raw
+    ]
+    return engine_result_to_dict(compute_player_comparison(
+        players,
+        kpis=payload.get("kpis"),
+        weights=payload.get("weights"),
+    ))
+
+
+@router.post(
     "/performance/consistency",
     tags=["admin"],
     summary="Oyuncu rating tutarlılığı (mean, sd, cv, reliability)",
