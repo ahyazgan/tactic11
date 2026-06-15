@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Panel, Pill, StatTile, Sparkline } from "@/components/ui";
+import { PerformanceTrajectoryChart } from "@/components/charts/PerformanceTrajectoryChart";
+import { PlayerComparisonRadar } from "@/components/charts/PlayerComparisonRadar";
+import { TeamHealthGauge } from "@/components/charts/TeamHealthGauge";
+import { Panel, Pill, Sparkline, StatTile } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 
 interface ConsistencyResult {
@@ -358,12 +361,20 @@ export default function PerformansPage() {
 
           {trajectory.value.smoothed_series.length > 0 && (
             <div className="mb-3">
-              <div className="text-xs uppercase text-muted mb-1">Smoothed (3-game MA)</div>
-              <Sparkline
-                data={trajectory.value.smoothed_series}
-                width={320}
-                height={48}
+              <div className="text-xs uppercase text-muted mb-1">
+                Trajectory (ham + smoothed + projeksiyon)
+              </div>
+              <PerformanceTrajectoryChart
+                raw={values}
+                smoothed={trajectory.value.smoothed_series}
+                projection={trajectory.value.projection_next_3}
+                peakIndex={trajectory.value.peak_index}
+                dipIndex={trajectory.value.dip_index}
+                direction={trajectory.value.direction}
               />
+              <div className="text-[10px] text-muted mt-1">
+                Yeşil = peak, kırmızı = dip; kesik çizgi = next-3 projeksiyon
+              </div>
             </div>
           )}
 
@@ -409,6 +420,13 @@ export default function PerformansPage() {
 
         {teamForm && (
           <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-3 items-start">
+              <TeamHealthGauge
+                score={teamForm.value.team_health_score}
+                label="Kadro Sağlık Skoru"
+              />
+              <p className="text-sm self-center">{teamForm.value.summary}</p>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <StatTile
                 label="Health"
@@ -437,8 +455,6 @@ export default function PerformansPage() {
                 value={`${teamForm.value.pct_volatile.toFixed(0)}%`}
               />
             </div>
-
-            <p className="text-sm">{teamForm.value.summary}</p>
 
             {teamForm.value.top_performers.length > 0 && (
               <div>
@@ -532,6 +548,19 @@ export default function PerformansPage() {
                 <span className="font-semibold">{comparison.value.winner_name}</span> —{" "}
                 <span className="text-muted">{comparison.value.reasoning}</span>
               </p>
+            )}
+
+            {comparison.value.per_kpi.length > 0 && comparison.value.per_player.length > 0 && (
+              <div>
+                <div className="text-xs uppercase text-muted mb-1">
+                  Radar (normalize KPI'lar)
+                </div>
+                <PlayerComparisonRadar
+                  kpis={comparison.value.kpis_compared}
+                  perKpi={comparison.value.per_kpi}
+                  perPlayer={comparison.value.per_player}
+                />
+              </div>
             )}
 
             {/* Per-player ranking */}
