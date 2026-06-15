@@ -3772,6 +3772,39 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/tactical/threat-pathway",
+    tags=["admin"],
+    summary="Pas/atak akışından lane bazlı tehlike haritası + advice",
+)
+def threat_pathway_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        events: [{start_y, end_y, threat_weight?, is_shot?, is_assist?}, ...],
+        perspective?: 'ours' | 'opponent'
+    }
+    """
+    from app.engine.threat_pathway import PathwayEvent, compute_threat_pathway
+
+    raw = payload.get("events", []) or []
+    events = [
+        PathwayEvent(
+            start_y=float(e.get("start_y", 40)),
+            end_y=float(e.get("end_y", 40)),
+            threat_weight=float(e.get("threat_weight", 0.05)),
+            is_shot=bool(e.get("is_shot", False)),
+            is_assist=bool(e.get("is_assist", False)),
+        )
+        for e in raw
+    ]
+    result = compute_threat_pathway(
+        events,
+        perspective=str(payload.get("perspective", "ours")),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
     "/tactical/counter",
     tags=["admin"],
     summary="Rakip × bizim stil → spesifik taktik öneri (counter playbook)",
