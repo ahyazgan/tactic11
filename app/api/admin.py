@@ -3404,6 +3404,29 @@ def clip_for_decision_endpoint(
 
 
 @router.get(
+    "/matches/{match_id}/pre-match-brief",
+    tags=["admin"],
+    summary="Maç-öncesi brief (form+h2h+AI sentezi)",
+)
+def pre_match_brief_endpoint(
+    match_id: int,
+    last_n: int = Query(default=5, ge=1, le=20),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """PreMatchReportAgent çıktısı — UI maç-planı / match-plan sayfası tüketir."""
+    from app.agents.pre_match_report import PreMatchReportAgent
+
+    agent = PreMatchReportAgent(last_n=last_n)
+    try:
+        result = agent.run(session, context={
+            "match_external_id": match_id,
+        })
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    return {"summary": result.summary, "output": result.output_json}
+
+
+@router.get(
     "/leagues/{league_id}/weekly-digest",
     tags=["admin"],
     summary="Lig haftalık özeti (form + rating + fixture_difficulty + predict)",

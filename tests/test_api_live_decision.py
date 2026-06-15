@@ -308,6 +308,39 @@ def test_set_piece_opportunity_endpoint(session, client):
     assert "tactical_advice" in v
 
 
+def test_pre_match_brief_endpoint(session, client):
+    """Maç + tarihten önce 5 maç → ai_brief stub + summary döner."""
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.add(models.Match(
+        sport=football.SPORT_NAME, external_id=900100,
+        league_external_id=203, season=2024,
+        kickoff=now + timedelta(days=2), status="NS",
+        home_team_external_id=701, away_team_external_id=702,
+        home_score=None, away_score=None, tenant_id="t-default",
+    ))
+    session.commit()
+    r = client.get("/admin/matches/900100/pre-match-brief?last_n=3")
+    assert r.status_code == 200
+    body = r.json()
+    assert "summary" in body
+    assert body["output"]["match_external_id"] == 900100
+    assert "ai_brief" in body["output"]
+
+
+def test_pre_match_brief_404(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    r = client.get("/admin/matches/999999/pre-match-brief")
+    assert r.status_code == 404
+
+
 def test_weekly_digest_endpoint(session, client):
     """Lig yoksa 404; minimal seed varsa 200 + summary döner."""
     from datetime import UTC, datetime, timedelta
