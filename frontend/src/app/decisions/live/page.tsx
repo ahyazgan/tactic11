@@ -92,6 +92,7 @@ interface LiveDecisionResponse {
   closing_strategy?: ClosingStrategy;
   star_feed?: StarFeed;
   foul_pressure?: FoulPressure;
+  active_concepts?: ActiveConceptOut;
   context?: ContextDecision;
 }
 
@@ -775,6 +776,67 @@ function SubTimingCard({ data }: { data?: SubTimingOut }) {
   );
 }
 
+interface ActiveConceptOut {
+  opponent_concepts?: { name: string; label: string; family: string }[];
+  our_concepts?: { name: string; label: string; family: string }[];
+  counter_advice?: string[];
+  summary?: string;
+}
+
+function ActiveConceptsCard({ data }: { data?: ActiveConceptOut }) {
+  if (!data) return null;
+  const opp = data.opponent_concepts ?? [];
+  const us = data.our_concepts ?? [];
+  if (opp.length === 0 && us.length === 0) return null;
+  return (
+    <EngineCard title="Aktif konseptler" icon="🧠" accent="var(--accent)"
+      tooltip="30+ taktiksel konseptin (gegenpressing, low_block, third_man, park_the_bus...) snapshot'a göre aktif hangileri. Counter advice rakibin konseptlerine karşı.">
+      {opp.length > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 10.5, color: "var(--muted)",
+            textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 700,
+            marginBottom: 4 }}>Rakip ({opp.length})</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {opp.slice(0, 4).map((c) => (
+              <span key={c.name} style={{
+                fontSize: 11, padding: "2px 8px", borderRadius: 999,
+                background: "color-mix(in srgb, var(--high) 12%, transparent)",
+                color: "var(--high)", border: "1px solid var(--high)",
+                fontWeight: 600,
+              }}>{c.label}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {us.length > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 10.5, color: "var(--muted)",
+            textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 700,
+            marginBottom: 4 }}>Bizim ({us.length})</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {us.slice(0, 4).map((c) => (
+              <span key={c.name} style={{
+                fontSize: 11, padding: "2px 8px", borderRadius: 999,
+                background: "color-mix(in srgb, var(--low) 12%, transparent)",
+                color: "var(--low)", border: "1px solid var(--low)",
+                fontWeight: 600,
+              }}>{c.label}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {data.counter_advice && data.counter_advice.length > 0 && (
+        <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--ink)",
+          lineHeight: 1.5 }}>
+          {data.counter_advice.slice(0, 2).map((a, i) => (
+            <div key={i} style={{ marginBottom: 3 }}>• {a}</div>
+          ))}
+        </div>
+      )}
+    </EngineCard>
+  );
+}
+
 function TacticalTriggersCard({
   data,
 }: { data?: { type: string; urgency: string; recommendation: string }[] }) {
@@ -1382,6 +1444,7 @@ export default function LiveDecisionPage() {
         <MomentumCard data={data?.momentum} />
         <SubTimingCard data={data?.sub_timing} />
         <TacticalTriggersCard data={data?.tactical_triggers} />
+        <ActiveConceptsCard data={data?.active_concepts} />
         <RiskMonitorCard data={data?.risk_monitor} />
         <StarFeedCard data={data?.star_feed} />
         <FoulPressureCard data={data?.foul_pressure} />

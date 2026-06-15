@@ -2931,6 +2931,54 @@ def live_decision_endpoint(
         opponent_external_id=opp_id,
     ))
 
+    # Taktiksel konsept tespit — diğer engine'lerden snapshot türet
+    from app.engine.concept_recognizer import compute_active_concepts
+    concept_snap: dict[str, Any] = {
+        "current_minute": current_minute,
+        "my_score_diff": (my_score or 0) - (opp_score or 0),
+    }
+    # Momentum
+    mom_v = out.get("momentum") if isinstance(out.get("momentum"), dict) else {}
+    if mom_v:
+        concept_snap["momentum_score"] = mom_v.get("score", 0)
+        concept_snap["holder"] = mom_v.get("holder", "balanced")
+        concept_snap["press_breaking"] = bool(mom_v.get("press_breaking"))
+        concept_snap["xg_swing_alert"] = bool(mom_v.get("xg_swing_alert"))
+    # Foul pressure
+    fp_v = out.get("foul_pressure") if isinstance(out.get("foul_pressure"), dict) else {}
+    if fp_v:
+        concept_snap["tactical_fouling_alert"] = bool(fp_v.get("tactical_fouling_alert"))
+        concept_snap["our_high_foul_alert"] = bool(fp_v.get("our_high_foul_alert"))
+        concept_snap["escalation_alert"] = bool(fp_v.get("escalation_alert"))
+    # Spatial / field tilt
+    spat_v = out.get("spatial_control") if isinstance(out.get("spatial_control"), dict) else {}
+    if spat_v:
+        concept_snap["opp_field_tilt_pct"] = float(spat_v.get("opp_field_tilt_pct", 50))
+    # PPDA & press_height — engine yoksa kestir
+    # (engine.ppda var ama window-bazlı; live-decision'da hesaplamaya gitmeden
+    # mevcut snapshot'tan türetiyoruz)
+    if p:
+        opp_def_actions = sum(
+            1 for x in d if x.team_external_id == opp_id
+            and x.minute >= max(0, current_minute - 15)
+        )
+        # PPDA proxy: rakip pas / bizim def 15dk pencere
+        our_pass_count = sum(
+            1 for x in p if x.team_external_id == my_team_id
+            and x.minute >= max(0, current_minute - 15)
+        )
+        if opp_def_actions > 0:
+            concept_snap["opp_ppda"] = round(our_pass_count / opp_def_actions, 2)
+        # press_height proxy: rakip def aksiyon ortalama x → 0-1
+        opp_d = [x for x in d if x.team_external_id == opp_id
+                 and x.minute >= max(0, current_minute - 15)]
+        if opp_d:
+            avg_x = sum(x.x for x in opp_d) / len(opp_d)
+            concept_snap["opp_press_height"] = round(min(1.0, avg_x / 100.0), 3)
+    _safe("active_concepts", lambda: compute_active_concepts(
+        concept_snap, current_minute=current_minute,
+    ))
+
     # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
     out.update(run_context_pipeline(
