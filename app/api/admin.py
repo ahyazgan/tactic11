@@ -3772,6 +3772,54 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/tactical/match-plan",
+    tags=["admin"],
+    summary="H+I+K kompozit — 1-sayfa taktik maç planı",
+)
+def match_plan_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        our_formation: str, opp_formation: str,
+        opponent_style?: str,
+        set_piece_type?: 'corner' | ..., set_piece_side?: 'short' | 'long',
+        our_attributes?: {aerial: 0.8, ...},
+        recent_threat_events?: [{start_y, end_y, threat_weight?, ...}, ...]
+    }
+    """
+    from app.engine.match_plan_builder import MatchPlanContext, compute_match_plan
+    from app.engine.threat_pathway import PathwayEvent
+
+    events_raw = payload.get("recent_threat_events")
+    events: list[PathwayEvent] | None = None
+    if events_raw is not None:
+        events = [
+            PathwayEvent(
+                start_y=float(e.get("start_y", 40)),
+                end_y=float(e.get("end_y", 40)),
+                threat_weight=float(e.get("threat_weight", 0.05)),
+                is_shot=bool(e.get("is_shot", False)),
+                is_assist=bool(e.get("is_assist", False)),
+            )
+            for e in events_raw
+        ]
+
+    ctx = MatchPlanContext(
+        our_formation=str(payload.get("our_formation", "4-3-3")),
+        opp_formation=str(payload.get("opp_formation", "4-3-3")),
+        opponent_style=payload.get("opponent_style"),
+        set_piece_type=str(payload.get("set_piece_type", "corner")),
+        set_piece_side=payload.get("set_piece_side", "long"),
+        our_attributes={
+            k: float(v) for k, v in (payload.get("our_attributes") or {}).items()
+        },
+        recent_threat_events=events,
+    )
+    result = compute_match_plan(ctx)
+    return engine_result_to_dict(result)
+
+
+@router.post(
     "/tactical/opportunity-window",
     tags=["admin"],
     summary="Maç-içi snapshot serisinden 'şimdi hamle yap' pencereleri",
