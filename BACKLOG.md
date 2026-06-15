@@ -9,26 +9,26 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
-- [ ] Mobile sidebar drawer
+- [x] Mobile sidebar drawer  (ba07618)
   Done when: drawer opens/closes on mobile breakpoints, nav items reachable, tsc+build clean, committed.
-- [ ] Decisions API load-perf cache
+- [x] Decisions API load-perf cache  (b2c55d6)
   Done when: /decisions endpoints cached with sane TTL, repeat-load latency measurably lower, tests cover cache hit/miss, committed.
-- [ ] End-to-end smoke run — La Liga match
+- [x] End-to-end smoke run — La Liga match  (bc44854)
   Done when: full decision flow (live → apply → track → reconcile) runs green on a La Liga fixture in demo mode, no console errors, committed.
 
 -----
 
 ## Next (pull these once "Now" is clear)
 
-- [ ] return_to_play engine
+- [x] return_to_play engine  (ceec769)
   Done when: engine implemented in engine layer, wired api→ai→engine→domain, unit tests green, committed.
-- [ ] minutes_management engine
+- [x] minutes_management engine  (8a9f839)
   Done when: as above.
-- [ ] congestion_risk engine
+- [x] congestion_risk engine  (a94952d)
   Done when: as above.
-- [ ] weekly_digest output motor
+- [x] weekly_digest output motor  (3951a49)
   Done when: generates digest from real engine outputs, rendered in UI, tested, committed.
-- [ ] prematch_brief output motor
+- [x] prematch_brief output motor  (b2083cf)
   Done when: as above.
 
 -----
@@ -40,7 +40,7 @@
 - [ ] i18n scaffold for English UI
 - [ ] Security headers (CSP / HSTS / X-Frame-Options / X-Content-Type-Options)
 - [ ] Retry + circuit-breaker on external API calls
-- [ ] Liveness/readiness split on /health
+- [x] Liveness/readiness split on /health  (pre-existing — /healthz + /readyz)
 
 -----
 
