@@ -3312,6 +3312,39 @@ def set_piece_opportunity_endpoint(
 
 
 @router.get(
+    "/matches/{match_id}/live-digest",
+    tags=["admin"],
+    summary="Maç-içi snapshot → 1-paragraf TR AI brief (LiveDecisionDigestAgent)",
+)
+def live_digest_endpoint(
+    match_id: int,
+    my_team_id: int = Query(...),
+    current_minute: float = Query(..., ge=0, le=130),
+    star_player_id: int | None = Query(default=None),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Live decision panel'in altında gösterilecek 2-3 cümlelik TR özet.
+
+    ANTHROPIC_API_KEY tanımlı değilse stub döner ("[stub:live_digest] ...").
+    Cache: minute + primary headline + güven kombosu → 24 saat.
+    """
+    from app.agents.live_decision_digest import LiveDecisionDigestAgent
+    agent = LiveDecisionDigestAgent()
+    try:
+        result = agent.run(session, context={
+            "match_external_id": match_id, "my_team_id": my_team_id,
+            "current_minute": current_minute,
+            "star_player_id": star_player_id,
+        })
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    return {
+        "summary": result.summary,
+        "output": result.output_json,
+    }
+
+
+@router.get(
     "/matches/{match_id}/clip",
     tags=["admin"],
     summary="Karar etrafındaki video clip metası (stub — CLIP_BASE_URL env)",
