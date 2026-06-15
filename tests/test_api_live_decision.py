@@ -308,6 +308,27 @@ def test_set_piece_opportunity_endpoint(session, client):
     assert "tactical_advice" in v
 
 
+def test_minutes_management_endpoint(client):
+    r = client.post(
+        "/admin/teams/11/minutes-management",
+        json={
+            "matches_next_2_weeks": 4,
+            "players": [
+                {"player_external_id": 7, "age": 28,
+                 "weekly_minutes_recent": [90, 90, 85, 90]},
+                {"player_external_id": 14, "age": 33,
+                 "weekly_minutes_recent": [60, 60, 60, 60]},
+            ],
+        },
+    )
+    assert r.status_code == 200
+    v = r.json()["value"]
+    assert v["marathon_window"] is True
+    assert v["total_players"] == 2
+    # Yüksek yüklü 28 yaş + maraton → rest_advised
+    assert v["rest_count"] >= 1
+
+
 def test_return_to_play_endpoint(client):
     r = client.post(
         "/admin/players/7/return-to-play",

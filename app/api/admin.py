@@ -3404,6 +3404,58 @@ def clip_for_decision_endpoint(
 
 
 @router.post(
+    "/teams/{team_id}/minutes-management",
+    tags=["admin"],
+    summary="Sezon dakika yönetimi + maraton penceresi planı",
+)
+def minutes_management_endpoint(
+    team_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Çoklu oyuncu dakika planlama.
+
+    payload: {
+        "matches_next_2_weeks"?: int (override; verilmezse player avg'den),
+        "players": [
+            {"player_external_id": int, "age": int,
+             "weekly_minutes_recent": [float, ...],
+             "days_since_last_injury"?: int,
+             "matches_next_2_weeks"?: int (default 2)}
+        ]
+    }
+    """
+    from app.engine.minutes_management import (
+        PlayerMinutesInput,
+        compute_minutes_management,
+    )
+
+    raw = payload.get("players", []) or []
+    players = [
+        PlayerMinutesInput(
+            player_external_id=int(p.get("player_external_id", 0)),
+            age=int(p.get("age", 25)),
+            weekly_minutes_recent=[
+                float(x) for x in (p.get("weekly_minutes_recent") or [])
+            ],
+            days_since_last_injury=(
+                int(p["days_since_last_injury"])
+                if p.get("days_since_last_injury") is not None else None
+            ),
+            matches_next_2_weeks=int(p.get("matches_next_2_weeks", 2)),
+        )
+        for p in raw
+    ]
+    override = payload.get("matches_next_2_weeks")
+    result = compute_minutes_management(
+        players,
+        matches_next_2_weeks=int(override) if override is not None else None,
+    )
+    body = engine_result_to_dict(result)
+    body["team_id"] = team_id
+    return body
+
+
+@router.post(
     "/players/{player_id}/return-to-play",
     tags=["admin"],
     summary="Çoklu test sentezli sakatlık-dönüşü plan (faz + dakika tavanı)",
