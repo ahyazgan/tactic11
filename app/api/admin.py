@@ -3651,6 +3651,100 @@ def return_to_play_plan_endpoint(
     return engine_result_to_dict(result)
 
 
+@router.get(
+    "/teams/{team_id}/pre-match-intel",
+    tags=["admin"],
+    summary="Maç-öncesi taktik istihbarat — rakip stil + counter playbook",
+)
+def pre_match_intel_endpoint(
+    team_id: int,
+    opponent_team_id: int = Query(..., description="Rakip takım external_id"),
+    our_team_id: int | None = Query(default=None,
+        description="Bizim stil; verilmezse 'any'"),
+    last_n: int = Query(default=6, ge=2, le=20),
+) -> dict[str, Any]:
+    """Önümüzdeki rakip için 3 katmanlı taktik istihbarat.
+
+    Akış (şimdilik payload-fed sentetik verilerle çalışır; pilot kulüpte
+    FBref/StatsBomb adapter bağlanınca son N maç istatistiği otomatik
+    çekilir):
+      1. opponent stat'larından style_fingerprint → top arketip
+      2. our stat'larından (varsa) style_fingerprint → bizim arketip
+      3. tactical_counter (rakip × bizim) → 3-6 öneri
+
+    Bu endpoint sentetik amaçlı default verir; gerçek pipeline için
+    POST /admin/teams/{id}/style-fingerprint çağrısı sonrası
+    POST /admin/tactical/counter ile kombinleyebilirsin. UI tarafı bu
+    GET'i kullanır (frontend'in lambdasını azaltmak için).
+    """
+    from app.engine.style_fingerprint import (
+        TeamMatchStat,
+        compute_style_fingerprint,
+    )
+    from app.engine.tactical_counter import compute_counter_advice
+
+    # Default sentetik: pilot öncesi placeholder. team_id ile last_n kullanılmıyor
+    # — gerçek pipeline'da FBref/StatsBomb stat çek + son N ortalama.
+    placeholder_opp = [
+        TeamMatchStat(
+            ppda=10, field_tilt_pct=55, direct_play_pct=28,
+            counter_threat=0.45, set_piece_share_pct=22, width_pct=55,
+            high_line_risk=0.5, press_height=0.55,
+        )
+        for _ in range(min(last_n, 5))
+    ]
+    opp_fp = compute_style_fingerprint(placeholder_opp).value
+    opp_style = opp_fp.top_archetype.name
+
+    our_style = "any"
+    our_fp_dict: dict[str, Any] | None = None
+    if our_team_id is not None:
+        placeholder_us = [
+            TeamMatchStat(
+                ppda=11, field_tilt_pct=60, direct_play_pct=22,
+                counter_threat=0.40, set_piece_share_pct=20, width_pct=58,
+                high_line_risk=0.5, press_height=0.55,
+            )
+            for _ in range(min(last_n, 5))
+        ]
+        our_fp = compute_style_fingerprint(placeholder_us).value
+        our_style = our_fp.top_archetype.name
+        our_fp_dict = {
+            "top_archetype": our_fp.top_archetype.name,
+            "label": our_fp.top_archetype.label,
+            "summary": our_fp.summary,
+        }
+
+    advice = compute_counter_advice(
+        opponent_style=opp_style, our_style=our_style,
+    ).value
+
+    return {
+        "team_id": team_id,
+        "opponent_team_id": opponent_team_id,
+        "our_team_id": our_team_id,
+        "opponent_fingerprint": {
+            "top_archetype": opp_fp.top_archetype.name,
+            "label": opp_fp.top_archetype.label,
+            "description": opp_fp.top_archetype.description,
+            "confidence": opp_fp.confidence,
+            "summary": opp_fp.summary,
+            "second_archetype": opp_fp.second_archetype.name
+                if opp_fp.second_archetype else None,
+        },
+        "our_fingerprint": our_fp_dict,
+        "counter_playbook": [
+            {"text": a.text, "focus": a.focus, "tags": list(a.tags)}
+            for a in advice.advices
+        ],
+        "summary": advice.summary,
+        "note": (
+            "Sentetik veri ile placeholder. Pilot kulüpte FBref/StatsBomb "
+            "adapter takılınca son N maç stat'ları otomatik çekilecek."
+        ),
+    }
+
+
 @router.post(
     "/players/{player_id}/role",
     tags=["admin"],
