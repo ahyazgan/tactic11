@@ -38,8 +38,8 @@
 - [ ] PDF report export for scout_report_generator
 - [ ] Push/email delivery for digests (currently pull-only)
 - [ ] i18n scaffold for English UI
-- [ ] Security headers (CSP / HSTS / X-Frame-Options / X-Content-Type-Options)
-- [ ] Retry + circuit-breaker on external API calls
+- [x] Security headers (CSP / HSTS / X-Frame-Options / X-Content-Type-Options)  (b067175)
+- [x] Retry + circuit-breaker on external API calls  (868f289)
 - [x] Liveness/readiness split on /health  (pre-existing — /healthz + /readyz)
 
 -----
