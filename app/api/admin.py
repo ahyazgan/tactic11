@@ -3652,6 +3652,52 @@ def return_to_play_plan_endpoint(
 
 
 @router.post(
+    "/players/{player_id}/role",
+    tags=["admin"],
+    summary="Oyuncu stat'ından taktiksel rol tespit (30+ rol KB cosine)",
+)
+def player_role_endpoint(
+    player_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Oyuncu 8-vektör stat → rol arketipi.
+
+    payload: {
+        "stats": {
+            "defensive_actions_pct": 0..1, "tackle_pct": 0..1,
+            "interception_pct": 0..1, "pass_completion_pct": 0..1,
+            "progressive_pass_pct": 0..1, "key_pass_pct": 0..1,
+            "dribble_pct": 0..1, "shot_per_90_pct": 0..1
+        },
+        "position_group"?: "GK|CB|FB|DM|CM|AM|W|FW",
+        "top_n_secondary"?: int (default 2)
+    }
+    """
+    from app.engine.role_matcher import (
+        PlayerStatVector,
+        compute_role_match,
+    )
+
+    s = payload.get("stats", {}) or {}
+    stats = PlayerStatVector(
+        defensive_actions_pct=float(s.get("defensive_actions_pct", 0.5)),
+        tackle_pct=float(s.get("tackle_pct", 0.5)),
+        interception_pct=float(s.get("interception_pct", 0.5)),
+        pass_completion_pct=float(s.get("pass_completion_pct", 0.7)),
+        progressive_pass_pct=float(s.get("progressive_pass_pct", 0.5)),
+        key_pass_pct=float(s.get("key_pass_pct", 0.3)),
+        dribble_pct=float(s.get("dribble_pct", 0.3)),
+        shot_per_90_pct=float(s.get("shot_per_90_pct", 0.2)),
+    )
+    result = compute_role_match(
+        player_id, stats,
+        position_group=payload.get("position_group"),
+        top_n_secondary=int(payload.get("top_n_secondary", 2)),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
     "/tactical/counter",
     tags=["admin"],
     summary="Rakip × bizim stil → spesifik taktik öneri (counter playbook)",
