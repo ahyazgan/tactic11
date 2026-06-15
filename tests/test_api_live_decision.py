@@ -377,6 +377,64 @@ def test_clip_for_decision_with_env(session, client, monkeypatch):
     assert v["source"] == "broadcast"
 
 
+def test_decisions_recent_cache_hit_miss(session, client):
+    """1. çağrı miss, 2. çağrı aynı tenant+team+limit için hit (30sn TTL)."""
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.add(models.Decision(
+        sport=football.SPORT_NAME, tenant_id="t-default",
+        match_external_id=100, team_external_id=11,
+        minute=70.0, period=2, decision_type="substitution",
+        outcome="positive", created_at=now - timedelta(minutes=1),
+    ))
+    session.commit()
+
+    r1 = client.get("/admin/decisions/recent?limit=20")
+    assert r1.status_code == 200
+    assert r1.json()["_cache"] == "miss"
+
+    r2 = client.get("/admin/decisions/recent?limit=20")
+    assert r2.status_code == 200
+    assert r2.json()["_cache"] == "hit"
+    # Cache body summary aynı
+    assert r1.json()["summary"]["total"] == r2.json()["summary"]["total"]
+
+
+def test_decisions_recent_cache_key_varies_by_filter(session, client):
+    """team_external_id filter farklıysa cache miss (ayrı key)."""
+    from datetime import UTC, datetime, timedelta
+    now = datetime.now(UTC)
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=now,
+    ))
+    session.add(models.Decision(
+        sport=football.SPORT_NAME, tenant_id="t-default",
+        match_external_id=200, team_external_id=11,
+        minute=70.0, period=2, decision_type="substitution",
+        outcome="pending", created_at=now - timedelta(minutes=1),
+    ))
+    session.commit()
+    a = client.get("/admin/decisions/recent?team_external_id=11&limit=20")
+    b = client.get("/admin/decisions/recent?team_external_id=22&limit=20")
+    assert a.json()["_cache"] == "miss"
+    assert b.json()["_cache"] == "miss"  # farklı team → farklı key
+
+
+def test_matches_with_events_cache_hit_miss(session, client):
+    """matches-with-events de cache'leniyor (60sn TTL)."""
+    _seed_match_events(session)
+    r1 = client.get("/admin/matches/with-events?limit=10")
+    assert r1.status_code == 200
+    assert r1.json()["_cache"] == "miss"
+    r2 = client.get("/admin/matches/with-events?limit=10")
+    assert r2.json()["_cache"] == "hit"
+
+
 def test_decisions_recent_summary_and_list(session, client):
     """3 karar: 2 pozitif + 1 negatif → hit_rate=0.667, summary doğru."""
     from datetime import UTC, datetime, timedelta

@@ -3028,8 +3028,18 @@ def decisions_recent_endpoint(
 
     summary: toplam, recommended, by_outcome, by_decision_type, hit_rate.
     decisions: en yeni karar önce, kullanıcıya gösterilecek alanlarla.
+
+    Cache: 30sn TTL (tenant_id + team + limit → key). Outcome mark sonrası
+    user SWR mutate çağırır; bu cache'i bypass etmez ama 30sn'de sıfırlanır.
     """
     from sqlalchemy import func
+    tenant_id = session.info.get("tenant_id", "default")
+    cache_key = f"decisions-recent:{tenant_id}:{team_external_id or 'all'}:{limit}"
+    cached = cache_get(session, source="admin_decisions_recent", key=cache_key)
+    if isinstance(cached, dict) and "summary" in cached:
+        cached["_cache"] = "hit"
+        return cached
+
     where = [models.Decision.sport == football.SPORT_NAME]
     if team_external_id is not None:
         where.append(models.Decision.team_external_id == team_external_id)
@@ -3058,7 +3068,7 @@ def decisions_recent_endpoint(
     resolved = positive + negative + neutral
     hit_rate = round(positive / resolved, 3) if resolved > 0 else None
 
-    return {
+    body = {
         "summary": {
             "total": int(sum(outcome_counts.values())),
             "resolved": resolved,
@@ -3087,6 +3097,12 @@ def decisions_recent_endpoint(
             for r in rows
         ],
     }
+    cache_set(
+        session, source="admin_decisions_recent", key=cache_key,
+        value=body, ttl_seconds=30,
+    )
+    body["_cache"] = "miss"
+    return body
 
 
 @router.get(
@@ -3104,8 +3120,17 @@ def matches_with_events_endpoint(
     Frontend `/decisions/live` match selector dropdown'u için. Sadece
     EventRow'da en az 1 satırı olan maçlar listelenir; boş maçlar atlanır.
     Sıralama: en yeni kickoff önce.
+
+    Cache: 60sn TTL — match listesi ingest sıklığına bağlı.
     """
     from sqlalchemy import func
+    tenant_id = session.info.get("tenant_id", "default")
+    cache_key = f"matches-with-events:{tenant_id}:{sport}:{limit}"
+    cached = cache_get(session, source="admin_matches_with_events", key=cache_key)
+    if isinstance(cached, dict) and "matches" in cached:
+        cached["_cache"] = "hit"
+        return cached
+
     # Match × EventRow.match_external_id JOIN sayım
     event_counts = dict(session.execute(
         select(
@@ -3149,7 +3174,13 @@ def matches_with_events_endpoint(
         }
         for m in rows
     ]
-    return {"matches": matches, "total": len(matches)}
+    body = {"matches": matches, "total": len(matches)}
+    cache_set(
+        session, source="admin_matches_with_events", key=cache_key,
+        value=body, ttl_seconds=60,
+    )
+    body["_cache"] = "miss"
+    return body
 
 
 @router.get(
