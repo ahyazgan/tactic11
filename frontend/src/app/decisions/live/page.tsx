@@ -74,6 +74,7 @@ interface ContextPrimary {
   headline?: string; theme_label?: string;
   urgency?: number; confidence?: number; confidence_label?: string;
   rationale?: string;
+  drivers?: string[];   // confidence engine açıklamaları: sample, magnitude, history vb.
 }
 interface ContextDecision {
   one_liner?: string;
@@ -513,6 +514,28 @@ function PrimaryBanner({
         <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.65 }}>
           {p.rationale}
         </div>
+        {p.drivers && p.drivers.length > 0 && (
+          <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap",
+            gap: 6 }}>
+            {p.drivers.slice(0, 5).map((d, i) => {
+              const isHistory = d.toLowerCase().includes("geçmiş")
+                || d.toLowerCase().includes("doğru çıktı");
+              return (
+                <span key={i} style={{
+                  fontSize: 10.5, padding: "2px 8px", borderRadius: 999,
+                  background: isHistory
+                    ? "color-mix(in srgb, var(--accent) 12%, transparent)"
+                    : "var(--panel2)",
+                  color: isHistory ? "var(--accent)" : "var(--muted)",
+                  border: `1px solid ${isHistory ? "var(--accent)" : "var(--line)"}`,
+                  fontWeight: isHistory ? 700 : 500,
+                }}>
+                  {isHistory ? "📊 " : ""}{d}
+                </span>
+              );
+            })}
+          </div>
+        )}
         {(onApply || onWatchClip) && (
           <div style={{ marginTop: 14, display: "flex",
             alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -1134,6 +1157,9 @@ export default function LiveDecisionPage() {
         await new Promise((r) => setTimeout(r, 400));
         setApplyState("saved");
       } else {
+        // context_json — score_state + closing_phase + theme; geçmiş hit_rate
+        // bu state'e göre filtrelenir (context_pipeline _hit_rate state-filter)
+        const closing = data?.closing_strategy;
         await apiFetch(`/admin/matches/${matchId}/decisions`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1145,6 +1171,12 @@ export default function LiveDecisionPage() {
             notes: p.headline,
             recommended: true,
             confidence: p.confidence,
+            context_json: {
+              score_state: closing?.score_state ?? null,
+              closing_phase: closing?.closing_phase ?? null,
+              theme: p.theme_label ?? null,
+              urgency: p.urgency ?? null,
+            },
           }),
         });
         setApplyState("saved");
