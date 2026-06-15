@@ -32,6 +32,7 @@ from app.engine.formation_matcher import (
     best_formations_against,
     compute_formation_matchup,
 )
+from app.engine.match_plan_builder import MatchPlanContext, compute_match_plan
 from app.engine.opponent import compute_head_to_head
 from app.engine.rating import compute_team_rating
 from app.sports import football
@@ -49,7 +50,7 @@ class TacticalAdjustmentAgent(Agent):
     """Rakibe karşı taktiksel ayarlama önerisi."""
 
     name = "tactical_adjustment"
-    version = "2"  # v1 → v2: engine.formation_matcher entegre
+    version = "3"  # v2 → v3: engine.match_plan_builder (H+I+K kompozit) entegre
 
     def __init__(self, *, commentator: ClaudeCommentator | None = None):
         self._commentator = commentator or ClaudeCommentator(AnthropicClient())
@@ -157,18 +158,51 @@ class TacticalAdjustmentAgent(Agent):
                     "avg_goal_diff": pref_vs_opp.avg_goal_diff,
                 }
 
+        # v3: Match Plan kompoziti (H formation_matchup + I set_piece + K threat)
+        opp_recent_formation = formation_insight.get("opp_recent_formation")
+        opponent_style = _infer_opponent_style(opp_form, opp_rating)
+        plan_ctx = MatchPlanContext(
+            our_formation=preferred_formation,
+            opp_formation=opp_recent_formation or "4-3-3",
+            opponent_style=opponent_style,
+            set_piece_type="corner",
+            set_piece_side="long",
+            our_attributes={"aerial": 0.7, "set_piece": 0.65, "technique": 0.7},
+        )
+        match_plan_result = compute_match_plan(plan_ctx)
+        match_plan = match_plan_result.value
+        # Plan'dan en kritik advice'i signals'a ekle
+        if match_plan.matchup_advice:
+            signals.append(
+                f"Plan: {match_plan.matchup_advice[0]}",
+            )
+        if match_plan.set_piece_top:
+            top_sp = match_plan.set_piece_top[0]
+            signals.append(
+                f"Set-piece önerisi: {top_sp['label']} (score {top_sp['score']})",
+            )
+
         ai_brief = _build_tactical_brief(
             commentator=self._commentator,
             match_id=match_id, my_team_id=team_id, opp_id=opp_id, is_home=is_home,
             preferred_formation=preferred_formation, signals=signals,
             opp_form=opp_form, opp_rating=opp_rating, h2h=h2h,
             formation_insight=formation_insight,
+            match_plan=match_plan,
         )
 
         output = {
             "match_external_id": match_id,
             "team_external_id": team_id,
             "formation_insight": formation_insight,
+            "match_plan": {
+                "headline": match_plan.headline,
+                "matchup_vector": match_plan.matchup_vector,
+                "matchup_advice": list(match_plan.matchup_advice),
+                "set_piece_top": list(match_plan.set_piece_top),
+                "plan_lines": list(match_plan.plan_lines),
+                "opponent_style_inferred": opponent_style,
+            },
             "opponent_id": opp_id,
             "is_home": is_home,
             "preferred_formation": preferred_formation,
@@ -292,11 +326,28 @@ def _last_formation_for_team(
     return row
 
 
+def _infer_opponent_style(opp_form, opp_rating) -> str | None:
+    """opp_form + opp_rating'den basit kural-tabanlı stil etiketi."""
+    ga = opp_form.goals_against
+    gf = opp_form.goals_for
+    mp = opp_form.matches_played
+    if mp < 3:
+        return None
+    if ga <= 3 and mp >= 3:
+        return "italian_catenaccio"
+    if gf >= 10 and mp >= 5:
+        return "gegenpress"
+    if opp_form.draws >= mp // 2 and mp >= 4:
+        return "atletico_compact"
+    return None
+
+
 def _build_tactical_brief(
     *, commentator: ClaudeCommentator, match_id: int, my_team_id: int,
     opp_id: int, is_home: bool, preferred_formation: str, signals: list[str],
     opp_form, opp_rating, h2h,
     formation_insight: dict | None = None,
+    match_plan=None,
 ) -> str:
     if commentator._client.is_stub():
         return (
@@ -325,6 +376,12 @@ def _build_tactical_brief(
                     f"({r['matches']} maç, gd {r['avg_goal_diff']:+.1f})\n"
                 )
 
+    plan_block = ""
+    if match_plan is not None:
+        plan_block = f"\nMatch Plan (kompozit): {match_plan.headline}\n"
+        for line in match_plan.plan_lines[:4]:
+            plan_block += f"  • {line}\n"
+
     user = (
         f"Maç {match_id}, ben={my_team_id} ({'ev' if is_home else 'dep'}) vs rakip {opp_id}\n"
         f"Tercih ettiğim formasyon: {preferred_formation}\n"
@@ -335,5 +392,6 @@ def _build_tactical_brief(
         f"H2H: {h2h.matches_played} maç (ben={h2h.team_a_wins} X={h2h.draws} rakip={h2h.team_b_wins})\n"
         f"Sinyaller: {signals if signals else 'belirgin sinyal yok'}"
         + formation_block
+        + plan_block
     )
     return commentator._call(system, user, max_tokens=400)

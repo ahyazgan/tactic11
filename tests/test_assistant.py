@@ -339,6 +339,31 @@ def test_tactical_adjustment_produces_signals(session, commentator_stub):
     assert "form_wdl" in r.output_json["opponent_summary"]
 
 
+def test_tactical_adjustment_v3_includes_match_plan(session, commentator_stub):
+    """v3: engine.match_plan_builder kompoziti output'a eklenir."""
+    _seed_basic(session, datetime.now(UTC))
+    agent = TacticalAdjustmentAgent(commentator=commentator_stub)
+    assert agent.version == "3"
+    r = agent.run(session, context={"match_external_id": 99, "team_external_id": 611})
+    mp = r.output_json.get("match_plan")
+    assert mp is not None
+    assert "headline" in mp
+    assert "matchup_vector" in mp
+    assert "matchup_advice" in mp
+    assert "set_piece_top" in mp
+    assert "plan_lines" in mp
+    assert "opponent_style_inferred" in mp
+    # 8 boyut matchup vector
+    expected_dims = {
+        "our_xt_expected", "opp_xt_expected", "our_ppda_advantage",
+        "midfield_control", "width_clash", "set_piece_clash",
+        "transition_speed", "space_behind_lines",
+    }
+    assert expected_dims.issubset(set(mp["matchup_vector"].keys()))
+    # Plan satırlarından en az biri signals'da
+    assert any("Plan:" in s or "Set-piece" in s for s in r.output_json["signals"])
+
+
 # --------------------------------------------------------------------------- #
 # Simulator API + memory API (TestClient)
 # --------------------------------------------------------------------------- #
