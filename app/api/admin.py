@@ -3604,6 +3604,32 @@ def return_to_play_plan_endpoint(
 
 
 @router.post(
+    "/tactical/concepts",
+    tags=["admin"],
+    summary="Aktif taktiksel konseptler — snapshot içinden tespit",
+)
+def tactical_concepts_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Snapshot dict üzerinden aktif konseptleri tara.
+
+    payload: {
+        "snapshot": {
+            "opp_ppda": 7.5, "opp_press_height": 0.7,
+            "my_score_diff": 1, "current_minute": 88, ...
+        },
+        "current_minute"?: float (default snapshot.current_minute)
+    }
+    """
+    from app.engine.concept_recognizer import compute_active_concepts
+
+    snap = payload.get("snapshot") or {}
+    cm = float(payload.get("current_minute") or snap.get("current_minute") or 0)
+    result = compute_active_concepts(snap, current_minute=cm)
+    return engine_result_to_dict(result)
+
+
+@router.post(
     "/referee/tendency",
     tags=["admin"],
     summary="Hakem eğilim profili (J.1) — payload prior_matches",
