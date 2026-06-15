@@ -3772,6 +3772,40 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/tactical/in-match-decision",
+    tags=["admin"],
+    summary="Anlık maç durumundan TD için sıralı karar listesi",
+)
+def in_match_decision_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {minute, our_score?, opp_score?, our_xg_running?,
+                  opp_xg_running?, fatigue_avg?, subs_left?,
+                  yellows_in_starting_xi?, opp_subs_used?,
+                  formation_drift_alert?}
+    """
+    from app.engine.in_match_decision import (
+        MatchState,
+        compute_in_match_decisions,
+    )
+
+    state = MatchState(
+        minute=float(payload.get("minute", 60)),
+        our_score=int(payload.get("our_score", 0)),
+        opp_score=int(payload.get("opp_score", 0)),
+        our_xg_running=float(payload.get("our_xg_running", 0.0)),
+        opp_xg_running=float(payload.get("opp_xg_running", 0.0)),
+        fatigue_avg=float(payload.get("fatigue_avg", 0.5)),
+        subs_left=int(payload.get("subs_left", 5)),
+        yellows_in_starting_xi=int(payload.get("yellows_in_starting_xi", 0)),
+        opp_subs_used=int(payload.get("opp_subs_used", 0)),
+        formation_drift_alert=bool(payload.get("formation_drift_alert", False)),
+    )
+    result = compute_in_match_decisions(state)
+    return engine_result_to_dict(result)
+
+
+@router.post(
     "/tactical/match-plan",
     tags=["admin"],
     summary="H+I+K kompozit — 1-sayfa taktik maç planı",
