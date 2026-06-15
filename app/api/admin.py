@@ -3604,6 +3604,30 @@ def return_to_play_plan_endpoint(
 
 
 @router.post(
+    "/tactical/counter",
+    tags=["admin"],
+    summary="Rakip × bizim stil → spesifik taktik öneri (counter playbook)",
+)
+def tactical_counter_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {opponent_style, our_style?: 'any', max_advice?: 6}.
+
+    Stil ID'leri style_fingerprint engine arketipiyle aynı: klopp_press,
+    pep_possession, atletico_compact, italian_zonal, bvb_counter,
+    lecce_direct, conte_3_5_2_wing, ten_hag_modern_pos, any.
+    """
+    from app.engine.tactical_counter import compute_counter_advice
+
+    result = compute_counter_advice(
+        opponent_style=str(payload.get("opponent_style", "any")),
+        our_style=str(payload.get("our_style", "any")),
+        max_advice=int(payload.get("max_advice", 6)),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
     "/teams/{team_id}/style-fingerprint",
     tags=["admin"],
     summary="Takım 8-vektör taktik kimlik (cosine arketip eşleme)",
