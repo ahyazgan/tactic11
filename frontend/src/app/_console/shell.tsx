@@ -113,6 +113,21 @@ export function ConsoleShell({
   // Tablet/mobil: sidebar çekmece (drawer) olarak açılır.
   const [menuOpen, setMenuOpen] = React.useState(false);
 
+  // ESC tuşu ile kapat + açıkken body scroll lock
+  React.useEffect(() => {
+    if (!menuOpen) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [menuOpen]);
+
   return (
     <div className={`ovroot${DEMO_MODE ? " demo" : ""}${menuOpen ? " nav-open" : ""}`}>
 
