@@ -36,6 +36,74 @@ const SCENARIO: Record<string, { label: string; v: string }> = {
   unknown: { label: "BİLİNMİYOR", v: "var(--muted)" },
 };
 
+interface PreMatchIntel {
+  opponent_fingerprint?: {
+    top_archetype: string; label: string; description: string;
+    confidence: string; summary: string; second_archetype?: string | null;
+  };
+  our_fingerprint?: { top_archetype: string; label: string } | null;
+  counter_playbook?: { text: string; focus: string; tags: string[] }[];
+  summary?: string;
+}
+
+function PreMatchIntelCard({
+  ourTeamId, oppTeamId,
+}: { ourTeamId: string; oppTeamId: string }): React.ReactElement | null {
+  const path = `/admin/teams/${ourTeamId}/pre-match-intel`
+    + `?opponent_team_id=${oppTeamId}&our_team_id=${ourTeamId}&last_n=6`;
+  const { data } = useSWR<PreMatchIntel>(
+    path, apiFetch, { revalidateOnFocus: false, shouldRetryOnError: false },
+  );
+  if (!data?.opponent_fingerprint) return null;
+  const opp = data.opponent_fingerprint;
+  return (
+    <div className="rc" style={{
+      margin: "12px 0", padding: "12px 16px",
+      borderLeft: "3px solid var(--accent)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8,
+        marginBottom: 8 }}>
+        <span style={{ fontSize: 14 }}>🧠</span>
+        <h3 style={{ fontSize: 11.5, textTransform: "uppercase",
+          letterSpacing: 0.7, color: "var(--muted)", margin: 0,
+          fontWeight: 700 }}>Rakip stili + counter playbook</h3>
+        <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--dim)",
+          textTransform: "uppercase" }}>{opp.confidence}</span>
+      </div>
+      <div style={{ marginBottom: 8 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>
+          {opp.label}
+        </span>
+        <span style={{ marginLeft: 8, fontSize: 11.5, color: "var(--muted)" }}>
+          — {opp.description}
+        </span>
+      </div>
+      {data.counter_playbook && data.counter_playbook.length > 0 && (
+        <div>
+          <div style={{ fontSize: 10.5, textTransform: "uppercase",
+            color: "var(--muted)", letterSpacing: 0.5, marginBottom: 6,
+            fontWeight: 700 }}>Counter Playbook ({data.counter_playbook.length})</div>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+            {data.counter_playbook.slice(0, 4).map((a, i) => (
+              <li key={i} style={{ fontSize: 12, color: "var(--ink)",
+                lineHeight: 1.55, marginBottom: 4,
+                paddingLeft: 14, position: "relative" }}>
+                <span style={{ position: "absolute", left: 0,
+                  color: "var(--accent)" }}>•</span>
+                {a.text}
+                <span style={{ marginLeft: 6, fontSize: 9.5,
+                  color: "var(--dim)", textTransform: "uppercase" }}>
+                  [{a.focus}]
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface PreMatchBrief {
   summary: string;
   output: {
@@ -146,6 +214,7 @@ export default function MatchPlanConsolePage() {
       {!DEMO_MODE && query && plan.isLoading && <div className="pgdesc">Yükleniyor…</div>}
       {!DEMO_MODE && query && plan.error && <div className="pgdesc">Bu maç için kayıtlı plan yok ya da maç bulunamadı.</div>}
       {!DEMO_MODE && query && <PreMatchBriefCard matchId={query} />}
+      {!DEMO_MODE && query && <PreMatchIntelCard ourTeamId="217" oppTeamId="206" />}
 
       {d && scen && (
         <>

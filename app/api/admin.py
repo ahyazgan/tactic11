@@ -2931,6 +2931,54 @@ def live_decision_endpoint(
         opponent_external_id=opp_id,
     ))
 
+    # Taktiksel konsept tespit — diğer engine'lerden snapshot türet
+    from app.engine.concept_recognizer import compute_active_concepts
+    concept_snap: dict[str, Any] = {
+        "current_minute": current_minute,
+        "my_score_diff": (my_score or 0) - (opp_score or 0),
+    }
+    # Momentum
+    mom_v = out.get("momentum") if isinstance(out.get("momentum"), dict) else {}
+    if mom_v:
+        concept_snap["momentum_score"] = mom_v.get("score", 0)
+        concept_snap["holder"] = mom_v.get("holder", "balanced")
+        concept_snap["press_breaking"] = bool(mom_v.get("press_breaking"))
+        concept_snap["xg_swing_alert"] = bool(mom_v.get("xg_swing_alert"))
+    # Foul pressure
+    fp_v = out.get("foul_pressure") if isinstance(out.get("foul_pressure"), dict) else {}
+    if fp_v:
+        concept_snap["tactical_fouling_alert"] = bool(fp_v.get("tactical_fouling_alert"))
+        concept_snap["our_high_foul_alert"] = bool(fp_v.get("our_high_foul_alert"))
+        concept_snap["escalation_alert"] = bool(fp_v.get("escalation_alert"))
+    # Spatial / field tilt
+    spat_v = out.get("spatial_control") if isinstance(out.get("spatial_control"), dict) else {}
+    if spat_v:
+        concept_snap["opp_field_tilt_pct"] = float(spat_v.get("opp_field_tilt_pct", 50))
+    # PPDA & press_height — engine yoksa kestir
+    # (engine.ppda var ama window-bazlı; live-decision'da hesaplamaya gitmeden
+    # mevcut snapshot'tan türetiyoruz)
+    if p:
+        opp_def_actions = sum(
+            1 for x in d if x.team_external_id == opp_id
+            and x.minute >= max(0, current_minute - 15)
+        )
+        # PPDA proxy: rakip pas / bizim def 15dk pencere
+        our_pass_count = sum(
+            1 for x in p if x.team_external_id == my_team_id
+            and x.minute >= max(0, current_minute - 15)
+        )
+        if opp_def_actions > 0:
+            concept_snap["opp_ppda"] = round(our_pass_count / opp_def_actions, 2)
+        # press_height proxy: rakip def aksiyon ortalama x → 0-1
+        opp_d = [x for x in d if x.team_external_id == opp_id
+                 and x.minute >= max(0, current_minute - 15)]
+        if opp_d:
+            avg_x = sum(x.x for x in opp_d) / len(opp_d)
+            concept_snap["opp_press_height"] = round(min(1.0, avg_x / 100.0), 3)
+    _safe("active_concepts", lambda: compute_active_concepts(
+        concept_snap, current_minute=current_minute,
+    ))
+
     # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
     out.update(run_context_pipeline(
@@ -3600,6 +3648,240 @@ def return_to_play_plan_endpoint(
         for t in tests_raw
     ]
     result = compute_return_to_play_plan(player_id, tests)
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/teams/{team_id}/pre-match-intel",
+    tags=["admin"],
+    summary="Maç-öncesi taktik istihbarat — rakip stil + counter playbook",
+)
+def pre_match_intel_endpoint(
+    team_id: int,
+    opponent_team_id: int = Query(..., description="Rakip takım external_id"),
+    our_team_id: int | None = Query(default=None,
+        description="Bizim stil; verilmezse 'any'"),
+    last_n: int = Query(default=6, ge=2, le=20),
+) -> dict[str, Any]:
+    """Önümüzdeki rakip için 3 katmanlı taktik istihbarat.
+
+    Akış (şimdilik payload-fed sentetik verilerle çalışır; pilot kulüpte
+    FBref/StatsBomb adapter bağlanınca son N maç istatistiği otomatik
+    çekilir):
+      1. opponent stat'larından style_fingerprint → top arketip
+      2. our stat'larından (varsa) style_fingerprint → bizim arketip
+      3. tactical_counter (rakip × bizim) → 3-6 öneri
+
+    Bu endpoint sentetik amaçlı default verir; gerçek pipeline için
+    POST /admin/teams/{id}/style-fingerprint çağrısı sonrası
+    POST /admin/tactical/counter ile kombinleyebilirsin. UI tarafı bu
+    GET'i kullanır (frontend'in lambdasını azaltmak için).
+    """
+    from app.engine.style_fingerprint import (
+        TeamMatchStat,
+        compute_style_fingerprint,
+    )
+    from app.engine.tactical_counter import compute_counter_advice
+
+    # Default sentetik: pilot öncesi placeholder. team_id ile last_n kullanılmıyor
+    # — gerçek pipeline'da FBref/StatsBomb stat çek + son N ortalama.
+    placeholder_opp = [
+        TeamMatchStat(
+            ppda=10, field_tilt_pct=55, direct_play_pct=28,
+            counter_threat=0.45, set_piece_share_pct=22, width_pct=55,
+            high_line_risk=0.5, press_height=0.55,
+        )
+        for _ in range(min(last_n, 5))
+    ]
+    opp_fp = compute_style_fingerprint(placeholder_opp).value
+    opp_style = opp_fp.top_archetype.name
+
+    our_style = "any"
+    our_fp_dict: dict[str, Any] | None = None
+    if our_team_id is not None:
+        placeholder_us = [
+            TeamMatchStat(
+                ppda=11, field_tilt_pct=60, direct_play_pct=22,
+                counter_threat=0.40, set_piece_share_pct=20, width_pct=58,
+                high_line_risk=0.5, press_height=0.55,
+            )
+            for _ in range(min(last_n, 5))
+        ]
+        our_fp = compute_style_fingerprint(placeholder_us).value
+        our_style = our_fp.top_archetype.name
+        our_fp_dict = {
+            "top_archetype": our_fp.top_archetype.name,
+            "label": our_fp.top_archetype.label,
+            "summary": our_fp.summary,
+        }
+
+    advice = compute_counter_advice(
+        opponent_style=opp_style, our_style=our_style,
+    ).value
+
+    return {
+        "team_id": team_id,
+        "opponent_team_id": opponent_team_id,
+        "our_team_id": our_team_id,
+        "opponent_fingerprint": {
+            "top_archetype": opp_fp.top_archetype.name,
+            "label": opp_fp.top_archetype.label,
+            "description": opp_fp.top_archetype.description,
+            "confidence": opp_fp.confidence,
+            "summary": opp_fp.summary,
+            "second_archetype": opp_fp.second_archetype.name
+                if opp_fp.second_archetype else None,
+        },
+        "our_fingerprint": our_fp_dict,
+        "counter_playbook": [
+            {"text": a.text, "focus": a.focus, "tags": list(a.tags)}
+            for a in advice.advices
+        ],
+        "summary": advice.summary,
+        "note": (
+            "Sentetik veri ile placeholder. Pilot kulüpte FBref/StatsBomb "
+            "adapter takılınca son N maç stat'ları otomatik çekilecek."
+        ),
+    }
+
+
+@router.post(
+    "/players/{player_id}/role",
+    tags=["admin"],
+    summary="Oyuncu stat'ından taktiksel rol tespit (30+ rol KB cosine)",
+)
+def player_role_endpoint(
+    player_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Oyuncu 8-vektör stat → rol arketipi.
+
+    payload: {
+        "stats": {
+            "defensive_actions_pct": 0..1, "tackle_pct": 0..1,
+            "interception_pct": 0..1, "pass_completion_pct": 0..1,
+            "progressive_pass_pct": 0..1, "key_pass_pct": 0..1,
+            "dribble_pct": 0..1, "shot_per_90_pct": 0..1
+        },
+        "position_group"?: "GK|CB|FB|DM|CM|AM|W|FW",
+        "top_n_secondary"?: int (default 2)
+    }
+    """
+    from app.engine.role_matcher import (
+        PlayerStatVector,
+        compute_role_match,
+    )
+
+    s = payload.get("stats", {}) or {}
+    stats = PlayerStatVector(
+        defensive_actions_pct=float(s.get("defensive_actions_pct", 0.5)),
+        tackle_pct=float(s.get("tackle_pct", 0.5)),
+        interception_pct=float(s.get("interception_pct", 0.5)),
+        pass_completion_pct=float(s.get("pass_completion_pct", 0.7)),
+        progressive_pass_pct=float(s.get("progressive_pass_pct", 0.5)),
+        key_pass_pct=float(s.get("key_pass_pct", 0.3)),
+        dribble_pct=float(s.get("dribble_pct", 0.3)),
+        shot_per_90_pct=float(s.get("shot_per_90_pct", 0.2)),
+    )
+    result = compute_role_match(
+        player_id, stats,
+        position_group=payload.get("position_group"),
+        top_n_secondary=int(payload.get("top_n_secondary", 2)),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/tactical/counter",
+    tags=["admin"],
+    summary="Rakip × bizim stil → spesifik taktik öneri (counter playbook)",
+)
+def tactical_counter_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {opponent_style, our_style?: 'any', max_advice?: 6}.
+
+    Stil ID'leri style_fingerprint engine arketipiyle aynı: klopp_press,
+    pep_possession, atletico_compact, italian_zonal, bvb_counter,
+    lecce_direct, conte_3_5_2_wing, ten_hag_modern_pos, any.
+    """
+    from app.engine.tactical_counter import compute_counter_advice
+
+    result = compute_counter_advice(
+        opponent_style=str(payload.get("opponent_style", "any")),
+        our_style=str(payload.get("our_style", "any")),
+        max_advice=int(payload.get("max_advice", 6)),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/teams/{team_id}/style-fingerprint",
+    tags=["admin"],
+    summary="Takım 8-vektör taktik kimlik (cosine arketip eşleme)",
+)
+def style_fingerprint_endpoint(
+    team_id: int,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Son N maç stat'ından 8-vektör → en yakın arketip.
+
+    payload: {
+        "stats": [
+            {"ppda": float, "field_tilt_pct": float, "direct_play_pct": float,
+             "counter_threat": float, "set_piece_share_pct": float,
+             "width_pct": float, "high_line_risk": float, "press_height": float}
+        ]
+    }
+    """
+    from app.engine.style_fingerprint import (
+        TeamMatchStat,
+        compute_style_fingerprint,
+    )
+
+    raw = payload.get("stats", []) or []
+    stats = [
+        TeamMatchStat(
+            ppda=float(s.get("ppda", 12)),
+            field_tilt_pct=float(s.get("field_tilt_pct", 50)),
+            direct_play_pct=float(s.get("direct_play_pct", 22)),
+            counter_threat=float(s.get("counter_threat", 0.35)),
+            set_piece_share_pct=float(s.get("set_piece_share_pct", 20)),
+            width_pct=float(s.get("width_pct", 55)),
+            high_line_risk=float(s.get("high_line_risk", 0.4)),
+            press_height=float(s.get("press_height", 0.5)),
+        )
+        for s in raw
+    ]
+    result = compute_style_fingerprint(stats)
+    body = engine_result_to_dict(result)
+    body["team_id"] = team_id
+    return body
+
+
+@router.post(
+    "/tactical/concepts",
+    tags=["admin"],
+    summary="Aktif taktiksel konseptler — snapshot içinden tespit",
+)
+def tactical_concepts_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Snapshot dict üzerinden aktif konseptleri tara.
+
+    payload: {
+        "snapshot": {
+            "opp_ppda": 7.5, "opp_press_height": 0.7,
+            "my_score_diff": 1, "current_minute": 88, ...
+        },
+        "current_minute"?: float (default snapshot.current_minute)
+    }
+    """
+    from app.engine.concept_recognizer import compute_active_concepts
+
+    snap = payload.get("snapshot") or {}
+    cm = float(payload.get("current_minute") or snap.get("current_minute") or 0)
+    result = compute_active_concepts(snap, current_minute=cm)
     return engine_result_to_dict(result)
 
 

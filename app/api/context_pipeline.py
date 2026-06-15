@@ -314,8 +314,16 @@ def _load_frames(session, match_id: int, team_id: int,
     return frames
 
 
-def _hit_rate(session, team_id: int) -> dict[str, float]:
-    """decision outcome'larından signal_type → geçmiş isabet oranı."""
+def _hit_rate(
+    session, team_id: int, *,
+    score_state: str | None = None,
+) -> dict[str, float]:
+    """decision outcome'larından signal_type → geçmiş isabet oranı.
+
+    score_state verilirse aynı durumdaki kararlara filtreler (örn. "trailing"
+    + "tactical_instruction" → 'Geride 0-1 80. dk tempo yükselt' tipi
+    kararların oranı). context_json'da score_state alanı varsa kullanılır.
+    """
     rows = session.execute(
         select(models.Decision).where(
             models.Decision.sport == football.SPORT_NAME,
@@ -325,6 +333,14 @@ def _hit_rate(session, team_id: int) -> dict[str, float]:
     ).scalars().all()
     by_type: dict[str, list[int]] = {}
     for r in rows:
+        if score_state is not None:
+            try:
+                ctx = _json.loads(r.context_json) if r.context_json else {}
+            except (ValueError, TypeError):
+                ctx = {}
+            row_state = ctx.get("score_state") if isinstance(ctx, dict) else None
+            if row_state != score_state:
+                continue
         by_type.setdefault(r.decision_type, []).append(
             1 if r.outcome == "positive" else 0
         )
@@ -380,10 +396,14 @@ def run_context_pipeline(
         hints: tuple[str, ...] = (
             ("adjust_shape", "change_personnel") if memory.threads else ()
         )
-        hit = _hit_rate(session, my_team_id)
-
         diff = (my_score or 0) - (opp_score or 0)
         state = "leading" if diff > 0 else "trailing" if diff < 0 else "drawing"
+        # State-filtered hit_rate: aynı durumdaki kararlar üzerinden
+        # ("trailing-tactical" → sadece geride iken verilen taktik kararlar)
+        hit = _hit_rate(session, my_team_id, score_state=state)
+        if not hit:
+            # Fallback: state filtresi yetersizse (veri az) tüm tarihçeye düş
+            hit = _hit_rate(session, my_team_id)
 
         ctx = compute_context(
             candidates, current_minute=current_minute, score_state=state,

@@ -308,6 +308,33 @@ def test_set_piece_opportunity_endpoint(session, client):
     assert "tactical_advice" in v
 
 
+def test_pre_match_intel_endpoint(client):
+    """Rakip stil + counter playbook tek istekte gelir."""
+    r = client.get(
+        "/admin/teams/11/pre-match-intel"
+        "?opponent_team_id=22&our_team_id=11&last_n=5",
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert "opponent_fingerprint" in body
+    assert "counter_playbook" in body
+    assert body["opponent_fingerprint"]["top_archetype"]
+    # Counter playbook en az 1 satır
+    assert len(body["counter_playbook"]) >= 1
+
+
+def test_pre_match_intel_endpoint_no_our_team(client):
+    """our_team_id verilmezse 'any' fallback."""
+    r = client.get(
+        "/admin/teams/11/pre-match-intel?opponent_team_id=22",
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["our_fingerprint"] is None
+    # any × opp matchup yine de advice verir
+    assert len(body["counter_playbook"]) >= 1
+
+
 def test_pre_match_brief_endpoint(session, client):
     """Maç + tarihten önce 5 maç → ai_brief stub + summary döner."""
     now = datetime.now(UTC)

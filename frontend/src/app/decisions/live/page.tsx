@@ -74,6 +74,7 @@ interface ContextPrimary {
   headline?: string; theme_label?: string;
   urgency?: number; confidence?: number; confidence_label?: string;
   rationale?: string;
+  drivers?: string[];   // confidence engine açıklamaları: sample, magnitude, history vb.
 }
 interface ContextDecision {
   one_liner?: string;
@@ -91,6 +92,7 @@ interface LiveDecisionResponse {
   closing_strategy?: ClosingStrategy;
   star_feed?: StarFeed;
   foul_pressure?: FoulPressure;
+  active_concepts?: ActiveConceptOut;
   context?: ContextDecision;
 }
 
@@ -513,6 +515,28 @@ function PrimaryBanner({
         <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.65 }}>
           {p.rationale}
         </div>
+        {p.drivers && p.drivers.length > 0 && (
+          <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap",
+            gap: 6 }}>
+            {p.drivers.slice(0, 5).map((d, i) => {
+              const isHistory = d.toLowerCase().includes("geçmiş")
+                || d.toLowerCase().includes("doğru çıktı");
+              return (
+                <span key={i} style={{
+                  fontSize: 10.5, padding: "2px 8px", borderRadius: 999,
+                  background: isHistory
+                    ? "color-mix(in srgb, var(--accent) 12%, transparent)"
+                    : "var(--panel2)",
+                  color: isHistory ? "var(--accent)" : "var(--muted)",
+                  border: `1px solid ${isHistory ? "var(--accent)" : "var(--line)"}`,
+                  fontWeight: isHistory ? 700 : 500,
+                }}>
+                  {isHistory ? "📊 " : ""}{d}
+                </span>
+              );
+            })}
+          </div>
+        )}
         {(onApply || onWatchClip) && (
           <div style={{ marginTop: 14, display: "flex",
             alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -748,6 +772,67 @@ function SubTimingCard({ data }: { data?: SubTimingOut }) {
           • Oyuncu #{a.player_id} → <b>{a.verdict}</b> (etki: {a.impact.toFixed(2)})
         </div>
       ))}
+    </EngineCard>
+  );
+}
+
+interface ActiveConceptOut {
+  opponent_concepts?: { name: string; label: string; family: string }[];
+  our_concepts?: { name: string; label: string; family: string }[];
+  counter_advice?: string[];
+  summary?: string;
+}
+
+function ActiveConceptsCard({ data }: { data?: ActiveConceptOut }) {
+  if (!data) return null;
+  const opp = data.opponent_concepts ?? [];
+  const us = data.our_concepts ?? [];
+  if (opp.length === 0 && us.length === 0) return null;
+  return (
+    <EngineCard title="Aktif konseptler" icon="🧠" accent="var(--accent)"
+      tooltip="30+ taktiksel konseptin (gegenpressing, low_block, third_man, park_the_bus...) snapshot'a göre aktif hangileri. Counter advice rakibin konseptlerine karşı.">
+      {opp.length > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 10.5, color: "var(--muted)",
+            textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 700,
+            marginBottom: 4 }}>Rakip ({opp.length})</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {opp.slice(0, 4).map((c) => (
+              <span key={c.name} style={{
+                fontSize: 11, padding: "2px 8px", borderRadius: 999,
+                background: "color-mix(in srgb, var(--high) 12%, transparent)",
+                color: "var(--high)", border: "1px solid var(--high)",
+                fontWeight: 600,
+              }}>{c.label}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {us.length > 0 && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 10.5, color: "var(--muted)",
+            textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 700,
+            marginBottom: 4 }}>Bizim ({us.length})</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {us.slice(0, 4).map((c) => (
+              <span key={c.name} style={{
+                fontSize: 11, padding: "2px 8px", borderRadius: 999,
+                background: "color-mix(in srgb, var(--low) 12%, transparent)",
+                color: "var(--low)", border: "1px solid var(--low)",
+                fontWeight: 600,
+              }}>{c.label}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {data.counter_advice && data.counter_advice.length > 0 && (
+        <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--ink)",
+          lineHeight: 1.5 }}>
+          {data.counter_advice.slice(0, 2).map((a, i) => (
+            <div key={i} style={{ marginBottom: 3 }}>• {a}</div>
+          ))}
+        </div>
+      )}
     </EngineCard>
   );
 }
@@ -1134,6 +1219,9 @@ export default function LiveDecisionPage() {
         await new Promise((r) => setTimeout(r, 400));
         setApplyState("saved");
       } else {
+        // context_json — score_state + closing_phase + theme; geçmiş hit_rate
+        // bu state'e göre filtrelenir (context_pipeline _hit_rate state-filter)
+        const closing = data?.closing_strategy;
         await apiFetch(`/admin/matches/${matchId}/decisions`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1145,6 +1233,12 @@ export default function LiveDecisionPage() {
             notes: p.headline,
             recommended: true,
             confidence: p.confidence,
+            context_json: {
+              score_state: closing?.score_state ?? null,
+              closing_phase: closing?.closing_phase ?? null,
+              theme: p.theme_label ?? null,
+              urgency: p.urgency ?? null,
+            },
           }),
         });
         setApplyState("saved");
@@ -1350,6 +1444,7 @@ export default function LiveDecisionPage() {
         <MomentumCard data={data?.momentum} />
         <SubTimingCard data={data?.sub_timing} />
         <TacticalTriggersCard data={data?.tactical_triggers} />
+        <ActiveConceptsCard data={data?.active_concepts} />
         <RiskMonitorCard data={data?.risk_monitor} />
         <StarFeedCard data={data?.star_feed} />
         <FoulPressureCard data={data?.foul_pressure} />
