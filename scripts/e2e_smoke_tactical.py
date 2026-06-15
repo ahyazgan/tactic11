@@ -149,6 +149,13 @@ def main() -> int:
                 {"player_id": 2, "name": "B", "kpis": {"rating": 6.5, "xt": 0.3}},
             ],
         }, lambda v: v["winner_name"] == "A"),
+        ("/admin/performance/opponent-adjusted-rating", {
+            "samples": [
+                {"match_id": 1, "rating": 7.5, "opp_rating": 8.5},
+                {"match_id": 2, "rating": 8.0, "opp_rating": 5.5},
+                {"match_id": 3, "rating": 7.0, "opp_rating": 7.0},
+            ],
+        }, lambda v: v["sample_count"] == 3 and len(v["buckets"]) >= 2),
         ("/admin/performance/clutch", {
             "samples": [
                 {"match_id": 1, "rating": 6.0, "flags": {}},

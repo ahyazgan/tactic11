@@ -3772,6 +3772,41 @@ def list_formations_endpoint() -> dict[str, Any]:
 
 
 @router.post(
+    "/performance/opponent-adjusted-rating",
+    tags=["admin"],
+    summary="Rakip gücüne göre düzeltilmiş rating (zor maç bonusu)",
+)
+def performance_opponent_adjusted_rating_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        samples: [{match_id, rating, opp_rating}, ...],
+        beta?: 0.30, league_avg?: 7.00
+    }
+    """
+    from app.engine.opponent_adjusted_rating import (
+        PerformanceVsOpponent,
+        compute_opponent_adjusted_rating,
+    )
+
+    raw = payload.get("samples", []) or []
+    samples = [
+        PerformanceVsOpponent(
+            match_id=int(s.get("match_id", 0)),
+            rating=float(s.get("rating", 0.0)),
+            opp_rating=float(s.get("opp_rating", 7.0)),
+        )
+        for s in raw
+    ]
+    league_avg = payload.get("league_avg")
+    return engine_result_to_dict(compute_opponent_adjusted_rating(
+        samples,
+        beta=float(payload.get("beta", 0.30)),
+        league_avg=float(league_avg) if league_avg is not None else None,
+    ))
+
+
+@router.post(
     "/performance/clutch",
     tags=["admin"],
     summary="Oyuncu clutch performans (kritik anlarda performans katsayısı)",
