@@ -40,41 +40,53 @@ type BadgeKind = "live" | "new" | "ai" | "count";
 interface NavItem { label: string; href: string; icon: string; badge?: string | number; badgeKind?: BadgeKind }
 interface NavGroup { grp: string; items: NavItem[] }
 
+// IA YENİDEN DÜZENLENDİ (2026-06): antrenörün iş-akışına göre 5 görünür grup +
+// dipte kapalı "Arşiv". Odak teknik-taktik + maç karar zekâsı; transfer/takvim/eski
+// kalıntı sayfalar Arşiv'e taşındı (URL'leri korunur, hiçbiri silinmedi).
 const FULL_NAV: NavGroup[] = [
-  { grp: "Genel", items: [
-    { label: "Komuta Merkezi", href: "/command",       icon: "ti-brain", badge: "AI", badgeKind: "ai" },
-    { label: "Kontrol Paneli", href: "/overview",      icon: "ti-layout-dashboard" },
-    { label: "Canlı Maç",      href: DEMO_LIVE_HREF,    icon: "ti-ball-football", badge: "CANLI", badgeKind: "live" },
+  { grp: "Maç Hazırlık", items: [
+    { label: "Maç Merkezi",      href: "/live-data",      icon: "ti-plug-connected", badge: "CANLI", badgeKind: "live" },
+    { label: "Rakip Analizi",    href: "/opponent",       icon: "ti-file-analytics" },
+    { label: "Maç Öncesi Plan",  href: "/match-plan",     icon: "ti-clipboard-list" },
+    { label: "Taktik Tahtası",   href: "/tactics-board",  icon: "ti-soccer-field", badge: "YENİ", badgeKind: "new" },
+    { label: "Gerçek Veri Analizi", href: "/tactical-real", icon: "ti-database", badge: "GERÇEK", badgeKind: "ai" },
+  ]},
+  { grp: "Maç Günü", items: [
+    { label: "Maç Öncesi Modu", href: "/prematch-mode",  icon: "ti-clipboard-check", badge: "HAZIRLIK", badgeKind: "new" },
+    { label: "Canlı Maç",      href: DEMO_LIVE_HREF,     icon: "ti-ball-football", badge: "CANLI", badgeKind: "live" },
+    { label: "Maç Modu",       href: "/match-mode",      icon: "ti-device-mobile", badge: "KENAR", badgeKind: "live" },
+    { label: "Devre Arası Modu", href: "/halftime-mode", icon: "ti-clock-pause", badge: "15dk", badgeKind: "live" },
+    { label: "Maç Değerlendirmesi", href: "/match-review", icon: "ti-checkup-list" },
   ]},
   { grp: "Takım", items: [
     { label: "Kadro",            href: "/squad",          icon: "ti-users" },
     { label: "Fiziksel Durum",   href: "/physical-tests", icon: "ti-activity" },
-    { label: "Test Hesaplayıcı", href: "/physical-tests/derive", icon: "ti-calculator" },
     { label: "Sakatlık & Sağlık",href: "/medical",        icon: "ti-heart-rate-monitor" },
     { label: "Yük Takibi",       href: "/workload",       icon: "ti-chart-area-line" },
-  ]},
-  { grp: "Maç & Taktik", items: [
-    { label: "Fikstür",          href: "/matches",        icon: "ti-calendar-event" },
-    { label: "Maç Öncesi Plan",  href: "/match-plan",     icon: "ti-clipboard-list" },
-    { label: "Rakip Analizi",    href: "/opponent",       icon: "ti-file-analytics" },
-    { label: "Taktik Tahtası",   href: "/tactics-board",  icon: "ti-soccer-field", badge: "YENİ", badgeKind: "new" },
-  ]},
-  { grp: "Antrenman", items: [
+    { label: "Antrenman Odağı",  href: "/training-focus", icon: "ti-target-arrow", badge: "AI", badgeKind: "ai" },
     { label: "Antrenman Planı",  href: "/training",       icon: "ti-run" },
-    { label: "Yoklama",          href: "/attendance",     icon: "ti-checklist" },
   ]},
-  { grp: "Keşif & Transfer", items: [
+  { grp: "Zekâ & Rapor", items: [
+    { label: "Kontrol Paneli",   href: "/overview",       icon: "ti-layout-dashboard" },
+    { label: "Komuta Merkezi",   href: "/command",        icon: "ti-brain", badge: "AI", badgeKind: "ai" },
+    { label: "Teknik Direktör",  href: "/coach",          icon: "ti-user-star", badge: "STRATEJİ", badgeKind: "ai" },
+    { label: "AI Asistan",       href: "/chat",           icon: "ti-robot", badge: "AI", badgeKind: "ai" },
+    { label: "Performans Analizi", href: "/xg",           icon: "ti-chart-line" },
+    { label: "Haftalık Rapor",   href: "/weekly-report",  icon: "ti-report-analytics" },
+  ]},
+  { grp: "Sistem", items: [
+    { label: "Bildirimler",    href: "/notifications", icon: "ti-bell", badge: 5, badgeKind: "count" },
+    { label: "Kalibrasyon",    href: "/calibration",   icon: "ti-adjustments" },
+    { label: "Sportmonks Planı", href: "/sportmonks-plan", icon: "ti-plug-connected" },
+    { label: "Ayarlar",        href: "/admin",         icon: "ti-settings" },
+  ]},
+  // ARŞİV — odak-dışı / eski sayfalar (transfer, takvim, eski kalıntı, yan araçlar).
+  // Sidebar'da dipte kapalı durur; URL'leri korunur, sayfalar erişilebilir.
+  { grp: "Arşiv", items: [
     { label: "Oyuncu Keşif",     href: "/scout",          icon: "ti-binoculars" },
     { label: "Skaut Raporları",  href: "/scout-reports",  icon: "ti-file-text" },
     { label: "Transfer",         href: "/transfer",       icon: "ti-arrows-exchange" },
-  ]},
-  { grp: "Raporlar & AI", items: [
-    { label: "Performans Analizi", href: "/xg",           icon: "ti-chart-line" },
-    { label: "Haftalık Rapor",     href: "/weekly-report",icon: "ti-report-analytics" },
-    { label: "AI Asistan",         href: "/chat",         icon: "ti-robot", badge: "AI", badgeKind: "ai" },
-  ]},
-  // "Diğer" — mockup IA'sında olmayan ama mevcut (eski) sayfalar; URL'leri korunur.
-  { grp: "Diğer", items: [
+    { label: "Fikstür",          href: "/matches",        icon: "ti-calendar-event" },
     { label: "Kararlar",            href: "/decisions",           icon: "ti-brain" },
     { label: "Kafa Kafaya",         href: "/h2h",                 icon: "ti-swords" },
     { label: "Ligler",              href: "/leagues",             icon: "ti-trophy" },
@@ -82,12 +94,9 @@ const FULL_NAV: NavGroup[] = [
     { label: "Sözleşmeler",         href: "/contracts",           icon: "ti-file-text" },
     { label: "TD Performansı",      href: "/manager-performance", icon: "ti-target" },
     { label: "Veri Girişi & Batarya",href: "/performance",        icon: "ti-clipboard-data" },
-  ]},
-  { grp: "Sistem", items: [
-    { label: "Bildirimler",    href: "/notifications", icon: "ti-bell", badge: 5, badgeKind: "count" },
-    { label: "Erişim Denetimi",href: "/compliance",    icon: "ti-lock" },
-    { label: "Kalibrasyon",    href: "/calibration",   icon: "ti-adjustments" },
-    { label: "Ayarlar",        href: "/admin",         icon: "ti-settings" },
+    { label: "Test Hesaplayıcı", href: "/physical-tests/derive", icon: "ti-calculator" },
+    { label: "Yoklama",          href: "/attendance",     icon: "ti-checklist" },
+    { label: "Erişim Denetimi",  href: "/compliance",     icon: "ti-lock" },
   ]},
 ];
 
@@ -216,10 +225,14 @@ export function ConsoleShell({
    Sol sidebar — açılır/kapanır gruplar
    Kapalı gruplar localStorage'da tutulur; aktif öğe içeren grup daima açık.
 ───────────────────────────────────────────── */
-const SIDEBAR_COLLAPSE_KEY = "manager2_console_sidebar_collapsed";
+// v2: IA yeniden gruplandı (2026-06); eski kayıtlı grup adları artık geçersiz, yeni
+// anahtar = temiz varsayılan (hepsi kapalı, aktif grup açık).
+const SIDEBAR_COLLAPSE_KEY = "manager2_console_sidebar_collapsed_v2";
 
 function SidebarNav({ active, navBadge }: { active: string; navBadge?: number }) {
-  const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
+  // Varsayılan: TÜM gruplar kapalı (aktif sayfanın grubu hasActive ile açık kalır).
+  // 46 item birden yerine yalnız ilgili grup görünür; kullanıcı tercihi localStorage'da.
+  const [collapsed, setCollapsed] = React.useState<Set<string>>(() => new Set(NAV.map((g) => g.grp)));
 
   React.useEffect(() => {
     try {
@@ -315,7 +328,7 @@ const CSS = `
   --header:#ffffff;--grad:linear-gradient(180deg,#ffffff,#eaf0ea);
   position:fixed;inset:0;
   background:var(--bg);color:var(--ink);
-  font-family:'Inter','Segoe UI',system-ui,sans-serif;
+  font-family:var(--font-sans),'Segoe UI',system-ui,sans-serif;
   font-size:13px;overflow:hidden;
 }
 /* ── NAVBAR ── */
@@ -481,12 +494,12 @@ const CSS = `
 /* Tile Grid — KPI kartları */
 .ovroot .kpis{
   display:grid;grid-template-columns:repeat(5,1fr);
-  gap:10px;margin-bottom:16px;
+  gap:14px;margin-bottom:24px;
 }
 .ovroot .kpi{
   background:var(--white);
-  border:1px solid var(--border);border-radius:12px;
-  padding:14px 16px;
+  border:1px solid var(--border);border-radius:14px;
+  padding:18px 20px;
   transition:border-color .1s,box-shadow .1s;
   cursor:default;
 }
@@ -506,8 +519,8 @@ const CSS = `
 .ovroot .kpi .kd .u{color:var(--low);font-weight:600}
 
 /* Card container */
-.ovroot .st{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
-.ovroot .st h2{font-size:14px;font-weight:600;color:var(--ink)}
+.ovroot .st{display:flex;align-items:center;justify-content:space-between;margin:30px 0 14px}
+.ovroot .st h2{font-size:15.5px;font-weight:700;color:var(--ink);letter-spacing:-.2px}
 .ovroot .st .ep{
   font-size:11.5px;color:var(--dim);
   background:var(--surface2);border:1px solid var(--border);
@@ -558,12 +571,12 @@ const CSS = `
 
 .ovroot .rc{
   background:var(--white);border:1px solid var(--border);
-  border-radius:12px;padding:14px;margin-bottom:10px;
+  border-radius:14px;padding:18px 20px;margin-bottom:14px;
   transition:border-color .1s;
 }
 .ovroot .rc h3{
-  font-size:12.5px;font-weight:600;color:var(--ink);
-  margin-bottom:11px;
+  font-size:13px;font-weight:700;color:var(--ink);letter-spacing:-.1px;
+  margin-bottom:14px;
   display:flex;align-items:center;justify-content:space-between;
 }
 .ovroot .rc h3 .tiny{font-size:11px;color:var(--dim);font-weight:400}

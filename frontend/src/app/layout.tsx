@@ -1,8 +1,19 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import { IBM_Plex_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { AppShell } from "./shell-client";
 import { SwRegister } from "./sw-register";
+
+// Kurumsal gövde fontu — next/font ile build'de self-host edilir (runtime'da CDN
+// yok; engelli ortamla uyumlu). IBM Plex Sans: teknik/kurumsal, jenerik "Inter"
+// görünümünden uzak. Türkçe için latin-ext alt kümesi dahil.
+const sans = IBM_Plex_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 // Yenilemede tema flaşı olmasın: render'dan önce kaydedilen temayı uygula.
 // Varsayılan AÇIK tema (kulüp demosu): kayıtlı tema "dark" DEĞİLSE light kalır.
@@ -43,7 +54,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="tr" className="light">
+    <html lang="tr" className={`light ${sans.variable}`}>
       <head>
         {/* FM26 shell ikonları — Tabler webfont SELF-HOSTED (public/tabler-icons.css +
             public/fonts/). CDN'e (jsdelivr) bağlı DEĞİL: offline/firewall/TR-engeli

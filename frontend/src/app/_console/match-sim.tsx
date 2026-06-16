@@ -9,6 +9,7 @@
 
 import * as React from "react";
 import type { MatchSimulation } from "@/lib/match-simulation";
+import { TrustBadge } from "./trust-badge";
 
 const pct = (x: number) => `%${Math.round(x * 100)}`;
 
@@ -93,8 +94,11 @@ export function MatchSimBody({ sim }: { sim: MatchSimulation }) {
           <MarketChips sim={sim} />
         </div>
       </div>
-      <div style={{ fontSize: 10.5, color: "var(--dim)", fontStyle: "italic" }}>
-        Poisson · Dixon-Coles (ρ {sim.rho}) · takım sezon xG güçlerinden · lig ort. {sim.leagueAvgXg} gol/maç
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <TrustBadge note="demo güçler · gerçek veride senin ligin" />
+        <span style={{ fontSize: 10.5, color: "var(--dim)", fontStyle: "italic" }}>
+          Poisson · Dixon-Coles (ρ {sim.rho}) · takım sezon xG güçlerinden · lig ort. {sim.leagueAvgXg} gol/maç
+        </span>
       </div>
     </div>
   );
