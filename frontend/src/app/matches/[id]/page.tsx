@@ -39,6 +39,14 @@ interface PredictResponse {
     most_likely_score: [number, number];
   };
   confidence: { score: number; label: string; drivers: string[] } | null;
+  calibration?: {
+    applied: boolean;
+    temperature: number;
+    prob_home_win: number;
+    prob_draw: number;
+    prob_away_win: number;
+    sample_count: number | null;
+  };
 }
 
 // --------------------------------------------------------------------------- //
@@ -441,6 +449,27 @@ function MatchLive({ matchId }: { matchId: string }) {
                 </td></tr>
                 <tr><td>Beklenen skor</td><td className="r">{v.expected_home_goals.toFixed(2)} - {v.expected_away_goals.toFixed(2)}</td></tr>
                 <tr><td>En olası skor</td><td className="r">{v.most_likely_score[0]}-{v.most_likely_score[1]}</td></tr>
+                {predict?.calibration?.applied && (
+                  <tr>
+                    <td>
+                      Kalibre olasılık
+                      <span className="ep" style={{ marginLeft: 6 }}>
+                        T={predict.calibration.temperature}
+                        {predict.calibration.sample_count != null && ` · ${predict.calibration.sample_count} maç`}
+                      </span>
+                    </td>
+                    <td className="r">
+                      <span className="probbar" style={{ marginBottom: 0, width: 200, display: "inline-flex" }}>
+                        <i style={{ width: `${predict.calibration.prob_home_win * 100}%`, background: "var(--low)" }} />
+                        <i style={{ width: `${predict.calibration.prob_draw * 100}%`, background: "var(--dim)" }} />
+                        <i style={{ width: `${predict.calibration.prob_away_win * 100}%`, background: "var(--high)" }} />
+                      </span>
+                      <div className="kd" style={{ marginTop: 2 }}>
+                        {Math.round(predict.calibration.prob_home_win * 100)}% / {Math.round(predict.calibration.prob_draw * 100)}% / {Math.round(predict.calibration.prob_away_win * 100)}% — geçmiş isabetle düzeltildi
+                      </div>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

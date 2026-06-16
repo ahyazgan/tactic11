@@ -76,11 +76,14 @@ interface ContextPrimary {
   urgency?: number; confidence?: number; confidence_label?: string;
   rationale?: string;
   drivers?: string[];   // confidence engine açıklamaları: sample, magnitude, history vb.
+  corroboration?: number;  // aynı temada hemfikir diğer sinyal sayısı
 }
 interface ContextDecision {
   one_liner?: string;
   primary?: ContextPrimary | null;
   secondary?: ContextPrimary[];
+  has_conflict?: boolean;
+  conflict_note?: string | null;
 }
 interface LiveDecisionResponse {
   match_id: number;
@@ -516,6 +519,21 @@ function PrimaryBanner({
         <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.65 }}>
           {p.rationale}
         </div>
+        {(p.corroboration ?? 0) > 0 && (
+          <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--low)", fontWeight: 700 }}>
+            ✓ {p.corroboration} sinyal aynı yönde hemfikir
+          </div>
+        )}
+        {ctx?.has_conflict && ctx.conflict_note && (
+          <div style={{
+            marginTop: 10, padding: "8px 12px", borderRadius: 8,
+            background: "color-mix(in srgb, var(--high) 12%, transparent)",
+            border: "1px solid var(--high)", color: "var(--high)",
+            fontSize: 12, fontWeight: 600, lineHeight: 1.5,
+          }}>
+            ⚠ {ctx.conflict_note}
+          </div>
+        )}
         {p.drivers && p.drivers.length > 0 && (
           <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap",
             gap: 6 }}>
