@@ -43,7 +43,7 @@
 - [x] Maç-içi karar beyni v2 — tema-farkında korroborasyon + push↔hold çelişki tespiti (context_engine)  (HEAD)
 - [ ] Frontend kalibrasyon sayfasına önerilen T + düzeltilmiş log-loss/ECE'yi göster (şu an client-side hesap; backend endpoint'e bağla)
 - [ ] Frontend demo poisson-predict.ts'i v3 modeline hizala (şu an sadece kendi-atağı; yalnız demo-mode)
-- [ ] predict v3'ü gerçek sezonda backtest et (Brier/log-loss baseline vs v3 karşılaştırması)
+- [x] predict v3 + kalibrasyon empirik backtest — gerçek 10.488 maç: v3 log-loss +1.26%/Brier +1.75%/isabet +1.6pp, kalibrasyon +1.87% (docs/PREDICT_BACKTEST.md)  (HEAD)
 - [ ] PDF report export for scout_report_generator
 - [ ] Push/email delivery for digests (currently pull-only)
 - [ ] i18n scaffold for English UI
