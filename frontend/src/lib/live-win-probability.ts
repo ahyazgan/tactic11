@@ -66,6 +66,28 @@ export function liveWinProb(
   };
 }
 
+/**
+ * Bir kararın (ör. değişiklik) etkisini win-prob'a yansıt: kalan sürede beklenen
+ * gole boost ekleyip W/D/L'yi yeniden hesapla. homeBoost = sub'ın beklenen ek
+ * tehdidi (subTiming.impact). Mevcut WinProb'tan türetilir.
+ */
+export function projectWithBoost(wp: WinProb, homeBoost: number, awayBoost = 0): WinProb {
+  const lh = Math.max(0, wp.lambdaHomeRem + homeBoost);
+  const la = Math.max(0, wp.lambdaAwayRem + awayBoost);
+  let pHome = 0, pDraw = 0, pAway = 0;
+  for (let i = 0; i <= MAXX; i++) {
+    const ph = poisson(i, lh);
+    for (let j = 0; j <= MAXX; j++) {
+      const p = ph * poisson(j, la);
+      const fh = wp.scoreHome + i, fa = wp.scoreAway + j;
+      if (fh > fa) pHome += p; else if (fh === fa) pDraw += p; else pAway += p;
+    }
+  }
+  const tot = pHome + pDraw + pAway || 1;
+  const r3 = (x: number) => Math.round((x / tot) * 1000) / 1000;
+  return { ...wp, pHome: r3(pHome), pDraw: r3(pDraw), pAway: r3(pAway), lambdaHomeRem: Math.round(lh * 100) / 100, lambdaAwayRem: Math.round(la * 100) / 100 };
+}
+
 // ── Demo: canlı maçtan (demoLive) win-prob eğrisi ────────────────────────────
 const asOfScore = (minute: number): [number, number] => {
   let h = 0, a = 0;

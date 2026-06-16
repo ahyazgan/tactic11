@@ -15,15 +15,14 @@ import { demoNextMatchSimulation } from "@/lib/match-simulation";
 import { squadAvailability, recommendedXI } from "@/lib/lineup-advice";
 import { squadRiskRanked, LEVEL_VAR, LEVEL_LABEL } from "@/lib/injury-risk";
 import { demoTrackRecord } from "@/lib/track-record";
-import { weeklyInsights } from "@/lib/weekly-insights";
 import { computeDevelopmentFor, PHASE_LABEL, PHASE_VAR } from "@/lib/player-development";
 import { commandIntel } from "@/lib/command-brief";
 import { demoWinProbNow } from "@/lib/live-win-probability";
 import { ConsoleShell } from "../_console/shell";
 import { OutcomeBar, MarketChips } from "../_console/match-sim";
+import { TrustBadge } from "../_console/trust-badge";
 import { FormationPitch } from "../_console/lineup";
 import { TrackRecordBadge, TypeBreakdown } from "../_console/track-record";
-import { InsightFeedCompact } from "../_console/insights";
 import { DecisionsQueue } from "../_console/decisions-queue";
 
 const STATE_BADGE: Record<"pre" | "live" | "post", { label: string; color: string }> = {
@@ -53,7 +52,6 @@ export default function CommandCenterPage() {
   const avail = squadAvailability();
   const xi = recommendedXI(DEMO_OPPONENT, avail);
   const tr = demoTrackRecord();
-  const insights = weeklyInsights();
   const riskTop = squadRiskRanked().slice(0, 4);
   const rested = avail.filter((a) => a.verdict === "dinlendir");
   const win = isLive ? demoWinProbNow() : null;
@@ -105,12 +103,8 @@ export default function CommandCenterPage() {
       {/* #2 Bugünün Kararları — onayla/ertele */}
       <DecisionsQueue decisions={intel.decisions} />
 
-      {/* Bu haftanın öncelikleri — tam genişlik manşet */}
-      <div className="st" style={{ marginTop: 0 }}><h2>Bu Haftanın Öncelikleri</h2><span className="ep">4 motordan otomatik</span></div>
-      <div className="rc" style={{ margin: "0 0 14px" }}>
-        <InsightFeedCompact data={insights} limit={5} />
-      </div>
-
+      {/* Motor detayları — ikincil, tek bakışta özet */}
+      <div className="st"><h2>Motor Detayları</h2><span className="ep">her kart kaynak sayfaya gider</span></div>
       {/* Motor kartları ızgarası */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 12, alignItems: "stretch" }}>
         {/* #4 Maç kartı — canlıyken win-prob, değilse maç-öncesi sim */}
@@ -132,6 +126,7 @@ export default function CommandCenterPage() {
             <div style={{ fontFamily: "JetBrains Mono", fontSize: 10.5, color: "var(--muted)", textAlign: "center", marginTop: 8 }}>
               maç-öncesi %{Math.round(sim.probHomeWin * 100)} → şu an %{Math.round(win.pHome * 100)} · kalan beklenen gol {win.lambdaHomeRem.toFixed(2)}–{win.lambdaAwayRem.toFixed(2)}
             </div>
+            <div style={{ marginTop: 10 }}><TrustBadge note="aynı doğrulanmış motor" /></div>
           </Card>
         ) : (
           <Card href="/match-plan" title="Sıradaki Maç" tag="Poisson · Dixon-Coles">
@@ -141,6 +136,7 @@ export default function CommandCenterPage() {
               en olası {sim.mostLikelyScore[0]}-{sim.mostLikelyScore[1]} · beklenen gol {sim.lambdaHome.toFixed(1)}–{sim.lambdaAway.toFixed(1)}
             </div>
             <MarketChips sim={sim} />
+            <div style={{ marginTop: 10 }}><TrustBadge note="bu tahmin tipi" /></div>
           </Card>
         )}
 
