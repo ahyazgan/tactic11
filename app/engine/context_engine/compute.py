@@ -23,7 +23,15 @@ from app.engine.decision_signal import CandidateSignal, ScoredSignal
 from app.engine.signal_quality import compute_signal_quality
 
 ENGINE_NAME = "engine.context_engine"
-ENGINE_VERSION = "1"
+ENGINE_VERSION = "2"  # v1 → v2: tema-farkında korroborasyon + çelişki tespiti
+
+# Stance grupları — çelişki tespiti için. "Push" temalar oyunu değiştirmeye
+# (proaktif), "hold" temalar oyunu yönetmeye/kapatmaya bakar. İkisi aynı anda
+# güçlüyse karar bir muhakeme meselesidir; güveni şişirmek yerine işaretlenir.
+PUSH_THEMES = frozenset({"change_personnel", "adjust_shape", "set_piece"})
+HOLD_THEMES = frozenset({"manage_game"})
+# Çelişki yalnız anlamlı aciliyetteki sinyaller arasında sayılır.
+_CONFLICT_URGENCY = 0.5
 
 # Sinyal tipi → kaba tema (çakışan sinyaller aynı temada birleşir)
 THEME_BY_TYPE: dict[str, str] = {
@@ -63,6 +71,7 @@ class PrioritizedAction:
     rationale: str                 # çakışan sinyalleri birleştiren tek cümle
     drivers: tuple[str, ...] = field(default_factory=tuple)
     supporting_keys: tuple[str, ...] = field(default_factory=tuple)
+    corroboration: int = 0         # aynı temada hemfikir diğer sinyal sayısı
 
 
 @dataclass(frozen=True)
@@ -73,6 +82,8 @@ class ContextDecision:
     secondary: tuple[PrioritizedAction, ...] = field(default_factory=tuple)
     suppressed: tuple[tuple[str, str], ...] = field(default_factory=tuple)
     memory_threads: tuple[str, ...] = field(default_factory=tuple)
+    has_conflict: bool = False     # push ↔ hold sinyalleri aynı anda güçlü
+    conflict_note: str | None = None
 
 
 def _theme(sig: CandidateSignal) -> str:
@@ -104,14 +115,19 @@ def compute_context(
 
     fired = [s for s in signals if s.fired and s.key in kept_keys]
 
+    corroboration_by_key: dict[str, int] = {}
     scored: list[ScoredSignal] = []
     for s in fired:
         th = _theme(s)
         qv = quality_by_key[s.key]
-        # korroborasyon = aynı anda ateşleyen DİĞER tüm sinyaller. Birden çok
-        # bağımsız sinyal aynı dakikada → karar daha güvenilir (kullanıcının
-        # "momentum + oyuncu kritik + skor" örneği farklı temalardan gelir).
-        corroboration = len(fired) - 1
+        # Tema-farkında korroborasyon: yalnız AYNI temada ateşleyen diğer
+        # sinyaller gerçek hemfikirlik sayılır. Farklı temalar (örn. duran top
+        # fırsatı + oyuncu kritik) ayrı kararlardır; birbirini "doğrulamaz".
+        # Eski v1 tüm eşzamanlı sinyalleri sayıp güveni yapay şişiriyordu.
+        corroboration = sum(
+            1 for o in fired if o.key != s.key and _theme(o) == th
+        )
+        corroboration_by_key[s.key] = corroboration
         conf = score_confidence(
             sample_size=s.sample_size, magnitude=s.magnitude,
             corroboration=corroboration, data_quality=qv.score,
@@ -170,7 +186,32 @@ def compute_context(
         confidence=top.confidence, confidence_label=top.confidence_label,
         priority=top.priority, rationale=rationale,
         drivers=top.confidence_drivers, supporting_keys=supporting_keys,
+        corroboration=corroboration_by_key.get(top.candidate.key, 0),
     )
+
+    # Çelişki tespiti: anlamlı aciliyette push (değiştir) VE hold (yönet)
+    # sinyalleri aynı anda varsa karar muhakeme meselesidir — şeffafça işaretle.
+    strong_themes = {
+        _theme(sc.candidate)
+        for sc in scored
+        if sc.candidate.urgency >= _CONFLICT_URGENCY
+    }
+    has_conflict = bool(strong_themes & PUSH_THEMES) and bool(strong_themes & HOLD_THEMES)
+    conflict_note: str | None = None
+    if has_conflict:
+        push_sig = next(
+            (sc for sc in scored if _theme(sc.candidate) in PUSH_THEMES
+             and sc.candidate.urgency >= _CONFLICT_URGENCY), None,
+        )
+        hold_sig = next(
+            (sc for sc in scored if _theme(sc.candidate) in HOLD_THEMES
+             and sc.candidate.urgency >= _CONFLICT_URGENCY), None,
+        )
+        if push_sig and hold_sig:
+            conflict_note = (
+                f"Çelişki: '{push_sig.candidate.headline}' (değiştir) ↔ "
+                f"'{hold_sig.candidate.headline}' (yönet) — duruma göre teyit et"
+            )
 
     # ikincil: farklı temadaki sonraki sinyaller (her temadan en güçlü bir tane)
     secondary_actions: list[PrioritizedAction] = []
@@ -186,12 +227,15 @@ def compute_context(
             confidence_label=sc.confidence_label, priority=sc.priority,
             rationale=sc.candidate.headline, drivers=sc.confidence_drivers,
             supporting_keys=(sc.candidate.key,),
+            corroboration=corroboration_by_key.get(sc.candidate.key, 0),
         ))
 
     one_liner = (
         f"ŞİMDİ: {primary.headline} "
         f"(güven: {primary.confidence_label}, öncelik {primary.priority:.2f})"
     )
+    if has_conflict:
+        one_liner += " — ⚠ çelişen sinyaller, teyit et"
 
     decision = ContextDecision(
         current_minute=current_minute,
@@ -200,6 +244,8 @@ def compute_context(
         secondary=tuple(secondary_actions[:3]),
         suppressed=suppressed,
         memory_threads=memory_threads,
+        has_conflict=has_conflict,
+        conflict_note=conflict_note,
     )
     return _wrap(decision, current_minute)
 
@@ -213,11 +259,14 @@ def _wrap(decision: ContextDecision, minute: float) -> EngineResult[ContextDecis
             "one_liner": decision.one_liner,
             "primary_theme": decision.primary.theme if decision.primary else None,
             "primary_confidence": decision.primary.confidence if decision.primary else None,
+            "primary_corroboration": decision.primary.corroboration if decision.primary else 0,
             "secondary_count": len(decision.secondary),
             "suppressed_count": len(decision.suppressed),
+            "has_conflict": decision.has_conflict,
         },
         inputs={"current_minute": minute},
-        formula="quality süz → tema grupla → confidence skorla → memory güçlendir "
-                "→ priority sırala → çakışanları tek karara birleştir",
+        formula="quality süz → tema grupla → AYNI-tema korroborasyon say → "
+                "confidence skorla → memory güçlendir → priority sırala → "
+                "çakışanları tek karara birleştir → push↔hold çelişkisini işaretle",
     )
     return EngineResult(value=decision, audit=audit)

@@ -165,3 +165,56 @@ def test_context_memory_threads_passed_through():
         memory_threads=("rakip 55'te değişti, sol kanat düştü",),
     ).value
     assert d.memory_threads
+
+
+# --------------------------------------------------------------------------- #
+# v2: tema-farkında korroborasyon + çelişki tespiti
+# --------------------------------------------------------------------------- #
+
+
+def test_context_same_theme_signals_corroborate():
+    """Aynı temadaki (adjust_shape) iki sinyal birbirini doğrular → corroboration=1."""
+    sigs = [
+        _sig("momentum", "tactical", urgency=0.8, headline="momentum düşüyor"),
+        _sig("spatial", "spatial", urgency=0.7, headline="sol kanat boş"),
+    ]
+    d = compute_context(sigs, current_minute=70, score_state="drawing").value
+    assert d.primary is not None
+    assert d.primary.corroboration == 1  # diğer adjust_shape sinyali
+    assert d.has_conflict is False
+
+
+def test_context_different_theme_does_not_corroborate():
+    """Farklı temalar (duran top fırsatı + oyuncu değişimi) birbirini doğrulamaz."""
+    sigs = [
+        _sig("sub_timing", "substitution", urgency=0.9, headline="8 no değiştir"),
+        _sig("sp_opp", "set_piece_opportunity", urgency=0.6, headline="korner fırsatı"),
+    ]
+    d = compute_context(sigs, current_minute=70, score_state="drawing").value
+    assert d.primary is not None
+    assert d.primary.corroboration == 0  # farklı tema → gerçek korroborasyon yok
+
+
+def test_context_flags_push_hold_conflict():
+    """Güçlü 'değiştir' (push) + güçlü 'oyunu yönet' (hold) → çelişki işaretlenir."""
+    sigs = [
+        _sig("sub_timing", "substitution", urgency=0.9, headline="hücumcu al"),
+        _sig("closing", "closing", urgency=0.8, headline="oyunu böl, koru"),
+    ]
+    d = compute_context(sigs, current_minute=85, score_state="leading").value
+    assert d.has_conflict is True
+    assert d.conflict_note is not None
+    assert "Çelişki" in d.conflict_note
+    assert "çelişen sinyaller" in d.one_liner
+    assert d.one_liner.startswith("ŞİMDİ")  # yine de bir birincil aksiyon var
+
+
+def test_context_no_conflict_when_hold_signal_weak():
+    """Hold sinyali eşik altında (urgency<0.5) → çelişki sayılmaz."""
+    sigs = [
+        _sig("sub_timing", "substitution", urgency=0.9, headline="hücumcu al"),
+        _sig("closing", "closing", urgency=0.3, headline="oyunu böl"),
+    ]
+    d = compute_context(sigs, current_minute=85, score_state="leading").value
+    assert d.has_conflict is False
+    assert d.conflict_note is None
