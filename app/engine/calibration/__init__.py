@@ -5,6 +5,11 @@ from app.engine.calibration.compute import (
     CalibrationReport,
     compute_calibration,
 )
+from app.engine.calibration.recalibrate import (
+    Calibrator,
+    apply_temperature,
+    fit_temperature,
+)
 
 __all__ = [
     "ENGINE_NAME",
@@ -12,4 +17,7 @@ __all__ = [
     "CalibrationBucket",
     "CalibrationReport",
     "compute_calibration",
+    "Calibrator",
+    "apply_temperature",
+    "fit_temperature",
 ]

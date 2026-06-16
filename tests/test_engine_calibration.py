@@ -80,5 +80,5 @@ def test_calibration_ece_zero_when_perfectly_calibrated():
 def test_calibration_audit_engine_name():
     r = compute_calibration([(0.5, 0.3, 0.2, "home")])
     assert r.audit.engine == "engine.calibration"
-    assert r.audit.engine_version == "1"
+    assert r.audit.engine_version == "2"
     assert "Brier" in r.audit.formula

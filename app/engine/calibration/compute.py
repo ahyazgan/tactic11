@@ -24,9 +24,10 @@ from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 
 from app.audit import AuditRecord, EngineResult
+from app.engine.calibration.recalibrate import apply_temperature, fit_temperature
 
 ENGINE_NAME = "engine.calibration"
-ENGINE_VERSION = "1"
+ENGINE_VERSION = "2"  # v1 → v2: temperature-scaling düzeltme önerisi
 
 # Olasılık clipping — log loss'da 0'a düşmesini önler
 _PROB_EPS = 1e-6
@@ -53,10 +54,28 @@ class CalibrationReport:
     log_loss: float | None
     expected_calibration_error: float | None
     home_outcome_buckets: list[CalibrationBucket]
+    # Temperature-scaling düzeltme önerisi (recalibrate=True ve N>0 ise dolu).
+    recommended_temperature: float | None = None  # 1.0 → düzeltme gereksiz
+    log_loss_recalibrated: float | None = None     # T uygulanınca log-loss
+    ece_recalibrated: float | None = None          # T uygulanınca ECE
 
 
 def _clip(p: float) -> float:
     return max(_PROB_EPS, min(1.0 - _PROB_EPS, p))
+
+
+def _ece_from_pairs(home_probs_with_actual: list[tuple[float, bool]]) -> tuple[list[CalibrationBucket], float]:
+    """home_prob bucket'larından ECE (sample-weighted |avg_pred - freq|)."""
+    buckets = _build_buckets(home_probs_with_actual)
+    weighted_diff = 0.0
+    total = 0
+    for b in buckets:
+        if b.sample_count == 0:
+            continue
+        total += b.sample_count
+        weighted_diff += b.sample_count * abs(b.avg_predicted_prob - b.actual_frequency)
+    ece = weighted_diff / total if total > 0 else 0.0
+    return buckets, ece
 
 
 def compute_calibration(
@@ -64,10 +83,14 @@ def compute_calibration(
     *,
     engine: str = "engine.predict",
     engine_version: str = "?",
+    recalibrate: bool = True,
 ) -> EngineResult[CalibrationReport]:
     """`samples`: (prob_home, prob_draw, prob_away, actual_outcome) çiftleri.
 
     `actual_outcome` ∈ {"home", "draw", "away"}.
+
+    `recalibrate=True` ise temperature scaling ile önerilen T + düzeltilmiş
+    log-loss/ECE rapora eklenir (ham metrikler değişmez; öneri olarak sunulur).
     """
     items = list(samples)
     if not items:
@@ -116,15 +139,23 @@ def compute_calibration(
 
     # ECE: prob_home_win aralıklarına böl; her bucket için avg(pred) vs
     # actual home oranı; mutlak fark sample-weighted ortalama
-    buckets = _build_buckets(home_probs_with_actual)
-    weighted_diff = 0.0
-    total = 0
-    for b in buckets:
-        if b.sample_count == 0:
-            continue
-        total += b.sample_count
-        weighted_diff += b.sample_count * abs(b.avg_predicted_prob - b.actual_frequency)
-    ece = weighted_diff / total if total > 0 else 0.0
+    buckets, ece = _ece_from_pairs(home_probs_with_actual)
+
+    # Temperature-scaling düzeltme önerisi: log-loss'u minimize eden T'yi öğren,
+    # T uygulanınca düzeltilmiş log-loss + ECE'yi raporla (ham metrik değişmez).
+    rec_temp: float | None = None
+    ll_recal: float | None = None
+    ece_recal: float | None = None
+    if recalibrate:
+        calib = fit_temperature(items)
+        rec_temp = calib.temperature
+        ll_recal = calib.log_loss_after
+        recal_home_pairs = [
+            (apply_temperature((ph, pd, pa), calib.temperature)[0], actual == "home")
+            for ph, pd, pa, actual in items
+        ]
+        _, ece_recal_val = _ece_from_pairs(recal_home_pairs)
+        ece_recal = round(ece_recal_val, 4)
 
     report = CalibrationReport(
         sample_count=n,
@@ -132,6 +163,9 @@ def compute_calibration(
         log_loss=round(ll, 4),
         expected_calibration_error=round(ece, 4),
         home_outcome_buckets=buckets,
+        recommended_temperature=rec_temp,
+        log_loss_recalibrated=ll_recal,
+        ece_recalibrated=ece_recal,
     )
     audit = AuditRecord(
         engine=ENGINE_NAME, engine_version=ENGINE_VERSION,
@@ -144,11 +178,13 @@ def compute_calibration(
             "target_engine_version": engine_version,
             "sample_count": n,
             "bucket_count": _BUCKET_COUNT,
+            "recalibrate": recalibrate,
         },
         formula=(
             "Brier = Σ(p-y)² / N (multi-class); "
             "log_loss = -ln(P(actual)) ortalaması (clipped at 1e-6); "
-            f"ECE = sample-weighted |avg_pred - actual_freq|, {_BUCKET_COUNT} bucket"
+            f"ECE = sample-weighted |avg_pred - actual_freq|, {_BUCKET_COUNT} bucket; "
+            "recalibrate: T* = argmin_T log_loss(p^(1/T) normalize) (temperature scaling)"
         ),
     )
     return EngineResult(value=report, audit=audit)
