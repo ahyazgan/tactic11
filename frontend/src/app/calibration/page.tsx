@@ -14,7 +14,7 @@
 import { computeCalibration, predictorData } from "@/lib/calibration";
 import { engineLedgers } from "@/lib/decision-ledger";
 import { ConsoleShell } from "../_console/shell";
-import { CalibrationBody, FixturePredictor, DecisionLedger, AppliedActions, EngineRecord } from "../_console/calibration";
+import { CalibrationBody, FixturePredictor, DecisionLedger, AppliedActions, EngineRecord, LearnedTemperature } from "../_console/calibration";
 
 export default function CalibrationPage() {
   const report = computeCalibration();
@@ -54,6 +54,12 @@ export default function CalibrationPage() {
       right={right}
     >
       <CalibrationBody report={report} />
+
+      {/* Öğrenilmiş kalibrasyon sıcaklığı — canlı sistemin gerçek tahminlerinden */}
+      <div className="st"><h2>Öğrenilmiş Kalibrasyon (Canlı Sistem)</h2><span className="ep">reconciled tahminlerden öğrenilen sıcaklık T · /predict&apos;e otomatik uygulanır</span></div>
+      <div className="rc" style={{ margin: "0 0 14px", borderLeft: "3px solid var(--accent)" }}>
+        <LearnedTemperature />
+      </div>
 
       {/* Canlı tahmin — doğrulanmış model, gerçek takımlar */}
       <div className="st"><h2>Doğrulanmış Model — Canlı Tahmin</h2><span className="ep">öğrenilmiş gerçek takım güçleriyle · bir eşleşme seç</span></div>

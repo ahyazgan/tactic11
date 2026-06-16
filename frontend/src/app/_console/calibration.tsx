@@ -7,6 +7,8 @@
  */
 
 import * as React from "react";
+import useSWR from "swr";
+import { apiFetch } from "@/lib/api";
 import type { CalibrationReport, ReliabilityBin, Outcome, MarketResult, LeagueRatings } from "@/lib/calibration";
 import type { EngineLedger } from "@/lib/decision-ledger";
 import { predictFixture, predictEnsemble } from "@/lib/poisson-predict";
@@ -468,6 +470,79 @@ export function CalibrationBody({ report: r }: { report: CalibrationReport }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   Öğrenilmiş kalibrasyon sıcaklığı — backend /admin/calibration-model-status.
+   Reconciled tahminlerden öğrenilen T'yi + log-loss kazancını gösterir.
+───────────────────────────────────────────── */
+interface CalModelStatus {
+  status: "untrained" | "stale" | "fresh";
+  best_temperature?: number;
+  sample_count?: number;
+  log_loss_before?: number;
+  log_loss_after?: number;
+  improved?: boolean;
+  expires_at?: string;
+}
+
+export function LearnedTemperature() {
+  const { data, error } = useSWR<CalModelStatus>(
+    "/admin/calibration-model-status",
+    apiFetch,
+    { shouldRetryOnError: false },
+  );
+
+  if (error) {
+    return (
+      <div style={{ fontSize: 12, color: "var(--muted)" }}>
+        Durum alınamadı (admin yetkisi gerekir).
+      </div>
+    );
+  }
+  if (!data) {
+    return <div style={{ fontSize: 12, color: "var(--dim)" }}>Yükleniyor…</div>;
+  }
+  if (data.status !== "fresh" || data.best_temperature == null) {
+    return (
+      <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.6 }}>
+        {data.status === "stale"
+          ? "Öğrenilmiş sıcaklık süresi geçti — yeni sonuçlarla yeniden eğitilecek."
+          : "Henüz öğrenilmedi. Yeterli sonuçlanmış tahmin biriktiğinde sistem, ham olasılıkları dürüstleştiren sıcaklığı (T) otomatik öğrenir."}
+      </div>
+    );
+  }
+
+  const t = data.best_temperature;
+  const before = data.log_loss_before ?? 0;
+  const after = data.log_loss_after ?? 0;
+  const gainPct = before > 0 ? ((before - after) / before) * 100 : 0;
+  const direction = t > 1 ? "yumuşatıyor (aşırı-güveni kırıyor)"
+    : t < 1 ? "keskinleştiriyor" : "değiştirmiyor";
+
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 18, alignItems: "center" }}>
+      <div>
+        <div style={{ fontSize: 28, fontWeight: 800, color: "var(--accent)", lineHeight: 1 }}>
+          T = {t}
+        </div>
+        <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4 }}>
+          tahminleri {direction}
+        </div>
+      </div>
+      <div style={{ borderLeft: "1px solid var(--line)", paddingLeft: 18 }}>
+        <div style={{ fontSize: 12.5, color: "var(--ink)" }}>
+          log-loss <b>{before.toFixed(3)}</b> → <b style={{ color: data.improved ? "var(--low)" : "var(--ink)" }}>{after.toFixed(3)}</b>
+          {data.improved && (
+            <span style={{ color: "var(--low)", fontWeight: 700 }}> (−%{gainPct.toFixed(1)})</span>
+          )}
+        </div>
+        <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4 }}>
+          {data.sample_count ?? 0} sonuçlanmış tahminden öğrenildi · canlı tahminlere otomatik uygulanır
         </div>
       </div>
     </div>
