@@ -461,6 +461,24 @@ export default function OverviewConsolePage() {
         )}
       </div>
 
+      <div className="rc" style={{ margin: "0 0 16px 0" }}>
+        <h3>Analist Modülleri <span className="tiny">manuel veri girişi + saf hesap motorları</span></h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 8 }}>
+          <ClickCard className="rc clickable" href="/mac-notla" label="Maçı Notla — 1-10 oyuncu notu giriş" style={{ margin: 0 }}>
+            <div className="kl">Maçı Notla</div>
+            <div className="kd" style={{ marginTop: 6 }}>Oyuncuları 1-10 notla + maç bağlamını işaretle → performans motorlarını besle</div>
+          </ClickCard>
+          <ClickCard className="rc clickable" href="/performans" label="Performans Analizi — 8 bölüm" style={{ margin: 0 }}>
+            <div className="kl">Performans Analizi</div>
+            <div className="kd" style={{ marginTop: 6 }}>Tutarlılık · trajectory · anomali · clutch · kadro formu · karşılaştırma</div>
+          </ClickCard>
+          <ClickCard className="rc clickable" href="/taktik-komuta" label="Taktik Komuta — maç planı + karar danışmanı" style={{ margin: 0 }}>
+            <div className="kl">Taktik Komuta</div>
+            <div className="kd" style={{ marginTop: 6 }}>Maç planı (H+I+K) · fırsat penceresi (L) · TD karar danışmanı (N)</div>
+          </ClickCard>
+        </div>
+      </div>
+
       {DEMO_MODE ? (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
           <FormTrendCard form={demoRecentForm} rating={demoRatingTrend} href={teamHref} />
