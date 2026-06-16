@@ -1251,6 +1251,43 @@ def match_predict(
             payload.setdefault("audit", {}).setdefault("inputs", {})["ml_status"] = ml_status
         return payload
 
+    def _inject_calibration(payload: dict[str, Any]) -> dict[str, Any]:
+        """Öğrenilmiş sıcaklık T varsa kalibre 1X2 olasılıklarını payload'a ekle.
+
+        HAM tahmin (payload["value"]) ve saklanan satır DEĞİŞMEZ — kalibre
+        olasılıklar yalnız servis-anında `calibration` bloğunda sunulur, böylece
+        bir sonraki training yine ham veriyi görür (feedback loop yok).
+        """
+        from app.data.cache.store import cache_get
+        from app.engine.calibration import (
+            CACHE_KEY as _CAL_KEY,
+            CACHE_SOURCE as _CAL_SRC,
+            apply_temperature,
+        )
+
+        val = payload.get("value")
+        if not isinstance(val, dict):
+            return payload
+        ph = val.get("prob_home_win")
+        pd = val.get("prob_draw")
+        pa = val.get("prob_away_win")
+        if ph is None or pd is None or pa is None:
+            return payload
+        cached = cache_get(session, source=_CAL_SRC, key=_CAL_KEY)
+        if not cached or cached.get("best_temperature") is None:
+            return payload
+        temp = float(cached["best_temperature"])
+        cph, cpd, cpa = apply_temperature((float(ph), float(pd), float(pa)), temp)
+        payload["calibration"] = {
+            "applied": temp != 1.0,
+            "temperature": temp,
+            "prob_home_win": round(cph, 4),
+            "prob_draw": round(cpd, 4),
+            "prob_away_win": round(cpa, 4),
+            "sample_count": cached.get("sample_count"),
+        }
+        return payload
+
     # `explain=True` Claude'a hit eder (kendi cache'i AI commentator'da);
     # cache atlanır, prediction her zaman saklanır (kalibrasyon).
     if explain:
@@ -1262,9 +1299,9 @@ def match_predict(
         if shadow:
             _save_shadows()
         session.commit()
-        return _inject_ml_status(
+        return _inject_calibration(_inject_ml_status(
             _maybe_explain(engine_result_to_dict(result), result, explain=True)
-        )
+        ))
 
     # explain yoksa snapshot-keyed cache devreye girer; ilk miss'te
     # save_prediction da burada çalışır (idempotent upsert)
@@ -1293,7 +1330,7 @@ def match_predict(
         ),
         compute_fn=_compute,
     )
-    return _inject_ml_status(payload)
+    return _inject_calibration(_inject_ml_status(payload))
 
 
 @protected.get(

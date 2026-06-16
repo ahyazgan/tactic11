@@ -10,6 +10,13 @@ from app.engine.calibration.recalibrate import (
     apply_temperature,
     fit_temperature,
 )
+from app.engine.calibration.train import (
+    CACHE_KEY,
+    CACHE_SOURCE,
+    CalibrationTrainingReport,
+    NotEnoughTrainingData,
+    train_best_temperature,
+)
 
 __all__ = [
     "ENGINE_NAME",
@@ -20,4 +27,9 @@ __all__ = [
     "Calibrator",
     "apply_temperature",
     "fit_temperature",
+    "CACHE_KEY",
+    "CACHE_SOURCE",
+    "CalibrationTrainingReport",
+    "NotEnoughTrainingData",
+    "train_best_temperature",
 ]

@@ -223,6 +223,53 @@ register(
 )
 
 
+def train_calibration_handler(*, min_samples: int = 20) -> None:
+    """engine.calibration — reconciled tahminlerden en iyi sıcaklık T öğren.
+
+    Sonucu cache_entries(source='calibration_model', key='best_temperature_v1')'e
+    yazar (TTL 30 gün). T HAM olasılıklardan öğrenilir; serving anında uygulanır,
+    saklanan tahmin HAM kalır (feedback loop yok). Yetersiz veri → skip.
+    """
+    from dataclasses import asdict as _asdict
+
+    from app.data.cache.store import cache_set
+    from app.engine.calibration import (
+        CACHE_KEY,
+        CACHE_SOURCE,
+        NotEnoughTrainingData,
+        train_best_temperature,
+    )
+
+    with SessionLocal() as session:
+        try:
+            report = train_best_temperature(session, min_samples=min_samples)
+        except NotEnoughTrainingData as e:
+            log.info("calibration train atlandı: %s", e)
+            return
+        cache_set(
+            session,
+            source=CACHE_SOURCE,
+            key=CACHE_KEY,
+            value=_asdict(report),
+            ttl_seconds=30 * 86_400,
+        )
+        session.commit()
+    log.info(
+        "job train_calibration: samples=%d best_T=%.3f log_loss %.4f→%.4f",
+        report.sample_count, report.best_temperature or 1.0,
+        report.log_loss_before or 0.0, report.log_loss_after or 0.0,
+    )
+
+
+register(
+    JobSpec(
+        name="train_calibration",
+        handler=train_calibration_handler,
+        description="engine.calibration: reconciled tahminlerden best sıcaklık T öğren.",
+    )
+)
+
+
 def ingest_tracking_match_handler(*, match_external_id: int, replace: bool = False) -> None:
     """Bir maç için tracking frame'lerini DB'ye yaz.
 

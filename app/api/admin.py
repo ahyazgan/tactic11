@@ -519,6 +519,38 @@ def ml_model_status(session: Session = Depends(get_session)) -> dict[str, Any]:
     }
 
 
+@router.get("/calibration-model-status")
+def calibration_model_status(session: Session = Depends(get_session)) -> dict[str, Any]:
+    """engine.calibration train job durumu — öğrenilmiş sıcaklık T.
+
+    cache_entries(source='calibration_model', key='best_temperature_v1') okur.
+    Serving yolu (/predict) bu T'yi response'a `calibration` bloğu olarak ekler.
+    """
+    from app.data.cache.store import cache_get
+    from app.engine.calibration import CACHE_KEY, CACHE_SOURCE
+
+    cached = cache_get(session, source=CACHE_SOURCE, key=CACHE_KEY)
+    if cached is None:
+        from sqlalchemy import select as _select
+        row = session.execute(
+            _select(models.CacheEntry).where(
+                models.CacheEntry.source == CACHE_SOURCE,
+                models.CacheEntry.key == CACHE_KEY,
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            return {"status": "untrained"}
+        return {"status": "stale", "expires_at": row.expires_at.isoformat()}
+    return {
+        "status": "fresh",
+        "best_temperature": cached.get("best_temperature"),
+        "sample_count": cached.get("sample_count"),
+        "log_loss_before": cached.get("log_loss_before"),
+        "log_loss_after": cached.get("log_loss_after"),
+        "improved": cached.get("improved"),
+    }
+
+
 @router.get("/db-stats")
 def db_stats(session: Session = Depends(get_session)) -> dict[str, int]:
     """Tablo başına satır sayısı — sync ilerlemesini görmek için hızlı bakış."""
