@@ -13,9 +13,13 @@
  */
 
 import { DEMO_TEAM_ROWS, demoTeamById, type DemoTeamRow } from "@/lib/demo-teams";
+import { pois, dcTau } from "@/lib/poisson-predict";
 
-// ── Model sabitleri (backend ρ=-0.12 ile hizalı) ────────────────────────────
-const RHO = -0.12;          // Dixon-Coles düşük-skor korelasyon düzeltmesi
+// ── Model sabitleri ─────────────────────────────────────────────────────────
+// ρ, /calibration'da out-of-sample doğrulanmış değerle (-0.08) hizalı — bu motor
+// ve doğrulanmış backtest motoru AYNI Dixon-Coles çekirdeğini (poisson-predict)
+// kullanır; tutarsızlık imkansız.
+const RHO = -0.08;          // Dixon-Coles düşük-skor korelasyon düzeltmesi
 const HOME_ADV = 1.05;      // iç saha çarpanı (λ_home'a, λ_away'e ters)
 const SHRINK = 0.45;        // güçleri lig ortalamasına çekme (0=tam ort, 1=ham)
 const MAXG = 8;             // skor ızgarası 0..8 gol/takım
@@ -26,10 +30,6 @@ const LEAGUE_AVG_XG = (() => {
   const totalMatches = DEMO_TEAM_ROWS.reduce((s, t) => s + t.played, 0);
   return totalMatches > 0 ? totalXgf / totalMatches : 1.3;
 })();
-
-const fact = (n: number): number => { let f = 1; for (let i = 2; i <= n; i++) f *= i; return f; };
-const poisson = (k: number, lambda: number): number =>
-  (Math.pow(lambda, k) * Math.exp(-lambda)) / fact(k);
 
 export interface TeamStrength {
   attack: number;   // lige göre hücum gücü (1 = ortalama), shrink uygulanmış
@@ -67,15 +67,6 @@ export interface MatchSimulation {
   leagueAvgXg: number;
 }
 
-/** Dixon-Coles τ düzeltmesi — düşük skorlu hücreleri korelasyon için ayarlar. */
-function dcTau(x: number, y: number, lh: number, la: number, rho: number): number {
-  if (x === 0 && y === 0) return 1 - lh * la * rho;
-  if (x === 0 && y === 1) return 1 + lh * rho;
-  if (x === 1 && y === 0) return 1 + la * rho;
-  if (x === 1 && y === 1) return 1 - rho;
-  return 1;
-}
-
 /** λ_home, λ_away → tam skor dağılımı + özet olasılıklar (analitik). */
 export function simulateFromLambdas(
   homeTeam: string, awayTeam: string, lambdaHome: number, lambdaAway: number,
@@ -84,7 +75,7 @@ export function simulateFromLambdas(
   let total = 0;
   for (let x = 0; x <= MAXG; x++) {
     for (let y = 0; y <= MAXG; y++) {
-      const p = poisson(x, lambdaHome) * poisson(y, lambdaAway) * dcTau(x, y, lambdaHome, lambdaAway, RHO);
+      const p = pois(x, lambdaHome) * pois(y, lambdaAway) * dcTau(x, y, lambdaHome, lambdaAway, RHO);
       cells.push({ home: x, away: y, prob: p });
       total += p;
     }

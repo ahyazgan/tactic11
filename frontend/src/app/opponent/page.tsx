@@ -16,7 +16,10 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { Crest } from "@/lib/teams";
+import { compareDna, weaknessMap, matchPlan } from "@/lib/tactical-dna";
 import { ConsoleShell } from "../_console/shell";
+import { DnaComparisonBody, MatchPlanBody } from "../_console/tactical-radar";
+import { TacticalDeepDive } from "../_console/tactical-deepdive";
 
 interface ChannelM {
   channel: string;
@@ -134,15 +137,6 @@ const demoThreats: Threat[] = [
   { shirt: 10, role: "10 Numara", metric: "9 asist · maç başına 2.4 kilit pas", level: "yüksek" },
   { shirt: 7, role: "Sağ Kanat", metric: "dakikada 1.8 dripling · %64 başarı", level: "orta" },
   { shirt: 6, role: "Ön Libero", metric: "top kazanma lideri ama 60. dk sonrası -%30", level: "orta" },
-];
-
-// Rakip zaafları (scout)
-interface OppWeak { title: string; detail: string; severity: "yüksek" | "orta" | "düşük"; tag: string }
-const demoWeak: OppWeak[] = [
-  { title: "Sağ bek arkası boşluğu", tag: "Sağ koridor", severity: "yüksek", detail: "Sağ bek (2) hücumda yüksek konumlanıyor; arkasındaki koridor maç başına ort. 6 kez açılıyor. Hızlı kanat oyuncusu cezalandırır." },
-  { title: "Zonal duran top zaafı", tag: "Duran top", severity: "yüksek", detail: "Köşe vuruşlarında ikinci direk (far-post) örtülemiyor — son 8 maçta 4 gol yedi. Far-post koşusu hazırla." },
-  { title: "Geç dakika tempo düşüşü", tag: "75+ dk", severity: "orta", detail: "75. dk sonrası PPDA %30 artıyor (pres çözülüyor). Taze kanat oyuncusu ve geçiş atakları etkili." },
-  { title: "Yüksek hat — derinlik açığı", tag: "Savunma hattı", severity: "orta", detail: "Savunma hattı yüksek duruyor; arkaya atılan toplara karşı stoper ikilisi dönüş hızında zorlanıyor." },
 ];
 
 // Eşleşme avantajı (bizim oyuncu vs rakip oyuncu)
@@ -354,23 +348,21 @@ export default function OpponentConsolePage() {
             <div className="kpi"><div className="kl">Tehdit Seviyesi</div><div className="kn" style={{ color: "var(--mid)" }}>{demoMeta.threat_level}</div><div className="kd">2 yüksek tehdit</div></div>
           </div>
 
-          <div className="st"><h2>Rakip Profili</h2><span className="ep">{DEMO_COMP}</span></div>
-          <div className="rc" style={{ margin: "0 0 12px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0 }}>
-              <div className="stat" style={{ borderBottom: 0, flexDirection: "column", alignItems: "flex-start", gap: 3 }}>
-                <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--dim)" }}>Dizilim</span>
-                <span style={{ fontWeight: 700, fontSize: 14 }}>{demoMeta.formation}</span>
-              </div>
-              <div className="stat" style={{ borderBottom: 0, flexDirection: "column", alignItems: "flex-start", gap: 3 }}>
-                <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--dim)" }}>Kuruluş</span>
-                <span style={{ fontWeight: 600, fontSize: 12.5 }}>{demoMeta.build_up}</span>
-              </div>
-              <div className="stat" style={{ borderBottom: 0, flexDirection: "column", alignItems: "flex-start", gap: 3 }}>
-                <span style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--dim)" }}>Pres</span>
-                <span style={{ fontWeight: 600, fontSize: 12.5 }}>{demoMeta.press}</span>
-              </div>
-            </div>
-          </div>
+          {/* Taktik DNA — iki takımın oyun stili karşılaştırması + maç planı (temel analiz) */}
+          {(() => {
+            const cmp = compareDna(100, 101);   // Beşiktaş vs Antalyaspor
+            return cmp ? (
+              <>
+                <div className="st"><h2>Taktik DNA</h2><span className="ep">oyun stili · 8 eksen · maç planı</span></div>
+                <div className="rc" style={{ margin: "0 0 12px" }}>
+                  <DnaComparisonBody comparison={cmp} />
+                </div>
+              </>
+            ) : null;
+          })()}
+
+          {/* Saha analizi (Biz/Rakip geçişli) + pas ağı karşılaştırması */}
+          <TacticalDeepDive usId={100} themId={101} />
         </>
       )}
 
@@ -413,22 +405,43 @@ export default function OpponentConsolePage() {
       {/* DEMO: zaaflar + eşleşme avantajı */}
       {DEMO_MODE && (
         <>
-          <div className="st"><h2>Tespit Edilen Zaaflar</h2><span className="ep">{demoWeak.length} bulgu</span></div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-            {demoWeak.map((w, i) => {
-              const sv = SEV_VAR[w.severity] ?? "var(--muted)";
-              return (
-                <div className="rc" key={i} style={{ margin: 0, borderTop: `2px solid ${sv}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-                    <b style={{ fontSize: 13 }}>{w.title}</b>
-                    <span style={{ fontSize: 9.5, textTransform: "uppercase", color: sv, fontWeight: 700 }}>{w.severity}</span>
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5, marginBottom: 8 }}>{w.detail}</div>
-                  <span className="pos">{w.tag}</span>
+          {(() => {
+            const wmap = weaknessMap(101);   // Antalyaspor zaafları — DNA'dan hesaplanır
+            return (
+              <>
+                <div className="st"><h2>Zaaf Haritası</h2><span className="ep">Taktik DNA'dan hesaplandı · {wmap.length} zaaf</span></div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 10, marginBottom: 12 }}>
+                  {wmap.map((w, i) => {
+                    const sv = SEV_VAR[w.severity] ?? "var(--muted)";
+                    return (
+                      <div className="rc" key={i} style={{ margin: 0, borderTop: `2px solid ${sv}` }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                          <b style={{ fontSize: 13 }}>{w.title}</b>
+                          <span className="risk" style={{ color: sv, fontSize: 10 }}><span className="rd" style={{ background: sv }} />{w.severity}</span>
+                        </div>
+                        <div style={{ fontSize: 11.5, color: "var(--dim)", lineHeight: 1.5, marginBottom: 7 }}>{w.reason}</div>
+                        <div style={{ fontSize: 12, color: "var(--ink)", lineHeight: 1.5 }}>
+                          <span style={{ color: "var(--low)", fontWeight: 700 }}>Sömür → </span>{w.exploit}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
-          </div>
+              </>
+            );
+          })()}
+
+          {(() => {
+            const plan = matchPlan(100, 101);
+            return plan ? (
+              <>
+                <div className="st"><h2>Önerilen Oyun Planı</h2><span className="ep">DNA + zaaflardan · diziliş · pres · senaryolar</span></div>
+                <div className="rc" style={{ margin: "0 0 12px" }}>
+                  <MatchPlanBody plan={plan} />
+                </div>
+              </>
+            ) : null;
+          })()}
 
           <div className="st"><h2>Eşleşme Avantajı</h2><span className="ep">bizim oyuncu vs rakip</span></div>
           <div className="rc" style={{ margin: "0 0 12px", padding: 0, overflow: "hidden" }}>
