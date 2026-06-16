@@ -41,7 +41,8 @@
 - [x] Kalibrasyon düzeltici v2 — temperature scaling; ham olasılıkları log-loss minimize eden T ile dürüstleştirir; /admin/calibration önerir; 2093 test yeşil  (HEAD)
 - [x] Kalibrasyon T'yi predict serving path'ine bağla — train_best_temperature → cache → /predict 'calibration' bloğu + /admin/calibration-model-status; ham tahmin değişmez (feedback loop yok)  (1a2b serving)
 - [x] Maç-içi karar beyni v2 — tema-farkında korroborasyon + push↔hold çelişki tespiti (context_engine)  (HEAD)
-- [ ] Frontend kalibrasyon sayfasına önerilen T + düzeltilmiş log-loss/ECE'yi göster (şu an client-side hesap; backend endpoint'e bağla)
+- [x] Beyin kazanımları ekranda — /matches/[id] kalibre olasılık bloğu + /decisions/live korroborasyon & çelişki uyarısı  (HEAD)
+- [ ] Kalibrasyon sayfasına önerilen T + düzeltilmiş log-loss/ECE'yi göster (şu an client-side hesap; /admin/calibration-model-status'a bağla)
 - [ ] Frontend demo poisson-predict.ts'i v3 modeline hizala (şu an sadece kendi-atağı; yalnız demo-mode)
 - [x] predict v3 + kalibrasyon empirik backtest — gerçek 10.488 maç: v3 log-loss +1.26%/Brier +1.75%/isabet +1.6pp, kalibrasyon +1.87% (docs/PREDICT_BACKTEST.md)  (HEAD)
 - [ ] PDF report export for scout_report_generator
