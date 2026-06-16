@@ -82,7 +82,7 @@ def test_save_prediction_creates_row(session):
     )
     assert row.id is not None
     assert row.engine == "engine.predict"
-    assert row.engine_version == "2"
+    assert row.engine_version == "3"
     assert row.match_external_id == 99
     assert row.actual_outcome is None  # reconcile job henüz çalışmadı
 
