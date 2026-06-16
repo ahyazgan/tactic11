@@ -35,6 +35,8 @@
 
 ## Later (lower priority — only if Now + Next clear)
 
+- [x] Tutarlı sayfa kabukları — ConsoleShell breadcrumb + LoadingState/EmptyState/ErrorState + 3 öksüz sayfayı (performans/mac-notla/taktik-komuta) kabuğa taşı  (9b7b0c0, 652ed24)
+- [ ] State bileşenlerini yaygınlaştır — kalan ~26 sayfadaki ad-hoc "Yükleniyor…"/boş/hata metinlerini LoadingState/EmptyState/ErrorState ile değiştir
 - [ ] PDF report export for scout_report_generator
 - [ ] Push/email delivery for digests (currently pull-only)
 - [ ] i18n scaffold for English UI
