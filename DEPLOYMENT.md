@@ -95,8 +95,8 @@ Tek-kulüp deploy'dan multi-tenant'a geçiş **2 aşamalı, zero-downtime** path
 
 ### Önce: backup
 ```bash
-DATABASE_URL=$DATABASE_URL ./scripts/backup_db.sh /var/backups/manager2-pre-multitenant
-# → manager2-pre-multitenant-YYYY-MM-DD-HHMMSS.sql.gz
+DATABASE_URL=$DATABASE_URL ./scripts/backup_db.sh /var/backups/tactic11-pre-multitenant
+# → tactic11-pre-multitenant-YYYY-MM-DD-HHMMSS.sql.gz
 ```
 Roll-back için bu yedek kritik. Multi-tenant migration zorlu downgrade içerir.
 
@@ -114,7 +114,7 @@ Bu noktada:
 # JWT_SECRET_KEY üret + .env'e yaz
 python -c "import secrets; print(secrets.token_hex(32))"
 # BACKWARD_COMPAT_API_KEY = eski API_AUTH_KEY değeri (kırılma yok)
-systemctl restart manager2-api  # yeni binary, JWT auth aktif
+systemctl restart tactic11-api  # yeni binary, JWT auth aktif
 ```
 
 ### İlk admin user'ı yarat (default tenant'a)
@@ -181,21 +181,21 @@ Compose dışı, daha klasik kurulum.
 ### 1) Bağımlılıklar
 ```bash
 sudo apt update && sudo apt install -y python3.11 python3.11-venv postgresql postgresql-contrib
-sudo -u postgres createuser --pwprompt manager2
-sudo -u postgres createdb -O manager2 manager2
+sudo -u postgres createuser --pwprompt tactic11
+sudo -u postgres createdb -O tactic11 tactic11
 ```
 
 ### 2) Kod + venv
 ```bash
-sudo mkdir -p /opt/manager2 && sudo chown $USER /opt/manager2
-git clone <repo> /opt/manager2 && cd /opt/manager2
+sudo mkdir -p /opt/tactic11 && sudo chown $USER /opt/tactic11
+git clone <repo> /opt/tactic11 && cd /opt/tactic11
 python3.11 -m venv venv
 venv/bin/pip install -r requirements.txt
 cp .env.example .env  # düzenle
 venv/bin/alembic upgrade head
 ```
 
-### 3) systemd unit (`/etc/systemd/system/manager2-api.service`)
+### 3) systemd unit (`/etc/systemd/system/tactic11-api.service`)
 ```ini
 [Unit]
 Description=football-intelligence API
@@ -203,10 +203,10 @@ After=network.target postgresql.service
 
 [Service]
 Type=exec
-User=manager2
-WorkingDirectory=/opt/manager2
-EnvironmentFile=/opt/manager2/.env
-ExecStart=/opt/manager2/venv/bin/uvicorn app.api.main:app --host 127.0.0.1 --port 8000
+User=tactic11
+WorkingDirectory=/opt/tactic11
+EnvironmentFile=/opt/tactic11/.env
+ExecStart=/opt/tactic11/venv/bin/uvicorn app.api.main:app --host 127.0.0.1 --port 8000
 Restart=on-failure
 RestartSec=5
 
@@ -215,18 +215,43 @@ WantedBy=multi-user.target
 ```
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now manager2-api
-sudo systemctl status manager2-api
+sudo systemctl enable --now tactic11-api
+sudo systemctl status tactic11-api
 ```
 
 Nginx önünde reverse proxy + TLS önerilir (`proxy_pass http://127.0.0.1:8000`).
 
-### 4) Cron (`crontab -e` — manager2 kullanıcısı)
+### 4) Cron (`crontab -e` — tactic11 kullanıcısı)
 ```cron
-# Her sabah 06:00 UTC — Süper Lig sync
-0 6 * * * cd /opt/manager2 && venv/bin/python scripts/run_job.py sync_league --league 203 --season 2024 >> /var/log/manager2-cron.log 2>&1
+# 06:00 UTC — Süper Lig sync (1. iş — veri tazele)
+0 6 * * * cd /opt/tactic11 && venv/bin/python scripts/run_job.py sync_league --league 203 --season 2024 >> /var/log/tactic11-cron.log 2>&1
+
+# 06:15 UTC — Morning brief (Faz 5 #18): bugün maçı olan takımların
+# PreMatchReportAgent çıktıları tazelenir. sync_league'ten 15 dk sonra
+# tetiklenmeli — fresh verilerle çalışsın.
+15 6 * * * cd /opt/tactic11 && venv/bin/python scripts/run_job.py morning_brief >> /var/log/tactic11-cron.log 2>&1
+
+# 03:00 UTC — Geçen günkü maçların tahmin sonuçlarını uzlaştır (kalibrasyon)
+0 3 * * * cd /opt/tactic11 && venv/bin/python scripts/run_job.py reconcile_predictions >> /var/log/tactic11-cron.log 2>&1
+
+# Pazartesi 04:00 UTC — predict_ml haftalık retrain
+0 4 * * 1 cd /opt/tactic11 && venv/bin/python scripts/run_job.py train_predict_ml >> /var/log/tactic11-cron.log 2>&1
 ```
 `run_job.py` başarısızsa exit 1 döner — cron MAILTO ile uyarı gönderir.
+
+#### Cron zinciri mantığı
+- **sync_league (06:00)** → API-Football'dan günün maç + sonuç verisi.
+- **morning_brief (06:15)** → fresh veriler üstünden bugün maçı olan
+  takımlar için PreMatchReportAgent çıktısı; `run_pre_match_reports`
+  job'unu `horizon_days=1` ile çağıran kabuk. Idempotent: aynı maçın
+  output'u tazelenir (`save_agent_output` upsert).
+- **reconcile_predictions (03:00 gece)** → dünkü maçların actual sonucunu
+  predictions tablosuna yazar; ML retrain için lazım.
+- **train_predict_ml (Pzt 04:00)** → haftalık best ρ retrain; cache_entries
+  içine 30 gün TTL ile yazar.
+
+Saat dilimi: cron expression'ları **UTC** kabul edilir (server timezone).
+Lokal saatte istersen crontab'in başına `TZ=Europe/Istanbul` ekle.
 
 ## Production checklist
 
@@ -249,8 +274,8 @@ hazır script'ler var:
 
 ### Manuel yedek
 ```bash
-DATABASE_URL=$DATABASE_URL ./scripts/backup_db.sh /var/backups/manager2
-# → /var/backups/manager2/manager2-2026-05-27-030000.sql.gz
+DATABASE_URL=$DATABASE_URL ./scripts/backup_db.sh /var/backups/tactic11
+# → /var/backups/tactic11/tactic11-2026-05-27-030000.sql.gz
 ```
 
 Plain SQL dump + gzip; `--no-owner --no-privileges` ile restore'da
@@ -258,7 +283,7 @@ owner uyumsuzluğu önlenir.
 
 ### Cron (günlük 03:00 UTC)
 ```cron
-0 3 * * * cd /opt/manager2 && DATABASE_URL=$(grep ^DATABASE_URL .env | cut -d= -f2-) ./scripts/backup_db.sh /var/backups/manager2 >> /var/log/manager2-backup.log 2>&1
+0 3 * * * cd /opt/tactic11 && DATABASE_URL=$(grep ^DATABASE_URL .env | cut -d= -f2-) ./scripts/backup_db.sh /var/backups/tactic11 >> /var/log/tactic11-backup.log 2>&1
 ```
 
 ### Restore drill (ayrı bir DB üzerinde, ayda bir)
@@ -268,7 +293,7 @@ createdb manager2_restore_test
 
 # Restore
 DATABASE_URL=postgresql://user:pw@localhost/manager2_restore_test \
-  ./scripts/restore_db.sh /var/backups/manager2/manager2-2026-05-27-030000.sql.gz
+  ./scripts/restore_db.sh /var/backups/tactic11/tactic11-2026-05-27-030000.sql.gz
 
 # Doğrula
 psql manager2_restore_test -c "SELECT version_num FROM alembic_version;"
@@ -286,7 +311,7 @@ daha güvenli).
 ### S3 / external storage (opsiyonel)
 ```cron
 # Her sabah yedek aldıktan sonra S3'e yükle
-5 3 * * * aws s3 sync /var/backups/manager2 s3://my-bucket/manager2-backups/ --no-progress
+5 3 * * * aws s3 sync /var/backups/tactic11 s3://my-bucket/tactic11-backups/ --no-progress
 ```
 Yerel disk yangını riskini azaltır; AWS region farkı (multi-region) için S3
 Cross-Region Replication kullan.

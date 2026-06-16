@@ -19,6 +19,7 @@ from app.core.config import get_settings
 from app.core.logging import get_logger
 from app.core.usage import consume_quota
 from app.data.cache import cache_get, cache_set
+from app.data.sources._resilience import CircuitBreaker, call_with_retry
 from app.data.sources.base import DataSource
 from app.db.session import SessionLocal
 from app.domain import League, LineupEntry, Match, PlayerMatchStats, Team
@@ -37,6 +38,21 @@ _TTL_SECONDS: dict[str, int] = {
     "fixtures": 3_600,
 }
 _DEFAULT_TTL = 600
+
+# Devre kesici — process ömründe tek instance (API-Football kaynağı için).
+_BREAKER = CircuitBreaker(
+    failure_threshold=get_settings().http_breaker_threshold,
+    cooldown_seconds=get_settings().http_breaker_cooldown_seconds,
+)
+
+
+def _is_retryable(e: Exception) -> bool:
+    """Timeout/transport hatası ve 5xx geçici sayılır; 4xx (client) retry edilmez."""
+    if isinstance(e, httpx.TransportError):  # TimeoutException, ConnectError, ...
+        return True
+    if isinstance(e, httpx.HTTPStatusError):
+        return e.response.status_code >= 500
+    return False
 
 
 def _cache_key(path: str, params: dict[str, Any]) -> str:
@@ -144,6 +160,9 @@ class APIFootball(DataSource):
         fouls = s.get("fouls") or {}
         cards = s.get("cards") or {}
         subs = s.get("substitutes") or {}
+        goals = s.get("goals") or {}
+        tackles = s.get("tackles") or {}
+        duels = s.get("duels") or {}
         minutes = games.get("minutes")
         if minutes is None:
             return None  # oynamamış oyuncu
@@ -175,6 +194,15 @@ class APIFootball(DataSource):
             second_yellow=cards.get("yellowred") if cards.get("yellowred") else None,
             substituted_in_minute=subs.get("in"),
             substituted_out_minute=subs.get("out"),
+            goals=goals.get("total"),
+            assists=goals.get("assists"),
+            goals_conceded=goals.get("conceded"),
+            saves=goals.get("saves"),
+            key_passes=passes.get("key"),
+            tackles_total=tackles.get("total"),
+            interceptions=tackles.get("interceptions"),
+            duels_total=duels.get("total"),
+            duels_won=duels.get("won"),
         )
 
     # Internals ------------------------------------------------------------
@@ -205,10 +233,23 @@ class APIFootball(DataSource):
 
         url = f"{self._base_url}/{path}"
         log.info("api_football GET %s params=%s", path, params)
-        with httpx.Client(timeout=10.0) as client:
-            r = client.get(url, params=params, headers={"x-apisports-key": self._key})
-            r.raise_for_status()
-            data = r.json()
+        settings = get_settings()
+
+        def _do_request() -> dict[str, Any]:
+            with httpx.Client(timeout=settings.http_timeout_seconds) as client:
+                r = client.get(
+                    url, params=params, headers={"x-apisports-key": self._key}
+                )
+                r.raise_for_status()
+                return r.json()
+
+        # Geçici hata/timeout'ta retry + devre kesici (kaynak düşükse fail-fast).
+        data = call_with_retry(
+            _do_request,
+            attempts=settings.http_retry_attempts,
+            breaker=_BREAKER,
+            is_retryable=_is_retryable,
+        )
 
         ttl = _TTL_SECONDS.get(path, _DEFAULT_TTL)
         with SessionLocal() as session:

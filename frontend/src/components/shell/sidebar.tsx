@@ -12,22 +12,38 @@ import useSWR from "swr";
 import { cn } from "@/lib/cn";
 import { apiFetch } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 
 interface NavItem {
   href: string;
   label: string;
   roles?: ("admin" | "analyst" | "coach" | "viewer")[];
+  indent?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { href: "/overview", label: "Genel Bakış", roles: ["admin", "coach", "analyst"] },
   { href: "/leagues", label: "Ligler" },
   { href: "/teams", label: "Takımlar" },
+  { href: "/squad", label: "Kadro", roles: ["admin", "coach", "analyst"] },
   { href: "/h2h", label: "H2H" },
+  { href: "/scout", label: "Scout", roles: ["admin", "coach", "analyst"] },
   { href: "/matches", label: "Maçlar" },
+  { href: "/match-plan", label: "Maç Planı", roles: ["admin", "coach", "analyst"] },
   { href: "/training", label: "Antrenman", roles: ["admin", "coach", "analyst"] },
+  { href: "/physical-tests", label: "Performans", roles: ["admin", "coach", "analyst"] },
+  { href: "/medical", label: "Tıbbi Merkez", roles: ["admin", "coach", "analyst"] },
   { href: "/decisions", label: "Kararlar", roles: ["admin", "coach", "analyst"] },
+  { href: "/decisions/live", label: "Maç-içi Karar", roles: ["admin", "coach", "analyst"], indent: true },
+  { href: "/decisions/track", label: "Karar Takip", roles: ["admin", "coach", "analyst"], indent: true },
+  { href: "/xg", label: "xG Analiz", roles: ["admin", "coach", "analyst"] },
   { href: "/calibration", label: "Kalibrasyon" },
   { href: "/chat", label: "Asistan" },
+  { href: "/notifications", label: "Bildirimler", roles: ["admin"] },
+  { href: "/contracts", label: "Sözleşmeler", roles: ["admin", "analyst"] },
+  { href: "/opponent", label: "Rakip Raporu", roles: ["admin", "coach", "analyst"] },
+  { href: "/manager-performance", label: "TD Performansı", roles: ["admin", "analyst"] },
+  { href: "/compliance", label: "Erişim Denetimi", roles: ["admin"] },
   { href: "/admin", label: "Admin", roles: ["admin"] },
 ];
 
@@ -49,11 +65,14 @@ function relativeTime(iso: string): string {
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useCurrentUser();
+  const { t } = useI18n();
   const role = user?.role ?? "viewer";
 
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.roles || item.roles.includes(role),
-  );
+  // Giriş yapılmamışsa (önizleme/backend yok) TÜM ekranları göster ki tasarım
+  // gezilebilsin. Kullanıcı varsa kendi rolüne göre filtrele.
+  const visibleItems = user
+    ? NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role))
+    : NAV_ITEMS;
 
   const shouldFetchJobs =
     user?.role === "admin" || user?.role === "analyst";
@@ -72,18 +91,26 @@ export function Sidebar() {
         {visibleItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
+          const exactMatch = pathname === item.href;
+          // Parent /decisions: alt-link aktifken parent vurgulanmasın
+          const indented = item.indent;
+          const active = indented ? exactMatch : isActive;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "block px-4 py-2 text-[13px] border-l-2 transition-colors",
-                isActive
+                "block py-2 text-[13px] border-l-2 transition-colors",
+                indented ? "pl-8 pr-4 text-[12px]" : "px-4",
+                active
                   ? "bg-surface2 text-text border-accent font-medium"
                   : "border-transparent text-textmut hover:text-text hover:bg-surface2",
               )}
             >
-              {item.label}
+              {indented && (
+                <span className="mr-1.5 text-textdim" aria-hidden>↳</span>
+              )}
+              {t(item.label)}
             </Link>
           );
         })}

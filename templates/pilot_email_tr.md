@@ -70,7 +70,7 @@ Sayın {ad_soyad},
 {kulüp_adı}'nın analiz ekibinde çalıştığınızı biliyorum. Geçen sezon
 {kulüp_adı}'nın {örnek_başarı/zorluk} dikkatimi çekmişti.
 
-manager2 — Süper Lig odaklı bir veri platformu. Mevcut Wyscout/StatsBomb
+tactic11 — Süper Lig odaklı bir veri platformu. Mevcut Wyscout/StatsBomb
 abonelerinin üstüne kurulan bir analiz katmanı, kendi başına bir veri
 sağlayıcı değil. Saf hesap mimarisi (engine layer DB/HTTP'ye dokunmaz)
 sayesinde sizin mevcut araçlarınızla yan yana çalışır.
@@ -126,7 +126,7 @@ Pilot sözleşmesi imzalandı, hoş geldiniz! İlk hafta planı:
 - "Şu ana kadar ne çalıştı, ne eksik" 30 dk
 
 İlk haftada her gün e-posta + Slack desteği. Sorun bildirim:
-{support_email} ya da Slack #manager2-pilot kanalı.
+{support_email} ya da Slack #tactic11-pilot kanalı.
 
 Hoş geldiniz!
 {senin_adın}
@@ -134,12 +134,12 @@ Hoş geldiniz!
 
 ## Şablon 5 — Aylık raporlama
 
-**Konu:** {kulüp_adı} aylık manager2 raporu — {ay_adı}
+**Konu:** {kulüp_adı} aylık tactic11 raporu — {ay_adı}
 
 ```
 Merhaba,
 
-{ay_adı} ayının manager2 raporu hazır.
+{ay_adı} ayının tactic11 raporu hazır.
 
 **Kullanım:**
 - Maç önü brief üretimi: {brief_count} (önceki ay {önceki_brief_count})

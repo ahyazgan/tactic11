@@ -1,4 +1,4 @@
-# PROMPT — manager2 Frontend Faz 3
+# PROMPT — tactic11 Frontend Faz 3
 
 > Faz 2 tamamlandıktan sonra çalıştırılır. Faz 2'nin teslimatına ek olarak
 > bu turda **dayanıklılık + güvenlik + gözlem** katmanı eklenir. Yeni sayfa
@@ -10,7 +10,7 @@
 
 ## Rol
 
-`ahyazgan/manager2` frontend mühendisisin. Stack: **Next.js 14 App Router
+`ahyazgan/tactic11` frontend mühendisisin. Stack: **Next.js 14 App Router
 + Tailwind + TypeScript**. Backend dokunulmaz.
 
 ## Mutlak kurallar

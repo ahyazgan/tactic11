@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tactic11 — Game Plan</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --good: #3fb950; --warn: #d29922; --bad: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  header a { color: var(--accent); text-decoration: none; }
+  main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .auth { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+  .auth label { color: var(--muted); font-size: 12px; }
+  .auth input { background: var(--bg); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px; }
+  .auth input.api { flex: 1; }
+  .auth input.id { width: 130px; }
+  .auth button { background: var(--accent); color: #fff; border: 0; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .scoreline { font-size: 32px; font-weight: 600; letter-spacing: 1px; }
+  .meta-line { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .scenario-banner { padding: 14px 18px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+  .scenario-banner .label { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 11px; padding: 4px 8px; border-radius: 4px; }
+  .scenario-leading .label { background: var(--good); color: #0e1116; }
+  .scenario-level .label { background: var(--warn); color: #0e1116; }
+  .scenario-trailing .label { background: var(--bad); color: #fff; }
+  .scenario-unknown .label { background: var(--muted); color: #fff; }
+  .scenario-banner .text { flex: 1; font-size: 15px; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); margin-bottom: 24px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card h2 { margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .card .body { font-size: 14px; line-height: 1.6; }
+  .card .body p { margin: 0 0 8px 0; }
+  .kv { display: grid; grid-template-columns: 100px 1fr; gap: 6px 12px; font-size: 13px; }
+  .kv .k { color: var(--muted); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .pill.ok { background: rgba(63, 185, 80, 0.2); color: var(--good); }
+  .pill.warn { background: rgba(210, 153, 34, 0.2); color: var(--warn); }
+  .pill.bad { background: rgba(248, 81, 73, 0.2); color: var(--bad); }
+  .note-list { color: var(--warn); font-size: 13px; }
+  .note-list li { margin-bottom: 4px; }
+  .empty { color: var(--muted); font-style: italic; }
+  .footer { padding: 16px 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Game Plan</h1>
+    <div class="meta" id="meta">—</div>
+  </div>
+  <a href="/dashboard">← Dashboard</a>
+</header>
+
+<main>
+  <div class="auth">
+    <label>X-API-Key</label>
+    <input id="apikey" class="api" placeholder="API key" autocomplete="off" />
+    <label>my_team_id</label>
+    <input id="my-team-id" class="id" type="number" placeholder="örn. 549" />
+    <button id="reload">Yükle</button>
+  </div>
+
+  <div id="error-box" style="display:none; padding:14px; background:var(--panel); border:1px solid var(--bad); border-radius:8px; color:var(--bad); margin-bottom:16px;"></div>
+
+  <div id="scoreline-card" class="card" style="display:none; margin-bottom:16px;">
+    <div class="scoreline" id="scoreline">—</div>
+    <div class="meta-line" id="match-meta">—</div>
+  </div>
+
+  <div id="scenario-banner" class="scenario-banner scenario-unknown" style="display:none;">
+    <span class="label" id="scenario-label">—</span>
+    <span class="text" id="scenario-text">—</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Senaryo reçetesi</h2>
+      <div class="body" id="recipe-body"><span class="empty">yükleniyor…</span></div>
+    </div>
+    <div class="card">
+      <h2>Matchup tavsiyesi</h2>
+      <div class="body" id="matchup-body"><span class="empty">yükleniyor…</span></div>
+    </div>
+    <div class="card">
+      <h2>Set-piece ipucu</h2>
+      <div class="body" id="set-piece-body"><span class="empty">yükleniyor…</span></div>
+    </div>
+    <div class="card">
+      <h2>Plan notları</h2>
+      <div class="body" id="notes-body"><span class="empty">yükleniyor…</span></div>
+    </div>
+  </div>
+</main>
+
+<div class="footer">
+  tactic11 · game-plan canlı eşleştirme. Plan kaydı:
+  <code>POST /matches/{id}/plan</code> · Eşleştirme: <code>GET /matches/{id}/plan/vs-live</code>
+</div>
+
+<script>
+const MATCH_ID = parseInt(document.getElementById('meta').dataset.matchId || window.MATCH_ID, 10);
+const apikeyInput = document.getElementById('apikey');
+const teamIdInput = document.getElementById('my-team-id');
+const reloadBtn = document.getElementById('reload');
+const STORAGE_KEY_API = 'manager2_apikey';
+const STORAGE_KEY_TEAM = 'manager2_my_team_id_' + MATCH_ID;
+
+apikeyInput.value = localStorage.getItem(STORAGE_KEY_API) || '';
+teamIdInput.value = localStorage.getItem(STORAGE_KEY_TEAM) || '';
+
+reloadBtn.addEventListener('click', () => {
+  localStorage.setItem(STORAGE_KEY_API, apikeyInput.value);
+  localStorage.setItem(STORAGE_KEY_TEAM, teamIdInput.value);
+  loadPlan();
+});
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.style.display = 'block';
+  box.textContent = msg;
+}
+
+function hideError() {
+  document.getElementById('error-box').style.display = 'none';
+}
+
+async function fetchJSON(path) {
+  const headers = {};
+  if (apikeyInput.value) headers['X-API-Key'] = apikeyInput.value;
+  const r = await fetch(path, { headers });
+  if (!r.ok) {
+    const text = await r.text();
+    return { __error: true, status: r.status, body: text };
+  }
+  return r.json();
+}
+
+function renderRecipe(recipe) {
+  const body = document.getElementById('recipe-body');
+  if (!recipe) { body.innerHTML = '<span class="empty">aktif senaryo için reçete yok</span>'; return; }
+  let html = '<div class="kv">';
+  if (recipe.label) html += `<div class="k">Durum</div><div>${recipe.label}</div>`;
+  if (recipe.approach) html += `<div class="k">Yaklaşım</div><div>${recipe.approach}</div>`;
+  if (recipe.formation_hint) html += `<div class="k">Formasyon</div><div>${recipe.formation_hint}</div>`;
+  if (recipe.dynamic_focus) html += `<div class="k">Anlık odak</div><div><em>${recipe.dynamic_focus}</em></div>`;
+  if (recipe.risk) html += `<div class="k">Risk</div><div style="color:var(--warn)">${recipe.risk}</div>`;
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function renderMatchup(rec) {
+  const body = document.getElementById('matchup-body');
+  if (!rec) { body.innerHTML = '<span class="empty">matchup planda yok</span>'; return; }
+  body.innerHTML = `<p>${rec}</p>`;
+}
+
+function renderSetPiece(hint) {
+  const body = document.getElementById('set-piece-body');
+  if (!hint) { body.innerHTML = '<span class="empty">set-piece tavsiyesi yok</span>'; return; }
+  body.innerHTML = `<p>${hint}</p>`;
+}
+
+function renderNotes(notes) {
+  const body = document.getElementById('notes-body');
+  if (!notes || !notes.length) { body.innerHTML = '<span class="empty">uyarı yok</span>'; return; }
+  body.innerHTML = '<ul class="note-list">' +
+    notes.map(n => `<li>${n}</li>`).join('') + '</ul>';
+}
+
+function renderScenario(scenario, recipe) {
+  const banner = document.getElementById('scenario-banner');
+  const labelEl = document.getElementById('scenario-label');
+  const textEl = document.getElementById('scenario-text');
+  banner.style.display = 'flex';
+  banner.className = 'scenario-banner scenario-' + scenario;
+  labelEl.textContent = scenario.toUpperCase();
+  const summary = recipe?.approach || (
+    scenario === 'unknown' ? 'Skor/takım belirsiz — senaryo seçilemedi'
+                            : 'reçete yok'
+  );
+  textEl.textContent = summary;
+}
+
+function renderScoreline(data) {
+  const card = document.getElementById('scoreline-card');
+  card.style.display = 'block';
+  const sc = data.score || {};
+  const home = sc.home ?? '—';
+  const away = sc.away ?? '—';
+  document.getElementById('scoreline').textContent = `${home} – ${away}`;
+  const parts = [];
+  if (data.minute !== null && data.minute !== undefined) parts.push(`Dk ${data.minute}`);
+  if (data.status) parts.push(`Status: ${data.status}`);
+  if (data.plan_age_seconds !== undefined) {
+    const hrs = (data.plan_age_seconds / 3600).toFixed(1);
+    parts.push(`Plan ${hrs}h önce kaydedildi`);
+  }
+  document.getElementById('match-meta').textContent = parts.join(' · ') || '—';
+}
+
+async function loadPlan() {
+  hideError();
+  const teamId = parseInt(teamIdInput.value, 10);
+  if (!teamId) {
+    showError('my_team_id girip Yükle\'ye basın.');
+    return;
+  }
+  const data = await fetchJSON(`/matches/${MATCH_ID}/plan/vs-live?my_team_id=${teamId}`);
+  if (data.__error) {
+    showError(`Plan yüklenemedi (HTTP ${data.status}): ${data.body.slice(0, 240)}`);
+    return;
+  }
+  document.getElementById('meta').textContent = `Maç #${MATCH_ID} · ${new Date().toLocaleTimeString()}`;
+  renderScoreline(data);
+  renderScenario(data.active_scenario || 'unknown', data.scenario_recipe);
+  renderRecipe(data.scenario_recipe);
+  renderMatchup(data.matchup_recommendation);
+  renderSetPiece(data.set_piece_hint);
+  renderNotes(data.notes);
+}
+
+if (apikeyInput.value && teamIdInput.value) {
+  loadPlan();
+} else {
+  document.getElementById('meta').textContent = `Maç #${MATCH_ID} · API key + my_team_id girin`;
+}
+</script>
+</body>
+</html>

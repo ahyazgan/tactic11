@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tactic11 — Rol Dashboard</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --good: #3fb950; --warn: #d29922; --bad: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  header a { color: var(--accent); text-decoration: none; }
+  .role-tabs { display: flex; gap: 6px; }
+  .role-tabs a { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); }
+  .role-tabs a.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .auth { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .auth label { color: var(--muted); font-size: 12px; }
+  .auth input { background: var(--bg); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px; }
+  .auth input.api { flex: 1; min-width: 200px; }
+  .auth input.id { width: 130px; }
+  .auth button { background: var(--accent); color: #fff; border: 0; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card.wide { grid-column: 1 / -1; }
+  .card h2 { margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; }
+  .card h2 a { color: var(--accent); text-decoration: none; font-size: 11px; font-weight: 500; text-transform: none; letter-spacing: 0; }
+  .num { font-size: 28px; font-weight: 600; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .status-ok { color: var(--good); }
+  .status-warn { color: var(--warn); }
+  .status-bad { color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td.r { text-align: right; }
+  td.c { text-align: center; }
+  .pill { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .pill.ok { background: rgba(63, 185, 80, 0.2); color: var(--good); }
+  .pill.warn { background: rgba(210, 153, 34, 0.2); color: var(--warn); }
+  .pill.bad { background: rgba(248, 81, 73, 0.2); color: var(--bad); }
+  .empty { color: var(--muted); font-style: italic; }
+  .footer { padding: 16px 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 id="page-title">Rol Dashboard</h1>
+    <div class="meta" id="meta">—</div>
+  </div>
+  <div class="role-tabs">
+    <a href="/roles/tactical/dashboard" data-r="tactical">TD</a>
+    <a href="/roles/analyst/dashboard" data-r="analyst">Analist</a>
+    <a href="/roles/conditioning/dashboard" data-r="conditioning">Kondisyon</a>
+    <a href="/roles/scout/dashboard" data-r="scout">Scout</a>
+    <a href="/dashboard">Ops</a>
+  </div>
+</header>
+
+<main>
+  <div class="auth">
+    <label>X-API-Key</label>
+    <input id="apikey" class="api" placeholder="API key" autocomplete="off" />
+    <label>team_id</label>
+    <input id="team-id" class="id" type="number" placeholder="opsiyonel" />
+    <label>player_id</label>
+    <input id="player-id" class="id" type="number" placeholder="opsiyonel" />
+    <button id="reload">Yükle</button>
+  </div>
+
+  <div id="error-box" style="display:none; padding:14px; background:var(--panel); border:1px solid var(--bad); border-radius:8px; color:var(--bad); margin-bottom:16px;"></div>
+
+  <div class="grid" id="card-grid"></div>
+</main>
+
+<div class="footer">
+  tactic11 · rol bazlı landing — kartlar role'a göre filtreli, mevcut endpoint'leri tüketir
+</div>
+
+<script>
+const ROLE = window.ROLE || 'tactical';
+const apikeyInput = document.getElementById('apikey');
+const teamInput = document.getElementById('team-id');
+const playerInput = document.getElementById('player-id');
+const reloadBtn = document.getElementById('reload');
+
+const STORAGE_API = 'manager2_apikey';
+const STORAGE_TEAM = 'manager2_role_team';
+const STORAGE_PLAYER = 'manager2_role_player';
+
+apikeyInput.value = localStorage.getItem(STORAGE_API) || '';
+teamInput.value = localStorage.getItem(STORAGE_TEAM) || '';
+playerInput.value = localStorage.getItem(STORAGE_PLAYER) || '';
+
+// Active tab highlight
+document.querySelectorAll('.role-tabs a[data-r]').forEach(a => {
+  if (a.dataset.r === ROLE) a.classList.add('active');
+});
+
+const ROLE_TITLES = {
+  tactical: 'Teknik Direktör',
+  analyst: 'Analist',
+  conditioning: 'Kondisyon ekibi',
+  scout: 'Scout',
+};
+document.getElementById('page-title').textContent = ROLE_TITLES[ROLE] + ' Dashboard';
+
+reloadBtn.addEventListener('click', () => {
+  localStorage.setItem(STORAGE_API, apikeyInput.value);
+  localStorage.setItem(STORAGE_TEAM, teamInput.value);
+  localStorage.setItem(STORAGE_PLAYER, playerInput.value);
+  renderRole();
+});
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.style.display = 'block';
+  box.textContent = msg;
+}
+
+function hideError() { document.getElementById('error-box').style.display = 'none'; }
+
+async function fetchJSON(path) {
+  const headers = {};
+  if (apikeyInput.value) headers['X-API-Key'] = apikeyInput.value;
+  const r = await fetch(path, { headers });
+  if (!r.ok) return { __error: true, status: r.status, body: await r.text() };
+  return r.json();
+}
+
+// ---- Card builders — her kart bir { title, link?, content() } ----
+
+function cardHtml(title, link, bodyHtml, wide = false) {
+  return `<div class="card${wide ? ' wide' : ''}">
+    <h2>${title}${link ? ` <a href="${link}">aç →</a>` : ''}</h2>
+    <div>${bodyHtml}</div>
+  </div>`;
+}
+
+async function cardTeamForm(teamId) {
+  if (!teamId) return cardHtml('Form (son 5)', null, '<span class="empty">team_id girin</span>');
+  const d = await fetchJSON(`/teams/${teamId}/form?last_n=5`);
+  if (d.__error) return cardHtml('Form (son 5)', null, `<span class="empty">HTTP ${d.status}</span>`);
+  const v = d.value || d;
+  return cardHtml('Form (son 5)', `/teams/${teamId}/dashboard`,
+    `<div class="num">${(v.points_per_game ?? 0).toFixed(2)}</div>
+     <div class="sub">${v.wins ?? 0}G ${v.draws ?? 0}B ${v.losses ?? 0}M</div>`);
+}
+
+async function cardTeamRating(teamId) {
+  if (!teamId) return cardHtml('Rating', null, '<span class="empty">team_id girin</span>');
+  const d = await fetchJSON(`/teams/${teamId}/rating`);
+  if (d.__error) return cardHtml('Rating', null, `<span class="empty">HTTP ${d.status}</span>`);
+  const v = d.value || d;
+  return cardHtml('Rating', `/teams/${teamId}/dashboard`,
+    `<div class="num">${(v.rating ?? 0).toFixed(1)}</div>
+     <div class="sub">ev ${(v.home_rating ?? 0).toFixed(1)} · dep ${(v.away_rating ?? 0).toFixed(1)}</div>`);
+}
+
+async function cardUpcoming(teamId) {
+  if (!teamId) return cardHtml('Yaklaşan maçlar', null, '<span class="empty">team_id girin</span>');
+  const d = await fetchJSON(`/teams/${teamId}/matches?last_n=10`);
+  if (d.__error) return cardHtml('Yaklaşan maçlar', null, `<span class="empty">HTTP ${d.status}</span>`);
+  const items = (Array.isArray(d) ? d : (d.items || []));
+  const now = Date.now();
+  const fut = items.filter(m => new Date(m.kickoff).getTime() >= now)
+                    .sort((a, b) => new Date(a.kickoff) - new Date(b.kickoff))
+                    .slice(0, 4);
+  if (!fut.length) return cardHtml('Yaklaşan maçlar', null, '<span class="empty">fikstür boş</span>', true);
+  let html = '<table><thead><tr><th>tarih</th><th>rakip</th><th>—</th></tr></thead><tbody>';
+  fut.forEach(m => {
+    const isHome = m.home_team_external_id === parseInt(teamId, 10);
+    const opp = isHome ? m.away_team_external_id : m.home_team_external_id;
+    const date = new Date(m.kickoff).toLocaleDateString();
+    html += `<tr><td>${date}</td><td>#${opp}</td><td class="r">
+      <a href="/matches/${m.external_id}/game-plan" style="color:var(--accent)">plan</a> ·
+      <a href="/matches/${m.external_id}/warmup" style="color:var(--accent)">checklist</a>
+    </td></tr>`;
+  });
+  html += '</tbody></table>';
+  return cardHtml('Yaklaşan maçlar', null, html, true);
+}
+
+async function cardRecentAgentOutputs(filter) {
+  const d = await fetchJSON('/admin/agent-outputs?limit=10');
+  if (d.__error) return cardHtml('Son agent çıktıları', null, `<span class="empty">HTTP ${d.status}</span>`, true);
+  let items = (Array.isArray(d) ? d : (d.items || []));
+  if (filter) items = items.filter(o => filter.includes(o.agent_name));
+  if (!items.length) return cardHtml('Son agent çıktıları', null, '<span class="empty">kayıt yok</span>', true);
+  let html = '<table><thead><tr><th>agent</th><th>subject</th><th>güncellendi</th><th>özet</th></tr></thead><tbody>';
+  items.slice(0, 8).forEach(o => {
+    const s = (o.summary || '').slice(0, 70);
+    html += `<tr><td>${o.agent_name}</td><td>${o.subject_type}:${o.subject_id}</td>
+      <td>${o.updated_at?.slice(0, 16) ?? '—'}</td><td>${s}</td></tr>`;
+  });
+  html += '</tbody></table>';
+  return cardHtml('Son agent çıktıları', null, html, true);
+}
+
+async function cardMLStatus() {
+  const d = await fetchJSON('/admin/ml-model-status');
+  if (d.__error) return cardHtml('ML model', null, `<span class="empty">HTTP ${d.status}</span>`);
+  if (d.status === 'fresh') {
+    return cardHtml('ML model', null,
+      `<div class="num status-ok">ρ ${d.best_rho?.toFixed(3) ?? '?'}</div>
+       <div class="sub">n=${d.sample_count} · loss=${d.best_log_loss?.toFixed(4)}</div>`);
+  }
+  return cardHtml('ML model', null,
+    `<div class="num status-warn">${d.status}</div>
+     <div class="sub">train_predict_ml job çalışmalı</div>`);
+}
+
+async function cardAccuracy() {
+  const d = await fetchJSON('/admin/predict-accuracy?days=30');
+  if (d.__error) return cardHtml('Tahmin doğruluğu (30g)', null, `<span class="empty">HTTP ${d.status}</span>`);
+  return cardHtml('Tahmin doğruluğu (30g)', null,
+    `<div class="num">${(d.brier_score ?? 0).toFixed(3)}</div>
+     <div class="sub">Brier · loss=${(d.log_loss ?? 0).toFixed(3)} · n=${d.sample_count ?? d.matches_considered ?? '?'}</div>`);
+}
+
+async function cardPlayerLoad(playerId) {
+  if (!playerId) return cardHtml('Oyuncu yük', null, '<span class="empty">player_id girin</span>');
+  const d = await fetchJSON(`/players/${playerId}/load?window_days=14`);
+  if (d.__error) return cardHtml('Oyuncu yük', null, `<span class="empty">HTTP ${d.status}</span>`);
+  const v = d.value || d;
+  const risk = v.risk_level || 'low';
+  const cls = risk === 'low' ? 'status-ok' : risk === 'medium' ? 'status-warn' : 'status-bad';
+  return cardHtml('Oyuncu yük (14g)', `/players/${playerId}/dashboard`,
+    `<div class="num ${cls}">${risk.toUpperCase()}</div>
+     <div class="sub">${Math.round(v.minutes_per_week ?? 0)} dk/hf · ${v.back_to_back_count ?? 0} b2b</div>`);
+}
+
+async function cardDecisionsFeedback(teamId) {
+  if (!teamId) return cardHtml('Karar isabet', null, '<span class="empty">team_id girin</span>');
+  const d = await fetchJSON(`/admin/teams/${teamId}/decisions/feedback`);
+  if (d.__error) return cardHtml('Karar isabet', null, `<span class="empty">HTTP ${d.status}</span>`);
+  const byType = d.by_decision_type || {};
+  const types = Object.entries(byType);
+  if (!types.length) {
+    return cardHtml('Karar isabet', `/teams/${teamId}/decisions-dashboard`,
+      `<div class="num">—</div><div class="sub">${d.evaluated ?? 0} değerlendirilmiş</div>`);
+  }
+  let total = 0, hits = 0;
+  types.forEach(([_, b]) => { total += b.n; hits += b.n * b.hit_rate; });
+  const rate = total ? hits / total : 0;
+  const cls = rate >= 0.6 ? 'status-ok' : rate >= 0.4 ? 'status-warn' : 'status-bad';
+  return cardHtml('Karar isabet', `/teams/${teamId}/decisions-dashboard`,
+    `<div class="num ${cls}">${(rate * 100).toFixed(1)}%</div>
+     <div class="sub">${total} değerlendirilmiş · ${types.length} tip</div>`);
+}
+
+// ---- Rol → kart kümeleri ----
+const ROLE_CARDS = {
+  tactical: async () => {
+    const teamId = teamInput.value;
+    return Promise.all([
+      cardTeamForm(teamId),
+      cardTeamRating(teamId),
+      cardDecisionsFeedback(teamId),
+      cardUpcoming(teamId),
+      cardRecentAgentOutputs(['pre_match_report', 'game_plan', 'opponent_scout', 'tactical_adjustment']),
+    ]);
+  },
+  analyst: async () => {
+    const teamId = teamInput.value;
+    return Promise.all([
+      cardMLStatus(),
+      cardAccuracy(),
+      cardTeamForm(teamId),
+      cardTeamRating(teamId),
+      cardRecentAgentOutputs(['weekly_digest', 'opponent_scout']),
+    ]);
+  },
+  conditioning: async () => {
+    const teamId = teamInput.value;
+    const playerId = playerInput.value;
+    return Promise.all([
+      cardPlayerLoad(playerId),
+      cardRecentAgentOutputs(['injury_load', 'training_plan']),
+      cardUpcoming(teamId),
+    ]);
+  },
+  scout: async () => {
+    return Promise.all([
+      cardRecentAgentOutputs(['opponent_scout', 'scout_watchlist_digest', 'player_feedback']),
+    ]);
+  },
+};
+
+async function renderRole() {
+  hideError();
+  document.getElementById('meta').textContent = 'Yenilendi: ' + new Date().toLocaleTimeString();
+  const grid = document.getElementById('card-grid');
+  grid.innerHTML = '<div class="empty" style="padding: 24px; text-align: center;">yükleniyor…</div>';
+  const builder = ROLE_CARDS[ROLE];
+  if (!builder) {
+    grid.innerHTML = `<div class="empty">Bilinmeyen rol: ${ROLE}</div>`;
+    return;
+  }
+  const cards = await builder();
+  grid.innerHTML = cards.join('');
+}
+
+renderRole();
+</script>
+</body>
+</html>

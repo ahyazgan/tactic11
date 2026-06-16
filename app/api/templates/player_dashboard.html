@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tactic11 — Oyuncu Dashboard</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --good: #3fb950; --warn: #d29922; --bad: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  header a { color: var(--accent); text-decoration: none; }
+  main { padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .auth { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
+  .auth label { color: var(--muted); font-size: 12px; }
+  .auth input { background: var(--bg); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px; flex: 1; }
+  .auth button { background: var(--accent); color: #fff; border: 0; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .card.wide { grid-column: 1 / -1; }
+  .card h2 { margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .num { font-size: 28px; font-weight: 600; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .status-ok { color: var(--good); }
+  .status-warn { color: var(--warn); }
+  .status-bad { color: var(--bad); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+  .pill.low { background: rgba(63, 185, 80, 0.2); color: var(--good); }
+  .pill.medium { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+  .pill.high { background: rgba(210, 153, 34, 0.2); color: var(--warn); }
+  .pill.extreme { background: rgba(248, 81, 73, 0.2); color: var(--bad); }
+  .pill.rising { background: rgba(63, 185, 80, 0.2); color: var(--good); }
+  .pill.declining { background: rgba(248, 81, 73, 0.2); color: var(--bad); }
+  .pill.stable { background: rgba(139, 148, 158, 0.2); color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td.r { text-align: right; }
+  td.c { text-align: center; }
+  .kv { display: grid; grid-template-columns: 110px 1fr; gap: 4px 12px; font-size: 13px; }
+  .kv .k { color: var(--muted); }
+  /* Inline bar — minute bar her appearance için */
+  .bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 4px; }
+  .bar-row .label { width: 80px; color: var(--muted); }
+  .bar-row .track { flex: 1; height: 14px; background: var(--bg); border-radius: 3px; overflow: hidden; border: 1px solid var(--border); }
+  .bar-row .bar { height: 100%; background: var(--accent); }
+  .bar-row .value { width: 50px; text-align: right; color: var(--fg); }
+  .empty { color: var(--muted); font-style: italic; }
+  .footer { padding: 16px 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1 id="player-title">Oyuncu Dashboard</h1>
+    <div class="meta" id="meta">—</div>
+  </div>
+  <a href="/dashboard">← Ops Dashboard</a>
+</header>
+
+<main>
+  <div class="auth">
+    <label>X-API-Key</label>
+    <input id="apikey" placeholder="API key" autocomplete="off" />
+    <button id="reload">Yükle</button>
+  </div>
+
+  <div id="error-box" style="display:none; padding:14px; background:var(--panel); border:1px solid var(--bad); border-radius:8px; color:var(--bad); margin-bottom:16px;"></div>
+
+  <div id="info-card" class="card wide" style="margin-bottom: 16px;">
+    <h2>Künye</h2>
+    <div class="kv" id="info-body"><span class="empty">yükleniyor…</span></div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Yük (son 14 gün)</h2>
+      <div class="num" id="load-mpw">—</div>
+      <div class="sub" id="load-detail">dakika/hafta · risk</div>
+    </div>
+    <div class="card">
+      <h2>Form (son N)</h2>
+      <div class="num" id="form-trend">—</div>
+      <div class="sub" id="form-detail">Z-score baseline</div>
+    </div>
+    <div class="card">
+      <h2>Maç sıklığı</h2>
+      <div class="num" id="b2b-count">—</div>
+      <div class="sub" id="b2b-detail">5 günde max maç</div>
+    </div>
+
+    <div class="card wide">
+      <h2>Dakika trendi (son 8 maç)</h2>
+      <div id="minute-trend"><span class="empty">yükleniyor…</span></div>
+    </div>
+
+    <div class="card wide">
+      <h2>Son maçlar (rating)</h2>
+      <div id="recent-apps"><span class="empty">yükleniyor…</span></div>
+    </div>
+  </div>
+</main>
+
+<div class="footer">
+  tactic11 · oyuncu gelişim trendi (player.form + player.load + appearances)
+</div>
+
+<script>
+const PLAYER_ID = parseInt(window.PLAYER_ID, 10);
+const apikeyInput = document.getElementById('apikey');
+const reloadBtn = document.getElementById('reload');
+const STORAGE_KEY = 'manager2_apikey';
+
+apikeyInput.value = localStorage.getItem(STORAGE_KEY) || '';
+
+reloadBtn.addEventListener('click', () => {
+  localStorage.setItem(STORAGE_KEY, apikeyInput.value);
+  loadAll();
+});
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.style.display = 'block';
+  box.textContent = msg;
+}
+
+function hideError() { document.getElementById('error-box').style.display = 'none'; }
+
+function setText(id, text, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  if (cls) el.className = el.className.split(' ').filter(c => !c.startsWith('status-')).join(' ') + ' ' + cls;
+}
+
+async function fetchJSON(path) {
+  const headers = {};
+  if (apikeyInput.value) headers['X-API-Key'] = apikeyInput.value;
+  const r = await fetch(path, { headers });
+  if (!r.ok) return { __error: true, status: r.status, body: await r.text() };
+  return r.json();
+}
+
+async function loadInfo() {
+  const d = await fetchJSON(`/players/${PLAYER_ID}/info`);
+  const body = document.getElementById('info-body');
+  if (d.__error) {
+    body.innerHTML = `<span class="empty">info çekilemedi (HTTP ${d.status})</span>`;
+    document.getElementById('player-title').textContent = `Oyuncu #${PLAYER_ID}`;
+    return;
+  }
+  document.getElementById('player-title').textContent = d.name || `Oyuncu #${PLAYER_ID}`;
+  let html = '';
+  html += `<div class="k">External ID</div><div>${d.player_external_id}</div>`;
+  html += `<div class="k">Pozisyon</div><div>${d.position ?? '—'}</div>`;
+  html += `<div class="k">Doğum</div><div>${d.birth_date ?? '—'}${d.age !== null ? ` · ${d.age} yaş` : ''}</div>`;
+  html += `<div class="k">Uyruk</div><div>${d.nationality ?? '—'}</div>`;
+  body.innerHTML = html;
+}
+
+const RISK_CLS = { low: 'low', medium: 'medium', high: 'high', extreme: 'extreme' };
+
+async function loadLoad() {
+  const d = await fetchJSON(`/players/${PLAYER_ID}/load?window_days=14`);
+  if (d.__error) {
+    setText('load-mpw', '—'); setText('load-detail', `HTTP ${d.status}`);
+    setText('b2b-count', '—'); setText('b2b-detail', 'load eksik');
+    return;
+  }
+  const v = d.value || d;
+  const mpw = v.minutes_per_week ?? 0;
+  const risk = v.risk_level || 'low';
+  setText('load-mpw', `${Math.round(mpw)} dk/hf`);
+  const ld = document.getElementById('load-detail');
+  ld.innerHTML = `<span class="pill ${RISK_CLS[risk] || 'low'}">${risk.toUpperCase()}</span> ${v.matches_in_window ?? 0} maç`;
+  setText('b2b-count', v.back_to_back_count ?? 0);
+  setText('b2b-detail', v.high_load ? 'eşik üstü' : 'normal');
+}
+
+const TREND_CLS = { rising: 'rising', stable: 'stable', declining: 'declining' };
+
+async function loadForm() {
+  const d = await fetchJSON(`/players/${PLAYER_ID}/form?recent_n=5`);
+  if (d.__error) {
+    setText('form-trend', '—'); setText('form-detail', `HTTP ${d.status}`);
+    return;
+  }
+  const v = d.value || d;
+  const z = v.minutes_z_score ?? 0;
+  const trend = v.trend || 'stable';
+  const tr = document.getElementById('form-trend');
+  tr.innerHTML = `<span class="pill ${TREND_CLS[trend] || 'stable'}">${trend.toUpperCase()}</span>`;
+  setText('form-detail', `Z=${z.toFixed(2)} · baseline ${v.baseline_matches ?? '—'} maç`);
+}
+
+function renderMinuteTrend(apps) {
+  const el = document.getElementById('minute-trend');
+  if (!apps.length) { el.innerHTML = '<span class="empty">appearance yok</span>'; return; }
+  const last = apps.slice(0, 8);
+  let html = '';
+  last.forEach(a => {
+    const date = new Date(a.kickoff).toLocaleDateString();
+    const min = a.minutes ?? 0;
+    const pct = Math.min(100, (min / 90) * 100);
+    html += `<div class="bar-row">
+      <div class="label">${date}</div>
+      <div class="track"><div class="bar" style="width:${pct}%"></div></div>
+      <div class="value">${min}'</div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderRecentApps(apps) {
+  const el = document.getElementById('recent-apps');
+  if (!apps.length) { el.innerHTML = '<span class="empty">appearance yok</span>'; return; }
+  const last = apps.slice(0, 10);
+  let html = '<table><thead><tr><th>tarih</th><th class="c">match_id</th><th class="r">dakika</th><th class="r">rating</th><th class="r">paslar</th></tr></thead><tbody>';
+  last.forEach(a => {
+    const date = new Date(a.kickoff).toLocaleDateString();
+    const rating = (a.rating_apifootball ?? null) !== null ? a.rating_apifootball.toFixed(2) : '—';
+    const passes = a.passes_total ?? '—';
+    html += `<tr>
+      <td>${date}</td>
+      <td class="c">${a.match_external_id}</td>
+      <td class="r">${a.minutes}'</td>
+      <td class="r">${rating}</td>
+      <td class="r">${passes}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+async function loadAppearances() {
+  const d = await fetchJSON(`/admin/player-appearances?player_external_id=${PLAYER_ID}&limit=20`);
+  let apps = [];
+  if (d.__error) {
+    // Genel endpoint yoksa minute trendi yine load'tan minute count'tan türetilemez;
+    // boş bırak
+    renderMinuteTrend([]); renderRecentApps([]);
+    return;
+  }
+  apps = Array.isArray(d) ? d : (d.items || []);
+  apps.sort((a, b) => new Date(b.kickoff) - new Date(a.kickoff));
+  renderMinuteTrend(apps);
+  renderRecentApps(apps);
+}
+
+async function loadAll() {
+  hideError();
+  document.getElementById('meta').textContent = 'Yenilendi: ' + new Date().toLocaleTimeString();
+  await Promise.all([
+    loadInfo(),
+    loadLoad(),
+    loadForm(),
+    loadAppearances(),
+  ]);
+}
+
+if (apikeyInput.value) {
+  loadAll();
+} else {
+  document.getElementById('meta').textContent = `Oyuncu #${PLAYER_ID} · API key girin`;
+  document.getElementById('player-title').textContent = `Oyuncu #${PLAYER_ID}`;
+}
+</script>
+</body>
+</html>

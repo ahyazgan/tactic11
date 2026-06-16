@@ -23,8 +23,10 @@ from app.ai.base import Commentator
 from app.ai.prompts import (
     _PREVIEW_SYSTEM_PROMPT,
     SYSTEM_PROMPT,
+    build_live_digest_prompt,
     build_match_preview_prompt,
     build_user_prompt,
+    stub_live_digest,
     stub_match_preview,
     stub_response,
 )
@@ -126,6 +128,50 @@ class ClaudeCommentator(Commentator):
             kickoff_iso=kickoff_iso,
         )
         text = self._call(_PREVIEW_SYSTEM_PROMPT, user, max_tokens=400)
+        self._cache_set(cache_key, text)
+        return text
+
+    def explain_live_digest(
+        self,
+        snapshot: dict[str, object],
+        *,
+        match_id: int,
+        current_minute: float,
+        score: str,
+    ) -> str:
+        """Maç-içi snapshot için 2-3 cümlelik Türkçe brief.
+
+        Stub mode: ANTHROPIC_API_KEY yok → primary.headline ile basit kalıp.
+        """
+        ctx = snapshot.get("context") or {}
+        primary = (ctx.get("primary") or {}) if isinstance(ctx, dict) else {}
+        primary_headline = primary.get("headline") if isinstance(primary, dict) else None
+
+        if self._client.is_stub():
+            return stub_live_digest(
+                match_id=match_id, current_minute=current_minute,
+                score=score, primary_headline=primary_headline,
+            )
+
+        # Cache key — minute + primary headline + güven (her dakika ayrı brief)
+        cache_payload = json.dumps({
+            "v": _PROMPT_VERSION,
+            "match": match_id, "minute": round(current_minute, 1),
+            "score": score, "primary": primary_headline,
+            "conf": primary.get("confidence") if isinstance(primary, dict) else None,
+        }, ensure_ascii=False, sort_keys=True)
+        cache_key = "live-digest-" + hashlib.sha256(
+            cache_payload.encode("utf-8"),
+        ).hexdigest()[:24]
+        cached = self._cache_get(cache_key)
+        if cached is not None:
+            return cached
+
+        user = build_live_digest_prompt(
+            snapshot, match_id=match_id,
+            current_minute=current_minute, score=score,
+        )
+        text = self._call(_PREVIEW_SYSTEM_PROMPT, user, max_tokens=220)
         self._cache_set(cache_key, text)
         return text
 

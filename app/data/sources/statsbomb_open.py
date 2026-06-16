@@ -66,33 +66,61 @@ _BODY_PART_MAP: dict[int, str] = {
 # StatsBomb event.type.id == 16 → Shot
 SHOT_EVENT_TYPE_ID = 16
 
+# Lineup/substitution event tipleri (Faz B — maç-içi kadro farkındalığı)
+STARTING_XI_EVENT_TYPE_ID = 35   # tactics.lineup ilk 11'i taşır
+SUBSTITUTION_EVENT_TYPE_ID = 19  # player = çıkan, substitution.replacement = giren
+
 
 class StatsBombOpen:
     """StatsBomb Open Data adapter — GitHub raw ingest.
 
     `name = "statsbomb_open"`; DataSource ABC ile uyumlu değil çünkü domain
-    şekli farklı (per-match event listesi). Manager2'nin DataSource base'i
+    şekli farklı (per-match event listesi). tactic11'nin DataSource base'i
     league/team/match için — bu adapter shot event'lerine odaklı.
     """
 
     name = "statsbomb_open"
+    # Sınıf-düzeyi devre kesici — pod ömrü boyunca paylaşılır (runtime lazy assign)
+    _breaker: object | None = None
 
     def __init__(self, base_url: str | None = None, timeout: float = HTTP_TIMEOUT):
         self._base_url = (base_url or STATSBOMB_RAW_BASE).rstrip("/")
         self._timeout = timeout
+        if StatsBombOpen._breaker is None:
+            from app.data.sources._resilience import CircuitBreaker
+            StatsBombOpen._breaker = CircuitBreaker(
+                failure_threshold=5, cooldown_seconds=60.0,
+            )
+
+    @staticmethod
+    def _is_retryable(e: Exception) -> bool:
+        """Timeout/transport + 5xx geçici. 4xx retry edilmez."""
+        if isinstance(e, (httpx.TimeoutException, httpx.TransportError)):
+            return True
+        msg = str(e)
+        return any(code in msg for code in (" 500", " 502", " 503", " 504"))
 
     def _fetch_json(self, path: str) -> Any:
-        """GitHub raw'dan JSON çek. HTTP 4xx → RuntimeError; 5xx + network → retry yok."""
+        """GitHub raw'dan JSON çek. Retry (3 attempt + backoff) + circuit breaker."""
+        from app.data.sources._resilience import call_with_retry
+
         url = f"{self._base_url}/{path}"
         log.info("statsbomb fetch: %s", path)
-        with httpx.Client(timeout=self._timeout) as client:
-            r = client.get(url)
-            if r.status_code != 200:
-                raise RuntimeError(
-                    f"StatsBomb fetch fail {path}: HTTP {r.status_code} — "
-                    f"{r.text[:200]}"
-                )
-            return r.json()
+
+        def _once() -> Any:
+            with httpx.Client(timeout=self._timeout) as client:
+                r = client.get(url)
+                if r.status_code != 200:
+                    raise RuntimeError(
+                        f"StatsBomb fetch fail {path}: HTTP {r.status_code} — "
+                        f"{r.text[:200]}"
+                    )
+                return r.json()
+
+        return call_with_retry(
+            _once, attempts=3, breaker=StatsBombOpen._breaker,
+            is_retryable=self._is_retryable,
+        )
 
     def get_competitions(self) -> list[dict[str, Any]]:
         return self._fetch_json("competitions.json")
@@ -165,8 +193,8 @@ def _event_to_shot(event: dict[str, Any], *, match_id: int) -> Shot | None:
             minute=minute,
             x=round(x_100, 2),
             y=round(y_100, 2),
-            body_part=body_part,
-            pattern=pattern,
+            body_part=body_part,  # type: ignore[arg-type]
+            pattern=pattern,  # type: ignore[arg-type]
             is_goal=is_goal,
             team_external_id=team_id,
         )
@@ -181,3 +209,57 @@ def shots_from_events_json(events_json: list[dict[str, Any]], *, match_id: int) 
         s for s in (_event_to_shot(ev, match_id=match_id) for ev in events_json if _is_shot_event(ev))
         if s is not None
     ]
+
+
+def appearances_from_events_json(
+    events_json: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """StatsBomb events JSON → oyuncu görünümleri (Faz B kadro/sub farkındalığı).
+
+    Saf parse, HTTP yok. İki event tipinden türetir:
+    - Starting XI (tip 35): `tactics.lineup` içindeki her oyuncu → ilk 11,
+      `start_minute = 0.0`.
+    - Substitution (tip 19): event'in `player` = SAHADAN ÇIKAN (end = event
+      dakikası), `substitution.replacement` = SAHAYA GİREN (start = event dakikası).
+
+    Dönüş: `{player_external_id, team_external_id, start_minute, end_minute}`
+    dict listesi. `end_minute=None` → çıkmadı (maç sonuna kadar). Kadrosuz/bozuk
+    event'ler atlanır (sahadaki gerçeği bozmadan).
+    """
+    appearances: dict[int, dict[str, Any]] = {}
+
+    for ev in events_json:
+        type_id = int((ev.get("type") or {}).get("id", 0))
+        team_id = int((ev.get("team") or {}).get("id", 0)) or None
+
+        if type_id == STARTING_XI_EVENT_TYPE_ID:
+            lineup = ((ev.get("tactics") or {}).get("lineup")) or []
+            for slot in lineup:
+                pid = (slot.get("player") or {}).get("id")
+                if pid is None or team_id is None:
+                    continue
+                appearances[int(pid)] = {
+                    "player_external_id": int(pid),
+                    "team_external_id": team_id,
+                    "start_minute": 0.0,
+                    "end_minute": None,
+                }
+
+        elif type_id == SUBSTITUTION_EVENT_TYPE_ID:
+            minute = float(ev.get("minute", 0))
+            off_player = (ev.get("player") or {}).get("id")
+            sub_block = ev.get("substitution") or {}
+            on_player = (sub_block.get("replacement") or {}).get("id")
+            # Çıkan oyuncunun penceresini kapat
+            if off_player is not None and int(off_player) in appearances:
+                appearances[int(off_player)]["end_minute"] = minute
+            # Giren oyuncu için yeni pencere aç
+            if on_player is not None and team_id is not None:
+                appearances[int(on_player)] = {
+                    "player_external_id": int(on_player),
+                    "team_external_id": team_id,
+                    "start_minute": minute,
+                    "end_minute": None,
+                }
+
+    return list(appearances.values())

@@ -8,12 +8,18 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime, timedelta
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+    Response,
+)
 from sqlalchemy import or_, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -27,22 +33,36 @@ from app.api.auth import (
     router as auth_router,
 )
 from app.api.errors import register_exception_handlers
+from app.api.html_views import router as html_views_router
 from app.api.live import router as live_router
+from app.api.live_vaep import router as live_vaep_router
+from app.api.notes import router as notes_router
+from app.api.notifications import router as notifications_router
 from app.api.observability import (
     METRICS,
     PROCESS_STARTED_AT,
     SlidingWindowRateLimiter,
+    prometheus_text,
     should_bypass_rate_limit,
 )
+from app.api.physical_tests import router as physical_tests_router
+from app.api.plan import router as plan_router
+from app.api.reports import router as reports_router
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
+from app.api.sportmonks_catalog import media_router, sportmonks_router
 from app.api.serialize import engine_result_to_dict
+from app.api.shared import router as shared_router
+from app.api.sprint3 import router as sprint3_router
+from app.api.sprint4 import router as sprint4_router
+from app.api.sprint5 import router as sprint5_router
 from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
+from app.core.monitoring import init_sentry
 from app.core.request_context import clear_request_id, set_request_id
 from app.data.cache import engine_cached
 from app.data.predictions import save_prediction
 from app.db import models
-from app.db.session import get_session
+from app.db.session import engine, get_session
 from app.db.tenant_filter import install_tenant_filter
 from app.engine.fixture_difficulty import OpponentRating, compute_fixture_difficulty
 from app.engine.form import compute_form
@@ -55,6 +75,9 @@ from app.engine.schedule import compute_schedule
 from app.sports import football
 
 setup_logging()
+
+# Hata izleme — SENTRY_DSN set + sentry-sdk kuruluysa aktive olur, yoksa no-op.
+init_sentry()
 
 # Multi-tenant filter — global SQLAlchemy event listener
 install_tenant_filter()
@@ -106,16 +129,27 @@ _TAGS_METADATA = [
     },
 ]
 
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    """Graceful shutdown: SIGTERM/deploy'da DB havuzunu temiz kapat.
+
+    Uvicorn/gunicorn SIGTERM'i devam eden istekleri bitirip lifespan'i
+    sonlandırır; burada connection pool dispose edilir (kopuk bağlantı yok)."""
+    yield
+    engine.dispose()
+
+
 app = FastAPI(
     title="football-intelligence",
     version=APP_VERSION,
     description=(
         "Süper Lig odaklı futbol zekası API'si. Tüm uçlar X-API-Key header'ı "
-        "ister (/health hariç). Tepkiler ErrorResponse şemasıyla "
-        "yapılandırılmış; istekler X-Request-ID ile trace edilir; "
-        "rate limit dakika başına (default 120)."
+        "ister (/healthz, /readyz, /health hariç). Tepkiler ErrorResponse "
+        "şemasıyla yapılandırılmış; istekler X-Request-ID ile trace edilir; "
+        "rate limit dakika başına (default 120), /auth/login için ayrı sıkı limit."
     ),
     openapi_tags=_TAGS_METADATA,
+    lifespan=_lifespan,
 )
 register_exception_handlers(app)  # HTTPException → ErrorResponse şeması
 
@@ -134,6 +168,53 @@ if _cors_origins:
 
 # Rate limiter — settings'ten okur, tek instance.
 _rate_limiter = SlidingWindowRateLimiter(get_settings().rate_limit_per_minute)
+# /auth/login için ayrı, daha sıkı limiter (brute-force yüzeyi).
+_login_rate_limiter = SlidingWindowRateLimiter(
+    get_settings().login_rate_limit_per_minute
+)
+_LOGIN_PATH = "/auth/login"
+
+# HSTS sadece prod'da (HTTPS varsayımı); diğer güvenlik header'ları her ortamda.
+_HSTS_ENABLED = get_settings().app_env == "prod"
+
+
+def _apply_security_headers(response) -> None:
+    """OWASP temel güvenlik header'ları.
+
+    CSP: /dashboard inline JS kullandığı için 'unsafe-inline' bırakıldı;
+    base policy yine de XSS yüzeyini daraltır (eval/object/base block).
+    Strict mode için ileride per-route nonce stratejisi.
+    """
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault(
+        "Permissions-Policy", "geolocation=(), microphone=(), camera=()",
+    )
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' data:; "
+        "connect-src 'self' https:; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'; "
+        "object-src 'none'",
+    )
+    response.headers.setdefault(
+        "Cross-Origin-Opener-Policy", "same-origin",
+    )
+    response.headers.setdefault(
+        "Cross-Origin-Resource-Policy", "same-origin",
+    )
+    if _HSTS_ENABLED:
+        response.headers.setdefault(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains; preload",
+        )
 
 
 _REQUEST_ID_HEADER = "x-request-id"
@@ -150,22 +231,37 @@ async def observability_middleware(request: Request, call_next):
 
     path = request.url.path
     try:
-        # Rate limit (sadece /health bypass)
+        client_ip = request.client.host if request.client else "unknown"
+
+        # /auth/login için ayrı sıkı limit (IP başına) — brute-force koruması.
+        if path == _LOGIN_PATH and not _login_rate_limiter.allow(f"login:{client_ip}"):
+            METRICS.record(
+                method=request.method, path=path, status=429, duration_seconds=0.0
+            )
+            resp = JSONResponse(
+                {"detail": "login rate limit exceeded"},
+                status_code=429,
+                headers={"Retry-After": "60", "X-Request-ID": rid},
+            )
+            _apply_security_headers(resp)
+            return resp
+
+        # Rate limit (/healthz, /readyz, /health bypass)
         if not should_bypass_rate_limit(path):
             # Key: API key varsa onu, yoksa client IP. Auth disabled olsa bile
             # rate limit IP üzerinden devam eder (DoS koruması).
-            key = request.headers.get("x-api-key") or (
-                request.client.host if request.client else "unknown"
-            )
+            key = request.headers.get("x-api-key") or client_ip
             if not _rate_limiter.allow(key):
                 METRICS.record(
                     method=request.method, path=path, status=429, duration_seconds=0.0
                 )
-                return JSONResponse(
+                resp = JSONResponse(
                     {"detail": "rate limit exceeded (per minute)"},
                     status_code=429,
                     headers={"Retry-After": "60", "X-Request-ID": rid},
                 )
+                _apply_security_headers(resp)
+                return resp
 
         start = time.perf_counter()
         response = await call_next(request)
@@ -177,6 +273,7 @@ async def observability_middleware(request: Request, call_next):
             duration_seconds=duration,
         )
         response.headers["X-Request-ID"] = rid
+        _apply_security_headers(response)
         return response
     finally:
         clear_request_id()
@@ -248,7 +345,45 @@ def dashboard() -> HTMLResponse:
     return HTMLResponse(_DASHBOARD_HTML_PATH.read_text(encoding="utf-8"))
 
 
-@app.get("/health", tags=["ops"], summary="Liveness + readiness check")
+@app.get("/metrics", tags=["ops"], summary="Prometheus metrics (opsiyonel)")
+def metrics() -> Response:
+    """Prometheus exposition. prometheus-client kuruluysa text/plain metrikler;
+    değilse 200 + açıklama (scraper kırılmasın)."""
+    payload = prometheus_text()
+    if payload is None:
+        return PlainTextResponse(
+            "prometheus-client kurulu değil — /admin/metrics (in-memory) kullanın\n"
+        )
+    body, content_type = payload
+    return Response(content=body, media_type=content_type)
+
+
+@app.get("/healthz", tags=["ops"], summary="Liveness probe (DB'siz)")
+def healthz() -> JSONResponse:
+    """Liveness: process ayakta mı. DB'ye DOKUNMAZ — DB anlık düşse bile
+    orkestratör pod'u öldürmesin (yalnız hard kill için). 200 sabit."""
+    return JSONResponse({
+        "status": "ok",
+        "version": APP_VERSION,
+        "uptime_seconds": round(time.time() - PROCESS_STARTED_AT, 2),
+    })
+
+
+@app.get("/readyz", tags=["ops"], summary="Readiness probe (DB ping)")
+def readyz(session: Session = Depends(get_session)) -> JSONResponse:
+    """Readiness: trafiğe hazır mı. DB ping başarısızsa 503 → load balancer
+    bu pod'a istek yönlendirmez ama liveness ayrı olduğu için pod ölmez."""
+    try:
+        session.execute(text("SELECT 1"))
+    except SQLAlchemyError as e:  # noqa: BLE001
+        return JSONResponse(
+            {"status": "not_ready", "db": "error", "db_error": type(e).__name__},
+            status_code=503,
+        )
+    return JSONResponse({"status": "ready", "db": "ok"})
+
+
+@app.get("/health", tags=["ops"], summary="Liveness + readiness (legacy birleşik)")
 def health(session: Session = Depends(get_session)) -> JSONResponse:
     """Liveness + readiness check.
 
@@ -275,6 +410,69 @@ def health(session: Session = Depends(get_session)) -> JSONResponse:
         payload["db_error"] = db_error
     status_code = 200 if db_status == "ok" else 503
     return JSONResponse(payload, status_code=status_code)
+
+
+@app.get(
+    "/health/deep",
+    tags=["ops"],
+    summary="Derin sağlık — DB + migration + cache backend + bildirim kanalları",
+)
+def health_deep(session: Session = Depends(get_session)) -> JSONResponse:
+    """Bileşen-bazlı sağlık raporu (readiness probe + operasyonel görünürlük).
+
+    DB erişimi kritik → düşükse 503. Diğer bileşenler (cache backend, bildirim
+    kanalları, migration head) bilgilendirme amaçlı — degrade etmez ama
+    operatör 'Redis aktif mi, hangi kanal yapılandırılmış, hangi migration'
+    sorusunu tek uçtan görür.
+    """
+    components: dict[str, Any] = {}
+    db_ok = True
+    try:
+        session.execute(text("SELECT 1"))
+        components["db"] = {"status": "ok"}
+    except SQLAlchemyError as e:  # noqa: BLE001
+        components["db"] = {"status": "error", "error": type(e).__name__}
+        db_ok = False
+
+    # DB'nin uyguladığı migration revizyonu (alembic_version tablosu).
+    try:
+        rev = session.execute(
+            text("SELECT version_num FROM alembic_version")
+        ).scalar_one_or_none()
+        components["migration"] = {"current": rev}
+    except SQLAlchemyError:
+        components["migration"] = {"current": None}
+
+    # Cache backend — Redis yapılandırılmış+erişilebilir mi, yoksa DB cache.
+    try:
+        from app.data.cache.redis_backend import REDIS_AVAILABLE, get_redis_cache
+        backend = get_redis_cache()
+        components["cache"] = {
+            "backend": "redis" if backend is not None else "db",
+            "redis_lib": REDIS_AVAILABLE,
+        }
+    except Exception as e:  # noqa: BLE001 — sağlık ucu hiçbir şeye düşmemeli
+        components["cache"] = {"backend": "db", "error": type(e).__name__}
+
+    # Bildirim kanalları — hangileri gerçek (configured) modda.
+    try:
+        from app.notifications import build_default_notifier
+        active = build_default_notifier().active_channel_names()
+        components["notifications"] = {
+            "active_channels": active, "configured": bool(active),
+        }
+    except Exception as e:  # noqa: BLE001
+        components["notifications"] = {
+            "active_channels": [], "error": type(e).__name__,
+        }
+
+    payload: dict[str, Any] = {
+        "status": "ok" if db_ok else "degraded",
+        "version": APP_VERSION,
+        "uptime_seconds": round(time.time() - PROCESS_STARTED_AT, 2),
+        "components": components,
+    }
+    return JSONResponse(payload, status_code=200 if db_ok else 503)
 
 
 @protected.get(
@@ -585,6 +783,44 @@ def player_load(
 
 
 @protected.get(
+    "/players/{player_id}/info",
+    tags=["team-analysis"],
+    summary="Oyuncu temel bilgileri (name + position + birth_date + nationality)",
+)
+def player_info(
+    player_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Players tablosundan temel bilgi — dashboard sayfaları için."""
+    player = session.execute(
+        select(models.Player).where(
+            models.Player.sport == football.SPORT_NAME,
+            models.Player.external_id == player_id,
+        )
+    ).scalar_one_or_none()
+    if player is None:
+        raise HTTPException(
+            status_code=404, detail=f"player {player_id} bulunamadı",
+        )
+    age: int | None = None
+    if player.birth_date is not None:
+        today = datetime.now(UTC).date()
+        age = today.year - player.birth_date.year - (
+            1 if (today.month, today.day) <
+                 (player.birth_date.month, player.birth_date.day)
+            else 0
+        )
+    return {
+        "player_external_id": player.external_id,
+        "name": player.name,
+        "position": player.position,
+        "birth_date": player.birth_date.isoformat() if player.birth_date else None,
+        "age": age,
+        "nationality": player.nationality,
+    }
+
+
+@protected.get(
     "/players/{player_id}/form",
     tags=["team-analysis"],
     summary="Oyuncu form snapshot — Z-score baseline'la (engine.player_form)",
@@ -624,6 +860,136 @@ def player_form(
         now=now,
     )
     return engine_result_to_dict(result)
+
+
+def _season_stats_aggregate(rows: list[models.PlayerAppearance]) -> dict[str, Any]:
+    """player_appearances satırlarını tek sezon-istatistiği sözlüğüne indirger.
+
+    Frontend `PlayerSeasonStats` şekliyle birebir (özellik türetimi girdi).
+    pass_accuracy pas hacmiyle ağırlıklı ortalamadır; clean_sheets kaleci
+    satırlarından (≥45 dk + 0 yenen gol) sayılır.
+    """
+    s = lambda key: sum((getattr(r, key) or 0) for r in rows)  # noqa: E731
+    minutes = sum(r.minutes for r in rows)
+    played = [r for r in rows if r.minutes > 0]
+    pass_w = sum((r.passes_total or 0) for r in rows if r.passes_accuracy is not None)
+    pass_acc = (
+        round(sum((r.passes_total or 0) * (r.passes_accuracy or 0)
+                  for r in rows if r.passes_accuracy is not None) / pass_w)
+        if pass_w > 0 else 0
+    )
+    clean_sheets = sum(
+        1 for r in rows
+        if (r.saves is not None or r.goals_conceded is not None)
+        and (r.goals_conceded or 0) == 0 and r.minutes >= 45
+    )
+    return {
+        "player_id": rows[0].player_external_id,
+        "appearances": len(played),
+        "minutes": minutes,
+        "goals": s("goals"),
+        "assists": s("assists"),
+        "shots": s("shots_total"),
+        "shots_on": s("shots_on"),
+        "pass_accuracy": pass_acc,
+        "key_passes": s("key_passes"),
+        "dribbles_att": s("dribbles_attempts"),
+        "dribbles_succ": s("dribbles_success"),
+        "tackles": s("tackles_total"),
+        "interceptions": s("interceptions"),
+        "duels": s("duels_total"),
+        "duels_won": s("duels_won"),
+        "aerials_won": 0,  # API-Football ayrıştırmıyor; duels üzerinden yaklaşık
+        "fouls": s("fouls_committed"),
+        "saves": s("saves"),
+        "goals_conceded": s("goals_conceded"),
+        "clean_sheets": clean_sheets,
+    }
+
+
+@protected.get(
+    "/players/{player_id}/season-stats",
+    tags=["team-analysis"],
+    summary="Oyuncu sezon istatistiği + takım emsalleri (özellik türetimi girdisi)",
+)
+def player_season_stats(
+    player_id: int,
+    window_days: int = Query(365, ge=30, le=730),
+    include_peers: bool = Query(
+        True, description="Takım arkadaşlarının toplamları da dönsün (percentile için)",
+    ),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """player_appearances toplamları — oyuncu + (ops.) takım emsal havuzu.
+
+    Frontend FM-tarzı 1-20 özellikleri bu veriden türetir: oyuncunun her
+    metrikteki değeri emsal havuzundaki yüzdelik sırasına göre ölçeklenir.
+    Emsal havuz = oyuncunun en son maçındaki takımının tüm oyuncuları.
+    """
+    rows = list(
+        session.execute(
+            select(models.PlayerAppearance).where(
+                models.PlayerAppearance.sport == football.SPORT_NAME,
+                models.PlayerAppearance.player_external_id == player_id,
+            )
+        ).scalars()
+    )
+    if not rows:
+        raise HTTPException(
+            status_code=404, detail=f"player {player_id} için appearance yok",
+        )
+    ref_tz = rows[0].kickoff.tzinfo
+    cutoff = datetime.now(ref_tz) - timedelta(days=window_days)
+    rows = [r for r in rows if r.kickoff >= cutoff] or rows  # pencere boşsa hepsi
+
+    latest = max(rows, key=lambda r: r.kickoff)
+    team_id = latest.team_external_id
+
+    player_agg = _season_stats_aggregate(sorted(rows, key=lambda r: r.kickoff))
+
+    peers: list[dict[str, Any]] = []
+    if include_peers and team_id is not None:
+        peer_rows = list(
+            session.execute(
+                select(models.PlayerAppearance).where(
+                    models.PlayerAppearance.sport == football.SPORT_NAME,
+                    models.PlayerAppearance.team_external_id == team_id,
+                    models.PlayerAppearance.kickoff >= cutoff,
+                )
+            ).scalars()
+        )
+        by_pid: dict[int, list[models.PlayerAppearance]] = {}
+        for r in peer_rows:
+            by_pid.setdefault(r.player_external_id, []).append(r)
+        # Oyuncu adı/pozisyonu (varsa) — frontend gösterimi için
+        pinfo = {
+            p.external_id: p for p in session.execute(
+                select(models.Player).where(
+                    models.Player.sport == football.SPORT_NAME,
+                    models.Player.external_id.in_(list(by_pid.keys())),
+                )
+            ).scalars()
+        }
+        for pid, prows in sorted(by_pid.items()):
+            agg = _season_stats_aggregate(sorted(prows, key=lambda r: r.kickoff))
+            info = pinfo.get(pid)
+            agg["name"] = info.name if info else None
+            agg["position"] = info.position if info else None
+            peers.append(agg)
+
+    me = next((p for p in peers if p["player_id"] == player_id), None)
+    if me is not None:
+        player_agg["name"] = me.get("name")
+        player_agg["position"] = me.get("position")
+
+    return {
+        "value": {
+            "player": player_agg,
+            "team_external_id": team_id,
+            "window_days": window_days,
+            "peers": peers,
+        }
+    }
 
 
 @protected.get(
@@ -775,6 +1141,14 @@ def match_predict(
         False,
         description="True → birincilin yanına ρ=0 ve ρ=-0.18 shadow tahminleri de kaydeder (A/B accuracy için).",
     ),
+    use_ml: bool = Query(
+        False,
+        description=(
+            "True → engine.predict_ml cache'inden learned ρ oku ve onu kullan; "
+            "cache yok/stale ise default ρ ile fallback. audit.inputs.ml_status "
+            "her zaman set'lenir (fresh|stale|untrained)."
+        ),
+    ),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Maç için Poisson skor tahmini.
@@ -789,6 +1163,10 @@ def match_predict(
     `shadow=true` ise birincil tahminin yanına ρ=0 (saf Poisson) ve
     ρ=-0.18 (agresif DC) shadow tahminleri de saklanır (rapor B3'te
     `engine_version` aynı ama params farklı → ayrı satırlar).
+
+    `use_ml=true` ise engine.predict_ml'in cache'ten okuduğu learned ρ
+    kullanılır (train job çalışıp populate ettiyse); aksi durumda default
+    ρ ile fallback. ml_status audit'te işaretli.
     """
     match = session.execute(
         select(models.Match).where(
@@ -801,7 +1179,37 @@ def match_predict(
 
     home_id = match.home_team_external_id
     away_id = match.away_team_external_id
-    params = {"last_n": last_n, "time_decay_rate": time_decay_rate}
+
+    # use_ml resolve: cache'ten learned ρ oku; yoksa default'a düş.
+    # ml_status: "fresh" → cache hit, "stale" → expired row mevcut,
+    # "untrained" → hiç yok. Üçünde de fallback rho var; status açıkça
+    # audit'te görünür.
+    effective_rho: float | None = None
+    ml_status: str | None = None
+    if use_ml:
+        from app.data.cache.store import cache_get
+        from app.engine.predict_ml import CACHE_KEY, CACHE_SOURCE
+        cached = cache_get(session, source=CACHE_SOURCE, key=CACHE_KEY)
+        if cached and cached.get("best_rho") is not None:
+            effective_rho = float(cached["best_rho"])
+            ml_status = "fresh"
+        else:
+            # cache_get None döner hem missing hem expired durumda;
+            # ayırt etmek için raw row'a bak
+            row = session.execute(
+                select(models.CacheEntry).where(
+                    models.CacheEntry.source == CACHE_SOURCE,
+                    models.CacheEntry.key == CACHE_KEY,
+                )
+            ).scalar_one_or_none()
+            ml_status = "stale" if row is not None else "untrained"
+            # learned_rho yok → default fallback (None bırak; compute_predict
+            # kendi default'unu kullansın)
+
+    params: dict[str, Any] = {"last_n": last_n, "time_decay_rate": time_decay_rate}
+    if use_ml:
+        params["use_ml"] = True
+        params["ml_status"] = ml_status
 
     def _forms():
         home_form = compute_form(
@@ -816,10 +1224,12 @@ def match_predict(
 
     def _build_result():
         home_form, away_form = _forms()
-        return compute_predict(
-            home_form.value, away_form.value,
-            home_team_id=home_id, away_team_id=away_id,
-        )
+        kwargs: dict[str, Any] = {
+            "home_team_id": home_id, "away_team_id": away_id,
+        }
+        if effective_rho is not None:
+            kwargs["rho"] = effective_rho
+        return compute_predict(home_form.value, away_form.value, **kwargs)
 
     def _save_shadows() -> None:
         """Birincilin yanına ρ=0 ve ρ=-0.18 shadow'larını kaydet."""
@@ -835,6 +1245,12 @@ def match_predict(
                 params={**params, "rho": rho},  # params_hash farklı
             )
 
+    def _inject_ml_status(payload: dict[str, Any]) -> dict[str, Any]:
+        """audit.inputs.ml_status ekle (use_ml=true case'inde transparency)."""
+        if use_ml and ml_status is not None:
+            payload.setdefault("audit", {}).setdefault("inputs", {})["ml_status"] = ml_status
+        return payload
+
     # `explain=True` Claude'a hit eder (kendi cache'i AI commentator'da);
     # cache atlanır, prediction her zaman saklanır (kalibrasyon).
     if explain:
@@ -846,7 +1262,9 @@ def match_predict(
         if shadow:
             _save_shadows()
         session.commit()
-        return _maybe_explain(engine_result_to_dict(result), result, explain=True)
+        return _inject_ml_status(
+            _maybe_explain(engine_result_to_dict(result), result, explain=True)
+        )
 
     # explain yoksa snapshot-keyed cache devreye girer; ilk miss'te
     # save_prediction da burada çalışır (idempotent upsert)
@@ -860,16 +1278,22 @@ def match_predict(
             _save_shadows()
         return engine_result_to_dict(result)
 
+    # use_ml ve ml_status'u cache key'e dahil et: aynı match için use_ml=true
+    # ile use_ml=false ayrı cache entries; learned ρ değişirse stale cache
+    # otomatik invalid (key prefix snapshot.id'ye bağlı).
     payload, _was_cached = engine_cached(
         session,
         sport=football.SPORT_NAME,
         key_parts=(
             "predict", match_id, "last_n", last_n,
-            "decay", str(time_decay_rate), "shadow", int(shadow),
+            "decay", str(time_decay_rate),
+            "shadow", int(shadow),
+            "ml", int(use_ml), "ml_status", ml_status or "n/a",
+            "rho", str(effective_rho) if effective_rho is not None else "default",
         ),
         compute_fn=_compute,
     )
-    return payload
+    return _inject_ml_status(payload)
 
 
 @protected.get(
@@ -1247,7 +1671,24 @@ def simulate_match(
 app.include_router(auth_router)
 
 protected.include_router(admin_router)
+protected.include_router(plan_router)
+protected.include_router(sprint3_router)
+protected.include_router(sprint4_router)
+protected.include_router(sprint5_router)
+protected.include_router(live_vaep_router)
+protected.include_router(notifications_router)
+protected.include_router(notes_router)
+protected.include_router(reports_router)
+protected.include_router(physical_tests_router)
+protected.include_router(sportmonks_router)
 app.include_router(protected)
+# Medya proxy — AUTH YOK (<img src> header gönderemez); yalnız cdn.sportmonks.com.
+app.include_router(media_router)
 # WebSocket router — auth FastAPI WebSocket'ta header bazlı; pilot demo
 # için public route (production'da Cookie/Header-based auth eklenir).
 app.include_router(live_router)
+# HTML görünüm sayfaları — /dashboard ile aynı tarz, sayfa public, JS protected
+# JSON endpoint'lerine X-API-Key ile fetch eder.
+app.include_router(html_views_router)
+# Public share endpoint — auth'suz, imzalı token ile PDF açar (Faz 5 #40).
+app.include_router(shared_router)

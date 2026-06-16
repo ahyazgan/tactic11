@@ -15,29 +15,32 @@ Loader'lar 4 strateji:
 from __future__ import annotations
 
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import models
-from app.domain import Carry, DefensiveAction, PassEvent, Shot
+from app.domain import Carry, DefensiveAction, FoulEvent, PassEvent, Shot
 from app.sports import football
 
 
 @dataclass(frozen=True)
 class LoadedEvents:
-    """Engine'lerin ihtiyacı 4 event tipi paket."""
+    """Engine'lerin ihtiyacı event tipi paketi."""
     passes: list[PassEvent]
     carries: list[Carry]
     defensive_actions: list[DefensiveAction]
     shots: list[Shot]
     match_ids: list[int]      # hangi maçlardan çekildiği (audit için)
+    fouls: list[FoulEvent] = field(default_factory=list)  # type: ignore[assignment]
 
     @property
     def total(self) -> int:
-        return len(self.passes) + len(self.carries) + len(self.defensive_actions) + len(self.shots)
+        return (len(self.passes) + len(self.carries)
+                + len(self.defensive_actions) + len(self.shots)
+                + len(self.fouls))
 
 
 def _row_to_pass(row: models.EventRow) -> PassEvent | None:
@@ -96,6 +99,28 @@ def _row_to_def(row: models.EventRow) -> DefensiveAction | None:
         return None
 
 
+def _row_to_foul(row: models.EventRow) -> FoulEvent | None:
+    """EventRow (event_type='foul') → FoulEvent."""
+    try:
+        card_color = (
+            row.outcome
+            if row.outcome in ("yellow", "second_yellow", "red")
+            else None
+        )
+        return FoulEvent(
+            sport=row.sport, match_external_id=row.match_external_id,
+            player_external_id=row.player_external_id or 0,
+            team_external_id=row.team_external_id or 0,
+            minute=row.minute, period=row.period,
+            x=row.start_x or 50.0, y=row.start_y or 50.0,
+            card=card_color,  # type: ignore[arg-type]
+            advantage_played=(row.pattern == "advantage"),
+            possession_id=row.possession_id,
+        )
+    except (ValueError, TypeError):
+        return None
+
+
 def _row_to_shot(row: models.EventRow) -> Shot | None:
     try:
         body_part = row.body_part if row.body_part in {
@@ -120,11 +145,12 @@ def _row_to_shot(row: models.EventRow) -> Shot | None:
 
 
 def rows_to_domain(rows: Iterable[models.EventRow]) -> LoadedEvents:
-    """EventRow listesini 4 domain listeye böl."""
+    """EventRow listesini domain listelere böl."""
     passes: list[PassEvent] = []
     carries: list[Carry] = []
     defs: list[DefensiveAction] = []
     shots: list[Shot] = []
+    fouls: list[FoulEvent] = []
     match_ids: set[int] = set()
 
     for r in rows:
@@ -145,10 +171,14 @@ def rows_to_domain(rows: Iterable[models.EventRow]) -> LoadedEvents:
             s = _row_to_shot(r)
             if s:
                 shots.append(s)
+        elif r.event_type == "foul":
+            f = _row_to_foul(r)
+            if f:
+                fouls.append(f)
     return LoadedEvents(
         passes=passes, carries=carries,
         defensive_actions=defs, shots=shots,
-        match_ids=sorted(match_ids),
+        match_ids=sorted(match_ids), fouls=fouls,
     )
 
 
@@ -179,7 +209,7 @@ def load_team_events(
         ).order_by(models.Match.kickoff.desc()).limit(last_n)
     ).scalars().all()
     if not match_rows:
-        return LoadedEvents([], [], [], [], [])
+        return LoadedEvents([], [], [], [], [], [])
 
     event_rows = session.execute(
         select(models.EventRow).where(
@@ -210,7 +240,7 @@ def load_player_events(
     team_id = appearances[0].team_external_id if appearances else None
 
     if not match_ids:
-        return LoadedEvents([], [], [], [], []), {
+        return LoadedEvents([], [], [], [], [], []), {
             "team_external_id": team_id, "minutes_played": 0.0,
             "matches_analyzed": 0,
         }

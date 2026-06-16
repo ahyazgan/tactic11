@@ -97,6 +97,7 @@ def compute_live_sub_recommendation(
     current_minute: float,
     my_score: int = 0,
     opponent_score: int = 0,
+    eligible_player_ids: Iterable[int] | None = None,
 ) -> EngineResult[LiveSubReport]:
     """Canlı maçta sub önerisi.
 
@@ -107,12 +108,18 @@ def compute_live_sub_recommendation(
        0.15 × score_pressure + 0.15 × minute_progression
     4. Score state çarpanı uygulanır
     5. Top 3 ranked döner
+
+    `eligible_player_ids` verilirse (Faz B — kadro farkındalığı), yalnızca o
+    kümedeki (= şu an SAHADA olan) oyuncular değerlendirilir. Aksi halde çoktan
+    çıkmış bir oyuncu, event'leri pencerede hâlâ görüldüğü için yanlışlıkla
+    önerilebilir. None → eski davranış (tüm event-aktörleri).
     """
     passes_list = list(all_passes)
     defs_list = list(all_def_actions)
     score_state = _score_state_from_score(my_score, opponent_score)
+    eligible = set(eligible_player_ids) if eligible_player_ids is not None else None
 
-    # Takım oyuncuları
+    # Takım oyuncuları (eligible verilmişse sahadakilerle sınırla)
     my_player_ids: set[int] = set()
     for p in passes_list:
         if p.team_external_id == team_external_id:
@@ -120,6 +127,8 @@ def compute_live_sub_recommendation(
     for d in defs_list:
         if d.team_external_id == team_external_id:
             my_player_ids.add(d.player_external_id)
+    if eligible is not None:
+        my_player_ids &= eligible
 
     minute_urgency = _minute_urgency(current_minute)
     score_pressure = 1.0 if score_state == "losing" else (

@@ -240,6 +240,16 @@ class PlayerAppearance(Base):
     position_played: Mapped[str | None] = mapped_column(String(5), nullable=True)
     formation_played: Mapped[str | None] = mapped_column(String(10), nullable=True)
     captain: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    # 0027 — sezon istatistiği zenginleştirmesi (oyuncu özellik türetimi için)
+    goals: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    assists: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    goals_conceded: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    saves: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    key_passes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    tackles_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    interceptions: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    duels_total: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    duels_won: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class AgentOutput(Base):
@@ -632,6 +642,213 @@ class Decision(Base):
     payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
     by_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    # Faz 8 #4 — audit trail: öneri kaynaklı mıydı + güven + bağlam + sonuç
+    recommended: Mapped[bool] = mapped_column(Boolean, default=False)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    context_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # outcome: pending|positive|negative|neutral — uygulandıktan sonra ölçülür
+    outcome: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    outcome_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    outcome_notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    outcome_recorded_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+    )
+
+
+class MatchSnapshot(Base):
+    """Faz 8 #3 — maç-içi hafıza için tick-tick canlı snapshot kaydı.
+
+    live-decision/WebSocket her hesaplamada bir satır yazar; match_memory
+    engine'i bu diziyi okuyup zaman-bağlantıları kurar (momentum flip, kanat
+    düşüşü, rakip değişimi). Maç başına ~50-90 satır (10sn interval).
+    """
+
+    __tablename__ = "match_snapshots"
+    __table_args__ = (
+        Index("ix_match_snapshots_match_minute", "sport", "tenant_id",
+              "match_external_id", "team_external_id", "minute"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"),
+    )
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    team_external_id: Mapped[int] = mapped_column(Integer)
+    minute: Mapped[float] = mapped_column(Float)
+    period: Mapped[int] = mapped_column(Integer, default=1)
+    # momentum + kanat verimliliği + rakip formasyon — match_memory girdisi
+    momentum_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    opponent_formation: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    frame_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PlayerContract(Base):
+    """Oyuncu sözleşme bitiş tarihi takibi (Faz 5 #34)."""
+
+    __tablename__ = "player_contracts"
+    __table_args__ = (
+        UniqueConstraint(
+            "sport", "player_external_id", "tenant_id",
+            name="uq_player_contracts_player",
+        ),
+        Index("ix_player_contracts_end", "contract_end"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    player_external_id: Mapped[int] = mapped_column(Integer)
+    team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    contract_end: Mapped[date] = mapped_column(Date)
+    annual_salary_eur: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PlayerRehabilitation(Base):
+    """Sakatlık → rehab → dönüş izi (Faz 5 #43)."""
+
+    __tablename__ = "player_rehabilitations"
+    __table_args__ = (
+        Index(
+            "ix_player_rehabilitations_player_status",
+            "player_external_id", "status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    player_external_id: Mapped[int] = mapped_column(Integer)
+    injury_type: Mapped[str] = mapped_column(String(128))
+    injury_start: Mapped[date] = mapped_column(Date)
+    expected_return: Mapped[date | None] = mapped_column(Date, nullable=True)
+    actual_return: Mapped[date | None] = mapped_column(Date, nullable=True)
+    status: Mapped[str] = mapped_column(String(16))
+    notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PlayerGoal(Base):
+    """Bireysel gelişim hedefi (Faz 5 #38)."""
+
+    __tablename__ = "player_goals"
+    __table_args__ = (
+        Index(
+            "ix_player_goals_player_status",
+            "player_external_id", "status",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    player_external_id: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(255))
+    metric: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    target_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="open")
+    notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class TeamGoal(Base):
+    """Sezonluk takım hedefi (Faz 5 #32)."""
+
+    __tablename__ = "team_goals"
+    __table_args__ = (
+        Index("ix_team_goals_team_season", "team_external_id", "season"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sport: Mapped[str] = mapped_column(String(32))
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    team_external_id: Mapped[int] = mapped_column(Integer)
+    season: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(255))
+    metric: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    target_value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="open")
+    notes: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class Note(Base):
+    """Çoklu kullanıcı not/yorum (Faz 5 #41).
+
+    Herhangi bir konuya (team/player/match/decision/agent_output) iliştirilir.
+    parent_note_id ile threaded zincir; author_user_id NULL = hesap silinmiş.
+    """
+
+    __tablename__ = "notes"
+    __table_args__ = (
+        Index("ix_notes_subject", "subject_type", "subject_id"),
+        Index("ix_notes_parent", "parent_note_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    author_user_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True,
+    )
+    subject_type: Mapped[str] = mapped_column(String(32))
+    subject_id: Mapped[int] = mapped_column(Integer)
+    parent_note_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("notes.id", ondelete="CASCADE"), nullable=True,
+    )
+    body: Mapped[str] = mapped_column(String(4096))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class DataAccessLog(Base):
+    """KVKK denetim izi — kim, hangi öznenin hangi kategorideki verisine erişti.
+
+    Sağlık/performans verisi özel nitelikli kişisel veri; erişim loglanmalı ki
+    veri sorumlusu (DPO) 'kim ne zaman gördü' sorusunu cevaplayabilsin ve
+    olağandışı toplu erişim (olası sızıntı) tespit edilebilsin.
+    """
+
+    __tablename__ = "data_access_log"
+    __table_args__ = (
+        Index("ix_data_access_subject", "tenant_id", "subject_type",
+              "subject_id", "created_at"),
+        Index("ix_data_access_user", "tenant_id", "user_id", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    user_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True,
+    )
+    subject_type: Mapped[str] = mapped_column(String(32))   # "player" | ...
+    subject_id: Mapped[int] = mapped_column(Integer)
+    data_category: Mapped[str] = mapped_column(String(48))  # health/performance_test/...
+    sensitivity: Mapped[str] = mapped_column(String(16))    # ozel_nitelikli/kisisel/genel
+    action: Mapped[str] = mapped_column(String(16), default="read")  # read|export
+    endpoint: Mapped[str | None] = mapped_column(String(128), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 

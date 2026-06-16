@@ -38,6 +38,10 @@ export function useIdleTimer({
     const reset = () => {
       clearTimeout(warnTimer);
       clearTimeout(idleTimer);
+      // timeout sonlu değilse (Infinity = "devre dışı") timer kurma.
+      // setTimeout(fn, Infinity) geçersiz delay → tarayıcıda ANINDA tetiklenir;
+      // kullanıcı yokken hatalı logout + /login yönlendirme döngüsüne yol açıyordu.
+      if (!Number.isFinite(timeout)) return;
       warnTimer = setTimeout(() => onWarn?.(), Math.max(0, timeout - warnBefore));
       idleTimer = setTimeout(() => onIdle?.(), timeout);
     };

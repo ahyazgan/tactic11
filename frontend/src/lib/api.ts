@@ -9,6 +9,19 @@
 const TOKEN_KEY = "manager2_access_token";
 const REFRESH_KEY = "manager2_refresh_token";
 
+/**
+ * HTTP durum kodunu taşıyan hata — global SWR retry mantığı (5xx tekrar dener,
+ * 4xx denemez) status'a bakar. status null = ağ/parse hatası (retry edilir).
+ */
+export class ApiError extends Error {
+  status: number | null;
+  constructor(message: string, status: number | null) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(TOKEN_KEY);
@@ -65,11 +78,12 @@ async function getOrRefreshToken(): Promise<string | null> {
   return refreshInFlight;
 }
 
-function redirectToLogin() {
+// 401 olduğunda token'ı temizle ama kullanıcıyı ZORLA /login'e atma.
+// Backend yoksa / önizlemede her çağrı 401 olur; yönlendirme yapmayınca
+// kullanıcı dashboard'da kalır, ekranlar boş/"veri yok" gösterir, gezinebilir.
+// Giriş için sayfalardaki "Giriş" linki kullanılır.
+function clearAuthState() {
   clearTokens();
-  if (typeof window !== "undefined") {
-    window.location.href = "/login";
-  }
 }
 
 async function rawFetch(
@@ -96,20 +110,26 @@ export async function apiFetch<T = unknown>(
     // Refresh flow — singleton kuyruk
     const newToken = await getOrRefreshToken();
     if (!newToken) {
-      redirectToLogin();
-      throw new Error("Unauthorized");
+      clearAuthState();
+      throw new ApiError("Unauthorized", 401);
     }
     // Tek bir retry
     res = await rawFetch(path, init, newToken);
     if (res.status === 401) {
-      redirectToLogin();
-      throw new Error("Unauthorized after refresh");
+      clearAuthState();
+      throw new ApiError("Unauthorized after refresh", 401);
     }
+  }
+
+  if (res.status === 401) {
+    // (refresh denenmiş ama token yok senaryosu zaten yukarıda yakalandı;
+    // burası savunma amaçlı — 401'i retry edilmeyen ApiError yap.)
+    throw new ApiError("Unauthorized", 401);
   }
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`HTTP ${res.status}: ${body.slice(0, 200)}`);
+    throw new ApiError(`HTTP ${res.status}: ${body.slice(0, 200)}`, res.status);
   }
   return res.json() as Promise<T>;
 }

@@ -29,8 +29,9 @@ select = ["E", "W", "F", "I", "B", "UP", "SIM"]
 ignore = ["E501", "B008"]
 
 [tool.ruff.lint.per-file-ignores]
-# Testlerde private erişime ve uzun string'lere izin
-"tests/*" = ["E402"]
+# Testlerde meşru desenler: E402 (geç import), B017 (pytest.raises(Exception)),
+# SIM117 (okunabilir nested with), B007 (kullanılmayan döngü değişkeni).
+"tests/*" = ["E402", "B017", "SIM117", "B007"]
 # Demo script: argparse + heredoc pattern, daha esnek
 "scripts/*" = ["E402"]
 # Alembic env modülü: __init__'siz import path manipülasyonu
@@ -50,3 +51,7 @@ no_implicit_optional = true
 [[tool.mypy.overrides]]
 module = "tests.*"
 ignore_errors = true  # test ergonomics > strict typing
+
+[[tool.mypy.overrides]]
+module = "scripts.*"
+ignore_errors = true  # operasyonel/demo scriptler — app/ strict, scripts gevşek

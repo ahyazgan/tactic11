@@ -26,8 +26,9 @@ from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from typing import Literal
 
-from app.audit import AuditRecord, EngineResult
+from app.audit import AuditRecord, ConfidenceInfo, EngineResult
 from app.engine._protocols import MatchLike
+from app.engine.confidence import score_confidence
 from app.sports import football
 
 ENGINE_NAME = "engine.form"
@@ -306,4 +307,13 @@ def compute_form(
             "scoring_rate=gol attığı maç oranı." + decay_formula
         ),
     )
-    return EngineResult(value=report, audit=audit)
+    # Güven: sample_size = değerlendirilen maç sayısı; magnitude = form
+    # kararlılığı (ppg/3 → 0=tüm mağlubiyet .. 1=tüm galibiyet).
+    conf = score_confidence(
+        sample_size=report.matches_played,
+        magnitude=min(1.0, report.points_per_game / 3.0),
+    )
+    return EngineResult(
+        value=report, audit=audit,
+        confidence=ConfidenceInfo(conf.score, conf.label, conf.drivers),
+    )

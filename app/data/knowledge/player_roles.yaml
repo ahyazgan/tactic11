@@ -1,0 +1,214 @@
+# Player Role Taxonomy
+#
+# 30+ taktiksel oyuncu rolünün YAML KB'si.
+# Engine 'role_matcher' bir oyuncunun istatistiklerinden en yakın rol(leri)
+# tespit eder (cosine arch matching).
+#
+# Şema:
+#   - name: snake_case unique ID
+#     label: TR insan-okunabilir
+#     position_group: "GK" | "CB" | "FB" | "DM" | "CM" | "AM" | "W" | "FW"
+#     description: tek satır TR tanım
+#     archetype_vector: 8-vektör 0..1 (hedef stat profili)
+#       [defensive_actions_pct, tackle_pct, interception_pct,
+#        pass_completion_pct, progressive_pass_pct, key_pass_pct,
+#        dribble_pct, shot_per_90_pct]
+#     typical_attributes: 3-5 anahtar oyuncu özelliği
+
+roles:
+  # ── GOALKEEPERS ──────────────────────────────────────────────────────
+  - name: traditional_gk
+    label: Klasik Kaleci
+    position_group: GK
+    description: Hattı koruyan, kurtarış odaklı klasik kaleci
+    archetype_vector: [0.50, 0.10, 0.05, 0.55, 0.10, 0.05, 0.05, 0.0]
+    typical_attributes: [reflex, positioning, aerial, communication]
+
+  - name: sweeper_gk
+    label: Süpürücü Kaleci
+    position_group: GK
+    description: Yüksek line + ayakla oyun (Ederson tipi)
+    archetype_vector: [0.55, 0.15, 0.15, 0.85, 0.40, 0.15, 0.10, 0.0]
+    typical_attributes: [foot_pass, anticipation, sweep_distance, calm]
+
+  # ── CENTRE-BACKS ─────────────────────────────────────────────────────
+  - name: traditional_cb
+    label: Klasik Stoper
+    position_group: CB
+    description: Air-duel + temas + uzun pas; geleneksel savunmacı
+    archetype_vector: [0.90, 0.80, 0.70, 0.78, 0.30, 0.10, 0.05, 0.10]
+    typical_attributes: [aerial, marking, strength, long_pass]
+
+  - name: ball_playing_cb
+    label: Topla Oynayan Stoper
+    position_group: CB
+    description: Geriden çıkış başlatan, dik pas atan stoper (Stones tipi)
+    archetype_vector: [0.80, 0.65, 0.65, 0.90, 0.65, 0.30, 0.10, 0.10]
+    typical_attributes: [pass_range, composure, dribble, anticipation]
+
+  - name: aggressive_cb
+    label: Agresif Stoper (Marcus Marker)
+    position_group: CB
+    description: Sürekli adım çıkan, agresif press yapan stoper
+    archetype_vector: [0.95, 0.85, 0.75, 0.75, 0.40, 0.15, 0.05, 0.10]
+    typical_attributes: [aggression, anticipation, recovery_speed]
+
+  # ── FULL-BACKS / WING-BACKS ──────────────────────────────────────────
+  - name: traditional_fullback
+    label: Klasik Bek
+    position_group: FB
+    description: Defansif öncelikli klasik bek
+    archetype_vector: [0.75, 0.70, 0.65, 0.75, 0.40, 0.20, 0.30, 0.05]
+    typical_attributes: [stamina, tackle, marking, cross]
+
+  - name: attacking_fullback
+    label: Hücumcu Bek
+    position_group: FB
+    description: Yüksek hat orta + hücumda overlap (Alexander-Arnold tipi)
+    archetype_vector: [0.55, 0.50, 0.50, 0.80, 0.65, 0.55, 0.50, 0.15]
+    typical_attributes: [cross, stamina, vision, overlap_run]
+
+  - name: inverted_fullback
+    label: İçeri Düşen Bek
+    position_group: FB
+    description: Hücumda orta sahaya kayan bek (Cancelo, Zinchenko)
+    archetype_vector: [0.65, 0.50, 0.45, 0.88, 0.70, 0.50, 0.35, 0.10]
+    typical_attributes: [tactical_intel, foot, pass_short, positioning]
+
+  - name: wing_back
+    label: Wing-Back
+    position_group: FB
+    description: 3-5-2/3-4-3 sisteminin uzun kanat oyuncusu
+    archetype_vector: [0.70, 0.65, 0.55, 0.75, 0.60, 0.50, 0.55, 0.15]
+    typical_attributes: [stamina, cross, sprint, dual_role]
+
+  # ── DEFENSIVE MIDFIELDERS ────────────────────────────────────────────
+  - name: defensive_mid
+    label: Defansif Orta Saha (6)
+    position_group: DM
+    description: Klasik destroyer; pres + duel + balance
+    archetype_vector: [0.90, 0.80, 0.75, 0.75, 0.30, 0.15, 0.10, 0.10]
+    typical_attributes: [aggression, work_rate, marking, anticipation]
+
+  - name: regista
+    label: Regista (Derin Oyun Kurucu)
+    position_group: DM
+    description: Geriden oyun kuran, uzun pas yapan derin 6 (Pirlo, Verratti)
+    archetype_vector: [0.65, 0.50, 0.45, 0.93, 0.80, 0.45, 0.10, 0.10]
+    typical_attributes: [pass_range, vision, composure, set_piece]
+
+  - name: deep_lying_playmaker
+    label: Deep-Lying Playmaker
+    position_group: DM
+    description: Regista'ya benzer ama daha sentetik (Xabi Alonso)
+    archetype_vector: [0.70, 0.55, 0.50, 0.92, 0.78, 0.50, 0.10, 0.10]
+    typical_attributes: [vision, composure, technique, anticipation]
+
+  # ── CENTRE / BOX-TO-BOX ─────────────────────────────────────────────
+  - name: box_to_box_mid
+    label: Box-to-Box 8 Numara
+    position_group: CM
+    description: Tüm sahada gezen, defansif + ofansif hibrit (Bellingham)
+    archetype_vector: [0.70, 0.60, 0.55, 0.80, 0.70, 0.55, 0.40, 0.25]
+    typical_attributes: [stamina, all_round, late_run, transition]
+
+  - name: mezzala
+    label: Mezzala (İç 8)
+    position_group: CM
+    description: Half-space içinde hücum + dribling (Barella, Tonali)
+    archetype_vector: [0.55, 0.50, 0.50, 0.82, 0.75, 0.60, 0.55, 0.20]
+    typical_attributes: [dribble, half_space, vision, late_run]
+
+  - name: ball_winner
+    label: Ball Winner 8
+    position_group: CM
+    description: Top kazanmaya odaklı, agresif press + duel
+    archetype_vector: [0.85, 0.80, 0.75, 0.72, 0.45, 0.20, 0.15, 0.10]
+    typical_attributes: [aggression, work_rate, tackle, anticipation]
+
+  # ── ATTACKING MIDFIELDERS ───────────────────────────────────────────
+  - name: classic_10
+    label: Klasik 10 Numara
+    position_group: AM
+    description: Oyun kurucu, asistler atan playmaker (Riquelme)
+    archetype_vector: [0.30, 0.20, 0.15, 0.88, 0.70, 0.90, 0.50, 0.25]
+    typical_attributes: [vision, dribble, technique, key_pass]
+
+  - name: shadow_striker
+    label: Shadow Striker
+    position_group: AM
+    description: 9.5; gol odaklı 10 (Müller tipi)
+    archetype_vector: [0.40, 0.30, 0.30, 0.78, 0.65, 0.75, 0.45, 0.55]
+    typical_attributes: [movement, anticipation, finishing, late_run]
+
+  # ── WINGERS ─────────────────────────────────────────────────────────
+  - name: traditional_winger
+    label: Klasik Kanat Oyuncusu
+    position_group: W
+    description: Dış kanattan orta atan klasik winger
+    archetype_vector: [0.40, 0.30, 0.25, 0.72, 0.50, 0.55, 0.75, 0.25]
+    typical_attributes: [pace, cross, dribble, stamina]
+
+  - name: inside_forward
+    label: Inside Forward
+    position_group: W
+    description: Kanattan içeri kesip şut atan winger (Salah)
+    archetype_vector: [0.45, 0.30, 0.30, 0.75, 0.60, 0.65, 0.80, 0.50]
+    typical_attributes: [shooting, pace, cut_inside, technique]
+
+  - name: inverted_winger
+    label: İçeri Düşen Winger
+    position_group: W
+    description: Inside forward'a benzer ama orta sahaya da iner
+    archetype_vector: [0.50, 0.35, 0.30, 0.80, 0.65, 0.70, 0.70, 0.40]
+    typical_attributes: [technique, work_rate, link_play, dribble]
+
+  - name: wide_target_man
+    label: Geniş Hedef Adam
+    position_group: W
+    description: Fizik üstünlüğü ile uzun topları çeken winger (Saint-Maximin tipi)
+    archetype_vector: [0.50, 0.40, 0.35, 0.70, 0.55, 0.40, 0.65, 0.35]
+    typical_attributes: [strength, dribble, hold_up, aerial]
+
+  # ── STRIKERS ────────────────────────────────────────────────────────
+  - name: target_man
+    label: Hedef Forvet
+    position_group: FW
+    description: Klasik 9; fizik + hava topu + alan tutma (Lukaku)
+    archetype_vector: [0.45, 0.40, 0.35, 0.65, 0.30, 0.40, 0.15, 0.65]
+    typical_attributes: [aerial, hold_up, strength, finishing]
+
+  - name: poacher
+    label: Yakın Mesafe Forvet (Poacher)
+    position_group: FW
+    description: Ceza yayı içinde gol arayan finişçi (Inzaghi tipi)
+    archetype_vector: [0.30, 0.25, 0.20, 0.70, 0.30, 0.35, 0.25, 0.80]
+    typical_attributes: [finishing, off_ball, anticipation, positioning]
+
+  - name: false_nine
+    label: Sahte 9 Numara
+    position_group: FW
+    description: Orta sahaya inip 10 boşluğu yaratan forvet (Messi-roma)
+    archetype_vector: [0.30, 0.20, 0.20, 0.88, 0.65, 0.85, 0.55, 0.45]
+    typical_attributes: [link_play, vision, technique, movement]
+
+  - name: complete_forward
+    label: Komple Forvet
+    position_group: FW
+    description: Her şeyi yapabilen 9 (Lewandowski, Haaland-modern)
+    archetype_vector: [0.45, 0.40, 0.35, 0.80, 0.55, 0.65, 0.45, 0.75]
+    typical_attributes: [finishing, aerial, hold_up, link_play, pace]
+
+  - name: pressing_forward
+    label: Press Forveti
+    position_group: FW
+    description: Yüksek pres başlatan forvet (Firmino tipi)
+    archetype_vector: [0.70, 0.55, 0.50, 0.78, 0.50, 0.55, 0.35, 0.40]
+    typical_attributes: [work_rate, press_trigger, link_play, stamina]
+
+  - name: second_striker
+    label: İkinci Forvet
+    position_group: FW
+    description: 9 yanında oynayan, hareket eden forvet (Tevez tipi)
+    archetype_vector: [0.40, 0.30, 0.30, 0.78, 0.60, 0.70, 0.55, 0.55]
+    typical_attributes: [movement, link_play, finishing, technique]

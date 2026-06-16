@@ -6,18 +6,25 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Sayfa smoke render", () => {
-  test("/login render olur", async ({ page }) => {
+  test("/login ana sayfaya yönlendirir (login kaldırıldı)", async ({ page }) => {
+    // Login kaldırıldı: /login form göstermez, /'e yönlendirir.
     await page.goto("/login");
-    await expect(page.locator("body")).toBeVisible();
-    // Email input mevcut olmalı
-    await expect(page.locator('input[type="email"]')).toBeVisible();
+    await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
+      timeout: 10_000,
+    });
+    // / artık Genel Bakış konsolunu render eder (tam-ekran fixed; body değil
+    // konsol içeriği kontrol edilir).
+    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("/ home page render olur", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("body")).toBeVisible();
-    // Hızlı erişim başlığı
-    await expect(page.locator("text=Hızlı erişim")).toBeVisible({ timeout: 10_000 });
+    // Ana sayfa Genel Bakış konsoludur (kart launcher kaldırıldı).
+    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });
 

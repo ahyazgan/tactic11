@@ -9,7 +9,35 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
 
-engine = create_engine(get_settings().database_url, pool_pre_ping=True, future=True)
+_settings = get_settings()
+
+
+def _normalize_db_url(url: str) -> str:
+    """Render/Heroku tarzı `postgres://`/`postgresql://` URL'lerini uygulamanın
+    psycopg v3 sürücüsüne (`postgresql+psycopg://`) çevir. `+driver` zaten varsa
+    dokunma. Deploy taşınabilirliği için."""
+    if url.startswith("postgresql+"):
+        return url
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg://" + url[len("postgresql://"):]
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg://" + url[len("postgres://"):]
+    return url
+
+
+_db_url = _normalize_db_url(_settings.database_url)
+
+# Pool ayarları yük altında bağlantı yetmezliğini ve kopuk uzun bağlantıları
+# önler. SQLite (test/dev) QueuePool kullanmaz → pool_size vb. uygulanmaz.
+_engine_kwargs: dict = {"pool_pre_ping": True, "future": True}
+if not _db_url.startswith("sqlite"):
+    _engine_kwargs.update(
+        pool_size=_settings.db_pool_size,
+        max_overflow=_settings.db_max_overflow,
+        pool_recycle=_settings.db_pool_recycle_seconds,
+    )
+
+engine = create_engine(_db_url, **_engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autoflush=True, expire_on_commit=False, future=True)
 
 # Tenant filter — global Session listener (loader_criteria + before_flush

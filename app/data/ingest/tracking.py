@@ -57,7 +57,7 @@ def delete_match_frames(session: Session, *, sport: str, match_external_id: int)
             models.TrackingFrameRow.match_external_id == match_external_id,
         )
     )
-    return int(result.rowcount or 0)
+    return int(result.rowcount or 0)  # type: ignore[attr-defined]
 
 
 def ingest_tracking_match(

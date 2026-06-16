@@ -1,0 +1,42 @@
+# Render Blueprint — tactic11 backend (API + Postgres).
+# Telefondan: render.com → New → Blueprint → bu repoyu seç → Apply.
+# Postgres + web service kurulur, migration + demo seed otomatik çalışır.
+#
+# Demo giriş (seed): admin@besiktas-demo / demo-password-1234
+#
+# Sonra: Vercel → projenin Settings → Environment Variables →
+#   API_BASE_URL = https://<bu-servisin-url'i>.onrender.com  (sonunda / YOK)
+# ekleyip Vercel'i redeploy et.
+
+databases:
+  - name: tactic11-db
+    plan: free
+    databaseName: tactic11
+    user: tactic11
+
+services:
+  - type: web
+    name: tactic11-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    dockerCommand: sh -c "alembic upgrade head && (python scripts/seed_demo.py || true) && uvicorn app.api.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tactic11-db
+          property: connectionString
+      - key: APP_ENV
+        value: dev
+      - key: USE_FIXTURES
+        value: "true"
+      - key: API_AUTH_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: LOG_LEVEL
+        value: INFO
+      - key: API_FOOTBALL_BASE_URL
+        value: https://v3.football.api-sports.io

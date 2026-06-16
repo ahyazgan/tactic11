@@ -1,0 +1,10 @@
+{
+  "name": "football-intelligence",
+  "private": true,
+  "scripts": {
+    "dev": "cmd /c ..\\BASLAT.bat",
+    "gelistirme": "npm --prefix frontend run gelistirme",
+    "dev:web": "npm --prefix frontend run dev:web",
+    "dev:api": "npm --prefix frontend run dev:api"
+  }
+}

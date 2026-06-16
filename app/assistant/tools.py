@@ -493,13 +493,31 @@ _TOOL_HANDLERS: dict[str, Callable[..., dict[str, Any]]] = {
 
 
 def get_tool_schemas() -> list[dict[str, Any]]:
-    """Claude messages.create için tools listesi (deep copy)."""
-    return [dict(s) for s in _TOOL_SCHEMAS]
+    """Claude messages.create için tools listesi (deep copy).
+
+    Faz 5: v2 + v3 tool schemaları otomatik dahil olur (Sprint 1 + Sprint 2-5).
+    """
+    from app.assistant.tools_v2 import V2_TOOL_SCHEMAS
+    from app.assistant.tools_v3 import V3_TOOL_SCHEMAS
+    return (
+        [dict(s) for s in _TOOL_SCHEMAS]
+        + [dict(s) for s in V2_TOOL_SCHEMAS]
+        + [dict(s) for s in V3_TOOL_SCHEMAS]
+    )
 
 
 def execute_tool(session: Session, name: str, input_args: dict[str, Any]) -> str:
-    """Tool çağırır, JSON string olarak sonucu döner. Bilinmeyen tool → error JSON."""
-    handler = _TOOL_HANDLERS.get(name)
+    """Tool çağırır, JSON string olarak sonucu döner. Bilinmeyen tool → error JSON.
+
+    Faz 5: v1 → v2 → v3 fallback sırası (Sprint 1 → Sprint 2-5).
+    """
+    from app.assistant.tools_v2 import V2_TOOL_HANDLERS
+    from app.assistant.tools_v3 import V3_TOOL_HANDLERS
+    handler = (
+        _TOOL_HANDLERS.get(name)
+        or V2_TOOL_HANDLERS.get(name)
+        or V3_TOOL_HANDLERS.get(name)
+    )
     if handler is None:
         return json.dumps({"error": f"bilinmeyen tool: {name}"})
     try:

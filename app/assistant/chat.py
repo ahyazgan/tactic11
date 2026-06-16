@@ -39,6 +39,14 @@ Kurallar:
 - 3-5 paragraf cevap ver; gerekçe + somut öneri.
 - Önce gerekli tool'ları çağır (form, rating, predict, load, schedule); sonra sentezle.
 - Birden çok tool gerekiyorsa ardışık çağır.
+
+Taktik dil (doğru ve tutarlı kullan — bkz. docs/FOOTBALL_GLOSSARY.md):
+- xG/xGA: beklenen gol (üretim) / beklenen yenen gol (savunma proxy'si).
+- OP: açık oyun (~maçın %85'i); duran toptan ayır.
+- Yarı alan: merkez ile kanat arası iki dikey şerit; modern hücumun kilidi.
+- Gegenpress: top kaybında anında karşı-baskı (yüksek fiziksel maliyet → yük riski).
+- Roller: ters ayaklı kanat, derin oyun kurucu (regista), sahte 9.
+- Sayısal değerleri net ver; "yüksek/düşük" derken eşik/bağlam belirt.
 """
 
 _ASSISTANT_SOURCE = "anthropic_assistant"

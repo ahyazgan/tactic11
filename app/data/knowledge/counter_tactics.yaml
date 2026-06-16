@@ -1,0 +1,181 @@
+# Counter-Tactic Matrix
+#
+# (rakip stili × bizim stilimiz) → 3 spesifik taktiksel ayar.
+# Yaml engine 'tactical_counter' bu matrisi tüketir.
+#
+# our_style: bizim arketipimiz; "any" tüm stiller için
+# focus: shape | press | transition | set_piece | sub
+# tags: rotation_priority | aggressive | conservative
+
+matchups:
+  # ── Rakip Klopp-Pres ──────────────────────────────────────────────────
+  - opp: klopp_press
+    our: pep_possession
+    advice:
+      - text: "Geriden GK'ye kısa pas riskini azalt — 3 savunma çiz"
+        focus: shape
+        tags: [conservative]
+      - text: "Forvet derinlik versin (long ball yönelim noktası)"
+        focus: transition
+        tags: [aggressive]
+      - text: "İlk 6 saniye sayacı: pres kırılırsa anında orta blok'a çekil"
+        focus: press
+
+  - opp: klopp_press
+    our: bvb_counter
+    advice:
+      - text: "Yüksek line'a karşı dik koşucu yıldız"
+        focus: transition
+        tags: [aggressive]
+      - text: "Pres kırınca direkt cebe pas (3 dokunuş kuralı)"
+        focus: transition
+      - text: "Defansif geçişte sayısal eşitlik şart"
+        focus: shape
+
+  - opp: klopp_press
+    our: lecce_direct
+    advice:
+      - text: "Hedef forvet → kanat patla zinciri"
+        focus: transition
+      - text: "Second-ball avcısı orta sahada hazır"
+        focus: shape
+
+  # ── Rakip Pep-Possession ─────────────────────────────────────────────
+  - opp: pep_possession
+    our: klopp_press
+    advice:
+      - text: "Gegenpres yüksek; rakibin 6n'asına pres odakla"
+        focus: press
+        tags: [aggressive]
+      - text: "Top kazanırken anında üçüncü hat'ten dik pas"
+        focus: transition
+      - text: "Geriden çıkış yollarını taç → kontrolü kıs"
+        focus: press
+
+  - opp: pep_possession
+    our: atletico_compact
+    advice:
+      - text: "4-4-2 mid-block; pres'i sabırla bekle, switch'e karşı 'yan' kapat"
+        focus: shape
+        tags: [conservative]
+      - text: "Top sahipliği değil, pas line kontrolü hedefle"
+        focus: press
+      - text: "Set-piece koreografi öncelik (rakip set-piece zayıf)"
+        focus: set_piece
+
+  - opp: pep_possession
+    our: italian_zonal
+    advice:
+      - text: "Zonal savunma + 3-4-3 mid-block uygun"
+        focus: shape
+      - text: "Cut-back alçak orta tercih, uzaktan şut + ikinci top"
+        focus: transition
+
+  # ── Rakip Atletico-Kompakt ───────────────────────────────────────────
+  - opp: atletico_compact
+    our: pep_possession
+    advice:
+      - text: "Switch of play (sahanın bir yanından diğerine)"
+        focus: transition
+      - text: "Half-space inverted FB pozisyon al"
+        focus: shape
+      - text: "Üçüncü oyuncu kombinasyonu + cut-back"
+        focus: transition
+
+  - opp: atletico_compact
+    our: bvb_counter
+    advice:
+      - text: "Yüksek tempo + kanat patlaması — kompakt blok kırma"
+        focus: transition
+        tags: [aggressive]
+      - text: "Dik koşucu yıldıza overload-isolation"
+        focus: transition
+
+  - opp: atletico_compact
+    our: any
+    advice:
+      - text: "Set-piece koreografisi: ön + arka direk yığ"
+        focus: set_piece
+      - text: "Uzaktan şut + ikinci top yakalayıcı"
+        focus: transition
+
+  # ── Rakip Italian-Zonal ──────────────────────────────────────────────
+  - opp: italian_zonal
+    our: any
+    advice:
+      - text: "Hareketli blok ile zonal-koruma ihlal (köşede)"
+        focus: set_piece
+      - text: "Cut-back alçak orta (zonal yapı reaksiyon yavaş)"
+        focus: transition
+
+  # ── Rakip BVB-Kontra ─────────────────────────────────────────────────
+  - opp: bvb_counter
+    our: pep_possession
+    advice:
+      - text: "Top kazanırken üst 4 hat boş bırakma — rest-defence 3 oyuncu"
+        focus: shape
+        tags: [conservative]
+      - text: "Yıldız taşıyıcılara body-up + foul tehdidi"
+        focus: defending
+      - text: "Defansif geçişte sayısal eşitlik şart"
+        focus: shape
+
+  - opp: bvb_counter
+    our: atletico_compact
+    advice:
+      - text: "Düşük blok rakibin kontra hedefini boşaltır"
+        focus: shape
+        tags: [conservative]
+      - text: "Tactical foul opsiyonu — sarı kart kabul edilebilir"
+        focus: defending
+
+  # ── Rakip Lecce-Direkt ───────────────────────────────────────────────
+  - opp: lecce_direct
+    our: any
+    advice:
+      - text: "Hava topu uzman stoper koy (forvete air-duel kazan)"
+        focus: shape
+      - text: "Forvet önünde 'second-ball' avcısı (taç + faul + kafa)"
+        focus: shape
+
+  # ── Rakip Conte 3-5-2 Wing ───────────────────────────────────────────
+  - opp: conte_3_5_2_wing
+    our: any
+    advice:
+      - text: "Wing-back'leri yüksekte tut → boşalan alanı doldur"
+        focus: shape
+      - text: "Karşı kanattan inverted FB 'iç' al"
+        focus: shape
+
+  - opp: conte_3_5_2_wing
+    our: pep_possession
+    advice:
+      - text: "Pos play ile 5'li blokta serbest oyuncu bul"
+        focus: shape
+      - text: "Switch of play sık kullan"
+        focus: transition
+
+  # ── Rakip Ten Hag Modern Possession ─────────────────────────────────
+  - opp: ten_hag_modern_pos
+    our: klopp_press
+    advice:
+      - text: "Düşük 6n'a hızlı pres"
+        focus: press
+      - text: "Inverted FB izlerini kapat — orta hat geri itme"
+        focus: press
+
+  - opp: ten_hag_modern_pos
+    our: atletico_compact
+    advice:
+      - text: "4-4-2 mid-block bu stile karşı verimli"
+        focus: shape
+        tags: [conservative]
+      - text: "Ön cep boşaltarak rakibin 10'unun kullanabileceği alanı kısma"
+        focus: shape
+
+  # ── Universal — bizim stilimiz any için fallback'ler ────────────────
+  - opp: any
+    our: any
+    advice:
+      - text: "Karşılaşma stiline özel öneri yok — temel disiplin sürdür"
+        focus: shape

@@ -94,3 +94,16 @@ def test_rating_audit_carries_split_inputs():
     assert res.audit.inputs["away_matches"] == 1
     assert "home_rating" in res.audit.formula
     assert "away_rating" in res.audit.formula
+
+
+def test_rating_carries_confidence():
+    matches = [
+        _match(1, 611, 607, 2, 1, 10),
+        _match(2, 614, 611, 1, 3, 7),
+        _match(3, 611, 998, 0, 0, 3),
+        _match(4, 998, 611, 2, 0, 1),
+    ]
+    res = compute_team_rating(611, matches, last_n=10)
+    assert res.confidence is not None
+    assert 0.0 <= res.confidence.score <= 1.0
+    assert res.confidence.label in ("yüksek", "orta", "düşük")

@@ -144,6 +144,39 @@ register(
 )
 
 
+def morning_brief_handler(*, horizon_days: int = 1) -> None:
+    """Sabah otomatik brief (Faz 5 #18).
+
+    Operasyonel kabuk: `run_pre_match_reports`'u 1 günlük kısa horizon ile
+    çağırır + bugün maçı olan takımlar için (varsa) tek seferlik
+    PreMatchReportAgent çıktısı yeniler.
+
+    Cron ile günde bir kez (örn. 06:00 lokal) çalışacak şekilde tasarlandı:
+
+        0 6 * * * cd /opt/tactic11 && \\
+            venv/bin/python scripts/run_job.py morning_brief
+
+    `horizon_days=1` default; daha geniş pencere istersen üst seviye job'u
+    (`run_pre_match_reports`) kullan. Idempotent — aynı maç için ikinci
+    çağrı `save_agent_output` upsert ile mevcut satırı tazeler.
+    """
+    log.info("morning_brief: starting with horizon_days=%d", horizon_days)
+    run_pre_match_reports_handler(horizon_days=horizon_days)
+    log.info("morning_brief: done")
+
+
+register(
+    JobSpec(
+        name="morning_brief",
+        handler=morning_brief_handler,
+        description=(
+            "Sabah otomatik brief — bugün maçı olan takımlar için pre-match "
+            "rapor refresh. Cron (örn. 06:00) ile günde bir çalıştırın."
+        ),
+    )
+)
+
+
 def train_predict_ml_handler(*, min_samples: int = 20) -> None:
     """engine.predict_ml — predictions tablosundan best ρ öğren.
 
@@ -530,5 +563,36 @@ register(JobSpec(
     description=(
         "Tüm aktif tenant'lar için günlük decision brief — bu haftaki maçlar "
         "için lineup + pre_match agent çalıştır. Idempotent (gün başına bir kez)."
+    ),
+))
+
+
+def appearance_backfill_handler(
+    *, tenant_id: str | None = None, limit: int | None = 30,
+) -> None:
+    """FT maçlar için lineup + player-stats ingest (quota-aware, idempotent).
+
+    Oyuncu sezon istatistiği (/players/{id}/season-stats) ve FM-tarzı özellik
+    türetimi bu veriden beslenir. Gece çalıştırılırsa gün içindeki maçların
+    kadro/istatistikleri ertesi sabah panelde hazır olur.
+    """
+    from app.data.ingest.backfill import backfill_appearances
+    from app.db.tenant_context import DEFAULT_TENANT_ID
+
+    report = backfill_appearances(
+        tenant_id=tenant_id or DEFAULT_TENANT_ID, limit=limit,
+    )
+    log.info(
+        "job appearance_backfill: candidates=%s processed=%s failed=%s",
+        report["candidates"], report["processed"], report["failed"],
+    )
+
+
+register(JobSpec(
+    name="appearance_backfill",
+    handler=appearance_backfill_handler,
+    description=(
+        "Bitmiş maçlar için lineup + oyuncu istatistik ingest'i — sezon "
+        "istatistiği ve özellik türetimi beslenir. Quota-aware, idempotent."
     ),
 ))

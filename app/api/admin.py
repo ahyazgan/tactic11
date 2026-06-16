@@ -478,6 +478,47 @@ def agent_outputs(
     ]
 
 
+@router.get("/ml-model-status")
+def ml_model_status(session: Session = Depends(get_session)) -> dict[str, Any]:
+    """engine.predict_ml train job son çalıştırma durumu.
+
+    cache_entries(source='ml_predict_model', key='best_rho_v1') okur:
+    - Hiç train edilmediyse: {status: "untrained"}
+    - Cache var ama expires_at geçmişse: {status: "stale", ...}
+    - Fresh: {status: "fresh", best_rho, sample_count, best_log_loss, ...}
+
+    Inference yolu (/predict?use_ml=true) bu status'a göre fallback yapar.
+    """
+    from app.data.cache.store import cache_get
+    from app.engine.predict_ml import CACHE_KEY, CACHE_SOURCE
+
+    # cache_get TTL'i otomatik kontrol eder — expired ise None döner.
+    cached = cache_get(session, source=CACHE_SOURCE, key=CACHE_KEY)
+    if cached is None:
+        # Stale veya hiç yok ayırt et: row var ama expired mi?
+        from sqlalchemy import select as _select
+        row = session.execute(
+            _select(models.CacheEntry).where(
+                models.CacheEntry.source == CACHE_SOURCE,
+                models.CacheEntry.key == CACHE_KEY,
+            )
+        ).scalar_one_or_none()
+        if row is None:
+            return {"status": "untrained"}
+        return {
+            "status": "stale",
+            "expires_at": row.expires_at.isoformat(),
+        }
+    return {
+        "status": "fresh",
+        "best_rho": cached.get("best_rho"),
+        "sample_count": cached.get("sample_count"),
+        "best_log_loss": cached.get("best_log_loss"),
+        "rho_grid": cached.get("rho_grid"),
+        "log_loss_per_rho": cached.get("log_loss_per_rho"),
+    }
+
+
 @router.get("/db-stats")
 def db_stats(session: Session = Depends(get_session)) -> dict[str, int]:
     """Tablo başına satır sayısı — sync ilerlemesini görmek için hızlı bakış."""
@@ -1435,12 +1476,20 @@ def create_decision(
             if payload.get("payload_json") else None,
         by_user_id=payload.get("by_user_id"),
         created_at=_datetime.now(UTC),
+        # Faz 8 #4 — öneri kaynaklı mıydı + o anki güven + bağlam
+        recommended=bool(payload.get("recommended", False)),
+        confidence=(float(payload["confidence"])
+                    if payload.get("confidence") is not None else None),
+        context_json=_json.dumps(payload.get("context_json"))
+            if payload.get("context_json") else None,
+        outcome="pending",
     )
     session.add(row)
     session.commit()
     return {
         "id": row.id, "match_id": match_id,
         "decision_type": row.decision_type, "minute": row.minute,
+        "recommended": row.recommended, "outcome": row.outcome,
         "created_at": row.created_at.isoformat(),
     }
 
@@ -1470,12 +1519,89 @@ def list_decisions(
             "subject_player_id": r.subject_player_external_id,
             "related_player_id": r.related_player_external_id,
             "notes": r.notes,
+            "recommended": r.recommended,
+            "confidence": r.confidence,
+            "outcome": r.outcome,
+            "outcome_value": r.outcome_value,
             "created_at": r.created_at.isoformat(),
         }
         for r in rows
     ]
 
 
+@router.post(
+    "/decisions/{decision_id}/outcome",
+    tags=["admin"],
+    summary="Karar sonucunu kaydet (Faz 8 #4 — feedback loop)",
+)
+def record_decision_outcome(
+    decision_id: int,
+    payload: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bir kararın uygulandıktan sonraki sonucunu işle.
+
+    payload: {"outcome": "positive"|"negative"|"neutral",
+              "outcome_value": float (opt), "outcome_notes": str (opt)}
+    Bu skor `decisions.feedback` üzerinden güven skoruna (#2) geri beslenir.
+    """
+    from datetime import UTC
+    from datetime import datetime as _datetime
+
+    allowed = {"positive", "negative", "neutral", "pending"}
+    outcome = payload.get("outcome")
+    if outcome not in allowed:
+        raise HTTPException(
+            status_code=400, detail=f"outcome {allowed} içinde olmalı",
+        )
+    row = session.get(models.Decision, decision_id)
+    if row is None:
+        raise HTTPException(status_code=404,
+                            detail=f"decision {decision_id} yok")
+    row.outcome = outcome
+    if payload.get("outcome_value") is not None:
+        row.outcome_value = float(payload["outcome_value"])
+    row.outcome_notes = payload.get("outcome_notes")
+    row.outcome_recorded_at = _datetime.now(UTC)
+    session.commit()
+    return {
+        "id": row.id, "outcome": row.outcome,
+        "outcome_value": row.outcome_value,
+        "recorded_at": row.outcome_recorded_at.isoformat(),
+    }
+
+
+@router.get(
+    "/teams/{team_id}/decisions/feedback",
+    tags=["admin"],
+    summary="Karar tipine göre geçmiş isabet oranı (Faz 8 #4 → güven skoru)",
+)
+def decisions_feedback(
+    team_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bu takımın geçmiş kararlarının decision_type bazlı isabet oranı.
+    context_engine güven skorunu (#2) bu oranla kalibre eder."""
+    rows = list(session.execute(
+        select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.team_external_id == team_id,
+            models.Decision.outcome.in_(("positive", "negative")),
+        )
+    ).scalars())
+    by_type: dict[str, dict[str, int]] = {}
+    for r in rows:
+        b = by_type.setdefault(r.decision_type, {"positive": 0, "negative": 0})
+        if r.outcome in ("positive", "negative"):
+            b[r.outcome] += 1
+    summary = {
+        dtype: {
+            "n": b["positive"] + b["negative"],
+            "hit_rate": round(b["positive"] / (b["positive"] + b["negative"]), 3),
+        }
+        for dtype, b in by_type.items()
+    }
+    return {"team_id": team_id, "evaluated": len(rows), "by_decision_type": summary}
 @router.get(
     "/matches/{match_id}/decisions/learning",
     tags=["admin"],

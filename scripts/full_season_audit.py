@@ -35,7 +35,8 @@ from app.data.loaders import load_match_events
 from app.data.sources.statsbomb_open import StatsBombOpen
 from app.db import models
 from app.db.base import Base
-from app.db.session import SessionLocal, engine as db_engine
+from app.db.session import SessionLocal
+from app.db.session import engine as db_engine
 from app.engine.build_up_pattern import compute_build_up_pattern
 from app.engine.channel_preference import compute_channel_preference
 from app.engine.coaching_identity import compute_coaching_identity
@@ -396,7 +397,7 @@ def main() -> int:
         max_matches = int(parser_args[idx + 1])
 
     print(f"\n{'='*70}")
-    print(f"  Full Season Audit — La Liga 2018/19")
+    print("  Full Season Audit — La Liga 2018/19")
     print(f"  Max matches: {max_matches or 'all'}")
     print(f"{'='*70}")
     ensure_db()
@@ -421,7 +422,7 @@ def main() -> int:
 
     # Konsol özet
     print(f"\n{'='*70}")
-    print(f"  SIGNAL RANKING")
+    print("  SIGNAL RANKING")
     print(f"{'='*70}")
     by_verdict: dict[str, list[str]] = {}
     for eng, info in signal.items():
@@ -438,7 +439,7 @@ def main() -> int:
                       f"n={info.get('n_samples', 0)}")
 
     print(f"\n{'='*70}")
-    print(f"  BARCA SANITY")
+    print("  BARCA SANITY")
     print(f"{'='*70}")
     for eng, v in barca_val.items():
         print(f"  · {eng}: {v}")

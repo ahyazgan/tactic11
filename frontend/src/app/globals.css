@@ -2,7 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
+:root {
+  color-scheme: light;
+  /* Kulüp marka rengi — adaçayı & koyu yeşil tema (tenant override edilebilir). */
+  --brand: #1e6b41;
+  /* Tema paleti — ADAÇAYI (açık yeşilimsi). Tailwind token'ları bunları okur. */
+  --c-bg: #eaf0ea;
+  --c-surface: #ffffff;
+  --c-surface2: #e1eae1;
+  --c-elevated: #d3e0d3;
+  --c-border: #d5e0d5;
+  --c-borderlt: #bccdbc;
+  --c-text: #1b261e;
+  --c-textmut: #53635a;
+  --c-textdim: #86978c;
+}
+
+/* Tema paleti — AÇIK. <html class="light"> ile aktifleşir (adaçayı ile aynı). */
+html.light {
+  color-scheme: light;
+  --c-bg: #eaf0ea;
+  --c-surface: #ffffff;
+  --c-surface2: #e1eae1;
+  --c-elevated: #d3e0d3;
+  --c-border: #d5e0d5;
+  --c-borderlt: #bccdbc;
+  --c-text: #1b261e;
+  --c-textmut: #53635a;
+  --c-textdim: #86978c;
+}
+
+/* NOT: .ovroot artık kendi FM26 açık paletini shell.tsx içinde tanımlıyor
+   (eski html.light .ovroot değişken override'ı kaldırıldı — çakışmasın). */
+
+/* Açık temada düz kartlar yerine yumuşak gölge + net kontrast. */
+html.light .ovroot .kpi,
+html.light .ovroot .rc,
+html.light .ovroot .tbl {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.07);
+}
+html.light .ovroot .kpi:hover {
+  box-shadow: 0 6px 16px rgba(16, 24, 40, 0.10);
+}
+html.light .ovroot .header,
+html.light .ovroot .nav,
+html.light .ovroot .right,
+html.light .ovroot .btabs {
+  box-shadow: 0 1px 0 rgba(16, 24, 40, 0.04);
+}
+html.light .ovroot thead th { background: #f0f3f8; }
+
+/* Fiziksel Performans paneli (.pp-root) — kendi koyu paleti var; demo açık tema
+   için aynı yapıyı koruyup yalnızca palet değişkenlerini light'a çevir. */
+html.light .pp-root {
+  --bg: #f3f5f9;
+  --panel: #ffffff;
+  --panel2: #eef1f6;
+  --line: #d7dce5;
+  --ink: #1a1f2e;
+  --muted: #5a6276;
+  --dim: #8b94a8;
+  --accent: #3d7eff;
+  --low: #16a34a;
+  --mid: #d97706;
+  --high: #ea580c;
+  --crit: #dc2626;
+  background-image: none;
+}
+html.light .pp-root .topbar { background: rgba(255, 255, 255, 0.85); }
+html.light .pp-root .card {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.07);
+}
+
+/* Mobilde alt tab bar varken tema düğmesini yukarı al (üst üste binmesin). */
+@media (max-width: 767px) {
+  button[aria-label="Tema değiştir"] { bottom: 76px !important; }
+}
 
 html, body { background: theme('colors.bg'); color: theme('colors.text'); }
 
@@ -33,4 +108,25 @@ input[type="submit"][data-touch="true"] {
   .card { padding: 0.75rem; }
   h1 { font-size: 1.5rem !important; }
   h2 { font-size: 1rem !important; }
+}
+
+/* PWA: yalnız TELEFON dikeyken yatay çevirmeyi iste.
+   Tabletler (≥768px) dikeyde de çalışır — çekmece menü + tek akış düzen. */
+@media (orientation: portrait) and (max-width: 767px) {
+  body::before {
+    content: "↻  Lütfen cihazınızı yatay çevirin";
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 28px;
+    background: #0c0e14;
+    color: #e8ebf2;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
 }

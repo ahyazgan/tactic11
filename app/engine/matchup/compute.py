@@ -13,7 +13,8 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
-from app.audit import AuditRecord, EngineResult
+from app.audit import AuditRecord, ConfidenceInfo, EngineResult
+from app.engine.confidence import score_confidence
 from app.engine.form import FormReport
 from app.engine.opponent import HeadToHead
 
@@ -118,4 +119,12 @@ def compute_matchup(
             "advantage_score = ppg*1 + gd*0.5 + mom*0.5 + home_adv*1 + h2h_dom/100"
         ),
     )
-    return EngineResult(value=report, audit=audit)
+    # Güven: sample_size = iki formun min maç sayısı; magnitude = |advantage_score|/3.
+    conf = score_confidence(
+        sample_size=min(home_form.matches_played, away_form.matches_played),
+        magnitude=min(1.0, abs(advantage_score) / 3.0),
+    )
+    return EngineResult(
+        value=report, audit=audit,
+        confidence=ConfidenceInfo(conf.score, conf.label, conf.drivers),
+    )

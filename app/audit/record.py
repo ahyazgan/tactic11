@@ -39,6 +39,21 @@ class AuditRecord:
 
 
 @dataclass(frozen=True)
+class ConfidenceInfo:
+    """Bir motor çıktısının güven skoru — hafif yapısal tip.
+
+    `engine/confidence.ConfidenceScore` ile alan-uyumlu; ama `audit/` katmanı
+    `engine/`'e bağımlı olmasın diye burada tanımlı (katman yönü temiz kalsın).
+    Engine tarafında dönüştürme tek satır: `ConfidenceInfo(score=c.score, ...)`.
+    """
+
+    score: float
+    label: str
+    drivers: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class EngineResult(Generic[T]):
     value: T
     audit: AuditRecord
+    confidence: ConfidenceInfo | None = None

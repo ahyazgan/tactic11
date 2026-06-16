@@ -42,6 +42,39 @@ def test_score_state_winning_lower_urgency():
     assert r.score_state == "winning"
 
 
+def test_eligible_player_ids_excludes_subbed_off():
+    """Faz B: çoktan çıkmış oyuncu (eligible kümede yok) önerilmez —
+    event'leri pencerede hâlâ görünse bile."""
+    # 100 ve 200 ikisi de yorgun aktör; ama 100 sahadan çıktı (eligible: {200}).
+    passes = (
+        [_p(100, minute=10.0, completed=True)] * 15
+        + [_p(100, minute=65.0, completed=False)] * 2
+        + [_p(200, minute=10.0, completed=True)] * 15
+        + [_p(200, minute=65.0, completed=False)] * 2
+    )
+    r = compute_live_sub_recommendation(
+        team_external_id=11, all_passes=passes, all_def_actions=[],
+        current_minute=75.0, my_score=0, opponent_score=1,
+        eligible_player_ids={200},
+    ).value
+    rec_ids = {rec.player_external_id for rec in r.recommendations}
+    assert 100 not in rec_ids            # çıkmış → önerilmez
+    assert 200 in rec_ids                # sahada → önerilir
+
+
+def test_eligible_none_keeps_all_actors():
+    """eligible_player_ids=None → eski davranış (tüm event-aktörleri)."""
+    passes = (
+        [_p(100, minute=10.0, completed=True)] * 15
+        + [_p(100, minute=65.0, completed=False)] * 2
+    )
+    r = compute_live_sub_recommendation(
+        team_external_id=11, all_passes=passes, all_def_actions=[],
+        current_minute=75.0, my_score=0, opponent_score=1,
+    ).value
+    assert 100 in {rec.player_external_id for rec in r.recommendations}
+
+
 def test_low_action_player_filtered():
     """3 aksiyon var (eşik 5) → filtre."""
     passes = [_p(100, minute=10.0)] * 3

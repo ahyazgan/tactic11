@@ -1,0 +1,352 @@
+# Tactical Concept Knowledge Base
+#
+# Her konsept bir taktik durumun adlı tanımıdır. Engine 'concept_recognizer'
+# canlı snapshot'a bakar, trigger_signals tutarsa konsepti aktif sayar.
+#
+# Şema:
+#   - name: snake_case eşsiz ID
+#     label: TR insan-okunabilir başlık
+#     family: pressing | possession | transition | shape | set_piece | counter | line | role
+#     definition: tek satır TR tanım
+#     trigger_signals: dict (signal_name → operator + value)
+#       Desteklenen sinyaller (snapshot dict'inden okunur):
+#         momentum_score, holder, press_breaking, xg_swing_alert,
+#         opp_ppda, opp_field_tilt_pct, opp_direct_play_pct,
+#         opp_press_height (0..1, yüksek=yüksek pres),
+#         opp_width_pct, opp_set_piece_share_pct,
+#         opp_high_line_risk (0..1), opp_counter_threat (0..1),
+#         my_score_diff, current_minute,
+#         our_high_foul_alert, tactical_fouling_alert, escalation_alert
+#     counter_when_opp_uses_it: rakip uygularsa bizim yapmamız gereken
+#     advice_when_we_use_it: biz uygulayacaksak nelere dikkat
+#     citations: kısa kaynak/referans listesi (kitap, makale, koç ismi)
+
+concepts:
+  # ── PRESSING ──────────────────────────────────────────────────────────
+  - name: gegenpressing
+    label: Gegen-Pres (Karşı-Pres)
+    family: pressing
+    definition: >-
+      Topu kaybeden takımın 5-7sn içinde rakip taşıyıcıyı yakın bölgede
+      sıkıştırması; topu hücum üçüne yakın geri kazanma hedefi.
+    trigger_signals:
+      opp_ppda: {op: "<", value: 9}
+      opp_press_height: {op: ">=", value: 0.6}
+    counter_when_opp_uses_it:
+      - "Geriye GK pas yerine hızlı dik pas; üçüncü oyuncu kombinasyonu"
+      - "İlk çıkışı 3 savunmacı + 1 alçak 6 numara ile yap (overload)"
+      - "Forvete uzun top yerine half-space'e gediği aç"
+    advice_when_we_use_it:
+      - "Üst 6 saniye sayacı: top kaybı sonrası 3 oyuncu top etrafına"
+      - "Pres kırılırsa anında 5-3-2 düşük blok'a geçiş planla"
+    citations: ["Klopp Liverpool (2015-)", "Hurwitz: Gegenpressing 2020"]
+
+  - name: high_block_man_orient
+    label: Yüksek Blok Adam-Adama
+    family: pressing
+    definition: Hücum üçü pres; her oyuncuya bire-bir pres atayan blok.
+    trigger_signals:
+      opp_ppda: {op: "<", value: 11}
+      opp_press_height: {op: ">=", value: 0.7}
+      opp_high_line_risk: {op: ">=", value: 0.6}
+    counter_when_opp_uses_it:
+      - "Yıldıza top vermeden önce blind-side dönüş hareketi"
+      - "Çıkış için 3-2 yapı (iki orta saha aşağıda)"
+      - "Dik koşucuyu yüksek line arkasına gönder (offside-bait)"
+    advice_when_we_use_it:
+      - "Sahanın 80 dakikasında uygulanamaz — interval uygula"
+
+  - name: low_block_5_4_1
+    label: Düşük Blok 5-4-1
+    family: pressing
+    definition: 5 savunma + 4 orta saha + 1 forvet kompakt düşük blok.
+    trigger_signals:
+      opp_field_tilt_pct: {op: "<", value: 38}
+      opp_press_height: {op: "<", value: 0.35}
+    counter_when_opp_uses_it:
+      - "Kanat overload + switch of play"
+      - "Half-space inverted FB"
+      - "Uzaktan şut + ikinci top hazırlığı (kale önü ikinci dalga)"
+      - "Set-piece koreografisini özelleştir"
+
+  - name: mid_block_compact
+    label: Orta Blok Kompakt
+    family: pressing
+    definition: Hücum üçe basmaz; orta saha kapanıkkalır, kontra tetikler.
+    trigger_signals:
+      opp_field_tilt_pct: {op: "<", value: 50}
+      opp_press_height: {op: "<", value: 0.55}
+      opp_press_height: {op: ">=", value: 0.30}
+    counter_when_opp_uses_it:
+      - "Yarıçemberle (Lavalle stili) çevirme paslar"
+      - "Forvet derinlik versin ama gerilim altında — ön cep boşaltsın"
+
+  # ── POSSESSION & BUILD-UP ────────────────────────────────────────────
+  - name: positional_play
+    label: Pozisyonel Oyun
+    family: possession
+    definition: 5 dikey kanal × 4 yatay hat; oyuncu farklı kanal/hatta.
+    trigger_signals:
+      opp_field_tilt_pct: {op: ">=", value: 58}
+      opp_ppda: {op: ">=", value: 12}
+    counter_when_opp_uses_it:
+      - "Kalabalık orta saha + pas linelarini kapat"
+      - "Switch yapana kadar pres'i sabırla bekle"
+      - "Top sahipliği değil, pas line kontrolü hedef"
+    advice_when_we_use_it:
+      - "5+4 = 9 oyuncu farklı bölge; serbest oyuncu olmasın"
+      - "Üst yarımda 3'lü pas üçgenleri kurulduğunda derinliği aç"
+
+  - name: third_man_combination
+    label: Üçüncü Oyuncu Kombinasyonu
+    family: possession
+    definition: A→B→C diziliminde C'nin presi geride aşması.
+    trigger_signals:
+      momentum_score: {op: ">=", value: 0.3}
+      opp_press_height: {op: ">=", value: 0.6}
+    advice_when_we_use_it:
+      - "Pres altında 1-touch kuralı: C oyuncu top'a tek dokun"
+      - "B'nin (orta) yönü 90° + C'ye blind-side dönüş"
+
+  - name: half_space_invasion
+    label: Half-Space İstilası
+    family: possession
+    definition: Yarı-sahalardan (kanal 2 ve 4) hücum geliştirme.
+    trigger_signals:
+      opp_width_pct: {op: ">=", value: 65}
+    advice_when_we_use_it:
+      - "Inverted full-back half-space'e taşı"
+      - "Yarı-saha oyuncusu defalarca aynı bölgeye değil — rotasyonlu"
+
+  - name: inverted_fullback
+    label: İçeri Düşen Bek
+    family: shape
+    definition: Bek hücum sırasında orta sahaya kayar (3 savunma + 1 6n).
+    trigger_signals:
+      opp_field_tilt_pct: {op: ">=", value: 55}
+    advice_when_we_use_it:
+      - "Karşı-kontra için tek bir 6n bek görevi alır"
+
+  # ── TRANSITION & COUNTER ─────────────────────────────────────────────
+  - name: counter_attack_long
+    label: Uzun Kontra
+    family: counter
+    definition: Top kazanımı sonrası 8sn içinde direkt forvete uzun pas.
+    trigger_signals:
+      opp_counter_threat: {op: ">=", value: 0.6}
+      opp_direct_play_pct: {op: ">=", value: 28}
+    counter_when_opp_uses_it:
+      - "5 savunma çiz, line yükseltme"
+      - "Forvete sırt çıkanı zonal koru"
+      - "Forvetin önündeki orta saha boşluğunu doldur"
+
+  - name: counter_attack_short
+    label: Kısa Hızlı Kontra
+    family: counter
+    definition: Top kazanımı sonrası 3 pas içinde rakip ceza alanına ulaşma.
+    trigger_signals:
+      opp_counter_threat: {op: ">=", value: 0.7}
+      opp_direct_play_pct: {op: "<", value: 22}
+    counter_when_opp_uses_it:
+      - "Geçişte sayısal eşitlik kur (taktik faul opsiyonu)"
+
+  - name: gegenpressing_we
+    label: Gegen-Pres (Bizim)
+    family: counter
+    definition: Topu kaybedince 5-7sn içinde bizim hücumcular presi başlatır.
+    advice_when_we_use_it:
+      - "Hücum 3'de 3 oyuncu pres'e hazır; 4. rest-defence"
+
+  # ── SHAPE & LINE ─────────────────────────────────────────────────────
+  - name: high_line_offside_trap
+    label: Yüksek Çizgi + Ofsayt Tuzağı
+    family: line
+    definition: Savunma çizgisi orta saha hizasında; coordinated step-up.
+    trigger_signals:
+      opp_high_line_risk: {op: ">=", value: 0.75}
+    counter_when_opp_uses_it:
+      - "Forvet line'ı patlatmak için dik koşu (taç çizgisinden değil, half-space'den)"
+      - "VAR ihtimaline rağmen ofsayt-marjini kullan: forvet 2.dalga"
+      - "Long ball'la line'ı geri it"
+
+  - name: back_three_3_5_2
+    label: 3-5-2 (Üç Savunma)
+    family: shape
+    definition: 3 savunmacı + 5 orta saha + 2 forvet; wing-back uzun şerit.
+    advice_when_we_use_it:
+      - "Wing-back'ler ofansif/defansif hibrit — alternatif dakika önemli"
+
+  - name: false_nine
+    label: Sahte 9 Numara
+    family: role
+    definition: 9 numara orta sahaya inip orta defansı dışarı çeker.
+    advice_when_we_use_it:
+      - "10 numara veya inside forward'lar onun boşluğuna girer"
+
+  - name: target_man_long_ball
+    label: Hedef Forvet + Uzun Top
+    family: role
+    definition: Klasik 9'un fizik üstünlüğü ile uzun pas yön noktası.
+    trigger_signals:
+      opp_direct_play_pct: {op: ">=", value: 32}
+    counter_when_opp_uses_it:
+      - "Forvete air-duel kazanan stoper koy"
+      - "Forvet önündeki orta saha 'second-ball' avcısı (Aksal-tip)"
+
+  # ── WIDTH & WING ─────────────────────────────────────────────────────
+  - name: overload_to_isolate
+    label: Yığ-ve-İzole Et
+    family: possession
+    definition: Bir yana 4-5 oyuncu yığar, sonra karşı kanattaki yıldıza switch.
+    trigger_signals:
+      opp_width_pct: {op: "<", value: 45}
+    advice_when_we_use_it:
+      - "Switch öncesi en az 4 pas aynı kanat (rakibi tut)"
+      - "Switch alıcısı yıldız (1v1 kazanabilen)"
+
+  - name: switch_of_play_long
+    label: Uzun Switch (Saha Çevirme)
+    family: possession
+    definition: 40+ metre diagonal pas ile sahanın bir tarafından öbürüne.
+    advice_when_we_use_it:
+      - "Hedef forvet/winger boşluk hazır olsun"
+
+  # ── SET-PIECE ────────────────────────────────────────────────────────
+  - name: short_corner
+    label: Kısa Köşe
+    family: set_piece
+    definition: Köşe vurularak ileri değil, kenar arkadaşa kısa pas.
+    advice_when_we_use_it:
+      - "Hava topu çoğunluğu rakibin → kısa korner alternatifi"
+
+  - name: zonal_marking_corner
+    label: Bölge Savunma Köşe
+    family: set_piece
+    definition: Köşe savunmasında oyuncular bölge, adam değil.
+    counter_when_opp_uses_it:
+      - "İlk direk 1, ikinci direk 2 oyuncu yığ"
+      - "Hareketli blok kurarak bölgeyi boşaltt"
+
+  # ── BUILD-UP TYPE ────────────────────────────────────────────────────
+  - name: gk_short_build
+    label: GK'den Kısa Çıkış
+    family: possession
+    definition: Kaleci doğrudan beklere kısa pas; savunma 3 yatay üzerinden çıkış.
+    trigger_signals:
+      opp_press_height: {op: "<", value: 0.45}
+    advice_when_we_use_it:
+      - "Yüksek pres'e karşı riskli — alternatif uzun olmalı"
+
+  - name: gk_long_targeted
+    label: GK Uzun Targeted
+    family: possession
+    definition: GK'den hedef forvete direkt uzun top.
+    trigger_signals:
+      opp_press_height: {op: ">=", value: 0.65}
+    advice_when_we_use_it:
+      - "Second-ball avcısı orta sahada olmalı"
+
+  # ── DEFENDING ────────────────────────────────────────────────────────
+  - name: tactical_foul
+    label: Taktiksel Faul
+    family: defending
+    definition: Kontra önlemek için orta sahada bilinçli faul.
+    trigger_signals:
+      tactical_fouling_alert: {op: "==", value: true}
+    counter_when_opp_uses_it:
+      - "Hızlı restart (ayağa kalk, hakem avantaj)"
+      - "Faul yapan oyuncuyu kart riski için işaretle"
+
+  - name: shithousery_time_management
+    label: Oyun Yavaşlatma
+    family: defending
+    definition: Önde kalan takımın taç + topu uzun tutması.
+    trigger_signals:
+      my_score_diff: {op: ">=", value: 1}
+      current_minute: {op: ">=", value: 75}
+    counter_when_opp_uses_it:
+      - "Hakem zamanını sıkı tut (4. hakem yönergesi)"
+      - "Kale dışı set-piece üzerinden hızlı çıkış"
+
+  # ── FORMATIONS ───────────────────────────────────────────────────────
+  - name: four_three_three_balanced
+    label: 4-3-3 Dengeli
+    family: shape
+    definition: Klasik 4-3-3; geniş hücum, 3 numara orta saha üçgeni.
+    advice_when_we_use_it: ["Kanat oyuncular hücum-savunma hibrit"]
+
+  - name: four_two_three_one_compact
+    label: 4-2-3-1 Kompakt
+    family: shape
+    definition: Çift pivot + 10 numara; kontrollü hücum dengesi.
+    advice_when_we_use_it: ["10 numara hareketli olmalı"]
+
+  - name: four_four_two_diamond
+    label: 4-4-2 Elmas
+    family: shape
+    definition: 1-2-1 orta saha elması; 6 numara + 8 + 10.
+    advice_when_we_use_it: ["Kanat genişliği bek + dış 8 numara ile sağlanır"]
+
+  - name: three_four_three_attacking
+    label: 3-4-3 Hücumcu
+    family: shape
+    definition: 3 savunma + 4 orta saha (kanatları wing-back) + 3 hücum.
+    advice_when_we_use_it: ["Geriden çıkışta wing-back zamanlı yüksel"]
+
+  - name: five_three_two_lock
+    label: 5-3-2 Kilitleme
+    family: shape
+    definition: 5 savunma + 3 orta saha + 2 forvet; öndeyken sonuç koruma.
+    trigger_signals:
+      my_score_diff: {op: ">=", value: 1}
+      current_minute: {op: ">=", value: 80}
+    advice_when_we_use_it: ["Önde + son 10 dk → tipik kilit"]
+
+  # ── DUEL & 1v1 ───────────────────────────────────────────────────────
+  - name: third_man_run
+    label: Üçüncü Adam Koşusu
+    family: counter
+    definition: A oyuncu top tutar, B kıs koşar, C arkadan boş alana koşar.
+    advice_when_we_use_it: ["C zamanlama kritik — B perde olur"]
+
+  - name: cutback_low_cross
+    label: Cut-back Alçak Orta
+    family: possession
+    definition: Kale çizgisi yakını + ceza yayına alçak orta.
+    advice_when_we_use_it: ["Cut-back alıcısı yay ortası (penaltı noktası)"]
+
+  - name: cross_far_post
+    label: Uzak Direk Orta
+    family: possession
+    definition: Karşı kanattan uzak direğe yüksek orta.
+    advice_when_we_use_it: ["Hedef oyuncu uzak direkte hava üstün"]
+
+  - name: low_cross_near_post
+    label: Yakın Direk Alçak Orta
+    family: possession
+    definition: Hızlı yakın direk taraması.
+    advice_when_we_use_it: ["Yakın direkte koşan oyuncuyla zaman senkron"]
+
+  # ── GAME-STATE TACTICS ──────────────────────────────────────────────
+  - name: park_the_bus
+    label: Otobüsü Park Et
+    family: defending
+    definition: 9-10 oyuncu kendi ceza yayında; sonuç koruma.
+    trigger_signals:
+      my_score_diff: {op: ">=", value: 1}
+      current_minute: {op: ">=", value: 85}
+    counter_when_opp_uses_it:
+      - "Yan + arka direkten alçak orta dene"
+      - "Uzaktan şut + ikinci top hazır"
+      - "Set-piece koreografi kullan"
+
+  - name: chase_the_game
+    label: Maçı Kovala
+    family: counter
+    definition: Geride kalan takımın tüm risk + tempo açma.
+    trigger_signals:
+      my_score_diff: {op: "<=", value: -1}
+      current_minute: {op: ">=", value: 75}
+    counter_when_opp_uses_it:
+      - "Counter için 3 oyuncu sahada bırak"
+      - "Açıklarına direkt kontra"

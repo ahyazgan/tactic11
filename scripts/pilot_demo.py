@@ -78,9 +78,8 @@ def _maybe_reset(reset: bool) -> None:
 
 
 def _migrate() -> None:
+    import alembic.command as command
     from alembic.config import Config
-
-    from alembic import command
     cfg = Config(str(_PROJECT_ROOT / "alembic.ini"))
     cfg.set_main_option("script_location", str(_PROJECT_ROOT / "alembic"))
     command.upgrade(cfg, "head")
@@ -417,7 +416,7 @@ def _render_tty(report: dict) -> None:
 
 def _render_md(report: dict) -> None:
     """Markdown çıktı — slide için copy-paste."""
-    print(f"""# manager2 — Pilot Demo Raporu
+    print(f"""# tactic11 — Pilot Demo Raporu
 
 **Süre:** {report['elapsed']:.1f} saniye
 **Tenant:** `{report['tenant']['slug']}`
@@ -453,14 +452,14 @@ def _render_md(report: dict) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="manager2 pilot demo runbook")
+    parser = argparse.ArgumentParser(description="tactic11 pilot demo runbook")
     parser.add_argument("--reset", action="store_true", help="DB'yi sıfırla (SQLite)")
     parser.add_argument("--output", choices=["tty", "md"], default="tty")
     args = parser.parse_args()
 
     started = time.time()
 
-    _section("MANAGER2 PİLOT DEMO", "🚀")
+    _section("TACTIC11 PİLOT DEMO", "🚀")
     _step("1/8 DB hazırla")
     _maybe_reset(args.reset)
     _migrate()

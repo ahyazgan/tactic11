@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>tactic11 — Sesli Not</title>
+<style>
+  :root {
+    --bg: #0e1116; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --muted: #8b949e; --accent: #58a6ff;
+    --good: #3fb950; --warn: #d29922; --bad: #f85149;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header .meta { color: var(--muted); font-size: 12px; }
+  header a { color: var(--accent); text-decoration: none; }
+  main { padding: 24px; max-width: 800px; margin: 0 auto; }
+  .auth { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .auth label { color: var(--muted); font-size: 12px; }
+  .auth input { background: var(--bg); border: 1px solid var(--border); color: var(--fg); padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px; width: 110px; }
+  .auth input.minute { width: 80px; }
+  .auth button { background: var(--bg); color: var(--muted); border: 1px solid var(--border); padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+  .auth button.danger { color: var(--bad); border-color: var(--bad); }
+
+  /* Recorder kontrol kartı */
+  .recorder { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 16px; text-align: center; }
+  .recorder .status { color: var(--muted); font-size: 12px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .recorder .status.recording { color: var(--bad); }
+  .recorder .timer { font-size: 36px; font-weight: 600; letter-spacing: 2px; font-family: monospace; }
+  .recorder .timer.recording { color: var(--bad); }
+  .rec-btn { background: var(--bad); color: #fff; border: 0; width: 80px; height: 80px; border-radius: 50%; cursor: pointer; font-size: 14px; font-weight: 700; margin-top: 16px; transition: transform 0.1s; }
+  .rec-btn:hover { transform: scale(1.05); }
+  .rec-btn.recording { background: var(--muted); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.6); } 50% { box-shadow: 0 0 0 18px rgba(248, 81, 73, 0); } }
+
+  /* Hızlı tag butonları */
+  .tags { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+  .tags h2 { margin: 0 0 12px 0; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .tag-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .tag-btn { background: var(--bg); color: var(--fg); border: 1px solid var(--border); padding: 10px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; text-align: left; transition: all 0.15s; }
+  .tag-btn:hover { border-color: var(--accent); }
+  .tag-btn .label { font-weight: 600; }
+  .tag-btn .key { color: var(--muted); font-size: 10px; margin-top: 2px; font-family: monospace; }
+
+  /* Notlar listesi */
+  .notes { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .notes h2 { margin: 0 0 12px 0; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; }
+  .notes h2 .count { font-weight: 400; }
+  .note-item { padding: 10px; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+  .note-item .minute { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; font-family: monospace; min-width: 50px; text-align: center; }
+  .note-item .tag-pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+  .note-item .text { flex: 1; font-size: 13px; color: var(--muted); }
+  .note-item audio { height: 30px; max-width: 180px; }
+  .note-item button { background: var(--bg); color: var(--muted); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
+  .note-item button.danger { color: var(--bad); border-color: var(--bad); }
+  .empty { color: var(--muted); font-style: italic; text-align: center; padding: 24px; }
+
+  .tag-substitution { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+  .tag-formation { background: rgba(63, 185, 80, 0.2); color: var(--good); }
+  .tag-opponent { background: rgba(248, 81, 73, 0.2); color: var(--bad); }
+  .tag-tactical { background: rgba(210, 153, 34, 0.2); color: var(--warn); }
+  .tag-injury { background: rgba(248, 81, 73, 0.4); color: #fff; }
+  .tag-other { background: rgba(139, 148, 158, 0.2); color: var(--muted); }
+
+  .perms-warn { background: var(--panel); border: 1px solid var(--warn); border-radius: 8px; padding: 14px; margin-bottom: 16px; color: var(--warn); display: none; }
+  .perms-warn.active { display: block; }
+
+  .footer { padding: 16px 24px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Sesli Not & Hızlı Tag</h1>
+    <div class="meta">Maç #<span id="meta-match">—</span></div>
+  </div>
+  <div>
+    <a id="live-link" href="#">Canlı →</a> ·
+    <a href="/dashboard">Ops</a>
+  </div>
+</header>
+
+<main>
+  <div class="auth">
+    <label>Maç dakikası</label>
+    <input id="minute" class="minute" type="number" min="0" max="120" value="0" />
+    <label>Etiket</label>
+    <select id="default-tag" style="background:var(--bg); color:var(--fg); border:1px solid var(--border); padding:6px 10px; border-radius:6px; font-size:12px;">
+      <option value="other">Diğer</option>
+      <option value="substitution">Substitution</option>
+      <option value="formation">Formasyon değişimi</option>
+      <option value="opponent">Rakip uyarı</option>
+      <option value="tactical">Taktik talimat</option>
+      <option value="injury">Sakatlık</option>
+    </select>
+    <button id="export">JSON dışa aktar</button>
+    <button id="clear-all" class="danger">Tümünü sil</button>
+  </div>
+
+  <div id="perms-warn" class="perms-warn">
+    Mikrofon izni reddedildi ya da tarayıcı desteklemiyor. Sadece tag kayıtları
+    çalışacak (ses olmadan).
+  </div>
+
+  <div class="recorder">
+    <div class="status" id="rec-status">HAZIR</div>
+    <div class="timer" id="rec-timer">00:00</div>
+    <button id="rec-btn" class="rec-btn">REC</button>
+    <div class="meta" style="margin-top:12px; color:var(--muted); font-size:11px;">
+      Boşluk = başlat/durdur · ESC = iptal
+    </div>
+  </div>
+
+  <div class="tags">
+    <h2>Hızlı tag — 1 tıkla mevcut dakikayı kaydet</h2>
+    <div class="tag-grid">
+      <button class="tag-btn" data-tag="substitution" data-key="s">
+        <div class="label">Substitution</div>
+        <div class="key">S</div>
+      </button>
+      <button class="tag-btn" data-tag="formation" data-key="f">
+        <div class="label">Formasyon değişimi</div>
+        <div class="key">F</div>
+      </button>
+      <button class="tag-btn" data-tag="opponent" data-key="o">
+        <div class="label">Rakip uyarı</div>
+        <div class="key">O</div>
+      </button>
+      <button class="tag-btn" data-tag="tactical" data-key="t">
+        <div class="label">Taktik talimat</div>
+        <div class="key">T</div>
+      </button>
+      <button class="tag-btn" data-tag="injury" data-key="i">
+        <div class="label">Sakatlık / yorgun</div>
+        <div class="key">I</div>
+      </button>
+      <button class="tag-btn" data-tag="other" data-key="n">
+        <div class="label">Genel not</div>
+        <div class="key">N</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>Kayıtlı notlar <span class="count" id="note-count">0</span></h2>
+    <div id="notes-list"><div class="empty">Henüz not yok.</div></div>
+  </div>
+</main>
+
+<div class="footer">
+  tactic11 · MediaRecorder API + localStorage. Notlar cihazda kalır — JSON
+  ile dışa aktarabilirsin. Backend persist için <code>POST</code> endpoint
+  ileride eklenebilir.
+</div>
+
+<script>
+const MATCH_ID = parseInt(window.MATCH_ID, 10);
+document.getElementById('meta-match').textContent = MATCH_ID;
+document.getElementById('live-link').href = `/matches/${MATCH_ID}/live`;
+
+const STORAGE = 'manager2_voice_notes_' + MATCH_ID;
+const minuteInput = document.getElementById('minute');
+const tagSelect = document.getElementById('default-tag');
+const recBtn = document.getElementById('rec-btn');
+const recStatus = document.getElementById('rec-status');
+const recTimer = document.getElementById('rec-timer');
+const permsWarn = document.getElementById('perms-warn');
+
+let mediaRecorder = null;
+let recordedChunks = [];
+let recStartedAt = 0;
+let timerInterval = null;
+
+// ---- LocalStorage I/O ----
+function loadNotes() {
+  try { return JSON.parse(localStorage.getItem(STORAGE) || '[]'); }
+  catch { return []; }
+}
+
+function saveNotes(notes) {
+  localStorage.setItem(STORAGE, JSON.stringify(notes));
+  render();
+}
+
+function addNote(note) {
+  const all = loadNotes();
+  all.push(note);
+  all.sort((a, b) => a.minute - b.minute);
+  saveNotes(all);
+}
+
+// ---- Recorder ----
+async function ensureRecorder() {
+  if (mediaRecorder) return true;
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    permsWarn.classList.add('active');
+    permsWarn.textContent = 'Tarayıcı MediaRecorder desteklemiyor — tag-only mod.';
+    return false;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) recordedChunks.push(e.data);
+    };
+    mediaRecorder.onstop = handleStop;
+    return true;
+  } catch (e) {
+    permsWarn.classList.add('active');
+    permsWarn.textContent = 'Mikrofon izni reddedildi: ' + e.message;
+    return false;
+  }
+}
+
+async function startRecording() {
+  const ok = await ensureRecorder();
+  if (!ok) return;
+  recordedChunks = [];
+  mediaRecorder.start();
+  recStartedAt = Date.now();
+  recBtn.classList.add('recording');
+  recBtn.textContent = '■';
+  recStatus.classList.add('recording');
+  recStatus.textContent = 'KAYIT';
+  recTimer.classList.add('recording');
+  timerInterval = setInterval(updateTimer, 100);
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+  }
+  clearInterval(timerInterval);
+  recBtn.classList.remove('recording');
+  recBtn.textContent = 'REC';
+  recStatus.classList.remove('recording');
+  recStatus.textContent = 'HAZIR';
+  recTimer.classList.remove('recording');
+  recTimer.textContent = '00:00';
+}
+
+function cancelRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    recordedChunks = [];
+    mediaRecorder.stop();
+  }
+  stopRecording();
+}
+
+function handleStop() {
+  if (recordedChunks.length === 0) return;
+  const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+  const durationSec = (Date.now() - recStartedAt) / 1000;
+  recordedChunks = [];
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    addNote({
+      id: Date.now(),
+      minute: parseInt(minuteInput.value, 10) || 0,
+      tag: tagSelect.value,
+      durationSec: Math.round(durationSec * 10) / 10,
+      audioDataUrl: reader.result,
+      createdAt: new Date().toISOString(),
+    });
+  };
+  reader.readAsDataURL(blob);
+}
+
+function updateTimer() {
+  const sec = (Date.now() - recStartedAt) / 1000;
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  recTimer.textContent =
+    String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+recBtn.addEventListener('click', () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+});
+
+// ---- Hızlı tag (ses kaydetmeden timestamp) ----
+function quickTag(tag) {
+  const minute = parseInt(minuteInput.value, 10) || 0;
+  addNote({
+    id: Date.now(),
+    minute,
+    tag,
+    durationSec: 0,
+    audioDataUrl: null,
+    createdAt: new Date().toISOString(),
+  });
+}
+
+document.querySelectorAll('.tag-btn').forEach((btn) => {
+  btn.addEventListener('click', () => quickTag(btn.dataset.tag));
+});
+
+// ---- Keyboard shortcuts ----
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.code === 'Space') {
+    e.preventDefault();
+    recBtn.click();
+    return;
+  }
+  if (e.code === 'Escape') {
+    cancelRecording();
+    return;
+  }
+  const key = e.key.toLowerCase();
+  const btn = document.querySelector(`.tag-btn[data-key="${key}"]`);
+  if (btn) {
+    e.preventDefault();
+    btn.click();
+  }
+});
+
+// ---- Render notlar listesi ----
+function tagPillClass(tag) {
+  return 'tag-pill tag-' + (tag || 'other');
+}
+
+function tagLabel(tag) {
+  return {
+    substitution: 'SUB', formation: 'FORM', opponent: 'OPP',
+    tactical: 'TAC', injury: 'INJ', other: 'NOT',
+  }[tag] || tag;
+}
+
+function render() {
+  const notes = loadNotes();
+  document.getElementById('note-count').textContent = notes.length;
+  const container = document.getElementById('notes-list');
+  if (!notes.length) {
+    container.innerHTML = '<div class="empty">Henüz not yok.</div>';
+    return;
+  }
+  let html = '';
+  notes.forEach((n) => {
+    const audioPlayer = n.audioDataUrl
+      ? `<audio controls src="${n.audioDataUrl}"></audio>`
+      : '<span class="text" style="color:var(--muted)">— sadece tag —</span>';
+    html += `<div class="note-item">
+      <div class="minute">${n.minute}'</div>
+      <span class="${tagPillClass(n.tag)}">${tagLabel(n.tag)}</span>
+      ${audioPlayer}
+      <span class="text">${n.durationSec > 0 ? n.durationSec + 's' : ''}</span>
+      <button class="danger" onclick="deleteNote(${n.id})">×</button>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function deleteNote(id) {
+  saveNotes(loadNotes().filter((n) => n.id !== id));
+}
+
+document.getElementById('clear-all').addEventListener('click', () => {
+  if (loadNotes().length === 0) return;
+  if (!confirm('Tüm notlar silinecek. Emin misin?')) return;
+  saveNotes([]);
+});
+
+document.getElementById('export').addEventListener('click', () => {
+  const notes = loadNotes();
+  if (!notes.length) { alert('Dışa aktarılacak not yok.'); return; }
+  // Audio data URL'leri ağır olduğu için export'ta meta only (alternatif).
+  const meta = notes.map((n) => ({
+    id: n.id, minute: n.minute, tag: n.tag,
+    durationSec: n.durationSec, hasAudio: !!n.audioDataUrl,
+    createdAt: n.createdAt,
+  }));
+  const blob = new Blob([JSON.stringify({ match_id: MATCH_ID, notes: meta }, null, 2)],
+                        { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `voice_notes_match_${MATCH_ID}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+render();
+</script>
+</body>
+</html>

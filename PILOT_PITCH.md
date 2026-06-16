@@ -1,20 +1,20 @@
-# manager2 — Pilot Programı (Detaylı Pitch)
+# tactic11 — Pilot Programı (Detaylı Pitch)
 
 **Süper Lig kulübü teknik direktör, analiz şefi, sportif direktör** için
 veri-tabanlı karar destek platformu. Tek-cümle: AI co-pilot + kalibre
-edilmiş tahmin motoru + 11 specialized agent.
+edilmiş tahmin motoru + 15 specialized agent.
 
 ## Sayılar (bugün)
 
 | Metrik | Değer |
 |---|---|
-| Otomatik test | **514 yeşil** (CI'da %100 pass rate) |
-| Engine modülü | **16** (form, rating, opponent, predict, xG, load, tracking, calibration, schedule, matchup, fixture_difficulty, predict_ml, player_form, set_piece, player_similarity, formation_matcher) |
-| Agent (AI brief üretici) | **11** (PreMatch, PostMatch, MegaMatch, OpponentScout, InjuryLoad, Lineup, Substitution, Tactical, Weekly, ScoutWatchlist, MediaBrief) |
+| Otomatik test | **1,674 yeşil** (CI'da %100 pass rate) |
+| Engine modülü | **98** (çekirdek: form, rating, opponent, predict, xG, load, tracking, calibration, schedule, matchup, fixture_difficulty, predict_ml, player_form, set_piece, player_similarity, formation_matcher + 80'i aşkın uzman taktik/fiziksel/scout modülü) |
+| Agent (AI brief üretici) | **15** (PreMatch, PostMatch, MegaMatch, OpponentScout, InjuryLoad, Lineup, Substitution, Tactical, TacticalAdjustment, GamePlan, TrainingPlan, PlayerFeedback, Weekly, ScoutWatchlist, MediaBrief) |
 | Tahmin modeli | Dixon-Coles + ML-kalibre ρ + logistic xG |
 | Multi-tenant | ✅ tenant_id 16 tabloda + JWT + RBAC |
-| Adapter | API-Football, StatsBomb Open, FixtureTracking |
-| Migration | 13 alembic versiyonu, rolling deploy uyumlu |
+| Adapter | Sportmonks, API-Football, StatsBomb Open, FixtureTracking |
+| Migration | 27 alembic versiyonu, rolling deploy uyumlu |
 
 ## 4 ana ürün modülü
 
@@ -65,7 +65,7 @@ python scripts/pilot_demo.py --output md > slides/demo.md
 - Anthropic Claude API ile sınırsız AI brief
 - Haftalık 1 saat görüşme
 - 24 saat e-posta SLA
-- 11 agent + yardımcı manager chat
+- 15 agent + yardımcı manager chat
 - Dashboard (HTML — minimal; geliştirilebilir)
 
 ### Pro — $20,000 setup + $4,000/ay (6 ay)
@@ -109,11 +109,11 @@ python scripts/pilot_demo.py --output md > slides/demo.md
 ## Teknik altyapı
 
 - **Backend**: FastAPI + SQLAlchemy + Postgres
-- **AI**: Anthropic Claude (Opus 4.7 ya da Sonnet 4.5 — pilot tercihi)
+- **AI**: Anthropic Claude — varsayılan Opus 4.7; model pilot tercihiyle değiştirilebilir
 - **ML**: scikit-learn (LogisticRegression xG), pure-Python pure engine
 - **Auth**: JWT + bcrypt + 4 rol (admin/analyst/coach/viewer)
 - **Deploy**: Docker Compose tek komut, Hetzner Cloud €4.51/ay yeterli
-- **Test**: 514 otomatik test, GitHub Actions CI
+- **Test**: 1,674 otomatik test, GitHub Actions CI
 - **Lisans**: Codebase pilot kulübe license; Anthropic + StatsBomb kendi ToS
 
 ## İletişim

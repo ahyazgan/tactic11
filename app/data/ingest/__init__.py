@@ -1,3 +1,7 @@
+from app.data.ingest.backfill import (
+    backfill_appearances,
+    matches_to_backfill,
+)
 from app.data.ingest.event import (
     EventIngestReport,
     ingest_events_for_match,
@@ -18,9 +22,11 @@ __all__ = [
     "EventIngestReport",
     "SyncReport",
     "TrackingIngestReport",
+    "backfill_appearances",
     "delete_match_frames",
     "ingest_appearances_for_match",
     "ingest_events_for_match",
     "ingest_tracking_match",
+    "matches_to_backfill",
     "sync_league",
 ]

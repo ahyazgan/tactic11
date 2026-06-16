@@ -124,7 +124,7 @@ kullanacağı şey değil. Niche/spesifik kullanım için kalıyor:
 
 ## Pilot pitch metni (önerilen)
 
-> "manager2 platform, gerçek La Liga 2018/19 sezonu üzerinde **19 production-grade
+> "tactic11 platform, gerçek La Liga 2018/19 sezonu üzerinde **19 production-grade
 > taktiksel engine** ile pilot kulübe hizmet eder. Her engine sentetik test'te
 > değil, 34 maç × 68 takım örnekleminde sinyal verir.
 >

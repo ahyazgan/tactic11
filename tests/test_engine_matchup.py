@@ -82,3 +82,19 @@ def test_matchup_audit_engine_name():
     assert res.audit.engine == "engine.matchup"
     assert res.audit.subject_id == 611
     assert res.audit.inputs["away_team_id"] == 607
+
+
+def test_matchup_carries_confidence():
+    home_matches = [
+        _m(1, 611, 998, 3, 0, 5),
+        _m(2, 611, 614, 2, 0, 10),
+        _m(3, 611, 607, 4, 1, 15),
+    ]
+    away_matches = [_m(4, 998, 607, 2, 0, 4), _m(5, 614, 607, 3, 0, 8)]
+    home_form = _form_for(611, home_matches)
+    away_form = _form_for(607, away_matches)
+    h2h = compute_head_to_head(611, 607, []).value
+    res = compute_matchup(home_form, away_form, h2h, home_team_id=611, away_team_id=607)
+    assert res.confidence is not None
+    assert 0.0 <= res.confidence.score <= 1.0
+    assert res.confidence.label in ("yüksek", "orta", "düşük")

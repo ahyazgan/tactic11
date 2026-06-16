@@ -39,9 +39,22 @@ class Settings(BaseSettings):
         alias="API_FOOTBALL_BASE_URL",
     )
 
+    # Sportmonks (ikinci veri kaynağı; token query-param + include ile çalışır,
+    # API-Football'dan zengin: gerçek xG + oyuncu-başı istatistik). Token yalnız
+    # backend'de tutulur, asla istemciye gitmez.
+    sportmonks_api_key: str = Field(default="", alias="SPORTMONKS_API_KEY")
+    sportmonks_base_url: str = Field(
+        default="https://api.sportmonks.com/v3/football",
+        alias="SPORTMONKS_BASE_URL",
+    )
+    # Aktif veri kaynağı (appearance ingest + backfill). "api_football" (varsayılan)
+    # ya da "sportmonks". sync_league lig/takım/fikstür çekimi ayrıca yapılır;
+    # bu yalnız maç kadro/istatistik ingest'inin kaynağını seçer.
+    data_source: str = Field(default="api_football", alias="DATA_SOURCE")
+
     # Veritabanı
     database_url: str = Field(
-        default="postgresql+psycopg://user:password@localhost:5432/manager2",
+        default="postgresql+psycopg://user:password@localhost:5432/tactic11",
         alias="DATABASE_URL",
     )
 
@@ -53,6 +66,22 @@ class Settings(BaseSettings):
 
     # xG modeli (Prompt 2) — trained artifact path; boş ise models/xg_v1.pkl
     xg_model_path: str = Field(default="", alias="XG_MODEL_PATH")
+
+    # Canlı feed sağlayıcısı — maç-içi konsolda hangi enterprise feed'in
+    # (StatsBomb/Opta/Stats Perform) API anahtarı "bağlı" görünür. Veri bugün
+    # StatsBomb open replay'inden gelir; bu sadece sunum/bağlantı katmanı.
+    # Geçerli: "statsbomb" | "opta" | "stats_perform".
+    live_feed_provider: str = Field(default="statsbomb", alias="LIVE_FEED_PROVIDER")
+    # Sağlayıcı API anahtarı. Boş ise sağlayıcıya özgü demo key kullanılır
+    # (replay demo'da .env gerektirmeden "bağlı" görünür). Snapshot'a yalnızca
+    # MASKELİ hâli düşer (tam key asla istemciye gönderilmez).
+    live_feed_api_key: str = Field(default="", alias="LIVE_FEED_API_KEY")
+    # Canlı veri kaynağı modu. "replay" (varsayılan) = StatsBomb open event'leri
+    # event-zaman güdümlü replay. "live_api" = gerçek koordinatlı event akışı
+    # (Opta/StatsBomb Pro adapter'ı bağlandığında). Koordinatlı akış olmadan
+    # tactical motorlar (xT/VAEP) beslenemez; bu yüzden adapter gelene kadar
+    # "live_api" seçilse bile fabrika güvenli şekilde replay'e düşer.
+    live_feed_mode: str = Field(default="replay", alias="LIVE_FEED_MODE")
 
     # Kota koruması
     api_football_daily_limit: int = Field(default=100, alias="API_FOOTBALL_DAILY_LIMIT")
@@ -72,6 +101,24 @@ class Settings(BaseSettings):
         default="", alias="BACKWARD_COMPAT_API_KEY",
     )
 
+    # Notifications (Faz 5 #19) — boşsa kanal stub modda çalışır.
+    telegram_bot_token: str = Field(default="", alias="TELEGRAM_BOT_TOKEN")
+    telegram_chat_id: str = Field(default="", alias="TELEGRAM_CHAT_ID")
+    twilio_account_sid: str = Field(default="", alias="TWILIO_ACCOUNT_SID")
+    twilio_auth_token: str = Field(default="", alias="TWILIO_AUTH_TOKEN")
+    whatsapp_from: str = Field(default="", alias="WHATSAPP_FROM")
+    whatsapp_to: str = Field(default="", alias="WHATSAPP_TO")
+    # E-posta (SMTP) — host/from/to boşsa kanal stub modda çalışır.
+    smtp_host: str = Field(default="", alias="SMTP_HOST")
+    smtp_port: int = Field(default=587, alias="SMTP_PORT")
+    smtp_username: str = Field(default="", alias="SMTP_USERNAME")
+    smtp_password: str = Field(default="", alias="SMTP_PASSWORD")
+    smtp_from: str = Field(default="", alias="SMTP_FROM")
+    smtp_to: str = Field(default="", alias="SMTP_TO")
+    smtp_use_tls: bool = Field(default=True, alias="SMTP_USE_TLS")
+    # Redis cache backend (opsiyonel). Boşsa DB-destekli cache kullanılır.
+    redis_url: str = Field(default="", alias="REDIS_URL")
+
     # Geliştirme/test
     use_fixtures: bool = Field(default=False, alias="USE_FIXTURES")
     log_level: LogLevel = Field(default="INFO", alias="LOG_LEVEL")
@@ -79,6 +126,28 @@ class Settings(BaseSettings):
 
     # Production hardening
     rate_limit_per_minute: int = Field(default=120, alias="RATE_LIMIT_PER_MINUTE")
+    # /auth/login için ayrı sıkı limit (brute-force yüzeyi daralt). IP başına/dk.
+    login_rate_limit_per_minute: int = Field(
+        default=10, alias="LOGIN_RATE_LIMIT_PER_MINUTE"
+    )
+    # DB connection pool (SQLite dışı backend'lerde uygulanır)
+    db_pool_size: int = Field(default=5, alias="DB_POOL_SIZE")
+    db_max_overflow: int = Field(default=10, alias="DB_MAX_OVERFLOW")
+    db_pool_recycle_seconds: int = Field(default=1800, alias="DB_POOL_RECYCLE_SECONDS")
+    # Dış HTTP (API-Football) retry + circuit breaker
+    http_timeout_seconds: float = Field(default=10.0, alias="HTTP_TIMEOUT_SECONDS")
+    http_retry_attempts: int = Field(default=3, alias="HTTP_RETRY_ATTEMPTS")
+    http_breaker_threshold: int = Field(default=5, alias="HTTP_BREAKER_THRESHOLD")
+    http_breaker_cooldown_seconds: float = Field(
+        default=30.0, alias="HTTP_BREAKER_COOLDOWN_SECONDS"
+    )
+    # Hata izleme (Sentry) — DSN boşsa devre dışı (no-op). Opsiyonel.
+    sentry_dsn: str = Field(default="", alias="SENTRY_DSN")
+    sentry_traces_sample_rate: float = Field(
+        default=0.0, ge=0.0, le=1.0, alias="SENTRY_TRACES_SAMPLE_RATE"
+    )
+    # Prometheus /metrics — prometheus-client kuruluysa aktif.
+    prometheus_enabled: bool = Field(default=True, alias="PROMETHEUS_ENABLED")
     # Kota uyarı eşiği (0..1) — bu fraksiyona ulaşınca WARNING log
     # Default 0.8 = %80. 0.6 → daha erken uyarı; 0.9 → daha geç.
     quota_warn_fraction: float = Field(

@@ -40,7 +40,8 @@ from __future__ import annotations
 import math
 from dataclasses import asdict, dataclass
 
-from app.audit import AuditRecord, EngineResult
+from app.audit import AuditRecord, ConfidenceInfo, EngineResult
+from app.engine.confidence import score_confidence
 from app.engine.form import FormReport
 
 ENGINE_NAME = "engine.predict"
@@ -198,4 +199,13 @@ def compute_predict(
             f"sample_size < {_MIN_CONFIDENT_SAMPLE} → low_confidence"
         ),
     )
-    return EngineResult(value=report, audit=audit)
+    # Güven: sample_size = iki formun min maç sayısı; magnitude = en olası
+    # sonucun olasılığı (tahminin keskinliği).
+    conf = score_confidence(
+        sample_size=min(home_form.matches_played, away_form.matches_played),
+        magnitude=max(p_home_win, p_draw, p_away_win),
+    )
+    return EngineResult(
+        value=report, audit=audit,
+        confidence=ConfidenceInfo(conf.score, conf.label, conf.drivers),
+    )

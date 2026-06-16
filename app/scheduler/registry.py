@@ -34,5 +34,10 @@ def get(name: str) -> JobSpec:
     return _REGISTRY[name]
 
 
+# `resolve` — `get` için anlamsal alias (ada göre JobSpec çöz). Bazı çağıranlar
+# ve testler bu adı kullanır.
+resolve = get
+
+
 def all_jobs() -> list[JobSpec]:
     return list(_REGISTRY.values())

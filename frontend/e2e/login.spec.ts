@@ -6,17 +6,17 @@
  */
 import { test, expect } from "@playwright/test";
 
-const TEST_EMAIL = process.env.E2E_TEST_EMAIL ?? "test@example.com";
-const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD ?? "test-password-1234";
-
 test.describe("Login akışı", () => {
-  test("geçersiz şifre hata gösterir", async ({ page }) => {
+  test("login devre dışı — /login ana sayfaya yönlendirir", async ({ page }) => {
+    // Login kaldırıldı (önizleme): /login form göstermez, /'e yönlendirir.
     await page.goto("/login");
-    await page.locator('input[type="email"]').fill(TEST_EMAIL);
-    await page.locator('input[type="password"]').fill("wrong-password");
-    await page.locator("form button[type='submit']").click();
-    // /login'de kalır, error metin görünür
-    await expect(page).toHaveURL(/\/login/);
+    await page.waitForURL((url) => !url.pathname.startsWith("/login"), {
+      timeout: 10_000,
+    });
+    // / Genel Bakış konsolunu render eder (tam-ekran fixed).
+    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("logout token'ları temizler ve /login'e döner", async ({ page }) => {
@@ -27,7 +27,9 @@ test.describe("Login akışı", () => {
       localStorage.setItem("manager2_refresh_token", "dummy-refresh");
     });
     await page.goto("/");
-    // Logout butonu yoksa (auth yok) en azından /'e gidip layout görünür
-    await expect(page.locator("body")).toBeVisible();
+    // / Genel Bakış konsolunu render eder; konsol içeriği görünür olmalı.
+    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });

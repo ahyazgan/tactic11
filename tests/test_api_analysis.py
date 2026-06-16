@@ -76,6 +76,23 @@ def test_team_form_returns_engine_value_and_audit(session, client):
     assert body["audit"]["subject_id"] == 611
 
 
+def test_team_form_returns_confidence(session, client):
+    """Faz 8: güven bağlanan endpoint yanıtında confidence.score + label döner."""
+    _seed_matches(session, datetime.now(UTC))
+    body = client.get("/teams/611/form?last_n=10").json()
+    assert body["confidence"] is not None
+    assert 0.0 <= body["confidence"]["score"] <= 1.0
+    assert body["confidence"]["label"] in ("yüksek", "orta", "düşük")
+    assert isinstance(body["confidence"]["drivers"], list)
+
+
+def test_team_rating_returns_confidence(session, client):
+    _seed_matches(session, datetime.now(UTC))
+    body = client.get("/teams/611/rating?last_n=10").json()
+    assert body["confidence"] is not None
+    assert body["confidence"]["label"] in ("yüksek", "orta", "düşük")
+
+
 def test_team_form_time_decay_affects_per_match_averages(session, client):
     """rate=0 vs rate>0 → goals_for_per_match farkı görülmeli (W/D/L aynı)."""
     _seed_matches(session, datetime.now(UTC))

@@ -7,8 +7,8 @@ manuel oyuncu notu kalıcı kaydı.
 Idempotent: (tenant, sport, match, player) unique. Maç bağlamı
 (opp_rating, fatigue_proxy, flags_json) her satırda denormalize.
 
-Revision ID: 0016_player_match_ratings
-Revises: 0015_decisions
+Revision ID: 0028_player_match_ratings
+Revises: 0027_appearance_season_stats
 Create Date: 2026-06-15 16:30:00
 """
 from collections.abc import Sequence
@@ -17,8 +17,8 @@ from typing import Union
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0016_player_match_ratings"
-down_revision: Union[str, None] = "0015_decisions"
+revision: str = "0028_player_match_ratings"
+down_revision: Union[str, None] = "0027_appearance_season_stats"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

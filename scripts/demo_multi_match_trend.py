@@ -166,10 +166,10 @@ def run_demo() -> dict:
 
         # 3. Print summary
         print("\n[3/3] Sezon trend özet (Barca son 5 maç):")
-        for metric, t in trends.items():
-            print(f"  {metric:20s} dir={t['direction']:12s} "
-                  f"slope={t['slope']:+.3f} mean={t['mean']:.2f}")
-            print(f"  {'':20s} series={t['series']}")
+        for metric, tr in trends.items():
+            print(f"  {metric:20s} dir={tr['direction']:12s} "
+                  f"slope={tr['slope']:+.3f} mean={tr['mean']:.2f}")
+            print(f"  {'':20s} series={tr['series']}")
 
         # JSON output
         output_path = Path("demo_multi_match_report.json")
