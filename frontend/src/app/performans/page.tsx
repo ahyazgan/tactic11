@@ -327,6 +327,77 @@ export default function PerformansPage() {
 
   const values = useMemo(() => parseSeries(seriesText), [seriesText]);
 
+  // Kayıtlı veriden yükleme — /mac-notla'dan beslenen serileri kullan
+  const [savedPlayerId, setSavedPlayerId] = useState("");
+  const [savedLoading, setSavedLoading] = useState(false);
+  const [savedErr, setSavedErr] = useState<string | null>(null);
+  const [savedCount, setSavedCount] = useState<number | null>(null);
+
+  async function loadFromSaved() {
+    if (!savedPlayerId.trim()) {
+      setSavedErr("Oyuncu ID gir");
+      return;
+    }
+    setSavedErr(null);
+    setSavedLoading(true);
+    try {
+      // 1) Seriyi ratings store'dan getir
+      type Row = {
+        rating: number; opp_rating: number | null;
+        flags: Record<string, boolean>; match_external_id: number;
+      };
+      const list = await apiFetch<{ count: number; ratings: Row[] }>(
+        `/admin/ratings/player/${savedPlayerId}`,
+      );
+      setSavedCount(list.count);
+      if (list.count < 2) {
+        setSavedErr("En az 2 maç notu gerek (mac-notla'dan kaydet)");
+        return;
+      }
+      // 2) Series textarea'sını rating dizisiyle doldur (preset gibi)
+      setSeriesText(list.ratings.map((r) => r.rating.toFixed(2)).join(", "));
+      // 3) Clutch + opponent_adjusted preset'lerini gerçek veriden üret
+      setClutchJson(JSON.stringify(
+        list.ratings.map((r, i) => ({
+          match_id: r.match_external_id || (i + 1),
+          rating: r.rating,
+          flags: r.flags || {},
+        })),
+        null, 2,
+      ));
+      setAdjustedJson(JSON.stringify(
+        list.ratings.map((r, i) => ({
+          match_id: r.match_external_id || (i + 1),
+          rating: r.rating,
+          opp_rating: r.opp_rating ?? 7.0,
+        })),
+        null, 2,
+      ));
+      // 4) Compositor endpoint'i çağır → tek seferde 5 motor
+      type PerfResp = {
+        results: {
+          consistency: ConsistencyResult;
+          trajectory: TrajectoryResult;
+          anomaly: AnomalyResult;
+          clutch: ClutchResult;
+          opponent_adjusted: AdjustedResult;
+        };
+      };
+      const perf = await apiFetch<PerfResp>(
+        `/admin/ratings/player/${savedPlayerId}/performance`,
+      );
+      setConsistency(perf.results.consistency);
+      setTrajectory(perf.results.trajectory);
+      setAnomaly(perf.results.anomaly);
+      setClutch(perf.results.clutch);
+      setAdjusted(perf.results.opponent_adjusted);
+    } catch (e) {
+      setSavedErr(String(e));
+    } finally {
+      setSavedLoading(false);
+    }
+  }
+
   async function runTeamForm() {
     setTeamErr(null);
     setTeamLoading(true);
@@ -406,6 +477,38 @@ export default function PerformansPage() {
           Maç-maç rating'leri yapıştır → reliability + trajectory + RTM uyarısı.
         </p>
       </div>
+
+      <Panel title="Kayıtlı veriden yükle (Maçı Notla → bu sayfa)">
+        <p className="text-xs text-muted mb-3">
+          /mac-notla'da kaydettiğin bir oyuncunun ID'sini gir → tüm performans
+          motorları (tutarlılık / yön / anomali / clutch / rakibe göre)
+          gerçek serinden otomatik beslenir. JSON yapıştırmaya gerek yok.
+        </p>
+        <div className="flex items-end gap-3">
+          <label className="flex flex-col text-xs">
+            <span className="text-muted mb-1">Oyuncu ID</span>
+            <input
+              type="number"
+              className="w-32 bg-bg border border-border rounded px-2 py-1 text-sm"
+              value={savedPlayerId}
+              onChange={(e) => setSavedPlayerId(e.target.value)}
+            />
+          </label>
+          <button
+            className="px-3 py-1.5 bg-accent text-white text-sm rounded"
+            onClick={loadFromSaved}
+            disabled={savedLoading}
+          >
+            {savedLoading ? "Yükleniyor…" : "Kayıtlı seriden yükle"}
+          </button>
+          {savedCount !== null && !savedErr && (
+            <span className="text-xs text-good">
+              ✓ {savedCount} maç notu yüklendi; tüm bölümler otomatik dolduruldu
+            </span>
+          )}
+          {savedErr && <span className="text-bad text-sm">{savedErr}</span>}
+        </div>
+      </Panel>
 
       <Panel title="Rating serisi (maç-maç)">
         <div className="mb-3 flex flex-wrap gap-2">
