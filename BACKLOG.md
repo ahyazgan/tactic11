@@ -36,7 +36,10 @@
 ## Later (lower priority — only if Now + Next clear)
 
 - [x] Tutarlı sayfa kabukları — ConsoleShell breadcrumb + LoadingState/EmptyState/ErrorState + 3 öksüz sayfayı (performans/mac-notla/taktik-komuta) kabuğa taşı  (9b7b0c0, 652ed24)
-- [x] State bileşenlerini yaygınlaştır — 24 sayfadaki ad-hoc "Yükleniyor…"/boş/hata metinleri LoadingState/ErrorState/EmptyState ile değiştirildi  (HEAD)
+- [x] State bileşenlerini yaygınlaştır — 24 sayfadaki ad-hoc "Yükleniyor…"/boş/hata metinleri LoadingState/ErrorState/EmptyState ile değiştirildi  (1c92e03)
+- [x] Tahmin çekirdeği v3 — rakip-göreli güç (opp_defense) + ev sahibi avantajı; backward-compat baseline korunur, 2082 test yeşil  (HEAD)
+- [ ] Frontend demo poisson-predict.ts'i v3 modeline hizala (şu an sadece kendi-atağı; yalnız demo-mode)
+- [ ] predict v3'ü gerçek sezonda backtest et (Brier/log-loss baseline vs v3 karşılaştırması)
 - [ ] PDF report export for scout_report_generator
 - [ ] Push/email delivery for digests (currently pull-only)
 - [ ] i18n scaffold for English UI
