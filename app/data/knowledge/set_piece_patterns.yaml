@@ -1,0 +1,237 @@
+# Set-Piece Pattern Library
+#
+# Köşe / serbest vuruş / penaltı bilinen 20+ routine'inin tanımı.
+# Her pattern: tetik koşulları + adım açıklaması + ideal oyuncu profili.
+#
+# Şema:
+#   - name: snake_case ID
+#     label: TR insan-okunur başlık
+#     type: corner | free_kick | throw_in | penalty | kick_off
+#     side: short | long | any (köşe için kısa/uzun)
+#     when_use: ne zaman tercih edilir (str list)
+#     steps: oyun adımı listesi (str)
+#     ideal_attributes: oyuncu profili (str list — "aerial", "pace" vb.)
+#     counter: rakip bu pattern'i kullanırsa savunma ipucu
+#     citations: kısa kaynak
+
+patterns:
+  # ── KÖŞE — UZUN ────────────────────────────────────────────────────
+  - name: corner_inswinger_near_post
+    label: Yakın Direk Inswinger Köşe
+    type: corner
+    side: long
+    when_use:
+      - "Hava topu üstün takım vs zayıf savunma"
+      - "İlk hücum dakikalarında ısınma"
+    steps:
+      - "Vurucu inswing (sağ ayak sol köşe veya tersi)"
+      - "Yakın direkte 2 oyuncu yığar — biri perde, biri ana hedef"
+      - "Penalty noktası civarında 2 'second-ball' avcısı"
+    ideal_attributes: [aerial, jumping_reach, anticipation]
+    counter:
+      - "Zonal-koruma yakın direğe 2 oyuncu — perdelemeyi blokla"
+      - "GK çıkışa hazır"
+
+  - name: corner_outswinger_far_post
+    label: Uzak Direk Outswinger Köşe
+    type: corner
+    side: long
+    when_use:
+      - "Uzak direkte fizik üstünlüğü"
+      - "Vurucu hassasiyetle outswing atabiliyor"
+    steps:
+      - "Vurucu outswing (sol ayak sol köşe)"
+      - "Uzak direkte hedef oyuncu late-run"
+      - "Penalty noktasında perde olacak oyuncu"
+    ideal_attributes: [aerial, late_run, timing]
+    counter:
+      - "Uzak direkte fizik üstün stoper"
+      - "Adam takip + zonal hibrit"
+
+  - name: corner_short_overload
+    label: Kısa Köşe Overload
+    type: corner
+    side: short
+    when_use:
+      - "Rakip ceza alanı kalabalık"
+      - "Vurucu sayı üstünlüğüyle pas çıkarmak istiyor"
+    steps:
+      - "Köşe → en yakın arkadaşa kısa pas"
+      - "Pas alan oyuncu çevirme topla çapraz orta"
+      - "Veya 3'lü kombinasyonla bek üzerinden kale önüne"
+    ideal_attributes: [technique, vision, close_control]
+    counter:
+      - "Köşeye 2 oyuncu çıkar — sayı dengele"
+      - "Sıkıştır + duels"
+
+  - name: corner_decoy_run_cross
+    label: Decoy Run + Cross Köşe
+    type: corner
+    side: long
+    when_use:
+      - "Rakip zonal-koruma — perdeleme ile bölge kır"
+      - "Yıldız oyuncu kale önünde rahat"
+    steps:
+      - "Sahte run (decoy) — uzak direkten yakın direğe"
+      - "Asıl hedef kale önünde yer alır (perdelenir)"
+      - "Vurucu kale önü orta atar"
+    ideal_attributes: [timing, anticipation, finishing]
+    counter:
+      - "Tek 'serbest' oyuncuyu adamlı izle"
+      - "Decoy'a kanma — gözle takip"
+
+  # ── KÖŞE — KISA ────────────────────────────────────────────────────
+  - name: corner_short_cutback
+    label: Kısa Köşe → Cut-back
+    type: corner
+    side: short
+    when_use:
+      - "Vurucu sahanın derinine çekmek istiyor"
+      - "Pas ortağı 1v1 kazanabilen winger"
+    steps:
+      - "Kısa köşe + kale çizgisi yakını dönüş"
+      - "Wing oyuncusu dribling ile kale çizgisine"
+      - "Cut-back alçak orta → penaltı yayına"
+    ideal_attributes: [dribble, technique, cross_quality]
+    counter:
+      - "Kale çizgisine sıkıştır"
+      - "Penaltı yayına ekstra oyuncu"
+
+  # ── SERBEST VURUŞ ──────────────────────────────────────────────────
+  - name: free_kick_direct_shot
+    label: Direk Serbest Vuruş Şutu
+    type: free_kick
+    when_use:
+      - "Vurucu kale önünde 18-30 metre arası"
+      - "Vurucu hassas + güçlü"
+    steps:
+      - "Duvar oluşturulurken vurucu odaklan"
+      - "Kale üst köşesi veya alttan bantı hedefle"
+    ideal_attributes: [shot_power, technique, set_piece]
+    counter:
+      - "Duvar 4-5 kişi (kale + duvar)"
+      - "GK direk arkası pozisyon"
+
+  - name: free_kick_indirect_overload
+    label: Endirek Vuruş Overload
+    type: free_kick
+    when_use:
+      - "Kale çok yakın — direk şut zor"
+      - "Sayı üstünlüğü ceza yayına yığılır"
+    steps:
+      - "Vurucu yan veya geriye pas"
+      - "İkinci oyuncu kale önüne orta"
+      - "Hedef oyuncu(lar) ceza yayına hücum"
+    ideal_attributes: [vision, timing, second_ball]
+    counter:
+      - "Ceza alanı içinde adam adama markaj"
+
+  - name: free_kick_wall_around
+    label: Duvar Etrafından Şut
+    type: free_kick
+    when_use:
+      - "Vurucu top doğal eğri atabilir"
+      - "Duvar kale arkasına çekiyor — yan boşluk"
+    steps:
+      - "Duvar yanına eğri vuruş"
+      - "Top kale içine kıvrılır"
+    ideal_attributes: [technique, curl, accuracy]
+    counter:
+      - "Duvarda en yüksek oyuncu zıplama"
+      - "GK yan köşeye hazır"
+
+  - name: free_kick_wide_cross
+    label: Geniş Pozisyondan Orta
+    type: free_kick
+    when_use:
+      - "Hücum üçünde geniş pozisyon"
+      - "Köşeye benzer yön"
+    steps:
+      - "Vurucu uzun orta (köşe gibi)"
+      - "Kale önüne hücumcular hücum"
+    ideal_attributes: [cross_quality, aerial]
+    counter:
+      - "Zonal + adam karışık savunma"
+
+  # ── TAÇ ATIŞI ──────────────────────────────────────────────────────
+  - name: throw_long_target_man
+    label: Uzun Taç → Hedef Adam
+    type: throw_in
+    when_use:
+      - "Hücum üçü tacı"
+      - "Hedef forvet fizik üstün"
+    steps:
+      - "Uzun taç hedef forvete"
+      - "Hedef üzerine geri pas (header)"
+      - "İkinci dalga şut"
+    ideal_attributes: [long_throw, aerial, hold_up]
+    counter:
+      - "Hedef adamı önce zorla"
+      - "Second ball avcısı hazır"
+
+  - name: throw_short_combination
+    label: Kısa Taç + Kombinasyon
+    type: throw_in
+    when_use:
+      - "Topla kontrol odaklı"
+      - "Hızlı topla geçiş"
+    steps:
+      - "Yakın arkadaşa kısa taç"
+      - "Top kontrolü ile sahanın derinine"
+      - "Kombinasyon (üçüncü oyuncu)"
+    ideal_attributes: [technique, vision]
+    counter:
+      - "Kısa pas hatlarını kapat"
+
+  # ── PENALTI ────────────────────────────────────────────────────────
+  - name: penalty_low_corner
+    label: Penaltı — Aşağı Köşe
+    type: penalty
+    when_use:
+      - "Vurucu power + accuracy"
+      - "Klasik yöntem"
+    steps:
+      - "GK okuma yapamadan sert vuruş"
+      - "Direk veya yan köşe alt"
+    ideal_attributes: [composure, technique]
+    counter:
+      - "GK büyük ihtimal sağ/sol ölü taraf"
+
+  - name: penalty_panenka
+    label: Penaltı — Panenka
+    type: penalty
+    when_use:
+      - "Vurucu cesur + soğukkanlı"
+      - "GK kestirmeye yatkın"
+    steps:
+      - "Yumuşak tok orta (chip)"
+      - "GK önce hareketse top içeride"
+    ideal_attributes: [composure, technique, mind_game]
+    counter:
+      - "GK eğer beklerse Panenka boş kale"
+
+  # ── KICK-OFF ───────────────────────────────────────────────────────
+  - name: kick_off_long_press
+    label: Kickoff — Uzun + Pres
+    type: kick_off
+    when_use:
+      - "Geride iken hızlı dönüş"
+      - "Rakibin çıkışını zorla"
+    steps:
+      - "İlk pas geriye/yana"
+      - "Uzun top + pres + ikinci top avcısı"
+    ideal_attributes: [press_intensity, fitness]
+    counter:
+      - "Uzun topa karşı stoper hazır"
+
+  - name: kick_off_short_possession
+    label: Kickoff — Kısa Possession
+    type: kick_off
+    when_use:
+      - "Topla kontrol + tempo set etme"
+    steps:
+      - "Kısa pas zinciri"
+      - "Ritim yakalama"
+    ideal_attributes: [composure, technique]
+    counter:
+      - "Press anında pres et"

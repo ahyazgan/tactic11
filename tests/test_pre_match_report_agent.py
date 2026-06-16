@@ -116,3 +116,24 @@ def test_run_pre_match_reports_job_registered():
     spec = get("run_pre_match_reports")
     assert spec.name == "run_pre_match_reports"
     assert callable(spec.handler)
+
+
+def test_pre_match_agent_v2_includes_match_plan(session, commentator_stub):
+    """v2: engine.match_plan_builder kompoziti output'a eklenir."""
+    _seed_match_with_history(session, datetime.now(UTC))
+    agent = PreMatchReportAgent(commentator=commentator_stub)
+    assert agent.version == "2"
+    result = agent.run(session, context={
+        "match_external_id": 99,
+        "home_formation": "4-3-3",
+        "away_formation": "5-3-2",
+    })
+    mp = result.output_json.get("match_plan")
+    assert mp is not None
+    assert "headline" in mp
+    assert "matchup_vector" in mp
+    assert "matchup_advice" in mp
+    assert "set_piece_top" in mp
+    assert "plan_lines" in mp
+    # Headline formasyon adlarını içermeli
+    assert "4-3-3" in mp["headline"] and "5-3-2" in mp["headline"]

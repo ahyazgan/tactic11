@@ -1602,8 +1602,6 @@ def decisions_feedback(
         for dtype, b in by_type.items()
     }
     return {"team_id": team_id, "evaluated": len(rows), "by_decision_type": summary}
-
-
 @router.get(
     "/matches/{match_id}/decisions/learning",
     tags=["admin"],
@@ -3787,6 +3785,675 @@ def player_role_endpoint(
         player_id, stats,
         position_group=payload.get("position_group"),
         top_n_secondary=int(payload.get("top_n_secondary", 2)),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/tactical/adaptation",
+    tags=["admin"],
+    summary="In-game rakip stil değişimi detector (snapshot deltası)",
+)
+def adaptation_detector_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {snapshots: [{minute, ppda_normalized, field_tilt_pct,
+                              press_height, direct_play_pct, counter_threat,
+                              high_line_risk}, ...],
+                  thresholds?: {dimension: value}}
+    """
+    from app.engine.adaptation_detector import (
+        SnapshotSample,
+        compute_adaptation,
+    )
+
+    raw = payload.get("snapshots", []) or []
+    samples = [
+        SnapshotSample(
+            minute=float(s.get("minute", 0)),
+            ppda_normalized=float(s.get("ppda_normalized", 0.5)),
+            field_tilt_pct=float(s.get("field_tilt_pct", 0.5)),
+            press_height=float(s.get("press_height", 0.5)),
+            direct_play_pct=float(s.get("direct_play_pct", 0.3)),
+            counter_threat=float(s.get("counter_threat", 0.4)),
+            high_line_risk=float(s.get("high_line_risk", 0.5)),
+        )
+        for s in raw
+    ]
+    thresholds = payload.get("thresholds")
+    result = compute_adaptation(samples, thresholds=thresholds)
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/tactical/set-piece-recommend",
+    tags=["admin"],
+    summary="Set-piece pattern öneri (köşe/serbest/penaltı routine retrieval)",
+)
+def set_piece_library_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        type: 'corner'|'free_kick'|'throw_in'|'penalty'|'kick_off',
+        side?: 'short'|'long',
+        our_attributes?: {aerial: 0.8, technique: 0.7, ...},
+        opponent_style?: 'atletico_compact' | ...,
+        top_n?: int
+    }
+    """
+    from app.engine.set_piece_library import (
+        SetPieceContext,
+        compute_set_piece_recommendation,
+    )
+
+    ctx = SetPieceContext(
+        type=str(payload.get("type", "corner")),
+        side=payload.get("side"),
+        our_attributes={
+            k: float(v) for k, v in (payload.get("our_attributes") or {}).items()
+        },
+        opponent_setpiece_marking=str(
+            payload.get("opponent_setpiece_marking", "mixed"),
+        ),
+        opponent_style=payload.get("opponent_style"),
+    )
+    result = compute_set_piece_recommendation(
+        ctx, top_n=int(payload.get("top_n", 3)),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/tactical/formation-matchup",
+    tags=["admin"],
+    summary="Formasyon × formasyon → 8-vektör beklenti + advice",
+)
+def formation_matchup_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {our_formation: '4-3-3', opp_formation: '4-2-3-1'}."""
+    from app.engine.formation_matchup import compute_formation_matchup
+
+    result = compute_formation_matchup(
+        our_formation=str(payload.get("our_formation", "4-3-3")),
+        opp_formation=str(payload.get("opp_formation", "4-3-3")),
+    )
+    return engine_result_to_dict(result)
+
+
+@router.get(
+    "/tactical/formations",
+    tags=["admin"],
+    summary="Tanımlı formasyon listesi (UI dropdown için)",
+)
+def list_formations_endpoint() -> dict[str, Any]:
+    from app.engine.formation_matchup import list_formations
+    forms = list_formations()
+    return {
+        "formations": [
+            {"id": f.id, "label": f.label, "typical_for": list(f.typical_for)}
+            for f in forms
+        ],
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Maçı Notla — manuel oyuncu notu kaydı + performans serisi
+# --------------------------------------------------------------------------- #
+
+
+@router.post(
+    "/ratings/match",
+    tags=["admin"],
+    summary="Bir maçın oyuncu notlarını kaydet (Maçı Notla — idempotent upsert)",
+)
+def save_match_ratings_endpoint(
+    payload: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """payload: {
+        match_external_id: int,
+        kickoff?: ISO datetime,
+        ratings: [{player_external_id, rating, minute_played?, opp_rating?,
+                   fatigue_proxy?, flags?: {big_match,...}, note?}, ...]
+    }
+    """
+    from datetime import datetime as _dt
+
+    from app.ratings.service import RatingInput, save_match_ratings
+
+    match_id = payload.get("match_external_id")
+    if match_id is None:
+        raise HTTPException(status_code=422, detail="match_external_id zorunlu")
+    raw = payload.get("ratings", []) or []
+    ratings = [
+        RatingInput(
+            player_external_id=int(r["player_external_id"]),
+            rating=float(r.get("rating", 0.0)),
+            minute_played=float(r.get("minute_played", 90.0)),
+            opp_rating=(
+                float(r["opp_rating"]) if r.get("opp_rating") is not None else None
+            ),
+            fatigue_proxy=(
+                float(r["fatigue_proxy"])
+                if r.get("fatigue_proxy") is not None else None
+            ),
+            flags={k: bool(v) for k, v in (r.get("flags") or {}).items()} or None,
+            note=r.get("note"),
+        )
+        for r in raw
+    ]
+    kickoff = None
+    if payload.get("kickoff"):
+        kickoff = _dt.fromisoformat(str(payload["kickoff"]).replace("Z", "+00:00"))
+    result = save_match_ratings(
+        session, match_external_id=int(match_id),
+        ratings=ratings, kickoff=kickoff,
+    )
+    session.commit()
+    return {"match_external_id": int(match_id), **result, "total": len(ratings)}
+
+
+@router.get(
+    "/ratings/match/{match_id}",
+    tags=["admin"],
+    summary="Bir maçın kayıtlı oyuncu notları",
+)
+def get_match_ratings_endpoint(
+    match_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.ratings.service import list_match_ratings, rating_to_dict
+
+    rows = list_match_ratings(session, match_external_id=match_id)
+    return {
+        "match_external_id": match_id,
+        "ratings": [rating_to_dict(r) for r in rows],
+    }
+
+
+@router.get(
+    "/ratings/player/{player_id}",
+    tags=["admin"],
+    summary="Bir oyuncunun kayıtlı not serisi (kronolojik)",
+)
+def get_player_ratings_endpoint(
+    player_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.ratings.service import list_player_ratings, rating_to_dict
+
+    rows = list_player_ratings(session, player_external_id=player_id)
+    return {
+        "player_external_id": player_id,
+        "count": len(rows),
+        "ratings": [rating_to_dict(r) for r in rows],
+    }
+
+
+@router.get(
+    "/ratings/player/{player_id}/performance",
+    tags=["admin"],
+    summary="Kayıtlı seriden O+P+S+T+U motorlarını tek çağrıda çalıştır",
+)
+def player_performance_from_ratings_endpoint(
+    player_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Oyuncunun kayıtlı not serisini tüm performans motorlarına geçirir.
+
+    JSON yapıştırmaya gerek yok — Maçı Notla'da kaydedilen seri otomatik
+    consistency/trajectory/anomaly/clutch/opponent_adjusted'a beslenir.
+    """
+    from app.engine.clutch_performance import (
+        ClutchSample,
+        compute_clutch_performance,
+    )
+    from app.engine.opponent_adjusted_rating import (
+        PerformanceVsOpponent,
+        compute_opponent_adjusted_rating,
+    )
+    from app.engine.performance_anomaly import (
+        PerformancePoint,
+        compute_performance_anomaly,
+    )
+    from app.engine.performance_consistency import (
+        PerformanceSample,
+        compute_performance_consistency,
+    )
+    from app.engine.performance_trajectory import (
+        TrajectoryPoint,
+        compute_performance_trajectory,
+    )
+    from app.ratings.service import list_player_ratings
+
+    rows = list_player_ratings(session, player_external_id=player_id)
+    if not rows:
+        return {"player_external_id": player_id, "count": 0, "results": {}}
+
+    samples = [
+        PerformanceSample(match_id=r.match_external_id, value=r.rating)
+        for r in rows
+    ]
+    points = [
+        TrajectoryPoint(match_id=r.match_external_id, value=r.rating, game_index=i)
+        for i, r in enumerate(rows)
+    ]
+    anomaly_points = [
+        PerformancePoint(
+            match_id=r.match_external_id, rating=r.rating,
+            minute_played=r.minute_played, fatigue_proxy=r.fatigue_proxy,
+        )
+        for r in rows
+    ]
+    results: dict[str, Any] = {
+        "consistency": engine_result_to_dict(
+            compute_performance_consistency(samples),
+        ),
+        "trajectory": engine_result_to_dict(
+            compute_performance_trajectory(points),
+        ),
+        "anomaly": engine_result_to_dict(
+            compute_performance_anomaly(anomaly_points),
+        ),
+    }
+    import json as _json
+
+    clutch_samples = [
+        ClutchSample(
+            match_id=r.match_external_id, rating=r.rating,
+            flags=_json.loads(r.flags_json) if r.flags_json else {},
+        )
+        for r in rows
+    ]
+    results["clutch"] = engine_result_to_dict(
+        compute_clutch_performance(clutch_samples),
+    )
+    adj_samples = [
+        PerformanceVsOpponent(
+            match_id=r.match_external_id, rating=r.rating,
+            opp_rating=r.opp_rating if r.opp_rating is not None else 7.0,
+        )
+        for r in rows
+    ]
+    results["opponent_adjusted"] = engine_result_to_dict(
+        compute_opponent_adjusted_rating(adj_samples),
+    )
+    return {
+        "player_external_id": player_id,
+        "count": len(rows),
+        "results": results,
+    }
+
+
+@router.post(
+    "/performance/opponent-adjusted-rating",
+    tags=["admin"],
+    summary="Rakip gücüne göre düzeltilmiş rating (zor maç bonusu)",
+)
+def performance_opponent_adjusted_rating_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        samples: [{match_id, rating, opp_rating}, ...],
+        beta?: 0.30, league_avg?: 7.00
+    }
+    """
+    from app.engine.opponent_adjusted_rating import (
+        PerformanceVsOpponent,
+        compute_opponent_adjusted_rating,
+    )
+
+    raw = payload.get("samples", []) or []
+    samples = [
+        PerformanceVsOpponent(
+            match_id=int(s.get("match_id", 0)),
+            rating=float(s.get("rating", 0.0)),
+            opp_rating=float(s.get("opp_rating", 7.0)),
+        )
+        for s in raw
+    ]
+    league_avg = payload.get("league_avg")
+    return engine_result_to_dict(compute_opponent_adjusted_rating(
+        samples,
+        beta=float(payload.get("beta", 0.30)),
+        league_avg=float(league_avg) if league_avg is not None else None,
+    ))
+
+
+@router.post(
+    "/performance/clutch",
+    tags=["admin"],
+    summary="Oyuncu clutch performans (kritik anlarda performans katsayısı)",
+)
+def performance_clutch_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {samples: [{match_id, rating, flags: {big_match, close_game,
+                  late_minute, knockout, opp_strong}}, ...]}.
+    """
+    from app.engine.clutch_performance import (
+        ClutchSample,
+        compute_clutch_performance,
+    )
+
+    raw = payload.get("samples", []) or []
+    samples = [
+        ClutchSample(
+            match_id=int(s.get("match_id", 0)),
+            rating=float(s.get("rating", 0.0)),
+            flags={k: bool(v) for k, v in (s.get("flags") or {}).items()},
+        )
+        for s in raw
+    ]
+    return engine_result_to_dict(compute_clutch_performance(samples))
+
+
+@router.post(
+    "/performance/anomaly",
+    tags=["admin"],
+    summary="Oyuncu performans anomali tespiti (sakatlık/fatigue erken uyarı)",
+)
+def performance_anomaly_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        points: [{match_id, rating, minute_played?, fatigue_proxy?}, ...],
+        k_sd?: 1.5,
+        decline_window?: 3
+    }
+    """
+    from app.engine.performance_anomaly import (
+        PerformancePoint,
+        compute_performance_anomaly,
+    )
+
+    raw = payload.get("points", []) or []
+    points = [
+        PerformancePoint(
+            match_id=int(p.get("match_id", 0)),
+            rating=float(p.get("rating", 0.0)),
+            minute_played=float(p.get("minute_played", 90.0)),
+            fatigue_proxy=(
+                float(p["fatigue_proxy"])
+                if p.get("fatigue_proxy") is not None
+                else None
+            ),
+        )
+        for p in raw
+    ]
+    return engine_result_to_dict(compute_performance_anomaly(
+        points,
+        k_sd=float(payload.get("k_sd", 1.5)),
+        decline_window=int(payload.get("decline_window", 3)),
+    ))
+
+
+@router.post(
+    "/performance/team-form-health",
+    tags=["admin"],
+    summary="Takım kadro formu — O+P aggregate, health 0-100",
+)
+def team_form_health_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {players: [{player_id, name, ratings: [7.0, ...],
+                  position_group?}, ...]}.
+    """
+    from app.engine.team_form_health import (
+        PlayerSeries,
+        compute_team_form_health,
+    )
+
+    raw = payload.get("players", []) or []
+    series = [
+        PlayerSeries(
+            player_id=int(p.get("player_id", 0)),
+            name=str(p.get("name", "")),
+            ratings=tuple(float(r) for r in (p.get("ratings") or [])),
+            position_group=str(p.get("position_group", "")),
+        )
+        for p in raw
+    ]
+    return engine_result_to_dict(compute_team_form_health(series))
+
+
+@router.post(
+    "/performance/comparison",
+    tags=["admin"],
+    summary="Multi-oyuncu KPI karşılaştırma (radar + ranking + winner)",
+)
+def performance_comparison_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        players: [{player_id, name, kpis: {...}, position_group?}, ...],
+        kpis?: ["rating", "xt_per_90", ...],
+        weights?: {rating: 1.0, ...}
+    }
+    """
+    from app.engine.player_comparison import (
+        PlayerProfile,
+        compute_player_comparison,
+    )
+
+    raw = payload.get("players", []) or []
+    players = [
+        PlayerProfile(
+            player_id=int(p.get("player_id", 0)),
+            name=str(p.get("name", "")),
+            kpis={k: float(v) for k, v in (p.get("kpis") or {}).items()},
+            position_group=str(p.get("position_group", "")),
+        )
+        for p in raw
+    ]
+    return engine_result_to_dict(compute_player_comparison(
+        players,
+        kpis=payload.get("kpis"),
+        weights=payload.get("weights"),
+    ))
+
+
+@router.post(
+    "/performance/consistency",
+    tags=["admin"],
+    summary="Oyuncu rating tutarlılığı (mean, sd, cv, reliability)",
+)
+def performance_consistency_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {samples: [{match_id, value, minute_played?}, ...]}."""
+    from app.engine.performance_consistency import (
+        PerformanceSample,
+        compute_performance_consistency,
+    )
+
+    raw = payload.get("samples", []) or []
+    samples = [
+        PerformanceSample(
+            match_id=int(s.get("match_id", 0)),
+            value=float(s.get("value", 0.0)),
+            minute_played=float(s.get("minute_played", 90.0)),
+        )
+        for s in raw
+    ]
+    return engine_result_to_dict(compute_performance_consistency(samples))
+
+
+@router.post(
+    "/performance/trajectory",
+    tags=["admin"],
+    summary="Oyuncu performans yönü (slope + projeksiyon + peak/dip)",
+)
+def performance_trajectory_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {points: [{match_id, value, game_index}, ...]}."""
+    from app.engine.performance_trajectory import (
+        TrajectoryPoint,
+        compute_performance_trajectory,
+    )
+
+    raw = payload.get("points", []) or []
+    points = [
+        TrajectoryPoint(
+            match_id=int(p.get("match_id", 0)),
+            value=float(p.get("value", 0.0)),
+            game_index=int(p.get("game_index", i)),
+        )
+        for i, p in enumerate(raw)
+    ]
+    return engine_result_to_dict(compute_performance_trajectory(points))
+
+
+@router.post(
+    "/tactical/in-match-decision",
+    tags=["admin"],
+    summary="Anlık maç durumundan TD için sıralı karar listesi",
+)
+def in_match_decision_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {minute, our_score?, opp_score?, our_xg_running?,
+                  opp_xg_running?, fatigue_avg?, subs_left?,
+                  yellows_in_starting_xi?, opp_subs_used?,
+                  formation_drift_alert?}
+    """
+    from app.engine.in_match_decision import (
+        MatchState,
+        compute_in_match_decisions,
+    )
+
+    state = MatchState(
+        minute=float(payload.get("minute", 60)),
+        our_score=int(payload.get("our_score", 0)),
+        opp_score=int(payload.get("opp_score", 0)),
+        our_xg_running=float(payload.get("our_xg_running", 0.0)),
+        opp_xg_running=float(payload.get("opp_xg_running", 0.0)),
+        fatigue_avg=float(payload.get("fatigue_avg", 0.5)),
+        subs_left=int(payload.get("subs_left", 5)),
+        yellows_in_starting_xi=int(payload.get("yellows_in_starting_xi", 0)),
+        opp_subs_used=int(payload.get("opp_subs_used", 0)),
+        formation_drift_alert=bool(payload.get("formation_drift_alert", False)),
+    )
+    result = compute_in_match_decisions(state)
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/tactical/match-plan",
+    tags=["admin"],
+    summary="H+I+K kompozit — 1-sayfa taktik maç planı",
+)
+def match_plan_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        our_formation: str, opp_formation: str,
+        opponent_style?: str,
+        set_piece_type?: 'corner' | ..., set_piece_side?: 'short' | 'long',
+        our_attributes?: {aerial: 0.8, ...},
+        recent_threat_events?: [{start_y, end_y, threat_weight?, ...}, ...]
+    }
+    """
+    from app.engine.match_plan_builder import MatchPlanContext, compute_match_plan
+    from app.engine.threat_pathway import PathwayEvent
+
+    events_raw = payload.get("recent_threat_events")
+    events: list[PathwayEvent] | None = None
+    if events_raw is not None:
+        events = [
+            PathwayEvent(
+                start_y=float(e.get("start_y", 40)),
+                end_y=float(e.get("end_y", 40)),
+                threat_weight=float(e.get("threat_weight", 0.05)),
+                is_shot=bool(e.get("is_shot", False)),
+                is_assist=bool(e.get("is_assist", False)),
+            )
+            for e in events_raw
+        ]
+
+    ctx = MatchPlanContext(
+        our_formation=str(payload.get("our_formation", "4-3-3")),
+        opp_formation=str(payload.get("opp_formation", "4-3-3")),
+        opponent_style=payload.get("opponent_style"),
+        set_piece_type=str(payload.get("set_piece_type", "corner")),
+        set_piece_side=payload.get("set_piece_side", "long"),
+        our_attributes={
+            k: float(v) for k, v in (payload.get("our_attributes") or {}).items()
+        },
+        recent_threat_events=events,
+    )
+    result = compute_match_plan(ctx)
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/tactical/opportunity-window",
+    tags=["admin"],
+    summary="Maç-içi snapshot serisinden 'şimdi hamle yap' pencereleri",
+)
+def opportunity_window_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {snapshots: [{minute, our_press_intensity?, opp_press_intensity?,
+                              opp_distance_covered?, opp_sub_count_used?,
+                              opp_yellow_count?, opp_red_imminent?,
+                              our_xg_recent_5min?, opp_xg_recent_5min?}, ...]}
+    """
+    from app.engine.opportunity_window import (
+        TacticalSnapshot,
+        compute_opportunity_windows,
+    )
+
+    raw = payload.get("snapshots", []) or []
+    snaps = [
+        TacticalSnapshot(
+            minute=float(s.get("minute", 0)),
+            our_press_intensity=float(s.get("our_press_intensity", 0.5)),
+            opp_press_intensity=float(s.get("opp_press_intensity", 0.5)),
+            opp_distance_covered=float(s.get("opp_distance_covered", 0.7)),
+            opp_sub_count_used=int(s.get("opp_sub_count_used", 0)),
+            opp_yellow_count=int(s.get("opp_yellow_count", 0)),
+            opp_red_imminent=bool(s.get("opp_red_imminent", False)),
+            our_xg_recent_5min=float(s.get("our_xg_recent_5min", 0.0)),
+            opp_xg_recent_5min=float(s.get("opp_xg_recent_5min", 0.0)),
+        )
+        for s in raw
+    ]
+    result = compute_opportunity_windows(snaps)
+    return engine_result_to_dict(result)
+
+
+@router.post(
+    "/tactical/threat-pathway",
+    tags=["admin"],
+    summary="Pas/atak akışından lane bazlı tehlike haritası + advice",
+)
+def threat_pathway_endpoint(
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """payload: {
+        events: [{start_y, end_y, threat_weight?, is_shot?, is_assist?}, ...],
+        perspective?: 'ours' | 'opponent'
+    }
+    """
+    from app.engine.threat_pathway import PathwayEvent, compute_threat_pathway
+
+    raw = payload.get("events", []) or []
+    events = [
+        PathwayEvent(
+            start_y=float(e.get("start_y", 40)),
+            end_y=float(e.get("end_y", 40)),
+            threat_weight=float(e.get("threat_weight", 0.05)),
+            is_shot=bool(e.get("is_shot", False)),
+            is_assist=bool(e.get("is_assist", False)),
+        )
+        for e in raw
+    ]
+    result = compute_threat_pathway(
+        events,
+        perspective=str(payload.get("perspective", "ours")),
     )
     return engine_result_to_dict(result)
 

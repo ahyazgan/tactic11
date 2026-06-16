@@ -28,6 +28,7 @@ from app.ai import AnthropicClient, ClaudeCommentator
 from app.api.serialize import engine_result_to_dict
 from app.db import models
 from app.engine.form import compute_form
+from app.engine.match_plan_builder import MatchPlanContext, compute_match_plan
 from app.engine.opponent import compute_head_to_head
 from app.sports import football
 
@@ -36,7 +37,7 @@ class PreMatchReportAgent(Agent):
     """Maç öncesi brief üretir: form (her iki takım) + h2h + AI sentezi."""
 
     name = "pre_match_report"
-    version = "1"
+    version = "2"  # v2: engine.match_plan_builder kompoziti dahil edildi
 
     def __init__(self, *, commentator: ClaudeCommentator | None = None, last_n: int = 5):
         # commentator opsiyonel — testte stub injekte edilebilir
@@ -95,6 +96,16 @@ class PreMatchReportAgent(Agent):
         )
         h2h = compute_head_to_head(home_id, away_id, h2h_matches)
 
+        # v2: Match plan kompoziti (preview için ev sahibinin penceresi)
+        plan = compute_match_plan(MatchPlanContext(
+            our_formation=str(context.get("home_formation", "4-3-3")),
+            opp_formation=str(context.get("away_formation", "4-3-3")),
+            opponent_style=context.get("away_style"),
+            set_piece_type="corner",
+            set_piece_side="long",
+            our_attributes={"aerial": 0.7, "set_piece": 0.65, "technique": 0.7},
+        )).value
+
         # AI brief — ANTHROPIC_API_KEY yoksa stub döner (commentator.explain_match_preview)
         ai_brief = self._commentator.explain_match_preview(
             home_form=home_form,
@@ -113,6 +124,13 @@ class PreMatchReportAgent(Agent):
             "home_form": engine_result_to_dict(home_form),
             "away_form": engine_result_to_dict(away_form),
             "head_to_head": engine_result_to_dict(h2h),
+            "match_plan": {
+                "headline": plan.headline,
+                "matchup_vector": plan.matchup_vector,
+                "matchup_advice": list(plan.matchup_advice),
+                "set_piece_top": list(plan.set_piece_top),
+                "plan_lines": list(plan.plan_lines),
+            },
             "ai_brief": ai_brief,
         }
         # Summary — kısa metin (dashboard/Slack için)
