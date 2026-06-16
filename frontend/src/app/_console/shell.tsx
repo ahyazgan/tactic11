@@ -69,8 +69,11 @@ const FULL_NAV: NavGroup[] = [
   { grp: "Zekâ & Rapor", items: [
     { label: "Kontrol Paneli",   href: "/overview",       icon: "ti-layout-dashboard" },
     { label: "Komuta Merkezi",   href: "/command",        icon: "ti-brain", badge: "AI", badgeKind: "ai" },
+    { label: "Taktik Komuta",    href: "/taktik-komuta",  icon: "ti-strategy", badge: "AI", badgeKind: "ai" },
     { label: "Teknik Direktör",  href: "/coach",          icon: "ti-user-star", badge: "STRATEJİ", badgeKind: "ai" },
     { label: "AI Asistan",       href: "/chat",           icon: "ti-robot", badge: "AI", badgeKind: "ai" },
+    { label: "Maçı Notla",       href: "/mac-notla",      icon: "ti-edit", badge: "YENİ", badgeKind: "new" },
+    { label: "Oyuncu Performansı", href: "/performans",   icon: "ti-user-check" },
     { label: "Performans Analizi", href: "/xg",           icon: "ti-chart-line" },
     { label: "Haftalık Rapor",   href: "/weekly-report",  icon: "ti-report-analytics" },
   ]},
@@ -104,6 +107,11 @@ const FULL_NAV: NavGroup[] = [
 
 const NAV = FULL_NAV;
 
+export interface Crumb {
+  label: string;
+  href?: string;
+}
+
 export interface ConsoleShellProps {
   active: string;
   title: string;
@@ -112,13 +120,25 @@ export interface ConsoleShellProps {
   navBadge?: number;
   /** Bu sayfanın verisini hangi kaynak(lar)dan aldığını başlık altında işaretler. */
   source?: SourceId | SourceId[];
+  /**
+   * Başlık üstü breadcrumb. Verilmezse aktif sayfanın NAV grubundan otomatik
+   * türetilir ("Grup / Sayfa") — 46 sayfalık IA'da konum hissi verir.
+   */
+  crumbs?: Crumb[];
   right?: React.ReactNode;
   children: React.ReactNode;
 }
 
+/** active href'i NAV gruplarında bulup "Grup / Başlık" breadcrumb'u üretir. */
+function autoCrumbs(active: string, title: string): Crumb[] {
+  const grp = NAV.find((g) => g.items.some((it) => it.href === active));
+  return grp ? [{ label: grp.grp }, { label: title }] : [{ label: title }];
+}
+
 export function ConsoleShell({
-  active, title, sub, desc, navBadge, source, right, children,
+  active, title, sub, desc, navBadge, source, crumbs, right, children,
 }: ConsoleShellProps) {
+  const trail = crumbs ?? autoCrumbs(active, title);
   // Tablet/mobil: sidebar çekmece (drawer) olarak açılır.
   const [menuOpen, setMenuOpen] = React.useState(false);
 
@@ -209,6 +229,25 @@ export function ConsoleShell({
         {/* Orta */}
         <main className="center">
           <div className="pghdr">
+            {trail.length > 1 && (
+              <nav className="pgcrumb" aria-label="breadcrumb">
+                {trail.map((c, i) => {
+                  const last = i === trail.length - 1;
+                  return (
+                    <React.Fragment key={`${c.label}-${i}`}>
+                      {i > 0 && <span className="pgcrumb-sep" aria-hidden="true">/</span>}
+                      {c.href && !last ? (
+                        <Link href={c.href}>{c.label}</Link>
+                      ) : (
+                        <span className={last ? "crumb-current" : undefined} aria-current={last ? "page" : undefined}>
+                          {c.label}
+                        </span>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </nav>
+            )}
             <div className="pgttl">
               <h1>{title}</h1>
               {sub && <span className="pg-badge">{sub}</span>}
@@ -499,6 +538,11 @@ const CSS = `
 .ovroot .center::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
 .ovroot .pghdr{margin-bottom:18px}
+.ovroot .pgcrumb{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:11.5px;color:var(--dim);margin-bottom:6px}
+.ovroot .pgcrumb a{color:var(--muted);text-decoration:none;transition:color .12s}
+.ovroot .pgcrumb a:hover{color:var(--accent)}
+.ovroot .pgcrumb .pgcrumb-sep{color:var(--dim)}
+.ovroot .pgcrumb .crumb-current{color:var(--ink);font-weight:600}
 .ovroot .pgttl{display:flex;align-items:center;gap:10px;margin-bottom:5px}
 .ovroot .pgttl h1{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-0.5px}
 .ovroot .pg-badge{
