@@ -18,6 +18,7 @@ import { DEMO_MODE } from "@/lib/demo-mode";
 import { Crest } from "@/lib/teams";
 import { compareDna, weaknessMap, matchPlan } from "@/lib/tactical-dna";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 import { DnaComparisonBody, MatchPlanBody } from "../_console/tactical-radar";
 import { TacticalDeepDive } from "../_console/tactical-deepdive";
 
@@ -333,8 +334,8 @@ export default function OpponentConsolePage() {
       )}
 
       {!DEMO_MODE && !q && <div className="pgdesc">İki takım ID gir (bizim + rakip).</div>}
-      {!DEMO_MODE && q && isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
-      {!DEMO_MODE && error && <div className="pgdesc">Analiz üretilemedi ya da yetki yok.</div>}
+      {!DEMO_MODE && q && isLoading && <LoadingState label="Hesaplanıyor…" />}
+      {!DEMO_MODE && error && <ErrorState title="Analiz üretilemedi ya da yetki yok." />}
       {!DEMO_MODE && data?.note && <div className="pgdesc">{data.note}</div>}
 
       {/* DEMO: zengin scout şeridi */}

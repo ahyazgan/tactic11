@@ -22,6 +22,7 @@ import {
   type SmStandingsResp,
 } from "@/lib/sportmonks";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
 interface League {
@@ -257,8 +258,8 @@ export default function LeaguesConsolePage() {
       source="api_football"
       right={right}
     >
-      {!DEMO_MODE && isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {!DEMO_MODE && error && <div className="pgdesc">Yüklenemedi ya da yetki yok.</div>}
+      {!DEMO_MODE && isLoading && <LoadingState />}
+      {!DEMO_MODE && error && <ErrorState title="Yüklenemedi ya da yetki yok." />}
 
       <div className="kpis">
         <div className="kpi"><div className="kl">Lig</div><div className="kn" style={{ fontSize: 20 }}>{DEMO_MODE ? "Süper Lig" : isLive ? `Lig #${SM_LEAGUE_ID}` : "Süper Lig"}</div><div className="kd">{DEMO_MODE ? "Türkiye · 2025/26" : `sezon ${SM_SEASON}/${(SM_SEASON + 1) % 100}`}</div></div>

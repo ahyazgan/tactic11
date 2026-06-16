@@ -25,6 +25,7 @@ import {
 import { defensiveSetPiece, type SpRiskLevel } from "@/lib/set-piece";
 import { SetPieceZoneMap } from "@/components/charts/SetPieceZoneMap";
 import { ConsoleShell } from "../../../_console/shell";
+import { LoadingState } from "@/components/ui";
 
 const SP_RISK_VAR: Record<SpRiskLevel, string> = { "düşük": "var(--low)", "orta": "var(--mid)", "yüksek": "var(--crit)" };
 
@@ -486,7 +487,7 @@ function SetPieceRoutineLive() {
       </div>
 
       {error && <div className="pgdesc">Yüklenemedi: {String(error)}</div>}
-      {isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
+      {isLoading && <LoadingState label="Hesaplanıyor…" />}
       {data?.note && <div className="pgdesc">{data.note}</div>}
 
       {data?.value && (

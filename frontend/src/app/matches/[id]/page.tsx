@@ -27,6 +27,7 @@ import {
   type SquadPlayer,
 } from "@/lib/demo-data";
 import { ConsoleShell } from "../../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 
 interface PredictResponse {
   value: {
@@ -417,7 +418,7 @@ function MatchLive({ matchId }: { matchId: string }) {
       source={["statsbomb", "xg_model"]}
       right={right}
     >
-      {error && <div className="pgdesc">Tahmin alınamadı: {String(error)}</div>}
+      {error && <ErrorState title="Tahmin alınamadı" error={error} />}
 
       {v && (
         <>
@@ -445,7 +446,7 @@ function MatchLive({ matchId }: { matchId: string }) {
           </div>
         </>
       )}
-      {!v && !error && <div className="pgdesc">Tahmin yükleniyor…</div>}
+      {!v && !error && <LoadingState label="Tahmin yükleniyor…" />}
     </ConsoleShell>
   );
 }

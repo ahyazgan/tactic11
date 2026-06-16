@@ -19,6 +19,7 @@ import { DEMO_CLUB } from "@/lib/demo-data";
 import { Crest } from "@/lib/teams";
 import { SM_TEAM_ID, type SmMatch, type SmScheduleResp } from "@/lib/sportmonks";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 
 interface ScheduleResp {
   value?: { next_kickoffs?: string[] };
@@ -480,8 +481,8 @@ export default function MatchesConsolePage() {
         <div className="kpi"><div className="kl">Takım</div><div className="kn">#{team}</div><div className="kd">seçili</div></div>
       </div>
 
-      {isLoading && <div className="pgdesc">Program yükleniyor…</div>}
-      {error && <div className="pgdesc">Program verisi alınamadı (sync_league çalıştırıldı mı?).</div>}
+      {isLoading && <LoadingState label="Program yükleniyor…" />}
+      {error && <ErrorState title="Program verisi alınamadı (sync_league çalıştırıldı mı?)." />}
 
       <div className="st"><h2>Yaklaşan Maçlar</h2><span className="ep">GET /teams/{team}/schedule</span></div>
       <div className="tbl">

@@ -26,6 +26,7 @@ import {
 } from "@/lib/demo-data";
 import { MiniPitch } from "@/components/charts/MiniPitch";
 import { ConsoleShell } from "../../../../../_console/shell";
+import { LoadingState, EmptyState } from "@/components/ui";
 
 interface SuboptimalPass {
   minute: number;
@@ -256,8 +257,8 @@ export default function PlayerFeedbackConsolePage() {
   return (
     <ConsoleShell active="/matches" title={title} sub="Maç feedback" desc={data ? `${data.minutes_played ?? 0} dk · ${data.events_loaded ?? 0} event` : "Oyuncu maç-sonu analizi."} right={right}>
       {error && <div className="pgdesc">Yüklenemedi: {String(error)}</div>}
-      {isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {data?.events_loaded === 0 && <div className="pgdesc">{data.note ?? "Bu maç için event ingest yok."}</div>}
+      {isLoading && <LoadingState />}
+      {data?.events_loaded === 0 && <EmptyState title={data.note ?? "Bu maç için event ingest yok."} />}
 
       {m && (
         <>

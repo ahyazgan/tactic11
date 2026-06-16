@@ -13,6 +13,7 @@ import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { DemoLiveBanner } from "@/lib/demo-live-banner";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 
 interface Channel {
   name: string;
@@ -113,8 +114,8 @@ export default function NotificationsConsolePage() {
       </div>
 
       <div className="st"><h2>Kanallar</h2><span className="ep">{useDemo ? "örnek veri (env'de kanal yapılandırılmadı)" : "GET /admin/notifications/status"}</span></div>
-      {isLoading && !useDemo && <div className="pgdesc">Yükleniyor…</div>}
-      {error && !useDemo && <div className="pgdesc">Durum alınamadı ya da yetki yok.</div>}
+      {isLoading && !useDemo && <LoadingState />}
+      {error && !useDemo && <ErrorState title="Durum alınamadı ya da yetki yok." />}
       <div className="tbl">
         <table>
           <thead><tr><th>Kanal</th><th className="r">Durum</th></tr></thead>

@@ -15,6 +15,7 @@ import useSWR, { mutate as swrMutate } from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../../_console/shell";
+import { LoadingState } from "@/components/ui";
 
 interface DecisionRow {
   id: number;
@@ -480,7 +481,7 @@ export default function DecisionsTrackPage() {
     return (
       <ConsoleShell active="/decisions/track" title="Karar Takip"
         sub="GET /admin/decisions/recent" right={right}>
-        <div className="pgdesc">Yükleniyor…</div>
+        <LoadingState />
       </ConsoleShell>
     );
   }

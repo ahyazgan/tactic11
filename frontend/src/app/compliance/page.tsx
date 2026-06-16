@@ -13,6 +13,7 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 
 interface LogEntry {
   user_id: string | null;
@@ -147,8 +148,8 @@ export default function ComplianceConsolePage() {
       </div>
 
       <div className="st"><h2>Erişim Kayıtları</h2><span className="ep">{useDemo ? "örnek veri (backend'te kayıt yok)" : "GET /admin/compliance/access-log"}</span></div>
-      {log.isLoading && !useDemo && <div className="pgdesc">Yükleniyor…</div>}
-      {log.error && !useDemo && <div className="pgdesc">Kayıt alınamadı ya da yetki yok (admin).</div>}
+      {log.isLoading && !useDemo && <LoadingState />}
+      {log.error && !useDemo && <ErrorState title="Kayıt alınamadı ya da yetki yok (admin)." />}
       <div className="tbl">
         <table>
           <thead><tr>

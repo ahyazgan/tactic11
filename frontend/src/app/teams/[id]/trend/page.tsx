@@ -19,6 +19,7 @@ import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { DEMO_CLUB, DEMO_OPPONENT } from "@/lib/demo-data";
 import { ConsoleShell } from "../../../_console/shell";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui";
 
 // --------------------------------------------------------------------------- //
 // Canlı-API tipleri (DEMO kapalıyken korunur)
@@ -433,10 +434,10 @@ export default function TacticalTrendPage() {
       right={right}
     >
       {/* DEMO kapalı: yükleme / hata / boş durumları */}
-      {!DEMO_MODE && isLoading && <div className="pgdesc">Trend hesaplanıyor…</div>}
-      {!DEMO_MODE && error && <div className="pgdesc">Trend verisi alınamadı ya da yetki yok.</div>}
+      {!DEMO_MODE && isLoading && <LoadingState label="Trend hesaplanıyor…" />}
+      {!DEMO_MODE && error && <ErrorState title="Trend verisi alınamadı ya da yetki yok." />}
       {!DEMO_MODE && resp && resp.matches_analyzed === 0 && (
-        <div className="pgdesc">{resp.note || "Yeterli maç verisi yok."}</div>
+        <EmptyState title={resp.note || "Yeterli maç verisi yok."} />
       )}
 
       {resp && resp.matches_analyzed > 0 && (

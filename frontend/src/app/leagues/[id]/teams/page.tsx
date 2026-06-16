@@ -25,6 +25,7 @@ import {
 import { Crest } from "@/lib/teams";
 import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../../../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 import { RiskDonut, LegendRow } from "../../../_console/viz";
 
 interface League { external_id: number; name: string; season: number; country: string | null }
@@ -375,8 +376,8 @@ function LeagueTeamsLive() {
       desc="Bu ligdeki takımlar. Takım detayı için bir satıra tıkla."
       right={right}
     >
-      {isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {error && <div className="pgdesc">Yüklenemedi ya da yetki yok.</div>}
+      {isLoading && <LoadingState />}
+      {error && <ErrorState title="Yüklenemedi ya da yetki yok." />}
       <div className="st" style={{ marginTop: 0 }}><h2>Takım Listesi</h2><span className="ep">GET /teams/{leagueId}</span></div>
       <div className="tbl">
         <table>

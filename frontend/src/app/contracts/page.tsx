@@ -13,6 +13,7 @@ import { demoSquad } from "@/lib/demo-data";
 import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { DemoLiveBanner } from "@/lib/demo-live-banner";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 
 interface Alert {
   player_external_id: number;
@@ -163,8 +164,8 @@ export default function ContractsConsolePage() {
       </div>
 
       <div className="st"><h2>Uyarılar</h2><span className="ep">{useDemo ? "örnek veri (backend'te kayıt yok)" : "GET /players/contract-alerts"}</span></div>
-      {isLoading && !useDemo && <div className="pgdesc">Yükleniyor…</div>}
-      {error && !useDemo && <div className="pgdesc">Sözleşme verisi yok ya da yetki yok.</div>}
+      {isLoading && !useDemo && <LoadingState />}
+      {error && !useDemo && <ErrorState title="Sözleşme verisi yok ya da yetki yok." />}
       <div className="tbl">
         <table>
           <thead><tr>

@@ -21,6 +21,7 @@ import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../../_console/shell";
+import { LoadingState } from "@/components/ui";
 
 const DEFAULT_MATCH_ID = 9300;
 const DEFAULT_TEAM_ID = 11;
@@ -1382,7 +1383,7 @@ export default function LiveDecisionPage() {
     return (
       <ConsoleShell active="/decisions/live" title="Maç-içi Karar"
         sub="GET /admin/matches/{id}/live-decision" right={right}>
-        <div className="pgdesc">Yükleniyor…</div>
+        <LoadingState />
       </ConsoleShell>
     );
   }

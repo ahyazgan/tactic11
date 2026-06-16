@@ -13,6 +13,7 @@ import { DEMO_MODE } from "@/lib/demo-mode";
 import { jobLabel } from "@/lib/labels";
 import { useSort, SortableTh, sortCompare } from "@/lib/sortable";
 import { ConsoleShell } from "../_console/shell";
+import { ErrorState } from "@/components/ui";
 
 interface JobRow {
   id: number;
@@ -127,7 +128,7 @@ function AdminConsoleContent() {
       </div>
 
       <div className="st"><h2>Son Job Geçmişi</h2><span className="ep">GET /admin/jobs</span></div>
-      {jobsError && <div className="pgdesc">Job geçmişi alınamadı ya da yetki yok.</div>}
+      {jobsError && <ErrorState title="Job geçmişi alınamadı ya da yetki yok." />}
       <div className="tbl">
         <table>
           <thead><tr>

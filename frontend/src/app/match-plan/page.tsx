@@ -15,6 +15,7 @@ import { demoPlan, demoWeaknesses, demoMatchups, demoScenarios, DEMO_OPPONENT } 
 import { demoNextMatchSimulation } from "@/lib/match-simulation";
 import { demoTrackRecord } from "@/lib/track-record";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 import { MatchSimBody } from "../_console/match-sim";
 import { TrackRecordBadge } from "../_console/track-record";
 
@@ -211,8 +212,8 @@ export default function MatchPlanConsolePage() {
       )}
 
       {!DEMO_MODE && !query && <div className="pgdesc">Canlı senaryo için bir maç ID gir.</div>}
-      {!DEMO_MODE && query && plan.isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {!DEMO_MODE && query && plan.error && <div className="pgdesc">Bu maç için kayıtlı plan yok ya da maç bulunamadı.</div>}
+      {!DEMO_MODE && query && plan.isLoading && <LoadingState label="Plan yükleniyor…" />}
+      {!DEMO_MODE && query && plan.error && <ErrorState title="Bu maç için kayıtlı plan yok ya da maç bulunamadı." />}
       {!DEMO_MODE && query && <PreMatchBriefCard matchId={query} />}
       {!DEMO_MODE && query && <PreMatchIntelCard ourTeamId="217" oppTeamId="206" />}
 

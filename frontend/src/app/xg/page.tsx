@@ -17,6 +17,7 @@ import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoLive, DEMO_CLUB, DEMO_OPPONENT, type LivePlayerImpact } from "@/lib/demo-data";
 import { useSort, SortableTh } from "@/lib/sortable";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 
 interface XgResp {
   team_id: number;
@@ -647,8 +648,8 @@ export default function XgConsolePage() {
       </div>
 
       {!DEMO_MODE && !team && <div className="pgdesc">Analiz için bir takım ID gir (örn. 611) ve dönem seç.</div>}
-      {!DEMO_MODE && team && isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
-      {!DEMO_MODE && error && <div className="pgdesc">xG verisi üretilemedi ya da yetki yok.</div>}
+      {!DEMO_MODE && team && isLoading && <LoadingState label="Hesaplanıyor…" />}
+      {!DEMO_MODE && error && <ErrorState title="xG verisi üretilemedi ya da yetki yok." />}
       {!DEMO_MODE && data?.note && <div className="pgdesc">{data.note}</div>}
 
       {has && (

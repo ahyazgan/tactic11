@@ -16,6 +16,7 @@ import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoSquad, demoLive, DEMO_CLUB, DEMO_OPPONENT, type SquadPlayer } from "@/lib/demo-data";
 import { ConsoleShell } from "../../../_console/shell";
+import { LoadingState } from "@/components/ui";
 
 interface Scenario {
   out_player_id: number;
@@ -352,7 +353,7 @@ export default function SubChessConsolePage() {
       right={right}
     >
       {error && <div className="pgdesc">Yüklenemedi: {String(error)}</div>}
-      {isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
+      {isLoading && <LoadingState label="Hesaplanıyor…" />}
       {isEvent0 && <div className="pgdesc">{data?.note}</div>}
 
       {data?.value && data.value.scenarios.length > 0 && (

@@ -23,6 +23,7 @@ import {
   demoMatchups,
 } from "@/lib/demo-data";
 import { ConsoleShell } from "../../../_console/shell";
+import { LoadingState, EmptyState } from "@/components/ui";
 
 interface Drill { name: string; focus: string; rationale: string; duration_min: string }
 interface OpponentProfile {
@@ -214,8 +215,8 @@ export default function TrainingPlanConsolePage() {
         <div className="pgdesc"><code style={{ fontFamily: "JetBrains Mono" }}>?opponent_id=&lt;N&gt;</code> parametresi gerekli (Antrenman ekranından gel).</div>
       )}
       {!DEMO_MODE && error && <div className="pgdesc">Yüklenemedi: {String(error)}</div>}
-      {!DEMO_MODE && isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {!DEMO_MODE && data && (data.events_loaded ?? 0) === 0 && <div className="pgdesc">{data.note ?? "Veri yok."}</div>}
+      {!DEMO_MODE && isLoading && <LoadingState />}
+      {!DEMO_MODE && data && (data.events_loaded ?? 0) === 0 && <EmptyState title={data.note ?? "Veri yok."} />}
 
       {op && (
         <>

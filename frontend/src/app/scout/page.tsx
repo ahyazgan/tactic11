@@ -21,6 +21,7 @@ import { DEMO_MODE } from "@/lib/demo-mode";
 import { useProviderAccess, ProviderConnect, ProviderConnectedBar } from "@/lib/provider-access";
 import { PlayerAvatar } from "@/lib/player-avatar";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui";
 
 interface SimMatch {
   player_external_id: number;
@@ -463,9 +464,9 @@ function ScoutLive() {
       </div>
 
       {!query && <div className="pgdesc">Benzerlik analizi için bir hedef oyuncu ID gir.</div>}
-      {query && sim.isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
-      {query && sim.error && <div className="pgdesc">Bu oyuncu için maç verisi yok ya da aday havuzu yetersiz.</div>}
-      {sim.data && matches.length === 0 && !sim.isLoading && <div className="pgdesc">Yeterli benzer aday bulunamadı.</div>}
+      {query && sim.isLoading && <LoadingState label="Hesaplanıyor…" />}
+      {query && sim.error && <ErrorState title="Bu oyuncu için maç verisi yok ya da aday havuzu yetersiz." />}
+      {sim.data && matches.length === 0 && !sim.isLoading && <EmptyState title="Yeterli benzer aday bulunamadı." />}
 
       {sim.data && matches.length > 0 && (
         <>

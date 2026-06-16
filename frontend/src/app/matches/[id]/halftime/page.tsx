@@ -29,6 +29,7 @@ import {
   halftimeSubs, halftimeMoves, halftimeBrief, type HtMove,
 } from "@/lib/halftime-advice";
 import { ConsoleShell } from "../../../_console/shell";
+import { LoadingState } from "@/components/ui";
 
 interface HalftimeBrief {
   match_external_id: number;
@@ -116,7 +117,7 @@ function HalftimeApiView() {
   if (isLoading || !data) {
     return (
       <ConsoleShell active="/matches" title={`Devre Arası — Maç #${matchId}`} sub={`Takım #${myTeam}`}>
-        <div className="pgdesc">Yükleniyor…</div>
+        <LoadingState />
       </ConsoleShell>
     );
   }

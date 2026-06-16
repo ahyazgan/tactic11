@@ -14,6 +14,7 @@ import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { DEMO_CLUB, DEMO_OPPONENT } from "@/lib/demo-data";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 
 interface League { external_id: number; name: string }
 interface Team { external_id: number; name: string }
@@ -384,8 +385,8 @@ export default function H2HConsolePage() {
         </div>
       </div>
 
-      {go && isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {error && <div className="pgdesc">Yüklenemedi ya da yetki yok.</div>}
+      {go && isLoading && <LoadingState />}
+      {error && <ErrorState title="Yüklenemedi ya da yetki yok." />}
 
       {v && (
         <>

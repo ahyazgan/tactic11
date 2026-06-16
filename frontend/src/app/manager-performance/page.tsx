@@ -15,6 +15,7 @@ import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { DEMO_CLUB } from "@/lib/demo-data";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 
 interface PerMatch {
   match_id: number;
@@ -305,8 +306,8 @@ export default function ManagerPerfConsolePage() {
       </div>
 
       {!DEMO_MODE && !team && <div className="pgdesc">Bir takım ID gir (örn. 611) ve dönem seç.</div>}
-      {!DEMO_MODE && team && isLoading && <div className="pgdesc">Hesaplanıyor…</div>}
-      {!DEMO_MODE && error && <div className="pgdesc">Veri üretilemedi ya da yetki yok.</div>}
+      {!DEMO_MODE && team && isLoading && <LoadingState label="Hesaplanıyor…" />}
+      {!DEMO_MODE && error && <ErrorState title="Veri üretilemedi ya da yetki yok." />}
 
       {has && (
         <>

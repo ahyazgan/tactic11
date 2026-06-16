@@ -20,6 +20,7 @@ import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { topRiskPlayers, LEVEL_VAR, LEVEL_LABEL } from "@/lib/injury-risk";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState, EmptyState } from "@/components/ui";
 import { RiskDonut, LegendRow } from "../_console/viz";
 
 interface Rehab {
@@ -411,8 +412,8 @@ function MedicalLive() {
       </div>
 
       <div className="st"><h2>Aktif Sakatlıklar</h2><span className="ep">GET /rehab/active</span></div>
-      {team.isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {team.error && <div className="pgdesc">Liste alınamadı ya da yetki yok.</div>}
+      {team.isLoading && <LoadingState />}
+      {team.error && <ErrorState title="Liste alınamadı ya da yetki yok." />}
       <div className="tbl">
         <table>
           <thead><tr>
@@ -458,8 +459,8 @@ function MedicalLive() {
         </form>
       </div>
       {!query && <div className="pgdesc">Bir oyuncunun rehab geçmişi için ID gir; sağdaki formla yeni kayıt ekleyebilirsin.</div>}
-      {query && rehab.isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {query && !rehab.isLoading && rows.length === 0 && <div className="pgdesc">#{query} için aktif rehab kaydı yok.</div>}
+      {query && rehab.isLoading && <LoadingState />}
+      {query && !rehab.isLoading && rows.length === 0 && <EmptyState title={`#${query} için aktif rehab kaydı yok.`} />}
       {rows.length > 0 && (
         <div className="tbl">
           <table>

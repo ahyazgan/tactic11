@@ -17,6 +17,7 @@ import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoDecisions, demoDecisionSummary, type DecisionCard, type Urgency } from "@/lib/demo-data";
 import { engineLabel } from "@/lib/labels";
 import { ConsoleShell } from "../_console/shell";
+import { LoadingState, ErrorState } from "@/components/ui";
 
 const URGENCY_VAR: Record<Urgency, string> = {
   "kritik": "var(--crit)",
@@ -217,8 +218,8 @@ function LiveAgentOutputs() {
   return (
     <ConsoleShell active="/decisions" title="Kararlar" sub="Agent çıktıları"
       desc="Son agent çıktıları — lineup, sub advice, tactical adjustment, injury load." right={right}>
-      {isLoading && <div className="pgdesc">Yükleniyor…</div>}
-      {error && <div className="pgdesc">Yüklenemedi ya da yetki yok.</div>}
+      {isLoading && <LoadingState />}
+      {error && <ErrorState title="Yüklenemedi ya da yetki yok." />}
       <div className="st" style={{ marginTop: 0 }}><h2>Son Çıktılar</h2><span className="ep">GET /admin/agent-outputs</span></div>
       <div className="tbl">
         <table>
