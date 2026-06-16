@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ConsoleShell } from "../_console/shell";
 import { Panel, Pill, StatTile } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 
@@ -177,13 +178,12 @@ export default function TaktikKomutaPage() {
   }
 
   return (
-    <main className="max-w-6xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Taktik Komuta</h1>
-        <p className="text-sm text-muted">
-          Maç planı + canlı fırsat penceresi + TD karar danışmanı — H/I/K/L/M/N motorları tek yerde.
-        </p>
-      </div>
+    <ConsoleShell
+      active="/taktik-komuta"
+      title="Taktik Komuta"
+      desc="Maç planı + canlı fırsat penceresi + TD karar danışmanı — H/I/K/L/M/N motorları tek yerde."
+    >
+      <div className="space-y-6">
 
       {/* Section 1 — Match Plan */}
       <Panel title="1. Maç Planı (H+I+K kompozit)">
@@ -404,6 +404,7 @@ export default function TaktikKomutaPage() {
           </div>
         )}
       </Panel>
-    </main>
+      </div>
+    </ConsoleShell>
   );
 }

@@ -5,6 +5,7 @@ import { PerformanceTrajectoryChart } from "@/components/charts/PerformanceTraje
 import { PlayerComparisonRadar } from "@/components/charts/PlayerComparisonRadar";
 import { TeamHealthGauge } from "@/components/charts/TeamHealthGauge";
 import { Panel, Pill, Sparkline, StatTile } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
 import { apiFetch } from "@/lib/api";
 
 interface ConsistencyResult {
@@ -469,15 +470,12 @@ export default function PerformansPage() {
   }
 
   return (
-    <main className="max-w-6xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Performans Analizi</h1>
-        <p className="text-sm text-muted">
-          Oyuncu rating serisinden tutarlılık (O) + yön/projeksiyon (P).
-          Maç-maç rating'leri yapıştır → reliability + trajectory + RTM uyarısı.
-        </p>
-      </div>
-
+    <ConsoleShell
+      active="/performans"
+      title="Performans Analizi"
+      desc="Oyuncu rating serisinden tutarlılık (O) + yön/projeksiyon (P). Maç-maç rating'leri yapıştır → reliability + trajectory + RTM uyarısı."
+    >
+      <div className="space-y-6">
       <Panel title="Kayıtlı veriden yükle (Maçı Notla → bu sayfa)">
         <p className="text-xs text-muted mb-3">
           /mac-notla'da kaydettiğin bir oyuncunun ID'sini gir → tüm performans
@@ -1162,7 +1160,8 @@ export default function PerformansPage() {
           </p>
         </Panel>
       )}
-    </main>
+      </div>
+    </ConsoleShell>
   );
 }
 

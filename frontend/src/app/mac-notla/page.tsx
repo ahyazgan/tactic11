@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Panel, Pill } from "@/components/ui";
+import { ConsoleShell } from "../_console/shell";
+import { Panel, Pill, EmptyState, LoadingState } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 
 interface PlayerRow {
@@ -151,16 +152,12 @@ export default function MacNotlaPage() {
   }
 
   return (
-    <main className="max-w-5xl mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Maçı Notla</h1>
-        <p className="text-sm text-muted">
-          Oyuncuları 1-10 notla + maç bağlamını işaretle → kaydet. Kaydedilen
-          seri tüm performans motorlarını (tutarlılık / yön / anomali / clutch /
-          rakibe göre) otomatik besler.
-        </p>
-      </div>
-
+    <ConsoleShell
+      active="/mac-notla"
+      title="Maçı Notla"
+      desc="Oyuncuları 1-10 notla + maç bağlamını işaretle → kaydet. Kaydedilen seri tüm performans motorlarını (tutarlılık / yön / anomali / clutch / rakibe göre) otomatik besler."
+    >
+      <div className="space-y-6">
       <Panel title="Maç bilgisi">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
           <label className="flex flex-col text-xs">
@@ -335,11 +332,16 @@ export default function MacNotlaPage() {
           </button>
         </div>
 
-        {perf && perf.count === 0 && (
-          <p className="text-sm text-muted">Bu oyuncu için kayıtlı not yok.</p>
+        {perfLoading && <LoadingState label="Performans hesaplanıyor…" />}
+
+        {!perfLoading && perf && perf.count === 0 && (
+          <EmptyState
+            title="Kayıtlı not yok"
+            hint="Bu oyuncu için henüz maç notu girilmemiş. Yukarıdan notları kaydet, sonra tekrar getir."
+          />
         )}
 
-        {perf && perf.count > 0 && (
+        {!perfLoading && perf && perf.count > 0 && (
           <div className="space-y-2 text-sm">
             <p className="text-xs text-muted">{perf.count} maç notu üzerinden:</p>
             {perf.results.consistency && (
@@ -389,6 +391,7 @@ export default function MacNotlaPage() {
           </div>
         )}
       </Panel>
-    </main>
+      </div>
+    </ConsoleShell>
   );
 }
