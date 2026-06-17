@@ -52,6 +52,7 @@ from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.sportmonks_catalog import media_router, sportmonks_router
 from app.api.serialize import engine_result_to_dict
 from app.api.shared import router as shared_router
+from app.audit import EngineResult
 from app.api.sprint3 import router as sprint3_router
 from app.api.sprint4 import router as sprint4_router
 from app.api.sprint5 import router as sprint5_router
@@ -1123,6 +1124,41 @@ def matchup(
 # 0.0 saf Poisson (PR #17'den önceki baseline), -0.18 daha agresif DC
 _SHADOW_RHOS: tuple[float, ...] = (0.0, -0.18)
 
+# Kalibre shadow için ayrı engine kimliği — kalibrasyon training'i (engine.predict
+# okur) bunu HAM sanıp kirletmesin; raw vs calibrated backtest'i bu adla sorgular.
+_CALIBRATED_SHADOW_ENGINE = "engine.predict_calibrated"
+
+
+def _calibrated_shadow_result(raw: EngineResult, temperature: float) -> EngineResult:
+    """Birincil tahmine sıcaklık T uygulanmış shadow EngineResult üretir.
+
+    Ayrı engine adı (`engine.predict_calibrated`) taşır → kalibrasyon/ρ training'i
+    görmezden gelir, reconcile (match bazlı) yine doldurur. Böylece sonradan
+    'ham vs kalibre gerçekten daha mı iyi tuttu' karşılaştırmalı backtest yapılır.
+    """
+    from dataclasses import asdict, replace
+
+    from app.engine.calibration import apply_temperature
+
+    rep = raw.value
+    cph, cpd, cpa = apply_temperature(
+        (rep.prob_home_win, rep.prob_draw, rep.prob_away_win), temperature
+    )
+    cal_rep = replace(
+        rep,
+        prob_home_win=round(cph, 4),
+        prob_draw=round(cpd, 4),
+        prob_away_win=round(cpa, 4),
+    )
+    cal_audit = replace(
+        raw.audit,
+        engine=_CALIBRATED_SHADOW_ENGINE,
+        value=asdict(cal_rep),
+        inputs={**raw.audit.inputs, "calibration_T": temperature,
+                "raw_engine": raw.audit.engine},
+    )
+    return replace(raw, value=cal_rep, audit=cal_audit)
+
 
 @protected.get(
     "/matches/{match_id}/predict",
@@ -1232,7 +1268,7 @@ def match_predict(
         return compute_predict(home_form.value, away_form.value, **kwargs)
 
     def _save_shadows() -> None:
-        """Birincilin yanına ρ=0 ve ρ=-0.18 shadow'larını kaydet."""
+        """Birincilin yanına ρ=0/-0.18 shadow'ları + (varsa) kalibre shadow."""
         home_form, away_form = _forms()
         for rho in _SHADOW_RHOS:
             shadow_result = compute_predict(
@@ -1243,6 +1279,22 @@ def match_predict(
                 session, sport=football.SPORT_NAME,
                 match_external_id=match_id, result=shadow_result,
                 params={**params, "rho": rho},  # params_hash farklı
+            )
+        # Kalibre shadow: öğrenilmiş T (≠1.0) varsa birincil tahmine uygulanmış
+        # varyantı AYRI engine adıyla sakla → 'ham vs kalibre' backtest.
+        from app.data.cache.store import cache_get
+        from app.engine.calibration import (
+            CACHE_KEY as _CK,
+            CACHE_SOURCE as _CS,
+        )
+        cached = cache_get(session, source=_CS, key=_CK)
+        if cached and cached.get("best_temperature") not in (None, 1.0):
+            temp = float(cached["best_temperature"])
+            cal_result = _calibrated_shadow_result(_build_result(), temp)
+            save_prediction(
+                session, sport=football.SPORT_NAME,
+                match_external_id=match_id, result=cal_result,
+                params={**params, "calibration_T": temp},
             )
 
     def _inject_ml_status(payload: dict[str, Any]) -> dict[str, Any]:

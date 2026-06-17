@@ -166,3 +166,50 @@ def test_predict_identity_temperature_marks_not_applied(session, client):
     _populate_cal_cache(session, temperature=1.0)
     body = client.get("/matches/99/predict").json()
     assert body["calibration"]["applied"] is False
+
+
+# ---- ρ + T shadow'lama -----------------------------------------------------
+
+
+def _predictions(session, *, engine, match_id=99):
+    from sqlalchemy import select
+    return list(session.execute(
+        select(models.Prediction).where(
+            models.Prediction.engine == engine,
+            models.Prediction.match_external_id == match_id,
+        )
+    ).scalars())
+
+
+def test_shadow_saves_calibrated_variant(session, client):
+    _seed_match_with_history(session, datetime.now(UTC))
+    _populate_cal_cache(session, temperature=1.5)
+    r = client.get("/matches/99/predict?shadow=true")
+    assert r.status_code == 200
+
+    cal_rows = _predictions(session, engine="engine.predict_calibrated")
+    assert len(cal_rows) == 1
+    cal = json.loads(cal_rows[0].predicted_value_json)
+    s = cal["prob_home_win"] + cal["prob_draw"] + cal["prob_away_win"]
+    assert abs(s - 1.0) < 0.02
+    assert "calibration_T" in cal_rows[0].params_json
+    # Kalibre satır HAM engine.predict satırından ayrı (training'i kirletmez).
+    assert all(r2.engine == "engine.predict_calibrated" for r2 in cal_rows)
+    # T=1.5 yumuşatır → kalibre tepe olasılık ham tahminin altında.
+    raw = r.json()["value"]
+    raw_max = max(raw["prob_home_win"], raw["prob_draw"], raw["prob_away_win"])
+    cal_max = max(cal["prob_home_win"], cal["prob_draw"], cal["prob_away_win"])
+    assert cal_max <= raw_max + 1e-9
+
+
+def test_shadow_skips_calibrated_when_identity_temperature(session, client):
+    _seed_match_with_history(session, datetime.now(UTC))
+    _populate_cal_cache(session, temperature=1.0)
+    client.get("/matches/99/predict?shadow=true")
+    assert _predictions(session, engine="engine.predict_calibrated") == []
+
+
+def test_shadow_skips_calibrated_when_untrained(session, client):
+    _seed_match_with_history(session, datetime.now(UTC))
+    client.get("/matches/99/predict?shadow=true")
+    assert _predictions(session, engine="engine.predict_calibrated") == []

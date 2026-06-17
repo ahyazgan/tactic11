@@ -43,7 +43,7 @@
 - [x] Maç-içi karar beyni v2 — tema-farkında korroborasyon + push↔hold çelişki tespiti (context_engine)  (HEAD)
 - [x] Beyin kazanımları ekranda — /matches/[id] kalibre olasılık bloğu + /decisions/live korroborasyon & çelişki uyarısı  (HEAD)
 - [x] Kalibrasyon sayfasına öğrenilmiş T + log-loss kazancını göster (/admin/calibration-model-status'a bağlı LearnedTemperature paneli)  (HEAD)
-- [ ] ρ + T shadow'lama: predict shadow'larının yanında kalibre varyantı da sakla (karşılaştırmalı backtest için)
+- [x] ρ + T shadow'lama: shadow=true iken kalibre varyantı engine.predict_calibrated adıyla saklanır → 'ham vs kalibre' karşılaştırmalı backtest (/admin/calibration?engine=engine.predict_calibrated)  (HEAD)
 - [ ] Frontend demo poisson-predict.ts'i v3 modeline hizala (şu an sadece kendi-atağı; yalnız demo-mode)
 - [x] predict v3 + kalibrasyon empirik backtest — gerçek 10.488 maç: v3 log-loss +1.26%/Brier +1.75%/isabet +1.6pp, kalibrasyon +1.87% (docs/PREDICT_BACKTEST.md)  (HEAD)
 - [ ] PDF report export for scout_report_generator
