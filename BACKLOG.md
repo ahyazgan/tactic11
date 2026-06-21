@@ -46,6 +46,10 @@
 
 ## Done (archive — keep last ~10 for context)
 
+- [x] Kulüp sunumu hazırlığı — pitch tek-kaynak + demo sağlamlaştırma + kalibrasyon kanıtı  (877a868, 92727fa, fc96d89)
+  - PILOT_PITCH doğrulanmış rakamlar (2078 test/121 engine/15 agent/185 endpoint); PILOT.md arşiv→redirect
+  - pilot_demo: takım isimleri + lineup roster seed (3/3 agent yeşil) + dürüst sync sayısı
+  - scripts/calibration_report.py: sızıntısız Brier/log-loss/ECE backtest (model naif baseline'ı geçiyor)
 - [x] LiveDecisionDigestAgent → AI brief paneli  (5b36b56, PR #193)
 - [x] Video clip stub + PWA offline shell + pilot pitch  (97d6eba, PR #192)
 - [x] Audit fixes — replay commit + docs eksikleri  (dd08676, PR #191)
