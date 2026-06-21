@@ -1,11 +1,16 @@
 /**
- * Kök rota — açılışta doğrudan Genel Bakış konsolunu gösterir.
- * (Redirect yerine doğrudan render: `/` 200 döner; CI healthcheck'i ve
- * derin linkler sorunsuz çalışır. Eski kart launcher kaldırıldı.)
+ * Kök rota — giriş sonrası persona launcher.
+ *
+ * Teknik ekipten biri girince önce rolünü seçer (Analist / TD / Scout /
+ * Sportif Direktör), sonra sadece o rolün görev kartlarını görür. Geri kalan
+ * tüm ekranlar (Genel Bakış dahil → /overview) kenar menüden erişilebilir.
+ *
+ * Eski davranış: `/` doğrudan Genel Bakış'ı render ederdi. Artık Genel Bakış
+ * "Sportif Direktör" personasının bir görevi olarak /overview'da durur.
  */
 
-import OverviewConsolePage from "./overview/page";
+import { PersonaLauncher } from "@/components/persona-launcher";
 
 export default function HomePage() {
-  return <OverviewConsolePage />;
+  return <PersonaLauncher />;
 }
