@@ -123,6 +123,72 @@ def _run_sync(tenant_id: str) -> dict:
     }
 
 
+def _team_name_map(tenant_id: str) -> dict[int, str]:
+    """external_id → takım adı (display için; ham ID yerine 'Galatasaray')."""
+    from sqlalchemy import select
+
+    from app.db import models
+    from app.db.session import SessionLocal
+    from app.sports import football
+    with SessionLocal() as s:
+        s.info["tenant_id"] = tenant_id
+        rows = s.execute(
+            select(models.Team).where(models.Team.sport == football.SPORT_NAME)
+        ).scalars()
+        return {t.external_id: t.name for t in rows}
+
+
+def _seed_demo_appearances(tenant_id: str) -> int:
+    """Her takımın geçmiş maçlarına sentetik PlayerAppearance ekle.
+
+    Lineup agent roster-proxy'yi 'son maçlarda en çok dakika alan oyuncular'
+    üzerinden kurar; fixture'larda oyuncu yok, o yüzden demo için 16 kişilik
+    sentetik kadro seed ediyoruz (player_external_id = team_id*1000 + slot).
+    Böylece lineup agent gerçek kod yolundan (minutes proxy) çalışır.
+    """
+    from sqlalchemy import select
+
+    from app.db import models
+    from app.db.session import SessionLocal
+    from app.sports import football
+    created = 0
+    with SessionLocal() as s:
+        s.info["tenant_id"] = tenant_id
+        # Zaten seed edilmişse tekrar etme (idempotent)
+        existing = s.execute(
+            select(models.PlayerAppearance).limit(1)
+        ).scalar_one_or_none()
+        if existing is not None:
+            return 0
+        matches = list(
+            s.execute(
+                select(models.Match).where(models.Match.sport == football.SPORT_NAME)
+            ).scalars()
+        )
+        for m in matches:
+            for team_id in (m.home_team_external_id, m.away_team_external_id):
+                # 16 kişilik kadro; ilk 11 yüksek dakika, yedekler düşük
+                for slot in range(16):
+                    minutes = 90 if slot < 11 else (30 if slot < 14 else 10)
+                    s.add(
+                        models.PlayerAppearance(
+                            sport=football.SPORT_NAME,
+                            player_external_id=team_id * 1000 + slot,
+                            match_external_id=m.external_id,
+                            team_external_id=team_id,
+                            minutes=minutes,
+                            kickoff=m.kickoff,
+                            tenant_id=tenant_id,
+                            position_played=("GK" if slot == 0 else
+                                             "DEF" if slot < 5 else
+                                             "MID" if slot < 9 else "FWD"),
+                        )
+                    )
+                    created += 1
+        s.commit()
+    return created
+
+
 def _jwt_login_test() -> str:
     """Login endpoint smoke — TestClient ile."""
     from fastapi.testclient import TestClient
@@ -181,10 +247,15 @@ def _run_agents_for_first_upcoming_match(tenant_id: str) -> dict:
             ).scalar_one_or_none()
             if upcoming is None:
                 return out
+        names = {t.external_id: t.name for t in s.execute(
+            select(models.Team).where(models.Team.sport == football.SPORT_NAME)
+        ).scalars()}
         out["match"] = {
             "match_id": upcoming.external_id,
             "home_team_id": upcoming.home_team_external_id,
             "away_team_id": upcoming.away_team_external_id,
+            "home_team_name": names.get(upcoming.home_team_external_id, f"team {upcoming.home_team_external_id}"),
+            "away_team_name": names.get(upcoming.away_team_external_id, f"team {upcoming.away_team_external_id}"),
             "kickoff": upcoming.kickoff.isoformat(),
             "status": upcoming.status,
         }
@@ -289,10 +360,15 @@ def _predict_summary(tenant_id: str) -> dict | None:
             home_team_id=m.home_team_external_id,
             away_team_id=m.away_team_external_id,
         ).value
+        names = {t.external_id: t.name for t in s.execute(
+            select(models.Team).where(models.Team.sport == football.SPORT_NAME)
+        ).scalars()}
         return {
             "match_id": m.external_id,
             "home_team_id": m.home_team_external_id,
             "away_team_id": m.away_team_external_id,
+            "home_team_name": names.get(m.home_team_external_id, f"team {m.home_team_external_id}"),
+            "away_team_name": names.get(m.away_team_external_id, f"team {m.away_team_external_id}"),
             "prob_home_win": round(p.prob_home_win, 3),
             "prob_draw": round(p.prob_draw, 3),
             "prob_away_win": round(p.prob_away_win, 3),
@@ -373,7 +449,8 @@ def _render_tty(report: dict) -> None:
     if report.get("match"):
         m = report["match"]
         print()
-        print(f"  \033[1mDemo maç:\033[0m team {m['home_team_id']} vs team {m['away_team_id']}")
+        print(f"  \033[1mDemo maç:\033[0m {m.get('home_team_name', m['home_team_id'])} "
+              f"vs {m.get('away_team_name', m['away_team_id'])}")
         print(f"    Kickoff: {m['kickoff']}")
         print(f"    Status:  {m['status']}")
 
@@ -405,7 +482,8 @@ def _render_tty(report: dict) -> None:
     _section("PILOTA GÖSTERILECEK", "🎯")
     print(
         "  • Login → JWT bearer flow çalışıyor (multi-tenant izolasyon)\n"
-        "  • Süper Lig sync uçtan uca — 20 takım, fixture sayısı\n"
+        f"  • Süper Lig sync uçtan uca — {report['sync']['teams']} takım, "
+        f"{report['sync']['matches']} maç\n"
         f"  • {len(report['agents']['succeeded'])} agent her maç için AI brief üretiyor\n"
         "  • Tahmin doğruluğu /admin/predict-accuracy üzerinden ölçülebilir\n"
         "  • Asistan chat — doğal dil ile soru sorulabilir\n"
@@ -429,7 +507,7 @@ def _render_md(report: dict) -> None:
 
 ## Demo maç
 - Match ID: `{report.get('match', {}).get('match_id', '—')}`
-- Ev / Dep: `{report.get('match', {}).get('home_team_id', '—')}` vs `{report.get('match', {}).get('away_team_id', '—')}`
+- Ev / Dep: **{report.get('match', {}).get('home_team_name', '—')}** vs **{report.get('match', {}).get('away_team_name', '—')}**
 - Kickoff: `{report.get('match', {}).get('kickoff', '—')}`
 
 ## Tahmin
@@ -485,6 +563,10 @@ def main() -> int:
     token = _jwt_login_test()
     _row("access_token", f"{token[:24]}... ({len(token)} char)")
 
+    _info("roster proxy için sentetik kadro seed ediliyor…")
+    seeded = _seed_demo_appearances(tenant_id)
+    _row("appearance seed", f"{seeded} kayıt (lineup agent roster proxy)")
+
     _step("5/8 Agent zinciri (lineup → pre_match → mega_match)")
     agents = _run_agents_for_first_upcoming_match(tenant_id)
     for ag in agents["succeeded"]:
@@ -500,7 +582,8 @@ def main() -> int:
     _step("7/9 Tahmin örneği (engine.predict + Dixon-Coles)")
     predict = _predict_summary(tenant_id)
     if predict:
-        _row("match", f"{predict['home_team_id']} vs {predict['away_team_id']}")
+        _row("match", f"{predict.get('home_team_name', predict['home_team_id'])} vs "
+                      f"{predict.get('away_team_name', predict['away_team_id'])}")
         _row("1X2", f"{predict['prob_home_win']*100:.0f}% / "
                     f"{predict['prob_draw']*100:.0f}% / "
                     f"{predict['prob_away_win']*100:.0f}%")
