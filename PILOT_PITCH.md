@@ -6,15 +6,18 @@ edilmiş tahmin motoru + 15 specialized agent.
 
 ## Sayılar (bugün)
 
+> Tüm rakamlar `pytest` + repo sayımıyla doğrulanmıştır (son güncelleme: 2026-06-21).
+
 | Metrik | Değer |
 |---|---|
-| Otomatik test | **1,674 yeşil** (CI'da %100 pass rate) |
-| Engine modülü | **98** (çekirdek: form, rating, opponent, predict, xG, load, tracking, calibration, schedule, matchup, fixture_difficulty, predict_ml, player_form, set_piece, player_similarity, formation_matcher + 80'i aşkın uzman taktik/fiziksel/scout modülü) |
-| Agent (AI brief üretici) | **15** (PreMatch, PostMatch, MegaMatch, OpponentScout, InjuryLoad, Lineup, Substitution, Tactical, TacticalAdjustment, GamePlan, TrainingPlan, PlayerFeedback, Weekly, ScoutWatchlist, MediaBrief) |
+| Otomatik test | **2,078 yeşil** (CI'da %100 pass rate) |
+| Engine modülü | **121** (çekirdek: form, rating, opponent, predict, xG, load, tracking, calibration, schedule, matchup, fixture_difficulty, predict_ml, player_form, set_piece, player_similarity, formation_matcher + 100'ü aşkın uzman taktik/fiziksel/scout modülü) |
+| Agent (AI brief üretici) | **15** (PreMatch, PostMatch, MegaMatch, OpponentScout, InjuryLoad, Lineup, Substitution, TacticalAdjustment, GamePlan, TrainingPlan, PlayerFeedback, Weekly, ScoutWatchlist, MediaBrief, HalftimeAnalysis) |
+| HTTP endpoint | **185** (admin + analiz + auth + decisions + live) |
 | Tahmin modeli | Dixon-Coles + ML-kalibre ρ + logistic xG |
 | Multi-tenant | ✅ tenant_id 16 tabloda + JWT + RBAC |
 | Adapter | Sportmonks, API-Football, StatsBomb Open, FixtureTracking |
-| Migration | 27 alembic versiyonu, rolling deploy uyumlu |
+| Migration | 28 alembic versiyonu, rolling deploy uyumlu |
 
 ## 4 ana ürün modülü
 
@@ -89,6 +92,20 @@ python scripts/pilot_demo.py --output md > slides/demo.md
 - Bahis odds engine (regulatif risk)
 - Transfermarkt resmi entegrasyon (kulüp kendi lisansını sağlar)
 
+## Riskler ve açık konular (şeffaf)
+
+- **Veri kaynağı kotası**: Süper Lig + 1 ek lig için API-Football/Sportmonks
+  Pro tier (≈7.500 req/gün) yeterli; daha geniş kapsam üst tier gerektirir.
+  Kota anahtarı kulübün adına açılır — biz ortada veri satmıyoruz.
+- **Tracking verisi**: SecondSpectrum/Hawk-Eye entegrasyonu için kulübün ya da
+  liganın mevcut sözleşmesi gerekir; bağımsız tracking lisansı satmıyoruz.
+  Adapter hazır — lisans gelince pipeline değişmeden bağlanır.
+- **KVKK/GDPR**: Oyuncu performans verisi kişisel veridir. **Kurulum kulübün
+  kendi sunucusunda** yapılır; biz SaaS olarak host etmiyoruz → veri kulüpte kalır.
+- **AI çağrıları**: Brief üretimi Anthropic Claude API üzerinden ABD'ye gider
+  (sadece anonim maç/form istatistikleri; kişisel veri gönderilmez). İstenirse
+  AI katmanı kapatılıp salt-motor (Dixon-Coles + engine'ler) modunda çalışır.
+
 ## Pilot başvuru süreci
 
 1. **0. hafta** — discovery: 1 saatlik görüşme, kulübün ihtiyacı + mevcut araçlar
@@ -113,7 +130,7 @@ python scripts/pilot_demo.py --output md > slides/demo.md
 - **ML**: scikit-learn (LogisticRegression xG), pure-Python pure engine
 - **Auth**: JWT + bcrypt + 4 rol (admin/analyst/coach/viewer)
 - **Deploy**: Docker Compose tek komut, Hetzner Cloud €4.51/ay yeterli
-- **Test**: 1,674 otomatik test, GitHub Actions CI
+- **Test**: 2,078 otomatik test, GitHub Actions CI
 - **Lisans**: Codebase pilot kulübe license; Anthropic + StatsBomb kendi ToS
 
 ## İletişim
