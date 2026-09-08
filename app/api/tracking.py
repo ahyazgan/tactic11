@@ -55,6 +55,7 @@ def _row_to_frame(row: models.TrackingFrameRow) -> dict[str, Any]:
         "event_uuid": meta.get("event_uuid"),
         "event_type": meta.get("event_type"),
         "possession_team_external_id": meta.get("possession_team_external_id"),
+        "ball_estimated": bool(meta.get("ball_estimated", False)),
         "visible_area": meta.get("visible_area"),
     }
 

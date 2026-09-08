@@ -212,6 +212,65 @@ def test_timestamps_unique_within_same_second() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Hat yardımcıları (torch'suz): top enterpolasyonu, hız
+# --------------------------------------------------------------------------- #
+
+
+def _sample(order: int, persons=(), ball=None, src=None):
+    from app.tracking.pipeline import SampledObservation
+
+    return SampledObservation(order=order, frame_idx=order * 2, seconds=order / 15.0,
+                              persons=list(persons), ball=ball, ball_source=src)
+
+
+def test_interpolate_ball_fills_short_gaps_only() -> None:
+    from app.tracking.pipeline import interpolate_ball
+
+    s = [_sample(0, ball=(100.0, 100.0, 0.9), src="det"), _sample(1), _sample(2),
+         _sample(3, ball=(400.0, 100.0, 0.9), src="det"),
+         _sample(4), _sample(5), _sample(6), _sample(7), _sample(8),
+         _sample(9, ball=(400.0, 700.0, 0.9), src="det")]
+    filled = interpolate_ball(s, max_gap=3)
+    assert filled == 2
+    assert s[1].ball == (200.0, 100.0, 0.0) and s[1].ball_source == "interp"
+    assert s[2].ball == (300.0, 100.0, 0.0)
+    # 5 örneklik boşluk > max_gap → dolmaz
+    assert all(s[i].ball is None for i in range(4, 9))
+
+
+def test_compute_velocities_central_difference_and_caps() -> None:
+    from app.tracking.pipeline import MAX_BALL_SPEED_MPS, compute_velocities
+
+    c = _topdown_calib()  # 10 px = 1 m
+    # Oyuncu 7: her örnekte +10 px (1 m) → 15 fps'te 15 m/s → 12 m/s'ye kırpılır
+    # Oyuncu 8: her örnekte +2 px (0.2 m) → 3 m/s
+    def person(tid, u):
+        return (tid, u - 15, 400 - 40, u + 15, 400, 0.9)
+
+    s = [_sample(i, persons=[person(7, 600 + 10 * i), person(8, 800 + 2 * i)],
+                 ball=(700 + 100 * i, 400, 0.9), src="det") for i in range(4)]
+    pv, bv = compute_velocities(s, c, track_fps=15.0)
+    assert pv[1][7] == 12.0                  # kırpıldı
+    assert pv[1][8] == pytest.approx(3.0, abs=0.05)
+    assert pv[0][8] == pytest.approx(3.0, abs=0.05)   # kenar: tek yönlü fark
+    assert bv[1] == MAX_BALL_SPEED_MPS       # 10 m/örnek × 15 = 150 m/s → 45'e kırpıldı
+
+
+def test_build_frame_carries_velocity_and_ball_estimated() -> None:
+    c = _topdown_calib()
+    fr = build_frame(
+        match_id=1, seconds=0, order=0, calib=c,
+        players=[TrackObservation(1, 600, 400, 0, velocity_mps=4.2)],
+        ball=BallObservation(605, 400, velocity_mps=20.0),
+        home_team_id=1, away_team_id=2, ball_estimated=True,
+    )
+    assert fr is not None
+    assert fr.players[0].velocity_mps == 4.2
+    assert fr.ball is not None and fr.ball.velocity_mps == 20.0
+    assert fr.ball_estimated is True
+
+
+# --------------------------------------------------------------------------- #
 # JSON → kaynak → ingest
 # --------------------------------------------------------------------------- #
 

@@ -56,6 +56,7 @@ class TrackingFrame(BaseModel):
     period: int  # 1, 2, (3=ET1, 4=ET2)
     minute: float  # maç başından dakika (0.0–120.0)
     ball: PlayerPosition | None = None  # top da bir "oyuncu" gibi pozisyona sahip
+    ball_estimated: bool = False  # top görülmedi, komşu karelerden enterpole edildi
     players: tuple[PlayerPosition, ...]
     source: str | None = None
     event_uuid: str | None = None

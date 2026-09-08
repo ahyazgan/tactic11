@@ -12,7 +12,7 @@
  * DEMO_MODE: gerçek veriden alınmış fixture kareleri (lib/tracking-demo).
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
@@ -25,6 +25,7 @@ import {
 } from "@/lib/tracking-demo";
 import { ConsoleShell } from "../_console/shell";
 import { TrackingOverlayCard } from "../_console/tracking-pitch";
+import { VideoJobPanel } from "../_console/video-job-panel";
 
 interface TrackedMatch {
   match_id: number;
@@ -70,13 +71,17 @@ const inputStyle = {
 } as const;
 
 export default function VideoTrackingPage() {
-  const { data: listData, error: listError } = useSWR<{ matches: TrackedMatch[] }>(
+  const { data: listData, error: listError, mutate: refreshMatches } = useSWR<{ matches: TrackedMatch[] }>(
     DEMO_MODE ? null : "/tracking/matches", apiFetch,
     { revalidateOnFocus: false, shouldRetryOnError: false },
   );
   const matches = DEMO_MODE ? DEMO_MATCHES : (listData?.matches ?? []);
 
   const [matchId, setMatchId] = useState<number | null>(null);
+  const onJobDone = useCallback(async (mid: number) => {
+    await refreshMatches();
+    setMatchId(mid);
+  }, [refreshMatches]);
   const [side, setSide] = useState<"home" | "away">("home");
   const [minute, setMinute] = useState<number>(0);
   const [playing, setPlaying] = useState(false);
@@ -126,6 +131,7 @@ export default function VideoTrackingPage() {
 
   const right = (
     <>
+      {!DEMO_MODE && <VideoJobPanel onDone={onJobDone} />}
       <div className="rc">
         <h3>Kaynak</h3>
         <label style={{ fontSize: 11.5 }}>Maç

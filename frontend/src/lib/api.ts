@@ -92,11 +92,41 @@ async function rawFetch(
   token: string | null,
 ): Promise<Response> {
   const headers = new Headers(init.headers);
-  if (!headers.has("Content-Type") && init.body) {
+  // FormData'da tarayıcı boundary'li Content-Type'ı kendisi koyar
+  if (!headers.has("Content-Type") && init.body && !(init.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
   if (token) headers.set("Authorization", `Bearer ${token}`);
   return fetch(`/api${path}`, { ...init, headers });
+}
+
+/**
+ * Ham Response — JSON olmayan yanıtlar (görüntü, dosya) ve başlık okumak için.
+ * 401'de refresh + tek retry; 4xx/5xx'te ApiError.
+ */
+export async function apiFetchResponse(
+  path: string,
+  init: RequestInit = {},
+): Promise<Response> {
+  const token = getAccessToken();
+  let res = await rawFetch(path, init, token);
+  if (res.status === 401) {
+    const newToken = await getOrRefreshToken();
+    if (!newToken) {
+      clearAuthState();
+      throw new ApiError("Unauthorized", 401);
+    }
+    res = await rawFetch(path, init, newToken);
+    if (res.status === 401) {
+      clearAuthState();
+      throw new ApiError("Unauthorized after refresh", 401);
+    }
+  }
+  if (!res.ok) {
+    const body = await res.text();
+    throw new ApiError(`HTTP ${res.status}: ${body.slice(0, 200)}`, res.status);
+  }
+  return res;
 }
 
 export async function apiFetch<T = unknown>(

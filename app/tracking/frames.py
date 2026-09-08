@@ -33,6 +33,7 @@ class TrackObservation:
     v: float
     team: int | None
     conf: float = 1.0
+    velocity_mps: float | None = None
 
 
 @dataclass(frozen=True)
@@ -40,6 +41,7 @@ class BallObservation:
     u: float
     v: float
     conf: float = 1.0
+    velocity_mps: float | None = None
 
 
 def _dist_m(a: tuple[float, float], b: tuple[float, float], calib: PitchCalibration) -> float:
@@ -61,6 +63,7 @@ def build_frame(
     period: int = 1,
     clip_offset_minutes: float = 0.0,
     sport: str = "football",
+    ball_estimated: bool = False,
 ) -> TrackingFrame | None:
     """Bir örnekleme anının gözlemlerini TrackingFrame'e çevir; saha dışı/boş → None."""
     positions: list[tuple[TrackObservation, tuple[float, float]]] = []
@@ -75,7 +78,7 @@ def build_frame(
     ball_xy: tuple[float, float] | None = None
     if ball is not None and calib.is_on_pitch(ball.u, ball.v, margin_m=5.0):
         ball_xy = calib.image_to_normalized(ball.u, ball.v)
-        ball_pos = PlayerPosition(player_external_id=0, x=ball_xy[0], y=ball_xy[1])
+        ball_pos = PlayerPosition(player_external_id=0, x=ball_xy[0], y=ball_xy[1], velocity_mps=ball.velocity_mps)
 
     actor_idx: int | None = None
     if ball_xy is not None:
@@ -98,6 +101,7 @@ def build_frame(
         PlayerPosition(
             player_external_id=VIDEO_PLAYER_BASE_ID + obs.track_id,
             x=xy[0], y=xy[1],
+            velocity_mps=obs.velocity_mps,
             team_external_id=team_id(obs.team),
             is_actor=(i == actor_idx),
             is_keeper=False,
@@ -114,6 +118,7 @@ def build_frame(
         period=period,
         minute=round(minute, 4),
         ball=ball_pos,
+        ball_estimated=ball_estimated and ball_pos is not None,
         players=out_players,
         source=SOURCE_NAME,
         event_uuid=None,

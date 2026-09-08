@@ -18,13 +18,15 @@ export interface TrackingPlayer {
   is_actor: boolean;
   is_keeper: boolean;
   identity_estimated: boolean;
+  velocity_mps?: number | null;
   name?: string | null;
 }
 
 export interface TrackingFrame {
   minute: number;
   period: number;
-  ball: { x: number; y: number } | null;
+  ball: { x: number; y: number; velocity_mps?: number | null } | null;
+  ball_estimated?: boolean;
   players: TrackingPlayer[];
   source?: string | null;
   event_uuid?: string | null;
@@ -220,4 +222,19 @@ export function phaseLabel(frame: TrackingFrame, teamId: number): string {
 
 export function visibleTracks(frame: TrackingFrame): number {
   return frame.players.length;
+}
+
+/** m/s → "~12 km/h"; hız yoksa null. */
+export function fmtKmh(mps: number | null | undefined): string | null {
+  if (mps == null) return null;
+  return `~${Math.round(mps * 3.6)} km/h`;
+}
+
+/** Karedeki en hızlı oyuncu (hız verisi olan kaynaklarda). */
+export function fastestPlayer(frame: TrackingFrame): TrackingPlayer | null {
+  let best: TrackingPlayer | null = null;
+  for (const p of frame.players) {
+    if (p.velocity_mps != null && (best === null || p.velocity_mps > (best.velocity_mps ?? 0))) best = p;
+  }
+  return best;
 }

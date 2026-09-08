@@ -30,7 +30,16 @@ class DetectorConfig:
     tile_overlap: float = 0.15
     resolution: int | None = None
     device: str | None = None   # None → cuda varsa cuda
-    batch_size: int = 16        # dilimler toplu tahmin (GPU doluluğu)
+    # Dilimler toplu tahmin. None → (tiles+1)²/2+1: örtüşmeli ızgara (tiles+1)²
+    # dilim üretir, iki eşit batch + en fazla 1 dolgu (ölçüm: 6 dilim → 25 en hızlı).
+    batch_size: int | None = None
+    half: bool = True           # fp16 çıkarım (CUDA'da); CPU'da yok sayılır
+
+    @property
+    def effective_batch_size(self) -> int:
+        if self.batch_size is not None:
+            return max(1, self.batch_size)
+        return (self.tiles + 1) ** 2 // 2 + 1 if self.tiles > 1 else 1
     # İnce ayarlı ağırlık klasörü (scripts/train_topview_detector.py çıktısı:
     # checkpoint_best_total.pth + meta.json). None → COCO ön-eğitimli.
     weights: str | None = None
@@ -60,9 +69,18 @@ class RFDetrDetector:
         self._meta = meta
         # Derlenmiş model sabit batch ister; dilimli+batch modda son grup küçük
         # kalır → orada derleme atlanır (batch kazancı derleme kaybını karşılar).
-        if not (self.cfg.tiles > 1 and self.cfg.batch_size > 1):
+        self._fixed_batch: int | None = None
+        if not (self.cfg.tiles > 1 and self.cfg.effective_batch_size > 1):
             with contextlib.suppress(Exception):  # optimize opsiyonel
                 self.model.optimize_for_inference()
+        elif self.cfg.half and device.startswith("cuda"):
+            # Derlenmiş fp16 model sabit batch ister → dilim grupları batch_size'a
+            # doldurulur (_predict_batch), fazlası atılır.
+            try:
+                self.model.inference(dtype=torch.float16, batch_size=self.cfg.effective_batch_size)
+                self._fixed_batch = self.cfg.effective_batch_size
+            except Exception:  # noqa: BLE001 — fp16/derleme opsiyonel
+                self._fixed_batch = None
         self.device = device
         if meta:
             # İnce ayarlı model sınıfları 0-tabanlı indeksle döner (class_names sırası);
@@ -101,7 +119,14 @@ class RFDetrDetector:
             return {int(k): str(v) for k, v in COCO_CLASSES.items()}
         return {i: str(n) for i, n in enumerate(COCO_CLASSES)}
 
+    def predict_single(self, image_rgb: np.ndarray):
+        """Tek görüntü (dilimsiz) tahmin — ROI aramaları için."""
+        return self._predict(image_rgb)
+
     def _predict(self, image_rgb: np.ndarray):
+        if self._fixed_batch:
+            # Derlenmiş model tek görüntü kabul etmez → dolgulu batch yolu
+            return self._predict_batch([image_rgb])[0]
         det = self.model.predict(image_rgb, threshold=self.cfg.threshold)
         # rfdetr her sonuca kaynak görüntüyü metadata olarak iliştirir; dilimler
         # birleştirilirken çakışır → temizle.
@@ -110,9 +135,14 @@ class RFDetrDetector:
 
     def _predict_batch(self, images: list[np.ndarray]):
         """Dilimleri tek seferde GPU'ya ver (InferenceSlicer batch_size>1)."""
-        out = self.model.predict(list(images), threshold=self.cfg.threshold)
+        batch = list(images)
+        n = len(batch)
+        if self._fixed_batch and n < self._fixed_batch:
+            batch = batch + [batch[-1]] * (self._fixed_batch - n)
+        out = self.model.predict(batch, threshold=self.cfg.threshold)
         if not isinstance(out, list):
             out = [out]
+        out = out[:n]
         for d in out:
             d.metadata = {}
         return out
@@ -127,11 +157,11 @@ class RFDetrDetector:
             ov = self.cfg.tile_overlap
             # Küçük kutularda dilim sınırındaki çiftler düşük IoU verir → 0.3
             slicer = sv.InferenceSlicer(
-                callback=self._predict_batch if self.cfg.batch_size > 1 else self._predict,
+                callback=self._predict_batch if self.cfg.effective_batch_size > 1 else self._predict,
                 slice_wh=(tw, th),
                 overlap_wh=(int(tw * ov), int(th * ov)),
                 iou_threshold=0.3,
-                batch_size=self.cfg.batch_size,
+                batch_size=self.cfg.effective_batch_size,
             )
             det = slicer(frame_rgb)
         else:

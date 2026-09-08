@@ -13,6 +13,8 @@ import * as React from "react";
 import {
   actorOf,
   closestPressureM,
+  fastestPlayer,
+  fmtKmh,
   passOptions,
   phaseLabel,
   possessionShare,
@@ -104,6 +106,7 @@ export function TrackingOverlayCard({ frame, recent = [], ourTeamId, minute }: T
   const phase = phaseLabel(frame, ourTeamId);
   const actorIsOurs = actor?.team_external_id === ourTeamId;
   const lag = Math.max(0, minute - frame.minute);
+  const fastest = fastestPlayer(frame);
 
   return (
     <div className="rc" style={{ marginBottom: 12 }}>
@@ -158,13 +161,22 @@ export function TrackingOverlayCard({ frame, recent = [], ourTeamId, minute }: T
                   : <circle cx={ppx(p.x)} cy={ppy(p.y)} r={r} fill={p.is_actor ? color : "var(--panel)"} stroke={color} strokeWidth={p.identity_estimated ? 1.6 : 2.2} strokeDasharray={p.identity_estimated ? "2 1.5" : undefined} />}
                 <text x={ppx(p.x)} y={ppy(p.y) - r - 3} fontSize={7.5} fill={p.is_actor ? color : "var(--dim)"} textAnchor="middle" fontWeight={p.is_actor ? 700 : 400}>
                   {p.is_keeper ? "GK" : shortId(p)}
+                  {/* Yalnız koşan oyuncular (≥ 9 km/h) — kalabalık bölgelerde etiket yığılmasın */}
+                  {p.velocity_mps != null && p.velocity_mps >= 2.5 && (
+                    <tspan fill="var(--dim)" fontWeight={400}> {fmtKmh(p.velocity_mps)}</tspan>
+                  )}
                 </text>
               </g>
             );
           })}
 
           {frame.ball && (
-            <circle cx={ppx(frame.ball.x)} cy={ppy(frame.ball.y)} r={3} fill="#fff" stroke="#222" strokeWidth={1} />
+            <g>
+              <circle cx={ppx(frame.ball.x)} cy={ppy(frame.ball.y)} r={3} fill={frame.ball_estimated ? "none" : "#fff"} stroke={frame.ball_estimated ? "#888" : "#222"} strokeWidth={1} strokeDasharray={frame.ball_estimated ? "1.5 1" : undefined} />
+              {frame.ball.velocity_mps != null && frame.ball.velocity_mps >= 2 && (
+                <text x={ppx(frame.ball.x) + 5} y={ppy(frame.ball.y) - 4} fontSize={7} fill="var(--ink)" fontFamily="JetBrains Mono, monospace">{fmtKmh(frame.ball.velocity_mps)}</text>
+              )}
+            </g>
           )}
         </svg>
 
@@ -184,8 +196,16 @@ export function TrackingOverlayCard({ frame, recent = [], ourTeamId, minute }: T
           <div style={{ display: "flex", gap: 10, marginTop: 10, fontSize: 10, color: "var(--muted)" }}>
             <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 4, background: US, marginRight: 4 }} />Biz</span>
             <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 4, background: THEM, marginRight: 4 }} />Rakip</span>
-            <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 4, background: "#fff", border: "1px solid #222", marginRight: 4 }} />Top</span>
+            <span><span style={{ display: "inline-block", width: 8, height: 8, borderRadius: 4, background: "#fff", border: "1px solid #222", marginRight: 4 }} />Top{frame.ball_estimated ? " (enterpole)" : ""}</span>
           </div>
+          {(fastest || (frame.ball?.velocity_mps != null)) && (
+            <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 8, lineHeight: 1.5 }}>
+              {fastest && <>En hızlı: <b style={{ color: "var(--ink)" }}>{shortId(fastest)} {fmtKmh(fastest.velocity_mps)}</b></>}
+              {fastest && frame.ball?.velocity_mps != null && " · "}
+              {frame.ball?.velocity_mps != null && <>Top hızı <b style={{ color: "var(--ink)" }}>{fmtKmh(frame.ball.velocity_mps)}</b></>}
+              <br /><span style={{ color: "var(--dim)" }}>Hızlar ardışık karelerden kestirim</span>
+            </div>
+          )}
         </div>
       </div>
 

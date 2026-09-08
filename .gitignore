@@ -39,3 +39,6 @@ data/tracking/out/
 venv-cv/
 data/tracking/datasets/
 data/tracking/models/
+data/tracking/videos/
+data/tracking/frames/
+data/tracking/jobs/

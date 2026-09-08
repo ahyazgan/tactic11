@@ -389,3 +389,43 @@ Docker Compose + Postgres ya da bare-metal systemd + cron kurulumu için
 [DEPLOYMENT.md](DEPLOYMENT.md).
 
 Detaylı yol haritası: [ROADMAP.md](ROADMAP.md).
+
+## Video Takibi (saha overlay için ikinci kaynak)
+
+Klip → RF-DETR (Apache-2.0) tespit → ByteTrack takip → forma rengi takım ataması → saha
+homografisi → `TrackingFrame`. Çıktı StatsBomb 360 ile **aynı şemaya** yazılır; `/tracking`
+API'si ve Saha Overlay kaynağı ayırt etmez.
+
+**Ortam:** ağır bağımlılıklar ayrı bir yorumlayıcıda (`venv-cv`, Python 3.12):
+
+```bash
+py -3.12 -m venv venv-cv
+venv-cv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+venv-cv\Scripts\python.exe -m pip install rfdetr supervision opencv-python-headless "scipy==1.15.3"
+venv-cv\Scripts\python.exe -m pip install "rfdetr[train]"   # yalnız ince ayar için
+```
+
+> Windows Smart App Control açıkken çok yeni scipy derlemeleri engellenebilir; `scipy==1.15.3` sabit tutuldu.
+
+**Akış (arayüz):** `/video-tracking` → klip yükle → `/video-tracking/calibrate` ile karede 4+ saha
+işaretine tıkla (çizgiler kareye geri-izdüşülür, hata metre cinsinden) → "Video işle" → iş
+bitince maç listeye düşer. Backend: `app/api/tracking_jobs.py` (`venv-cv` alt süreç + ingest).
+
+**Akış (CLI):**
+
+```bash
+venv-cv\Scripts\python.exe -m scripts.track_video --video clip.mp4 \
+  --calibration data/tracking/calibrations/saha.json --out data/tracking/out/frames.json \
+  --match-id 990001 --home-team 9001 --away-team 9002 --fps 5 --track-fps 15 \
+  --weights data/tracking/models/rfdetr_top_small --tiles 6 --threshold 0.3 --ball-threshold 0.3 \
+  --preview data/tracking/out/preview.mp4
+venv\Scripts\python.exe -m scripts.ingest_tracking_json --json data/tracking/out/frames.json --tenant t-default
+```
+
+**İnce ayar (tepeden bakış / drone):** `scripts/build_topview_dataset.py` (TeamTrack klipleri → dilimli
+COCO) + `scripts/train_topview_detector.py` (RF-DETR small, 8 epoch ≈ 25 dk RTX 5060). Test klibinde
+oyuncu recall 0.99 / precision 0.99 / konum hatası 0.20 m / top (3 m) 0.71. Ağırlıklar
+`data/tracking/models/` altında, repoya girmez.
+
+Ortam değişkenleri: `TRACKING_DATA_DIR`, `TRACKING_WORKER_PYTHON`, `TRACKING_WEIGHTS`
+(`TRACKING_WORKER_CMD` testler için işçi stub'ı).

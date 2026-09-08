@@ -3,11 +3,14 @@
 Akış:
 1. Videoyu `track_fps` hızında örnekle (cv2) — takip için yüksek (15 fps):
    küçük/hızlı oyuncularda ardışık kareler arası IoU eşleşmesi ancak böyle tutar
-2. Her karede RF-DETR ile oyuncu/top tespiti (dilimli)
+2. Her karede RF-DETR ile oyuncu/top tespiti (dilimli, batch); saha dışı elenir
 3. ByteTrack ile takip kimliği (supervision)
-4. Forma rengi biriktir → klip sonunda takım kümeleme
-5. `fps_out` hızında (5 fps) TrackingFrame üret — kalibrasyon homografisiyle
-6. (opsiyonel) Etiketli önizleme videosu — görsel doğrulama için
+4. Top: dilimli tespit yoksa son bilinen konum çevresinde küçük, yüksek
+   çözünürlüklü pencerede yeniden ara; ≤ `ball_gap_seconds` boşlukları enterpole et
+5. Forma rengi biriktir → klip sonunda takım kümeleme
+6. Hız: ardışık örneklerden merkezi fark (m/s), oyuncu ve top
+7. `fps_out` hızında TrackingFrame üret — kalibrasyon homografisiyle
+8. (opsiyonel) Etiketli önizleme videosu (çıktı fps'inde) — görsel doğrulama
 
 Çıktı JSON'u `scripts/ingest_tracking_json.py` ile DB'ye alınır.
 """
@@ -27,6 +30,9 @@ from app.tracking.detect import DetectorConfig, RFDetrDetector
 from app.tracking.frames import BallObservation, TrackObservation, build_frame
 from app.tracking.teams import TeamAssigner, torso_color
 
+MAX_PLAYER_SPEED_MPS = 12.0
+MAX_BALL_SPEED_MPS = 45.0
+
 
 @dataclass
 class PipelineConfig:
@@ -39,6 +45,8 @@ class PipelineConfig:
     min_track_seconds: float = 0.4
     pitch_margin_m: float = 2.0     # saha dışı tespit eleme marjı (takipten önce)
     ball_threshold: float = 0.4     # top için ayrı (daha sıkı) güven eşiği
+    ball_roi_px: int = 320          # kayıp topu arama penceresi genişliği (yükseklik = 9/16)
+    ball_gap_seconds: float = 1.0   # bu kadar boşluk enterpole edilir
     clip_offset_minutes: float = 0.0
     period: int = 1
     preview_path: str | None = None
@@ -52,6 +60,7 @@ class SampledObservation:
     seconds: float
     persons: list[tuple[int, float, float, float, float, float]]  # tid, x1,y1,x2,y2, conf
     ball: tuple[float, float, float] | None                        # cx, cy, conf
+    ball_source: str | None = None                                 # det | roi | interp
 
 
 def video_info(path: str | Path) -> dict[str, Any]:
@@ -106,6 +115,44 @@ def _on_pitch_mask(det, calib: PitchCalibration | None, margin_m: float) -> np.n
     ], dtype=bool)
 
 
+def _search_ball_roi(det: RFDetrDetector, rgb: np.ndarray, center: tuple[float, float], roi_w: int, threshold: float) -> tuple[float, float, float] | None:
+    """Son bilinen top konumu çevresinde küçük pencerede (native çözünürlük) top ara."""
+    h, w = rgb.shape[:2]
+    roi_h = int(roi_w * 9 / 16)
+    cx, cy = center
+    x0 = int(min(max(cx - roi_w / 2, 0), max(w - roi_w, 0)))
+    y0 = int(min(max(cy - roi_h / 2, 0), max(h - roi_h, 0)))
+    crop = rgb[y0:y0 + roi_h, x0:x0 + roi_w]
+    if crop.size == 0:
+        return None
+    d = det.predict_single(crop)
+    balls = d[np.isin(d.class_id, list(det.ball_ids))]
+    if len(balls) == 0:
+        return None
+    i = int(np.argmax(balls.confidence))
+    if float(balls.confidence[i]) < threshold:
+        return None
+    bx1, by1, bx2, by2 = (float(v) for v in balls.xyxy[i])
+    return (x0 + (bx1 + bx2) / 2, y0 + (by1 + by2) / 2, float(balls.confidence[i]))
+
+
+def interpolate_ball(samples: list[SampledObservation], max_gap: int) -> int:
+    """Ardışık iki top gözlemi arasındaki ≤ max_gap örneklik boşlukları doğrusal doldur."""
+    filled = 0
+    known = [i for i, s in enumerate(samples) if s.ball is not None]
+    for a, b in zip(known, known[1:], strict=False):
+        gap = b - a - 1
+        if gap <= 0 or gap > max_gap:
+            continue
+        (ax, ay, _), (bx, by, _) = samples[a].ball, samples[b].ball  # type: ignore[misc]
+        for k in range(1, gap + 1):
+            t = k / (gap + 1)
+            samples[a + k].ball = (ax + (bx - ax) * t, ay + (by - ay) * t, 0.0)
+            samples[a + k].ball_source = "interp"
+            filled += 1
+    return filled
+
+
 def collect_observations(
     video_path: str | Path,
     cfg: PipelineConfig,
@@ -129,6 +176,8 @@ def collect_observations(
     teams = TeamAssigner()
     samples: list[SampledObservation] = []
     hits: dict[int, int] = {}
+    last_ball: tuple[float, float, int] | None = None   # cx, cy, order
+    roi_max_age = max(1, int(cfg.ball_gap_seconds * cfg.track_fps))
 
     for order, frame_idx, seconds, rgb in iter_video_frames(video_path, cfg.track_fps, cfg.max_seconds):
         all_det = det.detect(rgb)
@@ -147,25 +196,88 @@ def collect_observations(
             x1, y1, x2, y2 = (float(v) for v in xyxy)
             rows.append((tid, x1, y1, x2, y2, float(conf)))
             teams.observe(tid, torso_color(rgb, (x1, y1, x2, y2)))
+
         ball = None
+        ball_source = None
         if len(balls) > 0:
             i = int(np.argmax(balls.confidence))
             bx1, by1, bx2, by2 = (float(v) for v in balls.xyxy[i])
             ball = ((bx1 + bx2) / 2, (by1 + by2) / 2, float(balls.confidence[i]))
-        samples.append(SampledObservation(order, frame_idx, seconds, rows, ball))
+            ball_source = "det"
+        elif last_ball is not None and order - last_ball[2] <= roi_max_age:
+            found = _search_ball_roi(det, rgb, (last_ball[0], last_ball[1]), cfg.ball_roi_px, cfg.ball_threshold * 0.8)
+            if found is not None and (calib is None or calib.is_on_pitch(found[0], found[1], margin_m=1.0)):
+                ball, ball_source = found, "roi"
+        if ball is not None:
+            last_ball = (ball[0], ball[1], order)
+        samples.append(SampledObservation(order, frame_idx, seconds, rows, ball, ball_source))
         if progress and order % 50 == 0:
-            print(f"  kare {order} · t={seconds:6.1f}s · oyuncu={len(rows)} · top={'✓' if ball else '-'}", flush=True)
+            print(f"  kare {order} · t={seconds:6.1f}s · oyuncu={len(rows)} · top={ball_source or '-'}", flush=True)
 
     # Kısa ömürlü (gürültü) takipleri at
     min_hits = max(1, round(cfg.min_track_seconds * cfg.track_fps))
     weak = {t for t, n in hits.items() if n < min_hits}
     for s in samples:
         s.persons = [r for r in s.persons if r[0] not in weak]
+    interpolate_ball(samples, roi_max_age)
     return samples, teams
 
 
 def output_stride(cfg: PipelineConfig) -> int:
     return max(1, round(cfg.track_fps / cfg.fps_out))
+
+
+def compute_velocities(
+    samples: list[SampledObservation],
+    calib: PitchCalibration,
+    track_fps: float,
+) -> tuple[dict[int, dict[int, float]], dict[int, float]]:
+    """Merkezi farkla hız (m/s): oyuncu → {order: {tid: v}}, top → {order: v}.
+
+    Kenar örneklerde tek yönlü fark; uç değerler fiziksel sınırla kırpılır.
+    """
+    pos: list[dict[int, tuple[float, float]]] = []
+    ball_pos: list[tuple[float, float] | None] = []
+    for s in samples:
+        pos.append({tid: calib.image_to_pitch_m((x1 + x2) / 2, y2) for tid, x1, _y1, x2, y2, _c in s.persons})
+        ball_pos.append(calib.image_to_pitch_m(s.ball[0], s.ball[1]) if s.ball else None)
+
+    def speed(a: tuple[float, float], b: tuple[float, float], dt: float) -> float:
+        return float(np.hypot(b[0] - a[0], b[1] - a[1]) / dt) if dt > 0 else 0.0
+
+    player_v: dict[int, dict[int, float]] = {}
+    ball_v: dict[int, float] = {}
+    n = len(samples)
+    for i in range(n):
+        out: dict[int, float] = {}
+        for tid, p in pos[i].items():
+            prev = pos[i - 1].get(tid) if i > 0 else None
+            nxt = pos[i + 1].get(tid) if i + 1 < n else None
+            if prev is not None and nxt is not None:
+                v = speed(prev, nxt, 2.0 / track_fps)
+            elif prev is not None:
+                v = speed(prev, p, 1.0 / track_fps)
+            elif nxt is not None:
+                v = speed(p, nxt, 1.0 / track_fps)
+            else:
+                continue
+            out[tid] = round(min(v, MAX_PLAYER_SPEED_MPS), 2)
+        player_v[samples[i].order] = out
+        b = ball_pos[i]
+        if b is not None:
+            prev_b = ball_pos[i - 1] if i > 0 else None
+            next_b = ball_pos[i + 1] if i + 1 < n else None
+            if prev_b is not None and next_b is not None:
+                bv = speed(prev_b, next_b, 2.0 / track_fps)
+            elif prev_b is not None:
+                bv = speed(prev_b, b, 1.0 / track_fps)
+            elif next_b is not None:
+                bv = speed(b, next_b, 1.0 / track_fps)
+            else:
+                bv = None
+            if bv is not None:
+                ball_v[samples[i].order] = round(min(bv, MAX_BALL_SPEED_MPS), 2)
+    return player_v, ball_v
 
 
 def build_frames(
@@ -179,22 +291,26 @@ def build_frames(
     cfg: PipelineConfig,
 ) -> list[TrackingFrame]:
     stride = output_stride(cfg)
+    player_v, ball_v = compute_velocities(samples, calib, cfg.track_fps)
     out: list[TrackingFrame] = []
     for s in samples:
         if s.order % stride != 0:
             continue
+        vmap = player_v.get(s.order, {})
         players = [
             TrackObservation(
                 track_id=tid, u=(x1 + x2) / 2, v=y2,
                 team=team_by_track.get(tid), conf=conf,
+                velocity_mps=vmap.get(tid),
             )
             for tid, x1, y1, x2, y2, conf in s.persons
         ]
-        ball = BallObservation(s.ball[0], s.ball[1], s.ball[2]) if s.ball else None
+        ball = BallObservation(s.ball[0], s.ball[1], s.ball[2], velocity_mps=ball_v.get(s.order)) if s.ball else None
         fr = build_frame(
             match_id=match_id, seconds=s.seconds, order=s.order, calib=calib,
             players=players, ball=ball, home_team_id=home_team_id, away_team_id=away_team_id,
             period=cfg.period, clip_offset_minutes=cfg.clip_offset_minutes,
+            ball_estimated=(s.ball_source == "interp"),
         )
         if fr is not None:
             out.append(fr)
@@ -209,22 +325,22 @@ def write_preview(
     cfg: PipelineConfig,
     out_path: str | Path,
 ) -> None:
-    """Etiketli önizleme: kutular (takım rengi), takip id, top, saha çizgileri izdüşümü."""
+    """Etiketli önizleme (çıktı fps'inde): kutular (takım rengi), takip id, top, saha çizgileri."""
     import cv2
 
-    by_order = {s.order: s for s in samples}
+    by_frame_idx = {s.frame_idx: s for s in samples}
     # BGR: ev sahibi yeşil, deplasman kırmızı, atanmamış sarı
     colors = {0: (90, 200, 40), 1: (60, 80, 230), None: (60, 200, 200)}
     writer = None
     scale = 1.0
-    for order, _idx, _seconds, rgb in iter_video_frames(video_path, cfg.track_fps, cfg.max_seconds):
-        s = by_order.get(order)
+    for _order, frame_idx, _seconds, rgb in iter_video_frames(video_path, cfg.fps_out, cfg.max_seconds):
+        s = by_frame_idx.get(frame_idx)
         bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
         if writer is None:
             h, w = bgr.shape[:2]
             scale = min(1.0, cfg.preview_width / w)
             size = (int(w * scale), int(h * scale))
-            writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), cfg.track_fps, size)
+            writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), cfg.fps_out, size)
         _draw_pitch_lines(bgr, calib)
         if s is not None:
             for tid, x1, y1, x2, y2, _conf in s.persons:
@@ -232,7 +348,8 @@ def write_preview(
                 cv2.rectangle(bgr, (int(x1), int(y1)), (int(x2), int(y2)), c, 2)
                 cv2.putText(bgr, str(tid), (int(x1), int(y1) - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.6, c, 2)
             if s.ball:
-                cv2.circle(bgr, (int(s.ball[0]), int(s.ball[1])), 8, (255, 255, 255), 2)
+                col = (255, 255, 255) if s.ball_source != "interp" else (200, 200, 200)
+                cv2.circle(bgr, (int(s.ball[0]), int(s.ball[1])), 8, col, 2 if s.ball_source != "interp" else 1)
         if scale < 1.0:
             bgr = cv2.resize(bgr, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
         writer.write(bgr)
@@ -296,6 +413,9 @@ def process_video(
             "unassigned": sum(1 for t in tracks if assignment.team_by_track.get(t) is None),
         },
         "ball_frames": sum(1 for s in samples if s.ball),
+        "ball_sources": {
+            k: sum(1 for s in samples if s.ball_source == k) for k in ("det", "roi", "interp")
+        },
         "calibration_reprojection_m": round(calib.reprojection_error_m, 3),
     }
     return frames, summary
