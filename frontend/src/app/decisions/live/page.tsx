@@ -53,10 +53,13 @@ interface ClosingStrategy {
   score_state?: string; closing_phase?: string; urgency_level?: string;
   key_message?: string; recipe?: RecipeDetail; risk_reward?: RiskReward;
 }
+// Demo şekli (score/holder) ve backend engine şekli (momentum_score/momentum_holder).
 interface MomentumOut {
-  score?: number; holder?: string; press_breaking?: boolean;
-  xg_swing_alert?: boolean; alert_text?: string | null;
+  score?: number; holder?: string;
+  momentum_score?: number; momentum_holder?: string;
+  press_breaking?: boolean; xg_swing_alert?: boolean; alert_text?: string | null;
 }
+const HOLDER_TR: Record<string, string> = { us: "biz", opponent: "rakip", neutral: "dengeli" };
 // Demo şekli (player_id/verdict/impact) ve backend engine şekli
 // (player_external_id/timing_verdict/impact_estimate) birlikte kabul edilir.
 interface SubTimingAdvice {
@@ -659,12 +662,14 @@ function EngineCard({
 
 function MomentumCard({ data }: { data?: MomentumOut }) {
   if (!data) return null;
-  const score = data.score ?? 0;
+  const score = data.score ?? data.momentum_score ?? 0;
+  const holderRaw = data.holder ?? data.momentum_holder;
+  const holder = holderRaw ? (HOLDER_TR[holderRaw] ?? holderRaw) : "—";
   const tone = score > 0.2 ? "var(--low)" : score < -0.2 ? "var(--high)" : "var(--mid)";
   return (
     <EngineCard title="Momentum" icon="📈" accent={tone}
       tooltip="Son 10 dakikada hangi takım xT + şut + possession dalgasında baskın. Pres kırılma = bizim defansif aksiyonumuz aniden düştü mü.">
-      <div><b>Sahip:</b> {data.holder ?? "—"} ({score >= 0 ? "+" : ""}{score.toFixed(2)})</div>
+      <div><b>Sahip:</b> {holder} ({score >= 0 ? "+" : ""}{score.toFixed(2)})</div>
       {data.press_breaking && <div style={{ color: "var(--high)" }}>⚠ Pres kırılıyor</div>}
       {data.xg_swing_alert && <div style={{ color: "var(--crit)" }}>⚠ xG swing</div>}
       {data.alert_text && (
