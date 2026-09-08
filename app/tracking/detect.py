@@ -11,7 +11,9 @@ edilir, kesişen kutular NMS ile birleşir.
 from __future__ import annotations
 
 import contextlib
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -29,6 +31,9 @@ class DetectorConfig:
     resolution: int | None = None
     device: str | None = None   # None → cuda varsa cuda
     batch_size: int = 16        # dilimler toplu tahmin (GPU doluluğu)
+    # İnce ayarlı ağırlık klasörü (scripts/train_topview_detector.py çıktısı:
+    # checkpoint_best_total.pth + meta.json). None → COCO ön-eğitimli.
+    weights: str | None = None
 
 
 class RFDetrDetector:
@@ -38,24 +43,55 @@ class RFDetrDetector:
         from rfdetr import RFDETRBase, RFDETRLarge, RFDETRMedium, RFDETRNano, RFDETRSmall
 
         self.cfg = cfg or DetectorConfig()
+        meta = self._load_meta(self.cfg.weights)
+        model_name = meta.get("model", self.cfg.model) if meta else self.cfg.model
         cls = {
             "nano": RFDETRNano, "small": RFDETRSmall, "medium": RFDETRMedium,
             "base": RFDETRBase, "large": RFDETRLarge,
-        }[self.cfg.model]
+        }[model_name]
         device = self.cfg.device or ("cuda" if torch.cuda.is_available() else "cpu")
         kwargs: dict[str, Any] = {"device": device}
-        if self.cfg.resolution:
-            kwargs["resolution"] = self.cfg.resolution
+        resolution = self.cfg.resolution or (meta.get("resolution") if meta else None)
+        if resolution:
+            kwargs["resolution"] = int(resolution)
+        if meta:
+            kwargs["pretrain_weights"] = str(Path(self.cfg.weights) / "checkpoint_best_total.pth")  # type: ignore[arg-type]
         self.model = cls(**kwargs)
+        self._meta = meta
         # Derlenmiş model sabit batch ister; dilimli+batch modda son grup küçük
         # kalır → orada derleme atlanır (batch kazancı derleme kaybını karşılar).
         if not (self.cfg.tiles > 1 and self.cfg.batch_size > 1):
             with contextlib.suppress(Exception):  # optimize opsiyonel
                 self.model.optimize_for_inference()
         self.device = device
-        self._class_names = self._resolve_class_names()
-        self.person_ids = {i for i, n in self._class_names.items() if n in PERSON_NAMES}
-        self.ball_ids = {i for i, n in self._class_names.items() if n in BALL_NAMES}
+        if meta:
+            # İnce ayarlı model sınıfları 0-tabanlı indeksle döner (class_names sırası);
+            # meta'daki COCO kategori id'leri (1..n) değil.
+            names = getattr(self.model, "class_names", None)
+            if isinstance(names, list | tuple) and names:
+                self._class_names = {i: str(n) for i, n in enumerate(names)}
+            else:
+                self._class_names = {
+                    i: str(v) for i, (_k, v) in enumerate(sorted(
+                        meta.get("classes", {}).items(), key=lambda kv: int(kv[0]),
+                    ))
+                }
+            self.person_ids = {i for i, n in self._class_names.items() if n == "player"}
+            self.ball_ids = {i for i, n in self._class_names.items() if n == "ball"}
+        else:
+            self._class_names = self._resolve_class_names()
+            self.person_ids = {i for i, n in self._class_names.items() if n in PERSON_NAMES}
+            self.ball_ids = {i for i, n in self._class_names.items() if n in BALL_NAMES}
+
+    @staticmethod
+    def _load_meta(weights: str | None) -> dict[str, Any] | None:
+        if not weights:
+            return None
+        path = Path(weights) / "meta.json"
+        if not path.exists():
+            raise FileNotFoundError(f"ince ayar meta.json yok: {path}")
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
 
     @staticmethod
     def _resolve_class_names() -> dict[int, str]:

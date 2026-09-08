@@ -38,8 +38,10 @@ def main() -> int:
     p.add_argument("--max-seconds", type=float, default=None)
     p.add_argument("--model", default="medium", choices=["nano", "small", "medium", "base", "large"])
     p.add_argument("--threshold", type=float, default=0.35)
+    p.add_argument("--ball-threshold", type=float, default=0.4, help="Top için ayrı güven eşiği")
     p.add_argument("--tiles", type=int, default=1, help="1=tam kare, 2=2×2 dilim (küçük oyuncular için)")
     p.add_argument("--resolution", type=int, default=None)
+    p.add_argument("--weights", default=None, help="İnce ayarlı ağırlık klasörü (meta.json + checkpoint_best_total.pth)")
     p.add_argument("--clip-offset-minutes", type=float, default=0.0, help="Klibin maç dakikası başlangıcı")
     p.add_argument("--period", type=int, default=1)
     p.add_argument("--preview", default=None, help="Etiketli önizleme mp4 yolu")
@@ -52,9 +54,9 @@ def main() -> int:
 
     cfg = PipelineConfig(
         fps_out=args.fps, track_fps=args.track_fps, max_seconds=args.max_seconds,
-        detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution),
+        detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution, weights=args.weights),
         clip_offset_minutes=args.clip_offset_minutes, period=args.period,
-        preview_path=args.preview,
+        preview_path=args.preview, ball_threshold=args.ball_threshold,
     )
     started = time.time()
     frames, summary = process_video(
@@ -64,7 +66,7 @@ def main() -> int:
     payload = frames_to_json(frames, match_id=args.match_id, extra={
         "video": Path(args.video).name, "video_info": info,
         "home_team_external_id": args.home_team, "away_team_external_id": args.away_team,
-        "config": {"fps": args.fps, "track_fps": args.track_fps, "model": args.model, "tiles": args.tiles, "threshold": args.threshold},
+        "config": {"fps": args.fps, "track_fps": args.track_fps, "model": args.model, "tiles": args.tiles, "threshold": args.threshold, "weights": args.weights},
         "summary": summary,
     })
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

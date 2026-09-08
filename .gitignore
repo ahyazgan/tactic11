@@ -37,3 +37,5 @@ logs/
 # Video takibi çıktıları (kareler/önizleme) — repoya girmez
 data/tracking/out/
 venv-cv/
+data/tracking/datasets/
+data/tracking/models/
