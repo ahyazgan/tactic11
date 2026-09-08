@@ -190,6 +190,93 @@ def test_adapter_is_tracking_data_source_subclass() -> None:
     assert issubclass(StatsBomb360Adapter, TrackingDataSource)
 
 
+def _sample_events() -> list[dict[str, Any]]:
+    return [
+        {
+            "id": "e1", "period": 1, "minute": 12, "second": 30,
+            "type": {"name": "Pass"}, "team": {"id": 217},
+            "player": {"id": 5503}, "possession_team": {"id": 217},
+            "location": [60.0, 40.0],
+        },
+        {
+            "id": "e2", "period": 2, "minute": 70, "second": 0,
+            "type": {"name": "Carry"}, "team": {"id": 213},
+            "player": {"id": 9001}, "possession_team": {"id": 213},
+            "location": [30.0, 20.0],
+        },
+    ]
+
+
+def _payload_with_actor() -> list[dict[str, Any]]:
+    return [
+        {
+            "event_uuid": "e2",
+            "visible_area": [0, 0, 120, 0, 120, 80, 0, 80],
+            "freeze_frame": [
+                {"teammate": True, "actor": True, "keeper": False, "location": [30.0, 20.0]},
+                {"teammate": False, "actor": False, "keeper": True, "location": [5.0, 40.0]},
+            ],
+        },
+        {
+            "event_uuid": "e1",
+            "visible_area": [0, 0, 120, 0, 120, 80, 0, 80],
+            "freeze_frame": [
+                {"teammate": True, "actor": True, "keeper": False, "location": [60.0, 40.0]},
+                {"teammate": False, "actor": False, "keeper": False, "location": [80.0, 30.0]},
+            ],
+        },
+    ]
+
+
+def test_events_join_fills_time_identity_and_ball() -> None:
+    client = _FakeClient(_FakeResp(200, _payload_with_actor()))
+    adapter = StatsBomb360Adapter(
+        http_client=client, events=_sample_events(),
+        home_team_id=217, away_team_id=213,
+    )
+    frames = list(adapter.get_match_frames(match_external_id=3773672))
+    assert len(frames) == 2
+    # Dakikaya göre sıralandı: e1 (12.5) önce, e2 (70) sonra
+    f1, f2 = frames
+    assert f1.event_uuid == "e1"
+    assert f1.minute == 12.5
+    assert f1.period == 1
+    assert f1.event_type == "Pass"
+    assert f1.possession_team_external_id == 217
+    assert f1.source == "statsbomb_360"
+    assert f1.ball is not None and f1.ball.x == 50.0 and f1.ball.y == 50.0
+    assert f1.visible_area is not None and f1.visible_area[2] == (100.0, 100.0)
+
+    actor = next(p for p in f1.players if p.is_actor)
+    assert actor.player_external_id == 5503
+    assert actor.team_external_id == 217
+    assert actor.identity_estimated is False
+    opp = next(p for p in f1.players if not p.is_actor)
+    assert opp.team_external_id == 213
+    assert opp.identity_estimated is True
+    assert opp.player_external_id == AWAY_PLAYER_BASE_ID + 1
+
+    # e2: aktör takımı deplasman → rakip = ev sahibi; kaleci bayrağı korunur
+    assert f2.period == 2 and f2.minute == 70.0
+    keeper = next(p for p in f2.players if p.is_keeper)
+    assert keeper.team_external_id == 217
+    # Aynı dakika/farklı event timestamp çakışmasın
+    assert f1.timestamp != f2.timestamp
+
+
+def test_events_join_missing_uuid_falls_back_to_placeholders() -> None:
+    payload = [{"event_uuid": "unknown", "freeze_frame": [
+        {"teammate": True, "actor": True, "location": [60.0, 40.0]},
+    ]}]
+    client = _FakeClient(_FakeResp(200, payload))
+    adapter = StatsBomb360Adapter(http_client=client, events=_sample_events())
+    (frame,) = adapter.get_match_frames(match_external_id=1)
+    assert frame.minute == 0.0
+    assert frame.event_uuid == "unknown"
+    assert frame.event_type is None
+    assert frame.players[0].identity_estimated is True
+
+
 def test_get_match_frames_skips_non_dict_events() -> None:
     payload = [
         {"freeze_frame": [{"teammate": True, "location": [60, 40]}]},

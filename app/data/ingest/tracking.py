@@ -42,9 +42,31 @@ def _serialize_players(frame: TrackingFrame) -> str:
                 "x": p.x,
                 "y": p.y,
                 "velocity_mps": p.velocity_mps,
+                "team_external_id": p.team_external_id,
+                "is_actor": p.is_actor,
+                "is_keeper": p.is_keeper,
+                "identity_estimated": p.identity_estimated,
             }
             for p in frame.players
         ],
+        ensure_ascii=False,
+    )
+
+
+def _serialize_meta(frame: TrackingFrame) -> str | None:
+    if frame.event_uuid is None and frame.source is None:
+        return None
+    return json.dumps(
+        {
+            "source": frame.source,
+            "event_uuid": frame.event_uuid,
+            "event_type": frame.event_type,
+            "possession_team_external_id": frame.possession_team_external_id,
+            "visible_area": (
+                [list(pt) for pt in frame.visible_area]
+                if frame.visible_area is not None else None
+            ),
+        },
         ensure_ascii=False,
     )
 
@@ -94,6 +116,7 @@ def ingest_tracking_match(
         ts = frame.timestamp
         ts_key = _normalize(ts)
         players_blob = _serialize_players(frame)
+        meta_blob = _serialize_meta(frame)
         ball_x = frame.ball.x if frame.ball else None
         ball_y = frame.ball.y if frame.ball else None
         if ts_key in existing_by_ts:
@@ -104,6 +127,7 @@ def ingest_tracking_match(
             row.ball_x = ball_x
             row.ball_y = ball_y
             row.players_json = players_blob
+            row.meta_json = meta_blob
             updated += 1
         else:
             session.add(models.TrackingFrameRow(
@@ -115,6 +139,7 @@ def ingest_tracking_match(
                 ball_x=ball_x,
                 ball_y=ball_y,
                 players_json=players_blob,
+                meta_json=meta_blob,
                 created_at=now,
             ))
             written += 1

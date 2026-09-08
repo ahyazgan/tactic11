@@ -366,6 +366,8 @@ class TrackingFrameRow(Base):
     ball_x: Mapped[float | None] = mapped_column(Float, nullable=True)
     ball_y: Mapped[float | None] = mapped_column(Float, nullable=True)
     players_json: Mapped[str] = mapped_column(Text)
+    # Event-bağlantılı kaynaklar için frame meta (event_uuid, visible_area vb.)
+    meta_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     tenant_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
