@@ -193,7 +193,17 @@ const EVENT_TR: Record<string, string> = {
   "Dispossessed": "Top kaybı",
   "Shield": "Perdeleme",
   "Dribbled Past": "Çalım yenildi",
+  "video_sample": "Video karesi",
 };
+
+export const SOURCE_TR: Record<string, string> = {
+  statsbomb_360: "StatsBomb 360",
+  video_tracking: "Video takibi",
+};
+
+export function sourceTR(s: string | null | undefined): string {
+  return s ? (SOURCE_TR[s] ?? s) : "tracking";
+}
 
 export function eventTypeTR(t: string | null | undefined): string {
   if (!t) return "—";

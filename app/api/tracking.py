@@ -66,6 +66,55 @@ def _base_query(match_id: int):
     )
 
 
+@router.get("/matches", summary="Tracking karesi olan maçlar (kaynak + aralık)")
+def tracking_matches(
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    rows = session.execute(
+        select(
+            models.TrackingFrameRow.match_external_id,
+            func.count(models.TrackingFrameRow.id),
+            func.min(models.TrackingFrameRow.minute),
+            func.max(models.TrackingFrameRow.minute),
+            func.min(models.TrackingFrameRow.meta_json),
+        )
+        .where(models.TrackingFrameRow.sport == football.SPORT_NAME)
+        .group_by(models.TrackingFrameRow.match_external_id)
+        .order_by(models.TrackingFrameRow.match_external_id.desc())
+    ).all()
+    ids = [r[0] for r in rows]
+    matches: dict[int, models.Match] = {}
+    if ids:
+        matches = {
+            m.external_id: m
+            for m in session.execute(
+                select(models.Match).where(
+                    models.Match.sport == football.SPORT_NAME,
+                    models.Match.external_id.in_(ids),
+                )
+            ).scalars()
+        }
+    out = []
+    for mid, count, mn, mx, meta in rows:
+        m = matches.get(mid)
+        source = json.loads(meta).get("source") if meta else None
+        out.append({
+            "match_id": mid,
+            "frames": int(count or 0),
+            "first_minute": mn,
+            "last_minute": mx,
+            "source": source,
+            "home_team_external_id": m.home_team_external_id if m else None,
+            "away_team_external_id": m.away_team_external_id if m else None,
+            "kickoff": m.kickoff.isoformat() if m and m.kickoff else None,
+            "score": (
+                f"{m.home_score}-{m.away_score}"
+                if m and m.home_score is not None and m.away_score is not None else None
+            ),
+        })
+    return {"matches": out, "total": len(out)}
+
+
 @router.get("/matches/{match_id}/status", summary="Tracking verisi var mı / aralık")
 def tracking_status(
     match_id: int,

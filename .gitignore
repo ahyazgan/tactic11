@@ -33,3 +33,7 @@ logs/
 
 # cache / fixtures (yerel kayıt)
 .cache/
+
+# Video takibi çıktıları (kareler/önizleme) — repoya girmez
+data/tracking/out/
+venv-cv/

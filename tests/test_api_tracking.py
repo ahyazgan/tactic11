@@ -66,6 +66,29 @@ def _seed(session, match_id: int = 9600, frames: int = 3):
     session.commit()
 
 
+def test_matches_list_groups_by_match_with_source(session, client):
+    _seed(session)
+    r = client.get("/tracking/matches")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total"] == 1
+    m = body["matches"][0]
+    assert m["match_id"] == 9600
+    assert m["frames"] == 3
+    assert m["source"] == "statsbomb_360"
+    assert m["home_team_external_id"] == 217
+    assert m["score"] == "1-1"
+
+
+def test_matches_list_empty(session, client):
+    session.add(models.Tenant(
+        id="t-default", slug="t-default", name="X",
+        settings_json="{}", active=True, created_at=datetime.now(UTC),
+    ))
+    session.commit()
+    assert client.get("/tracking/matches").json() == {"matches": [], "total": 0}
+
+
 def test_status_404_when_match_missing(session, client):
     session.add(models.Tenant(
         id="t-default", slug="t-default", name="X",

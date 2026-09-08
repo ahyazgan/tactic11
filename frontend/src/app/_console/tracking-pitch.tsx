@@ -17,6 +17,7 @@ import {
   phaseLabel,
   possessionShare,
   screenedLaneCount,
+  sourceTR,
   spaceControl,
   visibleTracks,
   type PassOption,
@@ -109,7 +110,7 @@ export function TrackingOverlayCard({ frame, recent = [], ourTeamId, minute }: T
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
         <h3 style={{ margin: 0 }}>Saha Overlay <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 11 }}>· {phase}</span></h3>
         <span style={{ fontSize: 10, color: "var(--muted)" }}>
-          {frame.source === "statsbomb_360" ? "StatsBomb 360" : frame.source ?? "tracking"} · kare {frame.minute.toFixed(1)}&apos;
+          {sourceTR(frame.source)} · kare {frame.minute.toFixed(1)}&apos;
           {lag > 0.5 && ` (${lag.toFixed(1)} dk önce)`} · ~ tahmini kimlik
         </span>
       </div>

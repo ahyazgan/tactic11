@@ -50,6 +50,7 @@ const FULL_NAV: NavGroup[] = [
     { label: "Maç Öncesi Plan",  href: "/match-plan",     icon: "ti-clipboard-list" },
     { label: "Taktik Tahtası",   href: "/tactics-board",  icon: "ti-soccer-field", badge: "YENİ", badgeKind: "new" },
     { label: "Gerçek Veri Analizi", href: "/tactical-real", icon: "ti-database", badge: "GERÇEK", badgeKind: "ai" },
+    { label: "Video Analiz",      href: "/video-tracking", icon: "ti-video", badge: "YENİ", badgeKind: "new" },
   ]},
   { grp: "Maç Günü", items: [
     { label: "Maç Öncesi Modu", href: "/prematch-mode",  icon: "ti-clipboard-check", badge: "HAZIRLIK", badgeKind: "new" },

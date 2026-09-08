@@ -1,0 +1,18 @@
+{
+  "image_size": [3840, 2160],
+  "pitch_length_m": 105,
+  "pitch_width_m": 68,
+  "points": [
+    {"image": [473, 118],   "pitch": [0, 0],     "label": "sol üst köşe"},
+    {"image": [3428, 118],  "pitch": [105, 0],   "label": "sağ üst köşe"},
+    {"image": [3396, 2038], "pitch": [105, 68],  "label": "sağ alt köşe"},
+    {"image": [473, 1994],  "pitch": [0, 68],    "label": "sol alt köşe"},
+    {"image": [1922, 1074], "pitch": [52.5, 34], "label": "orta nokta"}
+  ],
+  "meta": {
+    "source": "TeamTrack soccer_top (drone, DJI Mavic 3, 4K) — University of Tsukuba",
+    "clip": "D_20220220_1_1530_1560.mp4",
+    "note": "Köşeler tam çözünürlük karesinden elle okundu (±8 px). Saha ölçüsü standart 105×68 varsayıldı.",
+    "camera": "drone_top"
+  }
+}
