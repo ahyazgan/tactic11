@@ -90,6 +90,15 @@ class Settings(BaseSettings):
 
     # API erişim anahtarı (boş ise auth devre dışı — sadece dev için)
     api_auth_key: str = Field(default="", alias="API_AUTH_KEY")
+    # Yalnız GELİŞTİRME için: auth kapalıyken isteklerin hangi tenant'a ait
+    # sayılacağı. Boşsa (üretim varsayılanı) hiçbir şey yapılmaz — tenant'ı auth
+    # katmanı belirler. Auth kapalı + veri birden çok tenant'a yayılmışsa istek
+    # tenant'sız kalıyor ve sorgular "MultipleResultsFound" ile 500 veriyordu.
+    dev_default_tenant_id: str = Field(
+        default="",
+        description="Geliştirmede auth kapalıyken kullanılacak tenant (üretimde boş)",
+    )
+
 
     # Multi-tenant JWT auth (Ufuk 1)
     jwt_secret_key: str = Field(default="", alias="JWT_SECRET_KEY")

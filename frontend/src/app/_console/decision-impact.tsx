@@ -18,6 +18,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { DecisionQualityCard } from "./decision-quality";
 
 export interface WindowMetrics {
   minutes: number; xg_for: number; xg_against: number; xg_diff: number; xt: number;
@@ -267,5 +268,42 @@ export function DecisionTrackRecordCard({ teamId, windowMin = 15 }: { teamId: nu
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * "Ölçülen Etki" bölümü — backend cevap veriyorsa görünür, vermiyorsa hiç yok.
+ *
+ * Eskiden bu bölüm `!DEMO_MODE` ile gizleniyordu. Ama DEMO_MODE iki ayrı şeyi
+ * birbirine karıştırıyor: (a) frontend mock verisi kullan, (b) Sportmonks canlı
+ * veriye geç. Karar zekâsı ikisine de bağlı değil — kendi backend'inden okuyor.
+ * Sonuç: demo kurulumda backend AYAKTA olsa bile bölüm gizli kalıyordu, yani
+ * ürünün en ayırt edici özelliği kimseye gösterilemiyordu.
+ *
+ * Doğru kural: **gösterilecek bir şey varsa görün.** Backend yoksa (ör. Vercel
+ * önizlemesi) bölüm sessizce yok olur — hata kutusu göstermez.
+ */
+export function MeasuredImpactSection({ teamId, matchId, windowMin = 15 }: {
+  teamId: number | null; matchId: number | null; windowMin?: number;
+}) {
+  const key = teamId != null
+    ? `/admin/teams/${teamId}/decisions/track-record?window_min=${windowMin}` : null;
+  // DecisionTrackRecordCard aynı anahtarı kullanıyor → SWR tekilleştirir,
+  // ikinci istek atılmaz.
+  const { data, error } = useSWR<TrackRecord>(key, apiFetch, {
+    revalidateOnFocus: false, shouldRetryOnError: false,
+  });
+  if (teamId == null || error || !data) return null;
+
+  return (
+    <>
+      <div className="st" style={{ marginTop: 8, marginBottom: 8 }}>
+        <h2>Ölçülen Etki</h2>
+        <span className="ep">kararın öncesi/sonrası maç verisinden — elle işaretleme gerekmez</span>
+      </div>
+      <DecisionTrackRecordCard teamId={teamId} windowMin={windowMin} />
+      <DecisionQualityCard teamId={teamId} windowMin={windowMin} />
+      <MatchDecisionImpactCard matchId={matchId} windowMin={windowMin} />
+    </>
   );
 }
