@@ -84,11 +84,15 @@ def worker_cmd(module: str) -> list[str]:
 
 
 def default_weights() -> str | None:
+    """İnce ayarlı ağırlık klasörü — karma (drone + yan açı) tercih edilir."""
     env = os.environ.get("TRACKING_WEIGHTS")
     if env:
         return env
-    cand = data_root() / "models" / "rfdetr_top_small"
-    return str(cand) if (cand / "meta.json").exists() else None
+    for name in ("rfdetr_mixed_small", "rfdetr_top_small"):
+        cand = data_root() / "models" / name
+        if (cand / "meta.json").exists():
+            return str(cand)
+    return None
 
 
 def _safe(name: str, what: str) -> str:
@@ -358,7 +362,7 @@ def create_job(body: JobCreate, user: models.User = Depends(get_current_user)) -
         "--clip-offset-minutes", str(body.clip_offset_minutes),
     ]
     if weights:
-        cmd += ["--weights", str(weights)]
+        cmd += ["--weights", weights]
     if preview:
         cmd += ["--preview", str(preview)]
     if body.max_seconds:

@@ -422,10 +422,21 @@ venv-cv\Scripts\python.exe -m scripts.track_video --video clip.mp4 \
 venv\Scripts\python.exe -m scripts.ingest_tracking_json --json data/tracking/out/frames.json --tenant t-default
 ```
 
-**İnce ayar (tepeden bakış / drone):** `scripts/build_topview_dataset.py` (TeamTrack klipleri → dilimli
-COCO) + `scripts/train_topview_detector.py` (RF-DETR small, 8 epoch ≈ 25 dk RTX 5060). Test klibinde
-oyuncu recall 0.99 / precision 0.99 / konum hatası 0.20 m / top (3 m) 0.71. Ağırlıklar
-`data/tracking/models/` altında, repoya girmez.
+**İnce ayar:** `scripts/build_topview_dataset.py` (TeamTrack klipleri → dilimli COCO; kamera başına
+farklı `--tiles` ile `--append`) + `scripts/train_topview_detector.py` (RF-DETR small, 8 epoch).
+Varsayılan ağırlık `data/tracking/models/rfdetr_mixed_small` (drone + yan açı karma, 39 dk RTX 5060);
+yoksa `rfdetr_top_small`. Ağırlıklar repoya girmez.
+
+Tespit ölçümü (TeamTrack, eğitim dışı klipler, 5 kare/kamera, eşik 0.3):
+
+| Model | Drone 4K recall/prec | Yan açı 6500×1000 recall/prec |
+|---|---|---|
+| COCO ön-eğitimli | 0.77 / 0.85 | 1.00 / 0.61 (saha dışı insanlar) |
+| Yalnız drone ince ayar | 1.00 / 0.96 | 0.63 / 0.70 |
+| **Karma (drone + yan açı)** | **1.00 / 0.96** | **0.97 / 0.94** |
+
+Tam hat (drone klibi, GT'ye karşı, karma model): oyuncu recall 0.995 / precision 0.995,
+konum hatası 0.20 m, kare başına 22.0/22 oyuncu, top 3 m içinde 0.83, 30 sn klip ≈ 224 sn.
 
 Ortam değişkenleri: `TRACKING_DATA_DIR`, `TRACKING_WORKER_PYTHON`, `TRACKING_WEIGHTS`
 (`TRACKING_WORKER_CMD` testler için işçi stub'ı).
