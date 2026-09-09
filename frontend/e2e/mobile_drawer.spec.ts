@@ -5,7 +5,11 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Mobile drawer (DEMO_MODE)", () => {
-  test.use({ viewport: { width: 390, height: 844 } });  // iPhone 14 Pro
+  // iPhone 14 Pro YATAY. Dikey telefonda (<768px + portrait) uygulama bilinçli
+  // olarak "cihazınızı yatay çevirin" kaplaması gösterir (globals.css) — o
+  // durumda çekmece zaten kullanılamaz. Çekmece UX'i tabletler ve yatay
+  // telefonlar içindir; test de onu doğrulamalı.
+  test.use({ viewport: { width: 844, height: 390 } });
 
   test("hamburger opens drawer, nav link reachable, click closes", async ({ page }) => {
     await page.goto("/decisions/live");

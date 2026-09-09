@@ -9,21 +9,28 @@ import { test, expect } from "@playwright/test";
 test.describe("Decisions live (DEMO_MODE)", () => {
   test("renders primary action banner + engine cards", async ({ page }) => {
     await page.goto("/decisions/live");
-    // ŞİMDİ banner
-    await expect(page.getByText("ŞİMDİ ŞUNU YAP")).toBeVisible();
+    // ŞİMDİ banner — aynı ifade sayfa altındaki açıklamada da geçtiği için
+    // afişin kendisine kapsanır (aksi halde strict mode ihlali).
+    await expect(
+      page.getByTestId("primary-action").getByText("ŞİMDİ ŞUNU YAP"),
+    ).toBeVisible();
     // En az 4 engine kartı (demo seed: 80. dk → closing high, momentum opp, foul high, star starved)
     await expect(page.getByText("Kapanış reçetesi")).toBeVisible();
-    await expect(page.getByText("Momentum")).toBeVisible();
+    // "Momentum" kelimesi momentum göstergesinin açıklamasında da geçiyor
+    await expect(page.getByTestId("momentum-card")).toBeVisible();
     await expect(page.getByText("Yıldız beslemesi")).toBeVisible();
     await expect(page.getByText("Faul ritmi + hakem")).toBeVisible();
-    // Aciliyet rozet (yüksek/orta)
-    await expect(page.getByText("oyun yönetimi")).toBeVisible();
+    // Aciliyet rozeti — tema etiketi sinyal listesinde de geçtiği için afişe kapsanır
+    await expect(
+      page.getByTestId("primary-action").getByText("oyun yönetimi"),
+    ).toBeVisible();
   });
 
   test("minute slider changes closing recipe", async ({ page }) => {
     await page.goto("/decisions/live");
     // Default 80. dk → "yükselt" tempo (berabere son 15 dk)
-    await expect(page.getByText(/tempo: .*yükselt/i)).toBeVisible();
+    // Kart içinde "tempo/yükselt" key_message'da da geçiyor → tempo satırı hedeflenir
+    await expect(page.getByTestId("closing-tempo")).toHaveText(/tempo: .*yükselt/i);
     // Slider'ı erken evreye çek
     const slider = page.locator('input[type="range"]');
     await slider.fill("60");
@@ -83,9 +90,13 @@ test.describe("Decisions live (DEMO_MODE)", () => {
     await expect(page.getByText(/izleme modu|net karar yok/i)).toBeVisible();
     // Late (80): "Berabere · son 15 dk"
     await slider.fill("80");
-    await expect(page.getByText(/son 15 dk/i)).toBeVisible();
-    // Stoppage (92): "uzatma → acil"
+    await expect(
+      page.getByTestId("closing-recipe").getByText(/son 15 dk/i),
+    ).toBeVisible();
+    // Stoppage (92): "uzatma → acil" — reçete kartında görünmeli
     await slider.fill("92");
-    await expect(page.getByText(/uzatma|acil/i)).toBeVisible();
+    await expect(
+      page.getByTestId("closing-recipe").getByText(/uzatma|acil/i).first(),
+    ).toBeVisible();
   });
 });
