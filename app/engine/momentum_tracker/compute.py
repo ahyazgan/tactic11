@@ -49,6 +49,13 @@ class MomentumReport:
     # xG swing
     xg_swing_alert: bool
     alert_text: str             # canlı bildirim
+    # KIRPILMAMIŞ ham momentum. `momentum_score` sözleşme gereği [-1, 1] içinde
+    # kalır (arayüz ve öteki motorlar buna güveniyor) ama sert kırpma "biraz
+    # üstün" ile "ezici üstün"ü aynı sayıya indiriyor. Ölçüldü (n=437): gerçek
+    # maçlarda kararların **%64'ü** |momentum| = 1.00'da toplanıyor ve o grubun
+    # olumsuz sonuç oranı iki katı. Ayırt edecek bilgi tam da kırpmada yok
+    # oluyordu — güven skoru bu yüzden doygun ve ayırt etmez hale geliyordu.
+    momentum_raw: float = 0.0
 
 
 def _shot_xg_proxy(s: Shot) -> float:
@@ -118,6 +125,7 @@ def compute_momentum(
     )
     raw = xt_diff * 2 + shot_diff * 0.3 + poss_diff
     momentum = round(max(-1.0, min(1.0, raw)), 3)
+    momentum_raw = round(raw, 3)
     holder = "us" if momentum > 0.2 else "opponent" if momentum < -0.2 else "balanced"
 
     # Pres kırılma: bizim defansif aksiyon prev → win düşüşü
@@ -162,6 +170,7 @@ def compute_momentum(
         window_min=window_min,
         momentum_score=momentum,
         momentum_holder=holder,
+        momentum_raw=momentum_raw,
         our_window_xt=round(our_xt, 3),
         opp_window_xt=round(opp_xt, 3),
         our_window_shots=our_shots,
@@ -177,6 +186,7 @@ def compute_momentum(
         metric="momentum",
         value={
             "momentum_score": momentum, "momentum_holder": holder,
+            "momentum_raw": momentum_raw,
             "press_breaking": press_breaking, "xg_swing_alert": xg_swing,
             "alert_text": alert,
         },

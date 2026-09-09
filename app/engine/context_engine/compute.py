@@ -30,6 +30,12 @@ THEME_BY_TYPE: dict[str, str] = {
     "substitution": "change_personnel",
     "risk": "change_personnel",
     "tactical": "adjust_shape",
+    # Momentum YÖNE GÖRE ayrı tip: "biz baskınız" ile "rakip baskın" zıt
+    # durumlar ve ölçüldü ki sonuçları da zıt (%21 vs %44 olumlu). Tek tipte
+    # toplamak geçmiş isabet oranının ikisini ayırmasını imkânsız kılıyordu.
+    # Tema aynı kalır — ikisi de şekil ayarı gerektirir.
+    "momentum_us": "adjust_shape",
+    "momentum_opp": "adjust_shape",
     "spatial": "adjust_shape",
     "matchup": "adjust_shape",
     "set_piece": "set_piece",

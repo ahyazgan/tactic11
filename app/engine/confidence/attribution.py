@@ -110,6 +110,92 @@ def attribute_driver(
     )
 
 
+def attribute_stratified(
+    samples: list[tuple[float, bool, float]], driver: str = "sürücü", *,
+    strata: int = 4,
+) -> DriverAttribution:
+    """KARIŞTIRICIYI kontrol ederek ayrım gücü — katmanlı AUC.
+
+    ## Neden gerekli
+
+    Karar etkisi cetveli `sonraki pencere - önceki pencere` farkıdır. Bu ölçü
+    **ortalamaya dönüş** taşır: iyi giderken verilen kararlar sistematik olarak
+    cezalandırılır, kötü giderken verilenler ödüllendirilir. Ölçüldü (n=502,
+    gerçek maçlar) — eğimler ZIT işaretli:
+
+        momentum_us  (biz baskın)  : -0.126
+        momentum_opp (rakip baskın): +0.030
+
+    Aynı sürücü, duruma göre zıt yönde "çalışıyor" görünüyor. Bu sürücünün
+    kalitesi değil, cetvelin yanlılığı. Ham AUC bu ikisini ayıramaz.
+
+    ## Yöntem
+
+    Örnekler karıştırıcıya (`confound`, örn. karar öncesi xG farkı) göre eşit
+    büyüklükte katmanlara bölünür; AUC her katman İÇİNDE hesaplanır ve katman
+    büyüklüğüne göre ağırlıklı ortalanır. Katman içinde karıştırıcı hemen hemen
+    sabit olduğu için geriye sürücünün kendi katkısı kalır.
+
+    `samples`: (sürücü değeri, olumlu mu, karıştırıcı değeri) üçlüleri.
+    """
+    kullanilir = [s for s in samples if s[1] is not None]
+    if len(kullanilir) < MIN_SAMPLES:
+        return attribute_driver(driver, [v for v, ok, _ in kullanilir if ok],
+                                [v for v, ok, _ in kullanilir if not ok])
+
+    sirali = sorted(kullanilir, key=lambda s: s[2])
+    boyut = max(1, len(sirali) // max(1, strata))
+    toplam_agirlik = 0.0
+    toplam_auc = 0.0
+    n_pos = n_neg = 0
+    poslar: list[float] = []
+    neglar: list[float] = []
+    for i in range(0, len(sirali), boyut):
+        katman = sirali[i:i + boyut]
+        p = [v for v, ok, _ in katman if ok]
+        n = [v for v, ok, _ in katman if not ok]
+        n_pos += len(p)
+        n_neg += len(n)
+        poslar += p
+        neglar += n
+        if not p or not n:
+            continue                       # tek sınıflı katman AUC vermez
+        agirlik = float(len(p) * len(n))   # kıyaslanabilir çift sayısı
+        toplam_auc += auc_score(p, n) * agirlik
+        toplam_agirlik += agirlik
+
+    if toplam_agirlik == 0.0:
+        # Her katman tek sınıflı: karıştırıcı sonucu neredeyse TAMAMEN
+        # belirliyor, geriye sürücüye ait ayrılabilir bilgi kalmıyor. Ham
+        # hükme sessizce düşmek yanıltıcı olurdu — ham ölçüm sürücüyü suçlu
+        # gösterir, oysa söylenebilecek tek dürüst şey "ayıramıyorum".
+        ham = attribute_driver(driver, poslar, neglar)
+        return DriverAttribution(
+            driver=driver, auc=0.5, lift=ham.lift,
+            mean_positive=ham.mean_positive, mean_negative=ham.mean_negative,
+            n_pos=n_pos, n_neg=n_neg, verdict="ayrıştırılamıyor",
+            note=(f"karıştırıcı sonucu tek başına belirliyor; her katman tek "
+                  f"sınıflı kaldı — sürücünün kendi katkısı ÖLÇÜLEMEZ "
+                  f"(kontrolsüz ölçüm {ham.auc:.2f} diyordu)"),
+        )
+
+    auc = toplam_auc / toplam_agirlik
+    ham = attribute_driver(driver, poslar, neglar)
+    if auc >= 0.5 + NOISE_BAND:
+        verdict, ek = "ayırıyor", "terim yüksekken sonuç daha sık olumlu"
+    elif auc <= 0.5 - NOISE_BAND:
+        verdict, ek = "TERS", "terim yüksekken sonuç daha sık OLUMSUZ"
+    else:
+        verdict, ek = "ayırmıyor", "sürücü sonucu öngörmüyor"
+    return DriverAttribution(
+        driver=driver, auc=round(auc, 3), lift=ham.lift,
+        mean_positive=ham.mean_positive, mean_negative=ham.mean_negative,
+        n_pos=n_pos, n_neg=n_neg, verdict=verdict,
+        note=(f"{ek} (katmanlı AUC {auc:.2f}; karıştırıcı kontrol edilmeden "
+              f"{ham.auc:.2f} görünüyordu)"),
+    )
+
+
 @dataclass(frozen=True)
 class AttributionReport:
     drivers: tuple[DriverAttribution, ...]
