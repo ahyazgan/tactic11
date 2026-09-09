@@ -347,6 +347,62 @@ def _load_frames(session, match_id: int, team_id: int,
     return frames
 
 
+def _apply_calibration(ctx, cmap):
+    """Karardaki güven değerlerini kalibre olasılıkla değiştir.
+
+    Eşleme kurulmadıysa (yetersiz geçmiş) karar aynen döner. Etiket
+    (yüksek/orta/düşük) da yeni değere göre yeniden hesaplanır — aksi halde
+    "yüksek" yazıp %55 gösteren bir kart çıkardı.
+    """
+    import dataclasses
+
+    from app.engine.confidence.compute import HIGH_THRESHOLD, MED_THRESHOLD
+
+    if not cmap.fitted:
+        return ctx
+
+    def _label(v: float) -> str:
+        return "yüksek" if v >= HIGH_THRESHOLD else "orta" if v >= MED_THRESHOLD else "düşük"
+
+    def _fix(action):
+        if action is None:
+            return None
+        p = round(cmap.apply(action.confidence), 3)
+        return dataclasses.replace(action, confidence=p, confidence_label=_label(p))
+
+    return dataclasses.replace(
+        ctx,
+        primary=_fix(ctx.primary),
+        secondary=tuple(_fix(a) for a in ctx.secondary),
+    )
+
+
+def _confidence_calibration(session, team_id: int):
+    """Takımın geçmişinden kanıt skoru → olasılık eşlemesi kur.
+
+    `score_confidence` bir olasılık değil KANIT GÜCÜ üretir; arayüzde ise
+    "bu karar tutar" olasılığı gibi okunuyor. Ölçüldü: sistem ortalama %84
+    diyor, gerçekleşme %58. Mevcut `historical_hit_rate` terimi bunu
+    düzeltemiyor — beş terimden biri, ağırlığı 0.10, nötr 0.5'e göre tartılıyor,
+    yani skoru en fazla ±0.05 oynatabiliyor.
+
+    Burada geçmişteki (kaydedilmiş güven, ölçülmüş sonuç) çiftlerinden eşleme
+    kurulur. Yetersiz geçmişte eşleme kurulmaz ve ham skor korunur.
+    """
+    from app.engine.confidence.calibration import fit_calibration
+
+    rows = session.execute(
+        select(models.Decision.confidence, models.Decision.outcome).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.team_external_id == team_id,
+            models.Decision.recommended.is_(True),
+            models.Decision.confidence.is_not(None),
+            models.Decision.outcome.in_(("positive", "negative")),
+        )
+    ).all()
+    return fit_calibration([(float(c), o == "positive") for c, o in rows])
+
+
 def _hit_rate(
     session, team_id: int, *,
     score_state: str | None = None,
@@ -443,6 +499,12 @@ def run_context_pipeline(
             memory_threads=memory_threads, memory_theme_hints=hints,
             historical_hit_rate=hit or None,
         ).value
+
+        # Kanıt skorunu takımın kendi geçmişinden öğrenilen OLASILIĞA çevir.
+        # Ham skor "ne kadar bilgim var"ı ölçer; koça ve kalibrasyon ucuna
+        # sunulan sayı "bu karar tutar mı" olmalı.
+        cmap = _confidence_calibration(session, my_team_id)
+        ctx = _apply_calibration(ctx, cmap)
 
         _record_snapshot(session, match, my_team_id, current_minute, out)
 
