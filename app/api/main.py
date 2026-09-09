@@ -55,6 +55,8 @@ from app.api.shared import router as shared_router
 from app.api.sprint3 import router as sprint3_router
 from app.api.sprint4 import router as sprint4_router
 from app.api.sprint5 import router as sprint5_router
+from app.api.tracking import router as tracking_router
+from app.api.tracking_jobs import router as tracking_jobs_router
 from app.core.config import get_settings
 from app.core.logging import get_logger, setup_logging
 from app.core.monitoring import init_sentry
@@ -1681,6 +1683,8 @@ protected.include_router(notes_router)
 protected.include_router(reports_router)
 protected.include_router(physical_tests_router)
 protected.include_router(sportmonks_router)
+protected.include_router(tracking_router)
+protected.include_router(tracking_jobs_router)
 app.include_router(protected)
 # Medya proxy — AUTH YOK (<img src> header gönderemez); yalnız cdn.sportmonks.com.
 app.include_router(media_router)

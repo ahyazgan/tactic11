@@ -10,7 +10,12 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import useSWR from "swr";
+import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import type { TrackingFrame } from "@/lib/tracking-geometry";
+import { DEMO_TRACKING_HOME_TEAM_ID, demoTrackingWindow } from "@/lib/tracking-demo";
+import { TrackingOverlayCard } from "../../../_console/tracking-pitch";
 import { demoLive, demoDecisions, type LiveEvent, type LivePlayerImpact, type DecisionCard } from "@/lib/demo-data";
 import { demoTrackRecord } from "@/lib/track-record";
 import { demoWinProbCurve, demoWinProbNow } from "@/lib/live-win-probability";
@@ -603,6 +608,18 @@ function LiveWsView() {
     setManualReconnectTrigger((x) => x + 1);
   };
 
+  // Saha overlay — WS snapshot dakikasına göre son ~3 dk'nın pozisyon kareleri.
+  // Anahtar tam dakikaya yuvarlanır ki her snapshot'ta yeniden çekilmesin.
+  const overlayMinute = snapshot?.current_minute != null ? Math.floor(snapshot.current_minute) : null;
+  const trackingPath = myTeam && overlayMinute != null
+    ? `/tracking/matches/${matchId}/frames?from_minute=${Math.max(0, overlayMinute - 3)}&to_minute=${overlayMinute}&limit=150`
+    : null;
+  const { data: trackingData } = useSWR<{ frames: TrackingFrame[] }>(
+    trackingPath, apiFetch, { revalidateOnFocus: false, shouldRetryOnError: false },
+  );
+  const trackingFrames = trackingData?.frames ?? [];
+  const trackingFrame = trackingFrames.length ? trackingFrames[trackingFrames.length - 1] : null;
+
   if (!myTeam) {
     return (
       <ConsoleShell active="/matches" title={`Canlı — Maç #${matchId}`} sub="Canlı maç konsolu">
@@ -700,6 +717,13 @@ function LiveWsView() {
           </div>
 
           <NextBestActionPanel action={wsNextAction(snapshot)} />
+
+          <TrackingOverlayCard
+            frame={trackingFrame}
+            recent={trackingFrames}
+            ourTeamId={Number(myTeam)}
+            minute={snapshot.current_minute ?? 0}
+          />
 
           {snapshot.context?.one_liner && (
             <>
@@ -1042,6 +1066,14 @@ function DemoLiveView() {
 
       {/* Sentez: tüm motorların tek önceliklendirilmiş hamlesi */}
       <NextBestActionPanel action={demoNextAction()} />
+
+      {/* Saha overlay — gerçek StatsBomb 360 karelerinden demo fixture */}
+      <TrackingOverlayCard
+        frame={demoTrackingWindow(d.minute).slice(-1)[0] ?? null}
+        recent={demoTrackingWindow(d.minute)}
+        ourTeamId={DEMO_TRACKING_HOME_TEAM_ID}
+        minute={d.minute}
+      />
 
       {/* xG yarışı */}
       <div className="st" style={{ marginTop: 0 }}><h2>xG Yarışı</h2><span className="ep">{d.minute}. dakikaya kadar</span></div>

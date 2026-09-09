@@ -13,12 +13,12 @@ import type { KeyPlayer } from "@/lib/statsbomb-match";
 const THEM = "var(--high)";
 const HUB = "var(--accent)";
 
-const PW = 420, PH = 280, PMX = 6, PMY = 6;
-const ppx = (x: number) => PMX + (x / 100) * (PW - 2 * PMX);
-const ppy = (y: number) => PMY + (y / 100) * (PH - 2 * PMY);
+export const PW = 420, PH = 280, PMX = 6, PMY = 6;
+export const ppx = (x: number) => PMX + (x / 100) * (PW - 2 * PMX);
+export const ppy = (y: number) => PMY + (y / 100) * (PH - 2 * PMY);
 
 /** Saha çizgileri (paylaşılan). */
-function PitchLines() {
+export function PitchLines() {
   return (
     <>
       <rect x={PMX} y={PMY} width={PW - 2 * PMX} height={PH - 2 * PMY} fill="none" stroke="var(--line2)" strokeWidth={1.4} rx={4} />

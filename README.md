@@ -389,3 +389,74 @@ Docker Compose + Postgres ya da bare-metal systemd + cron kurulumu için
 [DEPLOYMENT.md](DEPLOYMENT.md).
 
 Detaylı yol haritası: [ROADMAP.md](ROADMAP.md).
+
+## Video Takibi (saha overlay için ikinci kaynak)
+
+Klip → RF-DETR (Apache-2.0) tespit → ByteTrack takip → forma rengi takım ataması → saha
+homografisi → `TrackingFrame`. Çıktı StatsBomb 360 ile **aynı şemaya** yazılır; `/tracking`
+API'si ve Saha Overlay kaynağı ayırt etmez.
+
+**Ortam:** ağır bağımlılıklar ayrı bir yorumlayıcıda (`venv-cv`, Python 3.12):
+
+```bash
+py -3.12 -m venv venv-cv
+venv-cv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+venv-cv\Scripts\python.exe -m pip install rfdetr supervision opencv-python-headless "scipy==1.15.3"
+venv-cv\Scripts\python.exe -m pip install "rfdetr[train]"   # yalnız ince ayar için
+```
+
+> Windows Smart App Control açıkken çok yeni scipy derlemeleri engellenebilir; `scipy==1.15.3` sabit tutuldu.
+
+**Akış (arayüz):** `/video-tracking` → klip yükle → `/video-tracking/calibrate` ile karede 4+ saha
+işaretine tıkla (çizgiler kareye geri-izdüşülür, hata metre cinsinden) → "Video işle" → iş
+bitince maç listeye düşer. Backend: `app/api/tracking_jobs.py` (`venv-cv` alt süreç + ingest).
+
+**Akış (CLI):**
+
+```bash
+venv-cv\Scripts\python.exe -m scripts.track_video --video clip.mp4 \
+  --calibration data/tracking/calibrations/saha.json --out data/tracking/out/frames.json \
+  --match-id 990001 --home-team 9001 --away-team 9002 --fps 5 --track-fps 15 \
+  --weights data/tracking/models/rfdetr_top_small --tiles 6 --threshold 0.3 --ball-threshold 0.3 \
+  --preview data/tracking/out/preview.mp4
+venv\Scripts\python.exe -m scripts.ingest_tracking_json --json data/tracking/out/frames.json --tenant t-default
+```
+
+**İnce ayar:** `scripts/build_topview_dataset.py` (TeamTrack klipleri → dilimli COCO; kamera başına
+farklı `--tiles` ile `--append`) + `scripts/train_topview_detector.py` (RF-DETR small, 8 epoch).
+Varsayılan ağırlık `data/tracking/models/rfdetr_mixed_small` (drone + yan açı karma, 39 dk RTX 5060);
+yoksa `rfdetr_top_small`. Ağırlıklar repoya girmez.
+
+Tespit ölçümü (TeamTrack, eğitim dışı klipler, 5 kare/kamera, eşik 0.3):
+
+| Model | Drone 4K recall/prec | Yan açı 6500×1000 recall/prec |
+|---|---|---|
+| COCO ön-eğitimli | 0.77 / 0.85 | 1.00 / 0.61 (saha dışı insanlar) |
+| Yalnız drone ince ayar | 1.00 / 0.96 | 0.63 / 0.70 |
+| **Karma (drone + yan açı)** | **1.00 / 0.96** | **0.97 / 0.94** |
+
+Tam hat (drone klibi, GT'ye karşı, karma model): oyuncu recall 0.995 / precision 0.995,
+konum hatası 0.20 m, kare başına 22.0/22 oyuncu, top 3 m içinde 0.83, 30 sn klip ≈ 224 sn.
+
+Ortam değişkenleri: `TRACKING_DATA_DIR`, `TRACKING_WORKER_PYTHON`, `TRACKING_WEIGHTS`
+(`TRACKING_WORKER_CMD` testler için işçi stub'ı).
+
+**Kimlik eşleme:** video takibinde oyuncular `30000+track_id` sentetik id'siyle gelir.
+Video Analiz sayfasındaki *Kimlik eşleme* tablosunda takibi oyuncuya bağlarsın
+(`PUT /tracking/matches/{id}/identities`); kareler servis edilirken isim/forma uygulanır
+ve overlay'de `identity_estimated=false` olarak görünür. Takip listesi:
+`GET /tracking/matches/{id}/tracks` (kare sayısı, süre aralığı, ortalama hız, topla geçen
+kare, ortalama bölge — hangi takibin kim olduğunu ayırt etmeye yarar).
+
+**Kamera tipi ve dilimleme:** `--tiles` yükseklik ekseninde dilim sayısıdır; sütun
+sayısı görüntü oranından hesaplanır (dilimler eğitim oranına yakın kalır). 16:9 drone/
+taktik kamerada `--tiles 6` (dilim 640×360), panoramik yan-açıda (örn. 6500×1000)
+`--tiles 4` (dilim ~433×250) iyi sonuç verir. Panoramik **fisheye birleştirme** uyarısı:
+tek düzlemsel homografi bu görüntülerde tam oturmayabilir (yakın taç çizgisi kadraj
+dışındaysa daha da zor) — kalibrasyon ekranındaki geri-izdüşüm hatası bunun ölçüsüdür;
+2 m üstündeyse ya daha çok/yayılmış nokta seç ya da distorsiyonu giderilmiş akış kullan.
+
+**Takım şekli & pres:** `GET /tracking/matches/{id}/shape?minute=&window=` — `engine.tracking`
+(v2) pozisyon karelerinden genişlik / derinlik / kompaktlık / hat konumları / yerleşim
+tahmini ve rakip topa sahipken pres endeksi üretir. Kaynak ayırt edilmez (360 ya da video);
+kamera dışı oyuncular sayılmaz, bu yüzden yerleşim yalnız kadro görünür + tutarlıyken yazılır.

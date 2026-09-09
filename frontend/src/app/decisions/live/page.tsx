@@ -20,10 +20,15 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import type { TrackingFrame } from "@/lib/tracking-geometry";
+import { DEMO_TRACKING_HOME_TEAM_ID, demoTrackingWindow } from "@/lib/tracking-demo";
 import { ConsoleShell } from "../../_console/shell";
+import { TrackingOverlayCard } from "../../_console/tracking-pitch";
 
-const DEFAULT_MATCH_ID = 9300;
-const DEFAULT_TEAM_ID = 11;
+// Barcelona 1-1 Sevilla (La Liga 2020/21) — StatsBomb 360 freeze-frame'i olan
+// demo maçı; saha overlay'i canlı modda bununla açılır (scripts.ingest_statsbomb_360).
+const DEFAULT_MATCH_ID = 3773672;
+const DEFAULT_TEAM_ID = 217;
 const DEFAULT_STAR_ID = 5503;
 const REPLAY_TICK_MS = 900;
 const REPLAY_MINUTE_STEP = 5;
@@ -48,13 +53,24 @@ interface ClosingStrategy {
   score_state?: string; closing_phase?: string; urgency_level?: string;
   key_message?: string; recipe?: RecipeDetail; risk_reward?: RiskReward;
 }
+// Demo şekli (score/holder) ve backend engine şekli (momentum_score/momentum_holder).
 interface MomentumOut {
-  score?: number; holder?: string; press_breaking?: boolean;
-  xg_swing_alert?: boolean; alert_text?: string | null;
+  score?: number; holder?: string;
+  momentum_score?: number; momentum_holder?: string;
+  press_breaking?: boolean; xg_swing_alert?: boolean; alert_text?: string | null;
+}
+const HOLDER_TR: Record<string, string> = { us: "biz", opponent: "rakip", neutral: "dengeli" };
+// Demo şekli (player_id/verdict/impact) ve backend engine şekli
+// (player_external_id/timing_verdict/impact_estimate) birlikte kabul edilir.
+interface SubTimingAdvice {
+  player_id?: number; player_external_id?: number;
+  verdict?: string; timing_verdict?: string;
+  impact?: number; impact_estimate?: number;
 }
 interface SubTimingOut {
-  package?: string[]; rationale?: string;
-  advices?: { player_id: number; verdict: string; impact: number }[];
+  package?: string[]; package_recommendation?: string[];
+  rationale?: string; package_rationale?: string;
+  advices?: SubTimingAdvice[];
 }
 interface StarFeed {
   involvement_state?: string; suggested_action?: string;
@@ -87,7 +103,7 @@ interface LiveDecisionResponse {
   score?: string;
   momentum?: MomentumOut;
   sub_timing?: SubTimingOut;
-  tactical_triggers?: { type: string; urgency: string; recommendation: string }[];
+  tactical_triggers?: TacticalTriggerItem[] | { triggers?: TacticalTriggerItem[] };
   risk_monitor?: RiskMonitor;
   closing_strategy?: ClosingStrategy;
   star_feed?: StarFeed;
@@ -646,12 +662,14 @@ function EngineCard({
 
 function MomentumCard({ data }: { data?: MomentumOut }) {
   if (!data) return null;
-  const score = data.score ?? 0;
+  const score = data.score ?? data.momentum_score ?? 0;
+  const holderRaw = data.holder ?? data.momentum_holder;
+  const holder = holderRaw ? (HOLDER_TR[holderRaw] ?? holderRaw) : "—";
   const tone = score > 0.2 ? "var(--low)" : score < -0.2 ? "var(--high)" : "var(--mid)";
   return (
     <EngineCard title="Momentum" icon="📈" accent={tone}
       tooltip="Son 10 dakikada hangi takım xT + şut + possession dalgasında baskın. Pres kırılma = bizim defansif aksiyonumuz aniden düştü mü.">
-      <div><b>Sahip:</b> {data.holder ?? "—"} ({score >= 0 ? "+" : ""}{score.toFixed(2)})</div>
+      <div><b>Sahip:</b> {holder} ({score >= 0 ? "+" : ""}{score.toFixed(2)})</div>
       {data.press_breaking && <div style={{ color: "var(--high)" }}>⚠ Pres kırılıyor</div>}
       {data.xg_swing_alert && <div style={{ color: "var(--crit)" }}>⚠ xG swing</div>}
       {data.alert_text && (
@@ -754,22 +772,29 @@ function RiskMonitorCard({ data }: { data?: RiskMonitor }) {
 
 function SubTimingCard({ data }: { data?: SubTimingOut }) {
   if (!data) return null;
-  const nowList = (data.advices ?? []).filter((a) => a.verdict === "now");
+  const advices = (data.advices ?? []).map((a) => ({
+    playerId: a.player_id ?? a.player_external_id,
+    verdict: a.verdict ?? a.timing_verdict ?? "—",
+    impact: a.impact ?? a.impact_estimate,
+  }));
+  const pkg = data.package ?? data.package_recommendation ?? [];
+  const nowList = advices.filter((a) => a.verdict === "now");
   const tone = nowList.length ? "var(--high)" : "var(--mid)";
   return (
     <EngineCard title="İkame zamanlaması" icon="🔄" accent={tone}
       tooltip="Oyuncu yorgunluk projeksiyonu × skor durumu → 'şimdi/10dk sonra/bekle' verdict + paket önerisi.">
       <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 6 }}>
-        {data.rationale}
+        {data.rationale ?? data.package_rationale}
       </div>
-      {data.package && data.package.length > 0 && (
+      {pkg.length > 0 && (
         <div style={{ marginBottom: 8 }}>
-          <b>Paket:</b> {data.package.join(" + ")}
+          <b>Paket:</b> {pkg.join(" + ")}
         </div>
       )}
-      {(data.advices ?? []).slice(0, 3).map((a, i) => (
+      {advices.slice(0, 3).map((a, i) => (
         <div key={i} style={{ fontSize: 11.5 }}>
-          • Oyuncu #{a.player_id} → <b>{a.verdict}</b> (etki: {a.impact.toFixed(2)})
+          • Oyuncu #{a.playerId} → <b>{a.verdict}</b>
+          {a.impact != null && ` (etki: ${a.impact.toFixed(2)})`}
         </div>
       ))}
     </EngineCard>
@@ -837,18 +862,24 @@ function ActiveConceptsCard({ data }: { data?: ActiveConceptOut }) {
   );
 }
 
+// Demo şekli düz dizi; backend engine `{triggers: [...]}` ve `trigger_type`/`fired` verir.
+interface TacticalTriggerItem {
+  type?: string; trigger_type?: string; urgency: string; recommendation: string; fired?: boolean;
+}
+
 function TacticalTriggersCard({
   data,
-}: { data?: { type: string; urgency: string; recommendation: string }[] }) {
-  if (!data || data.length === 0) return null;
+}: { data?: TacticalTriggerItem[] | { triggers?: TacticalTriggerItem[] } }) {
+  const items = Array.isArray(data) ? data : (data?.triggers ?? []);
+  if (items.length === 0) return null;
   return (
     <EngineCard title="Taktiksel trigger'lar" icon="🎯" accent="var(--mid)"
       tooltip="Dizilim değişimi, pres yüksekliği, kanat shift gibi ön-tanımlı kurallar bu dakikada ateşlendi mi.">
-      {data.map((t, i) => (
-        <div key={i} style={{ marginBottom: 6 }}>
+      {items.map((t, i) => (
+        <div key={i} style={{ marginBottom: 6, opacity: t.fired === false ? 0.6 : 1 }}>
           <span style={{ fontSize: 10, textTransform: "uppercase",
             color: "var(--muted)", letterSpacing: 0.6 }}>
-            [{t.type}/{t.urgency}]
+            [{t.type ?? t.trigger_type}/{t.urgency}]{t.fired === false && " · pasif"}
           </span>
           <div style={{ fontSize: 12.5 }}>{t.recommendation}</div>
         </div>
@@ -1085,6 +1116,23 @@ export default function LiveDecisionPage() {
   const aiBrief = DEMO_MODE
     ? demoLiveBrief(minute, data?.context?.primary?.headline ?? null)
     : digestData?.output?.ai_brief;
+
+  // Saha overlay — son ~3 dk'nın pozisyon kareleri (StatsBomb 360 freeze-frame).
+  // Limit aşılırsa backend en güncel kareleri korur; son kare çizilir, pencere
+  // topa sahip olma payına gider.
+  const trackingPath = !DEMO_MODE
+    ? `/tracking/matches/${matchId}/frames`
+      + `?from_minute=${Math.max(0, minute - 3)}&to_minute=${minute}&limit=150`
+    : null;
+  const { data: trackingData } = useSWR<{ frames: TrackingFrame[] }>(
+    trackingPath, apiFetch, {
+      revalidateOnFocus: false, shouldRetryOnError: false,
+      refreshInterval: liveMode ? LIVE_REFRESH_MS : 0,
+    },
+  );
+  const trackingFrames = DEMO_MODE ? demoTrackingWindow(minute) : (trackingData?.frames ?? []);
+  const trackingFrame = trackingFrames.length ? trackingFrames[trackingFrames.length - 1] : null;
+  const trackingTeamId = DEMO_MODE ? DEMO_TRACKING_HOME_TEAM_ID : teamId;
 
   // ▶ Replay otomasyonu — REPLAY_TICK_MS aralıkla dakika ilerletir
   useEffect(() => {
@@ -1416,6 +1464,12 @@ export default function LiveDecisionPage() {
         onWatchClip={data?.context?.primary ? handleWatchClip : undefined}
       />
       <AiBriefPanel brief={aiBrief} />
+      <TrackingOverlayCard
+        frame={trackingFrame}
+        recent={trackingFrames}
+        ourTeamId={trackingTeamId}
+        minute={minute}
+      />
       {clipOpen && clipMeta && (
         <ClipModal
           meta={clipMeta}
@@ -1428,13 +1482,15 @@ export default function LiveDecisionPage() {
         <span className="ep">7 ham sinyal · context engine bunları birleştirir</span>
       </div>
 
-      <style>{`
+      {/* dangerouslySetInnerHTML: `>` ve tırnak SSR'da entity'ye çevrilip hydration
+          uyuşmazlığı yaratıyordu (style raw-text olduğu için tarayıcı decode etmez). */}
+      <style dangerouslySetInnerHTML={{ __html: `
         @media (max-width: 640px) {
           .live-decision-grid { grid-template-columns: 1fr !important; }
           .live-decision-grid > div { min-width: 0 !important; }
           input[type="range"] { height: 32px; }
         }
-      `}</style>
+      ` }} />
       <div className="live-decision-grid" style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))",
