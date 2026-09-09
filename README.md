@@ -512,13 +512,55 @@ devam eder. **Ingest başarısız olursa segment "işlendi" sayılmaz**, 3 kez y
 denenir (DB geçici düşerse kare kaybı olmasın). CV `venv-cv`'de, DB yazımı ana
 `venv`'de koşar (`--ingest-python`); `--database-url` ingest alt sürecine geçirilir.
 
-**Gerçek zaman uyarısı (ölçüldü, RTX 5060):** 4K (3840×2160) girdide `--tiles 6`,
-`--fps 5` ile 10 sn'lik segment ~43–63 sn sürüyor — yani **gerçek zamanın ~7-8 katı
-yavaş**. Bunun büyük kısmı her segment için ayrı `track_video` süreci açılıp modelin
-yeniden yüklenip derlenmesinden geliyor (ilk segment 116 sn). Gerçekten canlı takip
-için: çözünürlüğü düşür (1080p), `--tiles` azalt, `--fps` düşür ya da modeli sıcak
-tutan kalıcı bir işçi süreç kullan. Script her segmentte `✓ gerçek zamana yetişiyor`
-/ `⚠ segmentten yavaş` yazar — kurulumda bu satıra bak.
+**Sıcak model:** izleyici varsayılan olarak modeli bir kez yükleyip segmentleri
+aynı süreçte işler (`--isolate` eski davranışa döner). Dedektör ilk karede batch'ini
+sabitleyip fp16 derlediği için sıcak model yalnız aynı çözünürlükte geçerlidir;
+kaynak çözünürlük değişirse model otomatik yeniden kurulur.
+
+**Takım kimliği çapası:** her segment ayrı fit edildiğinden, takım kimliği "en
+kalabalık küme" kuralıyla verilirse segmentler arası **yer değiştirebilir** (kadraja
+giren oyuncu sayısı değişir) — o zaman "rakip daraldı" sinyali yanlış takımı gösterir.
+İlk segmentte bulunan forma renkleri çapa olarak sabitlenir, sonraki segmentler
+kimliği renge göre eşler (`TeamAssigner.fit(anchor_colors)`).
+
+**Gerçek zaman: henüz yetişmiyor (ölçüldü, RTX 5060, 4K 3840×2160).** Aynı 3 segment,
+`--threshold 0.3`, ince ayarlı `rfdetr_mixed_small`:
+
+| girdi | ayar | süre (8.4/5.0 sn video) | gerçek zaman katı | oyuncu/kare |
+|---|---|---|---|---|
+| 4K | `tiles 6`, `track-fps 15`, ayrı süreç | 63 / 43 sn | ~7.5–8.6× | **22.0** |
+| 4K | `tiles 6`, `track-fps 15`, sıcak model | 50 / 29 sn | ~5.8–6.0× | **22.0** |
+| 4K | `tiles 4`, `track-fps 15`, sıcak model | 50 / 32 sn | ~6.0–6.4× | **22.1** |
+| 4K | `tiles 6`, `track-fps 5`, sıcak model | 32 / 19 sn | ~3.8× | 9.9–13.2 ✗ |
+| 4K | `tiles 4`, `track-fps 5`, sıcak model | 19 / 15 sn | ~2.3–3.0× | 11.5–14.3 ✗ |
+| **1080p** | **`tiles 4`, `track-fps 15`, sıcak model** | **35 / 22 sn** | **~4.2–4.4×** | **21.7** |
+
+**Önerilen canlı ön ayar: 1080p girdi + `--tiles 4 --track-fps 15`.** Başlangıç
+noktasına göre **~2 kat hızlı, tespit kalitesi aynı** (22.0 → 21.7 oyuncu/kare).
+1080p'ye inerken kalibrasyon piksel noktaları da yarıya bölünmeli.
+
+Ölçümden çıkan sonuçlar:
+
+1. **Sıcak model kararlı durumda %21–33 kazandırıyor** (segment başına ~30-40 sn'lik
+   model yükleme/derleme gidiyor) — ama tek başına gerçek zamanı çözmüyor.
+2. **`track-fps` kaliteyi belirleyen ayar, ona dokunma.** 15 → 5 düşürmek kare başına
+   22 oyuncudan ~11'e indiriyor, yani takımın yarısı kayboluyor. Sebep filtre değil
+   (`min_track_seconds` düşük fps'te daha gevşek): 0.2 sn'de oyuncu çok yol aldığı
+   için ByteTrack'in IoU eşleşmesi kopuyor, takipler tek karelik parçalara bölünüp
+   gürültü olarak eleniyor. `engine.tracking_signals` en az 8 oyuncu istediğinden
+   şekil sinyalleri bu ayarda anlamsızlaşır.
+3. **`tiles` darboğaz değil.** 6 → 4 ne kaliteyi düşürdü (22.0 → 22.1) ne de hızı
+   değiştirdi — `tiles 6` bu görüntü için fazlaydı, `tiles 4` bedavaya kullanılabilir.
+4. **Çözünürlük düşürmek serbest kazanç:** 4K → 1080p %30 hızlandırıyor ve oyuncu
+   tespiti düşmüyor (21.7). Demek ki 4K'nın fazladan pikselleri bu model için bilgi
+   taşımıyor, sadece çözme/kırpma maliyeti getiriyor.
+
+Yine de gerçek zamanın ~4 katı yavaş. Kalan yollar: TensorRT/ONNX çıkarım, daha güçlü
+GPU, segmentleri paralel işlemek. Şu an pratik kullanım: **maç sonrası / devre arası
+analiz**, ya da kabul edilen gecikmeyle (birkaç dakika geriden) canlı takip — koç
+kararları dakika ölçeğinde alındığı için bu çoğu senaryoda yeterli. Script her
+segmentte `✓ gerçek zamana yetişiyor` / `⚠ segmentten yavaş` yazar; kurulumda bu
+satıra bak.
 
 **Event beslemesi olmayan kulüp senaryosu:** `/admin/matches/{id}/live-decision` eskiden
 event yoksa boş dönüyordu. Artık event yok ama kare varsa panel yalnız pozisyon

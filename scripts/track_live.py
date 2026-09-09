@@ -22,6 +22,13 @@ Kullanım (venv-cv):
 
 Ctrl+C ile durur. İşlenen segmentler `<watch>/.processed` altına taşınmaz —
 adları bir durum dosyasında tutulur, böylece yeniden başlatınca kaldığı yerden devam eder.
+
+**Sıcak model (varsayılan):** model bir kez yüklenip fp16 derlenir, sonraki
+segmentler aynı dedektörle işlenir. Her segment için ayrı süreç açmak (eski
+davranış) segment başına ~30-40 sn model yükleme/derleme maliyeti getiriyordu;
+canlı maçta bu tek başına gerçek zamana yetişmeyi imkânsız kılıyor. Yalıtım
+gerekirse `--isolate` ile eski davranışa dönülür (segment çökmesi izleyiciyi
+etkilemez, karşılığında her segment yeniden ısınır).
 """
 from __future__ import annotations
 
@@ -45,6 +52,80 @@ def default_ingest_python() -> str:
     sub = "Scripts/python.exe" if sys.platform == "win32" else "bin/python"
     cand = PROJECT_ROOT / "venv" / sub
     return str(cand) if cand.exists() else sys.executable
+
+
+class WarmTracker:
+    """Modeli açık tutan takip işçisi — segmentler arasında yeniden yüklenmez.
+
+    Dedektör ilk `detect()` çağrısında kare boyutuna göre batch'ini sabitleyip
+    fp16 derliyor (bkz. app/tracking/detect.py `_prepare`). Bu yüzden sıcak
+    dedektör YALNIZ aynı çözünürlükteki segmentlerde geçerli; kaynak çözünürlük
+    değişirse (kamera/encoder profili değişti) dedektör yeniden kurulur, yoksa
+    derlenmiş sabit batch ile dilim sayısı uyuşmaz.
+    """
+
+    def __init__(self, *, calibration: str, detector_cfg, pipeline_kwargs: dict):
+        from app.tracking.calibration import PitchCalibration
+
+        self.calib = PitchCalibration.load(calibration)
+        self._detector_cfg = detector_cfg
+        self._pipeline_kwargs = pipeline_kwargs
+        self._detector = None
+        self._size: tuple[int, int] | None = None
+        self.warmup_seconds = 0.0
+        # İlk segmentte bulunan forma renkleri; sonraki segmentlere çapa olarak
+        # geçilir ki ev/deplasman etiketleri yer değiştirmesin.
+        self.team_anchor = None
+
+    def _ensure_detector(self, width: int, height: int):
+        from app.tracking.detect import RFDetrDetector
+
+        if self._detector is not None and self._size != (width, height):
+            print(f"  ! çözünürlük {self._size} → {(width, height)} değişti, "
+                  f"model yeniden kuruluyor", flush=True)
+            self._detector = None
+        if self._detector is None:
+            t0 = time.time()
+            self._detector = RFDetrDetector(self._detector_cfg)
+            self._size = (width, height)
+            self.warmup_seconds = time.time() - t0
+        return self._detector
+
+    def run(self, video: Path, *, out_json: Path, offset_minutes: float,
+            match_id: int, home_team: int, away_team: int, period: int) -> dict:
+        """Tek segmenti sıcak modelle işle → frames JSON yaz, özet döndür."""
+        from app.tracking.frames import frames_to_json
+        from app.tracking.pipeline import PipelineConfig, process_video, video_info
+
+        info = video_info(str(video))
+        det = self._ensure_detector(int(info["width"]), int(info["height"]))
+        cfg = PipelineConfig(
+            detector=self._detector_cfg,
+            clip_offset_minutes=offset_minutes, period=period,
+            **self._pipeline_kwargs,
+        )
+        frames, summary = process_video(
+            str(video), self.calib, match_id=match_id,
+            home_team_id=home_team, away_team_id=away_team, cfg=cfg, detector=det,
+            team_anchor=self.team_anchor,
+        )
+        # İlk geçerli atamayı çapa olarak sabitle (sonraki segmentler buna uyar).
+        if self.team_anchor is None:
+            colors = summary.get("team_colors") or []
+            if len(colors) == 2 and any(any(c) for c in colors):
+                import numpy as np
+
+                self.team_anchor = np.asarray(colors, dtype=float)
+                print(f"  takım renkleri sabitlendi: {colors}", flush=True)
+        payload = frames_to_json(frames, match_id=match_id, extra={
+            "video": video.name, "video_info": info,
+            "home_team_external_id": home_team, "away_team_external_id": away_team,
+            "summary": summary,
+        })
+        out_json.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_json, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False)
+        return summary
 
 
 def _load_state(watch: Path) -> dict:
@@ -111,6 +192,9 @@ def main() -> int:
                         "(verilmezse ortamdaki/.env'deki değer kullanılır)")
     p.add_argument("--poll-seconds", type=float, default=5.0)
     p.add_argument("--once", action="store_true", help="Bekleme; mevcut segmentleri işle ve çık")
+    p.add_argument("--isolate", action="store_true",
+                   help="Her segmenti ayrı süreçte işle (model her seferinde yeniden "
+                        "yüklenir — yavaş, ama segment çökmesi izleyiciyi etkilemez)")
     args = p.parse_args()
 
     watch = Path(args.watch)
@@ -126,18 +210,30 @@ def main() -> int:
     if args.database_url:
         ingest_env["DATABASE_URL"] = args.database_url
 
+    warm: WarmTracker | None = None
+    if not args.isolate:
+        # Ağır import'lar (torch/rfdetr) yalnız sıcak yolda; --isolate'te alt süreç yükler.
+        from app.tracking.detect import DetectorConfig
+
+        warm = WarmTracker(
+            calibration=args.calibration,
+            detector_cfg=DetectorConfig(
+                threshold=args.threshold, tiles=args.tiles, weights=args.weights,
+            ),
+            pipeline_kwargs={
+                "fps_out": args.fps, "track_fps": args.track_fps,
+                "ball_threshold": args.threshold,
+            },
+        )
+
     def _done(name: str) -> None:
         nonlocal index
         processed.add(name)
         index += 1
         _save_state(watch, {"processed": sorted(processed)})
 
-    def _handle(seg: Path) -> None:
-        """Tek segment: takip → JSON → DB. İşlendi işaretlemesi burada yapılır."""
-        offset = _minute_from_name(seg.name, args.minute_from_name)
-        if offset is None:
-            offset = args.start_minute + index * (args.segment_seconds / 60.0)
-        frames_json = out_dir / f"{seg.stem}.json"
+    def _track_isolated(seg: Path, offset: float, frames_json: Path) -> bool:
+        """Eski yol: her segment ayrı süreçte (model her seferinde yeniden yüklenir)."""
         cmd = [
             sys.executable, "-m", "scripts.track_video",
             "--video", str(seg), "--calibration", args.calibration,
@@ -150,10 +246,32 @@ def main() -> int:
         ]
         if args.weights:
             cmd += ["--weights", args.weights]
-        t0 = time.time()
         rc = subprocess.run(cmd, check=False).returncode  # noqa: S603 — sabit komut listesi
         if rc != 0 or not frames_json.exists():
             print(f"  {seg.name}: işlenemedi (çıkış {rc}) — atlandı", flush=True)
+            return False
+        return True
+
+    def _track_warm(seg: Path, offset: float, frames_json: Path) -> bool:
+        """Sıcak model: aynı süreçte, dedektör yeniden yüklenmeden."""
+        assert warm is not None
+        warm.run(
+            seg, out_json=frames_json, offset_minutes=offset,
+            match_id=args.match_id, home_team=args.home_team,
+            away_team=args.away_team, period=args.period,
+        )
+        return frames_json.exists()
+
+    def _handle(seg: Path) -> None:
+        """Tek segment: takip → JSON → DB. İşlendi işaretlemesi burada yapılır."""
+        offset = _minute_from_name(seg.name, args.minute_from_name)
+        if offset is None:
+            offset = args.start_minute + index * (args.segment_seconds / 60.0)
+        frames_json = out_dir / f"{seg.stem}.json"
+        t0 = time.time()
+        ok = _track_isolated(seg, offset, frames_json) if args.isolate \
+            else _track_warm(seg, offset, frames_json)
+        if not ok:
             _done(seg.name)
             return
         ing = subprocess.run(  # noqa: S603 — sabit komut listesi
@@ -182,15 +300,26 @@ def main() -> int:
             return
         took = time.time() - t0
         real_time = took <= args.segment_seconds
+        # Isınma yalnız ilk segmentte (ya da çözünürlük değişiminde) olur;
+        # gerçek zamana yetişme kararını ısınmasız süreye göre ver.
+        extra = ""
+        if warm is not None and warm.warmup_seconds > 0.0:
+            warmup = warm.warmup_seconds
+            warm.warmup_seconds = 0.0
+            steady = took - warmup
+            real_time = steady <= args.segment_seconds
+            extra = f" (ısınma {warmup:.0f} sn hariç {steady:.0f} sn)"
         print(
             f"  {seg.name}: dk {offset:.2f}+ · {written or '?'} kare · "
-            f"{took:.0f} sn {'✓ gerçek zamana yetişiyor' if real_time else '⚠ segmentten yavaş'}",
+            f"{took:.0f} sn{extra} "
+            f"{'✓ gerçek zamana yetişiyor' if real_time else '⚠ segmentten yavaş'}",
             flush=True,
         )
         _done(seg.name)
 
+    mode = "ayrı süreç (--isolate)" if args.isolate else "sıcak model"
     print(f"izleniyor: {watch} · maç {args.match_id} · segment {args.segment_seconds} sn"
-          f" · işlenmiş {len(processed)}", flush=True)
+          f" · işlenmiş {len(processed)} · mod: {mode}", flush=True)
     try:
         while True:
             new = [s for s in _segments(watch) if s.name not in processed]

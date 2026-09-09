@@ -388,10 +388,14 @@ def process_video(
     away_team_id: int,
     cfg: PipelineConfig | None = None,
     detector: RFDetrDetector | None = None,
+    team_anchor: np.ndarray | None = None,
 ) -> tuple[list[TrackingFrame], dict[str, Any]]:
+    """`team_anchor` (2×3 forma rengi) verilirse takım kimliği küme büyüklüğü
+    yerine bu renklere sabitlenir — canlı segment akışında takımların
+    segmentler arası yer değiştirmemesi için (bkz. teams.TeamAssigner.fit)."""
     cfg = cfg or PipelineConfig()
     samples, assigner = collect_observations(video_path, cfg, detector=detector, calib=calib)
-    assignment = assigner.fit()
+    assignment = assigner.fit(team_anchor)
     frames = build_frames(
         samples, assignment.team_by_track, calib,
         match_id=match_id, home_team_id=home_team_id, away_team_id=away_team_id, cfg=cfg,
@@ -417,5 +421,8 @@ def process_video(
             k: sum(1 for s in samples if s.ball_source == k) for k in ("det", "roi", "interp")
         },
         "calibration_reprojection_m": round(calib.reprojection_error_m, 3),
+        # Canlı akışta bir sonraki segmente çapa olarak geçilir (takım kimliği
+        # segmentler arası sabit kalsın diye) — bkz. scripts/track_live.py.
+        "team_colors": [[round(float(c), 1) for c in row] for row in assignment.centers],
     }
     return frames, summary
