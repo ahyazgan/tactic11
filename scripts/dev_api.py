@@ -6,6 +6,7 @@ Wi-Fi'den erişebilir). Manuel env/komut gerekmez.
 """
 from __future__ import annotations
 
+import contextlib
 import os
 import sys
 from pathlib import Path
@@ -13,10 +14,9 @@ from pathlib import Path
 # Windows konsolu cp1254 (Türkçe) olabilir → arrow/em-dash gibi karakterler
 # UnicodeEncodeError verir. stdout/stderr'i utf-8'e çevir (app logları da güvenli).
 for _stream in (sys.stdout, sys.stderr):
-    try:
+    # Akış yeniden yapılandırılamıyorsa (yönlendirilmiş/kapalı) sorun değil.
+    with contextlib.suppress(Exception):
         _stream.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
-    except Exception:
-        pass
 
 ROOT = Path(__file__).resolve().parents[1]
 os.chdir(ROOT)

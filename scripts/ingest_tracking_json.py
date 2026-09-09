@@ -52,7 +52,15 @@ def ensure_match(session, *, match_id: int, tenant_id: str, home: int, away: int
     return True
 
 
-def ingest_json(*, path: str, tenant_id: str, match_id: int | None = None) -> dict:
+def ingest_json(
+    *, path: str, tenant_id: str, match_id: int | None = None, append: bool = False,
+) -> dict:
+    """JSON kareleri → tracking_frames.
+
+    `append=True`: mevcut kareler silinmez — canlı maçta ardışık segmentler
+    aynı maça eklenir (bkz. scripts/track_live.py). Aynı zaman damgalı kare
+    yeniden gelirse güncellenir (ingest zaten idempotent).
+    """
     from app.db.base import Base
     from app.db.session import engine
     from scripts.dev_seed import _sync_missing_columns
@@ -69,7 +77,9 @@ def ingest_json(*, path: str, tenant_id: str, match_id: int | None = None) -> di
     with SessionLocal() as session:
         session.info["tenant_id"] = tenant_id
         created = ensure_match(session, match_id=mid, tenant_id=tenant_id, home=home, away=away)
-        removed = delete_match_frames(session, sport=football.SPORT_NAME, match_external_id=mid)
+        removed = 0 if append else delete_match_frames(
+            session, sport=football.SPORT_NAME, match_external_id=mid,
+        )
         report = ingest_tracking_match(
             session, VideoJsonTrackingSource(path), match_external_id=mid, sport=football.SPORT_NAME,
         )
@@ -86,8 +96,11 @@ def main() -> int:
     p.add_argument("--json", required=True)
     p.add_argument("--tenant", required=True)
     p.add_argument("--match-id", type=int, default=None, help="JSON'daki id yerine bu id altında yaz")
+    p.add_argument("--append", action="store_true",
+                   help="Mevcut kareleri silme — canlı maçta segment ekleme")
     args = p.parse_args()
-    report = ingest_json(path=args.json, tenant_id=args.tenant, match_id=args.match_id)
+    report = ingest_json(path=args.json, tenant_id=args.tenant, match_id=args.match_id,
+                         append=args.append)
     print("\n=== Video Tracking Ingest ===")
     for k, v in report.items():
         print(f"  {k}: {v}")

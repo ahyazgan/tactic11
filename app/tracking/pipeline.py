@@ -49,6 +49,13 @@ class PipelineConfig:
     ball_gap_seconds: float = 1.0   # bu kadar boşluk enterpole edilir
     clip_offset_minutes: float = 0.0
     period: int = 1
+    # Karelere yazılacak kaynak etiketi. Kamera hareketliyse (yayın) buraya
+    # "broadcast_tracking" gelir ve motorlar kareleri top-merkezli sayar —
+    # sabit homografi geçersiz olduğu için şekil/bölge analizi kapanır.
+    source_name: str = "video_tracking"
+    # Kamera hareketliyse (yayın) her karede homografi yeniden bulunur; oturmayan
+    # kareler ATLANIR (sahte konum üretmektense kare kaybetmek yeğdir).
+    per_frame_calibration: bool = False
     preview_path: str | None = None
     preview_width: int = 1600
 
@@ -61,6 +68,9 @@ class SampledObservation:
     persons: list[tuple[int, float, float, float, float, float]]  # tid, x1,y1,x2,y2, conf
     ball: tuple[float, float, float] | None                        # cx, cy, conf
     ball_source: str | None = None                                 # det | roi | interp
+    # Kare başına kalibrasyon açıkken bu karenin kendi homografisi; None ise
+    # hattın sabit kalibrasyonu kullanılır (sabit kamera).
+    calibration: PitchCalibration | None = None
 
 
 def video_info(path: str | Path) -> dict[str, Any]:
@@ -174,16 +184,37 @@ def collect_observations(
         minimum_consecutive_frames=1,
     )
     teams = TeamAssigner()
+    per_frame = None
+    if cfg.per_frame_calibration:
+        if calib is None:
+            raise ValueError("kare başına kalibrasyon için çapa kalibrasyon gerekir")
+        from app.tracking.pitch_lines import PerFrameCalibrator
+
+        per_frame = PerFrameCalibrator(calib, image_size=tuple(calib.image_size))
+    skipped_uncalibrated = 0
     samples: list[SampledObservation] = []
     hits: dict[int, int] = {}
     last_ball: tuple[float, float, int] | None = None   # cx, cy, order
     roi_max_age = max(1, int(cfg.ball_gap_seconds * cfg.track_fps))
 
     for order, frame_idx, seconds, rgb in iter_video_frames(video_path, cfg.track_fps, cfg.max_seconds):
+        frame_calib = calib
+        if per_frame is not None:
+            import cv2
+
+            fc = per_frame.process(cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
+            if not fc.ok:
+                # Kalibre edilemeyen kare: konum üretmek yerine atla. Takipçiye de
+                # verilmez; kopuk kimlik, yanlış konumdan iyidir.
+                skipped_uncalibrated += 1
+                if progress and skipped_uncalibrated % 25 == 1:
+                    print(f"  kare {order} atlandı — {fc.reason}", flush=True)
+                continue
+            frame_calib = fc.calibration
         all_det = det.detect(rgb)
         persons, balls = det.split(all_det)
-        persons = persons[_on_pitch_mask(persons, calib, cfg.pitch_margin_m)]
-        balls = balls[_on_pitch_mask(balls, calib, 1.0)]
+        persons = persons[_on_pitch_mask(persons, frame_calib, cfg.pitch_margin_m)]
+        balls = balls[_on_pitch_mask(balls, frame_calib, 1.0)]
         if len(balls) > 0:
             balls = balls[balls.confidence >= cfg.ball_threshold]
         tracked = tracker.update_with_detections(persons)
@@ -206,11 +237,13 @@ def collect_observations(
             ball_source = "det"
         elif last_ball is not None and order - last_ball[2] <= roi_max_age:
             found = _search_ball_roi(det, rgb, (last_ball[0], last_ball[1]), cfg.ball_roi_px, cfg.ball_threshold * 0.8)
-            if found is not None and (calib is None or calib.is_on_pitch(found[0], found[1], margin_m=1.0)):
+            if found is not None and (frame_calib is None
+                                      or frame_calib.is_on_pitch(found[0], found[1], margin_m=1.0)):
                 ball, ball_source = found, "roi"
         if ball is not None:
             last_ball = (ball[0], ball[1], order)
-        samples.append(SampledObservation(order, frame_idx, seconds, rows, ball, ball_source))
+        samples.append(SampledObservation(order, frame_idx, seconds, rows, ball, ball_source,
+                                          calibration=frame_calib if per_frame else None))
         if progress and order % 50 == 0:
             print(f"  kare {order} · t={seconds:6.1f}s · oyuncu={len(rows)} · top={ball_source or '-'}", flush=True)
 
@@ -220,6 +253,10 @@ def collect_observations(
     for s in samples:
         s.persons = [r for r in s.persons if r[0] not in weak]
     interpolate_ball(samples, roi_max_age)
+    if per_frame is not None and progress:
+        print(f"  kare başına kalibrasyon: {per_frame.frames_calibrated} kare kalibre, "
+              f"{per_frame.frames_rejected} atlandı (oran {per_frame.calibrated_ratio})",
+              flush=True)
     return samples, teams
 
 
@@ -239,8 +276,11 @@ def compute_velocities(
     pos: list[dict[int, tuple[float, float]]] = []
     ball_pos: list[tuple[float, float] | None] = []
     for s in samples:
-        pos.append({tid: calib.image_to_pitch_m((x1 + x2) / 2, y2) for tid, x1, _y1, x2, y2, _c in s.persons})
-        ball_pos.append(calib.image_to_pitch_m(s.ball[0], s.ball[1]) if s.ball else None)
+        # Kare başına kalibrasyonda her karenin kendi homografisi kullanılmalı;
+        # aksi halde kameranın hareketi oyuncu hızı sanılır.
+        c = s.calibration or calib
+        pos.append({tid: c.image_to_pitch_m((x1 + x2) / 2, y2) for tid, x1, _y1, x2, y2, _c in s.persons})
+        ball_pos.append(c.image_to_pitch_m(s.ball[0], s.ball[1]) if s.ball else None)
 
     def speed(a: tuple[float, float], b: tuple[float, float], dt: float) -> float:
         return float(np.hypot(b[0] - a[0], b[1] - a[1]) / dt) if dt > 0 else 0.0
@@ -250,15 +290,19 @@ def compute_velocities(
     n = len(samples)
     for i in range(n):
         out: dict[int, float] = {}
+        # Kalibre edilemeyen kareler atlandığı için ardışık örnekler eşit aralıklı
+        # olmayabilir; zaman farkı örnek indisinden değil GERÇEK saniyeden alınır.
+        dt_prev = samples[i].seconds - samples[i - 1].seconds if i > 0 else 1.0 / track_fps
+        dt_next = samples[i + 1].seconds - samples[i].seconds if i + 1 < n else 1.0 / track_fps
         for tid, p in pos[i].items():
             prev = pos[i - 1].get(tid) if i > 0 else None
             nxt = pos[i + 1].get(tid) if i + 1 < n else None
             if prev is not None and nxt is not None:
-                v = speed(prev, nxt, 2.0 / track_fps)
+                v = speed(prev, nxt, dt_prev + dt_next)
             elif prev is not None:
-                v = speed(prev, p, 1.0 / track_fps)
+                v = speed(prev, p, dt_prev)
             elif nxt is not None:
-                v = speed(p, nxt, 1.0 / track_fps)
+                v = speed(p, nxt, dt_next)
             else:
                 continue
             out[tid] = round(min(v, MAX_PLAYER_SPEED_MPS), 2)
@@ -268,11 +312,11 @@ def compute_velocities(
             prev_b = ball_pos[i - 1] if i > 0 else None
             next_b = ball_pos[i + 1] if i + 1 < n else None
             if prev_b is not None and next_b is not None:
-                bv = speed(prev_b, next_b, 2.0 / track_fps)
+                bv = speed(prev_b, next_b, dt_prev + dt_next)
             elif prev_b is not None:
-                bv = speed(prev_b, b, 1.0 / track_fps)
+                bv = speed(prev_b, b, dt_prev)
             elif next_b is not None:
-                bv = speed(b, next_b, 1.0 / track_fps)
+                bv = speed(b, next_b, dt_next)
             else:
                 bv = None
             if bv is not None:
@@ -307,10 +351,12 @@ def build_frames(
         ]
         ball = BallObservation(s.ball[0], s.ball[1], s.ball[2], velocity_mps=ball_v.get(s.order)) if s.ball else None
         fr = build_frame(
-            match_id=match_id, seconds=s.seconds, order=s.order, calib=calib,
+            match_id=match_id, seconds=s.seconds, order=s.order,
+            calib=s.calibration or calib,
             players=players, ball=ball, home_team_id=home_team_id, away_team_id=away_team_id,
             period=cfg.period, clip_offset_minutes=cfg.clip_offset_minutes,
             ball_estimated=(s.ball_source == "interp"),
+            source_name=cfg.source_name,
         )
         if fr is not None:
             out.append(fr)
@@ -388,10 +434,14 @@ def process_video(
     away_team_id: int,
     cfg: PipelineConfig | None = None,
     detector: RFDetrDetector | None = None,
+    team_anchor: np.ndarray | None = None,
 ) -> tuple[list[TrackingFrame], dict[str, Any]]:
+    """`team_anchor` (2×3 forma rengi) verilirse takım kimliği küme büyüklüğü
+    yerine bu renklere sabitlenir — canlı segment akışında takımların
+    segmentler arası yer değiştirmemesi için (bkz. teams.TeamAssigner.fit)."""
     cfg = cfg or PipelineConfig()
     samples, assigner = collect_observations(video_path, cfg, detector=detector, calib=calib)
-    assignment = assigner.fit()
+    assignment = assigner.fit(team_anchor)
     frames = build_frames(
         samples, assignment.team_by_track, calib,
         match_id=match_id, home_team_id=home_team_id, away_team_id=away_team_id, cfg=cfg,
@@ -417,5 +467,8 @@ def process_video(
             k: sum(1 for s in samples if s.ball_source == k) for k in ("det", "roi", "interp")
         },
         "calibration_reprojection_m": round(calib.reprojection_error_m, 3),
+        # Canlı akışta bir sonraki segmente çapa olarak geçilir (takım kimliği
+        # segmentler arası sabit kalsın diye) — bkz. scripts/track_live.py.
+        "team_colors": [[round(float(c), 1) for c in row] for row in assignment.centers],
     }
     return frames, summary

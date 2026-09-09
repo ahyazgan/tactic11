@@ -552,10 +552,7 @@ def limb_asymmetry(left: float, right: float) -> AsymmetryReport:
     if hi == 0:
         raise ValueError("en az bir ölçüm pozitif olmalı")
     asym = round(abs(left - right) / hi * 100, 2)
-    if abs(left - right) < 1e-9:
-        side = "denge"
-    else:
-        side = "sol" if left > right else "sağ"
+    side = "denge" if abs(left - right) < 1e-9 else ("sol" if left > right else "sağ")
     if asym > ASYMMETRY_HIGH_PCT:
         flag = "kırmızı"
     elif asym > ASYMMETRY_WARN_PCT:

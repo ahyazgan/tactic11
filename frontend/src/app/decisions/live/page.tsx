@@ -24,6 +24,7 @@ import type { TrackingFrame } from "@/lib/tracking-geometry";
 import { DEMO_TRACKING_HOME_TEAM_ID, demoTrackingWindow } from "@/lib/tracking-demo";
 import { ConsoleShell } from "../../_console/shell";
 import { TrackingOverlayCard } from "../../_console/tracking-pitch";
+import { SpaceMapCard, type SpaceMapOut } from "../../_console/space-map-card";
 
 // Barcelona 1-1 Sevilla (La Liga 2020/21) — StatsBomb 360 freeze-frame'i olan
 // demo maçı; saha overlay'i canlı modda bununla açılır (scripts.ingest_statsbomb_360).
@@ -110,6 +111,8 @@ interface LiveDecisionResponse {
   foul_pressure?: FoulPressure;
   active_concepts?: ActiveConceptOut;
   context?: ContextDecision;
+  /** engine.space_map — yalnız pozisyon karesi olan maçlarda gelir */
+  space_map?: SpaceMapOut;
 }
 
 // --------------------------------------------------------------------------- //
@@ -1470,6 +1473,7 @@ export default function LiveDecisionPage() {
         ourTeamId={trackingTeamId}
         minute={minute}
       />
+      <SpaceMapCard data={data?.space_map} />
       {clipOpen && clipMeta && (
         <ClipModal
           meta={clipMeta}

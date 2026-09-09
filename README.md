@@ -390,6 +390,30 @@ Docker Compose + Postgres ya da bare-metal systemd + cron kurulumu için
 
 Detaylı yol haritası: [ROADMAP.md](ROADMAP.md).
 
+## Karar Etkisi (post-match learning)
+
+Koçun maç-içi hamleleri `decisions` tablosuna yazılıyor; `engine.decision_impact`
+her kararın **öncesi/sonrası** penceresini ölçüp etkiyi sayıya döker:
+
+- Pencereler maç sonuna kırpılır ve metrikler **dakika başına** normalize edilir
+  (88. dk kararının 2 dakikalık "sonrası"ı 15 dakikayla kıyaslanmasın).
+- Ölçülenler: xG farkı, xT, şut, gol, saha eğimi (hücum üçte-biri pas payı).
+- Hüküm: `positive` / `negative` / `neutral` / `insufficient_data`; güven pencere
+  uzunluğu ve olay yoğunluğundan gelir.
+
+| Uç | İş |
+|---|---|
+| `GET /admin/matches/{id}/decisions/learning` | maçtaki her kararın ölçümü |
+| `POST /admin/matches/{id}/decisions/auto-outcome` | ölçümü `outcome` alanına yazar (elle girilenleri ezmez) |
+| `GET /admin/teams/{id}/decisions/track-record` | karar defteri: tip + dakika bandı kırılımı, en iyi/en kötü |
+
+Yazılan sonuçlar `decisions/feedback` üzerinden `context_engine` güven skorunu
+kalibre eder: sistem bu koçun hangi tip hamlesinin işe yaradığını öğrenir.
+Arayüz: **Karar Takip** sayfasında "Ölçülen Etki" bölümü (`Ölç ve kaydet` düğmesi).
+
+Ölçüm vekildir, nedensellik kanıtı değil — skor durumu, kart ve rakip hamlesi de
+aynı pencerede etkilidir; arayüz bunu açıkça yazar.
+
 ## Video Takibi (saha overlay için ikinci kaynak)
 
 Klip → RF-DETR (Apache-2.0) tespit → ByteTrack takip → forma rengi takım ataması → saha
@@ -460,3 +484,333 @@ dışındaysa daha da zor) — kalibrasyon ekranındaki geri-izdüşüm hatası 
 (v2) pozisyon karelerinden genişlik / derinlik / kompaktlık / hat konumları / yerleşim
 tahmini ve rakip topa sahipken pres endeksi üretir. Kaynak ayırt edilmez (360 ya da video);
 kamera dışı oyuncular sayılmaz, bu yüzden yerleşim yalnız kadro görünür + tutarlıyken yazılır.
+
+### Canlı maç: segment akışı → maç-içi karar paneli
+
+Klip sonrası işlemeye ek olarak video **maç sırasında** okunabilir. Kamera/encoder
+klasöre segment yazar, `scripts/track_live.py` klasörü izler; her yeni segmenti takip
+hattından geçirip kareleri **aynı maça ekler** (`ingest_tracking_json --append`).
+Canlı karar paneli o kareleri okuyup pozisyon sinyali üretir.
+
+```bash
+# kulüp tarafında (kamera → segment)
+ffmpeg -i rtsp://kamera -c copy -f segment -segment_time 30 -reset_timestamps 1 \
+  data/tracking/live/seg_%04d.mp4
+
+# bizim tarafta (izleyici)
+venv-cv\Scripts\python.exe -m scripts.track_live --watch data/tracking/live \
+  --calibration data/tracking/calibrations/saha.json \
+  --match-id 990100 --home-team 611 --away-team 612 --tenant t-default \
+  --segment-seconds 30 --weights data/tracking/models/rfdetr_mixed_small \
+  --database-url "postgresql+psycopg://..."
+```
+
+Segment → dakika eşlemesi ada göre sırayla yapılır (`--start-minute` ile kaydır,
+ya da dosya adından `--minute-from-name 'min_(\d+)'` ile oku). İşlenen segmentler
+`<watch>/.track_live_state.json` içinde tutulur → yeniden başlatınca kaldığı yerden
+devam eder. **Ingest başarısız olursa segment "işlendi" sayılmaz**, 3 kez yeniden
+denenir (DB geçici düşerse kare kaybı olmasın). CV `venv-cv`'de, DB yazımı ana
+`venv`'de koşar (`--ingest-python`); `--database-url` ingest alt sürecine geçirilir.
+
+**Sıcak model:** izleyici varsayılan olarak modeli bir kez yükleyip segmentleri
+aynı süreçte işler (`--isolate` eski davranışa döner). Dedektör ilk karede batch'ini
+sabitleyip fp16 derlediği için sıcak model yalnız aynı çözünürlükte geçerlidir;
+kaynak çözünürlük değişirse model otomatik yeniden kurulur.
+
+**Takım kimliği çapası:** her segment ayrı fit edildiğinden, takım kimliği "en
+kalabalık küme" kuralıyla verilirse segmentler arası **yer değiştirebilir** (kadraja
+giren oyuncu sayısı değişir) — o zaman "rakip daraldı" sinyali yanlış takımı gösterir.
+İlk segmentte bulunan forma renkleri çapa olarak sabitlenir, sonraki segmentler
+kimliği renge göre eşler (`TeamAssigner.fit(anchor_colors)`).
+
+**Gerçek zaman: henüz yetişmiyor (ölçüldü, RTX 5060, 4K 3840×2160).** Aynı 3 segment,
+`--threshold 0.3`, ince ayarlı `rfdetr_mixed_small`:
+
+| girdi | ayar | süre (8.4/5.0 sn video) | gerçek zaman katı | oyuncu/kare |
+|---|---|---|---|---|
+| 4K | `tiles 6`, `track-fps 15`, ayrı süreç | 63 / 43 sn | ~7.5–8.6× | **22.0** |
+| 4K | `tiles 6`, `track-fps 15`, sıcak model | 50 / 29 sn | ~5.8–6.0× | **22.0** |
+| 4K | `tiles 4`, `track-fps 15`, sıcak model | 50 / 32 sn | ~6.0–6.4× | **22.1** |
+| 4K | `tiles 6`, `track-fps 5`, sıcak model | 32 / 19 sn | ~3.8× | 9.9–13.2 ✗ |
+| 4K | `tiles 4`, `track-fps 5`, sıcak model | 19 / 15 sn | ~2.3–3.0× | 11.5–14.3 ✗ |
+| **1080p** | **`tiles 4`, `track-fps 15`, sıcak model** | **35 / 22 sn** | **~4.2–4.4×** | **21.7** |
+
+**Önerilen canlı ön ayar: 1080p girdi + `--tiles 4 --track-fps 15`.** Başlangıç
+noktasına göre **~2 kat hızlı, tespit kalitesi aynı** (22.0 → 21.7 oyuncu/kare).
+1080p'ye inerken kalibrasyon piksel noktaları da yarıya bölünmeli.
+
+Ölçümden çıkan sonuçlar:
+
+1. **Sıcak model kararlı durumda %21–33 kazandırıyor** (segment başına ~30-40 sn'lik
+   model yükleme/derleme gidiyor) — ama tek başına gerçek zamanı çözmüyor.
+2. **`track-fps` kaliteyi belirleyen ayar, ona dokunma.** 15 → 5 düşürmek kare başına
+   22 oyuncudan ~11'e indiriyor, yani takımın yarısı kayboluyor. Sebep filtre değil
+   (`min_track_seconds` düşük fps'te daha gevşek): 0.2 sn'de oyuncu çok yol aldığı
+   için ByteTrack'in IoU eşleşmesi kopuyor, takipler tek karelik parçalara bölünüp
+   gürültü olarak eleniyor. `engine.tracking_signals` en az 8 oyuncu istediğinden
+   şekil sinyalleri bu ayarda anlamsızlaşır.
+3. **`tiles` darboğaz değil.** 6 → 4 ne kaliteyi düşürdü (22.0 → 22.1) ne de hızı
+   değiştirdi — `tiles 6` bu görüntü için fazlaydı, `tiles 4` bedavaya kullanılabilir.
+4. **Çözünürlük düşürmek serbest kazanç:** 4K → 1080p %30 hızlandırıyor ve oyuncu
+   tespiti düşmüyor (21.7). Demek ki 4K'nın fazladan pikselleri bu model için bilgi
+   taşımıyor, sadece çözme/kırpma maliyeti getiriyor.
+
+Yine de gerçek zamanın ~4 katı yavaş. Kalan yollar: TensorRT/ONNX çıkarım, daha güçlü
+GPU, segmentleri paralel işlemek. Şu an pratik kullanım: **maç sonrası / devre arası
+analiz**, ya da kabul edilen gecikmeyle (birkaç dakika geriden) canlı takip — koç
+kararları dakika ölçeğinde alındığı için bu çoğu senaryoda yeterli. Script her
+segmentte `✓ gerçek zamana yetişiyor` / `⚠ segmentten yavaş` yazar; kurulumda bu
+satıra bak.
+
+**Event beslemesi olmayan kulüp senaryosu:** `/admin/matches/{id}/live-decision` eskiden
+event yoksa boş dönüyordu. Artık event yok ama kare varsa panel yalnız pozisyon
+verisiyle çalışır: `engine.tracking_signals` ardışık iki pencerenin şekil/pres farkından
+sinyal üretir (blok açıldı/sıkıştı, hat yükseldi/düştü, rakip daraldı, pres düştü) ve
+bunlar `context_pipeline` üzerinden birincil karara dönüşür. Doğrulandı: sıfır event'li
+video maçında panel *"Rakip 6 m daraldı — kanatlar boş, oyunu genişlet"* birincil
+kararını üretiyor (`tests/test_api_live_decision_tracking_only.py`).
+
+**Dürüstlük kuralı:** şekil sinyalleri yalnız **sürekli takipte** (video) üretilir.
+StatsBomb 360 kareleri event-çapalı ve topun çevresini gösterdiği için orada
+`continuous=False` geçilir → yalnız topa göreli pres sinyalleri çıkar. Aksi halde
+"hat 22 m yükseldi" gibi sahte sinyaller üretiliyordu. İki pencere arasında görünen
+oyuncu sayısı 2'den çok oynarsa şekil kıyaslanmaz.
+
+## Koç Karar Zekâsı (karar → ölçüm → kalibrasyon)
+
+Koçun maç-içi hamlesi işe yaradı mı, ve sistemin kendi güveni dürüst mü?
+
+**1. Karar etkisi** — `engine.decision_impact`: her kararın öncesi/sonrası penceresi
+(varsayılan 15 dk) xG farkı, xT, şut, gol ve saha eğimi üzerinden kıyaslanır. Pencereler
+maç sonuna kırpılır ve metrikler **dakika başına** normalize edilir (88. dakikadaki
+kararın 2 dakikalık sonrası, 15 dakikalık öncesiyle haksız kıyaslanmasın). Hüküm
+positive/negative/neutral/insufficient_data — ve **xG ile xT'nin aynı yöne gitmesi
+şartı** vardır, tek metrik yeter sayılmaz.
+
+- `GET /admin/matches/{id}/decisions/learning` — maçtaki kararların ölçümü
+- `POST /admin/matches/{id}/decisions/auto-outcome` — ölçümü `Decision.outcome`'a yazıp
+  geri besleme döngüsünü kapatır. Elle girilmiş sonuçlar korunur (oto kayıtlar `[oto]`
+  önekiyle ayrılır); `?overwrite_manual=true` ile ezilebilir.
+- `GET /admin/teams/{id}/decisions/track-record` — takım defteri, tip ve dakika bandı kırılımı
+
+**2. Karar kalitesi** — `GET /admin/teams/{id}/decisions/quality`: `engine.backtest`
+kalibrasyonu + öneri/koç kıyası. İki soruya bakar: sistem "%70 güvenle öner" dediğinde
+gerçekten %70 tutuyor mu, ve sistemin önerdiği kararlar koçun kendi aldıklarından iyi mi.
+
+> **Yanıttaki iki "isabet" karıştırılmamalı:** `confidence_calibration.accuracy` =
+> 0.5 eşiğinde sınıflandırma doğruluğu; `recommended_vs_own.*.hit_rate` = pozitif
+> çıkan karar oranı. Bu yüzden kalibrasyon tarafında `hit_rate` adı bilinçli
+> kullanılmıyor.
+
+Arayüz: **Karar Takip** sayfası (`/decisions/track`) → "Ölçülen Etki" bölümü.
+`DecisionTrackRecordCard` (defter), `DecisionQualityCard` (kalibrasyon çubukları +
+öneri vs koç), `MatchDecisionImpactCard` (maç kırılımı + "Ölç ve kaydet").
+
+**Sınır:** ölçüm vekildir, nedensellik kanıtı değil — karar sonrası pencerede skor
+durumu, kartlar ve rakibin hamlesi de etkilidir. Öneri/koç kıyası gözlemseldir (iki
+grup farklı maç durumlarında oluşur). Kalibrasyon n<20 iken yön göstergesi sayılmalı;
+kart bunu "yön göstergesi / anlamlı" etiketiyle açıkça yazar.
+
+### Boşluk haritası — "nerede üstünlük var, nereye oyna"
+
+`engine.tracking` takımın **şeklini** ölçer, `engine.tracking_signals` iki pencere
+arasındaki **değişimi** yakalar. İkisi de takım geneli ortalamadır: koça "rakip
+daraldı" der ama **nerede** boşluk açıldığını söylemez. `engine.space_map` o boşluğu
+sahanın üstüne yerleştirir:
+
+- **Bölgesel sayısal üstünlük** — saha 3 koridor × 3 üçte bire bölünür, her hücrede
+  kare başına ortalama oyuncu farkı (biz − rakip) hesaplanır
+- **Hatlar arası boşluk** — rakip geri hattı ile önündeki hat arası mesafe + o cepte
+  kaç oyuncumuz var ("cebe gir")
+- **Zayıf taraf** — rakibin terk ettiği koridor ("kanat değiştir")
+
+Bulgular `context_pipeline` üzerinden `space:*` anahtarlı `spatial` sinyal olarak
+karar motoruna girer; arayüzde `_console/space-map-card.tsx` 3×3 ızgarayı çizer
+(sağ kenar hep bizim hücum ettiğimiz kale).
+
+**Hücum yönü bu motorun ön koşulu.** "Hücum üçte biri" yön bilinmeden anlamsızdır ve
+takımlar ikinci yarıda taraf değiştirir. Veride yön bilgisi yok; kalecinin konumundan
+(yoksa en derin oyuncudan) çıkarılır. Yön ters ise saha **180° döndürülür** — yani
+`x → 100-x` ile birlikte `y → 100-y`. Sadece x'i aynalamak koridorları ters çevirir
+("sol" derken sağı gösterir); testler bunu açıkça kovalar.
+
+**Üretmediği zaman sebebini söyler** — boş kart koçu "veri mi yok, sinyal mi yok"
+ikileminde bırakıyordu:
+
+| durum | davranış |
+|---|---|
+| event-çapalı kareler (StatsBomb 360) | bölge sayımı yapılmaz — freeze-frame topun çevresini gösterir |
+| görünür oyuncu < 8 | sayım güvenilmez |
+| oyuncuların x yayılımı < %45 | "kamera sahanın yalnız ~%X'ini görüyor" |
+| hücum yönü çıkarılamadı | "kaleci görünmüyor, iki takımın derinliği yakın" |
+
+**Yanlış sinyalden kaçınma:** bir koridorda hiç oyuncu yoksa (ne biz ne rakip) orası
+kameranın görmediği yerdir; "rakip o kanadı boşalttı" demek uydurma olur, bu yüzden
+zayıf-taraf sinyali koridorun gözlendiğine dair kanıt ister. Aciliyet üçte bire göre
+ağırlıklıdır: hücum üçte birindeki üstünlük doğrudan gol şansıdır, orta sahadaki aynı
+fark şekil sinyallerini ezmemelidir.
+
+**Mevcut demo klibinde çalışmaz** — TeamTrack drone klibi sahanın orta bandını
+gösteriyor, kaleciler kadraja girmiyor, yön çıkarılamıyor. Motor bunu sessizce
+uydurmak yerine sebebi yazıyor. Kulübün tam saha gören taktik kamerasında çalışır.
+
+### Yayın kamerası (TV) — neden ayrı bir sorun, ne yapılıyor
+
+Takip hattı **tek ve sabit** bir homografi kullanır: kalibrasyon bir kez yapılır, her
+karede aynı matrisle piksel → saha metresi çevrilir. Bu yalnız kamera hiç oynamıyorsa
+doğrudur. Ölçüldü (4K, gerçek kalibrasyon):
+
+| kamera kayması | oyuncunun sahada kayması |
+|---|---|
+| 30 px | 1.1 m |
+| 100 px | 3.6 m |
+
+`engine.tracking_signals` eşikleri 2.5–4 m. Yani **kamera hareketi tek başına sahte
+taktik sinyal üretir**: "geri hat 4 m yükseldi" der, oysa hat yerinde durmuş, kamera
+kaymıştır. Yayın kamerası saniyede yüzlerce piksel çevirir.
+
+**Koruma:** `app/tracking/camera.py` videoyu işlemeden önce kameraya bakar. İki ardışık
+örnek kare arasında faz korelasyonu global kaymayı ve tutarlılığını, histogram uzaklığı
+içerik değişimini verir. Ayrım şu: hızlı bir **çevirme** de histogramı çok değiştirir
+ama kayması tutarlıdır; **kesmede** tutarlılık yoktur.
+
+| hüküm | kaynak etiketi | sonuç |
+|---|---|---|
+| `static` | `video_tracking` | sabit homografi geçerli → tam analiz (şekil + bölge) açık |
+| `panning` | `broadcast_tracking` | tek çekim ama kamera çeviriyor → top-merkezli |
+| `broadcast` | `broadcast_tracking` | kesme + hareket → top-merkezli |
+| `unknown` | `broadcast_tracking` | analiz yapılamadı → güvenli tarafta kısıtlı |
+
+Etiket kareye yazılır, ingest'te `meta_json.source` olarak saklanır ve motorlara kadar
+gider: `broadcast_tracking` kareler **StatsBomb 360 freeze-frame'lerle aynı sınıf**
+sayılır (top-merkezli), şekil ve bölge analizi kapanır, yalnız topa göreli sinyaller
+üretilir. `scripts/track_video.py --camera auto|static|broadcast` ile elle de verilebilir.
+
+Gerçek veriyle doğrulandı: TeamTrack drone klibi → `static` (ortalama 0.02 px hareket);
+aynı klipten üretilen çevirmeli/zoomlu yayın taklidi → `panning` (%96 hareket, ortalama
+36.7 px) → tam analiz kapatıldı.
+
+**Bilinen sınır:** kesme tespiti sahne değişimine (kalabalık, yakın çekim, replay)
+göre ayarlıdır; aynı sahneye sert zoom "hareket" olarak okunur. Sonuç yine güvenli
+taraftır (kısıtlı mod), ama kesme sayısı olduğundan az raporlanabilir. Eşikler gerçek
+yayın görüntüsüyle ayarlanmalıdır.
+
+**TV yayınından tam saha analizi istiyorsanız** gereken şey bellidir ve bu sürümde
+YOKTUR: **kare başına kalibrasyon** — her karede saha çizgilerini (taç, ceza sahası,
+orta yuvarlak) tespit edip homografiyi yeniden hesaplamak; ayrıca kesme tespiti,
+replay ayıklama ve çekim sınıflandırma (ana kamera mı, yakın çekim mi). Bunlar
+olmadan TV yayınından çıkarılabilecek dürüst sonuç **topun çevresiyle sınırlıdır**.
+
+### Kare başına kalibrasyon — hareketli kamerada gerçek konum
+
+Sabit homografi yalnız sabit kamerada doğrudur. Yayın kamerası çevirdiğinde
+oyuncular sahada kaymış görünür ve sahte taktik sinyal çıkar. `--per-frame-calibration`
+homografiyi **her karede yeniden bulur**: modelin saha çizgileri görüntüdeki gerçek
+çizgilere oturtulur.
+
+**Nasıl:** sıfırdan çözmek yerine önceki karenin homografisinden başlanıp iyileştirilir
+(kamera bir karede az oynar). Parametre olarak matris elemanları değil **sahanın dört
+köşesinin görüntüdeki konumu** kullanılır — hepsi piksel biriminde, geometrik olarak
+anlamlı. Arama hamleleri gerçek kamera hareketlerine karşılık gelir: öteleme (pan),
+ölçek (zoom), tek köşe (perspektif).
+
+**Ölçülen doğruluk.** Sayılar `scripts/bench_calibration.py` ile üretilir —
+iddiaların hepsi tekrar koşturulabilir:
+
+```bash
+# 1) Ölçüm videosu + saha gerçeği üret (bir kez)
+venv-cv\Scripts\python.exe -m scripts.bench_calibration make ^
+    --source data/tracking/live/seg_0000.mp4 ^
+    --calibration data/tracking/calibrations/saha.json ^
+    --out-dir data/tracking/bench
+
+# 2) Tabloyu üret
+venv-cv\Scripts\python.exe -m scripts.bench_calibration table ^
+    --bench-dir data/tracking/bench --frames 50
+```
+
+Yöntem: sabit kameralı bir klipten kırpma penceresi gezdirilerek pan+zoom taklidi
+üretilir (1900 px gezinme + zoom salınımı). Kırpma parametreleri bilindiği için her
+karenin **gerçek** homografisi analitik hesaplanır; hata metre cinsinden ölçülür.
+
+| yöntem | ortalama hata | en kötü | kalibre kare |
+|---|---|---|---|
+| sabit homografi (eski davranış) | **16.11 m** | 28.87 m | — |
+| kare başına, her kare | **0.12 m** | 0.29 m | %100 |
+| kare başına, her 2. kare | 0.11 m | 0.24 m | %100 |
+| kare başına, her 3. kare | 0.09 m | 0.24 m | %100 |
+| kare başına, her 5. kare | — | — | **%2 (reddediyor)** |
+
+> Sentetik hareket düzgündür (gerçek kameramanın ani düzeltmeleri yoktur) ve
+> sıkıştırma bozulmaları azdır — bu sayılar **iyimser taraftadır** ve gerçek yayın
+> görüntüsünde doğrulanması gerekir.
+
+**`--track-fps 15` şart.** Kalibrasyon kamerayı ancak ardışık örnekler yakınsa takip
+eder; 30 fps kaynakta her 3. kareye kadar sorunsuz, her 5. karede kopuyor. `track-fps 5`
+denendiğinde 30 karenin yalnız 1'i kalibre oldu. Zaten tespit/takip kalitesi de 15
+istiyor (bkz. yukarıdaki performans tablosu) — iki kısıt aynı yeri gösteriyor. Script
+düşük değerde uyarır.
+
+**Bulamadığında susar.** Bu motorun işi doğru homografiyi bulmak kadar, bulamadığında
+konum üretmemektir:
+
+- Oturma kalitesi (inlier) **tek başına yetmez**: sahanın paralel çizgileri birbirine
+  benzediği için homografi yanlış çizgiye kilitlenebilir. Ölçüldü — böyle oturmalar
+  %55 inlier alıyor, doğru oturmalardan biri %58. Ayıran şey fizik: yanlış çözüm bir
+  karede 36 m sıçrıyor, ki bu imkânsızdır. Bu yüzden süreklilik kapısı var.
+- **Otomatik yeniden yakalama kapalı.** Denendi: kesme sonrası iki ardışık kare AYNI
+  yanlış çizgiye kilitlenip birbirini "doğruladı" ve hata 499 m'ye çıktı. Artık takip
+  kaybolunca kare üretilmiyor, dışarıdan çapa bekleniyor — **TV yayınında bu, çekim
+  başına çapa gerektiği anlamına gelir**.
+- Yakın çekim/replay (saha çizgisi yok) → kare atlanır.
+
+**Maliyet:** 88 ms/kare (720p, CPU). 25 fps gerçek zaman için 40 ms gerekir; şu an
+2.2 kat yavaş. Düşürme yolları: çizgi maskesini küçültmek, model noktası sayısını
+azaltmak, GPU'ya taşımak.
+
+**Kaynak etiketi yükselir:** kamera hareketli olduğu için `broadcast_tracking`
+işaretlenen kareler, kare başına kalibrasyon başarılıysa `video_tracking`'e yükseltilir
+— konumlar artık gerçek saha konumu taşıdığı için şekil ve bölge analizi yeniden açılır.
+
+#### 180° ikilik — çizgilerden çözülemeyen şey
+
+Saha çizgi modeli **180° dönme altında birebir kendine eşittir**. Sayısal olarak
+doğrulandı: modeli `(x,y) → (105-x, 68-y)` ile döndürüp orijinaliyle karşılaştırınca
+fark **ortalama ve en fazla 0.0000 m**. Yani her homografinin özdeş puanlı bir "ayna
+ikizi" vardır — ölçüldü, ayna oranı her karede tam **1.00**.
+
+**Sonuç: kameranın hangi yarıya baktığı yalnız saha çizgilerinden ASLA çıkarılamaz.**
+Bu bir uygulama eksiği değil, geometrinin sınırıdır. Ayrımı ancak dışarıdan bir bilgi
+yapar: kaleler, tribün/reklam panoları, çim deseni, operatör bilgisi ya da kesme öncesi
+bilinen homografi.
+
+Serbest aramayla çapa denendi ve bu ikilik tam da beklendiği gibi vurdu: **%94 inlier
+alan bir çapa 47 m yanlıştı**. Bu yüzden:
+
+- `find_anchor()` ipucu verilmedikçe **kabul etmez**; iki hipotezi de döndürür
+  (`homography` + `mirror_homography`), kararı bilgisi olana bırakır.
+- `PerFrameCalibrator` kayıp durumda serbest arama yapmaz; `allow_reacquire` açıksa
+  arama **çapadan** yapılır — çapa hangi yarı olduğunu sabitlediği için ikilik kapanır.
+  TV'de ana kamera kesmeden sonra benzer görüntüye döndüğü için bu pratikte çalışır.
+
+#### Hız — gerçek zamana ulaşıldı
+
+| adım | süre/kare | doğruluk |
+|---|---|---|
+| başlangıç | 88 ms | 0.09 m |
+| + kapalı form homografi (SVD yerine 8×8 çözüm) | 54 ms | 0.10 m |
+| + görüntüyü 0.75 ölçekte işleme | 42 ms | 0.08 m |
+| + aramada model noktası aralığı 1.5 m | **39 ms** | 0.11 m |
+
+Son hâl `bench_calibration table` çıktısında: ölçek 1.0 → 50.6 ms, ölçek 0.75 →
+**39.2 ms** (hata 0.11 m), ölçek 0.5 → 47.1 ms ama hata 1.50 m.
+
+25 fps için bütçe 40 ms → **gerçek zamanlı kalibrasyon mümkün**. Darboğaz skorlama
+değil, her denemede yapılan homografi çözümüydü: 4 nokta için genel DLT'nin (Hartley
+normalizasyonu + SVD) gereği yok, `h33=1` alıp 8×8 doğrusal sistem çözmek **3.9 kat**
+hızlı ve sonuç birebir aynı (fark 8e-14).
+
+**0.5 ölçeğin altına inmeyin:** hata 0.11 m'den 1.50 m'ye (en kötü 6.59 m) çıkıyor ve
+üstelik daha da yavaşlıyor (47 ms), çünkü kötü oturma daha çok iterasyon gerektiriyor.
+Sebep tolerans değil (ölçeğe bağlandı, düzelmedi) — çizgi çıkarmanın morfolojik filtresi
+720p'ye göre ayarlı; daha küçük görüntüde ince çizgileri kaçırıyor.

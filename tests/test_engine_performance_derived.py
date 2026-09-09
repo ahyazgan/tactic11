@@ -18,13 +18,13 @@ from app.engine.performance_test import (
     estimate_vo2max_from_vift,
     hamstring_quad_ratio,
     limb_asymmetry,
-    return_to_play_clearance,
-    sprint_split_analysis,
-    vift_to_aerobic_targets,
     protocols_for_position,
     reactive_strength_index,
     repeated_sprint_fatigue_index,
+    return_to_play_clearance,
     return_to_play_readiness,
+    sprint_split_analysis,
+    vift_to_aerobic_targets,
 )
 from app.engine.performance_test.compute import (
     ASYMMETRY_HIGH_PCT,

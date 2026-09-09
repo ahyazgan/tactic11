@@ -58,8 +58,16 @@ def kmeans(features: np.ndarray, k: int, *, iters: int = 30, n_init: int = 8, se
         centers = [X[rng.integers(n)]]
         for _k in range(1, k):
             d2 = np.min([np.sum((X - c) ** 2, axis=1) for c in centers], axis=0)
-            probs = d2 / max(d2.sum(), 1e-12)
-            centers.append(X[rng.choice(n, p=probs)])
+            total = float(d2.sum())
+            if total <= 0.0:
+                # Tüm noktalar seçilmiş merkezlerle ÇAKIŞIYOR (ör. iki forma
+                # rengi, k=3 ve renk gürültüsü yok). d2/0 → hepsi sıfır olasılık
+                # ve rng.choice "probabilities do not sum to 1" ile ÇÖKER.
+                # Böyle bir sahnede k-means++'ın ekleyecek bilgisi yok: rastgele
+                # bir nokta al, döngü zaten boş kümeyi eritir.
+                centers.append(X[rng.integers(n)])
+                continue
+            centers.append(X[rng.choice(n, p=d2 / total)])
         centers = np.array(centers)
         labels = np.zeros(n, dtype=int)
         for _ in range(iters):
@@ -90,6 +98,22 @@ class TeamAssignment:
     outlier_tracks: frozenset[int]
 
 
+def _order_by_anchor(
+    centers: np.ndarray, team_clusters: list[int], anchor: np.ndarray,
+) -> list[int]:
+    """İki takım kümesini çapa renklerine göre sırala → [ev kümesi, deplasman kümesi].
+
+    İki olası eşleşmeden (düz / çapraz) toplam renk mesafesi küçük olan seçilir;
+    böylece bir segmentte "kırmızı = ev" ise sonraki segmentlerde de öyle kalır.
+    """
+    a, b = team_clusters[0], team_clusters[1]
+    straight = (float(np.linalg.norm(centers[a] - anchor[0]))
+                + float(np.linalg.norm(centers[b] - anchor[1])))
+    crossed = (float(np.linalg.norm(centers[b] - anchor[0]))
+               + float(np.linalg.norm(centers[a] - anchor[1])))
+    return [b, a] if crossed < straight else [a, b]
+
+
 class TeamAssigner:
     """Takip başına renk gözlemi biriktirir; `fit()` ile 0/1/None atar."""
 
@@ -102,7 +126,15 @@ class TeamAssigner:
         if color is not None:
             self._obs[track_id].append(np.asarray(color, dtype=float))
 
-    def fit(self) -> TeamAssignment:
+    def fit(self, anchor_colors: np.ndarray | None = None) -> TeamAssignment:
+        """Renk kümelerini 0 (ev) / 1 (deplasman) takımına ata.
+
+        `anchor_colors` (2×3) verilirse takım kimliği küme BÜYÜKLÜĞÜNE değil bu
+        renklere göre belirlenir. Canlı akışta zorunlu: her segment ayrı fit
+        edildiği için, en kalabalık kümeyi ev sahibi saymak segmentler arasında
+        takımların yer değiştirmesine yol açar (kadraja giren oyuncu sayısı
+        değişir) — o zaman "rakip daraldı" sinyali yanlış takımı gösterir.
+        """
         tracks = [t for t, obs in self._obs.items() if len(obs) >= self._min_obs]
         if len(tracks) < 2:
             return TeamAssignment({t: None for t in self._obs}, np.zeros((2, 3)), frozenset(self._obs))
@@ -112,6 +144,8 @@ class TeamAssigner:
         sizes = [(int(np.sum(labels == j)), j) for j in range(k)]
         sizes.sort(reverse=True)
         team_clusters = [j for _, j in sizes[:2]]
+        if anchor_colors is not None and len(anchor_colors) == 2:
+            team_clusters = _order_by_anchor(centers, team_clusters, np.asarray(anchor_colors, dtype=float))
         cluster_to_team = {team_clusters[0]: 0, team_clusters[1]: 1}
 
         dist_own = np.array([np.linalg.norm(feats[i] - centers[labels[i]]) for i in range(len(tracks))])

@@ -42,3 +42,5 @@ data/tracking/models/
 data/tracking/videos/
 data/tracking/frames/
 data/tracking/jobs/
+data/tracking/live/
+data/tracking/bench/

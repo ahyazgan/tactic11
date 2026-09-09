@@ -18,7 +18,7 @@ from app.tracking.frames import (
     frames_from_json,
     frames_to_json,
 )
-from app.tracking.teams import TeamAssigner, kmeans2, torso_color
+from app.tracking.teams import TeamAssigner, kmeans, kmeans2, torso_color
 
 # --------------------------------------------------------------------------- #
 # Kalibrasyon
@@ -331,3 +331,91 @@ def test_json_roundtrip_and_ingest(session, tmp_path) -> None:
     assert len(meta["visible_area"]) == 4
     players = json.loads(row.players_json)
     assert players[0]["identity_estimated"] is True
+
+
+# --- Canlı akış: takım kimliği segmentler arası sabit kalmalı ------------- #
+
+RED = np.array([220.0, 30.0, 30.0])
+BLUE = np.array([30.0, 40.0, 220.0])
+REF = np.array([250.0, 240.0, 30.0])   # sarı hakem — k=3'ün üçüncü kümesi
+
+
+def _assign(red_tracks: int, blue_tracks: int, anchor=None, refs: int = 2):
+    """Kırmızı/mavi takım + hakem grubuyla fit — (kırmızının takımı, renkler).
+
+    Üçüncü renk (hakem) gerçek sahnede de vardır ve k=3 kümelemenin üçüncü
+    kümesini doldurur; olmazsa k-means bir takımın rengini ikiye bölüp
+    "en kalabalık küme" sıralamasını anlamsızlaştırır. Renklere küçük ve
+    deterministik sapma verilir (gerçek gözlemler birebir aynı olmaz).
+    """
+    a = TeamAssigner(min_observations=1)
+    tid = 0
+
+    def add(n, base):
+        nonlocal tid
+        ids = []
+        for i in range(n):
+            tid += 1
+            ids.append(tid)
+            a.observe(tid, base + i * 0.7)
+            a.observe(tid, base + i * 0.7 + 4)
+        return ids
+
+    red_ids = add(red_tracks, RED)
+    add(blue_tracks, BLUE)
+    add(refs, REF)
+    res = a.fit(anchor)
+    return res.team_by_track[red_ids[0]], res.centers
+
+
+def test_kmeans_survives_identical_colors_without_crashing() -> None:
+    """Tüm takipler birebir aynı renkse k-means++ çökmemeli.
+
+    d2 toplamı sıfır olunca `rng.choice(n, p=probs)` "probabilities do not sum
+    to 1" ile patlıyordu — canlı maçta hattı komple düşürecek bir hata.
+    """
+    feats = np.repeat(np.array([[120.0, 120.0, 120.0]]), 8, axis=0)
+    labels, centers = kmeans(feats, 3)
+    assert len(labels) == 8 and centers.shape == (3, 3)
+
+    a = TeamAssigner(min_observations=1)
+    for t in range(1, 9):
+        a.observe(t, RED)
+        a.observe(t, RED)
+    res = a.fit()          # çökmemeli
+    assert len(res.team_by_track) == 8
+
+
+def test_largest_cluster_rule_flips_teams_between_segments() -> None:
+    """Çapasız davranış: kalabalık küme takım 0 olur → segmentler arası takas.
+
+    Canlı akışta kadraja giren oyuncu sayısı değiştiği için bu gerçekleşir;
+    çapa mekanizmasının VARLIK SEBEBİ budur.
+    """
+    red_first, _ = _assign(8, 4)      # kırmızı kalabalık
+    red_second, _ = _assign(4, 8)     # mavi kalabalık
+    assert red_first == 0, "kalabalık kırmızı → ev sahibi"
+    assert red_second == 1, "kadraj değişti, kırmızı deplasman oldu (takas)"
+
+
+def test_anchor_keeps_team_identity_stable_across_segments() -> None:
+    """Çapa verilince kimlik renge bağlanır — oyuncu sayısı değişse de sabit."""
+    red_first, colors = _assign(8, 4)
+    assert red_first == 0
+    anchor = colors  # [ev rengi, deplasman rengi] = [kırmızı, mavi]
+
+    # Aynı kadro dağılımı takas ettirirdi; çapa ile kırmızı hâlâ ev sahibi
+    red_second, _ = _assign(4, 8, anchor=anchor)
+    assert red_second == 0
+
+    # Kırmızı iyice azalsa bile kimlik korunur
+    red_third, _ = _assign(3, 9, anchor=anchor)
+    assert red_third == 0
+
+
+def test_anchor_with_swapped_colors_maps_teams_the_other_way() -> None:
+    """Çapa [mavi, kırmızı] ise kırmızı deplasman olmalı — çapa yönü uygulanıyor."""
+    _, colors = _assign(8, 4)
+    swapped = np.array([colors[1], colors[0]])
+    red_team, _ = _assign(8, 4, anchor=swapped)
+    assert red_team == 1

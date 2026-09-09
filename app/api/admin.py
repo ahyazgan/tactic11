@@ -31,6 +31,10 @@ from app.sports import football
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+# Otomatik ölçülen karar sonuçlarının notu bu önekle başlar; elle girilen
+# sonuçlar (önek yok) auto-outcome tarafından ezilmez.
+AUTO_OUTCOME_PREFIX = "[oto]"
+
 # Tactical profile/trend cache: 1 saat TTL (event ingest sonrası
 # /admin/tactical-cache/clear ile manuel invalidate)
 TACTICAL_CACHE_SOURCE = "tactical_profile"
@@ -1605,22 +1609,36 @@ def decisions_feedback(
 @router.get(
     "/matches/{match_id}/decisions/learning",
     tags=["admin"],
-    summary="Post-match learning: TD kararının sonuca etkisi (causal proxy)",
+    summary="Post-match learning: TD kararının etkisi (engine.decision_impact)",
 )
 def decisions_learning(
     match_id: int,
+    window_min: float = Query(default=15.0, ge=3.0, le=30.0),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    """Bir maçtaki tüm kararlardan sonra ne oldu? Basit causal proxy:
-    karar dakikasından sonra takımın xT, possession, dominance score'u
-    nasıl değişti.
+    """Bir maçtaki her karardan önce/sonra ne oldu?
 
-    Algoritma: her karar için pre-window (karar-15dk..karar) vs
-    post-window (karar..karar+15dk) takım metric'leri karşılaştır.
+    `engine.decision_impact`: pencereler maç sonuna kırpılır, metrikler dakika
+    başına normalize edilir (88. dk kararı 2 dk'lık "sonrası" ile yanıltmasın),
+    xG farkı + xT + şut + saha eğimi ölçülür. Vekil ölçüm — nedensellik kanıtı değil.
     """
+    impacts, meta = _decision_impacts(session, match_id, window_min=window_min)
+    if meta.get("note"):
+        return {"match_id": match_id, **meta}
+    return {
+        "match_id": match_id,
+        "decisions_analyzed": len(impacts),
+        "window_minutes": window_min,
+        "impacts": [engine_result_to_dict(r)["value"] for r in impacts],
+    }
+
+
+def _decision_impacts(
+    session: Session, match_id: int, *, window_min: float = 15.0,
+) -> tuple[list[Any], dict[str, Any]]:
+    """(EngineResult[DecisionImpact] listesi, meta) — maç + event + karar yoksa meta.note dolu."""
     from app.data.loaders import load_match_events
-    from app.engine.match_dominance import compute_match_dominance
-    from app.engine.xt import compute_team_xt
+    from app.engine.decision_impact import DecisionContext, compute_decision_impact
 
     match = session.execute(
         select(models.Match).where(
@@ -1632,9 +1650,7 @@ def decisions_learning(
         raise HTTPException(status_code=404, detail=f"match {match_id} yok")
     loaded = load_match_events(session, match_id)
     if loaded.total == 0:
-        return {"match_id": match_id, "events_loaded": 0,
-                "note": "Event ingest yapılmamış"}
-
+        return [], {"events_loaded": 0, "note": "Event ingest yapılmamış"}
     decisions = list(session.execute(
         select(models.Decision).where(
             models.Decision.sport == football.SPORT_NAME,
@@ -1642,66 +1658,281 @@ def decisions_learning(
         ).order_by(models.Decision.minute)
     ).scalars())
     if not decisions:
-        return {"match_id": match_id, "decisions": 0,
-                "note": "Bu maç için decision log yok"}
+        return [], {"decisions": 0, "note": "Bu maç için decision log yok"}
 
-    WIN = 15.0
-    impacts = []
+    out = []
     for d in decisions:
-        team_id = d.team_external_id
-        opp_id = (match.away_team_external_id if team_id == match.home_team_external_id
+        opp_id = (match.away_team_external_id if d.team_external_id == match.home_team_external_id
                   else match.home_team_external_id)
-        pre_passes = [p for p in loaded.passes
-                       if d.minute - WIN <= p.minute < d.minute]
-        post_passes = [p for p in loaded.passes
-                        if d.minute <= p.minute < d.minute + WIN]
-        pre_carries = [c for c in loaded.carries
-                        if d.minute - WIN <= c.minute < d.minute]
-        post_carries = [c for c in loaded.carries
-                         if d.minute <= c.minute < d.minute + WIN]
-        pre_shots = [s for s in loaded.shots
-                      if d.minute - WIN <= s.minute < d.minute]
-        post_shots = [s for s in loaded.shots
-                       if d.minute <= s.minute < d.minute + WIN]
-        try:
-            pre_xt = compute_team_xt(team_id, pre_passes, pre_carries).value.total_xt
-            post_xt = compute_team_xt(team_id, post_passes, post_carries).value.total_xt
-            pre_dom = compute_match_dominance(
-                team_external_id=team_id, opponent_team_external_id=opp_id,
-                team_shots=pre_shots, opponent_shots=pre_shots,
-                all_passes=pre_passes, team_carries=pre_carries,
-                opponent_carries=pre_carries,
-            ).value.dominance_score
-            post_dom = compute_match_dominance(
-                team_external_id=team_id, opponent_team_external_id=opp_id,
-                team_shots=post_shots, opponent_shots=post_shots,
-                all_passes=post_passes, team_carries=post_carries,
-                opponent_carries=post_carries,
-            ).value.dominance_score
-        except (ValueError, ZeroDivisionError, KeyError, TypeError):
-            continue
-        impacts.append({
-            "decision_id": d.id,
-            "minute": d.minute,
-            "decision_type": d.decision_type,
-            "pre_xt": round(pre_xt, 3),
-            "post_xt": round(post_xt, 3),
-            "xt_delta": round(post_xt - pre_xt, 3),
-            "pre_dominance": pre_dom,
-            "post_dominance": post_dom,
-            "dominance_delta": round(post_dom - pre_dom, 2),
-            "verdict": (
-                "positive" if post_xt - pre_xt > 0.1 and post_dom - pre_dom > 0
-                else "negative" if post_xt - pre_xt < -0.1 and post_dom - pre_dom < 0
-                else "neutral"
-            ),
-        })
-    return {
-        "match_id": match_id,
-        "decisions_analyzed": len(impacts),
-        "window_minutes": WIN,
-        "impacts": impacts,
+        ctx = DecisionContext(
+            decision_id=d.id, match_external_id=match_id,
+            team_external_id=d.team_external_id, opponent_external_id=opp_id,
+            minute=d.minute, decision_type=d.decision_type, period=d.period,
+            recommended=d.recommended,
+        )
+        out.append(compute_decision_impact(
+            ctx, passes=loaded.passes, carries=loaded.carries, shots=loaded.shots,
+            defensive_actions=loaded.defensive_actions, window_min=window_min,
+        ))
+    return out, {}
+
+
+@router.post(
+    "/matches/{match_id}/decisions/auto-outcome",
+    tags=["admin"],
+    summary="Kararların sonucunu ölçüp outcome alanına yaz (feedback döngüsünü kapat)",
+)
+def decisions_auto_outcome(
+    match_id: int,
+    window_min: float = Query(default=15.0, ge=3.0, le=30.0),
+    overwrite_manual: bool = Query(default=False),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Maç bitince çalıştırılır: her kararın etkisini ölçüp `outcome` yazar.
+
+    Koçun elle girdiği sonuçlar korunur (`overwrite_manual=true` ile ezilir);
+    ölçülemeyen kararlar (kısa pencere / olay yok) atlanır. Yazılan değerler
+    `decisions/feedback` üzerinden context_engine güven skoruna geri besler.
+    """
+    from datetime import UTC
+    from datetime import datetime as _dt
+
+    impacts, meta = _decision_impacts(session, match_id, window_min=window_min)
+    if meta.get("note"):
+        return {"match_id": match_id, "written": 0, **meta}
+
+    by_id = {
+        r.id: r for r in session.execute(
+            select(models.Decision).where(
+                models.Decision.sport == football.SPORT_NAME,
+                models.Decision.match_external_id == match_id,
+            )
+        ).scalars()
     }
+    written = skipped_manual = skipped_insufficient = 0
+    details = []
+    for res in impacts:
+        imp = res.value
+        row = by_id.get(imp.decision_id)
+        if row is None:
+            continue
+        if imp.verdict == "insufficient_data":
+            skipped_insufficient += 1
+            continue
+        manual = bool(row.outcome_notes) and not (row.outcome_notes or "").startswith(AUTO_OUTCOME_PREFIX)
+        if manual and not overwrite_manual:
+            skipped_manual += 1
+            continue
+        row.outcome = imp.verdict
+        row.outcome_value = imp.xg_diff_delta
+        row.outcome_notes = f"{AUTO_OUTCOME_PREFIX} {imp.verdict_reason}"[:512]
+        row.outcome_recorded_at = _dt.now(UTC)
+        written += 1
+        details.append({
+            "decision_id": imp.decision_id, "minute": imp.minute,
+            "decision_type": imp.decision_type, "outcome": imp.verdict,
+            "xg_diff_delta": imp.xg_diff_delta, "confidence": imp.confidence,
+        })
+    session.commit()
+    return {
+        "match_id": match_id, "window_minutes": window_min,
+        "analyzed": len(impacts), "written": written,
+        "skipped_manual": skipped_manual, "skipped_insufficient": skipped_insufficient,
+        "details": details,
+    }
+
+
+@router.get(
+    "/teams/{team_id}/decisions/track-record",
+    tags=["admin"],
+    summary="Koçun karar defteri: tip ve dakika bandı kırılımlı isabet + ortalama etki",
+)
+def decisions_track_record(
+    team_id: int,
+    window_min: float = Query(default=15.0, ge=3.0, le=30.0),
+    last_matches: int = Query(default=20, ge=1, le=100),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bu takımın kararlarını maç maç ölçüp birleştirir (engine.decision_impact).
+
+    `outcome` alanı yazılmış olsun olmasın yeniden ölçer — böylece eşik/pencere
+    değişince defter tutarlı kalır.
+    """
+    from app.engine.decision_impact import compute_decision_track_record
+
+    match_ids = list(session.execute(
+        select(models.Decision.match_external_id).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.team_external_id == team_id,
+        ).group_by(models.Decision.match_external_id)
+        .order_by(models.Decision.match_external_id.desc())
+        .limit(last_matches)
+    ).scalars())
+    all_impacts = []
+    matches_with_events = 0
+    for mid in match_ids:
+        try:
+            impacts, meta = _decision_impacts(session, mid, window_min=window_min)
+        except HTTPException:
+            continue
+        if meta.get("note"):
+            continue
+        matches_with_events += 1
+        all_impacts.extend(
+            r.value for r in impacts
+            if r.value.decision_id in _team_decision_ids(session, mid, team_id)
+        )
+    result = compute_decision_track_record(team_id, all_impacts)
+    payload = engine_result_to_dict(result)
+    return {
+        "team_id": team_id, "matches": len(match_ids),
+        "matches_with_events": matches_with_events,
+        "window_minutes": window_min,
+        **payload["value"],
+        "formula": payload["audit"]["formula"],
+    }
+
+
+@router.get(
+    "/teams/{team_id}/decisions/quality",
+    tags=["admin"],
+    summary="Karar kalitesi: sistem güveni kalibre mi + öneri vs koçun kendi kararı",
+)
+def decisions_quality(
+    team_id: int,
+    window_min: float = Query(default=15.0, ge=3.0, le=30.0),
+    last_matches: int = Query(default=20, ge=1, le=100),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """`engine.decision_impact` etiketleri + `engine.backtest` kalibrasyonu.
+
+    İki soruya cevap verir:
+    1. Sistem "%70 güvenle öner" dediğinde gerçekten %70 tutuyor mu? (kalibrasyon)
+    2. Sistemin önerdiği kararlar, koçun kendi başına aldıklarından daha mı iyi?
+
+    Etiket = decision_impact hükmü (positive/negative); ölçülemeyenler dışarıda.
+    """
+    from app.engine.backtest import backtest
+
+    impacts_by_id, rows_by_id, matches_used = _measured_decisions(
+        session, team_id, window_min=window_min, last_matches=last_matches,
+    )
+    measured = [
+        (rows_by_id[did], imp) for did, imp in impacts_by_id.items()
+        if did in rows_by_id and imp.verdict in ("positive", "negative")
+    ]
+
+    samples = [
+        (float(row.confidence), imp.verdict == "positive")
+        for row, imp in measured
+        if row.recommended and row.confidence is not None
+    ]
+    report = backtest(samples)
+
+    def _group(rows: list[tuple[Any, Any]]) -> dict[str, Any]:
+        if not rows:
+            return {"n": 0, "hit_rate": None, "mean_xg_delta": 0.0}
+        pos = sum(1 for _r, i in rows if i.verdict == "positive")
+        return {
+            "n": len(rows), "hit_rate": round(pos / len(rows), 3),
+            "mean_xg_delta": round(sum(i.xg_diff_delta for _r, i in rows) / len(rows), 4),
+        }
+
+    rec = _group([(r, i) for r, i in measured if r.recommended])
+    own = _group([(r, i) for r, i in measured if not r.recommended])
+    lift = (
+        round(rec["mean_xg_delta"] - own["mean_xg_delta"], 4)
+        if rec["n"] and own["n"] else None
+    )
+    if not samples:
+        verdict = "Kalibrasyon için yeterli öneri-kaynaklı karar yok (güven değeri kayıtlı olmalı)."
+    elif report.well_calibrated:
+        verdict = (
+            f"Güven kalibre: ortalama %{round(report.mean_predicted * 100)} güvende "
+            f"gerçekleşme %{round(report.observed_rate * 100)}."
+        )
+    elif report.mean_predicted > report.observed_rate:
+        verdict = (
+            f"Sistem fazla güvenli: %{round(report.mean_predicted * 100)} diyor, "
+            f"%{round(report.observed_rate * 100)} tutuyor."
+        )
+    else:
+        verdict = (
+            f"Sistem fazla temkinli: %{round(report.mean_predicted * 100)} diyor, "
+            f"%{round(report.observed_rate * 100)} tutuyor."
+        )
+    return {
+        "team_id": team_id, "window_minutes": window_min,
+        "matches_used": matches_used, "measured_decisions": len(measured),
+        "confidence_calibration": {
+            # DİKKAT: burada `accuracy`, güven ≥0.5 iken kararın pozitif çıkma
+            # DOĞRULUĞU (sınıflandırma isabeti). `recommended_vs_own` içindeki
+            # `hit_rate` ise pozitif karar ORANI — aynı şey değil, o yüzden
+            # burada `hit_rate` adı bilinçli kullanılmıyor.
+            "n": report.n, "accuracy": report.hit_rate, "brier_score": report.brier_score,
+            "mean_predicted": report.mean_predicted, "observed_rate": report.observed_rate,
+            "well_calibrated": report.well_calibrated,
+            "bins": [
+                {"lower": round(b.lower, 2), "upper": round(min(b.upper, 1.0), 2), "n": b.n,
+                 "mean_predicted": b.mean_predicted, "observed_rate": b.observed_rate}
+                for b in report.calibration
+            ],
+        },
+        "recommended_vs_own": {"recommended": rec, "own": own, "xg_lift": lift},
+        "verdict": verdict,
+        "note": (
+            "Etiketler decision_impact vekil ölçümünden gelir; kalibrasyon örneklem "
+            "büyüdükçe anlamlanır (n<20 ise yön göstergesi sayılmalı)."
+        ),
+    }
+
+
+def _measured_decisions(
+    session: Session, team_id: int, *, window_min: float, last_matches: int,
+) -> tuple[dict[int, Any], dict[int, Any], int]:
+    """(karar_id → impact, karar_id → Decision satırı, kullanılan maç sayısı)."""
+    match_ids = list(session.execute(
+        select(models.Decision.match_external_id).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.team_external_id == team_id,
+        ).group_by(models.Decision.match_external_id)
+        .order_by(models.Decision.match_external_id.desc())
+        .limit(last_matches)
+    ).scalars())
+    impacts: dict[int, Any] = {}
+    rows: dict[int, Any] = {}
+    used = 0
+    for mid in match_ids:
+        try:
+            res, meta = _decision_impacts(session, mid, window_min=window_min)
+        except HTTPException:
+            continue
+        if meta.get("note"):
+            continue
+        used += 1
+        team_ids = _team_decision_ids(session, mid, team_id)
+        for r in res:
+            if r.value.decision_id in team_ids:
+                impacts[r.value.decision_id] = r.value
+        for row in session.execute(
+            select(models.Decision).where(
+                models.Decision.sport == football.SPORT_NAME,
+                models.Decision.match_external_id == mid,
+                models.Decision.team_external_id == team_id,
+            )
+        ).scalars():
+            rows[row.id] = row
+    return impacts, rows, used
+
+
+def _team_decision_ids(session: Session, match_id: int, team_id: int) -> set[int]:
+    return set(session.execute(
+        select(models.Decision.id).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.match_external_id == match_id,
+            models.Decision.team_external_id == team_id,
+        )
+    ).scalars())
 
 
 @router.get(
@@ -2818,14 +3049,34 @@ def live_decision_endpoint(
     if match is None:
         raise HTTPException(status_code=404, detail=f"match {match_id} yok")
 
-    loaded = load_match_events(session, match_id)
-    if loaded.total == 0:
-        return {"match_id": match_id, "events_loaded": 0,
-                "note": "Event ingest yok"}
-
     home_id = match.home_team_external_id
     opp_id = (match.away_team_external_id if my_team_id == home_id
               else home_id)
+
+    loaded = load_match_events(session, match_id)
+    if loaded.total == 0:
+        # Event feed'i yok ama kamera var (kulüp senaryosu): pozisyon verisinden
+        # üretilebilen sinyallerle sınırlı panel döner — boş ekran yerine.
+        tracking_only: dict[str, Any] = {
+            "match_id": match_id, "my_team_id": my_team_id,
+            "current_minute": current_minute, "events_loaded": 0,
+            "note": "Event ingest yok — panel yalnız pozisyon verisiyle çalışıyor",
+        }
+        _safe_assign(tracking_only, "tracking_signals", lambda: _tracking_signals_for(
+            session, match_id, my_team_id, opp_id, current_minute,
+        ))
+        _safe_assign(tracking_only, "space_map", lambda: _space_map_for(
+            session, match_id, my_team_id, opp_id, current_minute,
+        ))
+        if "tracking_signals" in tracking_only or "space_map" in tracking_only:
+            from app.api.context_pipeline import run_context_pipeline
+            tracking_only.update(run_context_pipeline(
+                session, match, my_team_id, current_minute, tracking_only, [], [], [],
+                my_score=match.home_score or 0, opp_score=match.away_score or 0,
+            ))
+        else:
+            tracking_only["note"] = "Event ingest yok ve pozisyon karesi de yok"
+        return tracking_only
     my_score = match.home_score if my_team_id == home_id else match.away_score
     opp_score = match.away_score if my_team_id == home_id else match.home_score
 
@@ -2977,6 +3228,14 @@ def live_decision_endpoint(
         concept_snap, current_minute=current_minute,
     ))
 
+    # Pozisyon verisi (video takibi / StatsBomb 360) varsa şekil-pres sinyalleri
+    _safe_assign(out, "tracking_signals", lambda: _tracking_signals_for(
+        session, match_id, my_team_id, opp_id, current_minute,
+    ))
+    _safe_assign(out, "space_map", lambda: _space_map_for(
+        session, match_id, my_team_id, opp_id, current_minute,
+    ))
+
     # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
     out.update(run_context_pipeline(
@@ -2984,6 +3243,79 @@ def live_decision_endpoint(
         my_score=my_score or 0, opp_score=opp_score or 0,
     ))
     return out
+
+
+TRACKING_SIGNAL_WINDOW_MIN = 1.0   # şimdiki pencere; öncesi bir o kadar geriye
+
+
+def _safe_assign(out: dict[str, Any], key: str, fn) -> None:
+    """Opsiyonel bloklar ana paneli düşürmesin — hata olursa anahtar hiç eklenmez."""
+    try:
+        value = fn()
+    except Exception:  # noqa: BLE001 — panel opsiyonel bloktan dolayı düşmemeli
+        return
+    if value is not None:
+        out[key] = value
+
+
+def _tracking_signals_for(
+    session: Session, match_id: int, my_team_id: int, opp_id: int, current_minute: float,
+) -> dict[str, Any] | None:
+    """Pozisyon karelerinden şekil/pres değişimi → maç-içi sinyaller.
+
+    İki ardışık pencere (şimdi ve bir öncesi) karşılaştırılır. Kare yoksa None
+    döner ve panel bu bloğu hiç göstermez (event-only maçlar bozulmaz).
+    """
+    from app.api.tracking import frames_in_window
+    from app.engine.tracking import compute_pressure, compute_team_shape
+    from app.engine.tracking_signals import compute_tracking_signals
+
+    w = TRACKING_SIGNAL_WINDOW_MIN
+    now_frames = frames_in_window(session, match_id, current_minute - w, current_minute)
+    if not now_frames:
+        return None
+    prev_frames = frames_in_window(session, match_id, current_minute - 2 * w, current_minute - w)
+
+    def _shape(frames, team_id):
+        return engine_result_to_dict(compute_team_shape(team_id, frames))["value"] if frames else None
+
+    def _press(frames, team_id):
+        return engine_result_to_dict(compute_pressure(team_id, frames))["value"] if frames else None
+
+    # Sürekli takip (video) mü, event-çapalı freeze frame (StatsBomb 360) mi?
+    continuous = all(f.source == "video_tracking" for f in now_frames if f.source)
+    result = compute_tracking_signals(
+        minute=current_minute, continuous=continuous,
+        our_shape=_shape(now_frames, my_team_id), their_shape=_shape(now_frames, opp_id),
+        prev_our_shape=_shape(prev_frames, my_team_id), prev_their_shape=_shape(prev_frames, opp_id),
+        our_pressure=_press(now_frames, my_team_id), their_pressure=_press(now_frames, opp_id),
+        prev_our_pressure=_press(prev_frames, my_team_id),
+        frames_used=len(now_frames),
+    )
+    return engine_result_to_dict(result)["value"]
+
+
+def _space_map_for(
+    session: Session, match_id: int, my_team_id: int, opp_id: int, current_minute: float,
+) -> dict[str, Any] | None:
+    """Pozisyon karelerinden bölgesel üstünlük + hatlar arası boşluk.
+
+    `_tracking_signals_for` "ne değişti"yi söyler; bu "nerede boşluk var"ı.
+    Tek pencere yeter (anlık durum), o yüzden önceki pencere okunmaz.
+    """
+    from app.api.tracking import frames_in_window
+    from app.engine.space_map import compute_space_map
+
+    w = TRACKING_SIGNAL_WINDOW_MIN
+    frames = frames_in_window(session, match_id, current_minute - w, current_minute)
+    if not frames:
+        return None
+    continuous = all(f.source == "video_tracking" for f in frames if f.source)
+    result = compute_space_map(
+        frames, our_team_external_id=my_team_id, their_team_external_id=opp_id,
+        minute=current_minute, continuous=continuous,
+    )
+    return engine_result_to_dict(result)["value"]
 
 
 @router.post(

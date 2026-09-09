@@ -64,6 +64,7 @@ def build_frame(
     clip_offset_minutes: float = 0.0,
     sport: str = "football",
     ball_estimated: bool = False,
+    source_name: str = SOURCE_NAME,
 ) -> TrackingFrame | None:
     """Bir örnekleme anının gözlemlerini TrackingFrame'e çevir; saha dışı/boş → None."""
     positions: list[tuple[TrackObservation, tuple[float, float]]] = []
@@ -120,7 +121,7 @@ def build_frame(
         ball=ball_pos,
         ball_estimated=ball_estimated and ball_pos is not None,
         players=out_players,
-        source=SOURCE_NAME,
+        source=source_name,
         event_uuid=None,
         event_type="video_sample",
         possession_team_external_id=possession,
@@ -128,10 +129,12 @@ def build_frame(
     )
 
 
-def frames_to_json(frames: list[TrackingFrame], *, match_id: int, extra: dict[str, Any] | None = None) -> dict[str, Any]:
+def frames_to_json(frames: list[TrackingFrame], *, match_id: int,
+                   extra: dict[str, Any] | None = None,
+                   source_name: str = SOURCE_NAME) -> dict[str, Any]:
     return {
         "match_external_id": match_id,
-        "source": SOURCE_NAME,
+        "source": source_name,
         "frames": [f.model_dump(mode="json") for f in frames],
         **(extra or {}),
     }

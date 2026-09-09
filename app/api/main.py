@@ -49,9 +49,9 @@ from app.api.physical_tests import router as physical_tests_router
 from app.api.plan import router as plan_router
 from app.api.reports import router as reports_router
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
-from app.api.sportmonks_catalog import media_router, sportmonks_router
 from app.api.serialize import engine_result_to_dict
 from app.api.shared import router as shared_router
+from app.api.sportmonks_catalog import media_router, sportmonks_router
 from app.api.sprint3 import router as sprint3_router
 from app.api.sprint4 import router as sprint4_router
 from app.api.sprint5 import router as sprint5_router
