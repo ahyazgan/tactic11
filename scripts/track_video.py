@@ -20,7 +20,12 @@ import time
 from pathlib import Path
 
 from app.tracking.calibration import PitchCalibration
-from app.tracking.camera import BROADCAST_SOURCE, STATIC_SOURCE, analyze_video
+from app.tracking.camera import (
+    BROADCAST_SOURCE,
+    STATIC_SOURCE,
+    analyze_video,
+    source_after_run,
+)
 from app.tracking.detect import DetectorConfig
 from app.tracking.frames import frames_to_json
 from app.tracking.pipeline import PipelineConfig, process_video, video_info
@@ -50,6 +55,10 @@ def main() -> int:
                    choices=["auto", "on", "off"],
                    help="Hareketli kamerada homografiyi her karede yeniden bul. "
                         "auto=kamera sabit değilse aç. Oturmayan kareler ATLANIR.")
+    p.add_argument("--reacquire", default="auto", choices=["auto", "on", "off"],
+                   help="Kesmeden sonra ÇAPADAN yeniden yakala. auto=yayın "
+                        "görüntüsünde aç. Kapalıyken ilk kesmede takip kopar ve "
+                        "bir daha toparlanmaz (videonun kalanı atılır).")
     p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast"],
                    help="Kamera davranışı: auto=videodan tespit et (varsayılan), "
                         "static=sabit kamera (tam analiz), broadcast=hareketli/yayın "
@@ -96,8 +105,23 @@ def main() -> int:
             # top-merkezli değil, gerçek saha konumu taşır.
             source_name = STATIC_SOURCE
 
+    # Kesmeden sonra yeniden yakalama. Yayında ŞART: yayın sürekli kamera
+    # değiştirir, kapalıyken kalibratör ilk kesmede KAYIP'a düşer ve bir daha
+    # toparlanmaz — segmentin kalanındaki her kare atılır.
+    if args.reacquire == "on":
+        reacquire = True
+    elif args.reacquire == "off":
+        reacquire = False
+    else:
+        reacquire = moving
+    if per_frame and reacquire:
+        print("kesmeden sonra yeniden yakalama: AÇIK (çapadan, %85 inlier şartı)")
+
     cfg = PipelineConfig(
         per_frame_calibration=per_frame,
+        allow_reacquire=per_frame and reacquire,
+        detect_cuts=per_frame,
+        detect_replays=per_frame and moving,
         source_name=source_name,
         fps_out=args.fps, track_fps=args.track_fps, max_seconds=args.max_seconds,
         detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution, weights=args.weights),
@@ -109,6 +133,17 @@ def main() -> int:
         args.video, calib, match_id=args.match_id,
         home_team_id=args.home_team, away_team_id=args.away_team, cfg=cfg,
     )
+    # Etiketi GERÇEKLEŞENE göre düzelt — canlı hatla (scripts/track_live.py)
+    # aynı kural. İki yolun aynı görüntüde farklı etiket üretmesi, karelerin bir
+    # sınıfta yazılıp başka bir sınıfta yorumlanmasına yol açar.
+    mode = {"per_frame": per_frame, "source": source_name}
+    stats = summary.get("calibration_stats") or {}
+    source_name, downgrade = source_after_run(mode, stats.get("calibrated_ratio"))
+    if downgrade:
+        frames = [f.model_copy(update={"source": source_name}) for f in frames]
+        summary["source_downgraded"] = downgrade
+        print(f"  ! {downgrade}")
+
     payload = frames_to_json(frames, match_id=args.match_id, source_name=source_name, extra={
         "video": Path(args.video).name, "video_info": info,
         "home_team_external_id": args.home_team, "away_team_external_id": args.away_team,

@@ -14,6 +14,7 @@ from __future__ import annotations
 import numpy as np
 
 from app.tracking.replay import (
+    ReplayFilter,
     ReplayThresholds,
     classify_frame,
     find_overlay_mask,
@@ -102,3 +103,85 @@ def test_overlay_change_ratio_detects_removal() -> None:
 
 def test_overlay_change_is_none_without_mask() -> None:
     assert overlay_change_ratio(np.zeros((4, 4)), np.zeros((4, 4)), None) is None
+
+
+# --- ReplayFilter: akış halinde ayıklama ------------------------------------ #
+
+BOOT = 16
+
+
+def _live_frames(n: int, *, seed: int = 0, overlay: float = 200.0):
+    """Canlı akış taklidi: değişen saha + SABİT skorboard köşesi."""
+    rng = np.random.default_rng(seed)
+    frames = rng.integers(0, 255, size=(n, 40, 60)).astype(np.float32)
+    frames[:, 0:6, 0:20] = overlay
+    return frames
+
+
+def test_bootstrap_frames_are_never_dropped() -> None:
+    """Isınma sırasında referans yok — hiçbir kare atılamaz.
+
+    Yayınlar canlı başlar; referans olmadan "yavaş" da "bindirme kalktı" da
+    tanımsızdır. Bu dönemde kare atmak veri kaybından başka bir şey değildir.
+    """
+    f = ReplayFilter(bootstrap=BOOT)
+    frames = _live_frames(BOOT)
+    for g in frames:
+        assert f.update(g, motion=0.0).is_replay is False
+    assert f.replays == 0
+    assert f.frames_seen == BOOT
+
+
+def test_without_an_overlay_nothing_is_ever_a_replay() -> None:
+    """Süzgecin BAŞARISIZLIĞI veri kaybına değil, süzmemeye yol açmalı.
+
+    Yayıncı skorboard göstermiyorsa maske bulunamaz. O durumda ağır çekim tek
+    başına tekrar sayılmaz — oyun durunca da hareket düşer.
+    """
+    rng = np.random.default_rng(3)
+    frames = rng.integers(0, 255, size=(BOOT + 10, 40, 60)).astype(np.float32)
+    f = ReplayFilter(bootstrap=BOOT)
+    for g in frames[:BOOT]:
+        f.update(g, motion=20.0)
+    assert f.mask_found is False
+    for g in frames[BOOT:]:
+        assert f.update(g, motion=0.5).is_replay is False   # çok yavaş, yine de canlı
+    assert f.replays == 0
+
+
+def test_overlay_disappearance_is_caught_after_bootstrap() -> None:
+    """Isınma bitince skorboardın kalkması tekrar olarak yakalanmalı."""
+    f = ReplayFilter(bootstrap=BOOT)
+    for g in _live_frames(BOOT):
+        f.update(g, motion=20.0)
+    assert f.mask_found is True
+
+    canli = _live_frames(1, seed=9)[0]
+    assert f.update(canli, motion=20.0).is_replay is False
+
+    tekrar = _live_frames(1, seed=9)[0].copy()
+    tekrar[0:6, 0:20] = 20.0                    # bindirme kalktı
+    v = f.update(tekrar, motion=2.0)            # ağır çekim
+    assert v.is_replay and v.overlay_gone
+    assert f.replays == 1
+
+
+def test_replay_frames_do_not_poison_the_live_baseline() -> None:
+    """Tekrar kareleri canlı medyanı beslememeli — yoksa süzgeç kendini kör eder.
+
+    Tekrarlar yavaştır. Medyana katılırlarsa medyan düşer, sonraki gerçek
+    tekrarlar "yavaş değil" görünür ve süzgeç işlemez hale gelir.
+    """
+    f = ReplayFilter(bootstrap=BOOT)
+    for g in _live_frames(BOOT):
+        f.update(g, motion=20.0)
+    onceki = list(f._motions)
+
+    tekrar = _live_frames(1, seed=5)[0].copy()
+    tekrar[0:6, 0:20] = 20.0
+    assert f.update(tekrar, motion=1.0).is_replay
+    assert f._motions == onceki, "tekrar karesi medyana katılmamalı"
+
+    canli = _live_frames(1, seed=5)[0]
+    f.update(canli, motion=21.0)
+    assert f._motions[-1] == 21.0, "canlı kare medyana katılmalı"

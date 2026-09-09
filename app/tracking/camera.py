@@ -48,6 +48,12 @@ from pathlib import Path
 STATIC_SOURCE = "video_tracking"
 BROADCAST_SOURCE = "broadcast_tracking"
 
+# Kare başına kalibrasyon açıkken, karelerin bu oranından AZI kalibre olduysa
+# konumlar gerçek ama ÇOK SEYREK demektir: şekil/bölge analizi az sayıda kareden
+# hesaplanır ve gürültülü olur. O yüzden kareler top-merkezli sayılır.
+# NOT: Gerçek yayın görüntüsüyle ayarlanmalıdır; şu an sezgiseldir.
+MIN_CALIBRATED_RATIO = 0.35
+
 # --- eşikler (gerçek yayın görüntüsüyle ayarlanmalı) ------------------------ #
 CUT_RESPONSE_MAX = 0.08     # faz korelasyonu güveni bunun altındaysa tutarsız
 CUT_HIST_MIN = 0.45         # histogram uzaklığı bunun üstündeyse içerik değişti
@@ -78,15 +84,119 @@ def classify_pairs(
     Kesme = içerik çok değişti AMA tutarlı bir kayma yok. Çevirme = kayma var ve
     tutarlı. Bu ayrım olmadan hızlı çevirmeler kesme sanılır.
     """
-    out: list[str] = []
-    for motion, response, hist in zip(motions_px, responses, hist_dists, strict=True):
-        if hist >= CUT_HIST_MIN and response < CUT_RESPONSE_MAX:
-            out.append("cut")
-        elif abs(motion) > STATIC_MOTION_PX:
-            out.append("moving")
-        else:
-            out.append("static")
-    return out
+    return [
+        classify_pair(motion, response, hist)
+        for motion, response, hist in zip(motions_px, responses, hist_dists, strict=True)
+    ]
+
+
+def plan_mode(*, moving: bool, per_frame_mode: str, reacquire_mode: str) -> dict:
+    """Kamera hükmünden ne açılacağına karar ver — saf mantık, cv2 gerekmez.
+
+    `moving`: kamera hareketli/yayın mı. Modlar "auto" | "on" | "off".
+
+    Kaynak etiketi PLANLANAN değerdir: kare başına kalibrasyon açıksa konumlar
+    gerçek saha konumu olacağı varsayılır. Bu varsayım işlem sonrası
+    `source_after_run` ile GERÇEKLEŞENE göre düzeltilir.
+
+    Canlı hat (`scripts/track_live.py`) ve çevrimdışı hat
+    (`scripts/track_video.py`) İKİSİ DE bunu kullanır: aynı görüntüde farklı
+    karar vermeleri, karelerin bir sınıfta yazılıp başka bir sınıfta
+    yorumlanmasına yol açar.
+    """
+    per_frame = per_frame_mode == "on" or (per_frame_mode == "auto" and moving)
+    reacquire = reacquire_mode == "on" or (reacquire_mode == "auto" and moving)
+    return {
+        "moving": moving,
+        "per_frame": per_frame,
+        "reacquire": reacquire,
+        "source": STATIC_SOURCE if (per_frame or not moving) else BROADCAST_SOURCE,
+    }
+
+
+def source_after_run(mode: dict, calibrated_ratio: float | None) -> tuple[str, str]:
+    """İşlem sonrası kaynak etiketi + (varsa) düşürme gerekçesi.
+
+    Etiketi TAHMİNE göre değil GERÇEKLEŞENE göre vermek için. Kalibrasyonun
+    tutacağını baştan varsayıp "tam saha analizi açık" demek, tutmadığında avuç
+    dolusu kareden şekil sinyali üretmek demektir. Kalibre olan kareler yine
+    gerçek konum taşır — sorun doğruluk değil, SEYREKLİK.
+    """
+    if not mode["per_frame"] or calibrated_ratio is None:
+        return str(mode["source"]), ""
+    if calibrated_ratio >= MIN_CALIBRATED_RATIO:
+        return str(mode["source"]), ""
+    return BROADCAST_SOURCE, (
+        f"kalibre oran %{calibrated_ratio * 100:.0f} < "
+        f"%{MIN_CALIBRATED_RATIO * 100:.0f} — kareler top-merkezli sayıldı"
+    )
+
+
+def classify_pair(motion: float, response: float, hist: float) -> str:
+    """Tek kare çifti için etiket — `classify_pairs`in akış hali.
+
+    Eşikler tek yerde kalsın diye ikisi de bunu çağırır; canlı hat ile
+    çevrimdışı analiz aynı kesme tanımını kullanmalı, yoksa biri kesme dediğine
+    öbürü çevirme der ve davranış videoya göre değişir.
+    """
+    if hist >= CUT_HIST_MIN and response < CUT_RESPONSE_MAX:
+        return "cut"
+    if abs(motion) > STATIC_MOTION_PX:
+        return "moving"
+    return "static"
+
+
+class CutDetector:
+    """Kare kare kesme tespiti — takip hattının içinde kullanılır (venv-cv).
+
+    `analyze_video` videoyu ÖNCEDEN tarar ve tek bir hüküm verir; bu sınıf ise
+    kareler geldikçe çalışır, çünkü kalibrasyon kesmeyi **olduğu anda** bilmek
+    zorundadır: kesmeden sonra homografi süreklilik referansını kaybeder.
+
+    Kareler `analyze_video` ile AYNI ölçekte (320x180) karşılaştırılır; eşikler
+    (`STATIC_MOTION_PX` vb.) o ölçekte piksel cinsinden tanımlı, farklı
+    boyutta ölçüp aynı eşiği uygulamak sessizce yanlış olur.
+    """
+
+    SCALE = (320, 180)
+
+    def __init__(self) -> None:
+        self._prev_gray = None
+        self._prev_hist = None
+        self.cuts = 0
+        self.frames = 0
+        # Son karenin ölçümleri. Tekrar süzgeci (replay.ReplayFilter) aynı
+        # büyüklüklere ihtiyaç duyuyor; faz korelasyonunu ikinci kez hesaplamak
+        # yerine buradan okur.
+        self.last_gray = None        # (180, 320) float32 gri kare
+        self.last_motion = 0.0       # kareler arası global kayma (px, bu ölçekte)
+
+    def update(self, bgr) -> str:
+        """Bir kare al, önceki kareye göre etiketi döndür.
+
+        İlk karede referans yoktur → "unknown" (kesme SAYILMAZ; ilk kareyi
+        kesme saymak her segmentin başında takibi gereksiz yere düşürürdü).
+        """
+        import cv2
+        import numpy as np
+
+        small = cv2.resize(bgr, self.SCALE, interpolation=cv2.INTER_AREA)
+        gray = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY).astype(np.float32)
+        hist = cv2.calcHist([small], [0, 1, 2], None, [8, 8, 8], [0, 256] * 3)
+        cv2.normalize(hist, hist)
+        label = "unknown"
+        motion = 0.0
+        if self._prev_gray is not None and self._prev_hist is not None:
+            (dx, dy), response = cv2.phaseCorrelate(self._prev_gray, gray)
+            motion = float((dx ** 2 + dy ** 2) ** 0.5)
+            corr = float(cv2.compareHist(self._prev_hist, hist, cv2.HISTCMP_CORREL))
+            label = classify_pair(motion, float(response), max(0.0, 1.0 - corr))
+            self.frames += 1
+            if label == "cut":
+                self.cuts += 1
+        self._prev_gray, self._prev_hist = gray, hist
+        self.last_gray, self.last_motion = gray, motion
+        return label
 
 
 def summarise(labels: list[str], motions_px: list[float], *, sample_fps: float) -> CameraVerdict:

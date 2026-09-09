@@ -14,11 +14,36 @@ taşımak — `--minute-from-name` deseniyle.)
     ffmpeg -i rtsp://kamera -c copy -f segment -segment_time 30 \\
            -reset_timestamps 1 data/tracking/live/seg_%04d.mp4
 
-Kullanım (venv-cv):
+Kullanım (venv-cv) — **kulüp kamerası** (sabit geniş açı):
     venv-cv\\Scripts\\python.exe -m scripts.track_live \\
         --watch data/tracking/live --calibration data/tracking/calibrations/saha.json \\
         --match-id 990100 --home-team 611 --away-team 612 --tenant t-default \\
         --segment-seconds 30 --weights data/tracking/models/rfdetr_mixed_small
+
+**TV yayını** (çoklu kamera + kesme). Varsayılan `--camera auto` ilk segmentten
+yayını zaten tanır; aşağıdaki bayrak yalnız tespiti atlamak içindir:
+        ... --camera broadcast --track-fps 15
+
+Yayın kipinde ne değişir:
+
+- **Kare başına kalibrasyon açılır.** Sabit homografi yalnız sabit kamerada
+  geçerlidir; yayın kamerası çevirince oyuncular sahada kaymış görünür
+  (ölçüldü: 100 px ≈ 3.6 m, sinyal eşikleri 2.5–4 m) — yani kameranın kendi
+  hareketi "geri hat 4 m yükseldi" sinyali uydurur.
+- **Kesme sonrası çapadan yeniden yakalama açılır.** Bu olmadan ilk kesmede
+  takip kopar ve segmentin KALANINDAKİ HER KARE atılır.
+- **Oturmayan kareler atılır**, uydurma konum üretilmez.
+- **Etiket gerçekleşene göre verilir:** kalibre olan kare oranı
+  `MIN_CALIBRATED_RATIO` altındaysa kareler top-merkezli sayılır ve şekil/bölge
+  analizi kapanır — konumlar gerçek ama seyrek olduğu için.
+
+`--track-fps 15` yayında ŞARTTIR: kalibrasyon kamerayı ancak ardışık örnekler
+yakınsa takip edebilir (ölçüldü: 5 fps'te 30 karenin 1'i kalibre oldu).
+
+Sınır — dürüstçe: kesme tespiti ve yeniden yakalama eşikleri sentetik kesmelerle
+doğrulandı, GERÇEK yayın görüntüsüyle henüz ayarlanmadı. Elinize gerçek bir maç
+yayını geçtiğinde `--camera broadcast` ile koşup ekrandaki "kalibre %" oranına
+bakın; düşükse eşikler ayarlanmalıdır.
 
 Ctrl+C ile durur. İşlenen segmentler `<watch>/.processed` altına taşınmaz —
 adları bir durum dosyasında tutulur, böylece yeniden başlatınca kaldığı yerden devam eder.
@@ -54,6 +79,11 @@ def default_ingest_python() -> str:
     return str(cand) if cand.exists() else sys.executable
 
 
+# Kare başına kalibrasyon açıkken, karelerin bu oranından AZI kalibre olduysa
+# konumlar gerçek ama ÇOK SEYREK demektir: şekil/bölge analizi az sayıda kareden
+# hesaplanır ve gürültülü olur. O yüzden kareler top-merkezli (broadcast)
+# etiketlenir — tam saha analizi kapanır, topa göreli sinyaller açık kalır.
+# NOT: Bu eşik gerçek yayın görüntüsüyle ayarlanmalıdır; şu an sezgiseldir.
 class WarmTracker:
     """Modeli açık tutan takip işçisi — segmentler arasında yeniden yüklenmez.
 
@@ -62,9 +92,16 @@ class WarmTracker:
     dedektör YALNIZ aynı çözünürlükteki segmentlerde geçerli; kaynak çözünürlük
     değişirse (kamera/encoder profili değişti) dedektör yeniden kurulur, yoksa
     derlenmiş sabit batch ile dilim sayısı uyuşmaz.
+
+    **Kamera kipi İLK segmentte belirlenir ve maç boyunca sabit kalır.** Her
+    segmenti yeniden sınıflandırmak videoyu ikinci kez çözmek demek (gerçek
+    zaman bütçesinde pahalı) ve gereksiz: bir yayın maç ortasında sabit kameraya
+    dönmez. Kesme sayımı zaten hattın içinde bedava geliyor.
     """
 
-    def __init__(self, *, calibration: str, detector_cfg, pipeline_kwargs: dict):
+    def __init__(self, *, calibration: str, detector_cfg, pipeline_kwargs: dict,
+                 camera: str = "auto", per_frame_mode: str = "auto",
+                 reacquire_mode: str = "auto", segment_seconds: float = 30.0):
         from app.tracking.calibration import PitchCalibration
 
         self.calib = PitchCalibration.load(calibration)
@@ -76,6 +113,46 @@ class WarmTracker:
         # İlk segmentte bulunan forma renkleri; sonraki segmentlere çapa olarak
         # geçilir ki ev/deplasman etiketleri yer değiştirmesin.
         self.team_anchor = None
+        self._camera = camera
+        self._per_frame_mode = per_frame_mode
+        self._reacquire_mode = reacquire_mode
+        self._segment_seconds = segment_seconds
+        self._mode: dict | None = None       # ilk segmentte kilitlenir
+
+    def _decide_mode(self, video: Path) -> dict:
+        """Kamera kipini bir kez belirle: sabit mi, yayın mı; ne açılacak?"""
+        from app.tracking.camera import BROADCAST_SOURCE, analyze_video, plan_mode
+
+        if self._camera == "auto":
+            v = analyze_video(str(video), max_seconds=self._segment_seconds)
+            moving = v.source_name == BROADCAST_SOURCE
+            print(f"  kamera: {v.kind} · {v.note}", flush=True)
+        else:
+            moving = self._camera == "broadcast"
+            print(f"  kamera: {self._camera} (elle verildi)", flush=True)
+
+        mode = plan_mode(moving=moving, per_frame_mode=self._per_frame_mode,
+                         reacquire_mode=self._reacquire_mode)
+        per_frame, reacquire = mode["per_frame"], mode["reacquire"]
+        if per_frame:
+            track_fps = self._pipeline_kwargs.get("track_fps", 0.0)
+            print("  kare başına kalibrasyon: AÇIK — oturmayan kareler ATLANIR",
+                  flush=True)
+            if track_fps < 15.0:
+                print(f"  UYARI: --track-fps {track_fps:g} kare başına kalibrasyon "
+                      f"için düşük; kamera kareler arasında çok yol alıyor (15 önerilir)",
+                      flush=True)
+            if reacquire:
+                print("  kesme sonrası yeniden yakalama: AÇIK (çapadan, %85 inlier)",
+                      flush=True)
+            else:
+                print("  UYARI: yeniden yakalama KAPALI — ilk kesmede takip kopar "
+                      "ve segmentin kalanı atılır", flush=True)
+        elif moving:
+            print("  UYARI: kamera hareketli ama kare başına kalibrasyon kapalı → "
+                  "kareler TOP-MERKEZLİ sayılacak (şekil/bölge analizi kapalı)",
+                  flush=True)
+        return mode
 
     def _ensure_detector(self, width: int, height: int):
         from app.tracking.detect import RFDetrDetector
@@ -94,14 +171,25 @@ class WarmTracker:
     def run(self, video: Path, *, out_json: Path, offset_minutes: float,
             match_id: int, home_team: int, away_team: int, period: int) -> dict:
         """Tek segmenti sıcak modelle işle → frames JSON yaz, özet döndür."""
+        from app.tracking.camera import source_after_run
         from app.tracking.frames import frames_to_json
         from app.tracking.pipeline import PipelineConfig, process_video, video_info
 
         info = video_info(str(video))
         det = self._ensure_detector(int(info["width"]), int(info["height"]))
+        if self._mode is None:
+            self._mode = self._decide_mode(video)
+        mode = self._mode
         cfg = PipelineConfig(
             detector=self._detector_cfg,
             clip_offset_minutes=offset_minutes, period=period,
+            per_frame_calibration=mode["per_frame"],
+            allow_reacquire=mode["per_frame"] and mode["reacquire"],
+            detect_cuts=mode["per_frame"],
+            # Tekrar ayıklama yalnız YAYINDA anlamlı: kulüp kamerası tekrar
+            # yayınlamaz, sabit kamerada süzgeci çalıştırmak boş maliyettir.
+            detect_replays=mode["per_frame"] and mode["moving"],
+            source_name=mode["source"],
             **self._pipeline_kwargs,
         )
         frames, summary = process_video(
@@ -109,6 +197,18 @@ class WarmTracker:
             home_team_id=home_team, away_team_id=away_team, cfg=cfg, detector=det,
             team_anchor=self.team_anchor,
         )
+        # Etiketi TAHMİNE göre değil, GERÇEKLEŞENE göre ver. Kalibrasyonun
+        # tutacağını baştan varsayıp "tam saha analizi açık" demek, tutmadığında
+        # avuç dolusu kareden şekil sinyali üretmek demektir. Oran düşükse
+        # kareler top-merkezliye düşürülür — konumlar yine gerçek, ama seyrek
+        # olduğu için şekil/bölge analizi kapatılır.
+        stats = summary.get("calibration_stats") or {}
+        frame_source, downgrade = source_after_run(mode, stats.get("calibrated_ratio"))
+        if downgrade:
+            # TrackingFrame donmuş (frozen) bir model — kopyalayarak değiştir.
+            frames = [f.model_copy(update={"source": frame_source}) for f in frames]
+            summary["source_downgraded"] = downgrade
+            print(f"  ! {downgrade}", flush=True)
         # İlk geçerli atamayı çapa olarak sabitle (sonraki segmentler buna uyar).
         if self.team_anchor is None:
             colors = summary.get("team_colors") or []
@@ -117,7 +217,10 @@ class WarmTracker:
 
                 self.team_anchor = np.asarray(colors, dtype=float)
                 print(f"  takım renkleri sabitlendi: {colors}", flush=True)
-        payload = frames_to_json(frames, match_id=match_id, extra={
+        # Üst düzey "source" karelerdekiyle AYNI olmalı: ingest bunu okuyup
+        # kaynağa göre davranıyor, ikisi ayrışırsa kareler bir sınıfta yazılıp
+        # başka bir sınıfta yorumlanır.
+        payload = frames_to_json(frames, match_id=match_id, source_name=frame_source, extra={
             "video": video.name, "video_info": info,
             "home_team_external_id": home_team, "away_team_external_id": away_team,
             "summary": summary,
@@ -185,6 +288,17 @@ def main() -> int:
     p.add_argument("--tiles", type=int, default=6)
     p.add_argument("--threshold", type=float, default=0.3)
     p.add_argument("--weights", default=None)
+    p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast"],
+                   help="Kamera davranışı. auto=ilk segmentten tespit et (sonra "
+                        "kilitlenir), static=sabit geniş açı, broadcast=TV yayını "
+                        "(çoklu kamera + kesme)")
+    p.add_argument("--per-frame-calibration", default="auto",
+                   choices=["auto", "on", "off"],
+                   help="Homografiyi her karede yeniden bul. auto=kamera hareketliyse "
+                        "aç. Oturmayan kareler ATLANIR (sahte konum üretilmez).")
+    p.add_argument("--reacquire", default="auto", choices=["auto", "on", "off"],
+                   help="Kesmeden sonra ÇAPADAN yeniden yakala. auto=yayında aç. "
+                        "Kapalıyken ilk kesmede takip kopar ve segmentin kalanı atılır.")
     p.add_argument("--ingest-python", default=default_ingest_python(),
                    help="DB ingest'i çalıştıracak yorumlayıcı (varsayılan: ana venv)")
     p.add_argument("--database-url", default=None,
@@ -224,6 +338,8 @@ def main() -> int:
                 "fps_out": args.fps, "track_fps": args.track_fps,
                 "ball_threshold": args.threshold,
             },
+            camera=args.camera, per_frame_mode=args.per_frame_calibration,
+            reacquire_mode=args.reacquire, segment_seconds=args.segment_seconds,
         )
 
     def _done(name: str) -> None:
@@ -243,6 +359,11 @@ def main() -> int:
             "--tiles", str(args.tiles), "--threshold", str(args.threshold),
             "--ball-threshold", str(args.threshold),
             "--clip-offset-minutes", f"{offset:.4f}", "--period", str(args.period),
+            # Yayın ayarları alt sürece de geçmeli; yoksa --isolate sessizce
+            # farklı (sabit kamera) davranır ve iki mod aynı maçta karışır.
+            "--camera", args.camera,
+            "--per-frame-calibration", args.per_frame_calibration,
+            "--reacquire", args.reacquire,
         ]
         if args.weights:
             cmd += ["--weights", args.weights]
@@ -252,15 +373,32 @@ def main() -> int:
             return False
         return True
 
+    last_summary: dict = {}
+
     def _track_warm(seg: Path, offset: float, frames_json: Path) -> bool:
         """Sıcak model: aynı süreçte, dedektör yeniden yüklenmeden."""
         assert warm is not None
-        warm.run(
+        last_summary.clear()
+        last_summary.update(warm.run(
             seg, out_json=frames_json, offset_minutes=offset,
             match_id=args.match_id, home_team=args.home_team,
             away_team=args.away_team, period=args.period,
-        )
+        ))
         return frames_json.exists()
+
+    def _calib_note() -> str:
+        """Segment satırına eklenecek kalibrasyon karnesi (yayın kipinde)."""
+        stats = last_summary.get("calibration_stats") or {}
+        if not stats.get("per_frame_calibration"):
+            return ""
+        ratio = stats.get("calibrated_ratio")
+        cuts = stats.get("cuts")
+        parts = [f"kalibre %{(ratio or 0.0) * 100:.0f}"]
+        if cuts is not None:
+            parts.append(f"{cuts} kesme")
+        if last_summary.get("source_downgraded"):
+            parts.append("top-merkezli")
+        return " · " + " · ".join(parts)
 
     def _handle(seg: Path) -> None:
         """Tek segment: takip → JSON → DB. İşlendi işaretlemesi burada yapılır."""
@@ -310,8 +448,8 @@ def main() -> int:
             real_time = steady <= args.segment_seconds
             extra = f" (ısınma {warmup:.0f} sn hariç {steady:.0f} sn)"
         print(
-            f"  {seg.name}: dk {offset:.2f}+ · {written or '?'} kare · "
-            f"{took:.0f} sn{extra} "
+            f"  {seg.name}: dk {offset:.2f}+ · {written or '?'} kare"
+            f"{_calib_note()} · {took:.0f} sn{extra} "
             f"{'✓ gerçek zamana yetişiyor' if real_time else '⚠ segmentten yavaş'}",
             flush=True,
         )

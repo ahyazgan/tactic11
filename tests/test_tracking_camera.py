@@ -14,9 +14,24 @@ from __future__ import annotations
 from app.tracking.camera import (
     BROADCAST_SOURCE,
     STATIC_SOURCE,
+    classify_pair,
     classify_pairs,
     summarise,
 )
+
+
+def test_streaming_and_batch_classification_agree() -> None:
+    """Canlı hat ile çevrimdışı analiz AYNI kesme tanımını kullanmalı.
+
+    `CutDetector` (kare kare, hattın içinde) ve `classify_pairs` (video önceden
+    taranırken) ikisi de `classify_pair`e iner. Ayrı eşik kopyaları olsaydı biri
+    kesme dediğine öbürü çevirme der, davranış videoya göre sessizce değişirdi.
+    """
+    cases = [(0.3, 0.9, 0.02), (25.0, 0.55, 0.6), (40.0, 0.02, 0.8), (1.0, 0.3, 0.1)]
+    motions, responses, hists = (list(c) for c in zip(*cases, strict=True))
+    assert classify_pairs(motions, responses, hists) == [
+        classify_pair(m, r, h) for m, r, h in cases
+    ]
 
 
 def test_static_camera_pairs_are_static() -> None:
