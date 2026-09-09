@@ -524,6 +524,11 @@ def process_video(
         samples, assignment.team_by_track, calib,
         match_id=match_id, home_team_id=home_team_id, away_team_id=away_team_id, cfg=cfg,
     )
+    # Pasları KARELERDEN çıkar: aktör (topa en yakın oyuncu) zaten kare başına
+    # işaretli, tutucu değişimi pasın kendisidir. Ayrı bir tespit modeli gerekmez.
+    from app.tracking.passes import extract_passes
+
+    pass_out = extract_passes(frames)
     if cfg.preview_path:
         write_preview(video_path, samples, assignment.team_by_track, calib, cfg, cfg.preview_path)
     tracks = {tid for s in samples for tid, *_ in s.persons}
@@ -545,6 +550,17 @@ def process_video(
             k: sum(1 for s in samples if s.ball_source == k) for k in ("det", "roi", "interp")
         },
         "calibration_reprojection_m": round(calib.reprojection_error_m, 3),
+        # Takipten çıkarılan paslar. Kulüp kendi kamerasıyla kayıt yapıyorsa
+        # event aboneliği olmadan xT/ileri pas/karar etkisi ölçümü bunlarla
+        # çalışabilir. Hepsi `estimated` — bkz. app/tracking/passes.py.
+        "passes": {
+            "count": len(pass_out.passes),
+            "complete": sum(1 for p in pass_out.passes if p.complete),
+            "turnovers": pass_out.turnovers,
+            "actor_ratio": pass_out.actor_ratio,
+            "rejected": pass_out.rejected,
+            "note": pass_out.note,
+        },
         # Yayın görüntüsünde çıktının ne kadarına güvenilebileceğini söyler:
         # kalibre olmayan kareler ATILDI, yani düşük oran "az veri" demektir,
         # "kötü veri" değil. Canlı hat bunu ekrana basar.
