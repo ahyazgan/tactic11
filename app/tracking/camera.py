@@ -32,10 +32,32 @@ frame'lerle aynı sınıf — ve yalnız topa göreli sinyaller üretilir.
 Bu ayrım önemlidir: hızlı bir çevirme de histogramı çok değiştirir, ama kayması
 tutarlıdır; kesmede tutarlılık yoktur.
 
-## Sınır
+## GERÇEK YAYINLA DOĞRULANDI (2026-09-10)
 
-Eşikler sezgiseldir ve gerçek yayın görüntüsüyle ayarlanmalıdır. Modülün amacı
-kesin sınıflandırma değil, **sistemin sabit kamera varsayımıyla yayın görüntüsüne
+Eşikler uzun süre "sezgisel, gerçek yayınla ayarlanmalı" notuyla duruyordu.
+Ayarlandı — ve **değiştirilmesi gerekmedi**.
+
+Kaynak: Orange County SC vs Oakland Roots maç özeti, 4K 60 fps, 4.4 dakika,
+**CC BY 3.0** (BZFilms, Wikimedia Commons). Ticari kullanım serbest.
+
+    hüküm            : broadcast          ✓ doğru sınıflandırdı
+    kesme            : dakikada 1.6
+    kamera hareketi  : karelerin %41'i
+
+Kesme sayısı önce "çok düşük" göründü (özet videoda daha çok kesme beklenir).
+Tam kare hızında (60 fps) tarayınca **tek bir sert kesme** bulundu ve bu kez
+"fazla sayıyor" sanıldı. İkisi de yanlıştı: adaylar tek tek incelendiğinde
+**yumuşak geçiş (dissolve)** oldukları görüldü — 30, 26, 12 ve 5 karelik.
+Tam-kare yöntemi dissolve'ları HİÇ görmüyor; yanlış olan referanstı.
+
+Ayırt edici ölçüt: sert kesme tek karede olur (ölçüldü: ardışık değişim 0.575),
+dissolve onlarca kareye yayılır (ardışık değişim ≤0.06 ama toplam ~1.0).
+4 fps örnekleme ikisini de yakalar — bu doğru davranıştır, ikisi de sahne
+değişimidir ve ikisinde de homografi süreklilik referansını kaybeder.
+
+**Sınır:** tek video, tek prodüksiyon tarzı. Farklı yayıncılarda (daha yoğun
+kesme, farklı grafik yoğunluğu) yeniden bakılmalı. Modülün amacı kesin
+sınıflandırma değil, **sistemin sabit kamera varsayımıyla yayın görüntüsüne
 kendinden emin çöp üretmesini engellemektir**. Şüphede kalırsa yayın (kısıtlı)
 tarafa düşer — yanlış sinyal üretmektense az sinyal üretmek yeğdir.
 """
