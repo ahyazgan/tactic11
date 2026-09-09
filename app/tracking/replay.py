@@ -158,3 +158,77 @@ def overlay_change_ratio(frame_gray, reference_gray, mask, *, tol: float = 12.0)
                   - np.asarray(reference_gray, dtype=np.float32))
     changed = (diff[mask] > tol)
     return float(changed.mean()) if changed.size else None
+
+
+# Bindirme maskesi + canlı medyan için toplanacak kare sayısı. 15 fps'te 30 kare
+# ≈ 2 sn: canlı futbolda sahne bu sürede belirgin değişir, değişmeyen bölge
+# gerçekten bindirmedir.
+BOOTSTRAP_FRAMES = 30
+# Canlı medyan penceresi — sınırsız büyümesin ve aydınlanma değişimine uysun.
+MOTION_HISTORY = 600
+
+
+class ReplayFilter:
+    """Akış halinde tekrar ayıklama — durumu kareler arası taşır (venv-cv).
+
+    `classify_frame` tek kareye bakar; bu sınıf onun için gereken iki referansı
+    biriktirir: canlı hareket medyanı ve skorboard bindirme maskesi.
+
+    **Isınma (bootstrap):** ilk `BOOTSTRAP_FRAMES` kare CANLI kabul edilir ve
+    hiçbiri atılmaz — yayınlar canlı başlar, ve referans olmadan "yavaş" ya da
+    "bindirme kalktı" tanımsızdır.
+
+    **Güvenli tasarım:** bindirme maskesi bulunamazsa (yayıncı skorboard
+    göstermiyor, ya da bölge çok küçük/büyük) `overlay_change` None kalır ve
+    `classify_frame` HİÇBİR kareyi tekrar saymaz. Yani süzgecin başarısızlığı
+    veri kaybına değil, süzmemeye yol açar.
+
+    `motion` dışarıdan verilir (kareler arası global kayma); faz korelasyonunu
+    `camera.CutDetector` zaten hesaplıyor, ikinci kez hesaplamak israf olur.
+    """
+
+    def __init__(self, *, thresholds: ReplayThresholds | None = None,
+                 bootstrap: int = BOOTSTRAP_FRAMES):
+        self._t = thresholds or ReplayThresholds()
+        self._bootstrap = max(bootstrap, MIN_BASELINE_SAMPLES)
+        self._motions: list[float] = []
+        self._boot: list = []          # ısınma karelerinin gri kopyaları
+        # Isınmanın bittiğini AYRI bir bayrak tutar. `len(self._boot)` ile
+        # bakılamaz: ısınma sonunda liste belleği bırakmak için boşaltılıyor ve
+        # koşul yeniden doğru olurdu — süzgeç sonsuza kadar ısınmada kalır,
+        # hiçbir kare süzülmez ve maske her N karede yeniden hesaplanırdı.
+        self._ready = False
+        self._mask = None
+        self._reference = None
+        self.frames_seen = 0
+        self.replays = 0
+        self.mask_found = False
+
+    def update(self, gray, motion: float) -> ReplayVerdict:
+        """Bir kare için hüküm. Isınma sırasında her zaman "canlı" döner."""
+        self.frames_seen += 1
+        if not self._ready:
+            self._boot.append(gray)
+            self._motions.append(motion)
+            if len(self._boot) >= self._bootstrap:
+                self._mask = find_overlay_mask(self._boot)
+                self._reference = self._boot[0]
+                self.mask_found = self._mask is not None
+                self._ready = True
+                self._boot = []        # belleği bırak
+            return classify_frame(motion=motion, baseline=None, overlay_change=None,
+                                  thresholds=self._t)
+
+        change = overlay_change_ratio(gray, self._reference, self._mask)
+        baseline = live_motion_baseline(self._motions, thresholds=self._t)
+        verdict = classify_frame(motion=motion, baseline=baseline,
+                                 overlay_change=change, thresholds=self._t)
+        if verdict.is_replay:
+            self.replays += 1
+        else:
+            # Canlı medyan yalnız CANLI karelerden beslenmeli; tekrar kareleri
+            # yavaş olduğu için medyanı aşağı çeker ve süzgeç kendi kendini kör eder.
+            self._motions.append(motion)
+            if len(self._motions) > MOTION_HISTORY:
+                del self._motions[0]
+        return verdict

@@ -181,3 +181,84 @@ def test_reacquire_stays_closed_by_default() -> None:
     back = _feed(cal, homography_for((10.0, 4.0)))
     assert not back.ok
     assert "çapa" in back.reason, back.reason
+
+
+# --- kesme bildirimi (TV yayını) ------------------------------------------- #
+
+def test_mark_cut_drops_out_of_tracking(calibrator) -> None:
+    """Kesme = süreklilik KOPTU. Kalibratör bunu bilmeli.
+
+    Kritik ayrım: TAKİPTE yolundaki kabul kapısı FİZİKTİR ("sabit bir görüntü
+    noktası bir karede 5 m'den fazla oynayamaz"). Kesmede o varsayım geçersiz;
+    iki ayrı kameranın kareleri arasında süreklilik yoktur. Kesmeyi "takip
+    sürüyor" saymak, fizik kapısını anlamsız bir referansa uygulamaktır.
+    """
+    assert _feed(calibrator, homography_for()).ok
+    assert calibrator.tracking
+
+    calibrator.mark_cut()
+    assert not calibrator.tracking
+
+
+def test_reset_to_anchor_and_mark_cut_differ(calibrator) -> None:
+    """İkisi karıştırılmamalı: biri takibi sürdürür, öbürü kopartır.
+
+    `reset_to_anchor` elle yeniden çapalama içindir (dışarıdan "bu kare çapaya
+    benziyor" bilgisi gelir). `mark_cut` ise kesme içindir.
+    """
+    assert _feed(calibrator, homography_for()).ok
+    calibrator.reset_to_anchor()
+    assert calibrator.tracking, "elle çapalama takibi sürdürmeli"
+
+    calibrator.mark_cut()
+    assert not calibrator.tracking, "kesme takibi kopartmalı"
+
+
+def test_cut_then_recovery_needs_reacquire_enabled(calibrator) -> None:
+    """Yeniden yakalama kapalıyken kesme KALICI kayıptır.
+
+    TV yayını için ölümcül olan tam bu: yayın sürekli kamera değiştirir, ilk
+    kesmeden sonra segmentin kalanındaki her kare atılır.
+    """
+    assert _feed(calibrator, homography_for()).ok
+    calibrator.mark_cut()
+    for _ in range(3):
+        r = _feed(calibrator, homography_for((10.0, 4.0)))
+        assert not r.ok, "yeniden yakalama kapalıyken kabul edilmemeli"
+        assert "çapa" in r.reason
+
+
+def test_cut_recovers_from_anchor_when_reacquire_is_on() -> None:
+    """Yeniden yakalama açıkken ana kamera görüntüsüne dönünce toparlanmalı.
+
+    TV yayınında ana kamera kesmeden sonra benzer kadraja döner; çapa hangi
+    yarıya bakıldığını sabitlediği için 180° ikizliği de kapanır.
+    """
+    cal = PerFrameCalibrator(
+        calibration_from_homography(homography_for(), (W, H)),
+        image_size=(W, H), allow_reacquire=True,
+    )
+    assert _feed(cal, homography_for()).ok
+    cal.mark_cut()
+    assert not cal.tracking
+
+    back = _feed(cal, homography_for((10.0, 4.0)))
+    assert back.ok, back.reason
+    assert cal.tracking
+
+
+def test_cut_recovery_still_demands_a_strong_fit() -> None:
+    """Kesme sonrası çıta YÜKSEK kalmalı — süreklilik desteği yok.
+
+    Yeniden yakalamayı açmak "her şeyi kabul et" demek değildir: çapadan uzak
+    bir sahne %85 inlier'ı tutturamaz ve reddedilir.
+    """
+    cal = PerFrameCalibrator(
+        calibration_from_homography(homography_for(), (W, H)),
+        image_size=(W, H), allow_reacquire=True,
+    )
+    assert _feed(cal, homography_for()).ok
+    cal.mark_cut()
+    far = _feed(cal, homography_for((300.0, 120.0)))
+    assert not far.ok, far.reason
+    assert not cal.tracking

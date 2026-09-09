@@ -32,6 +32,19 @@ doğrulanması gerekir.
     # 3) Tüm tabloyu üret (README'deki)
     venv-cv\\Scripts\\python.exe -m scripts.bench_calibration table \\
         --bench-dir data/tracking/bench
+
+    # 4) TV SENARYOSU: kesmeli yayın üret + yeniden yakalamayı ölç
+    venv-cv\\Scripts\\python.exe -m scripts.bench_calibration make-cuts \\
+        --bench-dir data/tracking/bench
+    venv-cv\\Scripts\\python.exe -m scripts.bench_calibration cuts \\
+        --bench-dir data/tracking/bench
+
+## TV yayını ölçümü — neden ayrı
+
+`pan_zoom.mp4` hareketli ana kamerayı taklit eder ama KESME içermez. Yayının
+asıl zorluğu kesmedir: her kesmede homografi süreklilik referansını kaybeder ve
+`allow_reacquire` kapalıysa kalibratör bir daha ASLA toparlanmaz — segmentin
+kalanındaki her kare atılır. `make-cuts` + `cuts` bunu ölçer.
 """
 from __future__ import annotations
 
@@ -45,7 +58,9 @@ from pathlib import Path
 import numpy as np
 
 from app.tracking.calibration import PitchCalibration
+from app.tracking.homography_fit import corners_from_homography
 from app.tracking.pitch_lines import PerFrameCalibrator, calibration_from_homography
+from app.tracking.pitch_model import pitch_corners
 
 BENCH_W, BENCH_H = 1280, 720
 GT_NAME = "ground_truth.json"
@@ -198,6 +213,138 @@ def table(args: argparse.Namespace) -> int:
     return 0
 
 
+CUTS_NAME = "yayin_kesmeli.mp4"
+
+
+def make_cuts(args: argparse.Namespace) -> int:
+    """pan_zoom.mp4'ten KESMELİ yayın taklidi üret.
+
+    pan_zoom hareketli ana kameradır ama kesme içermez; TV yayınının asıl
+    zorluğu kesmedir (her kesmede homografi süreklilik referansını kaybeder).
+
+    "İkinci kamera" yalnızca yakınlaştırma OLAMAZ: aynı içeriğin zoom'u
+    histogramı değiştirmediği için `classify_pair` onu haklı olarak "hızlı
+    çevirme" sayar, kesme değil. Gerçek kesme farklı bir sahneye gider — farklı
+    renk dağılımı + tutarsız kayma. Onu üretmek için kırpma + yatay çevirme +
+    renk tonu kaydırması birlikte uygulanır.
+    """
+    import cv2
+
+    bench = Path(args.bench_dir)
+    cap = cv2.VideoCapture(str(bench / MP4_NAME))
+    if not cap.isOpened():
+        print(f"kaynak açılamadı: {bench / MP4_NAME} — önce 'make' çalıştır")
+        return 1
+    fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    out_path = bench / CUTS_NAME
+    out = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), fps, (w, h))
+
+    i = cuts = 0
+    prev_close = None
+    while True:
+        ok, frame = cap.read()
+        if not ok:
+            break
+        close = (i % (args.wide + args.close)) >= args.wide
+        if close:
+            ch, cw = h // 3, w // 3
+            y0, x0 = (h - ch) // 2, (w - cw) // 2
+            frame = cv2.resize(frame[y0:y0 + ch, x0:x0 + cw], (w, h))
+            frame = cv2.flip(frame, 1)
+            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            hsv[:, :, 0] = (hsv[:, :, 0].astype(int) + 75) % 180
+            frame = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+        if prev_close is not None and prev_close != close:
+            cuts += 1
+        prev_close = close
+        out.write(frame)
+        i += 1
+    cap.release()
+    out.release()
+    print(f"{out_path}: {i} kare, {cuts} kesme "
+          f"({args.wide} geniş / {args.close} yakın blok)")
+
+    # Çapa kalibrasyonunu da YANINA yaz. `cuts` bunu kendisi türetiyor ama
+    # `track_video`/`track_live` ile uçtan uca duman testi yapmak için diskte
+    # bir JSON gerekiyor. Üretilen her şey bench klasöründe kalsın (gitignore'da);
+    # ground_truth.json'dan türeyen bir dosyayı repoya koymak tutarsız olurdu.
+    gt, true_h = _load(bench)
+    anchor_path = bench / "anchor_frame0.json"
+    with open(anchor_path, "w", encoding="utf-8") as f:
+        json.dump({
+            "image_size": [gt["width"], gt["height"]],
+            "pitch_length_m": 105.0, "pitch_width_m": 68.0,
+            "points": [{"image": [float(u), float(v)], "pitch": [float(px), float(py)]}
+                       for (u, v), (px, py) in zip(
+                           corners_from_homography(true_h(gt["params"][0])),
+                           pitch_corners(), strict=True)],
+        }, f, indent=1)
+    print(f"{anchor_path}: çapa kalibrasyonu (uçtan uca duman testi için)")
+    print("\nUçtan uca deneme:")
+    print(f"  python -m scripts.track_video --video {out_path} \\\n"
+          f"      --calibration {anchor_path} --out bench_frames.json \\\n"
+          f"      --match-id 990199 --home-team 611 --away-team 612 \\\n"
+          f"      --camera broadcast --track-fps 15")
+    return 0
+
+
+def cuts(args: argparse.Namespace) -> int:
+    """Kesmeli yayında yeniden yakalamanın etkisini ölç.
+
+    Ölçülen: kaç kare kalibre oldu. Kalibre olmayan kare ATILIR — düşük oran
+    "veri yok" demektir, "yanlış veri" değil.
+    """
+    import cv2
+
+    from app.tracking.camera import CutDetector
+    from app.tracking.pitch_lines import extract_lines
+
+    bench = Path(args.bench_dir)
+    video = bench / CUTS_NAME
+    if not video.exists():
+        print(f"{video} yok — önce 'make-cuts' çalıştır")
+        return 1
+    gt, true_h = _load(bench)
+    w, h = gt["width"], gt["height"]
+    anchor = calibration_from_homography(true_h(gt["params"][0]), (w, h))
+
+    cap = cv2.VideoCapture(str(video))
+    frames = []
+    while len(frames) < args.frames:
+        ok, f = cap.read()
+        if not ok:
+            break
+        frames.append(f)
+    cap.release()
+    print(f"video: {len(frames)} kare {w}x{h}\n")
+    print(f"{'yeniden yakalama':>18} {'kesme bildirimi':>16} {'kalibre':>12} "
+          f"{'oran':>6} {'kesme':>6}")
+    print("-" * 64)
+    for reacquire in (False, True):
+        for use_cuts in (False, True):
+            pfc = PerFrameCalibrator(anchor, image_size=(w, h),
+                                     allow_reacquire=reacquire)
+            det = CutDetector() if use_cuts else None
+            for f in frames:
+                if det is not None and det.update(f) == "cut":
+                    pfc.mark_cut()
+                ext = extract_lines(f)
+                pfc.process_lines(ext.dist_map, line_pixels=ext.line_pixels,
+                                  grass_ratio=ext.grass_ratio)
+            print(f"{'AÇIK' if reacquire else 'kapalı':>18} "
+                  f"{'VAR' if use_cuts else 'yok':>16} "
+                  f"{pfc.frames_calibrated:>6}/{pfc.frames_seen:<5} "
+                  f"{pfc.calibrated_ratio * 100:>5.0f}% "
+                  f"{(det.cuts if det else 0):>6}")
+    print("\nNot: sentetik kesmelerde 2. kamerada saha çizgisi yoktur, bu yüzden "
+          "'kesme bildirimi' sayıyı değiştirmez —\nmevcut kapılar zaten düşürür. "
+          "mark_cut'ın değeri İKİ kameranın da sahayı gördüğü kesmelerdedir "
+          "(bkz. tests/test_per_frame_calibrator.py).")
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Kare başına kalibrasyon ölçümü")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -224,6 +371,17 @@ def main() -> int:
     t.add_argument("--bench-dir", required=True)
     t.add_argument("--frames", type=int, default=60)
     t.set_defaults(func=table)
+
+    mc = sub.add_parser("make-cuts", help="KESMELİ yayın taklidi üret (TV senaryosu)")
+    mc.add_argument("--bench-dir", required=True)
+    mc.add_argument("--wide", type=int, default=40, help="Ana kamera blok uzunluğu (kare)")
+    mc.add_argument("--close", type=int, default=15, help="İkinci kamera blok uzunluğu")
+    mc.set_defaults(func=make_cuts)
+
+    c = sub.add_parser("cuts", help="Kesmeli yayında yeniden yakalamayı ölç")
+    c.add_argument("--bench-dir", required=True)
+    c.add_argument("--frames", type=int, default=500)
+    c.set_defaults(func=cuts)
 
     args = p.parse_args()
     return int(args.func(args))

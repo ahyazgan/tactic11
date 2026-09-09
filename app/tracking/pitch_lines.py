@@ -330,7 +330,29 @@ class PerFrameCalibrator:
         return self._accept(fit)
 
     def reset_to_anchor(self) -> None:
-        """Kesme sonrası: çapaya dön (kayan homografiyle devam etme)."""
+        """Çapaya dön ve TAKİPTE say (kayan homografiyle devam etme).
+
+        Elle yeniden çapalama içindir: dışarıdan "bu kare çapaya benziyor"
+        bilgisi geldiğinde kullanılır. Kesme için `mark_cut()` kullan —
+        orada süreklilik gerçekten kopmuştur.
+        """
         self._h = self._anchor.homography
         self._last_corners = self._prev_corners = self._pending = None
         self._misses = 0
+
+    def mark_cut(self) -> None:
+        """Kesme bildirildi: süreklilik KOPTU, çapadan yeniden yakala.
+
+        `reset_to_anchor`dan farkı: `_misses` sıfırlanmaz, en az 1 yapılır.
+        Böylece sonraki kare KAYIP yolundan geçer — çapadan aranır ve yüksek
+        inlier (`REACQUIRE_MIN_INLIER`) istenir.
+
+        Neden bu ayrım şart: TAKİPTE yolundaki kabul kapısı FİZİKTİR — "sabit
+        bir görüntü noktası bir karede 5 m'den fazla oynayamaz". Kesmede o
+        varsayım geçersizdir; iki ayrı kameranın kareleri arasında süreklilik
+        yoktur. Kesmeyi "takip sürüyor" saymak, fizik kapısını anlamsız bir
+        referansa karşı uygulamak ve düşük çıtayla kabul etmek demektir.
+        """
+        self._h = self._anchor.homography
+        self._last_corners = self._prev_corners = self._pending = None
+        self._misses = max(self._misses, 1)

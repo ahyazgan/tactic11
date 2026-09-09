@@ -56,6 +56,23 @@ class PipelineConfig:
     # Kamera hareketliyse (yayın) her karede homografi yeniden bulunur; oturmayan
     # kareler ATLANIR (sahte konum üretmektense kare kaybetmek yeğdir).
     per_frame_calibration: bool = False
+    # TV YAYINI İÇİN ŞART. Yayın sürekli kamera değiştirir; her kesmede
+    # süreklilik kopar. Bu kapalıyken kalibratör ilk kesmede KAYIP durumuna
+    # düşer ve bir daha ASLA toparlanmaz — segmentin kalanındaki her kare atılır.
+    # Açıkken kesme sonrası ÇAPADAN aranır (serbest arama değil: saha çizgi
+    # modeli 180° dönme altında kendine eşit olduğu için serbest arama 47 m
+    # yanlış çapa üretmişti) ve %85 inlier istenir.
+    allow_reacquire: bool = False
+    # Kesmeyi kare kare tespit et ve kalibratöre bildir. Kesme bilinmezse
+    # kalibratör kaymış homografiyle devam etmeyi dener ve yanlış çizgiye
+    # kilitlenir.
+    detect_cuts: bool = False
+    # Ağır çekim tekrarları ayıkla. Yayında tekrar canlı akışın arasına girer;
+    # canlı dakikayla kaydedilirse 68. dakikadaki atak 71'e yazılır ve aynı olay
+    # iki kez sayılır. Farklı açıdan gelen tekrarlar zaten kalibrasyon kapılarınca
+    # eleniyor; buradaki hedef ANA KAMERADAN gelen ağır çekim (sorunsuz kalibre
+    # olur, o yüzden görünmez). `detect_cuts` ile aynı ölçümleri paylaşır.
+    detect_replays: bool = False
     preview_path: str | None = None
     preview_width: int = 1600
 
@@ -170,9 +187,13 @@ def collect_observations(
     detector: RFDetrDetector | None = None,
     calib: PitchCalibration | None = None,
     progress: bool = True,
-) -> tuple[list[SampledObservation], TeamAssigner]:
+) -> tuple[list[SampledObservation], TeamAssigner, dict[str, Any]]:
     """Kalibrasyon verilirse saha dışı tespitler (yedek kulübesi, seyirci) takipten
-    ÖNCE elenir: takım kümelemesi ve takip kimlikleri yalnız sahadakilerle kurulur."""
+    ÖNCE elenir: takım kümelemesi ve takip kimlikleri yalnız sahadakilerle kurulur.
+
+    Üçüncü dönen değer kare başına kalibrasyonun **dürüstlük karnesi**: kaç kare
+    kalibre oldu, kaç kare atıldı, kaç kesme görüldü. Yayın görüntüsünde bu oran
+    çıktının ne kadarına güvenilebileceğini söyler ve özete yazılır."""
     import supervision as sv
 
     det = detector or RFDetrDetector(cfg.detector)
@@ -192,7 +213,22 @@ def collect_observations(
 
         per_frame = PerFrameCalibrator(
             calib, image_size=(int(calib.image_size[0]), int(calib.image_size[1])),
+            allow_reacquire=cfg.allow_reacquire,
         )
+    # Tekrar süzgeci kesme dedektörünün ölçümlerini kullanır (faz korelasyonu
+    # ikinci kez hesaplanmasın), o yüzden ikisinden biri isteniyorsa dedektör kurulur.
+    cut_detector = None
+    if per_frame is not None and (cfg.detect_cuts or cfg.detect_replays):
+        from app.tracking.camera import CutDetector
+
+        cut_detector = CutDetector()
+    replay_filter = None
+    if cut_detector is not None and cfg.detect_replays:
+        from app.tracking.replay import ReplayFilter
+
+        replay_filter = ReplayFilter()
+    cuts_seen = 0
+    replays_seen = 0
     skipped_uncalibrated = 0
     samples: list[SampledObservation] = []
     hits: dict[int, int] = {}
@@ -204,7 +240,25 @@ def collect_observations(
         if per_frame is not None:
             import cv2
 
-            fc = per_frame.process(cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
+            bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+            if cut_detector is not None:
+                if cut_detector.update(bgr) == "cut" and cfg.detect_cuts:
+                    # Süreklilik koptu. Kalibratöre söylemezsek kaymış homografiyle
+                    # devam etmeyi dener ve yanlış çizgiye kilitlenebilir.
+                    per_frame.mark_cut()
+                    cuts_seen += 1
+                if replay_filter is not None:
+                    v = replay_filter.update(cut_detector.last_gray,
+                                             cut_detector.last_motion)
+                    if v.is_replay:
+                        # Tekrar karesi: canlı dakikayla kaydedilirse zaman
+                        # çizgisi kayar ve olay iki kez sayılır. Konum ÜRETİLMEZ.
+                        replays_seen += 1
+                        if progress and replays_seen % 25 == 1:
+                            print(f"  kare {order} tekrar sayıldı — {v.reason}",
+                                  flush=True)
+                        continue
+            fc = per_frame.process(bgr)
             if not fc.ok:
                 # Kalibre edilemeyen kare: konum üretmek yerine atla. Takipçiye de
                 # verilmez; kopuk kimlik, yanlış konumdan iyidir.
@@ -259,7 +313,28 @@ def collect_observations(
         print(f"  kare başına kalibrasyon: {per_frame.frames_calibrated} kare kalibre, "
               f"{per_frame.frames_rejected} atlandı (oran {per_frame.calibrated_ratio})",
               flush=True)
-    return samples, teams
+        if cfg.detect_cuts and cut_detector is not None:
+            print(f"  kesme: {cuts_seen} (her kesmede çapadan yeniden yakalama "
+                  f"{'AÇIK' if cfg.allow_reacquire else 'kapalı — takip kopar'})",
+                  flush=True)
+        if replay_filter is not None:
+            uyari = "" if replay_filter.mask_found else (
+                " (skorboard bindirmesi bulunamadı — tekrar süzgeci etkisiz, "
+                "hiçbir kare atılmadı)")
+            print(f"  tekrar: {replays_seen} kare atıldı{uyari}", flush=True)
+    stats: dict[str, Any] = {"per_frame_calibration": per_frame is not None}
+    if per_frame is not None:
+        stats.update({
+            "frames_calibrated": per_frame.frames_calibrated,
+            "frames_rejected": per_frame.frames_rejected,
+            "calibrated_ratio": per_frame.calibrated_ratio,
+            "cuts": cuts_seen if cfg.detect_cuts else None,
+            "allow_reacquire": cfg.allow_reacquire,
+            "replays_dropped": replays_seen if replay_filter is not None else None,
+            "overlay_mask_found": (replay_filter.mask_found
+                                   if replay_filter is not None else None),
+        })
+    return samples, teams, stats
 
 
 def output_stride(cfg: PipelineConfig) -> int:
@@ -442,7 +517,8 @@ def process_video(
     yerine bu renklere sabitlenir — canlı segment akışında takımların
     segmentler arası yer değiştirmemesi için (bkz. teams.TeamAssigner.fit)."""
     cfg = cfg or PipelineConfig()
-    samples, assigner = collect_observations(video_path, cfg, detector=detector, calib=calib)
+    samples, assigner, calib_stats = collect_observations(
+        video_path, cfg, detector=detector, calib=calib)
     assignment = assigner.fit(team_anchor)
     frames = build_frames(
         samples, assignment.team_by_track, calib,
@@ -469,6 +545,10 @@ def process_video(
             k: sum(1 for s in samples if s.ball_source == k) for k in ("det", "roi", "interp")
         },
         "calibration_reprojection_m": round(calib.reprojection_error_m, 3),
+        # Yayın görüntüsünde çıktının ne kadarına güvenilebileceğini söyler:
+        # kalibre olmayan kareler ATILDI, yani düşük oran "az veri" demektir,
+        # "kötü veri" değil. Canlı hat bunu ekrana basar.
+        "calibration_stats": calib_stats,
         # Canlı akışta bir sonraki segmente çapa olarak geçilir (takım kimliği
         # segmentler arası sabit kalsın diye) — bkz. scripts/track_live.py.
         "team_colors": [[round(float(c), 1) for c in row] for row in assignment.centers],
