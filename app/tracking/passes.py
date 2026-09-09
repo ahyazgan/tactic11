@@ -31,6 +31,26 @@ olabilir, sekme pas sanılabilir. Bu yüzden:
 - top enterpole edilmişken (görülmemiş, komşu karelerden uydurulmuş) yapılan
   geçişler ayrı sayılır; bunlar en kırılgan olanlardır.
 
+## Gerçek yayında ne kadar tutuyor — ÖLÇÜLDÜ
+
+SkillCorner açık verisi (MIT), A-League 2024/25 maçı 2017461, 40.404 kare,
+referans 824 sahiplik geçişi (`scripts/validate_passes.py` ile tekrarlanabilir):
+
+    geçerli kesinlik      %72   (birebir %56 + ara sahiplik gözlenmemiş %15)
+    duyarlılık            %33
+    duyarlılık TAVANI     %41   (geçişin iki ucu da gözlemli olanlar)
+    TAVANIN yakalanan     %80
+
+**Duyarlılığı tek başına okumak yanıltıcıdır.** Bir pasın iki ucu da
+gözlenmemişse onu bulmak imkânsızdır; sınırlayıcı şey algoritma değil,
+sahiplik kapsamasıdır — bu maçta karelerin yalnız **%19**'unda topu tutan
+belirlenebiliyor. Aynı veri setinde SkillCorner'ın kendi ölçümleri de topu
+karelerin %55'inde görüyor. Yayından pas çıkarımının doğal tavanı budur.
+
+Eşikler bu veriyle SÜPÜRÜLDÜ: `MAX_FLIGHT_SECONDS=6` + `MIN_HOLD_FRAMES=2`
+en iyi F1'i veriyor (35.4). Uçuş kapısını gevşetmek pas sayısını artırıyor
+ama duyarlılık sabit kalıp kesinlik düşüyor — yani eklenenler yanlış.
+
 Saf mantık: cv2/DB gerektirmez, `TrackingFrame` dizisi alır.
 """
 from __future__ import annotations

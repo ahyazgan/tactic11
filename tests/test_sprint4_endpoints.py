@@ -4,6 +4,18 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
 
+
+def _bugun() -> date:
+    """Bugünün tarihi — UYGULAMA İLE AYNI SAAT DİLİMİ (UTC).
+
+    `date.today()` YEREL saati kullanır. Uygulama her yerde
+    `datetime.now(UTC).date()` yazıyor; ikisi UTC+3'te gece 00:00-03:00
+    arasında BİR GÜN ayrışıyor ve test o pencerede düşüyordu. CI UTC'de
+    koştuğu için bunu hiç yakalamıyordu — yalnız yerelde, gece yarısından
+    sonra görünen bir hata.
+    """
+    return datetime.now(UTC).date()
+
 import pytest
 from fastapi import HTTPException
 from sqlalchemy import create_engine
@@ -133,7 +145,7 @@ def test_goal_create_then_list(session: Session) -> None:
         title="Pas isabeti %85'e çıksın",
         metric="passes_accuracy",
         target_value=85.0,
-        deadline=date.today() + timedelta(days=90),
+        deadline=_bugun() + timedelta(days=90),
         notes="Antrenörle haftalık takip",
     )
     out = create_goal(player_id=42, payload=payload, session=session)

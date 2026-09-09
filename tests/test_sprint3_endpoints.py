@@ -5,6 +5,18 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
 
+
+def _bugun() -> date:
+    """Bugünün tarihi — UYGULAMA İLE AYNI SAAT DİLİMİ (UTC).
+
+    `date.today()` YEREL saati kullanır. Uygulama her yerde
+    `datetime.now(UTC).date()` yazıyor; ikisi UTC+3'te gece 00:00-03:00
+    arasında BİR GÜN ayrışıyor ve test o pencerede düşüyordu. CI UTC'de
+    koştuğu için bunu hiç yakalamıyordu — yalnız yerelde, gece yarısından
+    sonra görünen bir hata.
+    """
+    return datetime.now(UTC).date()
+
 import pytest
 from fastapi import HTTPException
 from sqlalchemy import create_engine
@@ -144,8 +156,8 @@ def test_transfer_targets_max_age_filter(session: Session) -> None:
 def test_create_rehab_active_then_list(session: Session) -> None:
     payload = RehabPayload(
         injury_type="hamstring grade II",
-        injury_start=date.today(),
-        expected_return=date.today() + timedelta(days=21),
+        injury_start=_bugun(),
+        expected_return=_bugun() + timedelta(days=21),
         status="active",
         notes="MR yapıldı, hafif yırtık",
     )
@@ -162,7 +174,7 @@ def test_create_rehab_active_then_list(session: Session) -> None:
 def test_create_rehab_invalid_status_rejected(session: Session) -> None:
     payload = RehabPayload(
         injury_type="muscle strain",
-        injury_start=date.today(),
+        injury_start=_bugun(),
         status="bogus",
     )
     with pytest.raises(HTTPException) as exc:
@@ -173,13 +185,13 @@ def test_create_rehab_invalid_status_rejected(session: Session) -> None:
 def test_cleared_rehab_excluded_from_active(session: Session) -> None:
     payload_active = RehabPayload(
         injury_type="ankle sprain",
-        injury_start=date.today() - timedelta(days=14),
+        injury_start=_bugun() - timedelta(days=14),
         status="active",
     )
     payload_cleared = RehabPayload(
         injury_type="knee meniscus",
-        injury_start=date.today() - timedelta(days=120),
-        actual_return=date.today() - timedelta(days=30),
+        injury_start=_bugun() - timedelta(days=120),
+        actual_return=_bugun() - timedelta(days=30),
         status="cleared",
     )
     create_rehab(player_id=7, payload=payload_active, session=session)
@@ -194,7 +206,7 @@ def test_update_rehab_transition_to_cleared(session: Session) -> None:
     out = create_rehab(
         player_id=99,
         payload=RehabPayload(
-            injury_type="hamstring", injury_start=date.today() - timedelta(days=20),
+            injury_type="hamstring", injury_start=_bugun() - timedelta(days=20),
             status="active",
         ),
         session=session,
@@ -205,7 +217,7 @@ def test_update_rehab_transition_to_cleared(session: Session) -> None:
         payload=RehabUpdate(status="cleared"), session=session,
     )
     assert upd.status == "cleared"
-    assert upd.actual_return == date.today()
+    assert upd.actual_return == _bugun()
     # artık aktif listede yok
     assert list_active_rehab(player_id=99, session=session) == []
 
@@ -222,7 +234,7 @@ def test_update_rehab_404_unknown(session: Session) -> None:
 def test_update_rehab_invalid_status_rejected(session: Session) -> None:
     out = create_rehab(
         player_id=5,
-        payload=RehabPayload(injury_type="x", injury_start=date.today(), status="active"),
+        payload=RehabPayload(injury_type="x", injury_start=_bugun(), status="active"),
         session=session,
     )
     with pytest.raises(HTTPException) as exc:
@@ -236,12 +248,12 @@ def test_update_rehab_invalid_status_rejected(session: Session) -> None:
 def test_list_all_active_rehab_team_wide(session: Session) -> None:
     # 2 oyuncu, biri aktif biri cleared
     create_rehab(player_id=10, payload=RehabPayload(
-        injury_type="ankle", injury_start=date.today(), status="active"), session=session)
+        injury_type="ankle", injury_start=_bugun(), status="active"), session=session)
     create_rehab(player_id=20, payload=RehabPayload(
-        injury_type="acl", injury_start=date.today() - timedelta(days=200),
-        actual_return=date.today() - timedelta(days=30), status="cleared"), session=session)
+        injury_type="acl", injury_start=_bugun() - timedelta(days=200),
+        actual_return=_bugun() - timedelta(days=30), status="cleared"), session=session)
     create_rehab(player_id=30, payload=RehabPayload(
-        injury_type="calf", injury_start=date.today(), status="recovering"), session=session)
+        injury_type="calf", injury_start=_bugun(), status="recovering"), session=session)
     everyone = list_all_active_rehab(session=session)
     pids = {r.player_external_id for r in everyone}
     assert pids == {10, 30}  # cleared (20) hariç, takım geneli

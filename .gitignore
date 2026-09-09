@@ -48,3 +48,7 @@ data/tracking/bench/
 # Playwright çıktıları (yerel koşu artefaktı)
 frontend/test-results/
 frontend/playwright-report/
+
+# SkillCorner acik verisi (MIT) — indirilen takip dosyalari buyuk (~85 MB/mac).
+# Indirme komutlari scripts/validate_passes.py docstring'inde; veri repoda tutulmaz.
+data/tracking/skillcorner/
