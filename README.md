@@ -873,3 +873,42 @@ yeniden ölçülür ve güven yükselir — kayıtları baştan girmek gerekmez.
 
 **Neden önce başlamak önemli:** güven kalibrasyonu **20+ ölçülmüş karar**
 istiyor. Kayda bugün başlanmazsa kalibrasyon bir sezon gecikir.
+
+### Replay (tekrar) tespiti
+
+TV yayınında tekrarlar canlı akışın arasına girer. Canlı dakikayla kaydedilirse
+zaman çizgisi bozulur: 68. dakikadaki atak 71'e yazılır, olay iki kez sayılır,
+karar etkisi yanlış pencereyi kıyaslar.
+
+**Kapsam.** Farklı kamera açısından gelen tekrarlar **zaten** ayıklanıyor —
+kalibrasyon takibi kopuyor ve kare "kalibre edilmemiş" sayılıyor. Kalan gerçek
+boşluk **ana kameradan gelen ağır çekim**: aynı açı olduğu için sorunsuz
+kalibre olur. `app/tracking/replay.py` bunu hedefler.
+
+**İki bağımsız işaret:**
+
+1. **Ağır çekim** — kareler arası hareket, canlı oyunun kendi **medyanının**
+   altına düşer. Mutlak eşik yok: "yavaş" kameraya ve sahneye göre değişir.
+   Medyan kullanılır çünkü tek bir hızlı çevirme ortalamayı çeker ve sonraki
+   her kareyi "yavaş" gösterir.
+2. **Skorboard kayboldu** — yayıncılar tekrarda bindirmeyi gizler. Nerede
+   olduğunu bilmeye gerek yok: canlı oyunda **değişmeyen** pikseller
+   bindirmedir, kendi kendini bulur.
+
+**Ağır çekim tek başına yeterli değildir** — oyun durunca da hareket düşer.
+Skorboard yerindeyse kare canlı sayılır. Şüphede canlı: yanlışlıkla tekrarı
+canlı saymak zaman çizgisini bozar, ama tekrar tespiti sezgiseldir ve gerçek
+yayınla ayarlanmadan agresif davranmamalıdır.
+
+**Bindirme eşiği görelidir** — sahnenin kendi varyans medyanının 0.1 katı.
+Mutlak eşik taşınmıyor: ölçüldü, durgun bir drone klibinde karenin varyans
+medyanı 1.5 iken sabit eşik 2.0 karenin **%65'ini** "bindirme" sanıyordu.
+
+**Doğrulama** (skorboardlı, 120-200 arası ağır çekim tekrar içeren sentetik
+yayın): **80/80 tekrar karesi yakalandı, 219 canlı karede 0 yanlış alarm.**
+Gerçek drone klibinde (skorboard yok) bindirme bulunamadı ve 0 kare işaretlendi
+— doğru davranış.
+
+**Sınır:** eşikler gerçek yayın görüntüsüyle ayarlanmalı. Bindirmeyi gizlemeyen
+bir yayıncıda ikinci işaret çalışmaz; o durumda ağır çekim tek başına yeterli
+sayılmadığı için tekrarlar kaçar (sessizce yanlış konum üretmez, sadece ayıklamaz).
