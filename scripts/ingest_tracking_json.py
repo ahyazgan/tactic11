@@ -15,7 +15,7 @@ import json
 import sys
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from app.data.ingest.tracking import delete_match_frames, ingest_tracking_match
 from app.data.sources.video_tracking import VideoJsonTrackingSource
@@ -24,6 +24,12 @@ from app.db.session import SessionLocal
 from app.sports import football
 
 VIDEO_LEAGUE_ID = 0
+# Takipten ÇIKARILMIŞ pasların kaynak etiketi. Sağlayıcı event'lerinden
+# (statsbomb_open, manual_shots) AYRI tutulur ki:
+#   - istenmezse tek sorguyla dışlanabilsin,
+#   - motorlar bunların TAHMİN olduğunu bilebilsin,
+#   - yeniden ingest idempotent olsun (source + source_event_id tekil).
+DERIVED_PASS_SOURCE = "video_passes"
 
 
 def ensure_match(session, *, match_id: int, tenant_id: str, home: int, away: int) -> bool:
@@ -50,6 +56,88 @@ def ensure_match(session, *, match_id: int, tenant_id: str, home: int, away: int
     ))
     session.flush()
     return True
+
+
+def ingest_derived_passes(
+    session, payload: dict, *, tenant_id: str, match_id: int, replace: bool,
+) -> int:
+    """JSON'daki `derived_passes` → events tablosu (pas olayları).
+
+    Neden gerekli: `app/tracking/passes.py` pasları çıkarıyordu ama hiçbir yere
+    YAZILMIYORDU — hesaplanıp JSON'da kalıyordu, dolayısıyla xT / ileri pas /
+    karar etkisi motorları kulüp videosundan beslenemiyordu. Bu fonksiyon o
+    zinciri kapatır.
+
+    Dürüstlük: hepsi TAHMİNDİR. Gerçek yayın verisiyle ölçüldü (SkillCorner,
+    `scripts/validate_passes.py`) — geçerli kesinlik %72, gözlemlenebilir
+    geçişlerin %80'i yakalanıyor. `outcome` alanı tamamlanma durumunu taşır;
+    `raw_json` ham ölçümleri (uçuş süresi, mesafe, topun enterpole olup olmadığı)
+    saklar ki sonradan güvenilirlik süzülebilsin.
+    """
+    passes = payload.get("derived_passes") or []
+    if not passes:
+        return 0
+
+    if replace:
+        session.execute(
+            delete(models.EventRow).where(
+                models.EventRow.sport == football.SPORT_NAME,
+                models.EventRow.tenant_id == tenant_id,
+                models.EventRow.match_external_id == match_id,
+                models.EventRow.source == DERIVED_PASS_SOURCE,
+            )
+        )
+
+    mevcut = {
+        e.source_event_id for e in session.execute(
+            select(models.EventRow).where(
+                models.EventRow.sport == football.SPORT_NAME,
+                models.EventRow.tenant_id == tenant_id,
+                models.EventRow.match_external_id == match_id,
+                models.EventRow.source == DERIVED_PASS_SOURCE,
+            )
+        ).scalars()
+    }
+
+    now = datetime.now(UTC)
+    yazilan = 0
+    for p in passes:
+        # Tekil kimlik: dakika + veren + alan. Aynı segment yeniden işlenirse
+        # çift kayıt oluşmaz.
+        eid = (f"{p['minute']:.4f}-{p['from_player_external_id']}"
+               f"-{p['to_player_external_id']}")
+        if eid in mevcut:
+            continue
+        session.add(models.EventRow(
+            sport=football.SPORT_NAME, tenant_id=tenant_id,
+            source=DERIVED_PASS_SOURCE, source_event_id=eid,
+            match_external_id=match_id,
+            team_external_id=p.get("team_external_id"),
+            player_external_id=p.get("from_player_external_id"),
+            event_type="pass",
+            minute=float(p["minute"]),
+            period=1 if float(p["minute"]) < 45 else 2,
+            start_x=p.get("start_x"), start_y=p.get("start_y"),
+            end_x=p.get("end_x"), end_y=p.get("end_y"),
+            # "completed" (d ile) — SAĞLAYICI ingest'iyle AYNI sözcük olmalı.
+            # `app/data/ingest/event.py` bunu yazıyor ve loader `completed`
+            # alanını buradan türetiyor. "complete" yazmak her pası
+            # tamamlanmamış sayar ve xT SESSİZCE sıfır çıkar.
+            outcome="completed" if p.get("complete", True) else "incomplete",
+            body_part=None, pattern="regular", possession_id=None,
+            is_goal=False, key_pass=False,
+            raw_json=json.dumps({
+                "derived": True,
+                "distance_m": p.get("distance_m"),
+                "flight_seconds": p.get("flight_seconds"),
+                "ball_estimated": p.get("ball_estimated"),
+                "to_player_external_id": p.get("to_player_external_id"),
+            }, ensure_ascii=False),
+            created_at=now,
+        ))
+        mevcut.add(eid)
+        yazilan += 1
+    return yazilan
 
 
 def ingest_json(
@@ -83,10 +171,17 @@ def ingest_json(
         report = ingest_tracking_match(
             session, VideoJsonTrackingSource(path), match_external_id=mid, sport=football.SPORT_NAME,
         )
+        # Takipten çıkarılan paslar → events. `append` canlı segment akışı
+        # demektir; orada var olanı SİLMEK önceki segmentlerin paslarını
+        # yok ederdi, o yüzden replace yalnız tam-video ingest'inde.
+        passes_written = ingest_derived_passes(
+            session, payload, tenant_id=tenant_id, match_id=mid, replace=not append,
+        )
         session.commit()
     return {
         "match_id": mid, "tenant_id": tenant_id, "match_created": created,
         "frames_removed": removed, "frames_written": report.frames_written,
+        "passes_written": passes_written,
         "source_video": payload.get("video"),
     }
 
