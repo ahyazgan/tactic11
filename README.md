@@ -437,6 +437,14 @@ ve overlay'de `identity_estimated=false` olarak görünür. Takip listesi:
 `GET /tracking/matches/{id}/tracks` (kare sayısı, süre aralığı, ortalama hız, topla geçen
 kare, ortalama bölge — hangi takibin kim olduğunu ayırt etmeye yarar).
 
+**Kamera tipi ve dilimleme:** `--tiles` yükseklik ekseninde dilim sayısıdır; sütun
+sayısı görüntü oranından hesaplanır (dilimler eğitim oranına yakın kalır). 16:9 drone/
+taktik kamerada `--tiles 6` (dilim 640×360), panoramik yan-açıda (örn. 6500×1000)
+`--tiles 4` (dilim ~433×250) iyi sonuç verir. Panoramik **fisheye birleştirme** uyarısı:
+tek düzlemsel homografi bu görüntülerde tam oturmayabilir (yakın taç çizgisi kadraj
+dışındaysa daha da zor) — kalibrasyon ekranındaki geri-izdüşüm hatası bunun ölçüsüdür;
+2 m üstündeyse ya daha çok/yayılmış nokta seç ya da distorsiyonu giderilmiş akış kullan.
+
 **Takım şekli & pres:** `GET /tracking/matches/{id}/shape?minute=&window=` — `engine.tracking`
 (v2) pozisyon karelerinden genişlik / derinlik / kompaktlık / hat konumları / yerleşim
 tahmini ve rakip topa sahipken pres endeksi üretir. Kaynak ayırt edilmez (360 ya da video);
