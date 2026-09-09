@@ -390,6 +390,30 @@ Docker Compose + Postgres ya da bare-metal systemd + cron kurulumu için
 
 Detaylı yol haritası: [ROADMAP.md](ROADMAP.md).
 
+## Karar Etkisi (post-match learning)
+
+Koçun maç-içi hamleleri `decisions` tablosuna yazılıyor; `engine.decision_impact`
+her kararın **öncesi/sonrası** penceresini ölçüp etkiyi sayıya döker:
+
+- Pencereler maç sonuna kırpılır ve metrikler **dakika başına** normalize edilir
+  (88. dk kararının 2 dakikalık "sonrası"ı 15 dakikayla kıyaslanmasın).
+- Ölçülenler: xG farkı, xT, şut, gol, saha eğimi (hücum üçte-biri pas payı).
+- Hüküm: `positive` / `negative` / `neutral` / `insufficient_data`; güven pencere
+  uzunluğu ve olay yoğunluğundan gelir.
+
+| Uç | İş |
+|---|---|
+| `GET /admin/matches/{id}/decisions/learning` | maçtaki her kararın ölçümü |
+| `POST /admin/matches/{id}/decisions/auto-outcome` | ölçümü `outcome` alanına yazar (elle girilenleri ezmez) |
+| `GET /admin/teams/{id}/decisions/track-record` | karar defteri: tip + dakika bandı kırılımı, en iyi/en kötü |
+
+Yazılan sonuçlar `decisions/feedback` üzerinden `context_engine` güven skorunu
+kalibre eder: sistem bu koçun hangi tip hamlesinin işe yaradığını öğrenir.
+Arayüz: **Karar Takip** sayfasında "Ölçülen Etki" bölümü (`Ölç ve kaydet` düğmesi).
+
+Ölçüm vekildir, nedensellik kanıtı değil — skor durumu, kart ve rakip hamlesi de
+aynı pencerede etkilidir; arayüz bunu açıkça yazar.
+
 ## Video Takibi (saha overlay için ikinci kaynak)
 
 Klip → RF-DETR (Apache-2.0) tespit → ByteTrack takip → forma rengi takım ataması → saha

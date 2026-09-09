@@ -31,6 +31,10 @@ from app.sports import football
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+# Otomatik ölçülen karar sonuçlarının notu bu önekle başlar; elle girilen
+# sonuçlar (önek yok) auto-outcome tarafından ezilmez.
+AUTO_OUTCOME_PREFIX = "[oto]"
+
 # Tactical profile/trend cache: 1 saat TTL (event ingest sonrası
 # /admin/tactical-cache/clear ile manuel invalidate)
 TACTICAL_CACHE_SOURCE = "tactical_profile"
@@ -1605,22 +1609,36 @@ def decisions_feedback(
 @router.get(
     "/matches/{match_id}/decisions/learning",
     tags=["admin"],
-    summary="Post-match learning: TD kararının sonuca etkisi (causal proxy)",
+    summary="Post-match learning: TD kararının etkisi (engine.decision_impact)",
 )
 def decisions_learning(
     match_id: int,
+    window_min: float = Query(default=15.0, ge=3.0, le=30.0),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    """Bir maçtaki tüm kararlardan sonra ne oldu? Basit causal proxy:
-    karar dakikasından sonra takımın xT, possession, dominance score'u
-    nasıl değişti.
+    """Bir maçtaki her karardan önce/sonra ne oldu?
 
-    Algoritma: her karar için pre-window (karar-15dk..karar) vs
-    post-window (karar..karar+15dk) takım metric'leri karşılaştır.
+    `engine.decision_impact`: pencereler maç sonuna kırpılır, metrikler dakika
+    başına normalize edilir (88. dk kararı 2 dk'lık "sonrası" ile yanıltmasın),
+    xG farkı + xT + şut + saha eğimi ölçülür. Vekil ölçüm — nedensellik kanıtı değil.
     """
+    impacts, meta = _decision_impacts(session, match_id, window_min=window_min)
+    if meta.get("note"):
+        return {"match_id": match_id, **meta}
+    return {
+        "match_id": match_id,
+        "decisions_analyzed": len(impacts),
+        "window_minutes": window_min,
+        "impacts": [engine_result_to_dict(r)["value"] for r in impacts],
+    }
+
+
+def _decision_impacts(
+    session: Session, match_id: int, *, window_min: float = 15.0,
+) -> tuple[list[Any], dict[str, Any]]:
+    """(EngineResult[DecisionImpact] listesi, meta) — maç + event + karar yoksa meta.note dolu."""
     from app.data.loaders import load_match_events
-    from app.engine.match_dominance import compute_match_dominance
-    from app.engine.xt import compute_team_xt
+    from app.engine.decision_impact import DecisionContext, compute_decision_impact
 
     match = session.execute(
         select(models.Match).where(
@@ -1632,9 +1650,7 @@ def decisions_learning(
         raise HTTPException(status_code=404, detail=f"match {match_id} yok")
     loaded = load_match_events(session, match_id)
     if loaded.total == 0:
-        return {"match_id": match_id, "events_loaded": 0,
-                "note": "Event ingest yapılmamış"}
-
+        return [], {"events_loaded": 0, "note": "Event ingest yapılmamış"}
     decisions = list(session.execute(
         select(models.Decision).where(
             models.Decision.sport == football.SPORT_NAME,
@@ -1642,66 +1658,149 @@ def decisions_learning(
         ).order_by(models.Decision.minute)
     ).scalars())
     if not decisions:
-        return {"match_id": match_id, "decisions": 0,
-                "note": "Bu maç için decision log yok"}
+        return [], {"decisions": 0, "note": "Bu maç için decision log yok"}
 
-    WIN = 15.0
-    impacts = []
+    out = []
     for d in decisions:
-        team_id = d.team_external_id
-        opp_id = (match.away_team_external_id if team_id == match.home_team_external_id
+        opp_id = (match.away_team_external_id if d.team_external_id == match.home_team_external_id
                   else match.home_team_external_id)
-        pre_passes = [p for p in loaded.passes
-                       if d.minute - WIN <= p.minute < d.minute]
-        post_passes = [p for p in loaded.passes
-                        if d.minute <= p.minute < d.minute + WIN]
-        pre_carries = [c for c in loaded.carries
-                        if d.minute - WIN <= c.minute < d.minute]
-        post_carries = [c for c in loaded.carries
-                         if d.minute <= c.minute < d.minute + WIN]
-        pre_shots = [s for s in loaded.shots
-                      if d.minute - WIN <= s.minute < d.minute]
-        post_shots = [s for s in loaded.shots
-                       if d.minute <= s.minute < d.minute + WIN]
-        try:
-            pre_xt = compute_team_xt(team_id, pre_passes, pre_carries).value.total_xt
-            post_xt = compute_team_xt(team_id, post_passes, post_carries).value.total_xt
-            pre_dom = compute_match_dominance(
-                team_external_id=team_id, opponent_team_external_id=opp_id,
-                team_shots=pre_shots, opponent_shots=pre_shots,
-                all_passes=pre_passes, team_carries=pre_carries,
-                opponent_carries=pre_carries,
-            ).value.dominance_score
-            post_dom = compute_match_dominance(
-                team_external_id=team_id, opponent_team_external_id=opp_id,
-                team_shots=post_shots, opponent_shots=post_shots,
-                all_passes=post_passes, team_carries=post_carries,
-                opponent_carries=post_carries,
-            ).value.dominance_score
-        except (ValueError, ZeroDivisionError, KeyError, TypeError):
-            continue
-        impacts.append({
-            "decision_id": d.id,
-            "minute": d.minute,
-            "decision_type": d.decision_type,
-            "pre_xt": round(pre_xt, 3),
-            "post_xt": round(post_xt, 3),
-            "xt_delta": round(post_xt - pre_xt, 3),
-            "pre_dominance": pre_dom,
-            "post_dominance": post_dom,
-            "dominance_delta": round(post_dom - pre_dom, 2),
-            "verdict": (
-                "positive" if post_xt - pre_xt > 0.1 and post_dom - pre_dom > 0
-                else "negative" if post_xt - pre_xt < -0.1 and post_dom - pre_dom < 0
-                else "neutral"
-            ),
-        })
-    return {
-        "match_id": match_id,
-        "decisions_analyzed": len(impacts),
-        "window_minutes": WIN,
-        "impacts": impacts,
+        ctx = DecisionContext(
+            decision_id=d.id, match_external_id=match_id,
+            team_external_id=d.team_external_id, opponent_external_id=opp_id,
+            minute=d.minute, decision_type=d.decision_type, period=d.period,
+            recommended=d.recommended,
+        )
+        out.append(compute_decision_impact(
+            ctx, passes=loaded.passes, carries=loaded.carries, shots=loaded.shots,
+            defensive_actions=loaded.defensive_actions, window_min=window_min,
+        ))
+    return out, {}
+
+
+@router.post(
+    "/matches/{match_id}/decisions/auto-outcome",
+    tags=["admin"],
+    summary="Kararların sonucunu ölçüp outcome alanına yaz (feedback döngüsünü kapat)",
+)
+def decisions_auto_outcome(
+    match_id: int,
+    window_min: float = Query(default=15.0, ge=3.0, le=30.0),
+    overwrite_manual: bool = Query(default=False),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Maç bitince çalıştırılır: her kararın etkisini ölçüp `outcome` yazar.
+
+    Koçun elle girdiği sonuçlar korunur (`overwrite_manual=true` ile ezilir);
+    ölçülemeyen kararlar (kısa pencere / olay yok) atlanır. Yazılan değerler
+    `decisions/feedback` üzerinden context_engine güven skoruna geri besler.
+    """
+    from datetime import UTC
+    from datetime import datetime as _dt
+
+    impacts, meta = _decision_impacts(session, match_id, window_min=window_min)
+    if meta.get("note"):
+        return {"match_id": match_id, "written": 0, **meta}
+
+    by_id = {
+        r.id: r for r in session.execute(
+            select(models.Decision).where(
+                models.Decision.sport == football.SPORT_NAME,
+                models.Decision.match_external_id == match_id,
+            )
+        ).scalars()
     }
+    written = skipped_manual = skipped_insufficient = 0
+    details = []
+    for res in impacts:
+        imp = res.value
+        row = by_id.get(imp.decision_id)
+        if row is None:
+            continue
+        if imp.verdict == "insufficient_data":
+            skipped_insufficient += 1
+            continue
+        manual = bool(row.outcome_notes) and not (row.outcome_notes or "").startswith(AUTO_OUTCOME_PREFIX)
+        if manual and not overwrite_manual:
+            skipped_manual += 1
+            continue
+        row.outcome = imp.verdict
+        row.outcome_value = imp.xg_diff_delta
+        row.outcome_notes = f"{AUTO_OUTCOME_PREFIX} {imp.verdict_reason}"[:512]
+        row.outcome_recorded_at = _dt.now(UTC)
+        written += 1
+        details.append({
+            "decision_id": imp.decision_id, "minute": imp.minute,
+            "decision_type": imp.decision_type, "outcome": imp.verdict,
+            "xg_diff_delta": imp.xg_diff_delta, "confidence": imp.confidence,
+        })
+    session.commit()
+    return {
+        "match_id": match_id, "window_minutes": window_min,
+        "analyzed": len(impacts), "written": written,
+        "skipped_manual": skipped_manual, "skipped_insufficient": skipped_insufficient,
+        "details": details,
+    }
+
+
+@router.get(
+    "/teams/{team_id}/decisions/track-record",
+    tags=["admin"],
+    summary="Koçun karar defteri: tip ve dakika bandı kırılımlı isabet + ortalama etki",
+)
+def decisions_track_record(
+    team_id: int,
+    window_min: float = Query(default=15.0, ge=3.0, le=30.0),
+    last_matches: int = Query(default=20, ge=1, le=100),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bu takımın kararlarını maç maç ölçüp birleştirir (engine.decision_impact).
+
+    `outcome` alanı yazılmış olsun olmasın yeniden ölçer — böylece eşik/pencere
+    değişince defter tutarlı kalır.
+    """
+    from app.engine.decision_impact import compute_decision_track_record
+
+    match_ids = list(session.execute(
+        select(models.Decision.match_external_id).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.team_external_id == team_id,
+        ).group_by(models.Decision.match_external_id)
+        .order_by(models.Decision.match_external_id.desc())
+        .limit(last_matches)
+    ).scalars())
+    all_impacts = []
+    matches_with_events = 0
+    for mid in match_ids:
+        try:
+            impacts, meta = _decision_impacts(session, mid, window_min=window_min)
+        except HTTPException:
+            continue
+        if meta.get("note"):
+            continue
+        matches_with_events += 1
+        all_impacts.extend(
+            r.value for r in impacts
+            if r.value.decision_id in _team_decision_ids(session, mid, team_id)
+        )
+    result = compute_decision_track_record(team_id, all_impacts)
+    payload = engine_result_to_dict(result)
+    return {
+        "team_id": team_id, "matches": len(match_ids),
+        "matches_with_events": matches_with_events,
+        "window_minutes": window_min,
+        **payload["value"],
+        "formula": payload["audit"]["formula"],
+    }
+
+
+def _team_decision_ids(session: Session, match_id: int, team_id: int) -> set[int]:
+    return set(session.execute(
+        select(models.Decision.id).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.match_external_id == match_id,
+            models.Decision.team_external_id == team_id,
+        )
+    ).scalars())
 
 
 @router.get(

@@ -15,6 +15,7 @@ import useSWR, { mutate as swrMutate } from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../../_console/shell";
+import { DecisionTrackRecordCard, MatchDecisionImpactCard } from "../../_console/decision-impact";
 
 interface DecisionRow {
   id: number;
@@ -494,6 +495,9 @@ export default function DecisionsTrackPage() {
 
   const summary = data?.summary;
   const rows = data?.decisions ?? [];
+  // Ölçülen etki kartları: filtre verilmişse o takım, yoksa en son kararın takımı/maçı
+  const impactTeamId = teamFilter ? parseInt(teamFilter) : (rows[0]?.team_id ?? null);
+  const impactMatchId = rows.find((r) => impactTeamId == null || r.team_id === impactTeamId)?.match_id ?? null;
 
   return (
     <ConsoleShell
@@ -507,6 +511,16 @@ export default function DecisionsTrackPage() {
       right={right}
     >
       {summary && <SummaryCards summary={summary} rows={rows} />}
+      {!DEMO_MODE && (
+        <>
+          <div className="st" style={{ marginTop: 8, marginBottom: 8 }}>
+            <h2>Ölçülen Etki</h2>
+            <span className="ep">kararın öncesi/sonrası maç verisinden — elle işaretleme gerekmez</span>
+          </div>
+          <DecisionTrackRecordCard teamId={impactTeamId} />
+          <MatchDecisionImpactCard matchId={impactMatchId} />
+        </>
+      )}
       <div className="st" style={{ marginTop: 8, marginBottom: 8 }}>
         <h2>Son Kararlar</h2>
         <span className="ep">en yeni önce, max {limit}</span>
