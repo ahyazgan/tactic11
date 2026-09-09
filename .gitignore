@@ -44,3 +44,7 @@ data/tracking/frames/
 data/tracking/jobs/
 data/tracking/live/
 data/tracking/bench/
+
+# Playwright çıktıları (yerel koşu artefaktı)
+frontend/test-results/
+frontend/playwright-report/
