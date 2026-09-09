@@ -834,3 +834,42 @@ hızlı ve sonuç birebir aynı (fark 8e-14).
 üstelik daha da yavaşlıyor (47 ms), çünkü kötü oturma daha çok iterasyon gerektiriyor.
 Sebep tolerans değil (ölçeğe bağlandı, düzelmedi) — çizgi çıkarmanın morfolojik filtresi
 720p'ye göre ayarlı; daha küçük görüntüde ince çizgileri kaçırıyor.
+
+### Ölçüme bu hafta başlamak — yalnız şutlarla
+
+Karar etkisi ölçümü koordinatlı event verisi ister (pas/taşıma/şut). Bu
+StatsBomb/Opta seviyesidir; çoğu kulüpte yoktur ve tam etiketleme maç başına
+**2-3 saat** sürer. Beklemeye gerek yok: **yalnız şutlarla** da ölçüm yapılır.
+
+Bir maçta ~25 şut olur — bir analistin **15 dakikalık** işi.
+
+```bash
+# 1) Maç sonrası şutları bir CSV'ye yaz (Excel'den de kaydedilebilir)
+#    dakika,takim,x,y,gol
+#    12.5,biz,88,52,0
+#    23,rakip,80,40,1
+python -m scripts.import_shots --csv mac_sutlar.csv --tenant t-default ^
+    --match-id 20260914 --our-team 217 --their-team 213 ^
+    --kickoff 2026-09-14 --our-score 2 --their-score 1
+
+# 2) Kararları ölç (panelden "Ölç ve kaydet" ya da uçtan)
+#    POST /admin/matches/20260914/decisions/auto-outcome
+```
+
+**Koordinatlar:** saha 0-100 normalize, **kale (100, 50)**. Her iki takımın şutu
+da kendi hücum yönünde girilir — rakip şutunu aynalamak xG'yi ters çevirir.
+
+**Sistem sınırını söyler.** Pas verisi yokken hüküm tek metriğe dayanır; motor
+bunu gizlemez:
+
+```
+45. dk Taktik ayar: positive (güven 0.45)
+   xG farkı dk başına +0.029 — YALNIZ xG ile (pas verisi yok, xT doğrulaması yapılamadı)
+```
+
+Güven `SINGLE_METRIC_CONFIDENCE_FACTOR` (0.7) ile kırpılır. Pas verisi sonradan
+gelirse (abonelik ya da kendi video hattımız) aynı kararlar iki metrikle
+yeniden ölçülür ve güven yükselir — kayıtları baştan girmek gerekmez.
+
+**Neden önce başlamak önemli:** güven kalibrasyonu **20+ ölçülmüş karar**
+istiyor. Kayda bugün başlanmazsa kalibrasyon bir sezon gecikir.
