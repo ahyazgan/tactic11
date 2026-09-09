@@ -27,6 +27,10 @@ if str(ROOT) not in sys.path:
 # Env defaults — kullanıcı dışarıdan set ederse onlar geçerli kalır.
 os.environ.setdefault("DATABASE_URL", "sqlite:///" + (ROOT / "demo.db").as_posix())
 os.environ.setdefault("APP_ENV", "dev")
+# Auth geliştirmede kapalı; o zaman istekler tenant'sız kalır ve veri birden çok
+# tenant'a yayılmışsa sorgular belirsizleşip 500 verir. Yerelde varsayılan
+# tenant'a kapsa (üretimde bu ayar boştur, tenant'ı auth belirler).
+os.environ.setdefault("DEV_DEFAULT_TENANT_ID", "t-default")
 os.environ.setdefault("PYTHONUTF8", "1")
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 

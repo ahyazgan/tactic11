@@ -15,8 +15,7 @@ import useSWR, { mutate as swrMutate } from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../../_console/shell";
-import { DecisionTrackRecordCard, MatchDecisionImpactCard } from "../../_console/decision-impact";
-import { DecisionQualityCard } from "../../_console/decision-quality";
+import { MeasuredImpactSection } from "../../_console/decision-impact";
 
 interface DecisionRow {
   id: number;
@@ -57,71 +56,71 @@ function demoData(): RecentDecisionsResponse {
   // 12 sentetik karar — 3 pending (kullanıcı ✓/✗/○ deneyebilsin),
   // 6 pozitif + 2 negatif + 1 nötr → hit_rate %66.7 (zengin sparkline)
   const decisions: DecisionRow[] = [
-    { id: 22, match_id: 9302, team_id: 11, minute: 82, decision_type: "substitution",
+    { id: 22, match_id: 16029, team_id: 217, minute: 82, decision_type: "substitution",
       subject_player_id: 14, related_player_id: 25, notes: "Hücum takviye, son 15 dk",
       recommended: true, confidence: 0.79, outcome: "pending",
       outcome_value: null, outcome_notes: null,
       created_at: "2026-06-14T19:28:01Z" },
-    { id: 21, match_id: 9302, team_id: 11, minute: 70, decision_type: "tactical_instruction",
+    { id: 21, match_id: 16029, team_id: 217, minute: 70, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Pres yüksekliği düşür — fatigue yığını",
       recommended: true, confidence: 0.74, outcome: "pending",
       outcome_value: null, outcome_notes: null,
       created_at: "2026-06-14T19:15:43Z" },
-    { id: 20, match_id: 9302, team_id: 11, minute: 55, decision_type: "tactical_instruction",
+    { id: 20, match_id: 16029, team_id: 217, minute: 55, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Sağ kanat overload",
       recommended: false, confidence: null, outcome: "pending",
       outcome_value: null, outcome_notes: null,
       created_at: "2026-06-14T19:00:20Z" },
-    { id: 19, match_id: 9301, team_id: 11, minute: 88, decision_type: "substitution",
+    { id: 19, match_id: 15973, team_id: 217, minute: 88, decision_type: "substitution",
       subject_player_id: 3, related_player_id: 17,
       notes: "Yıldız geri çek, sonuç kilitle",
       recommended: true, confidence: 0.85, outcome: "positive",
       outcome_value: 0.7, outcome_notes: "3-2 korundu",
       created_at: "2026-06-13T20:32:01Z" },
-    { id: 18, match_id: 9301, team_id: 11, minute: 78, decision_type: "substitution",
+    { id: 18, match_id: 15973, team_id: 217, minute: 78, decision_type: "substitution",
       subject_player_id: 12, related_player_id: 23,
       notes: "Yorgun, defansif takviye",
       recommended: true, confidence: 0.81, outcome: "positive",
       outcome_value: 0.6, outcome_notes: "Kontra durdu",
       created_at: "2026-06-13T20:18:12Z" },
-    { id: 17, match_id: 9301, team_id: 11, minute: 65, decision_type: "tactical_instruction",
+    { id: 17, match_id: 15973, team_id: 217, minute: 65, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Pres yüksekliği düşür",
       recommended: true, confidence: 0.72, outcome: "positive",
       outcome_value: 0.6, outcome_notes: "Rakip ritmi kırıldı",
       created_at: "2026-06-13T20:05:45Z" },
-    { id: 16, match_id: 9300, team_id: 11, minute: 82, decision_type: "formation_change",
+    { id: 16, match_id: 15978, team_id: 217, minute: 82, decision_type: "formation_change",
       subject_player_id: null, related_player_id: null, notes: "4-2-3-1 → 4-3-3",
       recommended: true, confidence: 0.78, outcome: "positive",
       outcome_value: 0.8, outcome_notes: "85'te beraberlik golü geldi",
       created_at: "2026-06-08T19:34:21Z" },
-    { id: 15, match_id: 9300, team_id: 11, minute: 70, decision_type: "substitution",
+    { id: 15, match_id: 15978, team_id: 217, minute: 70, decision_type: "substitution",
       subject_player_id: 7, related_player_id: 19,
       notes: "Yıldız aç → hücumcu girdi",
       recommended: true, confidence: 0.69, outcome: "negative",
       outcome_value: -0.3, outcome_notes: "Etki yok, kontradan yedik",
       created_at: "2026-06-08T19:22:10Z" },
-    { id: 14, match_id: 9299, team_id: 11, minute: 55, decision_type: "tactical_instruction",
+    { id: 14, match_id: 15986, team_id: 217, minute: 55, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Kanat değişikliği — sağa overload",
       recommended: false, confidence: null, outcome: "positive",
       outcome_value: 0.5, outcome_notes: "Sağdan 2 köşe geldi",
       created_at: "2026-06-01T20:00:00Z" },
-    { id: 13, match_id: 9299, team_id: 11, minute: 80, decision_type: "formation_change",
+    { id: 13, match_id: 15986, team_id: 217, minute: 80, decision_type: "formation_change",
       subject_player_id: null, related_player_id: null,
       notes: "4-3-3 → 4-4-2 (skoru koru)",
       recommended: true, confidence: 0.66, outcome: "neutral",
       outcome_value: 0.0, outcome_notes: "Skor değişmedi",
       created_at: "2026-06-01T19:48:18Z" },
-    { id: 12, match_id: 9298, team_id: 11, minute: 60, decision_type: "tactical_instruction",
+    { id: 12, match_id: 15998, team_id: 217, minute: 60, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Top oyununu yavaşlat",
       recommended: true, confidence: 0.71, outcome: "positive",
       outcome_value: 0.5, outcome_notes: "Tempo düştü, kontrol arttı",
       created_at: "2026-05-25T17:50:00Z" },
-    { id: 11, match_id: 9298, team_id: 11, minute: 75, decision_type: "substitution",
+    { id: 11, match_id: 15998, team_id: 217, minute: 75, decision_type: "substitution",
       subject_player_id: 8, related_player_id: 21,
       notes: "Sakatlık şüphesi — değiş",
       recommended: false, confidence: null, outcome: "negative",
@@ -514,17 +513,7 @@ export default function DecisionsTrackPage() {
       right={right}
     >
       {summary && <SummaryCards summary={summary} rows={rows} />}
-      {!DEMO_MODE && (
-        <>
-          <div className="st" style={{ marginTop: 8, marginBottom: 8 }}>
-            <h2>Ölçülen Etki</h2>
-            <span className="ep">kararın öncesi/sonrası maç verisinden — elle işaretleme gerekmez</span>
-          </div>
-          <DecisionTrackRecordCard teamId={impactTeamId} />
-          <DecisionQualityCard teamId={impactTeamId} />
-          <MatchDecisionImpactCard matchId={impactMatchId} />
-        </>
-      )}
+      <MeasuredImpactSection teamId={impactTeamId} matchId={impactMatchId} />
       <div className="st" style={{ marginTop: 8, marginBottom: 8 }}>
         <h2>Son Kararlar</h2>
         <span className="ep">en yeni önce, max {limit}</span>

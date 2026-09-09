@@ -49,8 +49,19 @@ install_tenant_filter()
 
 
 def get_session() -> Iterator[Session]:
-    """FastAPI dependency / context yardımcısı."""
+    """FastAPI dependency / context yardımcısı.
+
+    Geliştirmede auth kapalı olabilir; o zaman hiçbir katman tenant'ı set etmez
+    ve veri birden çok tenant'a yayılmışsa sorgular belirsizleşir (ölçüldü:
+    aynı maç iki tenant'ta olunca `MultipleResultsFound` → 500). `dev_default_
+    tenant_id` doluysa istek o tenant'a kapsanır. Üretimde bu ayar boştur ve
+    tenant'ı auth katmanı belirler; caller kendi tenant'ını set ederse (script,
+    test) o değer geçerli kalır.
+    """
     session = SessionLocal()
+    dev_tenant = _settings.dev_default_tenant_id
+    if dev_tenant and not _settings.api_auth_key:
+        session.info["tenant_id"] = dev_tenant
     try:
         yield session
     finally:

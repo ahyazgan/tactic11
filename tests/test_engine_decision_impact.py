@@ -148,3 +148,33 @@ def test_track_record_empty_is_safe() -> None:
     v = compute_decision_track_record(US, []).value
     assert v.decisions == 0 and v.hit_rate is None and v.best is None
     assert v.by_type == () and v.by_minute_band == ()
+
+
+def test_shots_only_data_is_labelled_single_metric() -> None:
+    """Pas verisi yoksa hüküm TEK METRİKLİ olduğunu söylemeli.
+
+    Tuzak: SUPPORT_XT_DELTA = 0.0 olduğu için xT ölçülemediğinde xt_delta 0
+    kalır ve `>= 0` da `<= 0` da doğrudur — iki-metrik onayı boş yere geçilir,
+    üstelik gerekçe "ikisi de lehte" yazardı. Ölçülmemiş metrik onaylanmış
+    gibi gösterilemez.
+
+    Bu senaryo gerçek: kulüp yalnız şut etiketleyerek (maç başına ~25 kayıt)
+    ölçüme başlayabilir; sistem o veriyle çalışmalı ama sınırını söylemeli.
+    """
+    ctx = _ctx(60.0)
+    shots = (
+        [_shot(50.0 + i, THEM) for i in range(4)]
+        + [_shot(61.0 + i, US, goal=(i == 0)) for i in range(5)]
+    )
+    v = compute_decision_impact(ctx, passes=[], carries=[], shots=shots,
+                                match_end_minute=90.0).value
+    assert v.verdict == "positive", v.verdict_reason
+    assert "YALNIZ xG" in v.verdict_reason
+    assert "pas verisi yok" in v.verdict_reason
+
+    # Aynı veri pas eklenince iki-metrikli olur ve güven ARTAR
+    passes = [_pass(61.0 + i * 0.5, US) for i in range(10)]
+    v2 = compute_decision_impact(ctx, passes=passes, carries=[], shots=shots,
+                                 match_end_minute=90.0).value
+    assert "YALNIZ xG" not in v2.verdict_reason
+    assert v2.confidence > v.confidence, (v2.confidence, v.confidence)
