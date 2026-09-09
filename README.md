@@ -155,11 +155,31 @@ python scripts/run_job.py sync_league --league 203 --season 2024
 # Cron örneği: 0 6 * * * cd /opt/tactic11 && venv/bin/python scripts/run_job.py sync_league --league 203 --season 2024
 ```
 
-## Test
+## Test ve kalite kapıları
+
+CI'daki üç kapının **hepsi yerelde koşturulabilir** — push edip beklemeye gerek yok.
+
 ```bash
-pytest -q
+pytest -q                              # 2205 test, in-memory SQLite (DB/anahtar gerekmez)
+ruff check app/ scripts/ tests/        # stil + basit hatalar
+mypy app/ scripts/                     # tip denetimi (~3 dk)
 ```
-Testler in-memory SQLite ile çalışır; gerçek DB veya API anahtarı gerekmez.
+
+Frontend:
+```bash
+cd frontend
+npm run typecheck                      # tsc --noEmit
+npm run build && npx next start -p 3111 &
+E2E_BASE_URL=http://localhost:3111 E2E_BACKEND=false npx playwright test
+```
+Tarayıcı yoksa bir kez `npx playwright install chromium`. e2e'yi **üretim
+derlemesine** karşı koşturun (CI öyle yapıyor); sunucuyu yeniden başlatırken
+portu gerçekten kapatın, yoksa eski derleme sunulmaya devam eder.
+
+> **mypy sürümü 1.18.2'de sabit, yükseltmeyin.** 1.19+ `librt`'ye (yalnızca
+> derlenmiş .pyd) zorunlu bağımlı; Windows 11'de Smart App Control bunu
+> engellediği için mypy hiç başlamıyor ve kapı yerelde koşturulamaz hale
+> geliyor. Gerekçe `requirements-dev.txt` içinde yazılı.
 
 ## Taktiksel Engine Envanteri (88 modül)
 

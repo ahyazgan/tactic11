@@ -4,5 +4,16 @@
 # Pin'li: pinsiz tool sürümleri CI'ı sürükledi (yeni ruff daha katı import kuralları).
 # Tekrarlanabilir lint için sabit sürüm; bilinçli güncellenir.
 ruff==0.15.8
-mypy==1.19.1
+# mypy 1.18.2'de SABİT — 1.19+ yükseltmeyin.
+#
+# mypy 1.19'dan itibaren `librt` (mypyc çalışma-zamanı) ZORUNLU bağımlılık ve
+# librt yalnızca derlenmiş .pyd dosyalarından oluşuyor. Windows 11'de Smart App
+# Control (çoğu makinede varsayılan AÇIK) imzasız yeni .pyd'leri engelliyor →
+# mypy hiç başlamıyor ("DLL load failed while importing internal"). Yani lint
+# KAPISI o makinelerde yerelde koşturulamaz hale geliyor; geliştirici tip
+# hatalarını ancak push edip CI'ı bekleyerek görebiliyor.
+#
+# 1.18.2 saf-Python tekerlekle gelir (compiled: no) ve her yerde çalışır.
+# Yükseltmeden önce librt'nin saf-Python alternatifi var mı bakın.
+mypy==1.18.2
 types-PyYAML==6.0.12.20250915
