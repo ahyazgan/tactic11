@@ -20,6 +20,7 @@ import random
 import sys
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 CATEGORIES = [
     {"id": 0, "name": "objects", "supercategory": "none"},
@@ -63,18 +64,29 @@ def main() -> int:
     p.add_argument("--list", required=True, help="satır: <split> <clip_name> ...")
     p.add_argument("--out", required=True)
     p.add_argument("--every", type=int, default=30)
-    p.add_argument("--tiles", type=int, default=6)
+    p.add_argument("--tiles", type=int, default=6, help="Yükseklik ekseninde dilim sayısı")
+    p.add_argument("--tile-aspect", type=float, default=16 / 9,
+                   help="Dilim en/boy oranı — çıkarımdaki DetectorConfig.tile_aspect ile aynı olmalı")
     p.add_argument("--empty-ratio", type=float, default=0.05)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--append", action="store_true",
+                   help="Mevcut veri setine ekle (farklı kamera/ızgara için ikinci geçiş)")
     args = p.parse_args()
     rng = random.Random(args.seed)
 
     with open(args.list, encoding="utf-8") as f:
         clips = [ln.split() for ln in f if ln.strip()]
     out = Path(args.out)
-    coco = {s: {"images": [], "annotations": [], "categories": CATEGORIES} for s in ("train", "valid", "test")}
-    img_id = {s: 0 for s in coco}
-    ann_id = {s: 0 for s in coco}
+    coco: dict[str, dict[str, Any]] = {}
+    for s in ("train", "valid", "test"):
+        existing = out / s / "_annotations.coco.json"
+        if args.append and existing.exists():
+            with open(existing, encoding="utf-8") as f:
+                coco[s] = json.load(f)
+        else:
+            coco[s] = {"images": [], "annotations": [], "categories": CATEGORIES}
+    img_id = {s: max((int(i["id"]) for i in c["images"]), default=-1) + 1 for s, c in coco.items()}
+    ann_id = {s: max((int(a["id"]) for a in c["annotations"]), default=-1) + 1 for s, c in coco.items()}
     stats: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
 
     for split, name, *_ in clips:
@@ -91,9 +103,12 @@ def main() -> int:
             gt_key = fi + 1
             if fi % args.every == 0 and gt_key in gt:
                 h, w = bgr.shape[:2]
-                tw, th = w // args.tiles, h // args.tiles
-                for ty in range(args.tiles):
-                    for tx in range(args.tiles):
+                # Çıkarımla aynı ızgara: satır = tiles, sütun görüntü oranından
+                rows_n = max(1, args.tiles)
+                cols_n = max(1, round(rows_n * (w / max(h, 1)) / args.tile_aspect))
+                tw, th = w // cols_n, h // rows_n
+                for ty in range(rows_n):
+                    for tx in range(cols_n):
                         x0, y0 = tx * tw, ty * th
                         boxes = []
                         for cls, bx, by, bw, bh in gt[gt_key]:

@@ -212,6 +212,36 @@ def test_timestamps_unique_within_same_second() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Dilim ızgarası (torch'suz — DetectorConfig saf dataclass)
+# --------------------------------------------------------------------------- #
+
+
+def test_tile_grid_keeps_tile_aspect_across_shapes() -> None:
+    from app.tracking.detect import DetectorConfig
+
+    cfg = DetectorConfig(tiles=6)
+    # 16:9 kaynak → kare ızgara (eski davranışla aynı), dilim 640x360
+    assert cfg.tile_grid(3840, 2160) == (6, 6)
+    # Panoramik 6.5:1 → sütun sayısı oranla artar, dilim yassılaşmaz
+    cols, rows = DetectorConfig(tiles=4).tile_grid(6500, 1000)
+    assert (cols, rows) == (15, 4)
+    tw, th = 6500 / cols, 1000 / rows
+    assert 1.4 < tw / th < 2.2          # eğitim oranına (16:9) yakın
+    # Dikey kaynak da yassılaşmaz
+    cols, rows = DetectorConfig(tiles=4).tile_grid(1080, 1920)
+    assert cols == 1 and rows == 4
+
+
+def test_effective_batch_size_scales_with_grid() -> None:
+    from app.tracking.detect import DetectorConfig
+
+    assert DetectorConfig(tiles=1).effective_batch_size(3840, 2160) == 1
+    assert DetectorConfig(tiles=6).effective_batch_size(3840, 2160) == 25   # (7·7)//2+1
+    assert DetectorConfig(tiles=4, batch_size=8).effective_batch_size(6500, 1000) == 8
+    assert DetectorConfig(tiles=4).effective_batch_size(6500, 1000) == 41   # (16·5)//2+1
+
+
+# --------------------------------------------------------------------------- #
 # Hat yardımcıları (torch'suz): top enterpolasyonu, hız
 # --------------------------------------------------------------------------- #
 

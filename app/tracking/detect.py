@@ -26,8 +26,13 @@ BALL_NAMES = {"sports ball"}
 class DetectorConfig:
     model: str = "medium"       # nano | small | medium | large
     threshold: float = 0.35
-    tiles: int = 1              # 1 = tam kare; 2 → 2×2, 3 → 3×3 dilim
+    tiles: int = 1              # yükseklik ekseninde dilim sayısı (1 = tam kare)
     tile_overlap: float = 0.15
+    # Dilim en/boy oranı: dilimler bu orana yakın tutulur, sütun sayısı görüntü
+    # oranından hesaplanır. 16:9 kaynakta tiles×tiles ızgarasıyla aynı sonuç;
+    # panoramik (örn. 6500×1000) kaynakta dilimler yassılaşmaz — model eğitim
+    # oranına yakın girdi görür.
+    tile_aspect: float = 16 / 9
     resolution: int | None = None
     device: str | None = None   # None → cuda varsa cuda
     # Dilimler toplu tahmin. None → (tiles+1)²/2+1: örtüşmeli ızgara (tiles+1)²
@@ -35,11 +40,20 @@ class DetectorConfig:
     batch_size: int | None = None
     half: bool = True           # fp16 çıkarım (CUDA'da); CPU'da yok sayılır
 
-    @property
-    def effective_batch_size(self) -> int:
+    def tile_grid(self, width: int, height: int) -> tuple[int, int]:
+        """(sütun, satır) — satır = `tiles`, sütun görüntü oranından."""
+        rows = max(1, self.tiles)
+        cols = max(1, round(rows * (width / max(height, 1)) / self.tile_aspect))
+        return cols, rows
+
+    def effective_batch_size(self, width: int = 1920, height: int = 1080) -> int:
         if self.batch_size is not None:
             return max(1, self.batch_size)
-        return (self.tiles + 1) ** 2 // 2 + 1 if self.tiles > 1 else 1
+        if self.tiles <= 1:
+            return 1
+        cols, rows = self.tile_grid(width, height)
+        # Örtüşmeli ızgara ≈ (cols+1)(rows+1) dilim → iki eşit batch + ≤1 dolgu
+        return (cols + 1) * (rows + 1) // 2 + 1
     # İnce ayarlı ağırlık klasörü (scripts/train_topview_detector.py çıktısı:
     # checkpoint_best_total.pth + meta.json). None → COCO ön-eğitimli.
     weights: str | None = None
@@ -67,20 +81,15 @@ class RFDetrDetector:
             kwargs["pretrain_weights"] = str(Path(self.cfg.weights) / "checkpoint_best_total.pth")  # type: ignore[arg-type]
         self.model = cls(**kwargs)
         self._meta = meta
-        # Derlenmiş model sabit batch ister; dilimli+batch modda son grup küçük
-        # kalır → orada derleme atlanır (batch kazancı derleme kaybını karşılar).
+        # Derlenmiş model sabit batch ister; dilim sayısı kare boyutuna bağlı
+        # olduğu için derleme ilk `detect()` çağrısına ertelenir.
         self._fixed_batch: int | None = None
-        if not (self.cfg.tiles > 1 and self.cfg.effective_batch_size > 1):
+        self._prepared = False
+        self._torch = torch
+        if self.cfg.tiles <= 1:
             with contextlib.suppress(Exception):  # optimize opsiyonel
                 self.model.optimize_for_inference()
-        elif self.cfg.half and device.startswith("cuda"):
-            # Derlenmiş fp16 model sabit batch ister → dilim grupları batch_size'a
-            # doldurulur (_predict_batch), fazlası atılır.
-            try:
-                self.model.inference(dtype=torch.float16, batch_size=self.cfg.effective_batch_size)
-                self._fixed_batch = self.cfg.effective_batch_size
-            except Exception:  # noqa: BLE001 — fp16/derleme opsiyonel
-                self._fixed_batch = None
+            self._prepared = True
         self.device = device
         if meta:
             # İnce ayarlı model sınıfları 0-tabanlı indeksle döner (class_names sırası);
@@ -147,21 +156,38 @@ class RFDetrDetector:
             d.metadata = {}
         return out
 
+    def _prepare(self, width: int, height: int) -> int:
+        """İlk kareyi görünce batch boyutunu sabitle + fp16 derle."""
+        batch = self.cfg.effective_batch_size(width, height)
+        if not self._prepared:
+            self._prepared = True
+            if batch > 1 and self.cfg.half and self.device.startswith("cuda"):
+                # Derlenmiş fp16 model sabit batch ister → dilim grupları
+                # `_predict_batch`'te doldurulur, fazlası atılır.
+                try:
+                    self.model.inference(dtype=self._torch.float16, batch_size=batch)
+                    self._fixed_batch = batch
+                except Exception:  # noqa: BLE001 — fp16/derleme opsiyonel
+                    self._fixed_batch = None
+        return batch
+
     def detect(self, frame_rgb: np.ndarray):
         """→ supervision.Detections (yalnız person + sports ball)."""
         import supervision as sv
 
         if self.cfg.tiles > 1:
             h, w = frame_rgb.shape[:2]
-            tw, th = int(w / self.cfg.tiles), int(h / self.cfg.tiles)
+            batch = self._prepare(w, h)
+            cols, rows = self.cfg.tile_grid(w, h)
+            tw, th = int(w / cols), int(h / rows)
             ov = self.cfg.tile_overlap
             # Küçük kutularda dilim sınırındaki çiftler düşük IoU verir → 0.3
             slicer = sv.InferenceSlicer(
-                callback=self._predict_batch if self.cfg.effective_batch_size > 1 else self._predict,
+                callback=self._predict_batch if batch > 1 else self._predict,
                 slice_wh=(tw, th),
                 overlap_wh=(int(tw * ov), int(th * ov)),
                 iou_threshold=0.3,
-                batch_size=self.cfg.effective_batch_size,
+                batch_size=batch,
             )
             det = slicer(frame_rgb)
         else:
