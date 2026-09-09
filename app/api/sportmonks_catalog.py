@@ -11,10 +11,12 @@ process-içi küçük LRU'da tutulur; uzun Cache-Control ile tarayıcı da cache
 
 from __future__ import annotations
 
+import contextlib
 import time
 from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import asdict
-from typing import Any, Callable
+from typing import Any
 
 import httpx
 from fastapi import APIRouter, HTTPException, Query
@@ -98,10 +100,9 @@ def _safe(fn, *args, **kwargs):
     except httpx.HTTPStatusError as e:  # 403 abonelik kapsamı vb.
         code = e.response.status_code
         msg = ""
-        try:
+        # Gövde JSON değilse mesaj boş kalsın; asıl bilgi status kodunda.
+        with contextlib.suppress(Exception):
             msg = e.response.json().get("message", "")[:160]
-        except Exception:  # noqa: BLE001
-            pass
         raise HTTPException(status_code=502, detail=f"Sportmonks {code}: {msg}") from e
     except httpx.HTTPError as e:
         raise HTTPException(status_code=502, detail=f"Sportmonks ağ hatası: {e}") from e
@@ -173,7 +174,7 @@ def sm_schedule(
 
 
 # ── Medya proxy ───────────────────────────────────────────────────────────────
-_MEDIA_CACHE: "OrderedDict[str, tuple[bytes, str]]" = OrderedDict()
+_MEDIA_CACHE: OrderedDict[str, tuple[bytes, str]] = OrderedDict()
 _MEDIA_CACHE_MAX = 256  # process-içi küçük LRU
 
 

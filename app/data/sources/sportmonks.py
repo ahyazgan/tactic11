@@ -293,7 +293,7 @@ class Sportmonks(DataSource):
         s = get_settings()
         log.info("sportmonks GET fixtures/%d", fid)
         with httpx.Client(timeout=s.http_timeout_seconds) as client:
-            for attempt in range(2):
+            for _attempt in range(2):
                 params = {"api_token": self._key, "include": self._fixture_include()}
                 r = client.get(url, params=params)
                 if r.status_code == 403 and self._xg_enabled:

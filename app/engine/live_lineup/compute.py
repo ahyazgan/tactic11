@@ -60,9 +60,8 @@ def is_on_pitch(appearance: PlayerAppearance, current_minute: float) -> bool:
     dakikasında artık sahada değildir (event-zaman yarı-açık aralık)."""
     if current_minute < appearance.start_minute:
         return False
-    if appearance.end_minute is not None and current_minute >= appearance.end_minute:
-        return False
-    return True
+    return not (appearance.end_minute is not None
+                and current_minute >= appearance.end_minute)
 
 
 def resolve_on_pitch(

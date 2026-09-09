@@ -17,7 +17,7 @@ yansır. Penaltılar zaten is_goal şut olarak akar.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from app.domain import Shot
 

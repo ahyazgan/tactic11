@@ -37,9 +37,7 @@ from app.db.session import get_session
 from app.db.session_load import SessionLoad
 from app.db.wellness_entry import WellnessEntry
 from app.engine.gps_load import GpsSession, compute_gps_load, srpe_session_load
-from app.engine.wellness import WellnessInput, compute_wellness
 from app.engine.performance_test import compute as perf
-from app.engine.workload import compute_workload
 from app.engine.physical.load_risk import (
     CRITICAL_LABEL,
     REFERENCE,
@@ -49,6 +47,8 @@ from app.engine.physical.load_risk import (
     format_critical_alert,
     rate_against_norms,
 )
+from app.engine.wellness import WellnessInput, compute_wellness
+from app.engine.workload import compute_workload
 
 log = get_logger(__name__)
 

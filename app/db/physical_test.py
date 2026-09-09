@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import enum
 from datetime import date
-
 from typing import Any
 
 from sqlalchemy import JSON, Date, Float, ForeignKey, Index, Integer, String, Text
