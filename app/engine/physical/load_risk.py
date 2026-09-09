@@ -7,10 +7,25 @@ saf Python; api → ai → engine → domain bağımlılık yönüne uygun).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, TypedDict
+
+
+class ProtocolReference(TypedDict):
+    """Bir test protokolünün referans aralığı.
+
+    Değerler karışık tipte (float/str/bool) olduğu için düz sözlük olarak
+    bırakılırsa tip denetleyici `object` çıkarır ve `float(ref["low"])` gibi
+    kullanımlar hata verir. Şekli burada bir kez tanımlanır.
+    """
+
+    low: float
+    high: float
+    unit: str
+    lower_is_better: bool
+
 
 # Protokol başına referans aralıkları (elit Süper Lig düzeyi).
-REFERENCE = {
+REFERENCE: dict[str, ProtocolReference] = {
     "sprint_10m":      {"low": 1.90, "high": 1.70, "unit": "sn",     "lower_is_better": True},
     "sprint_30m":      {"low": 4.30, "high": 3.90, "unit": "sn",     "lower_is_better": True},
     "ttest_agility":   {"low": 11.5, "high": 9.50, "unit": "sn",     "lower_is_better": True},
@@ -63,10 +78,8 @@ def _score_single(protocol: str, value: float) -> tuple[float, str | None]:
     if not ref:
         return 0.0, None
 
-    # REFERENCE değerleri heterojen (float/str/bool) → mypy `object` görür;
-    # sayısal/bool alanları açıkça daralt.
-    low = cast(float, ref["low"])
-    lib = cast(bool, ref["lower_is_better"])
+    low = ref["low"]
+    lib = ref["lower_is_better"]
 
     if lib:
         # düşük değer iyi — sprint süresi, vücut yağı
@@ -95,9 +108,9 @@ def rate_against_norms(protocol: str, value: float) -> str | None:
     ref = REFERENCE.get(protocol)
     if ref is None:
         return None
-    low = cast(float, ref["low"])
-    high = cast(float, ref["high"])
-    lib = bool(cast(bool, ref["lower_is_better"]))
+    low = ref["low"]
+    high = ref["high"]
+    lib = ref["lower_is_better"]
     mid = (low + high) / 2.0
     if lib:
         # düşük değer iyi: high(elit) < low(kabul)
@@ -227,7 +240,7 @@ def compute_protocol_trend(
     sprint süresi düşüyorsa 'improving', YoYo seviyesi düşüyorsa 'worsening'.
     """
     ref = REFERENCE.get(protocol)
-    lib = bool(cast(bool, ref["lower_is_better"])) if ref is not None else False
+    lib = ref["lower_is_better"] if ref is not None else False
 
     # vals'i doğrudan girdi (Any) üzerinden kur; `ordered` heterojen dict
     # olduğundan değerleri `object` çıkarsanır → float() mypy hatası verirdi.

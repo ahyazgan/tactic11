@@ -495,7 +495,9 @@ function PrimaryBanner({
     );
   }
   return (
-    <div className="rc" style={{
+    // data-testid: "ŞİMDİ ŞUNU YAP" / "son 15 dk" gibi ifadeler sayfadaki
+    // birden çok kartta geçiyor; E2E'nin BİRİNCİL AFİŞİ kastettiği açık olmalı.
+    <div className="rc" data-testid="primary-action" style={{
       marginBottom: 16, padding: 0, overflow: "hidden",
       borderLeft: `4px solid ${tone}`,
       animation: isCritical ? "decisionPulse 1.6s ease-in-out infinite" : undefined,
@@ -608,12 +610,12 @@ function PrimaryBanner({
 }
 
 function EngineCard({
-  title, icon, accent, tooltip, children,
+  title, icon, accent, tooltip, testId, children,
 }: { title: string; icon?: string; accent?: string;
-     tooltip?: string; children: React.ReactNode }) {
+     tooltip?: string; testId?: string; children: React.ReactNode }) {
   const [hover, setHover] = useState(false);
   return (
-    <div className="rc" style={{
+    <div className="rc" data-testid={testId} style={{
       marginBottom: 12, position: "relative",
       borderLeft: accent ? `3px solid ${accent}` : undefined,
       transition: "transform 120ms ease, box-shadow 120ms ease",
@@ -670,7 +672,7 @@ function MomentumCard({ data }: { data?: MomentumOut }) {
   const holder = holderRaw ? (HOLDER_TR[holderRaw] ?? holderRaw) : "—";
   const tone = score > 0.2 ? "var(--low)" : score < -0.2 ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Momentum" icon="📈" accent={tone}
+    <EngineCard title="Momentum" icon="📈" accent={tone} testId="momentum-card"
       tooltip="Son 10 dakikada hangi takım xT + şut + possession dalgasında baskın. Pres kırılma = bizim defansif aksiyonumuz aniden düştü mü.">
       <div><b>Sahip:</b> {holder} ({score >= 0 ? "+" : ""}{score.toFixed(2)})</div>
       {data.press_breaking && <div style={{ color: "var(--high)" }}>⚠ Pres kırılıyor</div>}
@@ -689,11 +691,11 @@ function ClosingCard({ data }: { data?: ClosingStrategy }) {
   const tone = data.urgency_level === "critical" ? "var(--crit)"
     : data.urgency_level === "high" ? "var(--high)" : "var(--mid)";
   return (
-    <EngineCard title="Kapanış reçetesi" icon="⏱" accent={tone}
+    <EngineCard title="Kapanış reçetesi" icon="⏱" accent={tone} testId="closing-recipe"
       tooltip="(skor_diff, dakika) → tempo + dizilim + ikame + duran top reçetesi. 'Önde 1-0, 80. dk, ne yapayım?' sorusunun pure-compute cevabı.">
       <div style={{ fontWeight: 700, marginBottom: 6 }}>{data.key_message}</div>
       <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.7 }}>
-        <div>tempo: <b style={{ color: "var(--ink)" }}>{data.recipe?.tempo}</b></div>
+        <div data-testid="closing-tempo">tempo: <b style={{ color: "var(--ink)" }}>{data.recipe?.tempo}</b></div>
         <div>dizilim: <b style={{ color: "var(--ink)" }}>{data.recipe?.positioning}</b></div>
         <div>ikame: <b style={{ color: "var(--ink)" }}>{data.recipe?.sub_priority}</b></div>
         <div>duran top: <b style={{ color: "var(--ink)" }}>{data.recipe?.set_pieces}</b></div>

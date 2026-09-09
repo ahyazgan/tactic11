@@ -952,23 +952,23 @@ def assess_readiness(
 
     if rtp is not None:
         cur, base, hib = rtp
-        r = return_to_play_readiness(cur, base, higher_is_better=hib)
+        rtp_r = return_to_play_readiness(cur, base, higher_is_better=hib)
         flags.append(ReadinessFlag(
             metric="RTP", engine="return_to_play_readiness",
-            severity="yeşil" if r.cleared else "kırmızı",
-            value=f"baseline'ın %{r.pct_of_baseline:g}'i",
+            severity="yeşil" if rtp_r.cleared else "kırmızı",
+            value=f"baseline'ın %{rtp_r.pct_of_baseline:g}'i",
             threshold=f"≥%{RTP_GREEN_LIGHT_PCT:g} yeşil ışık",
-            action=("sahaya hazır" if r.cleared
+            action=("sahaya hazır" if rtp_r.cleared
                     else "sahaya çıkmasın — rehabilitasyona devam, baseline'a ulaşsın"),
         ))
 
     if hq is not None:
         ham, quad = hq
-        r = hamstring_quad_ratio(ham, quad)
-        sev = {"ideal": "yeşil", "sınırda": "sarı", "yüksek_risk": "kırmızı"}[r.band]
+        hq_r = hamstring_quad_ratio(ham, quad)
+        sev = {"ideal": "yeşil", "sınırda": "sarı", "yüksek_risk": "kırmızı"}[hq_r.band]
         flags.append(ReadinessFlag(
             metric="H:Q", engine="hamstring_quad_ratio", severity=sev,
-            value=f"{r.ratio:g} ({r.band})",
+            value=f"{hq_r.ratio:g} ({hq_r.band})",
             threshold=f"≥{HQ_RATIO_IDEAL_MIN:g} ideal · <{HQ_RATIO_RISK:g} risk",
             action=("denge iyi" if sev == "yeşil"
                     else "eksantrik hamstring güçlendirme; <0.47 ise maç yükünü sınırla"),
@@ -976,60 +976,60 @@ def assess_readiness(
 
     if asymmetry is not None:
         left, right, label = asymmetry
-        r = limb_asymmetry(left, right)
+        asym_r = limb_asymmetry(left, right)
         flags.append(ReadinessFlag(
             metric=f"Asimetri ({label})" if label else "Asimetri",
-            engine="limb_asymmetry", severity=r.flag,
-            value=f"%{r.asymmetry_pct:g} (güçlü: {r.stronger_side})",
+            engine="limb_asymmetry", severity=asym_r.flag,
+            value=f"%{asym_r.asymmetry_pct:g} (güçlü: {asym_r.stronger_side})",
             threshold=f">%{ASYMMETRY_WARN_PCT:g} sarı · >%{ASYMMETRY_HIGH_PCT:g} kırmızı",
-            action=("denge iyi" if r.flag == "yeşil"
+            action=("denge iyi" if asym_r.flag == "yeşil"
                     else "tek-bacak düzeltici program; yeniden-sakatlanma riski"),
         ))
 
     if rsa is not None:
-        r = repeated_sprint_fatigue_index(rsa)
+        rsa_r = repeated_sprint_fatigue_index(rsa)
         flags.append(ReadinessFlag(
             metric="RSA", engine="repeated_sprint_fatigue_index",
-            severity="sarı" if r.insufficient_recovery else "yeşil",
-            value=f"FI %{r.fatigue_index_pct:g}",
+            severity="sarı" if rsa_r.insufficient_recovery else "yeşil",
+            value=f"FI %{rsa_r.fatigue_index_pct:g}",
             threshold=f">%{RSA_FATIGUE_FLAG_PCT:g} yetersiz toparlanma",
-            action=("anaerobik dayanıklılık iyi" if not r.insufficient_recovery
+            action=("anaerobik dayanıklılık iyi" if not rsa_r.insufficient_recovery
                     else "tekrarlı sprint + toparlanma bloğu"),
         ))
 
     if cod is not None:
         cod_t, lin = cod
-        r = change_of_direction_deficit(cod_t, lin)
+        cod_r = change_of_direction_deficit(cod_t, lin)
         flags.append(ReadinessFlag(
             metric="COD", engine="change_of_direction_deficit",
-            severity="sarı" if r.poor_deceleration else "yeşil",
-            value=f"{r.deficit:g}sn açık",
+            severity="sarı" if cod_r.poor_deceleration else "yeşil",
+            value=f"{cod_r.deficit:g}sn açık",
             threshold=f">{COD_DEFICIT_FLAG_S:g}sn zayıf frenleme",
-            action=("yön değiştirme iyi" if not r.poor_deceleration
+            action=("yön değiştirme iyi" if not cod_r.poor_deceleration
                     else "frenleme/deceleration mekaniği çalışması"),
         ))
 
     if adductor is not None:
         cur, prev = adductor
-        r = adductor_squeeze_drop(cur, prev)
+        add_r = adductor_squeeze_drop(cur, prev)
         flags.append(ReadinessFlag(
             metric="Adductor", engine="adductor_squeeze_drop",
-            severity="sarı" if r.flagged else "yeşil",
-            value=f"%{r.drop_pct:g} düşüş",
+            severity="sarı" if add_r.flagged else "yeşil",
+            value=f"%{add_r.drop_pct:g} düşüş",
             threshold=f">%{ADDUCTOR_DROP_FLAG_PCT:g} kasık/pubis riski",
-            action=("kasık kuvveti iyi" if not r.flagged
+            action=("kasık kuvveti iyi" if not add_r.flagged
                     else "kasık yükünü azalt, MD+1 takip; kasık/pubis riski"),
         ))
 
     if cmj is not None:
         cur, baseline_vals = cmj
-        r = cmj_neuromuscular_drop(cur, baseline_vals)
+        cmj_r = cmj_neuromuscular_drop(cur, baseline_vals)
         flags.append(ReadinessFlag(
             metric="CMJ", engine="cmj_neuromuscular_drop",
-            severity="sarı" if r.flagged else "yeşil",
-            value=f"baseline'a göre %{r.drop_pct:g}",
+            severity="sarı" if cmj_r.flagged else "yeşil",
+            value=f"baseline'a göre %{cmj_r.drop_pct:g}",
             threshold=f">%{CMJ_FATIGUE_DROP_PCT:g} nöromusküler yorgunluk",
-            action=("toparlanma tam" if not r.flagged
+            action=("toparlanma tam" if not cmj_r.flagged
                     else "yükü azalt; nöromusküler yorgunluk"),
         ))
 

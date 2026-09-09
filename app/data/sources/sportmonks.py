@@ -16,6 +16,11 @@ boş kalır, kırılmaz).
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # yalnız tip denetimi için — çalışma zamanı import'u tembel
+    from app.data.sources._resilience import CircuitBreaker
+
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -184,7 +189,7 @@ class Sportmonks(DataSource):
 
     name = _SOURCE_NAME
     # Sınıf-düzeyi devre kesici — pod ömrü boyunca paylaşılır
-    _breaker: object | None = None  # CircuitBreaker; runtime lazy assign
+    _breaker: CircuitBreaker | None = None  # CircuitBreaker; runtime lazy assign
 
     # Tek fixture için yeterli include seti (lineups.details = oyuncu istatistiği,
     # xgfixture = gerçek xG). participants/state/scores/events karar+skor için.
@@ -332,7 +337,7 @@ class Sportmonks(DataSource):
         log.info("sportmonks GET fixtures/between team=%d", team_id)
         with httpx.Client(timeout=s.http_timeout_seconds) as client:
             while True:
-                params = {
+                params: dict[str, str | int] = {
                     "api_token": self._key,
                     "include": self.SCHEDULE_INCLUDE,
                     "page": page,

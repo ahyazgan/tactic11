@@ -171,17 +171,19 @@ class PerFrameCalibrator:
         # küçültülerek işleniyorsa aynı sayı sahada daha büyük bir alana denk
         # gelir ve oturma gevşer (ölçüldü: yarı çözünürlükte sabit toleransla
         # hata 0.10 m → 3.95 m). Verilmezse görüntü genişliğinden ölçeklenir.
-        self._tolerance_px = tolerance_px
+        self._tolerance_px: float = (
+            tolerance_px if tolerance_px is not None else 0.0)  # aşağıda ölçeklenir
         self._reacquire_allowed = allow_reacquire
         self._anchor = anchor
         self._h = anchor.homography
-        self._image_size = image_size or tuple(anchor.image_size)
+        w, h = (image_size or (anchor.image_size[0], anchor.image_size[1]))
+        self._image_size: tuple[int, int] = (int(w), int(h))
         self._last_corners: np.ndarray | None = None
         self._prev_corners: np.ndarray | None = None
         self._pending: np.ndarray | None = None   # doğrulama bekleyen aday (KAYIP)
         self._last_jump_m = 0.0                   # son karede kameranın saha hareketi
         self._misses = 0
-        if self._tolerance_px is None:
+        if tolerance_px is None:
             self._tolerance_px = DEFAULT_TOLERANCE_PX * (self._image_size[0] / 1280.0)
         self.frames_seen = 0
         self.frames_calibrated = 0

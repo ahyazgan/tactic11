@@ -371,13 +371,29 @@ def build_live_digest_prompt(
     current_minute: float, score: str,
 ) -> str:
     """Snapshot dict → AI prompt'u (TR brief için)."""
-    ctx = snapshot.get("context") or {}
-    primary = (ctx.get("primary") or {}) if isinstance(ctx, dict) else {}
-    secondary = (ctx.get("secondary") or []) if isinstance(ctx, dict) else []
-    mom = snapshot.get("momentum") or {}
-    closing = snapshot.get("closing_strategy") or {}
-    fp = snapshot.get("foul_pressure") or {}
-    sf = snapshot.get("star_feed") or {}
+    def _dict(src: dict[str, object], key: str) -> dict[str, object]:
+        """Alt sözlük; eksik/yanlış tipse boş sözlük.
+
+        Snapshot `dict[str, object]` olduğu için alt alanların sözlük olduğu
+        garanti değil (motor hata döndürmüş olabilir). Tek yerde daraltılır.
+        """
+        v = src.get(key)
+        return v if isinstance(v, dict) else {}
+
+    def _list(src: dict[str, object], key: str) -> list[object]:
+        v = src.get(key)
+        return v if isinstance(v, list) else []
+
+    def _sub(key: str) -> dict[str, object]:
+        return _dict(snapshot, key)
+
+    ctx = _sub("context")
+    primary = _dict(ctx, "primary")
+    secondary = _list(ctx, "secondary")
+    mom = _sub("momentum")
+    closing = _sub("closing_strategy")
+    fp = _sub("foul_pressure")
+    sf = _sub("star_feed")
 
     parts = [
         f"Maç {match_id} · {current_minute:.0f}. dakika · skor {score}.",

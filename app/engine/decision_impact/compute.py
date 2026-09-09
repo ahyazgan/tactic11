@@ -255,12 +255,17 @@ def compute_decision_impact(
 
     pre_lo, pre_hi = _clip_window(ctx.minute - window_min, ctx.minute, match_end=match_end)
     post_lo, post_hi = _clip_window(ctx.minute, ctx.minute + window_min, match_end=match_end)
-    kw = {
-        "team_id": ctx.team_external_id, "opponent_id": ctx.opponent_external_id,
-        "passes": p, "carries": c, "shots": s, "defensive_actions": d,
-    }
-    pre = _window_metrics(lo=pre_lo, hi=pre_hi, **kw)
-    post = _window_metrics(lo=post_lo, hi=post_hi, **kw)
+    # Ortak argümanlar kapanışta: `**kw` sözlüğüyle geçmek değerleri karışık
+    # tipe düşürüyor ve tip denetimi kayboluyordu.
+    def _metrics(lo: float, hi: float) -> WindowMetrics:
+        return _window_metrics(
+            lo=lo, hi=hi,
+            team_id=ctx.team_external_id, opponent_id=ctx.opponent_external_id,
+            passes=p, carries=c, shots=s, defensive_actions=d,
+        )
+
+    pre = _metrics(pre_lo, pre_hi)
+    post = _metrics(post_lo, post_hi)
 
     xg_delta = round(post.xg_diff - pre.xg_diff, 4)
     xt_delta = round(post.xt - pre.xt, 4)

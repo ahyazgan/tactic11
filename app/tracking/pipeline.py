@@ -190,7 +190,9 @@ def collect_observations(
             raise ValueError("kare başına kalibrasyon için çapa kalibrasyon gerekir")
         from app.tracking.pitch_lines import PerFrameCalibrator
 
-        per_frame = PerFrameCalibrator(calib, image_size=tuple(calib.image_size))
+        per_frame = PerFrameCalibrator(
+            calib, image_size=(int(calib.image_size[0]), int(calib.image_size[1])),
+        )
     skipped_uncalibrated = 0
     samples: list[SampledObservation] = []
     hits: dict[int, int] = {}

@@ -210,7 +210,9 @@ function SummaryCards({
     : hr >= 0.66 ? "var(--low)"
     : hr >= 0.4 ? "var(--mid)" : "var(--crit)";
   return (
-    <div style={{
+    // data-testid: E2E bu bölgeyi hedefler. Sayfada "İsabet"/yüzde metni birden
+    // çok kartta geçtiği için testin ÖZET kartını kastettiği açık olmalı.
+    <div data-testid="summary-cards" style={{
       display: "grid", gap: 12, marginBottom: 16,
       gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
     }}>

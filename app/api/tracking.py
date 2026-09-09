@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.session import get_session
+from app.domain import PlayerPosition
 from app.sports import football
 
 router = APIRouter(prefix="/tracking", tags=["tracking"])
@@ -129,6 +130,12 @@ def _row_to_frame(row: models.TrackingFrameRow, ids: dict[int, models.TrackingId
     }
 
 
+_POSITION_FIELDS = frozenset({
+    "player_external_id", "x", "y", "velocity_mps", "team_external_id",
+    "is_actor", "is_keeper", "identity_estimated",
+})
+
+
 def frames_in_window(
     session: Session, match_id: int, from_minute: float, to_minute: float,
     *, limit: int = SHAPE_MAX_FRAMES,
@@ -157,12 +164,13 @@ def frames_in_window(
         out.append(TrackingFrame(
             sport=football.SPORT_NAME, match_external_id=match_id,
             timestamp=r.timestamp, period=r.period, minute=r.minute,
-            ball=({"player_external_id": 0, **d["ball"]} if d["ball"] else None),
+            # Pydantic sözlük kabul eder ama tip sözleşmesi PlayerPosition der;
+            # nesneyi açıkça kurmak hem denetlenebilir hem de alan adı yanlışsa
+            # burada patlar (sessizce yok sayılmaz).
+            ball=(PlayerPosition(player_external_id=0, **d["ball"]) if d["ball"] else None),
             players=tuple(
-                {k: v for k, v in p.items() if k in {
-                    "player_external_id", "x", "y", "velocity_mps", "team_external_id",
-                    "is_actor", "is_keeper", "identity_estimated",
-                }} for p in d["players"]
+                PlayerPosition(**{k: v for k, v in p.items() if k in _POSITION_FIELDS})
+                for p in d["players"]
             ),
             source=d["source"], event_type=d["event_type"],
             possession_team_external_id=d["possession_team_external_id"],

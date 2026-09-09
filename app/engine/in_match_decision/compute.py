@@ -182,24 +182,19 @@ PRIORITY_RANK = {"urgent": 3, "recommended": 2, "optional": 1}
 
 def compute_in_match_decisions(state: MatchState) -> EngineResult[DecisionReport]:
     score_state = _score_state(state)
-    decisions: list[Decision] = []
-    for fn in (
-        _fatigue_sub,
-        _formation_change,
-        _intensity_change,
-        _foul_trouble,
-        _kill_the_game,
-        _opportunity_exploit,
-    ):
-        # closures take varying args
-        if fn is _fatigue_sub:
-            d = fn(state)
-        elif fn in (_intensity_change, _formation_change, _kill_the_game):
-            d = fn(state, score_state)
-        else:
-            d = fn(state)
-        if d:
-            decisions.append(d)
+    # Kuralların hepsi denenir, üretenler toplanır. Doğrudan çağrı: eskiden
+    # döngüyle gezilip `fn is _fatigue_sub` gibi kimlik kontrolleriyle argüman
+    # seçiliyordu — yeni kural eklenince sessizce yanlış argümanla çağrılmaya
+    # açıktı ve tip denetimi de çözemiyordu.
+    candidates = (
+        _fatigue_sub(state),
+        _formation_change(state, score_state),
+        _intensity_change(state, score_state),
+        _foul_trouble(state),
+        _kill_the_game(state, score_state),
+        _opportunity_exploit(state),
+    )
+    decisions: list[Decision] = [d for d in candidates if d is not None]
 
     decisions.sort(key=lambda d: (-PRIORITY_RANK[d.priority], -d.confidence))
 

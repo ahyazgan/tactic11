@@ -8,13 +8,15 @@ import { test, expect } from "@playwright/test";
 test.describe("Decisions track (DEMO_MODE)", () => {
   test("renders summary cards + decisions table", async ({ page }) => {
     await page.goto("/decisions/track");
-    // Summary kartları
-    await expect(page.getByText("İsabet")).toBeVisible();
-    await expect(page.getByText("Toplam", { exact: true })).toBeVisible();
-    await expect(page.getByText("Pozitif", { exact: true })).toBeVisible();
-    await expect(page.getByText("Negatif", { exact: true })).toBeVisible();
+    // Summary kartları — sayfada "İsabet"/yüzde metni başka kartlarda da
+    // geçtiği için bölgeye kapsanır (aksi halde strict mode ihlali).
+    const summary = page.getByTestId("summary-cards");
+    await expect(summary.getByText("İsabet")).toBeVisible();
+    await expect(summary.getByText("Toplam", { exact: true })).toBeVisible();
+    await expect(summary.getByText("Pozitif", { exact: true })).toBeVisible();
+    await expect(summary.getByText("Negatif", { exact: true })).toBeVisible();
     // Demo hit_rate %67 görünür (6 pos / 9 resolved)
-    await expect(page.getByText("%67")).toBeVisible();
+    await expect(summary.getByText("%67")).toBeVisible();
     // Tablo: en az bir karar satırı (substitution)
     await expect(page.getByText("substitution").first()).toBeVisible();
     // Outcome label
@@ -37,12 +39,13 @@ test.describe("Decisions track (DEMO_MODE)", () => {
 
   test("inline outcome buttons mark pending rows + recompute hit_rate", async ({ page }) => {
     await page.goto("/decisions/track");
+    const summary = page.getByTestId("summary-cards");
     // Önce %67 görünüyor
-    await expect(page.getByText("%67")).toBeVisible();
+    await expect(summary.getByText("%67")).toBeVisible();
     // İlk ✓ butonunu tıkla (pending row için)
     const positiveBtn = page.locator('button[title="Doğru çıktı"]').first();
     await positiveBtn.click();
     // hit_rate 6 → 7 / 9 → 10 (1 pending pozitif oldu) → %70 görünmeli
-    await expect(page.getByText("%70")).toBeVisible({ timeout: 2000 });
+    await expect(summary.getByText("%70")).toBeVisible({ timeout: 2000 });
   });
 });
