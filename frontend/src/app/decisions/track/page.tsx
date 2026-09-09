@@ -16,6 +16,7 @@ import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../../_console/shell";
 import { DecisionTrackRecordCard, MatchDecisionImpactCard } from "../../_console/decision-impact";
+import { DecisionQualityCard } from "../../_console/decision-quality";
 
 interface DecisionRow {
   id: number;
@@ -518,6 +519,7 @@ export default function DecisionsTrackPage() {
             <span className="ep">kararın öncesi/sonrası maç verisinden — elle işaretleme gerekmez</span>
           </div>
           <DecisionTrackRecordCard teamId={impactTeamId} />
+          <DecisionQualityCard teamId={impactTeamId} />
           <MatchDecisionImpactCard matchId={impactMatchId} />
         </>
       )}

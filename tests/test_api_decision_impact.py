@@ -146,4 +146,4 @@ def test_no_events_or_no_decisions_is_reported_not_crashed(session, client):
     assert body["events_loaded"] == 0 and "note" in body
     auto = client.post(f"/admin/matches/{MATCH}/decisions/auto-outcome").json()
     assert auto["written"] == 0 and "note" in auto
-    assert client.get(f"/admin/matches/424242/decisions/learning").status_code == 404
+    assert client.get("/admin/matches/424242/decisions/learning").status_code == 404

@@ -129,6 +129,47 @@ def _row_to_frame(row: models.TrackingFrameRow, ids: dict[int, models.TrackingId
     }
 
 
+def frames_in_window(
+    session: Session, match_id: int, from_minute: float, to_minute: float,
+    *, limit: int = SHAPE_MAX_FRAMES,
+) -> list[Any]:
+    """Pencere içindeki kareleri `TrackingFrame` domain nesnesi olarak döner.
+
+    Canlı karar paneli ve /shape ucu ortak kullanır; kimlik eşlemesi uygulanır.
+    """
+    from app.domain.tracking import TrackingFrame
+
+    rows = session.execute(
+        _base_query(match_id)
+        .where(
+            models.TrackingFrameRow.minute >= max(0.0, from_minute),
+            models.TrackingFrameRow.minute <= to_minute,
+        )
+        .order_by(models.TrackingFrameRow.timestamp.desc())
+        .limit(limit)
+    ).scalars().all()
+    if not rows:
+        return []
+    ids = _identity_map(session, match_id)
+    out: list[TrackingFrame] = []
+    for r in reversed(rows):
+        d = _row_to_frame(r, ids)
+        out.append(TrackingFrame(
+            sport=football.SPORT_NAME, match_external_id=match_id,
+            timestamp=r.timestamp, period=r.period, minute=r.minute,
+            ball=({"player_external_id": 0, **d["ball"]} if d["ball"] else None),
+            players=tuple(
+                {k: v for k, v in p.items() if k in {
+                    "player_external_id", "x", "y", "velocity_mps", "team_external_id",
+                    "is_actor", "is_keeper", "identity_estimated",
+                }} for p in d["players"]
+            ),
+            source=d["source"], event_type=d["event_type"],
+            possession_team_external_id=d["possession_team_external_id"],
+        ))
+    return out
+
+
 def _base_query(match_id: int):
     return select(models.TrackingFrameRow).where(
         models.TrackingFrameRow.sport == football.SPORT_NAME,
@@ -407,37 +448,10 @@ def tracking_shape(
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     from app.api.serialize import engine_result_to_dict
-    from app.domain.tracking import TrackingFrame
     from app.engine.tracking.compute import compute_pressure, compute_team_shape
 
     match = _match_or_404(session, match_id)
-    rows = session.execute(
-        _base_query(match_id)
-        .where(
-            models.TrackingFrameRow.minute >= max(0.0, minute - window),
-            models.TrackingFrameRow.minute <= minute,
-        )
-        .order_by(models.TrackingFrameRow.timestamp.desc())
-        .limit(SHAPE_MAX_FRAMES)
-    ).scalars().all()
-    rows = list(reversed(rows))
-    ids = _identity_map(session, match_id)
-    frames: list[TrackingFrame] = []
-    for r in rows:
-        d = _row_to_frame(r, ids)
-        frames.append(TrackingFrame(
-            sport=football.SPORT_NAME, match_external_id=match_id,
-            timestamp=r.timestamp, period=r.period, minute=r.minute,
-            ball=({"player_external_id": 0, **d["ball"]} if d["ball"] else None),
-            players=tuple(
-                {k: v for k, v in p.items() if k in {
-                    "player_external_id", "x", "y", "velocity_mps", "team_external_id",
-                    "is_actor", "is_keeper", "identity_estimated",
-                }} for p in d["players"]
-            ),
-            source=d["source"], event_type=d["event_type"],
-            possession_team_external_id=d["possession_team_external_id"],
-        ))
+    frames = frames_in_window(session, match_id, minute - window, minute)
     out: dict[str, Any] = {
         "match_id": match_id, "minute": minute, "window": window, "frames": len(frames),
         "home_team_external_id": match.home_team_external_id,

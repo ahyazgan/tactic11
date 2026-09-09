@@ -270,6 +270,22 @@ def build_candidates(
                         "pass_share_pct": sf.get("pass_share_pct", 0.0)},
             ))
 
+    # tracking_signals (spatial) — pozisyon verisi (video / 360) varsa
+    ts = out.get("tracking_signals")
+    if _is_dict(ts):
+        frames = int(ts.get("frames_used", 0) or 0)
+        for f in (ts.get("findings") or [])[:2]:   # en acil iki bulgu
+            if not isinstance(f, dict):
+                continue
+            cands.append(CandidateSignal(
+                key=f"tracking:{f.get('key', 'signal')}", signal_type="spatial",
+                headline=str(f.get("headline", "Pozisyon sinyali")),
+                urgency=float(f.get("urgency", 0.5)), fired=True, minute=current_minute,
+                # kare sayısı = kanıt; sample_size event sayısıyla aynı ölçekte olsun
+                sample_size=frames, magnitude=float(f.get("magnitude", 0.0)),
+                detail={"source": "tracking", **(f.get("detail") or {})},
+            ))
+
     return cands
 
 

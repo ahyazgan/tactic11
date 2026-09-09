@@ -484,3 +484,87 @@ dışındaysa daha da zor) — kalibrasyon ekranındaki geri-izdüşüm hatası 
 (v2) pozisyon karelerinden genişlik / derinlik / kompaktlık / hat konumları / yerleşim
 tahmini ve rakip topa sahipken pres endeksi üretir. Kaynak ayırt edilmez (360 ya da video);
 kamera dışı oyuncular sayılmaz, bu yüzden yerleşim yalnız kadro görünür + tutarlıyken yazılır.
+
+### Canlı maç: segment akışı → maç-içi karar paneli
+
+Klip sonrası işlemeye ek olarak video **maç sırasında** okunabilir. Kamera/encoder
+klasöre segment yazar, `scripts/track_live.py` klasörü izler; her yeni segmenti takip
+hattından geçirip kareleri **aynı maça ekler** (`ingest_tracking_json --append`).
+Canlı karar paneli o kareleri okuyup pozisyon sinyali üretir.
+
+```bash
+# kulüp tarafında (kamera → segment)
+ffmpeg -i rtsp://kamera -c copy -f segment -segment_time 30 -reset_timestamps 1 \
+  data/tracking/live/seg_%04d.mp4
+
+# bizim tarafta (izleyici)
+venv-cv\Scripts\python.exe -m scripts.track_live --watch data/tracking/live \
+  --calibration data/tracking/calibrations/saha.json \
+  --match-id 990100 --home-team 611 --away-team 612 --tenant t-default \
+  --segment-seconds 30 --weights data/tracking/models/rfdetr_mixed_small \
+  --database-url "postgresql+psycopg://..."
+```
+
+Segment → dakika eşlemesi ada göre sırayla yapılır (`--start-minute` ile kaydır,
+ya da dosya adından `--minute-from-name 'min_(\d+)'` ile oku). İşlenen segmentler
+`<watch>/.track_live_state.json` içinde tutulur → yeniden başlatınca kaldığı yerden
+devam eder. **Ingest başarısız olursa segment "işlendi" sayılmaz**, 3 kez yeniden
+denenir (DB geçici düşerse kare kaybı olmasın). CV `venv-cv`'de, DB yazımı ana
+`venv`'de koşar (`--ingest-python`); `--database-url` ingest alt sürecine geçirilir.
+
+**Gerçek zaman uyarısı (ölçüldü, RTX 5060):** 4K (3840×2160) girdide `--tiles 6`,
+`--fps 5` ile 10 sn'lik segment ~43–63 sn sürüyor — yani **gerçek zamanın ~7-8 katı
+yavaş**. Bunun büyük kısmı her segment için ayrı `track_video` süreci açılıp modelin
+yeniden yüklenip derlenmesinden geliyor (ilk segment 116 sn). Gerçekten canlı takip
+için: çözünürlüğü düşür (1080p), `--tiles` azalt, `--fps` düşür ya da modeli sıcak
+tutan kalıcı bir işçi süreç kullan. Script her segmentte `✓ gerçek zamana yetişiyor`
+/ `⚠ segmentten yavaş` yazar — kurulumda bu satıra bak.
+
+**Event beslemesi olmayan kulüp senaryosu:** `/admin/matches/{id}/live-decision` eskiden
+event yoksa boş dönüyordu. Artık event yok ama kare varsa panel yalnız pozisyon
+verisiyle çalışır: `engine.tracking_signals` ardışık iki pencerenin şekil/pres farkından
+sinyal üretir (blok açıldı/sıkıştı, hat yükseldi/düştü, rakip daraldı, pres düştü) ve
+bunlar `context_pipeline` üzerinden birincil karara dönüşür. Doğrulandı: sıfır event'li
+video maçında panel *"Rakip 6 m daraldı — kanatlar boş, oyunu genişlet"* birincil
+kararını üretiyor (`tests/test_api_live_decision_tracking_only.py`).
+
+**Dürüstlük kuralı:** şekil sinyalleri yalnız **sürekli takipte** (video) üretilir.
+StatsBomb 360 kareleri event-çapalı ve topun çevresini gösterdiği için orada
+`continuous=False` geçilir → yalnız topa göreli pres sinyalleri çıkar. Aksi halde
+"hat 22 m yükseldi" gibi sahte sinyaller üretiliyordu. İki pencere arasında görünen
+oyuncu sayısı 2'den çok oynarsa şekil kıyaslanmaz.
+
+## Koç Karar Zekâsı (karar → ölçüm → kalibrasyon)
+
+Koçun maç-içi hamlesi işe yaradı mı, ve sistemin kendi güveni dürüst mü?
+
+**1. Karar etkisi** — `engine.decision_impact`: her kararın öncesi/sonrası penceresi
+(varsayılan 15 dk) xG farkı, xT, şut, gol ve saha eğimi üzerinden kıyaslanır. Pencereler
+maç sonuna kırpılır ve metrikler **dakika başına** normalize edilir (88. dakikadaki
+kararın 2 dakikalık sonrası, 15 dakikalık öncesiyle haksız kıyaslanmasın). Hüküm
+positive/negative/neutral/insufficient_data — ve **xG ile xT'nin aynı yöne gitmesi
+şartı** vardır, tek metrik yeter sayılmaz.
+
+- `GET /admin/matches/{id}/decisions/learning` — maçtaki kararların ölçümü
+- `POST /admin/matches/{id}/decisions/auto-outcome` — ölçümü `Decision.outcome`'a yazıp
+  geri besleme döngüsünü kapatır. Elle girilmiş sonuçlar korunur (oto kayıtlar `[oto]`
+  önekiyle ayrılır); `?overwrite_manual=true` ile ezilebilir.
+- `GET /admin/teams/{id}/decisions/track-record` — takım defteri, tip ve dakika bandı kırılımı
+
+**2. Karar kalitesi** — `GET /admin/teams/{id}/decisions/quality`: `engine.backtest`
+kalibrasyonu + öneri/koç kıyası. İki soruya bakar: sistem "%70 güvenle öner" dediğinde
+gerçekten %70 tutuyor mu, ve sistemin önerdiği kararlar koçun kendi aldıklarından iyi mi.
+
+> **Yanıttaki iki "isabet" karıştırılmamalı:** `confidence_calibration.accuracy` =
+> 0.5 eşiğinde sınıflandırma doğruluğu; `recommended_vs_own.*.hit_rate` = pozitif
+> çıkan karar oranı. Bu yüzden kalibrasyon tarafında `hit_rate` adı bilinçli
+> kullanılmıyor.
+
+Arayüz: **Karar Takip** sayfası (`/decisions/track`) → "Ölçülen Etki" bölümü.
+`DecisionTrackRecordCard` (defter), `DecisionQualityCard` (kalibrasyon çubukları +
+öneri vs koç), `MatchDecisionImpactCard` (maç kırılımı + "Ölç ve kaydet").
+
+**Sınır:** ölçüm vekildir, nedensellik kanıtı değil — karar sonrası pencerede skor
+durumu, kartlar ve rakibin hamlesi de etkilidir. Öneri/koç kıyası gözlemseldir (iki
+grup farklı maç durumlarında oluşur). Kalibrasyon n<20 iken yön göstergesi sayılmalı;
+kart bunu "yön göstergesi / anlamlı" etiketiyle açıkça yazar.
