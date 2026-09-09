@@ -374,6 +374,40 @@ class TrackingFrameRow(Base):
     )
 
 
+class TrackingIdentity(Base):
+    """Video takibi kimlik eşlemesi: sentetik takip id'si → gerçek oyuncu.
+
+    Video kaynağında oyuncular `30000 + track_id` sentetik id'siyle gelir; analist
+    Video Analiz ekranında takibi kadrodaki oyuncuya bağlar. /tracking kareleri
+    servis edilirken eşleme uygulanır (isim + gerçek id, identity_estimated=False).
+
+    Idempotent: (tenant, sport, match, track_player_external_id) tekil.
+    """
+
+    __tablename__ = "tracking_identities"
+    __table_args__ = (
+        UniqueConstraint(
+            "tenant_id", "sport", "match_external_id", "track_player_external_id",
+            name="uq_tracking_identity_unique",
+        ),
+        Index("ix_tracking_identity_match", "tenant_id", "sport", "match_external_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tenant_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
+    )
+    sport: Mapped[str] = mapped_column(String(32))
+    match_external_id: Mapped[int] = mapped_column(Integer)
+    track_player_external_id: Mapped[int] = mapped_column(Integer)
+    player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    player_name: Mapped[str] = mapped_column(String(120))
+    jersey_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_keeper: Mapped[bool] = mapped_column(Boolean, default=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class AssistantMemory(Base):
     """Manager asistanın takım/sezon-bazlı kalıcı hafızası.
 

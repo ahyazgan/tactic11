@@ -49,11 +49,11 @@ def test_tracking_data_source_is_abstract():
         TrackingDataSource()  # type: ignore[abstract]
 
 
-def test_engine_tracking_stubs_raise_until_faz_6():
-    with pytest.raises(NotImplementedError, match="Faz 6"):
-        compute_pressure(611, [])
-    with pytest.raises(NotImplementedError, match="Faz 6"):
-        compute_formation(611, [])
+def test_engine_tracking_pressure_and_formation_empty_input():
+    """Faz 6 stub'ları dolduruldu (engine v2): boş girdi → sıfır rapor, hata yok."""
+    assert compute_pressure(611, []).value.frames_used == 0
+    est = compute_formation(611, []).value
+    assert est.formation is None and est.frames_used == 0
 
 
 def _frame_with_ball_at(x: float) -> TrackingFrame:
@@ -105,8 +105,8 @@ def test_ball_zone_distribution_partitions_thirds():
     assert r.attacking_third_fraction == 0.3
 
 
-def test_ball_zone_distribution_v1_audit():
+def test_ball_zone_distribution_audit():
     r = compute_ball_zone_distribution([_frame_with_ball_at(20.0)])
-    assert r.audit.engine_version == "1"
+    assert r.audit.engine_version == "2"
     assert r.audit.metric == "ball_zone_distribution"
     assert "fractions" in r.audit.formula

@@ -32,8 +32,8 @@ const THEM = "var(--high)";
 const OPEN = "#d9b44a";
 const SCREENED = "#d45f5f";
 
-function shortId(p: { player_external_id: number; identity_estimated: boolean; name?: string | null }): string {
-  if (p.name) return p.name;
+function shortId(p: { player_external_id: number; identity_estimated: boolean; name?: string | null; jersey_number?: number | null }): string {
+  if (p.name) return p.jersey_number != null ? `${p.jersey_number} ${p.name}` : p.name;
   return (p.identity_estimated ? "~" : "#") + String(p.player_external_id).slice(-3);
 }
 

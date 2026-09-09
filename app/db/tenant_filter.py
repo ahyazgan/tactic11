@@ -28,6 +28,7 @@ _TENANT_MODELS = (
     models.ChatConversation, models.ChatMessage, models.ScoutWatchlist,
     models.EventRow, models.Decision, models.MatchSnapshot,
     models.DataAccessLog, models.PlayerMatchRating,
+    models.TrackingIdentity,
 )
 
 

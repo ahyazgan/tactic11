@@ -20,6 +20,8 @@ export interface TrackingPlayer {
   identity_estimated: boolean;
   velocity_mps?: number | null;
   name?: string | null;
+  jersey_number?: number | null;
+  track_player_external_id?: number | null;
 }
 
 export interface TrackingFrame {

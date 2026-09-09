@@ -63,6 +63,7 @@ def _serialize_meta(frame: TrackingFrame) -> str | None:
             "event_type": frame.event_type,
             "possession_team_external_id": frame.possession_team_external_id,
             "ball_estimated": frame.ball_estimated,
+            "ball_velocity_mps": frame.ball.velocity_mps if frame.ball else None,
             "visible_area": (
                 [list(pt) for pt in frame.visible_area]
                 if frame.visible_area is not None else None

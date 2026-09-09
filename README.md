@@ -429,3 +429,15 @@ oyuncu recall 0.99 / precision 0.99 / konum hatası 0.20 m / top (3 m) 0.71. Ağ
 
 Ortam değişkenleri: `TRACKING_DATA_DIR`, `TRACKING_WORKER_PYTHON`, `TRACKING_WEIGHTS`
 (`TRACKING_WORKER_CMD` testler için işçi stub'ı).
+
+**Kimlik eşleme:** video takibinde oyuncular `30000+track_id` sentetik id'siyle gelir.
+Video Analiz sayfasındaki *Kimlik eşleme* tablosunda takibi oyuncuya bağlarsın
+(`PUT /tracking/matches/{id}/identities`); kareler servis edilirken isim/forma uygulanır
+ve overlay'de `identity_estimated=false` olarak görünür. Takip listesi:
+`GET /tracking/matches/{id}/tracks` (kare sayısı, süre aralığı, ortalama hız, topla geçen
+kare, ortalama bölge — hangi takibin kim olduğunu ayırt etmeye yarar).
+
+**Takım şekli & pres:** `GET /tracking/matches/{id}/shape?minute=&window=` — `engine.tracking`
+(v2) pozisyon karelerinden genişlik / derinlik / kompaktlık / hat konumları / yerleşim
+tahmini ve rakip topa sahipken pres endeksi üretir. Kaynak ayırt edilmez (360 ya da video);
+kamera dışı oyuncular sayılmaz, bu yüzden yerleşim yalnız kadro görünür + tutarlıyken yazılır.

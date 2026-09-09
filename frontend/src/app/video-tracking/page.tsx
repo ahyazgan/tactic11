@@ -24,7 +24,9 @@ import {
   demoTrackingWindow,
 } from "@/lib/tracking-demo";
 import { ConsoleShell } from "../_console/shell";
+import { TrackIdentityPanel } from "../_console/track-identity-panel";
 import { TrackingOverlayCard } from "../_console/tracking-pitch";
+import { TrackingShapeCard } from "../_console/tracking-shape-card";
 import { VideoJobPanel } from "../_console/video-job-panel";
 
 interface TrackedMatch {
@@ -120,7 +122,7 @@ export default function VideoTrackingPage() {
   const framesPath = !DEMO_MODE && match
     ? `/tracking/matches/${match.match_id}/frames?from_minute=${Math.max(0, minute - windowMin)}&to_minute=${minute}&limit=150`
     : null;
-  const { data: framesData } = useSWR<{ frames: TrackingFrame[] }>(
+  const { data: framesData, mutate: refreshFrames } = useSWR<{ frames: TrackingFrame[] }>(
     framesPath, apiFetch, { revalidateOnFocus: false, shouldRetryOnError: false, keepPreviousData: true },
   );
   const frames = DEMO_MODE ? demoTrackingWindow(minute) : (framesData?.frames ?? []);
@@ -204,6 +206,12 @@ export default function VideoTrackingPage() {
       right={right}
     >
       <TrackingOverlayCard frame={frame} recent={frames} ourTeamId={ourTeamId} minute={minute} />
+      {!DEMO_MODE && match && (
+        <>
+          <TrackingShapeCard matchId={match.match_id} minute={minute} ourSide={side} windowMin={windowMin} />
+          {isVideo && <TrackIdentityPanel matchId={match.match_id} ourTeamId={ourTeamId} onSaved={() => { refreshFrames(); }} />}
+        </>
+      )}
     </ConsoleShell>
   );
 }
