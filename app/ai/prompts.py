@@ -371,18 +371,25 @@ def build_live_digest_prompt(
     current_minute: float, score: str,
 ) -> str:
     """Snapshot dict → AI prompt'u (TR brief için)."""
-    def _sub(key: str) -> dict[str, object]:
-        """Snapshot alt-sözlüğü; eksik/yanlış tipse boş sözlük.
+    def _dict(src: dict[str, object], key: str) -> dict[str, object]:
+        """Alt sözlük; eksik/yanlış tipse boş sözlük.
 
         Snapshot `dict[str, object]` olduğu için alt alanların sözlük olduğu
         garanti değil (motor hata döndürmüş olabilir). Tek yerde daraltılır.
         """
-        v = snapshot.get(key)
+        v = src.get(key)
         return v if isinstance(v, dict) else {}
 
+    def _list(src: dict[str, object], key: str) -> list[object]:
+        v = src.get(key)
+        return v if isinstance(v, list) else []
+
+    def _sub(key: str) -> dict[str, object]:
+        return _dict(snapshot, key)
+
     ctx = _sub("context")
-    primary = ctx.get("primary") or {}
-    secondary = ctx.get("secondary") or []
+    primary = _dict(ctx, "primary")
+    secondary = _list(ctx, "secondary")
     mom = _sub("momentum")
     closing = _sub("closing_strategy")
     fp = _sub("foul_pressure")
