@@ -37,6 +37,16 @@ class ConfidenceScore:
     score: float             # 0..1
     label: str               # "yüksek" | "orta" | "düşük"
     drivers: tuple[str, ...] = field(default_factory=tuple)
+    # SAYISAL sürücü kırılımı (0..1, ağırlık uygulanmadan önceki terimler).
+    #
+    # Neden gerekli: kalibrasyon "sistem fazla güvenli" diyebiliyordu ama HANGİ
+    # sürücünün yanılttığını söyleyemiyordu — çünkü kararla birlikte yalnız
+    # birleşik skor saklanıyordu (ölçüldü: 74 kararın hepsinde `context_json`
+    # boş). Atıf olmadan sinyal kalitesi iyileştirilemez: neyin işe yaradığını
+    # bilmeden ağırlık değiştirmek tahmindir.
+    #
+    # `drivers` insan içindir (metin); bu alan ÖLÇÜM içindir.
+    terms: dict[str, float] = field(default_factory=dict)
 
 
 def _clamp01(x: float) -> float:
@@ -91,4 +101,27 @@ def score_confidence(
             f"bu tip öneri geçmişte %{int(historical_hit_rate*100)} doğru çıktı"
         )
 
-    return ConfidenceScore(score=score, label=label, drivers=tuple(drivers))
+    return ConfidenceScore(
+        score=score, label=label, drivers=tuple(drivers),
+        terms={
+            # Birleşik HAM skor. Kalibrasyon `confidence` alanını olasılıkla
+            # değiştirdiği için ham değer başka yerde kalmıyor; atıf analizi
+            # "bütün, parçalarından iyi mi?" sorusunu ancak buna bakarak sorar.
+            "score": score,
+            "sample": round(sample_term, 3),
+            "magnitude": round(mag_term, 3),
+            "corroboration": round(corr_term, 3),
+            "quality": round(qual_term, 3),
+            "history": round(hist_term, 3),
+            # Ham girdiler de saklanır: terimler kırpılmış/dönüştürülmüş
+            # olduğu için geriye dönük analizde asıl değer gerekebilir
+            # (örn. corroboration 3 ile 9 aynı terime doyuyor).
+            "raw_sample_size": float(sample_size),
+            "raw_corroboration": float(corroboration),
+            # Ölçüldü (n=437): kararların YARISI magnitude 1.0'a kırpılmış
+            # geliyor — kırpma ayrım gücünü yok ediyor. Ham değer olmadan
+            # "eşiği 2 kat aşan ile 10 kat aşan" ayırt edilemez.
+            "raw_magnitude": float(magnitude),
+            "has_history": 0.0 if historical_hit_rate is None else 1.0,
+        },
+    )

@@ -63,6 +63,10 @@ class PrioritizedAction:
     rationale: str                 # çakışan sinyalleri birleştiren tek cümle
     drivers: tuple[str, ...] = field(default_factory=tuple)
     supporting_keys: tuple[str, ...] = field(default_factory=tuple)
+    # Güvenin SAYISAL kırılımı — kararla birlikte saklanır ki sonradan
+    # "hangi sürücü yanılttı" sorusu ölçülebilsin (bkz. engine.confidence).
+    confidence_terms: dict[str, float] = field(default_factory=dict)
+    signal_type: str = ""          # atıf analizinde tip bazlı kırılım için
 
 
 @dataclass(frozen=True)
@@ -130,6 +134,7 @@ def compute_context(
             candidate=boosted, quality=qv.score, quality_verdict=qv.verdict,
             quality_reason=qv.reason, confidence=conf.score,
             confidence_label=conf.label, confidence_drivers=conf.drivers,
+            confidence_terms=conf.terms,
         ))
 
     scored.sort(key=lambda s: s.priority, reverse=True)
@@ -170,6 +175,8 @@ def compute_context(
         confidence=top.confidence, confidence_label=top.confidence_label,
         priority=top.priority, rationale=rationale,
         drivers=top.confidence_drivers, supporting_keys=supporting_keys,
+        confidence_terms=top.confidence_terms,
+        signal_type=top.candidate.signal_type,
     )
 
     # ikincil: farklı temadaki sonraki sinyaller (her temadan en güçlü bir tane)
@@ -186,6 +193,8 @@ def compute_context(
             confidence_label=sc.confidence_label, priority=sc.priority,
             rationale=sc.candidate.headline, drivers=sc.confidence_drivers,
             supporting_keys=(sc.candidate.key,),
+            confidence_terms=sc.confidence_terms,
+            signal_type=sc.candidate.signal_type,
         ))
 
     one_liner = (
