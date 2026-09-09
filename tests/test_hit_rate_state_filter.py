@@ -85,3 +85,66 @@ def test_state_filter_skips_rows_with_no_context_json(session):
     out = _hit_rate(session, 11, score_state="leading")
     assert "tactical" in out
     assert out["tactical"] == 1.0  # sadece leading row sayıldı
+
+
+# --- sinyal tipine özel oran (ölçümle bulunan kusur) ----------------------- #
+
+def test_signal_type_rate_overrides_the_coarse_spread(session):
+    """ASIL KUSUR: kaba yayma zıt durumlara AYNI oranı veriyordu.
+
+    `_HITRATE_SPREAD` tek bir decision_type oranını "tactical, spatial,
+    matchup, momentum_us, momentum_opp"un HEPSİNE dağıtıyordu. Oysa gerçek
+    veride ölçüldü (n=437): momentum_opp %44 tutuyor, momentum_us %21.
+    Tek kovaya koymak bu farkı öğrenilemez kılıyordu — sistem zıt iki durumu
+    aynı güvenle sunuyordu.
+    """
+    session.info["tenant_id"] = "t-test"
+    kararlar = []
+    # momentum_opp: 12 karar, 9'u olumlu (%75)
+    for i in range(12):
+        kararlar.append({"type": "tactical_instruction", "match_id": 200 + i,
+                         "outcome": "positive" if i < 9 else "negative",
+                         "context": {"signal_type": "momentum_opp"}})
+    # momentum_us: 12 karar, 3'ü olumlu (%25)
+    for i in range(12):
+        kararlar.append({"type": "tactical_instruction", "match_id": 300 + i,
+                         "outcome": "positive" if i < 3 else "negative",
+                         "context": {"signal_type": "momentum_us"}})
+    _seed(session, team_id=11, decisions=kararlar)
+
+    out = _hit_rate(session, 11)
+    assert out["momentum_opp"] == 0.75
+    assert out["momentum_us"] == 0.25
+    # Kaba oran (24 kararın 12'si olumlu = %50) ince oranı EZMEMELİ
+    assert out["momentum_opp"] != out["momentum_us"]
+
+
+def test_thin_signal_type_keeps_the_coarse_rate(session):
+    """Az örnekte ince orana geçilmez: n=2'lik bir tip %0 der ve güveni uçurur."""
+    session.info["tenant_id"] = "t-test"
+    kararlar = [
+        {"type": "tactical_instruction", "match_id": 400,
+         "outcome": "negative", "context": {"signal_type": "momentum_us"}},
+        {"type": "tactical_instruction", "match_id": 401,
+         "outcome": "negative", "context": {"signal_type": "momentum_us"}},
+    ]
+    # kaba havuzu doldur (hepsi olumlu)
+    kararlar += [{"type": "tactical_instruction", "match_id": 500 + i,
+                  "outcome": "positive"} for i in range(8)]
+    _seed(session, team_id=11, decisions=kararlar)
+
+    out = _hit_rate(session, 11)
+    # 2 örnek eşiğin altında → %0 değil, kaba oran (8/10 = %80) korunur
+    assert out["momentum_us"] == 0.8
+
+
+def test_rows_without_signal_type_still_feed_the_coarse_rate(session):
+    """Eski kayıtlarda `signal_type` yok — geri besleme yine de çalışmalı."""
+    session.info["tenant_id"] = "t-test"
+    _seed(session, team_id=11, decisions=[
+        {"type": "tactical_instruction", "outcome": "positive", "match_id": 600},
+        {"type": "tactical_instruction", "outcome": "negative", "match_id": 601},
+    ])
+    out = _hit_rate(session, 11)
+    assert out["tactical"] == 0.5
+    assert out["momentum_us"] == 0.5    # kaba yayma yeni tiplere de ulaşır

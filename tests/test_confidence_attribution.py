@@ -13,6 +13,7 @@ from app.engine.confidence.attribution import (
     MIN_SAMPLES,
     attribute,
     attribute_driver,
+    attribute_stratified,
 )
 
 
@@ -98,3 +99,61 @@ def test_empty_input_is_honest() -> None:
     r = attribute([])
     assert r.n_decisions == 0
     assert r.headline == "ölçülmüş karar yok"
+
+
+# --- katmanlı ölçüm: karıştırıcıyı kontrol et ------------------------------ #
+
+def test_stratified_auc_removes_a_pure_confound() -> None:
+    """ASIL KUSUR: cetvel ortalamaya dönüş taşıyor.
+
+    Kurgu: sürücünün sonuçla HİÇ ilişkisi yok; sonucu belirleyen tamamen
+    karıştırıcı. Ama sürücü ile karıştırıcı ilişkili olduğu için HAM AUC
+    sürücüyü suçlu gösterir. Katmanlı ölçüm bunu temizlemeli.
+    """
+    samples = []
+    for i in range(80):
+        conf = i / 80.0                       # karıştırıcı
+        # Sonucu AĞIRLIKLI olarak karıştırıcı belirler (%75), sürücünün
+        # kendi katkısı YOK. Tam belirlenim kurmuyoruz: o zaman katmanlar tek
+        # sınıflı kalır ve ölçülecek bir şey kalmaz (ayrı test).
+        ok = (conf < 0.5) if (i % 4) else (conf >= 0.5)
+        samples.append((conf, ok, conf))      # sürücü = karıştırıcının kopyası
+    ham = attribute_driver("x", [v for v, o, _ in samples if o],
+                           [v for v, o, _ in samples if not o])
+    kat = attribute_stratified(samples, "x")
+    assert ham.verdict == "TERS", "kurgu gereği ham ölçüm suçlu göstermeli"
+    assert kat.verdict in {"ayırmıyor", "ayrıştırılamıyor"}, kat.note
+    assert kat.auc > ham.auc, "katmanlama yanlılığı azaltmalı"
+
+
+def test_perfect_confound_says_it_cannot_separate() -> None:
+    """Karıştırıcı sonucu TAM belirliyorsa dürüst cevap "ayıramıyorum"dur.
+
+    Ham hükme sessizce düşmek sürücüyü haksız yere suçlu gösterirdi.
+    """
+    samples = [(i / 60.0, i / 60.0 < 0.5, i / 60.0) for i in range(60)]
+    kat = attribute_stratified(samples, "x")
+    assert kat.verdict == "ayrıştırılamıyor"
+    assert kat.auc == 0.5
+    assert "ÖLÇÜLEMEZ" in kat.note
+
+
+def test_stratified_keeps_a_real_effect() -> None:
+    """Gerçek etki katmanlama SONRASI da görünmeli — yoksa yöntem körleştirir."""
+    samples = []
+    for i in range(80):
+        # Karıştırıcı, sürücüden BAĞIMSIZ olmalı: her katmanda iki sınıf da
+        # bulunsun. (i // 2) kullanınca ardışık çift/tek aynı katmana düşer.
+        conf = (i // 2 % 5) / 5.0
+        gercek = 0.9 if i % 2 == 0 else 0.1   # sürücü sonucu GERÇEKTEN belirliyor
+        samples.append((gercek, i % 2 == 0, conf))
+    kat = attribute_stratified(samples, "x")
+    assert kat.verdict == "ayırıyor"
+    assert kat.auc > 0.9
+
+
+def test_stratified_falls_back_on_thin_data() -> None:
+    """Az örnekte katmanlama gürültü üretir; ham ölçüme düşülür."""
+    samples = [(0.9, True, 0.1), (0.1, False, 0.9)]
+    kat = attribute_stratified(samples, "x")
+    assert kat.verdict == "yetersiz veri"

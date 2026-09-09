@@ -32,11 +32,17 @@ _URGENCY_BY_LEVEL = {"high": 0.9, "medium": 0.6, "low": 0.35}
 # 280'i (%96) "tactical" tipinde ve bu anahtar burada YOKTU — yani geri
 # besleme döngüsü sessizce ölüydü, `historical_hit_rate` hiç dolmuyordu
 # (sürücü karnesinde `has_history` her kararda 0.000 çıktı).
+_TACTICAL_TYPES = ("tactical", "spatial", "matchup", "momentum_us", "momentum_opp")
+# Sinyal tipine özel geçmiş isabet oranı için gereken en az ölçülmüş karar.
+# Altında kaba (decision_type) oran korunur: n=2'lik bir tip %0 ya da %100 der
+# ve güveni uçurur.
+MIN_SIGNAL_TYPE_SAMPLES = 12
+
 _HITRATE_SPREAD = {
     "substitution": ("substitution", "risk"),
-    "formation_change": ("tactical", "spatial", "matchup"),
-    "tactical_instruction": ("tactical", "spatial", "matchup"),
-    "tactical": ("tactical", "spatial", "matchup"),
+    "formation_change": _TACTICAL_TYPES,
+    "tactical_instruction": _TACTICAL_TYPES,
+    "tactical": _TACTICAL_TYPES,
 }
 
 
@@ -50,6 +56,21 @@ def _win_counts(p: list, d: list, s: list, current_minute: float,
     }
 
 
+def _soft_saturate(x: float, *, half: float = 1.0) -> float:
+    """Sınırsız bir büyüklüğü [0,1)'e SIRALAMAYI KORUYARAK sıkıştır.
+
+    `min(1.0, x)` sert kırpması "eşiği biraz aşan" ile "eşiği katbekat aşan"ı
+    aynı sayıya indiriyordu. Ölçüldü (n=437): kararların %64'ü magnitude
+    1.00'da toplanmıştı ve o grubun olumsuz sonuç oranı iki katıydı — yani
+    ayırt edecek bilgi tam da kırpmada yok oluyordu.
+
+    x/(x+half): x=0 → 0, x=half → 0.5, x=2·half → 0.667, x→∞ → 1.
+    Monotondur; büyük değerler birbirinden ayrılabilir kalır.
+    """
+    x = max(0.0, x)
+    return x / (x + half) if half > 0 else 0.0
+
+
 def build_candidates(
     out: dict[str, Any], *, current_minute: float, win: dict[str, int],
 ) -> list[CandidateSignal]:
@@ -60,20 +81,42 @@ def build_candidates(
     def _is_dict(x: object) -> TypeGuard[dict[str, Any]]:
         return isinstance(x, dict) and "error" not in x
 
-    # momentum (tactical)
+    # momentum — YÖNE GÖRE AYRI SİNYAL TİPİ
+    #
+    # Eskiden tek tip ("tactical") ve `magnitude=min(1.0, abs(ms))` idi. İki
+    # ayrı kusur vardı, ikisi de gerçek veriyle ölçüldü (n=437):
+    #
+    # 1. `abs()` YÖNÜ SİLİYORDU. "Momentum bizde" ile "Rakip baskı kuruyor"
+    #    aynı magnitude'ü ve aynı güveni alıyordu — oysa sonuçları taban
+    #    tabana zıt:
+    #        biz baskın  (n=314): %21 olumlu, %39 olumsuz, xG farkı -0.011
+    #        rakip baskın (n= 75): %44 olumlu, %5  olumsuz, xG farkı +0.037
+    #    Ayrı tip verilince geçmiş isabet oranı (`historical_hit_rate`) ikisini
+    #    ayrı öğrenebiliyor. Zıt durumlar zıt tavsiye ister; tek kovaya
+    #    koymak öğrenmeyi imkânsız kılıyordu.
+    #
+    # 2. SERT KIRPMA doygunluk yaratıyordu: kararların %64'ü magnitude 1.00'da
+    #    toplanıyordu ve o grubun olumsuz oranı iki katıydı. Artık kırpılmamış
+    #    `momentum_raw` yumuşak doyumla (x/(1+x)) sıkıştırılıyor: 1.2 ile 5.0
+    #    artık farklı değerler alıyor, sıralama korunuyor.
     m = out.get("momentum")
     if _is_dict(m):
         ms = float(m.get("momentum_score", 0.0))
+        raw_ms = float(m.get("momentum_raw", ms))
         pb = bool(m.get("press_breaking"))
         xg = bool(m.get("xg_swing_alert"))
         holder = m.get("momentum_holder", "balanced")
         fired = holder != "balanced" or pb or xg
         urgency = min(1.0, abs(ms) + (0.3 if pb else 0.0) + (0.3 if xg else 0.0))
         cands.append(CandidateSignal(
-            key="momentum", signal_type="tactical",
+            key="momentum",
+            signal_type=("momentum_us" if holder == "us"
+                         else "momentum_opp" if holder == "opponent"
+                         else "tactical"),
             headline=m.get("alert_text", "Momentum sinyali"),
             urgency=urgency, fired=fired, minute=current_minute,
-            sample_size=win["defs"] + win["shots"], magnitude=min(1.0, abs(ms)),
+            sample_size=win["defs"] + win["shots"],
+            magnitude=_soft_saturate(abs(raw_ms)),
         ))
 
     # sub_timing (substitution)
@@ -445,26 +488,46 @@ def _hit_rate(
             models.Decision.outcome.in_(("positive", "negative")),
         )
     ).scalars().all()
-    by_type: dict[str, list[int]] = {}
+    by_type: dict[str, list[int]] = {}          # decision_type → sonuçlar (kaba)
+    by_signal: dict[str, list[int]] = {}        # signal_type → sonuçlar (ince)
     for r in rows:
-        if score_state is not None:
+        ctx: dict = {}
+        if r.context_json:
             try:
-                ctx = _json.loads(r.context_json) if r.context_json else {}
+                loaded = _json.loads(r.context_json)
+                ctx = loaded if isinstance(loaded, dict) else {}
             except (ValueError, TypeError):
                 ctx = {}
-            row_state = ctx.get("score_state") if isinstance(ctx, dict) else None
-            if row_state != score_state:
-                continue
-        by_type.setdefault(r.decision_type, []).append(
-            1 if r.outcome == "positive" else 0
-        )
+        if score_state is not None and ctx.get("score_state") != score_state:
+            continue
+        ok = 1 if r.outcome == "positive" else 0
+        by_type.setdefault(r.decision_type, []).append(ok)
+        # Kararla birlikte SİNYAL TİPİ saklandıysa ince kırılım da birikir.
+        sig = ctx.get("signal_type")
+        if isinstance(sig, str) and sig:
+            by_signal.setdefault(sig, []).append(ok)
+
+    # Önce kaba oran: decision_type'ın oranı ilgili tüm sinyal tiplerine yayılır.
     out: dict[str, float] = {}
     for dtype, results in by_type.items():
         if not results:
             continue
         rate = sum(results) / len(results)
-        for sig_type in _HITRATE_SPREAD.get(dtype, ()):  # noqa: B007
+        for sig_type in _HITRATE_SPREAD.get(dtype, ()):
             out[sig_type] = rate
+
+    # Sonra İNCE oran kaba oranı EZER — yeterli örnek varsa.
+    #
+    # Neden gerekli: kaba yayma tek bir oranı "tactical, spatial, matchup,
+    # momentum_us, momentum_opp"un HEPSİNE veriyordu. Oysa ölçüldü (n=437):
+    # momentum_opp %44 tutuyor, momentum_us %21. Tek kovaya koymak bu farkı
+    # öğrenilemez kılıyor — sistem zıt iki durumu aynı güvenle sunuyordu.
+    #
+    # Az örnekte ince orana geçilmez: n=2'lik bir tip %0 ya da %100 der ve
+    # güveni uçurur. Eşiğin altında kaba oran korunur.
+    for sig_type, results in by_signal.items():
+        if len(results) >= MIN_SIGNAL_TYPE_SAMPLES:
+            out[sig_type] = sum(results) / len(results)
     return out
 
 

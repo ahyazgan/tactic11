@@ -209,6 +209,23 @@ def seed(args: argparse.Namespace) -> int:
     return 0
 
 
+def _ekle_baglam(row, yeni: dict) -> None:
+    """Karar satırının `context_json`'ına alan ekle (var olanı KORUYARAK).
+
+    Üzerine yazmak `confidence_terms`/`signal_type`'ı silerdi ve sürücü
+    karnesi bir daha çalışmazdı.
+    """
+    mevcut: dict = {}
+    if row.context_json:
+        try:
+            yuk = json.loads(row.context_json)
+            mevcut = yuk if isinstance(yuk, dict) else {}
+        except (ValueError, TypeError):
+            mevcut = {}
+    mevcut.update(yeni)
+    row.context_json = json.dumps(mevcut, ensure_ascii=False)
+
+
 def _karar_tipi(theme: str | None) -> str:
     """Tema → API'nin kabul ettiği KANONİK karar tipi.
 
@@ -262,8 +279,18 @@ def score(args: argparse.Namespace) -> int:
                     yetersiz += 1
                     continue
                 row.outcome = imp.verdict
-                # admin.decisions_auto_outcome ile AYNI alanlar yazılmalı;
-                # farklı yazarsak külliyat ile ürünün ölçtüğü şey ayrışır.
+                # KARAR ÖNCESİ durumu da sakla — ortalamaya dönüş kontrolü için.
+                #
+                # Ölçüldü (n=502): cetvel `post - pre` olduğu için, iyi giderken
+                # verilen kararlar sistematik olarak cezalandırılıyor, kötü
+                # giderken verilenler ödüllendiriliyor. Eğimler ZIT işaretli:
+                # momentum_us -0.126, momentum_opp +0.030. Bu öneri kalitesi
+                # değil, regresyon. Öncesini kaydetmeden düzeltilemez.
+                _ekle_baglam(row, {
+                    "pre_xg_diff": round(imp.pre.xg_diff, 5),
+                    "pre_xt": round(imp.pre.xt, 5),
+                    "post_xg_diff": round(imp.post.xg_diff, 5),
+                })
                 row.outcome_value = imp.xg_diff_delta
                 row.outcome_notes = f"[oto] {imp.verdict_reason}"[:512]
                 row.outcome_recorded_at = datetime.now(UTC)
@@ -271,6 +298,51 @@ def score(args: argparse.Namespace) -> int:
         s.commit()
     print(f"sonuç yazıldı: {yazilan} · ölçülemedi: {yetersiz}")
     return 0
+
+
+def _katmanli_rapor(rows) -> None:
+    """Ortalamaya dönüş kontrol edilerek sürücü karnesi.
+
+    Ham AUC, cetvelin yanlılığını sürücüye yükler: `sonraki - önceki` farkı
+    iyi giderken verilen kararı cezalandırır. Karar öncesi durumu (pre_xg_diff)
+    katman değişkeni yapıp AUC'yi katman İÇİNDE hesaplarsak geriye sürücünün
+    kendi katkısı kalır.
+    """
+    from app.engine.confidence.attribution import attribute_stratified
+
+    veri: dict[str, list[tuple[float, bool, float]]] = {}
+    for d in rows:
+        if not d.context_json or d.outcome not in {"positive", "negative"}:
+            continue
+        try:
+            ctx = json.loads(d.context_json)
+        except (ValueError, TypeError):
+            continue
+        pre = ctx.get("pre_xg_diff")
+        terms = ctx.get("confidence_terms") or {}
+        if pre is None or not terms:
+            continue
+        for k, v in terms.items():
+            if isinstance(v, (int, float)):
+                veri.setdefault(k, []).append(
+                    (float(v), d.outcome == "positive", float(pre)))
+
+    if not veri:
+        print("  (katmanlı ölçüm için karar öncesi durum kaydı yok — "
+              "`score` komutunu yeniden çalıştır)\n")
+        return
+
+    print("  KARIŞTIRICI KONTROLLÜ (karar öncesi xG farkına göre katmanlı)")
+    print(f"  {'sürücü':<18}{'ham':>6}{'katmanlı':>10}  hüküm")
+    print("  " + "-" * 60)
+    for k, v in sorted(veri.items(), key=lambda kv: -len(kv[1])):
+        kat = attribute_stratified(v, k)
+        ham_p = [x for x, ok, _ in v if ok]
+        ham_n = [x for x, ok, _ in v if not ok]
+        from app.engine.confidence.attribution import attribute_driver
+        ham = attribute_driver(k, ham_p, ham_n)
+        print(f"  {k:<18}{ham.auc:>6.2f}{kat.auc:>10.2f}  {kat.verdict}")
+    print()
 
 
 def report(args: argparse.Namespace) -> int:
@@ -311,6 +383,7 @@ def report(args: argparse.Namespace) -> int:
 
     rep = attribute(samples)
     print(f"  {rep.headline}\n")
+    _katmanli_rapor(rows)
     print(f"  {'sürücü':<18}{'AUC':>6}{'fark':>9}{'olumlu':>9}{'olumsuz':>9}  hüküm")
     print("  " + "-" * 74)
     for d in rep.drivers:
