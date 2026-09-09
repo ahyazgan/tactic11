@@ -44,6 +44,9 @@ class ScoredSignal:
     confidence: float        # 0..1 — güven skoru
     confidence_label: str    # "yüksek" | "orta" | "düşük"
     confidence_drivers: tuple[str, ...] = field(default_factory=tuple)
+    # Güvenin sayısal kırılımı (engine.confidence `terms`). Kararla birlikte
+    # saklanır ki "hangi sürücü yanılttı" sorusu sonradan ÖLÇÜLEBİLSİN.
+    confidence_terms: dict[str, float] = field(default_factory=dict)
 
     @property
     def priority(self) -> float:
