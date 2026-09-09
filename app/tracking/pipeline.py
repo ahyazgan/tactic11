@@ -49,6 +49,10 @@ class PipelineConfig:
     ball_gap_seconds: float = 1.0   # bu kadar boşluk enterpole edilir
     clip_offset_minutes: float = 0.0
     period: int = 1
+    # Karelere yazılacak kaynak etiketi. Kamera hareketliyse (yayın) buraya
+    # "broadcast_tracking" gelir ve motorlar kareleri top-merkezli sayar —
+    # sabit homografi geçersiz olduğu için şekil/bölge analizi kapanır.
+    source_name: str = "video_tracking"
     preview_path: str | None = None
     preview_width: int = 1600
 
@@ -311,6 +315,7 @@ def build_frames(
             players=players, ball=ball, home_team_id=home_team_id, away_team_id=away_team_id,
             period=cfg.period, clip_offset_minutes=cfg.clip_offset_minutes,
             ball_estimated=(s.ball_source == "interp"),
+            source_name=cfg.source_name,
         )
         if fr is not None:
             out.append(fr)

@@ -20,6 +20,7 @@ import time
 from pathlib import Path
 
 from app.tracking.calibration import PitchCalibration
+from app.tracking.camera import BROADCAST_SOURCE, STATIC_SOURCE, analyze_video
 from app.tracking.detect import DetectorConfig
 from app.tracking.frames import frames_to_json
 from app.tracking.pipeline import PipelineConfig, process_video, video_info
@@ -45,6 +46,10 @@ def main() -> int:
     p.add_argument("--clip-offset-minutes", type=float, default=0.0, help="Klibin maç dakikası başlangıcı")
     p.add_argument("--period", type=int, default=1)
     p.add_argument("--preview", default=None, help="Etiketli önizleme mp4 yolu")
+    p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast"],
+                   help="Kamera davranışı: auto=videodan tespit et (varsayılan), "
+                        "static=sabit kamera (tam analiz), broadcast=hareketli/yayın "
+                        "(top-merkezli, şekil ve bölge analizi kapalı)")
     args = p.parse_args()
 
     calib = PitchCalibration.load(args.calibration)
@@ -52,7 +57,19 @@ def main() -> int:
     print(f"video: {Path(args.video).name} {info['width']}x{info['height']} @{info['fps']:.2f}fps {info['frames']} kare")
     print(f"kalibrasyon: {len(calib.points)} nokta · geri-izdüşüm hatası ~{calib.reprojection_error_m:.2f} m")
 
+    # Kamera sabit mi? Sabit homografi yalnız sabit kamerada geçerlidir; kamera
+    # çeviriyorsa oyuncular sahada kaymış görünür ve sahte taktik sinyal çıkar
+    # (100 px kayma ≈ 3.6 m, sinyal eşikleri 2.5-4 m). Bkz. app/tracking/camera.py
+    if args.camera == "auto":
+        verdict = analyze_video(args.video)
+        print(f"kamera: {verdict.kind} · {verdict.note}")
+        source_name = verdict.source_name
+    else:
+        source_name = STATIC_SOURCE if args.camera == "static" else BROADCAST_SOURCE
+        print(f"kamera: {args.camera} (elle verildi) → kaynak {source_name}")
+
     cfg = PipelineConfig(
+        source_name=source_name,
         fps_out=args.fps, track_fps=args.track_fps, max_seconds=args.max_seconds,
         detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution, weights=args.weights),
         clip_offset_minutes=args.clip_offset_minutes, period=args.period,
@@ -63,7 +80,7 @@ def main() -> int:
         args.video, calib, match_id=args.match_id,
         home_team_id=args.home_team, away_team_id=args.away_team, cfg=cfg,
     )
-    payload = frames_to_json(frames, match_id=args.match_id, extra={
+    payload = frames_to_json(frames, match_id=args.match_id, source_name=source_name, extra={
         "video": Path(args.video).name, "video_info": info,
         "home_team_external_id": args.home_team, "away_team_external_id": args.away_team,
         "config": {"fps": args.fps, "track_fps": args.track_fps, "model": args.model, "tiles": args.tiles, "threshold": args.threshold, "weights": args.weights},

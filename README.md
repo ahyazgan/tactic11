@@ -653,3 +653,50 @@ fark şekil sinyallerini ezmemelidir.
 **Mevcut demo klibinde çalışmaz** — TeamTrack drone klibi sahanın orta bandını
 gösteriyor, kaleciler kadraja girmiyor, yön çıkarılamıyor. Motor bunu sessizce
 uydurmak yerine sebebi yazıyor. Kulübün tam saha gören taktik kamerasında çalışır.
+
+### Yayın kamerası (TV) — neden ayrı bir sorun, ne yapılıyor
+
+Takip hattı **tek ve sabit** bir homografi kullanır: kalibrasyon bir kez yapılır, her
+karede aynı matrisle piksel → saha metresi çevrilir. Bu yalnız kamera hiç oynamıyorsa
+doğrudur. Ölçüldü (4K, gerçek kalibrasyon):
+
+| kamera kayması | oyuncunun sahada kayması |
+|---|---|
+| 30 px | 1.1 m |
+| 100 px | 3.6 m |
+
+`engine.tracking_signals` eşikleri 2.5–4 m. Yani **kamera hareketi tek başına sahte
+taktik sinyal üretir**: "geri hat 4 m yükseldi" der, oysa hat yerinde durmuş, kamera
+kaymıştır. Yayın kamerası saniyede yüzlerce piksel çevirir.
+
+**Koruma:** `app/tracking/camera.py` videoyu işlemeden önce kameraya bakar. İki ardışık
+örnek kare arasında faz korelasyonu global kaymayı ve tutarlılığını, histogram uzaklığı
+içerik değişimini verir. Ayrım şu: hızlı bir **çevirme** de histogramı çok değiştirir
+ama kayması tutarlıdır; **kesmede** tutarlılık yoktur.
+
+| hüküm | kaynak etiketi | sonuç |
+|---|---|---|
+| `static` | `video_tracking` | sabit homografi geçerli → tam analiz (şekil + bölge) açık |
+| `panning` | `broadcast_tracking` | tek çekim ama kamera çeviriyor → top-merkezli |
+| `broadcast` | `broadcast_tracking` | kesme + hareket → top-merkezli |
+| `unknown` | `broadcast_tracking` | analiz yapılamadı → güvenli tarafta kısıtlı |
+
+Etiket kareye yazılır, ingest'te `meta_json.source` olarak saklanır ve motorlara kadar
+gider: `broadcast_tracking` kareler **StatsBomb 360 freeze-frame'lerle aynı sınıf**
+sayılır (top-merkezli), şekil ve bölge analizi kapanır, yalnız topa göreli sinyaller
+üretilir. `scripts/track_video.py --camera auto|static|broadcast` ile elle de verilebilir.
+
+Gerçek veriyle doğrulandı: TeamTrack drone klibi → `static` (ortalama 0.02 px hareket);
+aynı klipten üretilen çevirmeli/zoomlu yayın taklidi → `panning` (%96 hareket, ortalama
+36.7 px) → tam analiz kapatıldı.
+
+**Bilinen sınır:** kesme tespiti sahne değişimine (kalabalık, yakın çekim, replay)
+göre ayarlıdır; aynı sahneye sert zoom "hareket" olarak okunur. Sonuç yine güvenli
+taraftır (kısıtlı mod), ama kesme sayısı olduğundan az raporlanabilir. Eşikler gerçek
+yayın görüntüsüyle ayarlanmalıdır.
+
+**TV yayınından tam saha analizi istiyorsanız** gereken şey bellidir ve bu sürümde
+YOKTUR: **kare başına kalibrasyon** — her karede saha çizgilerini (taç, ceza sahası,
+orta yuvarlak) tespit edip homografiyi yeniden hesaplamak; ayrıca kesme tespiti,
+replay ayıklama ve çekim sınıflandırma (ana kamera mı, yakın çekim mi). Bunlar
+olmadan TV yayınından çıkarılabilecek dürüst sonuç **topun çevresiyle sınırlıdır**.
