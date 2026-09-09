@@ -116,8 +116,12 @@ def score_homography(
 _PITCH_CORNERS = pitch_corners()
 
 
-def _homography_from_corners(corners_px: np.ndarray) -> np.ndarray | None:
+def homography_from_corners(corners_px: np.ndarray) -> np.ndarray | None:
     """Görüntüdeki 4 köşeden homografi (görüntü → saha) — hızlı kapalı form.
+
+    `corners_from_homography` ile çift oluşturur: biri homografiden köşeleri,
+    diğeri köşelerden homografiyi verir. İkisi de kalibrasyon takibinin
+    parametreleştirmesidir, bu yüzden ikisi de açık API'dir.
 
     Tam 4 eşleşmede homografi tek türlü belirlidir; genel DLT'nin (Hartley
     normalizasyonu + SVD) gerekmediği yer burasıdır. h33=1 alınıp 8 bilinmeyenli
@@ -212,7 +216,7 @@ def refine_homography(
         candidate = None
         for move in _moves(step):
             trial = move(corners)
-            h_trial = _homography_from_corners(trial)
+            h_trial = homography_from_corners(trial)
             if h_trial is None:
                 continue
             s, inl, vis = score_homography(
@@ -297,6 +301,20 @@ def mirrored_homography(h_img_to_pitch: np.ndarray) -> np.ndarray:
 
 @dataclass(frozen=True)
 class AnchorResult:
+    """Çapa arama sonucu.
+
+    Garantiler:
+    - `accepted` False ise `homography` None'dır ve `note` sebebi söyler.
+      Hiçbir koşulda uydurma homografi DÖNMEZ.
+    - Bir oturma hesaplanabildiyse `fit` doludur ve `mirror_homography` onun
+      180° ikizidir — operatöre iki seçenek sunulabilsin diye.
+
+    NOT: bu bir ÖNERİ aracıdır, otomatik kalibrasyon değil. Ölçüldü — tam saha
+    görünen bir sahnede %90 inlier alan bir öneri 24 m yanlış olabiliyor. Öneri
+    mutlaka insan tarafından (önizleme görüntüsüyle) doğrulanmalıdır; bkz.
+    scripts/propose_calibration.py.
+    """
+
     homography: np.ndarray | None
     fit: FitResult | None
     candidates_scored: int
@@ -403,24 +421,28 @@ def find_anchor(
             None, best, len(cands), runner_up, False,
             f"kadrajda ayırt edici yapı yok (ceza sahası/orta yuvarlak: "
             f"{lm_visible} nokta) — yalnız paralel çizgiyle çapa kurulamaz",
+           mirror_homography=mirrored_homography(best.homography),
         )
     if lm_inlier < ANCHOR_MIN_LANDMARK_INLIER:
         return AnchorResult(
             None, best, len(cands), runner_up, False,
             f"ayırt edici yapılar oturmadı (inlier %{lm_inlier * 100:.0f}) — "
             f"çapa üretilmedi",
+           mirror_homography=mirrored_homography(best.homography),
         )
     if best.inlier_ratio < ANCHOR_MIN_INLIER:
         return AnchorResult(
             None, best, len(cands), runner_up, False,
             f"çapa oturması zayıf (inlier %{best.inlier_ratio * 100:.0f} < "
             f"%{ANCHOR_MIN_INLIER * 100:.0f}) — çapa üretilmedi",
+           mirror_homography=mirrored_homography(best.homography),
         )
     if runner_up > 0.0 and best.score < runner_up * ANCHOR_WIN_MARGIN:
         return AnchorResult(
             None, best, len(cands), runner_up, False,
             f"sahne belirsiz: en iyi aday ({best.score:.3f}) farklı bir duruşu "
             f"({runner_up:.3f}) belirgin geçemedi — çapa üretilmedi",
+           mirror_homography=mirrored_homography(best.homography),
         )
     mirror = mirrored_homography(best.homography)
     if hint_homography is None:

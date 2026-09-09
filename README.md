@@ -714,16 +714,36 @@ köşesinin görüntüdeki konumu** kullanılır — hepsi piksel biriminde, geo
 anlamlı. Arama hamleleri gerçek kamera hareketlerine karşılık gelir: öteleme (pan),
 ölçek (zoom), tek köşe (perspektif).
 
-**Ölçülen doğruluk** (gerçek 4K klipten üretilmiş pan+zoom, 1900 px gezinme, saha
-gerçeği bilinen):
+**Ölçülen doğruluk.** Sayılar `scripts/bench_calibration.py` ile üretilir —
+iddiaların hepsi tekrar koşturulabilir:
+
+```bash
+# 1) Ölçüm videosu + saha gerçeği üret (bir kez)
+venv-cv\Scripts\python.exe -m scripts.bench_calibration make ^
+    --source data/tracking/live/seg_0000.mp4 ^
+    --calibration data/tracking/calibrations/saha.json ^
+    --out-dir data/tracking/bench
+
+# 2) Tabloyu üret
+venv-cv\Scripts\python.exe -m scripts.bench_calibration table ^
+    --bench-dir data/tracking/bench --frames 50
+```
+
+Yöntem: sabit kameralı bir klipten kırpma penceresi gezdirilerek pan+zoom taklidi
+üretilir (1900 px gezinme + zoom salınımı). Kırpma parametreleri bilindiği için her
+karenin **gerçek** homografisi analitik hesaplanır; hata metre cinsinden ölçülür.
 
 | yöntem | ortalama hata | en kötü | kalibre kare |
 |---|---|---|---|
-| sabit homografi (eski) | **~21 m** | 34 m | — |
-| kare başına, her kare | **0.09 m** | 0.27 m | %100 |
-| kare başına, her 2. kare | 0.12 m | 0.79 m | %100 |
-| kare başına, her 3. kare | 0.19 m | 0.89 m | %100 |
-| kare başına, her 5. kare | — | — | %1 (reddediyor) |
+| sabit homografi (eski davranış) | **16.11 m** | 28.87 m | — |
+| kare başına, her kare | **0.12 m** | 0.29 m | %100 |
+| kare başına, her 2. kare | 0.11 m | 0.24 m | %100 |
+| kare başına, her 3. kare | 0.09 m | 0.24 m | %100 |
+| kare başına, her 5. kare | — | — | **%2 (reddediyor)** |
+
+> Sentetik hareket düzgündür (gerçek kameramanın ani düzeltmeleri yoktur) ve
+> sıkıştırma bozulmaları azdır — bu sayılar **iyimser taraftadır** ve gerçek yayın
+> görüntüsünde doğrulanması gerekir.
 
 **`--track-fps 15` şart.** Kalibrasyon kamerayı ancak ardışık örnekler yakınsa takip
 eder; 30 fps kaynakta her 3. kareye kadar sorunsuz, her 5. karede kopuyor. `track-fps 5`
@@ -782,11 +802,15 @@ alan bir çapa 47 m yanlıştı**. Bu yüzden:
 | + görüntüyü 0.75 ölçekte işleme | 42 ms | 0.08 m |
 | + aramada model noktası aralığı 1.5 m | **39 ms** | 0.11 m |
 
+Son hâl `bench_calibration table` çıktısında: ölçek 1.0 → 50.6 ms, ölçek 0.75 →
+**39.2 ms** (hata 0.11 m), ölçek 0.5 → 47.1 ms ama hata 1.50 m.
+
 25 fps için bütçe 40 ms → **gerçek zamanlı kalibrasyon mümkün**. Darboğaz skorlama
 değil, her denemede yapılan homografi çözümüydü: 4 nokta için genel DLT'nin (Hartley
 normalizasyonu + SVD) gereği yok, `h33=1` alıp 8×8 doğrusal sistem çözmek **3.9 kat**
 hızlı ve sonuç birebir aynı (fark 8e-14).
 
-**0.5 ölçeğin altına inmeyin:** hata 0.08 m'den 3.8 m'ye fırlıyor. Sebep tolerans değil
-(ölçeğe bağlandı, düzelmedi) — çizgi çıkarmanın morfolojik filtresi 720p'ye göre
-ayarlı; daha küçük görüntüde ince çizgileri kaçırıyor.
+**0.5 ölçeğin altına inmeyin:** hata 0.11 m'den 1.50 m'ye (en kötü 6.59 m) çıkıyor ve
+üstelik daha da yavaşlıyor (47 ms), çünkü kötü oturma daha çok iterasyon gerektiriyor.
+Sebep tolerans değil (ölçeğe bağlandı, düzelmedi) — çizgi çıkarmanın morfolojik filtresi
+720p'ye göre ayarlı; daha küçük görüntüde ince çizgileri kaçırıyor.

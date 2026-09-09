@@ -28,8 +28,8 @@ from app.tracking.calibration import PitchCalibration
 from app.tracking.homography_fit import (
     DEFAULT_TOLERANCE_PX,
     FitResult,
-    _homography_from_corners,
     corners_from_homography,
+    homography_from_corners,
     refine_homography,
 )
 
@@ -214,7 +214,7 @@ class PerFrameCalibrator:
             return None
         if self._last_jump_m < self.PREDICT_MIN_MOTION_M:
             return None             # kamera yavaş — tahmine gerek yok
-        return _homography_from_corners(
+        return homography_from_corners(
             self._last_corners + (self._last_corners - self._prev_corners),
         )
 
