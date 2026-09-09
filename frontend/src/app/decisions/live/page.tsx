@@ -92,6 +92,14 @@ interface ContextPrimary {
   urgency?: number; confidence?: number; confidence_label?: string;
   rationale?: string;
   drivers?: string[];   // confidence engine açıklamaları: sample, magnitude, history vb.
+  // Kalibrasyondan ÖNCEKİ ham kanıt gücü. `confidence` kalibrasyon sonrası
+  // olasılık olabildiği için ikisi farklı sorulardır: "elimde ne kadar kanıt
+  // var" ile "bu karar tutar mı".
+  evidence?: number;
+  // Kalibrasyonun kendi hükmü. Eşleme ayırt etmiyorsa burada bunu söyler ve
+  // arayüz kesin bir yüzde GÖSTERMEMELİDİR — ölçüldü (n=513): kanıt seviyesi
+  // sonucu ayırt etmiyor, gösterilen sayı takımın taban oranı.
+  calibration_note?: string;
 }
 interface ContextDecision {
   one_liner?: string;
@@ -466,6 +474,65 @@ function ClipModal({
   );
 }
 
+/** Güven rozeti — ölçülmüş gerçeğe göre davranır.
+ *
+ * NEDEN BÖYLE: Backend'in kalibrasyonu kendi geçmişinden öğreniyor ve
+ * 513 ölçülmüş kararda ŞUNU BULDU — kanıt seviyesi sonucu ayırt etmiyor
+ * (AUC 0.51), izotonik regresyon tüm binleri taban orana çöktürüyor. Yani
+ * "güven: yüksek (%88)" yazmak, kendi ölçümümüzün yalanladığı bir kesinlik
+ * satmaktır. Koç sisteme bir kez yalan söylettiyse bir daha açmaz.
+ *
+ * Bu yüzden `calibration_note` "AYIRT ETMİYOR" diyorsa yüzde GÖSTERİLMEZ;
+ * yerine kanıt gücü (elimizde ne kadar bilgi var) ve uyarı gösterilir.
+ * Kalibrasyon gerçekten ayırt ediyorsa yüzde hak edilmiştir, gösterilir.
+ */
+function ConfidenceBadge({ primary }: { primary: ContextPrimary }) {
+  const not = primary.calibration_note ?? "";
+  const kanit = primary.evidence ?? primary.confidence ?? 0;
+
+  // ÜÇ DURUM — üçü de farklı şey söyler, karıştırılmamalı:
+  //  (a) kalibrasyon hiç kurulmadı (yetersiz geçmiş) → elimizde yalnız KANIT var
+  //  (b) kuruldu ama ayırt etmiyor → yüzde takımın taban oranı, karara özel değil
+  //  (c) kuruldu ve ayırt ediyor → yüzde hak edilmiş, İSABET olarak gösterilir
+  const kalibreEdilmedi = not === "";
+  const ayirtEtmiyor = not.includes("AYIRT ETMİYOR");
+
+  if (kalibreEdilmedi || ayirtEtmiyor) {
+    return (
+      <span
+        data-testid="confidence-badge"
+        // Durum metinden DEĞİL bu nitelikten okunur: Türkçe "İ" küçültülünce
+        // birleşik noktalı karaktere dönüşüyor ("İSABET".toLowerCase() →
+        // "i̇sabet") ve metin eşleştirmesi sessizce tutmuyor.
+        data-state={kalibreEdilmedi ? "kalibrasyon-yok" : "ayirt-etmiyor"}
+        title={kalibreEdilmedi
+          ? "Bu takım için henüz yeterli ölçülmüş karar yok; gösterilen değer kanıt gücüdür, isabet olasılığı değil."
+          : not}
+        style={{ fontSize: 11, color: "var(--muted)", display: "flex",
+          alignItems: "center", gap: 5 }}
+      >
+        kanıt: <b style={{ color: "var(--ink)" }}>{primary.confidence_label}</b>
+        <span style={{ fontSize: 9.5, fontWeight: 700, color: "var(--mid)",
+          border: "1px solid var(--mid)", borderRadius: 4, padding: "1px 5px",
+          letterSpacing: 0.3 }}>
+          {kalibreEdilmedi ? "İSABET HENÜZ BİLİNMİYOR" : "İSABET ÖLÇÜLEMEDİ"}
+        </span>
+      </span>
+    );
+  }
+  return (
+    <span data-testid="confidence-badge" data-state="kalibre" title={not}
+      style={{ fontSize: 11, color: "var(--muted)" }}>
+      isabet: <b style={{ color: "var(--ink)" }}>
+        {primary.confidence_label} (%{Math.round((primary.confidence ?? 0) * 100)})
+      </b>
+      <span style={{ color: "var(--dim)" }}>
+        {" · kanıt %"}{Math.round(kanit * 100)}
+      </span>
+    </span>
+  );
+}
+
 function PrimaryBanner({
   ctx, onApply, applyState, onWatchClip,
 }: { ctx: ContextDecision | undefined;
@@ -474,7 +541,6 @@ function PrimaryBanner({
      onWatchClip?: () => void }) {
   const p = ctx?.primary;
   const urgency = p?.urgency ?? 0;
-  const conf = Math.round((p?.confidence ?? 0) * 100);
   const isCritical = urgency >= 0.85;
   const tone = urgency >= 0.8 ? "var(--crit)"
     : urgency >= 0.55 ? "var(--high)" : "var(--mid)";
@@ -524,9 +590,7 @@ function PrimaryBanner({
           padding: "2px 9px", fontWeight: 700, letterSpacing: 0.6 }}>
           {p.theme_label}
         </span>
-        <span style={{ fontSize: 11, color: "var(--muted)" }}>
-          güven: <b style={{ color: "var(--ink)" }}>{p.confidence_label} (%{conf})</b>
-        </span>
+        <ConfidenceBadge primary={p} />
       </div>
       <div style={{ padding: "18px" }}>
         <div style={{ fontSize: 19, fontWeight: 800, color: "var(--ink)",
