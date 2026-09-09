@@ -22,6 +22,11 @@ monkeypatch'leyerek sample fixture'larla parser'ı doğrular.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:  # yalnız tip denetimi için — çalışma zamanı import'u tembel
+    from app.data.sources._resilience import CircuitBreaker
+
 from typing import Any
 
 import httpx
@@ -81,7 +86,7 @@ class StatsBombOpen:
 
     name = "statsbomb_open"
     # Sınıf-düzeyi devre kesici — pod ömrü boyunca paylaşılır (runtime lazy assign)
-    _breaker: object | None = None
+    _breaker: CircuitBreaker | None = None
 
     def __init__(self, base_url: str | None = None, timeout: float = HTTP_TIMEOUT):
         self._base_url = (base_url or STATSBOMB_RAW_BASE).rstrip("/")

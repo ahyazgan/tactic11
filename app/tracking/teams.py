@@ -55,9 +55,9 @@ def kmeans(features: np.ndarray, k: int, *, iters: int = 30, n_init: int = 8, se
     best_labels, best_centers, best_inertia = None, None, np.inf
     for _ in range(n_init):
         # k-means++
-        centers = [X[rng.integers(n)]]
+        picked = [X[rng.integers(n)]]
         for _k in range(1, k):
-            d2 = np.min([np.sum((X - c) ** 2, axis=1) for c in centers], axis=0)
+            d2 = np.min([np.sum((X - c) ** 2, axis=1) for c in picked], axis=0)
             total = float(d2.sum())
             if total <= 0.0:
                 # Tüm noktalar seçilmiş merkezlerle ÇAKIŞIYOR (ör. iki forma
@@ -65,10 +65,10 @@ def kmeans(features: np.ndarray, k: int, *, iters: int = 30, n_init: int = 8, se
                 # ve rng.choice "probabilities do not sum to 1" ile ÇÖKER.
                 # Böyle bir sahnede k-means++'ın ekleyecek bilgisi yok: rastgele
                 # bir nokta al, döngü zaten boş kümeyi eritir.
-                centers.append(X[rng.integers(n)])
+                picked.append(X[rng.integers(n)])
                 continue
-            centers.append(X[rng.choice(n, p=d2 / total)])
-        centers = np.array(centers)
+            picked.append(X[rng.choice(n, p=d2 / total)])
+        centers = np.array(picked)
         labels = np.zeros(n, dtype=int)
         for _ in range(iters):
             dist = np.stack([np.linalg.norm(X - c, axis=1) for c in centers], axis=1)

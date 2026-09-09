@@ -1768,7 +1768,7 @@ def decisions_track_record(
         .order_by(models.Decision.match_external_id.desc())
         .limit(last_matches)
     ).scalars())
-    all_impacts = []
+    all_impacts: list[Any] = []
     matches_with_events = 0
     for mid in match_ids:
         try:
@@ -3428,12 +3428,12 @@ def decisions_recent_endpoint(
     ).scalars())
 
     # Global özet (sınırsız, sadece outcome bilinen kararlar üzerinden)
-    outcome_counts = dict(session.execute(
+    outcome_counts: dict[str | None, int] = dict(session.execute(  # type: ignore[arg-type]
         select(
             models.Decision.outcome, func.count(models.Decision.id),
         ).where(*where).group_by(models.Decision.outcome)
     ).all())
-    type_counts = dict(session.execute(
+    type_counts: dict[str, int] = dict(session.execute(  # type: ignore[arg-type]
         select(
             models.Decision.decision_type, func.count(models.Decision.id),
         ).where(*where).group_by(models.Decision.decision_type)
@@ -3510,7 +3510,7 @@ def matches_with_events_endpoint(
         return cached
 
     # Match × EventRow.match_external_id JOIN sayım
-    event_counts = dict(session.execute(
+    event_counts: dict[int, int] = dict(session.execute(  # type: ignore[arg-type]
         select(
             models.EventRow.match_external_id,
             func.count(models.EventRow.id),
@@ -3521,7 +3521,7 @@ def matches_with_events_endpoint(
     if not event_counts:
         return {"matches": [], "total": 0}
 
-    foul_counts = dict(session.execute(
+    foul_counts: dict[int, int] = dict(session.execute(  # type: ignore[arg-type]
         select(
             models.EventRow.match_external_id,
             func.count(models.EventRow.id),

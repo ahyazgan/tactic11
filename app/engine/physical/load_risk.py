@@ -7,10 +7,25 @@ saf Python; api → ai → engine → domain bağımlılık yönüne uygun).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any, TypedDict, cast
+
+
+class ProtocolReference(TypedDict):
+    """Bir test protokolünün referans aralığı.
+
+    Değerler karışık tipte (float/str/bool) olduğu için düz sözlük olarak
+    bırakılırsa tip denetleyici `object` çıkarır ve `float(ref["low"])` gibi
+    kullanımlar hata verir. Şekli burada bir kez tanımlanır.
+    """
+
+    low: float
+    high: float
+    unit: str
+    lower_is_better: bool
+
 
 # Protokol başına referans aralıkları (elit Süper Lig düzeyi).
-REFERENCE = {
+REFERENCE: dict[str, ProtocolReference] = {
     "sprint_10m":      {"low": 1.90, "high": 1.70, "unit": "sn",     "lower_is_better": True},
     "sprint_30m":      {"low": 4.30, "high": 3.90, "unit": "sn",     "lower_is_better": True},
     "ttest_agility":   {"low": 11.5, "high": 9.50, "unit": "sn",     "lower_is_better": True},

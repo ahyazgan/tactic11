@@ -171,7 +171,9 @@ def compute_foul_pressure(
     """
     yellow_states = dict(player_yellow_cards or {})
     auto_count_yellows = total_yellows_match is None
-    total_yellows = 0 if auto_count_yellows else int(total_yellows_match)
+    # Daraltma doğrudan yapılır: ara bir bool üzerinden geçince tip denetleyici
+    # None olmadığını göremiyor.
+    total_yellows = 0 if total_yellows_match is None else int(total_yellows_match)
     window_lo = current_minute - window_min
 
     # Takım-düzeyi sayım

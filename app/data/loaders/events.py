@@ -34,7 +34,7 @@ class LoadedEvents:
     defensive_actions: list[DefensiveAction]
     shots: list[Shot]
     match_ids: list[int]      # hangi maçlardan çekildiği (audit için)
-    fouls: list[FoulEvent] = field(default_factory=list)  # type: ignore[assignment]
+    fouls: list[FoulEvent] = field(default_factory=list)
 
     @property
     def total(self) -> int:

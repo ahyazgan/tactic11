@@ -5,3 +5,4 @@
 # Tekrarlanabilir lint için sabit sürüm; bilinçli güncellenir.
 ruff==0.15.8
 mypy==1.19.1
+types-PyYAML==6.0.12.20250915
