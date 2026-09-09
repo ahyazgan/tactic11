@@ -610,3 +610,46 @@ Arayüz: **Karar Takip** sayfası (`/decisions/track`) → "Ölçülen Etki" bö
 durumu, kartlar ve rakibin hamlesi de etkilidir. Öneri/koç kıyası gözlemseldir (iki
 grup farklı maç durumlarında oluşur). Kalibrasyon n<20 iken yön göstergesi sayılmalı;
 kart bunu "yön göstergesi / anlamlı" etiketiyle açıkça yazar.
+
+### Boşluk haritası — "nerede üstünlük var, nereye oyna"
+
+`engine.tracking` takımın **şeklini** ölçer, `engine.tracking_signals` iki pencere
+arasındaki **değişimi** yakalar. İkisi de takım geneli ortalamadır: koça "rakip
+daraldı" der ama **nerede** boşluk açıldığını söylemez. `engine.space_map` o boşluğu
+sahanın üstüne yerleştirir:
+
+- **Bölgesel sayısal üstünlük** — saha 3 koridor × 3 üçte bire bölünür, her hücrede
+  kare başına ortalama oyuncu farkı (biz − rakip) hesaplanır
+- **Hatlar arası boşluk** — rakip geri hattı ile önündeki hat arası mesafe + o cepte
+  kaç oyuncumuz var ("cebe gir")
+- **Zayıf taraf** — rakibin terk ettiği koridor ("kanat değiştir")
+
+Bulgular `context_pipeline` üzerinden `space:*` anahtarlı `spatial` sinyal olarak
+karar motoruna girer; arayüzde `_console/space-map-card.tsx` 3×3 ızgarayı çizer
+(sağ kenar hep bizim hücum ettiğimiz kale).
+
+**Hücum yönü bu motorun ön koşulu.** "Hücum üçte biri" yön bilinmeden anlamsızdır ve
+takımlar ikinci yarıda taraf değiştirir. Veride yön bilgisi yok; kalecinin konumundan
+(yoksa en derin oyuncudan) çıkarılır. Yön ters ise saha **180° döndürülür** — yani
+`x → 100-x` ile birlikte `y → 100-y`. Sadece x'i aynalamak koridorları ters çevirir
+("sol" derken sağı gösterir); testler bunu açıkça kovalar.
+
+**Üretmediği zaman sebebini söyler** — boş kart koçu "veri mi yok, sinyal mi yok"
+ikileminde bırakıyordu:
+
+| durum | davranış |
+|---|---|
+| event-çapalı kareler (StatsBomb 360) | bölge sayımı yapılmaz — freeze-frame topun çevresini gösterir |
+| görünür oyuncu < 8 | sayım güvenilmez |
+| oyuncuların x yayılımı < %45 | "kamera sahanın yalnız ~%X'ini görüyor" |
+| hücum yönü çıkarılamadı | "kaleci görünmüyor, iki takımın derinliği yakın" |
+
+**Yanlış sinyalden kaçınma:** bir koridorda hiç oyuncu yoksa (ne biz ne rakip) orası
+kameranın görmediği yerdir; "rakip o kanadı boşalttı" demek uydurma olur, bu yüzden
+zayıf-taraf sinyali koridorun gözlendiğine dair kanıt ister. Aciliyet üçte bire göre
+ağırlıklıdır: hücum üçte birindeki üstünlük doğrudan gol şansıdır, orta sahadaki aynı
+fark şekil sinyallerini ezmemelidir.
+
+**Mevcut demo klibinde çalışmaz** — TeamTrack drone klibi sahanın orta bandını
+gösteriyor, kaleciler kadraja girmiyor, yön çıkarılamıyor. Motor bunu sessizce
+uydurmak yerine sebebi yazıyor. Kulübün tam saha gören taktik kamerasında çalışır.

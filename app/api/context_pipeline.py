@@ -286,6 +286,23 @@ def build_candidates(
                 detail={"source": "tracking", **(f.get("detail") or {})},
             ))
 
+    # space_map (spatial) — "nerede boşluk var": bölgesel üstünlük, hat boşluğu,
+    # zayıf kanat. tracking_signals DEĞİŞİMİ söyler, bu YERİ söyler; ikisi
+    # birbirini tamamladığı için ayrı sinyal olarak girer.
+    sm = out.get("space_map")
+    if _is_dict(sm):
+        frames = int(sm.get("frames_used", 0) or 0)
+        for f in (sm.get("findings") or [])[:2]:
+            if not isinstance(f, dict):
+                continue
+            cands.append(CandidateSignal(
+                key=f"space:{f.get('key', 'zone')}", signal_type="spatial",
+                headline=str(f.get("headline", "Bölge sinyali")),
+                urgency=float(f.get("urgency", 0.5)), fired=True, minute=current_minute,
+                sample_size=frames, magnitude=float(f.get("magnitude", 0.0)),
+                detail={"source": "space_map", **(f.get("detail") or {})},
+            ))
+
     return cands
 
 

@@ -3065,7 +3065,10 @@ def live_decision_endpoint(
         _safe_assign(tracking_only, "tracking_signals", lambda: _tracking_signals_for(
             session, match_id, my_team_id, opp_id, current_minute,
         ))
-        if "tracking_signals" in tracking_only:
+        _safe_assign(tracking_only, "space_map", lambda: _space_map_for(
+            session, match_id, my_team_id, opp_id, current_minute,
+        ))
+        if "tracking_signals" in tracking_only or "space_map" in tracking_only:
             from app.api.context_pipeline import run_context_pipeline
             tracking_only.update(run_context_pipeline(
                 session, match, my_team_id, current_minute, tracking_only, [], [], [],
@@ -3229,6 +3232,9 @@ def live_decision_endpoint(
     _safe_assign(out, "tracking_signals", lambda: _tracking_signals_for(
         session, match_id, my_team_id, opp_id, current_minute,
     ))
+    _safe_assign(out, "space_map", lambda: _space_map_for(
+        session, match_id, my_team_id, opp_id, current_minute,
+    ))
 
     # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
@@ -3285,6 +3291,29 @@ def _tracking_signals_for(
         our_pressure=_press(now_frames, my_team_id), their_pressure=_press(now_frames, opp_id),
         prev_our_pressure=_press(prev_frames, my_team_id),
         frames_used=len(now_frames),
+    )
+    return engine_result_to_dict(result)["value"]
+
+
+def _space_map_for(
+    session: Session, match_id: int, my_team_id: int, opp_id: int, current_minute: float,
+) -> dict[str, Any] | None:
+    """Pozisyon karelerinden bölgesel üstünlük + hatlar arası boşluk.
+
+    `_tracking_signals_for` "ne değişti"yi söyler; bu "nerede boşluk var"ı.
+    Tek pencere yeter (anlık durum), o yüzden önceki pencere okunmaz.
+    """
+    from app.api.tracking import frames_in_window
+    from app.engine.space_map import compute_space_map
+
+    w = TRACKING_SIGNAL_WINDOW_MIN
+    frames = frames_in_window(session, match_id, current_minute - w, current_minute)
+    if not frames:
+        return None
+    continuous = all(f.source == "video_tracking" for f in frames if f.source)
+    result = compute_space_map(
+        frames, our_team_external_id=my_team_id, their_team_external_id=opp_id,
+        minute=current_minute, continuous=continuous,
     )
     return engine_result_to_dict(result)["value"]
 
