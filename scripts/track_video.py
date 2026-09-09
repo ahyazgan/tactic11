@@ -46,6 +46,10 @@ def main() -> int:
     p.add_argument("--clip-offset-minutes", type=float, default=0.0, help="Klibin maç dakikası başlangıcı")
     p.add_argument("--period", type=int, default=1)
     p.add_argument("--preview", default=None, help="Etiketli önizleme mp4 yolu")
+    p.add_argument("--per-frame-calibration", default="auto",
+                   choices=["auto", "on", "off"],
+                   help="Hareketli kamerada homografiyi her karede yeniden bul. "
+                        "auto=kamera sabit değilse aç. Oturmayan kareler ATLANIR.")
     p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast"],
                    help="Kamera davranışı: auto=videodan tespit et (varsayılan), "
                         "static=sabit kamera (tam analiz), broadcast=hareketli/yayın "
@@ -68,7 +72,32 @@ def main() -> int:
         source_name = STATIC_SOURCE if args.camera == "static" else BROADCAST_SOURCE
         print(f"kamera: {args.camera} (elle verildi) → kaynak {source_name}")
 
+    # Kamera hareketliyse sabit homografi geçersiz; kare başına kalibrasyon
+    # devreye girer ve oturmayan kareler atlanır. Kalibrasyon başarılıysa
+    # konumlar tekrar güvenilir olduğu için kaynak etiketi de yükseltilir.
+    moving = source_name == BROADCAST_SOURCE
+    if args.per_frame_calibration == "on":
+        per_frame = True
+    elif args.per_frame_calibration == "off":
+        per_frame = False
+    else:
+        per_frame = moving
+    if per_frame:
+        print("kare başına kalibrasyon: AÇIK — oturmayan kareler atlanacak")
+        # Kalibrasyon kamerayı ancak ardışık örnekler yakınsa takip edebilir.
+        # Ölçüldü: 30 fps kaynakta her 3. kareye kadar %100 kalibre, her 5.
+        # karede takip kopuyor. track_fps düşükse hat kareyi seyrek örnekler
+        # ve kalibrasyon hiç tutturamaz (5 fps'te 30 karenin 1'i kalibre oldu).
+        if args.track_fps < 15.0:
+            print(f"  UYARI: --track-fps {args.track_fps:g} kare başına kalibrasyon için "
+                  f"düşük. Kamera kareler arasında çok yol alıyor; 15 önerilir.")
+        if moving:
+            # Her kare kendi homografisiyle geldiği için kareler artık
+            # top-merkezli değil, gerçek saha konumu taşır.
+            source_name = STATIC_SOURCE
+
     cfg = PipelineConfig(
+        per_frame_calibration=per_frame,
         source_name=source_name,
         fps_out=args.fps, track_fps=args.track_fps, max_seconds=args.max_seconds,
         detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution, weights=args.weights),

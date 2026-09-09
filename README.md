@@ -700,3 +700,54 @@ YOKTUR: **kare başına kalibrasyon** — her karede saha çizgilerini (taç, ce
 orta yuvarlak) tespit edip homografiyi yeniden hesaplamak; ayrıca kesme tespiti,
 replay ayıklama ve çekim sınıflandırma (ana kamera mı, yakın çekim mi). Bunlar
 olmadan TV yayınından çıkarılabilecek dürüst sonuç **topun çevresiyle sınırlıdır**.
+
+### Kare başına kalibrasyon — hareketli kamerada gerçek konum
+
+Sabit homografi yalnız sabit kamerada doğrudur. Yayın kamerası çevirdiğinde
+oyuncular sahada kaymış görünür ve sahte taktik sinyal çıkar. `--per-frame-calibration`
+homografiyi **her karede yeniden bulur**: modelin saha çizgileri görüntüdeki gerçek
+çizgilere oturtulur.
+
+**Nasıl:** sıfırdan çözmek yerine önceki karenin homografisinden başlanıp iyileştirilir
+(kamera bir karede az oynar). Parametre olarak matris elemanları değil **sahanın dört
+köşesinin görüntüdeki konumu** kullanılır — hepsi piksel biriminde, geometrik olarak
+anlamlı. Arama hamleleri gerçek kamera hareketlerine karşılık gelir: öteleme (pan),
+ölçek (zoom), tek köşe (perspektif).
+
+**Ölçülen doğruluk** (gerçek 4K klipten üretilmiş pan+zoom, 1900 px gezinme, saha
+gerçeği bilinen):
+
+| yöntem | ortalama hata | en kötü | kalibre kare |
+|---|---|---|---|
+| sabit homografi (eski) | **~21 m** | 34 m | — |
+| kare başına, her kare | **0.09 m** | 0.27 m | %100 |
+| kare başına, her 2. kare | 0.12 m | 0.79 m | %100 |
+| kare başına, her 3. kare | 0.19 m | 0.89 m | %100 |
+| kare başına, her 5. kare | — | — | %1 (reddediyor) |
+
+**`--track-fps 15` şart.** Kalibrasyon kamerayı ancak ardışık örnekler yakınsa takip
+eder; 30 fps kaynakta her 3. kareye kadar sorunsuz, her 5. karede kopuyor. `track-fps 5`
+denendiğinde 30 karenin yalnız 1'i kalibre oldu. Zaten tespit/takip kalitesi de 15
+istiyor (bkz. yukarıdaki performans tablosu) — iki kısıt aynı yeri gösteriyor. Script
+düşük değerde uyarır.
+
+**Bulamadığında susar.** Bu motorun işi doğru homografiyi bulmak kadar, bulamadığında
+konum üretmemektir:
+
+- Oturma kalitesi (inlier) **tek başına yetmez**: sahanın paralel çizgileri birbirine
+  benzediği için homografi yanlış çizgiye kilitlenebilir. Ölçüldü — böyle oturmalar
+  %55 inlier alıyor, doğru oturmalardan biri %58. Ayıran şey fizik: yanlış çözüm bir
+  karede 36 m sıçrıyor, ki bu imkânsızdır. Bu yüzden süreklilik kapısı var.
+- **Otomatik yeniden yakalama kapalı.** Denendi: kesme sonrası iki ardışık kare AYNI
+  yanlış çizgiye kilitlenip birbirini "doğruladı" ve hata 499 m'ye çıktı. Artık takip
+  kaybolunca kare üretilmiyor, dışarıdan çapa bekleniyor — **TV yayınında bu, çekim
+  başına çapa gerektiği anlamına gelir**.
+- Yakın çekim/replay (saha çizgisi yok) → kare atlanır.
+
+**Maliyet:** 88 ms/kare (720p, CPU). 25 fps gerçek zaman için 40 ms gerekir; şu an
+2.2 kat yavaş. Düşürme yolları: çizgi maskesini küçültmek, model noktası sayısını
+azaltmak, GPU'ya taşımak.
+
+**Kaynak etiketi yükselir:** kamera hareketli olduğu için `broadcast_tracking`
+işaretlenen kareler, kare başına kalibrasyon başarılıysa `video_tracking`'e yükseltilir
+— konumlar artık gerçek saha konumu taşıdığı için şekil ve bölge analizi yeniden açılır.
