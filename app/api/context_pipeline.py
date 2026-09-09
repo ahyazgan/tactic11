@@ -24,10 +24,19 @@ from app.sports import football
 
 _URGENCY_BY_LEVEL = {"high": 0.9, "medium": 0.6, "low": 0.35}
 # decision_type → context sinyal tipleri (feedback yayılımı)
+# decision_type → hangi sinyal tiplerine geçmiş isabet olarak yayılacağı.
+#
+# "tactical" ANAHTARI ŞART: API'nin kabul ettiği kanonik tip
+# "tactical_instruction" ama veritabanındaki kararların ezici çoğunluğu
+# "tactical" olarak yazılmış. Ölçüldü (2026-09-09): ölçülmüş 293 kararın
+# 280'i (%96) "tactical" tipinde ve bu anahtar burada YOKTU — yani geri
+# besleme döngüsü sessizce ölüydü, `historical_hit_rate` hiç dolmuyordu
+# (sürücü karnesinde `has_history` her kararda 0.000 çıktı).
 _HITRATE_SPREAD = {
     "substitution": ("substitution", "risk"),
     "formation_change": ("tactical", "spatial", "matchup"),
     "tactical_instruction": ("tactical", "spatial", "matchup"),
+    "tactical": ("tactical", "spatial", "matchup"),
 }
 
 
@@ -364,11 +373,27 @@ def _apply_calibration(ctx, cmap):
     def _label(v: float) -> str:
         return "yüksek" if v >= HIGH_THRESHOLD else "orta" if v >= MED_THRESHOLD else "düşük"
 
+    # Eşleme ayırt etmiyorsa (tüm binler aynı olasılığa çökmüş) her karara AYNI
+    # sayı verilir. O sayıyı "bu kararın güveni" diye sunmak sahte kesinliktir:
+    # gerçekte söylenen "bu takımın taban oranı". Ölçüldü (n=518): kanıt skoru
+    # sonuçla TERS ilişkili olduğu için izotonik regresyon her şeyi çökertiyor.
+    if cmap.discriminates:
+        not_metni = f"kalibre edildi ({cmap.samples} karar, yön: {cmap.direction})"
+    else:
+        not_metni = (
+            f"kanıt seviyesi sonucu AYIRT ETMİYOR ({cmap.samples} karar, "
+            f"AUC {cmap.auc:.2f}); gösterilen değer bu takımın taban oranı "
+            f"(%{cmap.base_rate * 100:.0f}), karara özel bir olasılık değil"
+        )
+
     def _fix(action):
         if action is None:
             return None
         p = round(cmap.apply(action.confidence), 3)
-        return dataclasses.replace(action, confidence=p, confidence_label=_label(p))
+        return dataclasses.replace(
+            action, confidence=p, confidence_label=_label(p),
+            evidence=action.confidence, calibration_note=not_metni,
+        )
 
     return dataclasses.replace(
         ctx,

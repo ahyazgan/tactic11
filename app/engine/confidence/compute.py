@@ -19,14 +19,15 @@ from dataclasses import dataclass, field
 ENGINE_NAME = "engine.confidence"
 ENGINE_VERSION = "1"
 
-# Yeterli örnek sayılan eşik (bunun üstü sample skoru 1.0)
+# Yeterli örnek sayılan eşik (bunun üstü sample kapısı tam açık)
 SAMPLE_FULL = 12
-# Ağırlıklar (toplam 1.0)
-W_SAMPLE = 0.25
-W_MAGNITUDE = 0.25
-W_CORROBORATION = 0.20
-W_QUALITY = 0.20
-W_HISTORY = 0.10
+# Kapı tabanı: veri tamamen yetersizken bile kanıt SIFIRLANMAZ, yarıya iner.
+# Sıfırlamak "sinyal yok" demek olurdu; oysa sinyal var, desteği zayıf.
+MIN_GATE = 0.5
+# Teyit en fazla bu kadar ekler (doygunlukla)
+CORROBORATION_BONUS = 0.10
+# Geçmiş isabet nötrden (0.5) sapmasıyla en fazla bu kadar oynatır
+HISTORY_PULL = 0.10
 
 HIGH_THRESHOLD = 0.66
 MED_THRESHOLD = 0.40
@@ -73,14 +74,28 @@ def score_confidence(
     qual_term = _clamp01(data_quality)
     hist_term = 0.5 if historical_hit_rate is None else _clamp01(historical_hit_rate)
 
-    raw = (
-        W_SAMPLE * sample_term
-        + W_MAGNITUDE * mag_term
-        + W_CORROBORATION * corr_term
-        + W_QUALITY * qual_term
-        + W_HISTORY * hist_term
-    )
-    score = round(_clamp01(raw), 3)
+    # KANIT = metriğin eşiği ne kadar aştığı. Asıl bilgi budur.
+    #
+    # KAPILAR: yetersiz veri kanıtı ZAYIFLATIR, yeterli veri BONUS VERMEZ.
+    # Eskiden sample ve quality ağırlıklı toplamaya giriyordu ve ikisi de
+    # neredeyse hep 1.0 geldiği için skorun %45'i sabit dolguydu; history de
+    # hiç dolmadığından 0.5'e sabitti (+%5 daha). Ölçüldü (n=513 gerçek karar):
+    # skorun ayrım gücü yoktu ve kararların %87'si TEK bir çeyrek bine
+    # düşüyordu — "sistem hep %90 diyor"un kaynağı buydu. Sabit bir terimi
+    # toplamaya eklemek bilgi katmaz, yalnız tabanı yükseltir.
+    #
+    # En zayıf halka belirler: az örnek VE düşük kalite ayrı ayrı cezalandırılıp
+    # üst üste binmemeli.
+    sample_gate = MIN_GATE + (1.0 - MIN_GATE) * sample_term
+    quality_gate = MIN_GATE + (1.0 - MIN_GATE) * qual_term
+    gate = min(sample_gate, quality_gate)
+
+    corr_bonus = CORROBORATION_BONUS * corr_term
+    # Geçmiş YOKSA hiç oynatma. Eskiden yokluk 0.5 nötr sayılıp yine de
+    # ağırlıkla toplanıyordu; "bilmiyorum" ile "tam ortada" aynı şey değil.
+    hist_adj = 0.0 if historical_hit_rate is None else HISTORY_PULL * (hist_term - 0.5) * 2.0
+
+    score = round(_clamp01(mag_term * gate + corr_bonus + hist_adj), 3)
     label = ("yüksek" if score >= HIGH_THRESHOLD
              else "orta" if score >= MED_THRESHOLD else "düşük")
 
@@ -113,6 +128,10 @@ def score_confidence(
             "corroboration": round(corr_term, 3),
             "quality": round(qual_term, 3),
             "history": round(hist_term, 3),
+            # Kompozisyonun kendi parçaları — skoru yeniden üretebilmek için
+            "gate": round(gate, 3),
+            "corr_bonus": round(corr_bonus, 4),
+            "hist_adj": round(hist_adj, 4),
             # Ham girdiler de saklanır: terimler kırpılmış/dönüştürülmüş
             # olduğu için geriye dönük analizde asıl değer gerekebilir
             # (örn. corroboration 3 ile 9 aynı terime doyuyor).

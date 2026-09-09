@@ -56,10 +56,14 @@ class DriverAttribution:
     note: str = ""
 
 
-def _auc(pos: list[float], neg: list[float]) -> float:
+def auc_score(pos: list[float], neg: list[float]) -> float:
     """Mann-Whitney U → AUC. Beraberlikler 0.5 sayılır.
 
     Küçük n için kütüphaneye gerek yok; O(n·m) yeterli ve şeffaf.
+
+    Kalibrasyon da bunu kullanır (`calibration.fit_calibration`): eşleme
+    kurmadan ÖNCE ilişkinin yönünü bilmek gerekiyor, yoksa izotonik regresyon
+    azalan ilişkiyi sessizce taban orana çökertiyor.
     """
     if not pos or not neg:
         return 0.5
@@ -80,7 +84,7 @@ def attribute_driver(
     n_pos, n_neg = len(positives), len(negatives)
     mp = sum(positives) / n_pos if n_pos else 0.0
     mn = sum(negatives) / n_neg if n_neg else 0.0
-    auc = _auc(positives, negatives)
+    auc = auc_score(positives, negatives)
 
     if n_pos + n_neg < MIN_SAMPLES or n_pos == 0 or n_neg == 0:
         verdict = "yetersiz veri"

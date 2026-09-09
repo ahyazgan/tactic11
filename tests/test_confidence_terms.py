@@ -12,15 +12,9 @@ karıştırılırsa analiz yapılamaz.
 from __future__ import annotations
 
 from app.engine.confidence import score_confidence
-from app.engine.confidence.compute import (
-    W_CORROBORATION,
-    W_HISTORY,
-    W_MAGNITUDE,
-    W_QUALITY,
-    W_SAMPLE,
-)
 
-TERIMLER = {"sample", "magnitude", "corroboration", "quality", "history"}
+TERIMLER = {"sample", "magnitude", "corroboration", "quality", "history",
+            "gate", "corr_bonus", "hist_adj"}
 
 
 def test_every_weighted_driver_has_a_numeric_term() -> None:
@@ -33,18 +27,52 @@ def test_every_weighted_driver_has_a_numeric_term() -> None:
 def test_terms_reproduce_the_composite_score() -> None:
     """Kırılım gerçekten skoru açıklamalı; süs olmamalı.
 
-    Ağırlıklı toplam skora eşit değilse `terms` başka bir hesabı anlatıyordur
-    ve ona bakarak yapılan her çıkarım yanlış olur.
+    Kompozisyon: kanıt × kapı + teyit bonusu + geçmiş düzeltmesi.
+    Terimlerden skor yeniden üretilemiyorsa `terms` başka bir hesabı
+    anlatıyordur ve ona bakarak yapılan her çıkarım yanlış olur.
     """
     c = score_confidence(sample_size=6, magnitude=0.5, corroboration=2,
                          data_quality=0.8, historical_hit_rate=0.7)
     t = c.terms
-    beklenen = (
-        W_SAMPLE * t["sample"] + W_MAGNITUDE * t["magnitude"]
-        + W_CORROBORATION * t["corroboration"] + W_QUALITY * t["quality"]
-        + W_HISTORY * t["history"]
-    )
+    beklenen = t["magnitude"] * t["gate"] + t["corr_bonus"] + t["hist_adj"]
     assert abs(beklenen - c.score) < 0.002
+
+
+def test_adequate_data_does_not_inflate_the_score() -> None:
+    """ASIL DÜZELTME: yeterli veri BONUS vermez, yetersiz veri CEZA verir.
+
+    Eskiden sample ve quality ağırlıklı toplama giriyordu; ikisi de neredeyse
+    hep 1.0 geldiği için skorun %45'i sabit dolguydu. Ölçüldü (n=513): 448
+    karar TEK bir çeyrek bine düşüyordu. Artık mükemmel veriyle skor kanıtın
+    KENDİSİ kadardır.
+    """
+    mukemmel = score_confidence(sample_size=99, magnitude=0.30, data_quality=1.0)
+    assert abs(mukemmel.score - 0.30) < 0.002, "yeterli veri skoru şişirmemeli"
+
+    zayif = score_confidence(sample_size=1, magnitude=0.30, data_quality=1.0)
+    assert zayif.score < mukemmel.score, "az örnek kanıtı zayıflatmalı"
+
+    kotu_veri = score_confidence(sample_size=99, magnitude=0.30, data_quality=0.2)
+    assert kotu_veri.score < mukemmel.score, "düşük kalite kanıtı zayıflatmalı"
+
+
+def test_weakest_link_decides_the_gate() -> None:
+    """Az örnek VE düşük kalite üst üste binip kanıtı yok etmemeli."""
+    tek_sorun = score_confidence(sample_size=1, magnitude=0.8, data_quality=1.0)
+    iki_sorun = score_confidence(sample_size=1, magnitude=0.8, data_quality=0.9)
+    assert abs(tek_sorun.score - iki_sorun.score) < 0.01
+
+
+def test_absent_history_does_not_move_the_score() -> None:
+    """"Bilmiyorum" ile "tam ortada" aynı şey değil.
+
+    Eskiden geçmiş yokken 0.5 nötr sayılıp yine de ağırlıkla toplanıyordu.
+    """
+    yok = score_confidence(sample_size=8, magnitude=0.6)
+    orta = score_confidence(sample_size=8, magnitude=0.6, historical_hit_rate=0.5)
+    iyi = score_confidence(sample_size=8, magnitude=0.6, historical_hit_rate=0.9)
+    assert yok.score == orta.score
+    assert iyi.score > yok.score
 
 
 def test_raw_inputs_survive_saturation() -> None:
