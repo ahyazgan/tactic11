@@ -751,3 +751,42 @@ azaltmak, GPU'ya taşımak.
 **Kaynak etiketi yükselir:** kamera hareketli olduğu için `broadcast_tracking`
 işaretlenen kareler, kare başına kalibrasyon başarılıysa `video_tracking`'e yükseltilir
 — konumlar artık gerçek saha konumu taşıdığı için şekil ve bölge analizi yeniden açılır.
+
+#### 180° ikilik — çizgilerden çözülemeyen şey
+
+Saha çizgi modeli **180° dönme altında birebir kendine eşittir**. Sayısal olarak
+doğrulandı: modeli `(x,y) → (105-x, 68-y)` ile döndürüp orijinaliyle karşılaştırınca
+fark **ortalama ve en fazla 0.0000 m**. Yani her homografinin özdeş puanlı bir "ayna
+ikizi" vardır — ölçüldü, ayna oranı her karede tam **1.00**.
+
+**Sonuç: kameranın hangi yarıya baktığı yalnız saha çizgilerinden ASLA çıkarılamaz.**
+Bu bir uygulama eksiği değil, geometrinin sınırıdır. Ayrımı ancak dışarıdan bir bilgi
+yapar: kaleler, tribün/reklam panoları, çim deseni, operatör bilgisi ya da kesme öncesi
+bilinen homografi.
+
+Serbest aramayla çapa denendi ve bu ikilik tam da beklendiği gibi vurdu: **%94 inlier
+alan bir çapa 47 m yanlıştı**. Bu yüzden:
+
+- `find_anchor()` ipucu verilmedikçe **kabul etmez**; iki hipotezi de döndürür
+  (`homography` + `mirror_homography`), kararı bilgisi olana bırakır.
+- `PerFrameCalibrator` kayıp durumda serbest arama yapmaz; `allow_reacquire` açıksa
+  arama **çapadan** yapılır — çapa hangi yarı olduğunu sabitlediği için ikilik kapanır.
+  TV'de ana kamera kesmeden sonra benzer görüntüye döndüğü için bu pratikte çalışır.
+
+#### Hız — gerçek zamana ulaşıldı
+
+| adım | süre/kare | doğruluk |
+|---|---|---|
+| başlangıç | 88 ms | 0.09 m |
+| + kapalı form homografi (SVD yerine 8×8 çözüm) | 54 ms | 0.10 m |
+| + görüntüyü 0.75 ölçekte işleme | 42 ms | 0.08 m |
+| + aramada model noktası aralığı 1.5 m | **39 ms** | 0.11 m |
+
+25 fps için bütçe 40 ms → **gerçek zamanlı kalibrasyon mümkün**. Darboğaz skorlama
+değil, her denemede yapılan homografi çözümüydü: 4 nokta için genel DLT'nin (Hartley
+normalizasyonu + SVD) gereği yok, `h33=1` alıp 8×8 doğrusal sistem çözmek **3.9 kat**
+hızlı ve sonuç birebir aynı (fark 8e-14).
+
+**0.5 ölçeğin altına inmeyin:** hata 0.08 m'den 3.8 m'ye fırlıyor. Sebep tolerans değil
+(ölçeğe bağlandı, düzelmedi) — çizgi çıkarmanın morfolojik filtresi 720p'ye göre
+ayarlı; daha küçük görüntüde ince çizgileri kaçırıyor.

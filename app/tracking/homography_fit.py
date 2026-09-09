@@ -48,7 +48,12 @@ from dataclasses import dataclass
 import numpy as np
 
 from app.tracking.calibration import dlt_homography
-from app.tracking.pitch_model import model_points, pitch_corners
+from app.tracking.pitch_model import (
+    PITCH_LENGTH_M,
+    PITCH_WIDTH_M,
+    model_points,
+    pitch_corners,
+)
 
 # Model noktası bu kadar piksel içinde çizgi bulursa "oturmuş" sayılır
 DEFAULT_TOLERANCE_PX = 6.0
@@ -108,12 +113,37 @@ def score_homography(
     return float(soft.mean()), float((d <= tolerance_px).mean()), n
 
 
+_PITCH_CORNERS = pitch_corners()
+
+
 def _homography_from_corners(corners_px: np.ndarray) -> np.ndarray | None:
-    """Görüntüdeki 4 köşeden homografi (görüntü → saha)."""
+    """Görüntüdeki 4 köşeden homografi (görüntü → saha) — hızlı kapalı form.
+
+    Tam 4 eşleşmede homografi tek türlü belirlidir; genel DLT'nin (Hartley
+    normalizasyonu + SVD) gerekmediği yer burasıdır. h33=1 alınıp 8 bilinmeyenli
+    doğrusal sistem çözülür. Arama sırasında bu fonksiyon yüz kez çağrıldığı için
+    fark büyük: ölçüldü, SVD yolu iyileştirmenin 97 ms'sinin 60 ms'sini yiyordu.
+
+    Genel `dlt_homography` ile aynı sonucu verir (4 nokta için test edilir);
+    tekil/dejenere yapılandırmada None döner.
+    """
+    src = np.asarray(corners_px, dtype=float)
+    dst = _PITCH_CORNERS
+    a = np.zeros((8, 8), dtype=float)
+    b = np.empty(8, dtype=float)
+    for i in range(4):
+        x, y = src[i]
+        u, v = dst[i]
+        a[2 * i] = (x, y, 1.0, 0.0, 0.0, 0.0, -u * x, -u * y)
+        a[2 * i + 1] = (0.0, 0.0, 0.0, x, y, 1.0, -v * x, -v * y)
+        b[2 * i], b[2 * i + 1] = u, v
     try:
-        return dlt_homography(corners_px, pitch_corners())
-    except (ValueError, np.linalg.LinAlgError):
+        h = np.linalg.solve(a, b)
+    except np.linalg.LinAlgError:
         return None
+    if not np.all(np.isfinite(h)):
+        return None
+    return np.array([[h[0], h[1], h[2]], [h[3], h[4], h[5]], [h[6], h[7], 1.0]])
 
 
 def corners_from_homography(h_img_to_pitch: np.ndarray) -> np.ndarray:
@@ -129,7 +159,7 @@ def refine_homography(
     step_px: float = 12.0,
     min_step_px: float = 0.5,
     max_iterations: int = 4000,
-    step_m: float = 1.0,
+    step_m: float = 1.5,   # arama sırasında model noktası aralığı (m)
 ) -> FitResult:
     """`h_start`'tan başlayıp homografiyi çizgilere oturt (yön aramalı iniş).
 
@@ -210,3 +240,207 @@ def refine_homography(
         inlier_ratio=round(best_inlier, 4), visible_points=best_visible,
         iterations=iterations, accepted=accepted, note=note,
     )
+
+
+# --- Sıfırdan çapa arama (kesme sonrası) ----------------------------------- #
+#
+# `refine_homography` yakınsak bir başlangıç ister. Kesmeden sonra öyle bir
+# başlangıç yoktur: kamera bambaşka bir yere bakıyordur. O yüzden çapa MUTLAK
+# aranır — makul kamera duruşlarından bir aday kümesi üretilip hepsi denenir.
+#
+# Buradaki asıl tehlike, yerel iyileştirmede görülenin aynısıdır: sahanın
+# paralel çizgileri birbirine benzediği için BİRDEN FAZLA duruş iyi puan
+# alabilir. Ölçüldü — yanlış kilitlenmeler %55 inlier alıyordu, doğrulardan
+# biri %58. Bu yüzden burada tek bir eşik yetmez; **net kazanan** şartı vardır:
+# en iyi aday, kendisinden GEOMETRİK OLARAK FARKLI en iyi rakibini belirgin
+# farkla geçmelidir. Geçemiyorsa sahne belirsizdir ve çapa üretilmez.
+
+# Aday duruşlar: kadrajda sahanın ne kadarı var, nerede, ne kadar perspektifle
+ANCHOR_VIEW_LENGTHS_M = (30.0, 45.0, 60.0, 105.0)
+ANCHOR_PERSPECTIVE = (1.0, 0.82, 0.66)   # üst kenarın alt kenara oranı
+ANCHOR_CENTRE_STEP_M = 10.0
+# Kaba elemeden sonra kaç aday iyileştirilecek (iyileştirme pahalı)
+ANCHOR_REFINE_TOP_N = 8
+# Kabul için: neredeyse kusursuz oturma + rakibine belirgin üstünlük.
+# Eşik yüksek çünkü saha ORTA ÇİZGİYE GÖRE SİMETRİKTİR: bir ceza sahası
+# görüntüsü diğerinin aynısıdır. Tek kareden bu ikilik çözülemez. Ölçüldü —
+# %79 inlier alan bir çapa 51 m yanlıştı. Bu yüzden yalnız sahne
+# TARTIŞMASIZ okunduğunda çapa üretilir; değilse net bir kare beklenir.
+ANCHOR_MIN_INLIER = 0.90
+ANCHOR_WIN_MARGIN = 1.25
+# Çapa için ayırt edici yapı (ceza sahası / orta yuvarlak) görünmeli: yalnız
+# paralel taç çizgileri kameranın nerede olduğunu belirlemez.
+ANCHOR_MIN_LANDMARK_POINTS = 25
+ANCHOR_MIN_LANDMARK_INLIER = 0.70
+# İki çözüm bu kadar metre ayrıysa "farklı duruş" sayılır (rakip kabul edilir)
+ANCHOR_DISTINCT_M = 8.0
+# SAHA ÇİZGİ MODELİ 180° DÖNME ALTINDA BİREBİR KENDİNE EŞLENİR.
+# Sayısal olarak doğrulandı: döndürülmüş model noktalarının orijinale uzaklığı
+# ortalama ve en fazla 0.0000 m. Yani her homografinin bir "ayna ikizi" vardır
+# ve ikisi ÖZDEŞ puan alır (ölçüldü: oran her karede tam 1.00).
+#
+# Sonuç: **hangi yarıya bakıldığı yalnız saha çizgilerinden ASLA çıkarılamaz.**
+# Bu bir uygulama eksiği değil, geometrinin sınırıdır. Ayrımı ancak dışarıdan
+# bir bilgi yapar: kaleler, tribün/reklam panoları, çim deseni, ya da kesme
+# öncesi bilinen homografi. Bu yüzden `find_anchor` iki hipotezi de döndürür ve
+# ipucu verilmedikçe KABUL ETMEZ. (Ölçüldü: ipucusuz kabul edilen bir çapa %94
+# inlier'a rağmen 47 m yanlıştı.)
+
+
+def mirrored_homography(h_img_to_pitch: np.ndarray) -> np.ndarray:
+    """Sahayı 180° döndüren eşdeğer hipotez: (x, y) → (105-x, 68-y)."""
+    r = np.array([[-1.0, 0.0, PITCH_LENGTH_M],
+                  [0.0, -1.0, PITCH_WIDTH_M],
+                  [0.0, 0.0, 1.0]])
+    return r @ h_img_to_pitch
+
+
+@dataclass(frozen=True)
+class AnchorResult:
+    homography: np.ndarray | None
+    fit: FitResult | None
+    candidates_scored: int
+    runner_up_score: float
+    accepted: bool
+    note: str
+    # Eşit geçerli 180° ikiz çözüm. İpucu olmadan hangisinin doğru olduğu
+    # bilinemez (saha modeli tam simetrik); ikisi de burada döner.
+    mirror_homography: np.ndarray | None = None
+
+
+def _view_quad(width_px: float, height_px: float, taper: float) -> np.ndarray:
+    """Kadrajın saha üzerindeki izdüşümü için görüntü dörtgeni (yamuk).
+
+    Yandan bakan kamerada uzak taç çizgisi kısa görünür; `taper` üst kenarın
+    alt kenara oranıdır (1.0 = tepeden bakış).
+    """
+    cx = width_px / 2.0
+    half_top = width_px / 2.0 * taper
+    return np.array([
+        [cx - half_top, 0.0], [cx + half_top, 0.0],
+        [width_px, height_px], [0.0, height_px],
+    ], dtype=float)
+
+
+def anchor_candidates(image_size: tuple[int, int]) -> list[np.ndarray]:
+    """Makul kamera duruşlarından homografi adayları üret (görüntü → saha)."""
+    w, h = float(image_size[0]), float(image_size[1])
+    out: list[np.ndarray] = []
+    for view_len in ANCHOR_VIEW_LENGTHS_M:
+        centres = np.arange(view_len / 2.0, 105.0 - view_len / 2.0 + 1e-6,
+                            ANCHOR_CENTRE_STEP_M)
+        if len(centres) == 0:
+            centres = np.array([52.5])
+        for cx_m in centres:
+            x0, x1 = cx_m - view_len / 2.0, cx_m + view_len / 2.0
+            pitch_quad = np.array([[x0, 0.0], [x1, 0.0], [x1, 68.0], [x0, 68.0]])
+            for taper in ANCHOR_PERSPECTIVE:
+                try:
+                    out.append(dlt_homography(_view_quad(w, h, taper), pitch_quad))
+                except (ValueError, np.linalg.LinAlgError):
+                    continue
+    return out
+
+
+def find_anchor(
+    dist_map: np.ndarray,
+    image_size: tuple[int, int],
+    *,
+    tolerance_px: float = DEFAULT_TOLERANCE_PX,
+    hint_homography: np.ndarray | None = None,
+) -> AnchorResult:
+    """Başlangıç homografisi olmadan çapa bul (kesme sonrası).
+
+    Adaylar kabaca puanlanır (ucuz), en iyi birkaçı iyileştirilir (pahalı), sonra
+    net kazanan aranır. Kazanan yoksa çapa üretilmez.
+
+    **180° ikiliği:** saha çizgi modeli kendi 180° dönmesine birebir eşit
+    olduğundan her çözümün özdeş puanlı bir ikizi vardır. `hint_homography`
+    verilmezse hangisinin doğru olduğu bilinemez ve sonuç KABUL EDİLMEZ; iki
+    hipotez de döndürülür. İpucu tipik olarak kesmeden önceki son geçerli
+    homografidir (kamera aynı yarıya dönüyorsa ikilik çözülür).
+    """
+    pts_m = model_points(1.0)
+    cands = anchor_candidates(image_size)
+    scored = []
+    for h in cands:
+        s, inl, vis = score_homography(h, dist_map, pts_m=pts_m, tolerance_px=tolerance_px)
+        if vis >= MIN_VISIBLE_POINTS:
+            scored.append((s, inl, h))
+    if not scored:
+        return AnchorResult(None, None, len(cands), 0.0, False,
+                            "hiçbir aday kadrajda yeterli saha göremedi")
+    scored.sort(key=lambda t: t[0], reverse=True)
+
+    refined: list[FitResult] = []
+    for _s, _inl, h in scored[:ANCHOR_REFINE_TOP_N]:
+        refined.append(refine_homography(h, dist_map, tolerance_px=tolerance_px, step_px=30.0))
+    refined.sort(key=lambda f: f.score, reverse=True)
+    best = refined[0]
+
+    # Rakip: en iyiden GEOMETRİK OLARAK farklı en yüksek puanlı çözüm
+    runner_up = 0.0
+    probes = np.array([[image_size[0] / 2, image_size[1] / 2, 1.0],
+                       [image_size[0] * 0.25, image_size[1] * 0.6, 1.0],
+                       [image_size[0] * 0.75, image_size[1] * 0.6, 1.0]])
+
+    def _pitch(h: np.ndarray) -> np.ndarray:
+        q = probes @ h.T
+        return q[:, :2] / q[:, 2:3]
+
+    best_pts = _pitch(best.homography)
+    for f in refined[1:]:
+        if float(np.abs(_pitch(f.homography) - best_pts).max()) >= ANCHOR_DISTINCT_M:
+            runner_up = f.score
+            break
+
+    lm_pts = model_points(1.0, "landmark")
+    _lm_score, lm_inlier, lm_visible = score_homography(
+        best.homography, dist_map, pts_m=lm_pts, tolerance_px=tolerance_px,
+    )
+    if lm_visible < ANCHOR_MIN_LANDMARK_POINTS:
+        return AnchorResult(
+            None, best, len(cands), runner_up, False,
+            f"kadrajda ayırt edici yapı yok (ceza sahası/orta yuvarlak: "
+            f"{lm_visible} nokta) — yalnız paralel çizgiyle çapa kurulamaz",
+        )
+    if lm_inlier < ANCHOR_MIN_LANDMARK_INLIER:
+        return AnchorResult(
+            None, best, len(cands), runner_up, False,
+            f"ayırt edici yapılar oturmadı (inlier %{lm_inlier * 100:.0f}) — "
+            f"çapa üretilmedi",
+        )
+    if best.inlier_ratio < ANCHOR_MIN_INLIER:
+        return AnchorResult(
+            None, best, len(cands), runner_up, False,
+            f"çapa oturması zayıf (inlier %{best.inlier_ratio * 100:.0f} < "
+            f"%{ANCHOR_MIN_INLIER * 100:.0f}) — çapa üretilmedi",
+        )
+    if runner_up > 0.0 and best.score < runner_up * ANCHOR_WIN_MARGIN:
+        return AnchorResult(
+            None, best, len(cands), runner_up, False,
+            f"sahne belirsiz: en iyi aday ({best.score:.3f}) farklı bir duruşu "
+            f"({runner_up:.3f}) belirgin geçemedi — çapa üretilmedi",
+        )
+    mirror = mirrored_homography(best.homography)
+    if hint_homography is None:
+        return AnchorResult(
+            None, best, len(cands), runner_up, False,
+            "180° ikilik çözülemedi: saha çizgileri hangi yarıya bakıldığını "
+            "belirlemez (model tam simetrik). Kesme öncesi homografi ya da "
+            "operatör bilgisi gerekiyor.",
+            mirror_homography=mirror,
+        )
+    # İpucuna yakın olan hipotez seçilir
+    probe = np.array([[image_size[0] / 2, image_size[1] / 2, 1.0]])
+
+    def _p(h: np.ndarray) -> np.ndarray:
+        q = probe @ h.T
+        return q[:, :2] / q[:, 2:3]
+
+    ref = _p(hint_homography)
+    d_best = float(np.hypot(*(_p(best.homography) - ref)[0]))
+    d_mirror = float(np.hypot(*(_p(mirror) - ref)[0]))
+    chosen = best.homography if d_best <= d_mirror else mirror
+    return AnchorResult(chosen, best, len(cands), runner_up, True, "",
+                        mirror_homography=mirror)

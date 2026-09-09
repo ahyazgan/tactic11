@@ -148,3 +148,36 @@ def test_produces_a_usable_calibration_object(calibrator) -> None:
     x, y = res.calibration.image_to_pitch_m(W / 2, H / 2)
     assert 0.0 <= x <= 105.0 and 0.0 <= y <= 68.0
     assert res.fit is not None and res.fit.inlier_ratio > 0.5
+
+
+def test_reacquire_searches_from_the_anchor_not_the_drifted_pose() -> None:
+    """Yeniden yakalama açıkken arama ÇAPADAN yapılır.
+
+    Kaymış son homografiden serbest aramak, 180° ikizine kilitlenme riski
+    taşır (saha modeli tam simetrik). Çapa hangi yarı olduğunu sabitler.
+    """
+    anchor_h = homography_for()
+    cal = PerFrameCalibrator(
+        calibration_from_homography(anchor_h, (W, H)),
+        image_size=(W, H), allow_reacquire=True,
+    )
+    assert _feed(cal, anchor_h).ok
+    # Kesme: çok uzak sahne → takip kopar
+    assert not _feed(cal, homography_for((300.0, 120.0))).ok
+    assert not cal.tracking
+    # Kamera çapaya yakın görüntüye döndü → yeniden yakalanmalı
+    back = _feed(cal, homography_for((10.0, 4.0)))
+    assert back.ok, back.reason
+    assert cal.tracking
+
+
+def test_reacquire_stays_closed_by_default() -> None:
+    """Varsayılan güvenli: yeniden yakalama kapalı, dışarıdan çapa beklenir."""
+    cal = PerFrameCalibrator(
+        calibration_from_homography(homography_for(), (W, H)), image_size=(W, H),
+    )
+    assert _feed(cal, homography_for()).ok
+    assert not _feed(cal, homography_for((300.0, 120.0))).ok
+    back = _feed(cal, homography_for((10.0, 4.0)))
+    assert not back.ok
+    assert "çapa" in back.reason, back.reason

@@ -30,17 +30,31 @@ _GOAL_AREA_HALF_WIDTH = 9.16
 _CENTRE_RADIUS = 9.15
 
 
-def pitch_segments() -> list[tuple[float, float, float, float]]:
-    """Saha çizgileri: (x1, y1, x2, y2) metre. Orta yuvarlak poligon olarak eklenir."""
+def generic_segments() -> list[tuple[float, float, float, float]]:
+    """Ayırt EDİCİ OLMAYAN çizgiler: taç, kale çizgisi, orta saha çizgisi.
+
+    Bunlar birbirine paraleldir ve sahanın her yerinde benzer görünür; tek
+    başlarına kameranın nerede olduğunu belirlemezler.
+    """
     L, W = PITCH_LENGTH_M, PITCH_WIDTH_M
-    cy = W / 2.0
-    segs: list[tuple[float, float, float, float]] = [
+    return [
         (0.0, 0.0, L, 0.0),          # üst taç
         (0.0, W, L, W),              # alt taç
         (0.0, 0.0, 0.0, W),          # sol kale çizgisi
         (L, 0.0, L, W),              # sağ kale çizgisi
         (L / 2, 0.0, L / 2, W),      # orta saha çizgisi
     ]
+
+
+def landmark_segments() -> list[tuple[float, float, float, float]]:
+    """AYIRT EDİCİ yapılar: ceza sahaları, kale sahaları, orta yuvarlak.
+
+    Kameranın sahada nerede olduğunu ancak bunlar belirler. Kadrajda yalnız
+    paralel çizgiler varsa sahne belirsizdir ve çapa üretilmemelidir.
+    """
+    L, W = PITCH_LENGTH_M, PITCH_WIDTH_M
+    cy = W / 2.0
+    segs: list[tuple[float, float, float, float]] = []
     for side in (0.0, L):
         sign = 1.0 if side == 0.0 else -1.0
         for depth, half in ((_PENALTY_DEPTH, _PENALTY_HALF_WIDTH),
@@ -48,11 +62,10 @@ def pitch_segments() -> list[tuple[float, float, float, float]]:
             x_out = side + sign * depth
             y_top, y_bot = cy - half, cy + half
             segs += [
-                (side, y_top, x_out, y_top),     # üst kenar
-                (side, y_bot, x_out, y_bot),     # alt kenar
-                (x_out, y_top, x_out, y_bot),    # dikey kenar
+                (side, y_top, x_out, y_top),
+                (side, y_bot, x_out, y_bot),
+                (x_out, y_top, x_out, y_bot),
             ]
-    # Orta yuvarlak — çokgen yaklaşımı
     pts = [
         (L / 2 + _CENTRE_RADIUS * np.cos(t), cy + _CENTRE_RADIUS * np.sin(t))
         for t in np.linspace(0, 2 * np.pi, 33)
@@ -64,10 +77,20 @@ def pitch_segments() -> list[tuple[float, float, float, float]]:
     return segs
 
 
-def model_points(step_m: float = 1.0) -> np.ndarray:
-    """Çizgiler üzerinde `step_m` aralıkla örneklenmiş noktalar → (N, 2) metre."""
+def pitch_segments() -> list[tuple[float, float, float, float]]:
+    """Tüm saha çizgileri = paralel çizgiler + ayırt edici yapılar."""
+    return generic_segments() + landmark_segments()
+
+
+def model_points(step_m: float = 1.0, kind: str = "all") -> np.ndarray:
+    """Çizgiler üzerinde `step_m` aralıkla örneklenmiş noktalar → (N, 2) metre.
+
+    `kind`: "all" | "generic" (paralel çizgiler) | "landmark" (ayırt edici yapılar).
+    """
+    segs = {"all": pitch_segments, "generic": generic_segments,
+            "landmark": landmark_segments}[kind]()
     out: list[tuple[float, float]] = []
-    for x1, y1, x2, y2 in pitch_segments():
+    for x1, y1, x2, y2 in segs:
         length = float(np.hypot(x2 - x1, y2 - y1))
         n = max(2, int(length / max(step_m, 0.05)) + 1)
         for t in np.linspace(0.0, 1.0, n):

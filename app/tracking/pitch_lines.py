@@ -26,6 +26,7 @@ import numpy as np
 
 from app.tracking.calibration import PitchCalibration
 from app.tracking.homography_fit import (
+    DEFAULT_TOLERANCE_PX,
     FitResult,
     _homography_from_corners,
     corners_from_homography,
@@ -125,19 +126,23 @@ class PerFrameCalibrator:
       oynar). Kabul için hem oturma kalitesi hem de FİZİK gerekir: sabit bir
       görüntü noktasının saha karşılığı bir karede `MAX_PITCH_JUMP_M`'den fazla
       oynayamaz.
-    - **KAYIP** — kesme, replay, yakın çekim. Süreklilik referansı yoktur, bu
-      yüzden varsayılan olarak **otomatik yeniden yakalama YAPILMAZ**: kare
-      üretilmez ve dışarıdan yeni bir çapa beklenir (`reset_to_anchor` ya da
-      yeni elle kalibrasyon). Pratikte bu, TV yayınında **çekim başına çapa**
-      gerektiği anlamına gelir.
+    - **KAYIP** — kesme, replay, yakın çekim. Süreklilik referansı yoktur.
+      Varsayılanda kare üretilmez ve dışarıdan çapa beklenir. `allow_reacquire`
+      açıksa arama **çapadan** yapılır (kaymış son homografiden DEĞİL) ve yüksek
+      inlier istenir; TV yayınında ana kamera kesmeden sonra benzer görüntüye
+      döndüğü için bu pratikte işe yarar.
 
-    Neden bu kadar sıkı: sahanın paralel çizgileri birbirine benzediği için
-    homografi yanlış çizgiye kilitlenebilir. Ölçüldü — böyle oturmalar %55 inlier
-    alıyor (doğru oturmalardan biri %58), yani **skor tek başına ayırmıyor**; ama
-    yanlış çözüm bir karede 36 m sıçrıyor. Ayıran şey fizik, skor değil.
-    Otomatik yeniden yakalama denendiğinde iki ardışık kare AYNI yanlış çizgiye
-    kilitlenip birbirini "doğruladı" ve hata 499 m'ye çıktı; bu yüzden
-    `allow_reacquire` varsayılan olarak kapalıdır.
+    Neden bu kadar sıkı — iki ayrı sebep, ikisi de ölçüldü:
+
+    1. Sahanın paralel çizgileri benzer olduğu için homografi yanlış çizgiye
+       kilitlenebilir. Böyle oturmalar %55 inlier alıyor, doğrulardan biri %58 —
+       **skor tek başına ayırmıyor**. Ayıran şey fizik: yanlış çözüm bir karede
+       36 m sıçrıyor, ki imkânsızdır (süreklilik kapısı).
+    2. **Saha çizgi modeli 180° dönme altında birebir kendine eşit** (sayısal
+       olarak doğrulandı: fark 0.0000 m). Yani hangi yarıya bakıldığı yalnız
+       çizgilerden ASLA çıkarılamaz; her çözümün özdeş puanlı bir ikizi vardır.
+       Serbest aramayla bulunan %94 inlier'lık bir çapa 47 m yanlıştı. Çapadan
+       arama bu ikiliği kapatır, çünkü çapa hangi yarı olduğunu sabitler.
 
     Ölçülen doğruluk (sentetik pan+zoom, gerçek 4K klipten üretilmiş, saha
     gerçeği bilinen): sabit homografi ~21 m hata verirken kare başına
@@ -161,7 +166,12 @@ class PerFrameCalibrator:
     _PROBE_UV = ((0.5, 0.5), (0.25, 0.5), (0.75, 0.5))
 
     def __init__(self, anchor: PitchCalibration, *, image_size: tuple[int, int] | None = None,
-                 allow_reacquire: bool = False):
+                 allow_reacquire: bool = False, tolerance_px: float | None = None):
+        # Tolerans PİKSEL cinsindendir, yani çözünürlüğe bağlıdır. Görüntü
+        # küçültülerek işleniyorsa aynı sayı sahada daha büyük bir alana denk
+        # gelir ve oturma gevşer (ölçüldü: yarı çözünürlükte sabit toleransla
+        # hata 0.10 m → 3.95 m). Verilmezse görüntü genişliğinden ölçeklenir.
+        self._tolerance_px = tolerance_px
         self._reacquire_allowed = allow_reacquire
         self._anchor = anchor
         self._h = anchor.homography
@@ -171,6 +181,8 @@ class PerFrameCalibrator:
         self._pending: np.ndarray | None = None   # doğrulama bekleyen aday (KAYIP)
         self._last_jump_m = 0.0                   # son karede kameranın saha hareketi
         self._misses = 0
+        if self._tolerance_px is None:
+            self._tolerance_px = DEFAULT_TOLERANCE_PX * (self._image_size[0] / 1280.0)
         self.frames_seen = 0
         self.frames_calibrated = 0
         self.frames_rejected = 0
@@ -215,13 +227,15 @@ class PerFrameCalibrator:
         karede büyüyor (ölçüldü: 0.03 m → 3.65 m). Tahmini ADAY yapıp kararı
         skora bırakmak bu yanlılığı kaldırır.
         """
-        fit = refine_homography(self._h, dist_map, step_px=step)
+        fit = refine_homography(self._h, dist_map, step_px=step,
+                                tolerance_px=self._tolerance_px)
         if fit.accepted and fit.inlier_ratio >= 0.9:
             return fit              # zaten çok iyi — ikinci aramaya gerek yok
         h_pred = self._predicted_homography()
         if h_pred is None:
             return fit
-        alt = refine_homography(h_pred, dist_map, step_px=step)
+        alt = refine_homography(h_pred, dist_map, step_px=step,
+                                tolerance_px=self._tolerance_px)
         return alt if alt.score > fit.score * self.PREDICTION_MARGIN else fit
 
     def _miss(self, fit: FitResult | None, reason: str) -> FrameCalibration:
@@ -265,7 +279,14 @@ class PerFrameCalibrator:
 
         was_tracking = self.tracking
         step = self.SEARCH_STEPS_PX[min(self._misses, len(self.SEARCH_STEPS_PX) - 1)]
-        fit = self._best_fit(dist_map, step)
+        if was_tracking:
+            fit = self._best_fit(dist_map, step)
+        else:
+            # Kayıpken kaymış son homografiden değil, ÇAPADAN ara: çapa hem
+            # 180° ikiliğini sabitler hem de sürüklenmiş bir başlangıcın
+            # yanlış çizgiye kilitlenmesini engeller.
+            fit = refine_homography(self._anchor.homography, dist_map, step_px=step,
+                                    tolerance_px=self._tolerance_px)
         if not fit.accepted:
             self._pending = None
             return self._miss(fit, fit.note)
@@ -280,12 +301,18 @@ class PerFrameCalibrator:
                 )
             return self._accept(fit, jump_m=jump)
 
-        # KAYIP: süreklilik desteği yok. Otomatik yeniden yakalama YAPILMAZ —
-        # çünkü doğrulanabilir değil: iki ardışık kare AYNI yanlış çizgiye
-        # kilitlenip birbirini doğrulayabiliyor (ölçüldü: kendi içinde tutarlı
-        # ama 60 m yanlış çözümler kabul edildi). Yeniden çapa dışarıdan gelmeli
-        # (`reset_to_anchor` ya da yeni bir elle kalibrasyon). Bu, TV yayınında
-        # çekim başına çapa gerektiği anlamına gelir; bkz. README.
+        # KAYIP: süreklilik desteği yok.
+        #
+        # SERBEST arama YAPILMAZ. Saha çizgi modeli 180° dönme altında birebir
+        # kendine eşit olduğundan (sayısal olarak doğrulandı: fark 0.0000 m) her
+        # çözümün özdeş puanlı bir ikizi vardır; çizgilerden hangi yarıya
+        # bakıldığı ASLA çıkarılamaz. Ölçüldü: serbest aramayla bulunan %94
+        # inlier'lık bir çapa 47 m yanlıştı.
+        #
+        # Bunun yerine ÇAPADAN geniş arama yapılır: TV yayınında ana kamera
+        # kesmeden sonra benzer görüntüye döner, çapa da hangi yarı olduğunu
+        # sabitler — ikilik böylece kapanır. Kabul çıtası yüksektir çünkü
+        # süreklilik desteği yoktur.
         if not self._reacquire_allowed:
             return self._miss(
                 fit,
