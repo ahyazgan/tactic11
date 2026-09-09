@@ -104,3 +104,49 @@ def test_map_is_serialisable_and_explains_itself() -> None:
     assert "kalibre edildi" in cmap.note
     assert all(0.0 <= b.probability <= 1.0 for b in cmap.bins)
     assert sum(b.n for b in cmap.bins) == cmap.samples
+
+
+# --- yön tespiti: sessiz başarısızlığı görünür kıl ------------------------- #
+
+def test_increasing_relationship_is_reported_as_such() -> None:
+    """Kanıt gerçekten öngörüyorsa eşleme bunu söylemeli."""
+    cmap = fit_calibration(_samples([(0.2, 2, 12), (0.5, 6, 12), (0.9, 11, 12)]))
+    assert cmap.direction == "artan"
+    assert cmap.auc > 0.5
+    assert cmap.discriminates
+
+
+def test_inverted_relationship_is_flagged_loudly() -> None:
+    """ASIL KUSUR: PAVA artan monotonluğu ZORLUYOR.
+
+    İlişki azalansa tüm binler taban orana çöker ve sonuç "kalibre edildi"
+    gibi görünürdü — sessiz başarısızlık. Ölçüldü (n=518, gerçek veri): kanıt
+    skoru AUC 0.43, yani sonuçla ters ilişkili; eski kod bunu gizliyordu.
+
+    Beklenen davranış: eşleme yine taban oranı döndürür (dürüst cevap) AMA
+    bunu AÇIKÇA söyler ve düzeltilmesi gerekenin kanıt skoru olduğunu belirtir.
+    """
+    cmap = fit_calibration(_samples([(0.2, 11, 12), (0.5, 6, 12), (0.9, 2, 12)]))
+    assert cmap.direction == "azalan"
+    assert cmap.auc < 0.5
+    assert "TERS" in cmap.note
+    assert "düzeltilmesi" in cmap.note
+    # Monotonluk zorlandığı için ayrım kalmıyor — bu kabul edilebilir, ama
+    # "kalibre edildi" deyip susmak kabul edilemez.
+    assert not cmap.discriminates
+
+
+def test_unrelated_evidence_says_so_instead_of_pretending() -> None:
+    """Kanıt sonucu öngörmüyorsa eşleme taban oranı döndürdüğünü söylemeli."""
+    cmap = fit_calibration(_samples([(0.2, 6, 12), (0.5, 6, 12), (0.9, 6, 12)]))
+    assert cmap.direction == "ilişkisiz"
+    assert "öngörmüyor" in cmap.note
+    assert not cmap.discriminates
+    assert abs(cmap.apply(0.9) - cmap.base_rate) < 0.05
+
+
+def test_discriminates_is_false_without_a_fit() -> None:
+    """Eşleme kurulmadıysa 'ayırt ediyor' iddiası edilemez."""
+    cmap = fit_calibration(_samples([(0.9, 3, 5)]))
+    assert not cmap.fitted
+    assert not cmap.discriminates

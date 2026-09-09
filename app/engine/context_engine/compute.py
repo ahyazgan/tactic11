@@ -67,6 +67,13 @@ class PrioritizedAction:
     # "hangi sürücü yanılttı" sorusu ölçülebilsin (bkz. engine.confidence).
     confidence_terms: dict[str, float] = field(default_factory=dict)
     signal_type: str = ""          # atıf analizinde tip bazlı kırılım için
+    # Kalibrasyondan ÖNCEKİ ham kanıt gücü. `confidence` kalibrasyon sonrası
+    # OLASILIK olabildiği için ikisi farklı şeylerdir ve ikisi de gerekir:
+    # "elimde ne kadar kanıt var" ile "bu karar tutar mı" aynı soru değil.
+    evidence: float = 0.0
+    # Kalibrasyonun kendi hükmü (ayırt ediyor mu, yön ne). Boşsa kalibrasyon
+    # uygulanmamıştır. Arayüz buna bakıp sahte kesinlik göstermemeli.
+    calibration_note: str = ""
 
 
 @dataclass(frozen=True)
@@ -112,10 +119,16 @@ def compute_context(
     for s in fired:
         th = _theme(s)
         qv = quality_by_key[s.key]
-        # korroborasyon = aynı anda ateşleyen DİĞER tüm sinyaller. Birden çok
-        # bağımsız sinyal aynı dakikada → karar daha güvenilir (kullanıcının
-        # "momentum + oyuncu kritik + skor" örneği farklı temalardan gelir).
-        corroboration = len(fired) - 1
+        # Korroborasyon = AYNI TEMADAKİ diğer sinyaller.
+        #
+        # Eskiden `len(fired) - 1` idi: o dakikada ateşleyen HER sinyal sayılıyordu,
+        # birbirini destekleyip desteklemediğine bakılmadan. Sonuç: kaotik bir
+        # dakikada (çok sayıda ilgisiz sinyal) her öneri yüksek "teyit" alıyordu —
+        # yani durum en belirsizken güven en çok artıyordu. Modülün kendi
+        # belgesi de "aynı yöne işaret eden DİĞER sinyal sayısı" diyordu;
+        # uygulama belgeye uymuyordu. Ölçüldü (n=437): eski tanım sonucu hiç
+        # ayırt etmiyordu (AUC 0.51).
+        corroboration = sum(1 for o in fired if o.key != s.key and _theme(o) == th)
         conf = score_confidence(
             sample_size=s.sample_size, magnitude=s.magnitude,
             corroboration=corroboration, data_quality=qv.score,

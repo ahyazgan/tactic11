@@ -37,11 +37,15 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from app.engine.confidence.attribution import auc_score
+
 # Bu sayının altında eşleme kurulmaz — ham skor korunur
 MIN_SAMPLES = 20
 # Bin oranı taban orana bu ağırlıkla çekilir (Laplace benzeri küçültme)
 SHRINK = 5.0
 DEFAULT_BINS = 4
+# AUC'nin 0.5'ten bu kadar uzaklığı yön sayılır; altı "ilişkisiz"
+DIRECTION_BAND = 0.06
 
 
 @dataclass(frozen=True)
@@ -62,6 +66,25 @@ class CalibrationMap:
     samples: int
     fitted: bool           # False → eşleme yok, ham skor kullanılmalı
     note: str = ""
+    # İzotonik regresyondan ÖNCE ölçülen ham ilişki. PAVA artan monotonluğu
+    # ZORLADIĞI için, ilişki azalansa tüm binleri taban orana çökertir ve
+    # sonuç "kalibre edildi" gibi görünür — sessiz başarısızlık. Ölçüldü
+    # (n=518, Barcelona): kanıt skoru AUC 0.43, yani sonuçla TERS ilişkili;
+    # eski kod bunu gizliyordu. Bu alanlar onu görünür kılar.
+    auc: float = 0.5
+    direction: str = "bilinmiyor"   # "artan" | "azalan" | "ilişkisiz"
+
+    @property
+    def discriminates(self) -> bool:
+        """Eşleme gerçekten ayırt ediyor mu — yoksa her skora aynı sayı mı?
+
+        Tüm binler aynı olasılığa çöktüyse eşleme bilgi taşımaz: verilen cevap
+        taban orandır. "Kalibre edildi" demek bunu gizler.
+        """
+        if not self.fitted or len(self.bins) < 2:
+            return False
+        ps = [b.probability for b in self.bins]
+        return (max(ps) - min(ps)) > 0.02
 
     def apply(self, raw_score: float) -> float:
         """Ham kanıt skorunu kalibre olasılığa çevir (eşleme yoksa aynen döner)."""
@@ -141,8 +164,26 @@ def fit_calibration(
             edges[:-1], edges[1:], counts, raw_rates, monotone, strict=True,
         )
     )
+    # İlişkinin YÖNÜNÜ monotonluk zorlamadan ÖNCE ölç. Aksi halde azalan bir
+    # ilişki taban orana çöker ve "kalibre edildi" diye raporlanır.
+    auc = auc_score([s for s, ok in usable if ok], [s for s, ok in usable if not ok])
+    if auc >= 0.5 + DIRECTION_BAND:
+        direction = "artan"
+        yon_notu = f"kanıt skoru sonucu öngörüyor (AUC {auc:.2f})"
+    elif auc <= 0.5 - DIRECTION_BAND:
+        direction = "azalan"
+        yon_notu = (f"UYARI: kanıt skoru sonuçla TERS ilişkili (AUC {auc:.2f}) — "
+                    f"yüksek kanıt daha KÖTÜ sonuçla gidiyor. Monotonluk "
+                    f"zorlandığı için eşleme taban orana çöküyor; düzeltilmesi "
+                    f"gereken kanıt skorudur, kalibrasyon değil")
+    else:
+        direction = "ilişkisiz"
+        yon_notu = (f"kanıt skoru sonucu öngörmüyor (AUC {auc:.2f}) — "
+                    f"eşleme taban oranı döndürür")
+
     return CalibrationMap(
         bins=bins, base_rate=round(base, 4), samples=n, fitted=True,
+        auc=round(auc, 3), direction=direction,
         note=(f"{n} geçmiş karardan kalibre edildi (taban oran "
-              f"%{base * 100:.0f})"),
+              f"%{base * 100:.0f}) · {yon_notu}"),
     )

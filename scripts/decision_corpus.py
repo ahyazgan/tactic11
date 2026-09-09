@@ -210,7 +210,13 @@ def seed(args: argparse.Namespace) -> int:
 
 
 def _karar_tipi(theme: str | None) -> str:
-    return "substitution" if theme == "change_personnel" else "tactical"
+    """Tema → API'nin kabul ettiği KANONİK karar tipi.
+
+    "tactical" değil "tactical_instruction": admin ucunun `allowed_types`
+    listesi bunu kabul ediyor ve geri besleme eşlemesi (`_HITRATE_SPREAD`)
+    bunun üzerinden çalışıyor. Külliyat ürünle aynı sözlüğü kullanmalı.
+    """
+    return "substitution" if theme == "change_personnel" else "tactical_instruction"
 
 
 def _skor_durumu(match, team: int) -> str:
