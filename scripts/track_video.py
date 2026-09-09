@@ -17,6 +17,7 @@ import argparse
 import json
 import sys
 import time
+from dataclasses import asdict
 from pathlib import Path
 
 from app.tracking.calibration import PitchCalibration
@@ -28,6 +29,7 @@ from app.tracking.camera import (
 )
 from app.tracking.detect import DetectorConfig
 from app.tracking.frames import frames_to_json
+from app.tracking.passes import extract_passes
 from app.tracking.pipeline import PipelineConfig, process_video, video_info
 
 
@@ -145,6 +147,10 @@ def main() -> int:
         print(f"  ! {downgrade}")
 
     payload = frames_to_json(frames, match_id=args.match_id, source_name=source_name, extra={
+        # Takipten çıkarılan paslar JSON'a da girer: ingest bunları event
+        # tablosuna yazabilsin ve xT/ileri pas motorları kulüp videosuyla
+        # çalışabilsin. Özet yalnız sayıyı taşır, ayrıntı burada.
+        "derived_passes": [asdict(p) for p in extract_passes(frames).passes],
         "video": Path(args.video).name, "video_info": info,
         "home_team_external_id": args.home_team, "away_team_external_id": args.away_team,
         "config": {"fps": args.fps, "track_fps": args.track_fps, "model": args.model, "tiles": args.tiles, "threshold": args.threshold, "weights": args.weights},
