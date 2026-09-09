@@ -41,6 +41,9 @@ ATTACKING_THIRD_X = 200.0 / 3  # x > 66.67 hücum üçte biri
 POSITIVE_XG_DELTA = 0.010     # ~15 dk'da +0.15 xG
 NEGATIVE_XG_DELTA = -0.010
 SUPPORT_XT_DELTA = 0.0        # ikincil onay: xT de aynı yöne gitmeli
+# Pas verisi olmayan kaynaklarda (ör. yalnız şut etiketlenmiş maçlar) hüküm tek
+# metriğe dayanır; güven bu oranla kırpılır ve gerekçede açıkça yazılır.
+SINGLE_METRIC_CONFIDENCE_FACTOR = 0.7
 
 DECISION_TYPE_LABEL: dict[str, str] = {
     "substitution": "İkame",
@@ -284,19 +287,43 @@ def compute_decision_impact(
         )
         confidence = 0.0
     else:
-        if xg_delta >= POSITIVE_XG_DELTA and xt_delta >= SUPPORT_XT_DELTA:
+        # xT ÖLÇÜLEBİLİR Mİ? Pas/taşıma verisi yoksa xT sıfır kalır; o zaman
+        # `xt_delta >= 0` da `<= 0` da doğrudur ve iki-metrik onayı BOŞ YERE
+        # geçilir — üstelik gerekçe "ikisi de lehte" diye yazar. Ölçülmemiş bir
+        # metriği onaylamış gibi göstermek, tek metrikli bir hükmü iki metrikli
+        # gibi sunmak demektir. Bu yüzden ayırt edilir ve açıkça söylenir.
+        xt_measurable = any(
+            pre_lo <= e.minute < post_hi for e in list(p) + list(c)
+        )
+        if xt_measurable:
+            if xg_delta >= POSITIVE_XG_DELTA and xt_delta >= SUPPORT_XT_DELTA:
+                verdict = "positive"
+                reason = f"xG farkı dk başına {xg_delta:+.3f}, xT {xt_delta:+.3f} — ikisi de lehte"
+            elif xg_delta <= NEGATIVE_XG_DELTA and xt_delta <= SUPPORT_XT_DELTA:
+                verdict = "negative"
+                reason = f"xG farkı dk başına {xg_delta:+.3f}, xT {xt_delta:+.3f} — ikisi de aleyhte"
+            else:
+                verdict = "neutral"
+                reason = f"xG farkı {xg_delta:+.3f}, xT {xt_delta:+.3f} — net yön yok"
+        elif xg_delta >= POSITIVE_XG_DELTA:
             verdict = "positive"
-            reason = f"xG farkı dk başına {xg_delta:+.3f}, xT {xt_delta:+.3f} — ikisi de lehte"
-        elif xg_delta <= NEGATIVE_XG_DELTA and xt_delta <= SUPPORT_XT_DELTA:
+            reason = (f"xG farkı dk başına {xg_delta:+.3f} — YALNIZ xG ile "
+                      f"(pas verisi yok, xT doğrulaması yapılamadı)")
+        elif xg_delta <= NEGATIVE_XG_DELTA:
             verdict = "negative"
-            reason = f"xG farkı dk başına {xg_delta:+.3f}, xT {xt_delta:+.3f} — ikisi de aleyhte"
+            reason = (f"xG farkı dk başına {xg_delta:+.3f} — YALNIZ xG ile "
+                      f"(pas verisi yok, xT doğrulaması yapılamadı)")
         else:
             verdict = "neutral"
-            reason = f"xG farkı {xg_delta:+.3f}, xT {xt_delta:+.3f} — net yön yok"
-        # Güven: pencere uzunluğu (yarısı tam pencere) + olay yoğunluğu
+            reason = (f"xG farkı {xg_delta:+.3f} — net yön yok "
+                      f"(pas verisi yok, xT doğrulaması yapılamadı)")
+        # Güven: pencere uzunluğu (yarısı tam pencere) + olay yoğunluğu.
+        # Tek metrikli hüküm daha zayıftır; güven buna göre kırpılır.
         win_conf = min(1.0, short / window_min)
         ev_conf = min(1.0, events_in_windows / 40.0)
         confidence = round(0.6 * win_conf + 0.4 * ev_conf, 2)
+        if not xt_measurable:
+            confidence = round(confidence * SINGLE_METRIC_CONFIDENCE_FACTOR, 2)
 
     impact = DecisionImpact(
         decision_id=ctx.decision_id,
