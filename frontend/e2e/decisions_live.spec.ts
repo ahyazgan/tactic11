@@ -100,3 +100,38 @@ test.describe("Decisions live (DEMO_MODE)", () => {
     ).toBeVisible();
   });
 });
+
+test.describe("Güven rozeti dürüstlüğü", () => {
+  /**
+   * ÜRÜNÜN TEK GERÇEK MOAT'I: kanıtlanabilir güven.
+   *
+   * Backend kendi geçmişinden kalibrasyon kuruyor ve 513 ölçülmüş kararda
+   * şunu buldu: kanıt seviyesi sonucu AYIRT ETMİYOR (AUC 0.51). Böyle bir
+   * durumda "güven: yüksek (%88)" yazmak, kendi ölçümümüzün yalanladığı bir
+   * kesinlik satmaktır. Koç sisteme bir kez yalan söylettiyse bir daha açmaz.
+   *
+   * Bu test o regresyonu kilitler: isabet ölçülemediğinde afişte İSABET
+   * YÜZDESİ GÖRÜNMEMELİ.
+   */
+  test("isabet ölçülemediğinde yüzde vaat etmez", async ({ page }) => {
+    await page.goto("/decisions/live");
+    const rozet = page.getByTestId("confidence-badge");
+    await expect(rozet).toBeVisible();
+
+    // Durum METİNDEN okunmaz: Türkçe "İ" küçültülünce birleşik noktalı
+    // karaktere dönüşüyor ve eşleştirme sessizce tutmuyor.
+    const durum = await rozet.getAttribute("data-state");
+    const metin = await rozet.innerText();
+
+    if (durum === "kalibre") {
+      // Kalibrasyon ayırt ediyorsa yüzde hak edilmiştir; kanıtla birlikte gelir.
+      expect(metin).toMatch(/isabet:/i);
+      expect(metin).toMatch(/kanıt/i);
+    } else {
+      // Kalibrasyon yok ya da ayırt etmiyor → isabet YÜZDESİ İDDİA EDİLEMEZ.
+      expect(["kalibrasyon-yok", "ayirt-etmiyor"]).toContain(durum);
+      expect(metin).not.toMatch(/isabet:\s*\S+\s*\(%\d+\)/i);
+      expect(metin).toMatch(/kanıt/i);
+    }
+  });
+});
