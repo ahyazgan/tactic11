@@ -20,6 +20,22 @@ from app.db import models
 from app.engine.context_engine import compute_context
 from app.engine.decision_signal import CandidateSignal
 from app.engine.match_memory import MemoryFrame, compute_match_memory
+
+# Eşikler MOTORDAN alınır, kopyalanmaz: motor eşiğini değiştirirse magnitude
+# hesabı kendiliğinden takip etsin. Kopya tutsaydık ikisi sessizce ayrışır ve
+# "eşiği ne kadar aştı" ölçüsü yanlış olurdu.
+from app.engine.spatial_control.compute import (
+    GAP_OUR_MIN as _SPATIAL_GAP_MIN,
+)
+from app.engine.spatial_control.compute import (
+    NARROW_STD as _SPATIAL_NARROW,
+)
+from app.engine.spatial_control.compute import (
+    SUPERIORITY_DIFF as _SPATIAL_SUP_DIFF,
+)
+from app.engine.spatial_control.compute import (
+    WIDE_STD as _SPATIAL_WIDE,
+)
 from app.sports import football
 
 _URGENCY_BY_LEVEL = {"high": 0.9, "medium": 0.6, "low": 0.35}
@@ -176,15 +192,41 @@ def build_candidates(
             ))
 
     # spatial_control (spatial)
+    #
+    # Eskiden `magnitude=0.6` SABİTTİ. Ölçüldü (n=67 karar): 67 kararın hepsinde
+    # tek değer, standart sapma 0.000 — yani kanıt gücü hakkında SIFIR bilgi
+    # taşıyordu ve güven skorunun o payı gürültüydü. Oysa raporun kendisi gerçek
+    # büyüklükleri zaten üretiyor; hat onları yok sayıyordu.
+    #
+    # Artık magnitude = ateşleyen uyarılar arasında eşiği EN ÇOK aşanın gücü.
+    # `_soft_saturate` ile sıkıştırılır: "eşiği bir tık aşan" ile "katbekat aşan"
+    # ayırt edilebilir kalsın (bkz. momentum doygunluk kusuru).
     sc = out.get("spatial_control")
     if _is_dict(sc):
         alerts = sc.get("alerts", []) or []
         fired = bool(alerts)
         if fired:
+            guc = [0.0]
+            # #1 Hatlar arası boşluk: eşiğin üstündeki fazla zone-14 pası.
+            if sc.get("gap_between_lines"):
+                fazla = float(sc.get("our_zone14_passes", 0)) - _SPATIAL_GAP_MIN
+                guc.append(_soft_saturate(max(0.0, fazla), half=_SPATIAL_GAP_MIN))
+            # #2 Sayısal üstünlük: kanat farkının eşiği aşan kısmı.
+            diffs = [float(b.get("diff", 0)) for b in (sc.get("flank_balance") or [])
+                     if isinstance(b, dict)]
+            if sc.get("superiority_flank") and diffs:
+                fazla = max(diffs) - _SPATIAL_SUP_DIFF
+                guc.append(_soft_saturate(max(0.0, fazla), half=_SPATIAL_SUP_DIFF))
+            # #3 Darlık/genişlik: y dağılımının eşikten sapması.
+            durum, std = sc.get("shape_state"), float(sc.get("width_y_std", 0.0))
+            if durum == "narrow":
+                guc.append(_soft_saturate(max(0.0, _SPATIAL_NARROW - std), half=6.0))
+            elif durum == "wide":
+                guc.append(_soft_saturate(max(0.0, std - _SPATIAL_WIDE), half=6.0))
             cands.append(CandidateSignal(
                 key="spatial_control", signal_type="spatial",
                 headline=alerts[0], urgency=0.6, fired=True, minute=current_minute,
-                sample_size=win["passes"], magnitude=0.6,
+                sample_size=win["passes"], magnitude=max(guc),
             ))
 
     # live_matchup (matchup)
