@@ -15,7 +15,7 @@ interface VideoItem { name: string; size_mb: number }
 interface CalibItem { name: string; points: number; reprojection_error_m: number | null; valid: boolean }
 export interface TrackingJob {
   id: string; state: "queued" | "running" | "ingesting" | "done" | "failed";
-  created_at: string; video: string; calibration: string; label?: string | null;
+  created_at: string; video: string; calibration: string | null; auto_anchor?: boolean; label?: string | null;
   match_id: number; frames?: number; error?: string | null;
   summary?: Record<string, unknown> | null; log_tail?: string[];
 }
@@ -32,6 +32,10 @@ const STATE_COLOR: Record<TrackingJob["state"], string> = {
   queued: "var(--muted)", running: "var(--high)", ingesting: "var(--high)", done: "var(--low)", failed: "var(--crit)",
 };
 const ACTIVE = new Set(["queued", "running", "ingesting"]);
+// Çapasız başlangıç: kalibratör çapayı saha çizgilerinden bulur (TV kuralı).
+// Elle kalibrasyon daha doğrudur (0.09 m vs ~1.7 m); bu seçenek yayın gibi
+// kalibrasyonu olmayan kaynaklar içindir.
+const AUTO_ANCHOR = "__auto__";
 
 export function VideoJobPanel({ onDone }: { onDone: (matchId: number) => void }) {
   const { data: videos, mutate: refreshVideos } = useSWR<{ videos: VideoItem[] }>("/tracking/videos", apiFetch, { revalidateOnFocus: false });
@@ -58,7 +62,11 @@ export function VideoJobPanel({ onDone }: { onDone: (matchId: number) => void })
   const [seenDone, setSeenDone] = useState<Set<string>>(new Set());
 
   useEffect(() => { if (!video && videos?.videos?.length) setVideo(videos.videos[0].name); }, [videos, video]);
-  useEffect(() => { if (!calib && calibs?.calibrations?.length) setCalib(calibs.calibrations.find((c) => c.valid)?.name ?? calibs.calibrations[0].name); }, [calibs, calib]);
+  useEffect(() => {
+    if (calib || !calibs) return;
+    const first = calibs.calibrations.find((c) => c.valid)?.name;
+    setCalib(first ?? AUTO_ANCHOR);
+  }, [calibs, calib]);
 
   // Yeni biten işleri sayfaya bildir (bir kez)
   useEffect(() => {
@@ -81,7 +89,8 @@ export function VideoJobPanel({ onDone }: { onDone: (matchId: number) => void })
       await apiFetch("/tracking/jobs", {
         method: "POST",
         body: JSON.stringify({
-          video, calibration: calib, home_team_id: home, away_team_id: away, label: label || null,
+          video, calibration: calib === AUTO_ANCHOR ? null : calib,
+          home_team_id: home, away_team_id: away, label: label || null,
           fps, track_fps: trackFps, tiles, threshold, ball_threshold: threshold, preview: true,
           max_seconds: maxSeconds === "" ? null : maxSeconds,
         }),
@@ -123,7 +132,7 @@ export function VideoJobPanel({ onDone }: { onDone: (matchId: number) => void })
       <input type="file" accept="video/mp4,video/quicktime,.mkv,.avi" disabled={busy} onChange={(e) => upload(e.target.files?.[0] ?? null)} style={{ ...inputStyle, padding: 4 }} />
       <label style={{ fontSize: 11.5, display: "block", marginTop: 8 }}>Kalibrasyon
         <select value={calib} onChange={(e) => setCalib(e.target.value)} style={inputStyle}>
-          {(calibs?.calibrations ?? []).length === 0 && <option value="">(kalibrasyon yok)</option>}
+          <option value={AUTO_ANCHOR}>Otomatik çapa — saha çizgilerinden (yayın / kalibrasyon yok)</option>
           {(calibs?.calibrations ?? []).map((c) => (
             <option key={c.name} value={c.name} disabled={!c.valid}>{c.name} · {c.points} nokta{c.reprojection_error_m != null ? ` · ${c.reprojection_error_m} m` : ""}{c.valid ? "" : " · geçersiz"}</option>
           ))}

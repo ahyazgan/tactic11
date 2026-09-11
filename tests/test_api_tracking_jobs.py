@@ -128,6 +128,22 @@ def test_job_end_to_end_with_stub_worker(client, env, monkeypatch):
     assert client.get(f"/tracking/jobs/{job['id']}").status_code == 404
 
 
+def test_job_without_calibration_runs_anchorless(client, env, monkeypatch):
+    """Kalibrasyon verilmezse iş ÇAPASIZ başlar: işçiye --calibration geçilmez,
+    kalibratör çapayı saha çizgilerinden bulur (TV kuralı)."""
+    monkeypatch.setattr(tracking_jobs, "run_ingest", lambda *a, **k: {"frames_written": 1})
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "clip.mp4").write_bytes(b"\x00" * 10)
+    r = client.post("/tracking/jobs", json={"video": "clip.mp4", "match_id": 990778})
+    assert r.status_code == 202, r.text
+    job = r.json()
+    assert job["calibration"] is None and job["auto_anchor"] is True
+    stored = tracking_jobs._read_job(job["id"])
+    assert "--calibration" not in stored["command"]
+    done = _wait_done(client, job["id"])
+    assert done["state"] == "done", done
+
+
 def test_job_failure_is_reported(client, env, monkeypatch):
     monkeypatch.setattr(tracking_jobs, "run_ingest", lambda *a, **k: {"frames_written": 0})
     (env / "videos").mkdir(parents=True, exist_ok=True)
