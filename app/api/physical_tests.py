@@ -32,6 +32,7 @@ from sqlalchemy.orm import Session
 from app.api.auth import get_current_user
 from app.core.logging import get_logger
 from app.db import models
+from app.db.performance_target import PerformanceTarget
 from app.db.physical_test import PhysicalTest, TestProtocol
 from app.db.session import get_session
 from app.db.session_load import SessionLoad
@@ -1304,6 +1305,145 @@ def retest_comparison(
         improved=counts["improved"], declined=counts["declined"],
         unchanged=counts["unchanged"], insufficient=counts["insufficient"],
         rows=out_rows,
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Hedef takibi — oyuncu/protokol hedef değeri; ilerleme test geçmişinden
+# (development_curve eğimi) türetilir, saklanmaz. "Bu hızla kaç ölçüm sonra?"
+# --------------------------------------------------------------------------- #
+
+
+class TargetIn(BaseModel):
+    player_id: str
+    player_name: str
+    protocol: TestProtocol
+    target_value: float
+    due_date: date | None = None
+    note: str | None = Field(default=None, max_length=500)
+
+
+class TargetOut(BaseModel):
+    id: int
+    player_id: str
+    player_name: str
+    protocol: str
+    protocol_name: str
+    unit: str
+    higher_is_better: bool
+    target_value: float
+    due_date: date | None
+    note: str | None
+    # ilerleme (assess_target)
+    current: float | None
+    current_date: date | None
+    n_points: int
+    gap: float | None
+    progress_pct: float | None
+    slope: float | None
+    tests_to_target: int | None
+    status: str                 # reached | on_track | off_track | insufficient
+    progress_note: str
+
+
+_TARGET_ORDER = {c: i for i, c in enumerate(("off_track", "on_track", "insufficient", "reached"))}
+
+
+def _target_out(row: PerformanceTarget, history: list[PhysicalTest]) -> TargetOut:
+    proto = perf.PROTOCOLS[row.protocol]
+    values = [float(h.value) for h in history]
+    prog = perf.assess_target(
+        float(row.target_value), values, higher_is_better=proto.higher_is_better,
+    )
+    return TargetOut(
+        id=row.id, player_id=row.player_id, player_name=row.player_name,
+        protocol=row.protocol, protocol_name=proto.name, unit=proto.unit,
+        higher_is_better=proto.higher_is_better, target_value=float(row.target_value),
+        due_date=row.due_date, note=row.note,
+        current=prog.current, current_date=history[-1].test_date if history else None,
+        n_points=len(values), gap=prog.gap, progress_pct=prog.progress_pct,
+        slope=prog.slope, tests_to_target=prog.tests_to_target,
+        status=prog.status, progress_note=prog.note,
+    )
+
+
+def _target_history(
+    session: Session, tenant_id: str | None, player_id: str, protocol: str,
+) -> list[PhysicalTest]:
+    return list(session.execute(
+        select(PhysicalTest)
+        .where(PhysicalTest.tenant_id == tenant_id,
+               PhysicalTest.player_id == player_id,
+               PhysicalTest.protocol == protocol)
+        .order_by(PhysicalTest.test_date.asc(), PhysicalTest.id.asc())
+    ).scalars())
+
+
+@router.post("/targets", response_model=TargetOut, status_code=status.HTTP_201_CREATED)
+def create_target(
+    payload: TargetIn,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> TargetOut:
+    """Hedef koy; cevapta mevcut geçmişe göre ilerleme de gelir."""
+    row = PerformanceTarget(
+        tenant_id=user.tenant_id, player_id=payload.player_id,
+        player_name=payload.player_name, protocol=payload.protocol.value,
+        target_value=payload.target_value, due_date=payload.due_date,
+        note=payload.note, created_by=user.email, created_at=datetime.now(UTC),
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    _log_access(
+        session, player_id=row.player_id, action="create",
+        endpoint="/physical-tests/targets", user_id=user.id,
+    )
+    hist = _target_history(session, user.tenant_id, row.player_id, row.protocol)
+    return _target_out(row, hist)
+
+
+@router.get("/targets", response_model=list[TargetOut])
+def list_targets(
+    player_id: str | None = None,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> list[TargetOut]:
+    """Tenant'ın hedefleri + her biri için ilerleme. Sıra: rotadan sapan →
+    yolda → yetersiz → ulaşılan. `/{player_id}`'den ÖNCE tanımlı."""
+    q = select(PerformanceTarget).where(PerformanceTarget.tenant_id == user.tenant_id)
+    if player_id is not None:
+        q = q.where(PerformanceTarget.player_id == player_id)
+    rows = list(session.execute(q.order_by(PerformanceTarget.id.asc())).scalars())
+    out = [
+        _target_out(r, _target_history(session, user.tenant_id, r.player_id, r.protocol))
+        for r in rows
+    ]
+    out.sort(key=lambda t: (_TARGET_ORDER[t.status], t.player_name, t.protocol))
+    return out
+
+
+@router.delete("/targets/{target_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_target(
+    target_id: int,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> None:
+    """Hedefi sil (sadece aynı tenant)."""
+    row = session.execute(
+        select(PerformanceTarget).where(
+            PerformanceTarget.id == target_id,
+            PerformanceTarget.tenant_id == user.tenant_id,
+        )
+    ).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Hedef bulunamadı.")
+    player_id = row.player_id
+    session.delete(row)
+    session.commit()
+    _log_access(
+        session, player_id=player_id, action="delete",
+        endpoint="/physical-tests/targets/{target_id}", user_id=user.id,
     )
 
 

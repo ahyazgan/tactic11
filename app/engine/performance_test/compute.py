@@ -13,6 +13,7 @@ Saf: DB/HTTP yok. Mevcut development_curve + anomaly motorlarını kullanır.
 """
 from __future__ import annotations
 
+import math
 import statistics
 from dataclasses import dataclass, field
 
@@ -450,6 +451,78 @@ def retest_outcome(
     else:
         cat = "declined"
     return RetestOutcome(category=cat, assessment=a)
+
+
+# Hedef takibi — oyuncu/protokol hedef değeri, mevcut eğimle (development_curve)
+# "kaç ölçüm sonra" tahmini. Eğim için en az TARGET_MIN_POINTS ölçüm; tahmin
+# TARGET_MAX_HORIZON ölçümü aşarsa "bu hızla ulaşılmaz" (off_track).
+TARGET_MIN_POINTS = 3
+TARGET_MAX_HORIZON = 12
+
+TARGET_STATUSES = ("reached", "on_track", "off_track", "insufficient")
+
+
+@dataclass(frozen=True)
+class TargetProgress:
+    target: float
+    current: float | None        # son ölçüm (yoksa None)
+    gap: float | None            # hedefe kalan, yön-duyarlı (≤0 = ulaşıldı)
+    progress_pct: float | None   # ilk ölçümden hedefe ilerleme 0..100
+    slope: float | None          # ölçüm başına değişim (ham, işaretli)
+    tests_to_target: int | None  # mevcut eğimle kaç ölçüm sonra (0 = ulaşıldı)
+    status: str                  # reached | on_track | off_track | insufficient
+    note: str
+
+
+def assess_target(
+    target: float,
+    values: list[float],
+    *,
+    higher_is_better: bool,
+    min_points: int = TARGET_MIN_POINTS,
+    max_horizon: int = TARGET_MAX_HORIZON,
+) -> TargetProgress:
+    """Hedefe ulaşıldı mı; değilse mevcut eğimle kaç ölçüm sonra?
+
+    Ölçüm yoksa / eğim için yetersizse iddia üretilmez ('insufficient').
+    Eğim hedefin tersine ya da düz ise 'off_track'; hedefe götürüyor ama
+    max_horizon ölçümden uzun sürecekse yine 'off_track' (notta sebep yazar).
+    """
+    if not values:
+        return TargetProgress(target=target, current=None, gap=None, progress_pct=None,
+                              slope=None, tests_to_target=None, status="insufficient",
+                              note="ölçüm yok")
+    current = values[-1]
+    sign = 1.0 if higher_is_better else -1.0
+    gap = round(sign * (target - current), 3)          # pozitif = kalan
+    start = values[0]
+    total = sign * (target - start)
+    if total <= 0:
+        progress_pct: float | None = 100.0 if gap <= 0 else None
+    else:
+        progress_pct = round(max(0.0, min(100.0, 100.0 * sign * (current - start) / total)), 1)
+    if gap <= 0:
+        return TargetProgress(target=target, current=current, gap=gap, progress_pct=100.0,
+                              slope=None, tests_to_target=0, status="reached",
+                              note="hedefe ulaşıldı")
+    if len(values) < min_points:
+        return TargetProgress(target=target, current=current, gap=gap, progress_pct=progress_pct,
+                              slope=None, tests_to_target=None, status="insufficient",
+                              note=f"eğim için en az {min_points} ölçüm gerekir (n={len(values)})")
+    slope = development_curve(values).slope
+    rate = sign * slope                                  # pozitif = hedefe yaklaşıyor
+    if rate <= 0:
+        return TargetProgress(target=target, current=current, gap=gap, progress_pct=progress_pct,
+                              slope=slope, tests_to_target=None, status="off_track",
+                              note="eğim hedefin tersine ya da düz — bu gidişle ulaşılmaz")
+    tests = math.ceil(gap / rate)
+    if tests > max_horizon:
+        return TargetProgress(target=target, current=current, gap=gap, progress_pct=progress_pct,
+                              slope=slope, tests_to_target=tests, status="off_track",
+                              note=f"bu hızla ~{tests} ölçüm sonra (> {max_horizon}) — tempo yetersiz")
+    return TargetProgress(target=target, current=current, gap=gap, progress_pct=progress_pct,
+                          slope=slope, tests_to_target=tests, status="on_track",
+                          note=f"bu hızla ~{tests} ölçüm sonra")
 
 
 # --------------------------------------------------------------------------- #

@@ -31,6 +31,7 @@ import { GpsImport } from "./GpsImport";
 import { WellnessEntry } from "./WellnessEntry";
 import { SquadCompare } from "./SquadCompare";
 import { RetestCompare } from "./RetestCompare";
+import { TargetTracker } from "./TargetTracker";
 
 // Pano satırı — demo (tam SquadPlayer) ve API (yalnız id+ad) ortak şekli.
 interface BoardRow {
@@ -477,6 +478,7 @@ export default function FizikselDurumPage() {
 
           <SquadCompare />
           <RetestCompare />
+          <TargetTracker />
         </>
       )}
     </ConsoleShell>

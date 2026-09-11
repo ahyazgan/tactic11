@@ -1235,3 +1235,62 @@ def test_retest_is_tenant_isolated(client):
     state["tenant_id"] = "t2"
     body = c.get("/physical-tests/retest?protocol=cmj&split=2026-06-01").json()
     assert body["n"] == 0 and body["rows"] == []
+
+
+# --------------------------------------------------------------------------- #
+# Hedef takibi (POST/GET/DELETE /targets)
+# --------------------------------------------------------------------------- #
+
+
+def test_target_create_returns_progress_from_history(client):
+    c, _ = client
+    _post_series(c, "901", "Hedefli", "cmj", [
+        ("2026-05-01", 40.0), ("2026-05-08", 42.0), ("2026-05-15", 44.0), ("2026-05-22", 46.0),
+    ])
+    r = c.post("/physical-tests/targets", json={
+        "player_id": "901", "player_name": "Hedefli", "protocol": "cmj",
+        "target_value": 50.0, "due_date": "2026-08-31", "note": "sezon başı",
+    })
+    assert r.status_code == 201, r.text
+    body = r.json()
+    assert body["status"] == "on_track" and body["tests_to_target"] == 2
+    assert body["current"] == 46.0 and body["current_date"] == "2026-05-22" and body["n_points"] == 4
+    assert body["progress_pct"] == 60.0 and body["unit"] == "cm" and body["higher_is_better"] is True
+    assert body["due_date"] == "2026-08-31" and body["note"] == "sezon başı"
+
+
+def test_target_list_orders_off_track_first_and_filters_player(client):
+    c, _ = client
+    _post_series(c, "911", "Yolda", "cmj", [("2026-05-01", 40.0), ("2026-05-08", 44.0), ("2026-05-15", 48.0)])
+    _post_series(c, "912", "Sapan", "cmj", [("2026-05-01", 48.0), ("2026-05-08", 44.0), ("2026-05-15", 40.0)])
+    _post_series(c, "913", "Ulaşan", "cmj", [("2026-05-01", 48.0), ("2026-05-08", 50.0), ("2026-05-15", 52.0)])
+    for pid, name in [("913", "Ulaşan"), ("911", "Yolda"), ("912", "Sapan"), ("914", "Ölçümsüz")]:
+        assert c.post("/physical-tests/targets", json={
+            "player_id": pid, "player_name": name, "protocol": "cmj", "target_value": 50.0,
+        }).status_code == 201
+    body = c.get("/physical-tests/targets").json()
+    assert [t["status"] for t in body] == ["off_track", "on_track", "insufficient", "reached"]
+    only = c.get("/physical-tests/targets?player_id=911").json()
+    assert len(only) == 1 and only[0]["player_id"] == "911"
+
+
+def test_target_unknown_protocol_422_and_delete_204_then_404(client):
+    c, _ = client
+    assert c.post("/physical-tests/targets", json={
+        "player_id": "921", "player_name": "X", "protocol": "bilinmeyen", "target_value": 1.0,
+    }).status_code == 422
+    tid = c.post("/physical-tests/targets", json={
+        "player_id": "921", "player_name": "X", "protocol": "sprint_10m", "target_value": 1.70,
+    }).json()["id"]
+    assert c.delete(f"/physical-tests/targets/{tid}").status_code == 204
+    assert c.delete(f"/physical-tests/targets/{tid}").status_code == 404
+
+
+def test_target_is_tenant_isolated(client):
+    c, state = client
+    tid = c.post("/physical-tests/targets", json={
+        "player_id": "931", "player_name": "A", "protocol": "cmj", "target_value": 50.0,
+    }).json()["id"]
+    state["tenant_id"] = "t2"
+    assert c.get("/physical-tests/targets").json() == []
+    assert c.delete(f"/physical-tests/targets/{tid}").status_code == 404
