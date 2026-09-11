@@ -885,11 +885,20 @@ Aday sıralaması da aynı sebeple kesinlik × duyarlılık ile yapılır.
 
 Çapasız kalibratör uçtan uca: pan_zoom'da 9. denemede çapalanıp **362/500 kare kalibre
 (%72)**, hata ort **1.67 m** / %90 3.76 m; kesmeli yayında **133/500 (%27)** — elle çapayla
-aynı (%29). Elle çapa **0.09 m** veriyordu: otomatik çapanın ~1.5 m'lik perspektif kusuru
-takipte düzelmiyor. Bu yüzden **otomatik çapa bir yedektir**: operatör varsa
-`scripts/propose_calibration.py --tv-rule` ile öneriyi önizlemede onaylayıp
-`--calibration` vermek daha doğrudur. Çapasız evrede arama saniyede ~1 kez ~1 sn sürer
-(gerçek zaman sınırında); çapa bulununca maliyet biter.
+aynı (%29). Takip inlier tabanı (aşağıda) devreye girince otomatik çapalı koşum 64/500 kareye
+düşer (1.08 m): otomatik çapanın kusuru takipte düzelmiyor. Bu yüzden **otomatik çapa bir
+yedektir**: operatör varsa `scripts/propose_calibration.py --tv-rule` ile öneriyi önizlemede
+onaylayıp `--calibration` vermek daha doğrudur. Çapasız evrede arama saniyede ~1 kez ~1 sn
+sürer (gerçek zaman sınırında); çapa bulununca maliyet biter.
+
+**Teşhis — neden zayıf (ölçüldü, kod değişmedi):** sorun skor değil **arama**. Bench
+karelerinde gerçek homografi 0.88–0.97 puan alırken bulunan en iyi aday 0.13–0.42 (10 karenin
+9'unda); gerçeğe en yakın aday 2–6 m uzakta ve kaba sıralamada 0–226. sırada. İyileştirmenin
+havzası ~3 m, aday ızgarası 5–10 m — arama gerçeğin havzasına düşmüyor. Denenen ve
+yetmeyenler: tolerans tavlama (çapa hatası değişmez), kabadan-inceye tolerans merdiveni
+(yakın aday ilk 8'e giriyor ama iyileştirme paralel çizgi kaymasına kayıyor; 10 karenin 3'ü
+<1 m). Gerçek çözüm klasik saha kaydı: Hough doğru aileleri → model çizgi eşleştirmesi → DLT;
+fizibilite var (karelerin çoğunda 2 aile × 2–5 doğru) ama **gerçek TV görüntüsüyle kurulmalı**.
 
 **Maliyet:** 88 ms/kare (720p, CPU). 25 fps gerçek zaman için 40 ms gerekir; şu an
 2.2 kat yavaş. Düşürme yolları: çizgi maskesini küçültmek, model noktası sayısını

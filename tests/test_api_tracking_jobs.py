@@ -144,6 +144,38 @@ def test_job_without_calibration_runs_anchorless(client, env, monkeypatch):
     assert done["state"] == "done", done
 
 
+def test_jobs_run_one_at_a_time(client, env, monkeypatch):
+    """İki iş aynı anda GPU'ya binmez: ikincisi ilki bitene kadar kuyrukta bekler.
+
+    Gerçek işçi yerine `_run_job` zaman damgası kaydeder; aralıkların
+    çakışmaması sıralılığın kanıtıdır.
+    """
+    import threading
+    import time as _time
+
+    spans: list[tuple[str, float, float]] = []
+    done = threading.Event()
+
+    def fake_run(job):
+        t0 = _time.monotonic()
+        _time.sleep(0.15)
+        spans.append((job["id"], t0, _time.monotonic()))
+        if len(spans) == 2:
+            done.set()
+
+    monkeypatch.setattr(tracking_jobs, "_run_job", fake_run)
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "clip.mp4").write_bytes(b"\x00" * 10)
+    a = client.post("/tracking/jobs", json={"video": "clip.mp4", "match_id": 1}).json()
+    b = client.post("/tracking/jobs", json={"video": "clip.mp4", "match_id": 2}).json()
+    assert a["state"] == "queued" and b["state"] == "queued"
+    assert b["queue_ahead"] >= a["queue_ahead"]
+    assert done.wait(5.0), "işler tamamlanmadı"
+    (id1, s1, e1), (id2, s2, e2) = sorted(spans, key=lambda t: t[1])
+    assert id1 == a["id"] and id2 == b["id"]          # sıra korunur
+    assert s2 >= e1, "ikinci iş birincisi bitmeden başladı"
+
+
 def test_job_failure_is_reported(client, env, monkeypatch):
     monkeypatch.setattr(tracking_jobs, "run_ingest", lambda *a, **k: {"frames_written": 0})
     (env / "videos").mkdir(parents=True, exist_ok=True)
