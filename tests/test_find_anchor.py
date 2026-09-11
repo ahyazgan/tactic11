@@ -149,6 +149,96 @@ def test_hint_picks_the_nearer_of_the_two_hypotheses() -> None:
         assert d_chosen <= d_other
 
 
+# --- TV kuralı: yayın sahnesi (kadraj = saha dilimi) ----------------------- #
+
+def _probe_m(h_a: np.ndarray, h_b: np.ndarray, u: float, v: float) -> float:
+    p = np.array([u, v, 1.0])
+    a, b = h_a @ p, h_b @ p
+    return float(np.hypot(*(a[:2] / a[2] - b[:2] / b[2])))
+
+
+def test_camera_side_rule_accepts_a_broadcast_scene_and_lands_on_truth() -> None:
+    """TV kuralı ile ipucusuz KABUL — ve doğru yere.
+
+    Sahne yayın kamerası gibi kurulu: kadraj sahanın 60 m'lik orta dilimi,
+    görüntünün altı yakın taç (y=68), aday duruşlardan 9 px kaymış. Kabul
+    edilen çözüm gerçeğin 1 m içinde olmalı; uzlaşım yönelimi (alt = y>34)
+    korunmalı. Bu test kabul YOLUNU sentetik sahnede ilk kez kilitler —
+    önceki sahneler sahayı kadrajın içine koyduğu için aday uzayı dışındaydı.
+    """
+    from tests.pitch_scenes import dist_map_for as scene_map
+    from tests.pitch_scenes import view_homography
+
+    h_true = view_homography(W, H, centre_m=52.5, view_len_m=60.0, taper=0.82,
+                             offset_px=(9.0, -6.0))
+    res = find_anchor(scene_map(h_true, W, H), (W, H), assume_camera_side=True)
+    assert res.accepted, res.note
+    assert res.homography is not None and "TV kuralı" in res.note
+    q = res.homography @ np.array([W / 2, H - 1.0, 1.0])
+    assert (q[:2] / q[2])[1] > PITCH_WIDTH_M / 2, "görüntünün altı yakın taç (y>34) olmalı"
+    worst = max(_probe_m(res.homography, h_true, u, v)
+                for u, v in ((W / 2, H / 2), (W * 0.25, H * 0.6), (W * 0.75, H * 0.4)))
+    assert worst < 1.0, f"çapa gerçeğin {worst:.2f} m uzağında"
+    # İkiz yine sunulur: karşı açı olasılığı operatöre görünür kalsın
+    assert res.mirror_homography is not None
+    assert np.allclose(res.mirror_homography, mirrored_homography(res.homography))
+
+
+def test_camera_side_rule_is_a_convention_not_an_inference() -> None:
+    """Aynı sahnenin 180° ikizi verildiğinde sonuç yine 'alt = y 68' çıkar.
+
+    Yani kural sahneden bir şey ÖĞRENMEZ; çerçeveyi tanımlar. Karşı açıdan
+    çekilmiş bir görüntüde konumlar aynalanır — belgelenen sınır budur.
+    """
+    from tests.pitch_scenes import dist_map_for as scene_map
+    from tests.pitch_scenes import view_homography
+
+    h_true = view_homography(W, H, offset_px=(9.0, -6.0))
+    h_reverse = mirrored_homography(h_true)          # karşı açı: alt = y 0
+    res = find_anchor(scene_map(h_reverse, W, H), (W, H), assume_camera_side=True)
+    assert res.accepted, res.note
+    assert res.homography is not None and res.mirror_homography is not None
+    q = res.homography @ np.array([W / 2, H - 1.0, 1.0])
+    assert (q[:2] / q[2])[1] > PITCH_WIDTH_M / 2
+    # Gerçek (karşı açı) çözüm ikizde duruyor
+    assert _probe_m(res.mirror_homography, h_reverse, W / 2, H / 2) < 1.0
+
+
+def test_coverage_catches_a_pose_that_explains_only_part_of_the_scene() -> None:
+    """Kapsama kapısı — gerçek karede görülen kusurun sentetik hâli.
+
+    Ölçüldü (pan_zoom kare 300): modelin çoğunu kadraj dışına atıp yalnız orta
+    çizgiyi oturtan duruş %97 inlier aldı ve 27 m yanlıştı; kadrajdaki orta
+    yuvarlak ve ceza yayı hiç açıklanmıyordu. inlier "model → çizgi" bakar,
+    kapsama "çizgi → model": görünen çizgilerin payı. Gerçek duruş ~1.0
+    kapsama alırken, kadrajın yalnız bir şeridini açıklayan duruş eşiğin
+    altında kalmalı.
+    """
+    from app.tracking.homography_fit import ANCHOR_MIN_COVERAGE, line_coverage
+    from tests.pitch_scenes import dist_map_for as scene_map
+    from tests.pitch_scenes import view_homography
+
+    h_true = view_homography(W, H, offset_px=(9.0, -6.0))
+    mask = scene_map(h_true, W, H) <= 0.5
+    assert line_coverage(h_true, mask) > 0.95
+    # Modeli 3 kat büyütüp kaydır: kadraja yalnız orta çizgi + bir taç düşer
+    squeezed = view_homography(W, H, centre_m=52.5, view_len_m=20.0, taper=1.0,
+                               offset_px=(0.0, -H * 1.2), scale=3.0)
+    cov = line_coverage(squeezed, mask)
+    assert cov < ANCHOR_MIN_COVERAGE, cov
+
+
+def test_camera_side_rule_is_off_by_default() -> None:
+    """Varsayılan davranış değişmedi: ipucu yoksa kabul yok — kalite iyi olsa da."""
+    from tests.pitch_scenes import dist_map_for as scene_map
+    from tests.pitch_scenes import view_homography
+
+    h_true = view_homography(W, H, offset_px=(9.0, -6.0))
+    res = find_anchor(scene_map(h_true, W, H), (W, H))
+    assert not res.accepted and res.homography is None
+    assert "180°" in res.note
+
+
 def test_blank_scene_produces_no_anchor() -> None:
     """Çizgi yoksa çapa da yok — uydurma homografi üretilmemeli."""
     blank = np.full((H, W), 50.0, dtype=float)

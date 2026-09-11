@@ -73,6 +73,100 @@ def _feed(cal: PerFrameCalibrator, h: np.ndarray):
     return cal.process_lines(d, line_pixels=line_pixels_of(d))
 
 
+# --- çapasız başlangıç + çekim başına çapa --------------------------------- #
+
+def test_anchorless_start_requires_image_size() -> None:
+    with pytest.raises(ValueError):
+        PerFrameCalibrator(None)
+
+
+def _scene(**kw):
+    """Yayın sahnesi (kadraj = saha dilimi) — bkz. tests/pitch_scenes.py."""
+    from tests.pitch_scenes import view_homography
+
+    return view_homography(W, H, **kw)
+
+
+def _feed_scene(cal: PerFrameCalibrator, h: np.ndarray):
+    from tests.pitch_scenes import dist_map_for as scene_map
+    from tests.pitch_scenes import line_pixels_of as scene_pixels
+
+    d = scene_map(h, W, H)
+    return cal.process_lines(d, line_pixels=scene_pixels(d))
+
+
+def _probe_m(h_a: np.ndarray, h_b: np.ndarray) -> float:
+    p = np.array([W / 2, H / 2, 1.0])
+    a, b = h_a @ p, h_b @ p
+    return float(np.hypot(*(a[:2] / a[2] - b[:2] / b[2])))
+
+
+def test_anchorless_calibrator_finds_its_own_anchor_then_tracks() -> None:
+    """Elle kalibrasyon yok: çapa görüntüden bulunur (TV kuralı), sonra takip.
+
+    Bulunana kadar kare ÜRETİLMEZ; bulununca takip normal yoldan sürer ve
+    bulunan çapa gerçeğin 1 m içindedir.
+    """
+    cal = PerFrameCalibrator(None, image_size=(W, H))
+    assert not cal.anchored and not cal.tracking
+    truth = _scene(offset_px=(9.0, -6.0))
+    first = _feed_scene(cal, truth)
+    assert first.ok, first.reason
+    assert cal.anchored and cal.anchors_found == 1 and cal.anchor_attempts == 1
+    assert cal.anchor is not None and _probe_m(cal.anchor.homography, truth) < 1.0
+    results = [_feed_scene(cal, _scene(offset_px=(9.0 + k * 6.0, -6.0 + k * 2.0)))
+               for k in range(1, 5)]
+    assert all(r.ok for r in results), [r.reason for r in results if not r.ok]
+    assert cal.anchor_attempts == 1          # takipteyken çapa aranmaz
+
+
+def test_anchorless_search_is_throttled() -> None:
+    """Çapa araması pahalı: boş sahnede her karede değil, aralıklı denenir."""
+    cal = PerFrameCalibrator(None, image_size=(W, H))
+    blank = np.full((H, W), 60.0)
+    # Çizgi VAR gibi (line_pixels yeterli) ama oturacak yapı yok → kabul edilmez
+    for _ in range(PerFrameCalibrator.AUTO_ANCHOR_EVERY * 2):
+        r = cal.process_lines(blank, line_pixels=MIN_LINE_PIXELS + 1)
+        assert not r.ok
+    assert cal.anchor_attempts == 2
+    assert not cal.anchored
+
+
+def test_lost_shot_reanchors_when_reacquire_is_on() -> None:
+    """Kesmeden sonra kamera BAŞKA yere bakıyor: çapadan yakalama tutmaz.
+
+    Bir süre beklenir (ana kamera dönebilir), dönmezse çapa yeniden aranır ve
+    çekim kendi çapasını alır. Yeniden yakalama kapalıysa bu asla olmaz.
+    """
+    main_cam = _scene(centre_m=52.5, view_len_m=60.0, offset_px=(9.0, -6.0))
+    # Kesme sonrası kamera SOL kaleye yakın çekimde (30 m) — çapadan çok uzak
+    other_cam = _scene(centre_m=17.0, view_len_m=30.0, taper=0.66, offset_px=(-5.0, 2.0))
+    for reacquire in (True, False):
+        anchor = calibration_from_homography(main_cam, (W, H))
+        cal = PerFrameCalibrator(anchor, image_size=(W, H), allow_reacquire=reacquire)
+        assert _feed_scene(cal, main_cam).ok
+        cal.mark_cut()
+        results = []
+        budget = PerFrameCalibrator.REANCHOR_AFTER_MISSES + PerFrameCalibrator.AUTO_ANCHOR_EVERY
+        for _ in range(budget):
+            results.append(_feed_scene(cal, other_cam))
+        if not reacquire:
+            assert not any(r.ok for r in results)
+            assert cal.reanchors == 0 and cal.anchor_attempts == 0
+            continue
+        # Kayıp süresi: en az REANCHOR_AFTER_MISSES kare çapadan yakalama denenir
+        assert not any(r.ok for r in results[:PerFrameCalibrator.REANCHOR_AFTER_MISSES - 1])
+        assert cal.anchor_attempts >= 1, "kayıpta çapa yeniden aranmalıydı"
+        assert cal.reanchors == 1 and cal.anchors_found == 1
+        assert cal.anchor is not None and _probe_m(cal.anchor.homography, other_cam) < 1.0
+        # Kabul edilen her kare YENİ çekime oturmuş olmalı — eskisine değil
+        for r in results:
+            if r.ok:
+                assert r.calibration is not None
+                assert _probe_m(r.calibration.homography, other_cam) < 1.0
+        assert cal.tracking
+
+
 def test_tracks_a_slowly_panning_camera(calibrator) -> None:
     """Asıl iş: kamera azar azar kayarken homografi peşinden gitmeli."""
     results = [_feed(calibrator, homography_for((k * 6.0, k * 2.0))) for k in range(5)]

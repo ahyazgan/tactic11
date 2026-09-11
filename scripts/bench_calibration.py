@@ -345,6 +345,155 @@ def cuts(args: argparse.Namespace) -> int:
     return 0
 
 
+def _probe_error_m(h: np.ndarray, truth: np.ndarray, w: int, h_px: int) -> float:
+    """Üç sabit görüntü noktasının saha karşılığındaki en kötü fark (m)."""
+    probes = [(w / 2, h_px / 2), (w * 0.25, h_px * 0.6), (w * 0.75, h_px * 0.4)]
+    return max(float(np.hypot(*(_pitch(h, u, v) - _pitch(truth, u, v)))) for u, v in probes)
+
+
+def anchor(args: argparse.Namespace) -> int:
+    """ÇAPASIZ başlangıç ne kadar doğru? `find_anchor` + TV kuralı, kare kare.
+
+    Ölçülen: her `--every`. karede çapa aranır; kabul edilenlerin gerçek
+    homografiye (saha gerçeği) uzaklığı metre cinsinden raporlanır. Uzlaşım
+    (görüntünün altı = y 68) saha gerçeğinin yönelimiyle örtüşmeyebilir — bu
+    bir HATA değil, çerçeve tanımıdır; o yüzden hata gerçeğe VE 180° ikizine
+    göre ayrı ölçülür, ikizle örtüşen kare sayısı yazılır.
+
+    Asıl soru güvenlik: kabul edilen çapa kaç kez `--bad-m`'den fazla yanlış?
+    (Ölçüldü — tam saha görünen sahnede %90 inlier alan bir öneri 24 m
+    yanlış olabiliyor. Bu komut o iddiayı sayıya bağlar.)
+    """
+    import cv2
+
+    from app.tracking.homography_fit import (
+        ANCHOR_MIN_COVERAGE,
+        find_anchor,
+        line_coverage,
+        mirrored_homography,
+    )
+    from app.tracking.pitch_lines import extract_lines
+
+    bench = Path(args.bench_dir)
+    gt, true_h = _load(bench)
+    w, h = gt["width"], gt["height"]
+    cap = cv2.VideoCapture(str(bench / MP4_NAME))
+    tried = accepted = mirrored = bad = 0
+    errs: list[float] = []
+    truth_cov: list[float] = []
+    reasons: dict[str, int] = {}
+    elapsed = 0.0
+    idx = 0
+    while idx < args.frames:
+        ok, frame = cap.read()
+        if not ok:
+            break
+        if idx % args.every == 0:
+            ext = extract_lines(frame)
+            truth = true_h(gt["params"][idx])
+            # Kapsama eşiği için zemin: GERÇEK homografi kadrajdaki çizgilerin
+            # ne kadarını açıklıyor? (oyuncu/yazı gürültüsü bunu 1'in altına çeker)
+            truth_cov.append(line_coverage(truth, ext.mask))
+            t0 = time.time()
+            res = find_anchor(ext.dist_map, (w, h), assume_camera_side=True)
+            elapsed += time.time() - t0
+            tried += 1
+            if res.accepted and res.homography is not None:
+                accepted += 1
+                e_true = _probe_error_m(res.homography, truth, w, h)
+                e_mirror = _probe_error_m(res.homography, mirrored_homography(truth), w, h)
+                if e_mirror < e_true:
+                    mirrored += 1
+                e = min(e_true, e_mirror)
+                errs.append(e)
+                if e > args.bad_m:
+                    bad += 1
+                    inl = res.fit.inlier_ratio if res.fit else float("nan")
+                    print(f"  kare {idx}: KABUL ama {e:.1f} m yanlış (inlier %{inl * 100:.0f}, "
+                          f"kapsama %{res.coverage * 100:.0f})")
+            else:
+                key = res.note.split(":")[0].split("(")[0].strip()[:48]
+                reasons[key] = reasons.get(key, 0) + 1
+        idx += 1
+    cap.release()
+    e = np.array(errs) if errs else np.array([np.nan])
+    tc = np.array(truth_cov) if truth_cov else np.array([np.nan])
+    print(f"\n=== ÇAPASIZ BAŞLANGIÇ (find_anchor + TV kuralı) — {bench / MP4_NAME} ===")
+    print(f"  denenen kare: {tried} · kabul: {accepted} (%{accepted / max(tried, 1) * 100:.0f})"
+          f" · {elapsed / max(tried, 1) * 1000:.0f} ms/arama")
+    print(f"  gerçek homografinin kapsaması: ort %{np.nanmean(tc) * 100:.0f} · en düşük "
+          f"%{np.nanmin(tc) * 100:.0f} · eşik altı {int((tc < ANCHOR_MIN_COVERAGE).sum())}/{len(tc)}"
+          f" (eşik %{ANCHOR_MIN_COVERAGE * 100:.0f})")
+    if errs:
+        print(f"  kabul edilenlerde hata: ort {np.nanmean(e):.2f} m · %90 "
+              f"{np.nanpercentile(e, 90):.2f} m · en kötü {np.nanmax(e):.2f} m")
+        print(f"  yanlış kabul (> {args.bad_m:g} m): {bad}/{accepted}")
+        print(f"  saha gerçeğiyle aynı yönelim: {accepted - mirrored} · 180° ikizi: {mirrored}"
+              "  (uzlaşım çerçevesi — hata değil)")
+    if reasons:
+        print("  ret gerekçeleri:")
+        for k, n in sorted(reasons.items(), key=lambda kv: -kv[1]):
+            print(f"    {n:>3}  {k}")
+    return 0
+
+
+def auto(args: argparse.Namespace) -> int:
+    """Çapasız kalibratör uçtan uca: çapayı bul, takip et, kesmede yeniden çapala.
+
+    Elle çapalı `cuts` ölçümünün karşılığı. Rapor: kalibre oran, kabul edilen
+    karelerde metre hatası, bulunan çapa / çekim başına yeniden çapa sayısı.
+    """
+    import cv2
+
+    from app.tracking.camera import CutDetector
+    from app.tracking.homography_fit import mirrored_homography
+    from app.tracking.pitch_lines import extract_lines
+
+    bench = Path(args.bench_dir)
+    gt, true_h = _load(bench)
+    w, h = gt["width"], gt["height"]
+    for name in (MP4_NAME, CUTS_NAME):
+        video = bench / name
+        if not video.exists():
+            print(f"{video} yok — atlandı")
+            continue
+        cap = cv2.VideoCapture(str(video))
+        pfc = PerFrameCalibrator(None, image_size=(w, h), allow_reacquire=True)
+        det = CutDetector()
+        errs: list[float] = []
+        idx = 0
+        t0 = time.time()
+        while idx < args.frames:
+            ok, frame = cap.read()
+            if not ok:
+                break
+            if det.update(frame) == "cut":
+                pfc.mark_cut()
+            ext = extract_lines(frame)
+            res = pfc.process_lines(ext.dist_map, line_pixels=ext.line_pixels,
+                                    grass_ratio=ext.grass_ratio)
+            if res.ok and res.calibration is not None and name == MP4_NAME:
+                truth = true_h(gt["params"][idx])
+                errs.append(min(_probe_error_m(res.calibration.homography, truth, w, h),
+                                _probe_error_m(res.calibration.homography,
+                                               mirrored_homography(truth), w, h)))
+            idx += 1
+        cap.release()
+        took = (time.time() - t0) / max(idx, 1) * 1000
+        print(f"\n=== ÇAPASIZ KALİBRATÖR — {name} ({idx} kare) ===")
+        print(f"  kalibre {pfc.frames_calibrated}/{pfc.frames_seen} "
+              f"(%{pfc.calibrated_ratio * 100:.0f}) · çapa arama {pfc.anchor_attempts} · "
+              f"bulunan {pfc.anchors_found} · çekim başına yeniden çapa {pfc.reanchors} · "
+              f"kesme {det.cuts} · {took:.0f} ms/kare")
+        if errs:
+            e = np.array(errs)
+            print(f"  kalibre karelerde hata: ort {e.mean():.2f} m · %90 "
+                  f"{np.percentile(e, 90):.2f} m · en kötü {e.max():.2f} m")
+        elif name == MP4_NAME:
+            print("  hiç kare kalibre olmadı")
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Kare başına kalibrasyon ölçümü")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -382,6 +531,18 @@ def main() -> int:
     c.add_argument("--bench-dir", required=True)
     c.add_argument("--frames", type=int, default=500)
     c.set_defaults(func=cuts)
+
+    a = sub.add_parser("anchor", help="Çapasız başlangıcın doğruluğu (find_anchor + TV kuralı)")
+    a.add_argument("--bench-dir", required=True)
+    a.add_argument("--frames", type=int, default=500)
+    a.add_argument("--every", type=int, default=10)
+    a.add_argument("--bad-m", type=float, default=3.0, help="Bu kadar metreden fazla = yanlış kabul")
+    a.set_defaults(func=anchor)
+
+    au = sub.add_parser("auto", help="Çapasız kalibratör uçtan uca (pan_zoom + kesmeli)")
+    au.add_argument("--bench-dir", required=True)
+    au.add_argument("--frames", type=int, default=500)
+    au.set_defaults(func=auto)
 
     args = p.parse_args()
     return int(args.func(args))

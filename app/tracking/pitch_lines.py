@@ -20,6 +20,7 @@ taktik sinyal demektir (bkz. app/tracking/camera.py).
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import dataclass
 
 import numpy as np
@@ -29,6 +30,7 @@ from app.tracking.homography_fit import (
     DEFAULT_TOLERANCE_PX,
     FitResult,
     corners_from_homography,
+    find_anchor,
     homography_from_corners,
     refine_homography,
 )
@@ -130,7 +132,14 @@ class PerFrameCalibrator:
       Varsayılanda kare üretilmez ve dışarıdan çapa beklenir. `allow_reacquire`
       açıksa arama **çapadan** yapılır (kaymış son homografiden DEĞİL) ve yüksek
       inlier istenir; TV yayınında ana kamera kesmeden sonra benzer görüntüye
-      döndüğü için bu pratikte işe yarar.
+      döndüğü için bu pratikte işe yarar. Çapadan da tutmuyorsa çekim başka bir
+      yere bakıyordur: `REANCHOR_AFTER_MISSES` çizgili kareden sonra çapa
+      YENİDEN aranır (çekim başına çapa, `find_anchor` + TV kuralı).
+    - **ÇAPASIZ** — `anchor=None` ile başlatıldıysa elle kalibrasyon yoktur;
+      kalibratör çapayı görüntüden kendisi arar (`find_anchor`,
+      `assume_camera_side=True`: görüntünün altı yakın taç y=68). Bulununcaya
+      kadar kare üretilmez. Arama pahalı olduğu için her `AUTO_ANCHOR_EVERY`
+      çizgili karede bir denenir.
 
     Neden bu kadar sıkı — iki ayrı sebep, ikisi de ölçüldü:
 
@@ -164,35 +173,65 @@ class PerFrameCalibrator:
     # cinsinden köşe hareketi kaldıraçla büyür ve gerçek hareketi temsil etmez.
     PREDICT_MIN_MOTION_M = 0.3
     _PROBE_UV = ((0.5, 0.5), (0.25, 0.5), (0.75, 0.5))
+    # Çapa araması pahalıdır (~80 aday + 8 iyileştirme; kare başına oturtmanın
+    # ~10-20 katı). Çapasızken her bu kadar ÇİZGİLİ karede bir denenir.
+    AUTO_ANCHOR_EVERY = 15
+    # Kayıpta çapadan yakalama bu kadar çizgili karede tutmadıysa çekim başka
+    # bir yere bakıyordur → çapa yeniden aranır (çekim başına çapa). 15 fps'te
+    # ~1 saniye: ana kameranın kesme sonrası toparlanmasına fırsat kalır.
+    REANCHOR_AFTER_MISSES = 15
 
-    def __init__(self, anchor: PitchCalibration, *, image_size: tuple[int, int] | None = None,
+    def __init__(self, anchor: PitchCalibration | None, *,
+                 image_size: tuple[int, int] | None = None,
                  allow_reacquire: bool = False, tolerance_px: float | None = None):
         # Tolerans PİKSEL cinsindendir, yani çözünürlüğe bağlıdır. Görüntü
         # küçültülerek işleniyorsa aynı sayı sahada daha büyük bir alana denk
         # gelir ve oturma gevşer (ölçüldü: yarı çözünürlükte sabit toleransla
         # hata 0.10 m → 3.95 m). Verilmezse görüntü genişliğinden ölçeklenir.
+        if anchor is None and image_size is None:
+            raise ValueError("çapasız başlangıç için image_size gerekir")
         self._tolerance_px: float = (
             tolerance_px if tolerance_px is not None else 0.0)  # aşağıda ölçeklenir
         self._reacquire_allowed = allow_reacquire
-        self._anchor = anchor
-        self._h = anchor.homography
-        w, h = (image_size or (anchor.image_size[0], anchor.image_size[1]))
+        self._anchor: PitchCalibration | None = anchor
+        self._h: np.ndarray | None = anchor.homography if anchor is not None else None
+        if image_size is not None:
+            w, h = image_size
+        else:
+            assert anchor is not None
+            w, h = anchor.image_size[0], anchor.image_size[1]
         self._image_size: tuple[int, int] = (int(w), int(h))
         self._last_corners: np.ndarray | None = None
         self._prev_corners: np.ndarray | None = None
         self._pending: np.ndarray | None = None   # doğrulama bekleyen aday (KAYIP)
         self._last_jump_m = 0.0                   # son karede kameranın saha hareketi
         self._misses = 0
+        # Çapa arama ritmi: ilk çizgili karede hemen denensin
+        self._since_anchor_try = self.AUTO_ANCHOR_EVERY
+        self._lost_streak = 0                     # kayıpta çapadan tutmayan çizgili kare
+        self._last_anchor_note = ""
         if tolerance_px is None:
             self._tolerance_px = DEFAULT_TOLERANCE_PX * (self._image_size[0] / 1280.0)
         self.frames_seen = 0
         self.frames_calibrated = 0
         self.frames_rejected = 0
+        self.anchor_attempts = 0     # find_anchor kaç kez çağrıldı
+        self.anchors_found = 0       # otomatik bulunan çapa (ilk + çekim başına)
+        self.reanchors = 0           # kayıpta çapanın DEĞİŞTİĞİ sayısı
+
+    @property
+    def anchored(self) -> bool:
+        """Bir çapamız var mı (elle verilmiş ya da görüntüden bulunmuş)?"""
+        return self._anchor is not None
+
+    @property
+    def anchor(self) -> PitchCalibration | None:
+        return self._anchor
 
     @property
     def tracking(self) -> bool:
         """Süreklilik referansımız var mı? Çapa da bir referanstır (ilk kare)."""
-        return self._misses == 0
+        return self._anchor is not None and self._misses == 0
 
     @property
     def calibrated_ratio(self) -> float:
@@ -220,6 +259,25 @@ class PerFrameCalibrator:
             self._last_corners + (self._last_corners - self._prev_corners),
         )
 
+    def _search_anchor(self, dist_map: np.ndarray) -> FrameCalibration | None:
+        """Görüntüden çapa ara (TV kuralı). Bulunursa çapa OLUR ve kare kabul edilir.
+
+        Kabul kapıları `find_anchor`ındır: ≥%90 inlier, ayırt edici yapı görünür,
+        farklı duruşlu rakibi belirgin geçmiş. Bunlar geçilmezse None döner ve
+        kare üretilmez — uydurma çapa yoktur.
+        """
+        self.anchor_attempts += 1
+        res = find_anchor(dist_map, self._image_size, tolerance_px=self._tolerance_px,
+                          assume_camera_side=True)
+        self._last_anchor_note = res.note
+        if not res.accepted or res.homography is None or res.fit is None:
+            return None
+        self._anchor = calibration_from_homography(res.homography, self._image_size)
+        self.anchors_found += 1
+        self._lost_streak = 0
+        self._last_corners = self._prev_corners = self._pending = None
+        return self._accept(dataclasses.replace(res.fit, homography=res.homography))
+
     def _best_fit(self, dist_map: np.ndarray, step: float) -> FitResult:
         """Hem son homografiden hem TAHMİNDEN oturt, iyi olanı seç.
 
@@ -229,6 +287,7 @@ class PerFrameCalibrator:
         karede büyüyor (ölçüldü: 0.03 m → 3.65 m). Tahmini ADAY yapıp kararı
         skora bırakmak bu yanlılığı kaldırır.
         """
+        assert self._h is not None
         fit = refine_homography(self._h, dist_map, step_px=step,
                                 tolerance_px=self._tolerance_px)
         if fit.accepted and fit.inlier_ratio >= 0.9:
@@ -248,6 +307,7 @@ class PerFrameCalibrator:
     def _accept(self, fit: FitResult, *, jump_m: float | None = None) -> FrameCalibration:
         self._last_jump_m = jump_m if jump_m is not None else 0.0
         self._misses = 0
+        self._lost_streak = 0
         self._pending = None
         self._h = fit.homography
         self._prev_corners = self._last_corners
@@ -279,21 +339,27 @@ class PerFrameCalibrator:
                               f"saha çizgisi bulunamadı ({line_pixels} piksel, çim %"
                               f"{grass_ratio * 100:.0f}) — yakın çekim/replay olabilir")
 
+        if self._anchor is None:
+            # ÇAPASIZ: elle kalibrasyon yok, çapa görüntüden aranır (TV kuralı).
+            # Arama pahalı → her AUTO_ANCHOR_EVERY çizgili karede bir.
+            self._since_anchor_try += 1
+            if self._since_anchor_try < self.AUTO_ANCHOR_EVERY:
+                return self._miss(None, "çapa aranıyor (otomatik başlangıç)")
+            self._since_anchor_try = 0
+            found = self._search_anchor(dist_map)
+            if found is None:
+                return self._miss(None, f"çapa bulunamadı: {self._last_anchor_note}")
+            return found
+
+        anchor = self._anchor
         was_tracking = self.tracking
         step = self.SEARCH_STEPS_PX[min(self._misses, len(self.SEARCH_STEPS_PX) - 1)]
         if was_tracking:
+            assert self._h is not None
             fit = self._best_fit(dist_map, step)
-        else:
-            # Kayıpken kaymış son homografiden değil, ÇAPADAN ara: çapa hem
-            # 180° ikiliğini sabitler hem de sürüklenmiş bir başlangıcın
-            # yanlış çizgiye kilitlenmesini engeller.
-            fit = refine_homography(self._anchor.homography, dist_map, step_px=step,
-                                    tolerance_px=self._tolerance_px)
-        if not fit.accepted:
-            self._pending = None
-            return self._miss(fit, fit.note)
-
-        if was_tracking:
+            if not fit.accepted:
+                self._pending = None
+                return self._miss(fit, fit.note)
             jump = self._jump_m(fit.homography, self._h)
             if jump is not None and jump > self.MAX_PITCH_JUMP_M:
                 return self._miss(
@@ -302,6 +368,15 @@ class PerFrameCalibrator:
                     f"%{fit.inlier_ratio * 100:.0f}) — yanlış çizgiye kilitlenmiş, atlandı",
                 )
             return self._accept(fit, jump_m=jump)
+
+        # Kayıpken kaymış son homografiden değil, ÇAPADAN ara: çapa hem
+        # 180° ikiliğini sabitler hem de sürüklenmiş bir başlangıcın
+        # yanlış çizgiye kilitlenmesini engeller.
+        fit = refine_homography(anchor.homography, dist_map, step_px=step,
+                                tolerance_px=self._tolerance_px)
+        if not fit.accepted and not self._reacquire_allowed:
+            self._pending = None
+            return self._miss(fit, fit.note)
 
         # KAYIP: süreklilik desteği yok.
         #
@@ -321,24 +396,41 @@ class PerFrameCalibrator:
                 f"takip kayboldu (inlier %{fit.inlier_ratio * 100:.0f}) — yeniden "
                 f"çapa gerekiyor; otomatik yakalama doğrulanamadığı için kapalı",
             )
-        if fit.inlier_ratio < self.REACQUIRE_MIN_INLIER:
-            return self._miss(
-                fit,
-                f"yeniden yakalama için oturma zayıf (inlier "
-                f"%{fit.inlier_ratio * 100:.0f} < %{self.REACQUIRE_MIN_INLIER * 100:.0f})",
-            )
-        return self._accept(fit)
+        if fit.accepted and fit.inlier_ratio >= self.REACQUIRE_MIN_INLIER:
+            return self._accept(fit)
+
+        # Çapadan tutmadı. Bir süre daha ana kameranın dönmesini bekle; dönmezse
+        # çekim başka bir yere bakıyordur → ÇEKİM BAŞINA ÇAPA: görüntüden yeni
+        # çapa ara (aynı TV kuralıyla, o yüzden çerçeve değişmez). Kapılar
+        # `find_anchor`ın kapılarıdır; geçilmezse kare yine üretilmez.
+        self._lost_streak += 1
+        due = (self._lost_streak >= self.REANCHOR_AFTER_MISSES
+               and (self._lost_streak - self.REANCHOR_AFTER_MISSES) % self.AUTO_ANCHOR_EVERY == 0)
+        if due:
+            found = self._search_anchor(dist_map)
+            if found is not None:
+                self.reanchors += 1
+                return found
+        return self._miss(
+            fit,
+            f"yeniden yakalama için oturma zayıf (inlier "
+            f"%{fit.inlier_ratio * 100:.0f} < %{self.REACQUIRE_MIN_INLIER * 100:.0f})"
+            + (f"; çapa yeniden arandı, bulunamadı: {self._last_anchor_note}" if due else ""),
+        )
 
     def reset_to_anchor(self) -> None:
         """Çapaya dön ve TAKİPTE say (kayan homografiyle devam etme).
 
         Elle yeniden çapalama içindir: dışarıdan "bu kare çapaya benziyor"
         bilgisi geldiğinde kullanılır. Kesme için `mark_cut()` kullan —
-        orada süreklilik gerçekten kopmuştur.
+        orada süreklilik gerçekten kopmuştur. Çapasızken etkisizdir.
         """
+        if self._anchor is None:
+            return
         self._h = self._anchor.homography
         self._last_corners = self._prev_corners = self._pending = None
         self._misses = 0
+        self._lost_streak = 0
 
     def mark_cut(self) -> None:
         """Kesme bildirildi: süreklilik KOPTU, çapadan yeniden yakala.
@@ -352,7 +444,13 @@ class PerFrameCalibrator:
         varsayım geçersizdir; iki ayrı kameranın kareleri arasında süreklilik
         yoktur. Kesmeyi "takip sürüyor" saymak, fizik kapısını anlamsız bir
         referansa karşı uygulamak ve düşük çıtayla kabul etmek demektir.
+
+        Yeni çekim = kayıp sayacı sıfırdan: çekim başına çapa araması kesmeden
+        sonra `REANCHOR_AFTER_MISSES` çizgili kare beklenerek yapılır.
         """
-        self._h = self._anchor.homography
         self._last_corners = self._prev_corners = self._pending = None
+        self._lost_streak = 0
+        if self._anchor is None:
+            return                      # çapasız: arama zaten sürüyor
+        self._h = self._anchor.homography
         self._misses = max(self._misses, 1)

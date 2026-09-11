@@ -99,12 +99,13 @@ class WarmTracker:
     dönmez. Kesme sayımı zaten hattın içinde bedava geliyor.
     """
 
-    def __init__(self, *, calibration: str, detector_cfg, pipeline_kwargs: dict,
+    def __init__(self, *, calibration: str | None, detector_cfg, pipeline_kwargs: dict,
                  camera: str = "auto", per_frame_mode: str = "auto",
                  reacquire_mode: str = "auto", segment_seconds: float = 30.0):
         from app.tracking.calibration import PitchCalibration
 
-        self.calib = PitchCalibration.load(calibration)
+        # None → çapa görüntüden bulunur (kare başına kalibrasyon zorunlu açılır)
+        self.calib = PitchCalibration.load(calibration) if calibration else None
         self._detector_cfg = detector_cfg
         self._pipeline_kwargs = pipeline_kwargs
         self._detector = None
@@ -133,6 +134,14 @@ class WarmTracker:
 
         mode = plan_mode(moving=moving, per_frame_mode=self._per_frame_mode,
                          reacquire_mode=self._reacquire_mode)
+        if self.calib is None and not mode["per_frame"]:
+            # Çapasız tek yol kalibratördür: görüntüden çapa bulur (TV kuralı).
+            # `plan_mode` ile aynı etiket kuralı: kare başına → gerçek konum.
+            from app.tracking.camera import STATIC_SOURCE
+
+            mode = {**mode, "per_frame": True, "source": STATIC_SOURCE}
+            print("  kalibrasyon verilmedi → kare başına kalibrasyon otomatik açıldı "
+                  "(çapa görüntüden bulunur)", flush=True)
         per_frame, reacquire = mode["per_frame"], mode["reacquire"]
         if per_frame:
             track_fps = self._pipeline_kwargs.get("track_fps", 0.0)
@@ -280,7 +289,9 @@ def _stable(path: Path, wait_s: float = 1.0) -> bool:
 def main() -> int:
     p = argparse.ArgumentParser(description="Canlı segment izleyici → tracking_frames")
     p.add_argument("--watch", required=True, help="Segmentlerin yazıldığı klasör")
-    p.add_argument("--calibration", required=True)
+    p.add_argument("--calibration", default=None,
+                   help="Saha kalibrasyon JSON'u. Verilmezse çapa görüntüden bulunur "
+                        "(TV kuralı: görüntünün altı yakın taç çizgisi)")
     p.add_argument("--match-id", type=int, required=True)
     p.add_argument("--home-team", type=int, required=True)
     p.add_argument("--away-team", type=int, required=True)
@@ -359,7 +370,8 @@ def main() -> int:
         """Eski yol: her segment ayrı süreçte (model her seferinde yeniden yüklenir)."""
         cmd = [
             sys.executable, "-m", "scripts.track_video",
-            "--video", str(seg), "--calibration", args.calibration,
+            "--video", str(seg),
+            *(["--calibration", args.calibration] if args.calibration else []),
             "--out", str(frames_json), "--match-id", str(args.match_id),
             "--home-team", str(args.home_team), "--away-team", str(args.away_team),
             "--fps", str(args.fps), "--track-fps", str(args.track_fps),

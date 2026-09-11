@@ -74,6 +74,10 @@ def main() -> int:
                       help="Kamera sahanın SOL yarısına bakıyor (180° ikiliğini kapatır)")
     side.add_argument("--expect-right", action="store_true",
                       help="Kamera sahanın SAĞ yarısına bakıyor")
+    side.add_argument("--tv-rule", action="store_true",
+                      help="TV kuralı: görüntünün altı yakın taç çizgisi (y=68), sol küçük x. "
+                           "Yayının tüm kameraları aynı taraftaysa ikiliği uzlaşımla kapatır; "
+                           "track_video/track_live çapasız başlarken aynı kuralı kullanır")
     args = p.parse_args()
 
     cap = cv2.VideoCapture(args.video)
@@ -103,13 +107,15 @@ def main() -> int:
         img_quad = np.array([[0.0, 0.0], [w_img, 0.0], [w_img, h_img], [0.0, h_img]])
         hint = dlt_homography(img_quad, quad)
 
-    res = find_anchor(ext.dist_map, (w_img, h_img), hint_homography=hint)
+    res = find_anchor(ext.dist_map, (w_img, h_img), hint_homography=hint,
+                      assume_camera_side=args.tv_rule)
     if res.fit is None:
         print(f"öneri üretilemedi: {res.note}")
         return 1
 
     print(f"\n{res.candidates_scored} aday denendi · en iyi oturma: "
-          f"inlier %{res.fit.inlier_ratio * 100:.0f} · skor {res.fit.score:.3f}")
+          f"inlier %{res.fit.inlier_ratio * 100:.0f} · skor {res.fit.score:.3f} · "
+          f"kapsama %{res.coverage * 100:.0f}")
 
     if not res.accepted:
         print(f"\nOTOMATİK SEÇİM YAPILMADI: {res.note}\n")
