@@ -480,9 +480,19 @@ venv-cv\Scripts\python.exe -m scripts.export_detector_onnx --weights data/tracki
 
 **Dedektör arka ucu** (`--backend auto|torch|onnx`): `auto`, `data/tracking/models/onnx/…`
 altında ONNX modeli varsa (ya da torch yüklenemiyorsa) ONNX Runtime'ı seçer; yoksa torch.
-İki arka uç aynı arayüzü verir, hat farkı bilmez. Ölçüldü (torch 2.5.1 **CPU**, ince ayarlı
-small, 1080p): tiles=1 → 165 ms/kare, tiles=4 → 3 sn/kare — CPU çevrimdışı analiz için yeter,
-canlı 15 fps için değil; canlı yol ONNX + GPU'dur.
+İki arka uç aynı arayüzü verir, hat farkı bilmez. Ölçüldü (ince ayarlı small, 1080p, aynı kare):
+
+| tiles | dilim | torch CPU | ONNX GPU (RTX 5060) | bulunan oyuncu |
+|---|---|---|---|---|
+| 1 | 1 | 165 ms | **18 ms → 57 fps** | 1 (üstten çekimde oyuncu çok küçük) |
+| 2 | 9 | — | 153 ms → 6.5 fps | 15 |
+| 3 | 16 | — | 270 ms → 3.7 fps | 22 |
+| 4 | 25 | ~3 sn | 423 ms → 2.4 fps | 23 |
+
+Dilim başına maliyet sabit (~17 ms): **gerçek zaman (15 fps) yalnız tiles=1 ile mümkün.**
+Yayın karesinde oyuncular büyük olduğu için tiles=1 yeter (COCO medium, 4K yayın karesi:
+16 kutu, 85 ms); üstten/drone geniş açıda oyuncular küçüktür, tiles ≥ 3 gerekir → o kaynak
+çevrimdışı işlenir (2-4 fps). CPU yolu yalnız model yükleme/dışa aktarım ve acil yedek içindir.
 
 **Akış (arayüz):** `/video-tracking` → klip yükle → `/video-tracking/calibrate` ile karede 4+ saha
 işaretine tıkla (çizgiler kareye geri-izdüşülür, hata metre cinsinden) → "Video işle" → iş
