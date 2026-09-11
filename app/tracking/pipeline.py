@@ -207,14 +207,22 @@ def collect_observations(
     teams = TeamAssigner()
     per_frame = None
     if cfg.per_frame_calibration:
-        if calib is None:
-            raise ValueError("kare başına kalibrasyon için çapa kalibrasyon gerekir")
         from app.tracking.pitch_lines import PerFrameCalibrator
 
+        if calib is not None:
+            size = (int(calib.image_size[0]), int(calib.image_size[1]))
+        else:
+            # ÇAPASIZ başlangıç: elle kalibrasyon yok; kalibratör çapayı saha
+            # çizgilerinden kendisi bulur (TV kuralı: yakın taç y=68). Bulunana
+            # kadar kare üretilmez.
+            info = video_info(video_path)
+            size = (int(info["width"]), int(info["height"]))
         per_frame = PerFrameCalibrator(
-            calib, image_size=(int(calib.image_size[0]), int(calib.image_size[1])),
-            allow_reacquire=cfg.allow_reacquire,
+            calib, image_size=size, allow_reacquire=cfg.allow_reacquire,
         )
+    elif calib is None:
+        raise ValueError("kalibrasyon yok: --calibration ver ya da kare başına "
+                         "kalibrasyonu aç (çapa görüntüden bulunur)")
     # Tekrar süzgeci kesme dedektörünün ölçümlerini kullanır (faz korelasyonu
     # ikinci kez hesaplanmasın), o yüzden ikisinden biri isteniyorsa dedektör kurulur.
     cut_detector = None
@@ -313,6 +321,10 @@ def collect_observations(
         print(f"  kare başına kalibrasyon: {per_frame.frames_calibrated} kare kalibre, "
               f"{per_frame.frames_rejected} atlandı (oran {per_frame.calibrated_ratio})",
               flush=True)
+        if calib is None or per_frame.anchor_attempts:
+            print(f"  çapa: {'otomatik' if calib is None else 'elle'} · arama "
+                  f"{per_frame.anchor_attempts} · bulunan {per_frame.anchors_found} · "
+                  f"çekim başına yeniden çapa {per_frame.reanchors}", flush=True)
         if cfg.detect_cuts and cut_detector is not None:
             print(f"  kesme: {cuts_seen} (her kesmede çapadan yeniden yakalama "
                   f"{'AÇIK' if cfg.allow_reacquire else 'kapalı — takip kopar'})",
@@ -333,6 +345,12 @@ def collect_observations(
             "replays_dropped": replays_seen if replay_filter is not None else None,
             "overlay_mask_found": (replay_filter.mask_found
                                    if replay_filter is not None else None),
+            # Çapa karnesi: elle mi otomatik mi, kaç arama, kaç bulundu,
+            # kayıpta çapa kaç kez DEĞİŞTİ (çekim başına çapa).
+            "auto_anchor": calib is None,
+            "anchor_attempts": per_frame.anchor_attempts,
+            "anchors_found": per_frame.anchors_found,
+            "reanchors": per_frame.reanchors,
         })
     return samples, teams, stats
 
@@ -343,7 +361,7 @@ def output_stride(cfg: PipelineConfig) -> int:
 
 def compute_velocities(
     samples: list[SampledObservation],
-    calib: PitchCalibration,
+    calib: PitchCalibration | None,
     track_fps: float,
 ) -> tuple[dict[int, dict[int, float]], dict[int, float]]:
     """Merkezi farkla hız (m/s): oyuncu → {order: {tid: v}}, top → {order: v}.
@@ -356,6 +374,9 @@ def compute_velocities(
         # Kare başına kalibrasyonda her karenin kendi homografisi kullanılmalı;
         # aksi halde kameranın hareketi oyuncu hızı sanılır.
         c = s.calibration or calib
+        if c is None:
+            raise ValueError("kalibrasyonsuz örnek: kare başına kalibrasyon kapalıyken "
+                             "sabit kalibrasyon şart")
         pos.append({tid: c.image_to_pitch_m((x1 + x2) / 2, y2) for tid, x1, _y1, x2, y2, _c in s.persons})
         ball_pos.append(c.image_to_pitch_m(s.ball[0], s.ball[1]) if s.ball else None)
 
@@ -404,7 +425,7 @@ def compute_velocities(
 def build_frames(
     samples: list[SampledObservation],
     team_by_track: dict[int, int | None],
-    calib: PitchCalibration,
+    calib: PitchCalibration | None,
     *,
     match_id: int,
     home_team_id: int,
@@ -427,9 +448,13 @@ def build_frames(
             for tid, x1, y1, x2, y2, conf in s.persons
         ]
         ball = BallObservation(s.ball[0], s.ball[1], s.ball[2], velocity_mps=ball_v.get(s.order)) if s.ball else None
+        frame_calib = s.calibration or calib
+        if frame_calib is None:
+            raise ValueError("kalibrasyonsuz örnek: kare başına kalibrasyon kapalıyken "
+                             "sabit kalibrasyon şart")
         fr = build_frame(
             match_id=match_id, seconds=s.seconds, order=s.order,
-            calib=s.calibration or calib,
+            calib=frame_calib,
             players=players, ball=ball, home_team_id=home_team_id, away_team_id=away_team_id,
             period=cfg.period, clip_offset_minutes=cfg.clip_offset_minutes,
             ball_estimated=(s.ball_source == "interp"),
@@ -444,11 +469,15 @@ def write_preview(
     video_path: str | Path,
     samples: list[SampledObservation],
     team_by_track: dict[int, int | None],
-    calib: PitchCalibration,
+    calib: PitchCalibration | None,
     cfg: PipelineConfig,
     out_path: str | Path,
 ) -> None:
-    """Etiketli önizleme (çıktı fps'inde): kutular (takım rengi), takip id, top, saha çizgileri."""
+    """Etiketli önizleme (çıktı fps'inde): kutular (takım rengi), takip id, top, saha çizgileri.
+
+    Saha çizgileri karenin KENDİ kalibrasyonuyla çizilir (kare başına
+    kalibrasyonda her karenin homografisi farklıdır); yoksa sabit kalibrasyonla.
+    """
     import cv2
 
     by_frame_idx = {s.frame_idx: s for s in samples}
@@ -464,7 +493,10 @@ def write_preview(
             scale = min(1.0, cfg.preview_width / w)
             size = (int(w * scale), int(h * scale))
             writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), cfg.fps_out, size)
-        _draw_pitch_lines(bgr, calib)
+        frame_calib = (s.calibration if s is not None and s.calibration is not None
+                       else calib)
+        if frame_calib is not None:
+            _draw_pitch_lines(bgr, frame_calib)
         if s is not None:
             for tid, x1, y1, x2, y2, _conf in s.persons:
                 c = colors[team_by_track.get(tid)]
@@ -504,7 +536,7 @@ def _draw_pitch_lines(bgr: np.ndarray, calib: PitchCalibration) -> None:
 
 def process_video(
     video_path: str | Path,
-    calib: PitchCalibration,
+    calib: PitchCalibration | None,
     *,
     match_id: int,
     home_team_id: int,
@@ -515,7 +547,10 @@ def process_video(
 ) -> tuple[list[TrackingFrame], dict[str, Any]]:
     """`team_anchor` (2×3 forma rengi) verilirse takım kimliği küme büyüklüğü
     yerine bu renklere sabitlenir — canlı segment akışında takımların
-    segmentler arası yer değiştirmemesi için (bkz. teams.TeamAssigner.fit)."""
+    segmentler arası yer değiştirmemesi için (bkz. teams.TeamAssigner.fit).
+
+    `calib=None` yalnız kare başına kalibrasyonla geçerlidir: çapa görüntüden
+    bulunur, her kare kendi kalibrasyonuyla gelir."""
     cfg = cfg or PipelineConfig()
     samples, assigner, calib_stats = collect_observations(
         video_path, cfg, detector=detector, calib=calib)
@@ -549,7 +584,8 @@ def process_video(
         "ball_sources": {
             k: sum(1 for s in samples if s.ball_source == k) for k in ("det", "roi", "interp")
         },
-        "calibration_reprojection_m": round(calib.reprojection_error_m, 3),
+        "calibration_reprojection_m": (round(calib.reprojection_error_m, 3)
+                                       if calib is not None else None),
         # Takipten çıkarılan paslar. Kulüp kendi kamerasıyla kayıt yapıyorsa
         # event aboneliği olmadan xT/ileri pas/karar etkisi ölçümü bunlarla
         # çalışabilir. Hepsi `estimated` — bkz. app/tracking/passes.py.

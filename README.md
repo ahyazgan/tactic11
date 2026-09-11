@@ -790,11 +790,53 @@ konum üretmemektir:
   benzediği için homografi yanlış çizgiye kilitlenebilir. Ölçüldü — böyle oturmalar
   %55 inlier alıyor, doğru oturmalardan biri %58. Ayıran şey fizik: yanlış çözüm bir
   karede 36 m sıçrıyor, ki bu imkânsızdır. Bu yüzden süreklilik kapısı var.
-- **Otomatik yeniden yakalama kapalı.** Denendi: kesme sonrası iki ardışık kare AYNI
-  yanlış çizgiye kilitlenip birbirini "doğruladı" ve hata 499 m'ye çıktı. Artık takip
-  kaybolunca kare üretilmiyor, dışarıdan çapa bekleniyor — **TV yayınında bu, çekim
-  başına çapa gerektiği anlamına gelir**.
+- **Yeniden yakalama yalnız ÇAPADAN.** Serbest arama denendi: kesme sonrası iki
+  ardışık kare AYNI yanlış çizgiye kilitlenip birbirini "doğruladı" ve hata 499 m'ye
+  çıktı. Kayıpta kaymış son homografiden değil çapadan aranır ve %85 inlier istenir
+  (`--reacquire`, yayında otomatik açık). Çapadan da tutmuyorsa çekim başka yere
+  bakıyordur → aşağıdaki çekim başına çapa devreye girer.
 - Yakın çekim/replay (saha çizgisi yok) → kare atlanır.
+
+### Çapasız başlangıç — otomatik çapa ve TV kuralı
+
+`--calibration` verilmezse kalibratör çapayı **görüntüden kendisi arar**
+(`homography_fit.find_anchor`): makul kamera duruşlarından ~300 aday puanlanır, en
+iyileri iyileştirilir, kabul kapılarından geçen varsa çapa olur. Bulunana kadar kare
+üretilmez. Kesmeden sonra çapadan yakalama ~1 sn tutmazsa aynı arama **çekim başına**
+yeniden yapılır.
+
+**180° ikiliği nasıl kapanıyor — TV kuralı.** Saha çizgi modeli 180° dönme altında
+birebir kendine eşittir; hangi yarıya bakıldığı çizgilerden asla çıkarılamaz. Yayın
+rejisinde ise tüm canlı kameralar sahanın **aynı tarafındadır** (180° kuralı; karşı
+açı yalnız tekrarda). O hâlde "görüntünün altı yakın taç (y=68), solu küçük x" bir
+tahmin değil bir **çerçeve tanımıdır** ve aynı taraftaki her kamera için tutarlıdır.
+Hücum yönü bu çerçeve içinde veriden çıkarılır. **Sınır:** canlı karşı açıda o
+çekimin konumları aynalanır ve hiçbir kalite kapısı bunu yakalayamaz — geometri aynı
+puanı verir.
+
+**Kabul kapıları** (hepsi ölçümle bulundu): ≥%90 inlier · ayırt edici yapı (ceza
+sahası/orta yuvarlak) görünür ve oturmuş · geometrik olarak farklı en iyi rakibi
+%25 farkla geçmiş · **kapsama ≥ %60**. Kapsama sonradan eklendi: inlier "model →
+çizgi" bakar; modelin çoğunu kadraj dışına atıp yalnız orta çizgiyi oturtan bir duruş
+**%97 inlier alıp 27 m yanlış** çıktı (pan_zoom kare 300). Kapsama tersini sorar —
+görünen çizgi piksellerinin ne kadarı modelle açıklanıyor — ve o çözüm %14 aldı.
+Aday sıralaması da aynı sebeple kesinlik × duyarlılık ile yapılır.
+
+**Ölçüldü** (`bench_calibration anchor` / `auto`, saha gerçeği bilinen pan_zoom, 500 kare):
+
+| | kapsama kapısı yok | kapsama kapısı + kesinlik×duyarlılık |
+|---|---|---|
+| tek kareden çapa: kabul | 2/50 | 2/50 |
+| kabul edilenlerde **yanlış (>3 m)** | **1/2 (26.9 m)** | **0/2** (en kötü 1.59 m) |
+| arama süresi | 220 ms | ~1000 ms |
+
+Çapasız kalibratör uçtan uca: pan_zoom'da 9. denemede çapalanıp **362/500 kare kalibre
+(%72)**, hata ort **1.67 m** / %90 3.76 m; kesmeli yayında **133/500 (%27)** — elle çapayla
+aynı (%29). Elle çapa **0.09 m** veriyordu: otomatik çapanın ~1.5 m'lik perspektif kusuru
+takipte düzelmiyor. Bu yüzden **otomatik çapa bir yedektir**: operatör varsa
+`scripts/propose_calibration.py --tv-rule` ile öneriyi önizlemede onaylayıp
+`--calibration` vermek daha doğrudur. Çapasız evrede arama saniyede ~1 kez ~1 sn sürer
+(gerçek zaman sınırında); çapa bulununca maliyet biter.
 
 **Maliyet:** 88 ms/kare (720p, CPU). 25 fps gerçek zaman için 40 ms gerekir; şu an
 2.2 kat yavaş. Düşürme yolları: çizgi maskesini küçültmek, model noktası sayısını

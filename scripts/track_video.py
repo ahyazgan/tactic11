@@ -36,7 +36,10 @@ from app.tracking.pipeline import PipelineConfig, process_video, video_info
 def main() -> int:
     p = argparse.ArgumentParser(description="Video → TrackingFrame JSON (RF-DETR + ByteTrack)")
     p.add_argument("--video", required=True)
-    p.add_argument("--calibration", required=True, help="Saha kalibrasyon JSON'u")
+    p.add_argument("--calibration", default=None,
+                   help="Saha kalibrasyon JSON'u. Verilmezse çapa GÖRÜNTÜDEN bulunur "
+                        "(kare başına kalibrasyon açılır; TV kuralı: görüntünün altı "
+                        "yakın taç çizgisi). Çapa bulunana kadar kare üretilmez.")
     p.add_argument("--out", required=True, help="Çıktı frames JSON")
     p.add_argument("--match-id", type=int, required=True)
     p.add_argument("--home-team", type=int, required=True)
@@ -67,10 +70,14 @@ def main() -> int:
                         "(top-merkezli, şekil ve bölge analizi kapalı)")
     args = p.parse_args()
 
-    calib = PitchCalibration.load(args.calibration)
+    calib = PitchCalibration.load(args.calibration) if args.calibration else None
     info = video_info(args.video)
     print(f"video: {Path(args.video).name} {info['width']}x{info['height']} @{info['fps']:.2f}fps {info['frames']} kare")
-    print(f"kalibrasyon: {len(calib.points)} nokta · geri-izdüşüm hatası ~{calib.reprojection_error_m:.2f} m")
+    if calib is not None:
+        print(f"kalibrasyon: {len(calib.points)} nokta · geri-izdüşüm hatası ~{calib.reprojection_error_m:.2f} m")
+    else:
+        print("kalibrasyon: ÇAPA YOK → görüntüden otomatik çapa (TV kuralı: görüntünün "
+              "altı yakın taç y=68; karşı açıda konumlar aynalanır)")
 
     # Kamera sabit mi? Sabit homografi yalnız sabit kamerada geçerlidir; kamera
     # çeviriyorsa oyuncular sahada kaymış görünür ve sahte taktik sinyal çıkar
@@ -93,6 +100,14 @@ def main() -> int:
         per_frame = False
     else:
         per_frame = moving
+    if calib is None and not per_frame:
+        if args.per_frame_calibration == "off":
+            print("HATA: kalibrasyon yok ve kare başına kalibrasyon kapalı — "
+                  "--calibration ver ya da --per-frame-calibration on")
+            return 2
+        # Sabit kamerada da çapa görüntüden bulunur; bunun tek yolu kalibratör.
+        per_frame = True
+        print("kalibrasyon verilmedi → kare başına kalibrasyon otomatik açıldı")
     if per_frame:
         print("kare başına kalibrasyon: AÇIK — oturmayan kareler atlanacak")
         # Kalibrasyon kamerayı ancak ardışık örnekler yakınsa takip edebilir.

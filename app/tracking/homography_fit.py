@@ -263,6 +263,18 @@ def refine_homography(
 ANCHOR_VIEW_LENGTHS_M = (30.0, 45.0, 60.0, 105.0)
 ANCHOR_PERSPECTIVE = (1.0, 0.82, 0.66)   # üst kenarın alt kenara oranı
 ANCHOR_CENTRE_STEP_M = 10.0
+# Kadraj sahanın GENİŞLİĞİNİN ne kadarını görüyor ve nerede: (genişlik m,
+# üst kenarın saha y'si). Eski adaylar hep tam genişliği (0..68) varsayıyordu;
+# ölçüldü (pan_zoom bench, 50 kare): gerçek kadraj genişliğin yarısını
+# görürken hiçbir aday ulaşamıyor, kabul %2 kalıyordu. Yakın taç altta (TV ana
+# kamera) ve ortalanmış (üstten/orta zoom) dilimler eklendi.
+ANCHOR_VIEW_BANDS_M: tuple[tuple[float, float], ...] = (
+    (68.0, 0.0),           # tam genişlik
+    (45.0, 23.0),          # yakın taç altta, uzak taç dışarıda
+    (45.0, 11.5),          # ortalanmış
+    (30.0, 38.0),          # yakın taç altta, dar
+    (30.0, 19.0),          # ortalanmış, dar
+)
 # Kaba elemeden sonra kaç aday iyileştirilecek (iyileştirme pahalı)
 ANCHOR_REFINE_TOP_N = 8
 # Kabul için: neredeyse kusursuz oturma + rakibine belirgin üstünlük.
@@ -278,6 +290,14 @@ ANCHOR_MIN_LANDMARK_POINTS = 25
 ANCHOR_MIN_LANDMARK_INLIER = 0.70
 # İki çözüm bu kadar metre ayrıysa "farklı duruş" sayılır (rakip kabul edilir)
 ANCHOR_DISTINCT_M = 8.0
+# KAPSAMA kapısı — inlier ve skor "model → çizgi" bakar (kesinlik): modelin
+# kadraja düşen noktaları çizgi üstünde mi? Bu tek başına yetmiyor. Ölçüldü
+# (gerçek üstten çekim, pan_zoom kare 300): modelin neredeyse tamamını kadraj
+# DIŞINA atıp yalnız orta çizgiyi orta çizgiye oturtan bir duruş %97 inlier
+# aldı ve 27 m yanlıştı — kadrajdaki orta yuvarlak ve ceza yayı hiç
+# açıklanmıyordu. Kapsama tersini sorar ("çizgi → model", duyarlılık):
+# görüntüdeki çizgi piksellerinin ne kadarı modelin bir çizgisine yakın?
+ANCHOR_MIN_COVERAGE = 0.60
 # SAHA ÇİZGİ MODELİ 180° DÖNME ALTINDA BİREBİR KENDİNE EŞLENİR.
 # Sayısal olarak doğrulandı: döndürülmüş model noktalarının orijinale uzaklığı
 # ortalama ve en fazla 0.0000 m. Yani her homografinin bir "ayna ikizi" vardır
@@ -289,6 +309,85 @@ ANCHOR_DISTINCT_M = 8.0
 # öncesi bilinen homografi. Bu yüzden `find_anchor` iki hipotezi de döndürür ve
 # ipucu verilmedikçe KABUL ETMEZ. (Ölçüldü: ipucusuz kabul edilen bir çapa %94
 # inlier'a rağmen 47 m yanlıştı.)
+#
+# TV KURALI (`assume_camera_side`): ikilik bir UZLAŞIMLA da kapanabilir. Yayın
+# rejisinde tüm canlı kameralar sahanın AYNI tarafındadır (180° kuralı — karşı
+# açı yalnız tekrarda kullanılır). Adaylar görüntünün ALTINI yakın taç çizgisine
+# (y = 68) eşler ve iyileştirme yerel olduğu için bu yönelim korunur; o hâlde
+# "yakın taç = y 68, görüntünün solu = küçük x" demek dünya çerçevesini
+# kameranın tarafına göre TANIMLAMAK demektir — bir tahmin değil, bir tanım.
+# Aynı taraftaki her kamera için tutarlıdır; hücum yönü bu çerçeve içinde
+# veriden çıkarılır (bkz. space_map). Kural bozulursa (canlı karşı açı) o
+# çekimin konumları aynalanır — bilinen sınır, docstring'de yazılı.
+
+
+RECALL_SAMPLES = 200
+
+
+def _line_samples(dist_map: np.ndarray, n: int = RECALL_SAMPLES) -> np.ndarray | None:
+    """Çizgi piksellerinden eşit aralıklı, DETERMİNİSTİK örneklem (u, v)."""
+    ys, xs = np.nonzero(dist_map <= 0.5)
+    if len(xs) == 0:
+        return None
+    stride = max(1, len(xs) // n)
+    return np.column_stack([xs[::stride], ys[::stride]]).astype(float)
+
+
+def _recall(h_img_to_pitch: np.ndarray, samples: np.ndarray, pts_m: np.ndarray,
+            tolerance_px: float) -> float:
+    """Çizgi örneklerinin ne kadarı bir model noktasına `tolerance_px` içinde?
+
+    `line_coverage`nin ucuz, örneklemli hâli — aday sıralaması için (yüzlerce
+    aday). Kesin ölçüm kabul kapısında raster ile yapılır.
+    """
+    uv = project_to_image(h_img_to_pitch, pts_m)
+    uv = uv[np.isfinite(uv).all(axis=1)]
+    lo = samples.min(axis=0) - tolerance_px
+    hi = samples.max(axis=0) + tolerance_px
+    uv = uv[(uv >= lo).all(axis=1) & (uv <= hi).all(axis=1)]
+    if len(uv) == 0:
+        return 0.0
+    d2 = ((samples[:, None, :] - uv[None, :, :]) ** 2).sum(axis=-1).min(axis=1)
+    return float((d2 <= tolerance_px * tolerance_px).mean())
+
+
+def line_coverage(
+    h_img_to_pitch: np.ndarray, line_mask: np.ndarray, *,
+    tolerance_px: float = DEFAULT_TOLERANCE_PX, step_m: float = 0.1,
+) -> float:
+    """Görüntüdeki çizgi piksellerinin modelle AÇIKLANAN payı (0..1).
+
+    Model çizgileri sık örneklenip görüntüye izdüşürülür, `tolerance_px` kadar
+    genişletilir; çizgi maskesinin bu örtüye düşen oranı döner. Kadrajda model
+    noktası yoksa 0.
+    """
+    h_px, w_px = line_mask.shape
+    total = int(line_mask.sum())
+    if total == 0:
+        return 0.0
+    r = max(1, int(round(tolerance_px)))
+    # Kadraj kenarındaki çizgiler (yakın taç çoğu zaman görüntünün altında)
+    # model noktası kenarın hemen dışına düşünce de açıklanmış sayılmalı:
+    # raster tolerans kadar payla kurulur, genişletilir, sonra kırpılır.
+    pts = project_to_image(h_img_to_pitch, model_points(step_m))
+    pts = pts[np.isfinite(pts).all(axis=1)]
+    inside = ((pts[:, 0] >= -r) & (pts[:, 0] < w_px + r)
+              & (pts[:, 1] >= -r) & (pts[:, 1] < h_px + r))
+    pts = pts[inside]
+    if len(pts) == 0:
+        return 0.0
+    raster = np.zeros((h_px + 2 * r, w_px + 2 * r), dtype=bool)
+    raster[(pts[:, 1] + r).astype(int), (pts[:, 0] + r).astype(int)] = True
+    grown = raster
+    for _ in range(r):
+        g = grown.copy()
+        g[1:, :] |= grown[:-1, :]
+        g[:-1, :] |= grown[1:, :]
+        g[:, 1:] |= grown[:, :-1]
+        g[:, :-1] |= grown[:, 1:]
+        grown = g
+    grown = grown[r:r + h_px, r:r + w_px]
+    return float((line_mask & grown).sum() / total)
 
 
 def mirrored_homography(h_img_to_pitch: np.ndarray) -> np.ndarray:
@@ -324,6 +423,8 @@ class AnchorResult:
     # Eşit geçerli 180° ikiz çözüm. İpucu olmadan hangisinin doğru olduğu
     # bilinemez (saha modeli tam simetrik); ikisi de burada döner.
     mirror_homography: np.ndarray | None = None
+    # Kadrajdaki çizgi piksellerinin modelle açıklanan payı (kapsama kapısı)
+    coverage: float = 0.0
 
 
 def _view_quad(width_px: float, height_px: float, taper: float) -> np.ndarray:
@@ -351,12 +452,18 @@ def anchor_candidates(image_size: tuple[int, int]) -> list[np.ndarray]:
             centres = np.array([52.5])
         for cx_m in centres:
             x0, x1 = cx_m - view_len / 2.0, cx_m + view_len / 2.0
-            pitch_quad = np.array([[x0, 0.0], [x1, 0.0], [x1, 68.0], [x0, 68.0]])
-            for taper in ANCHOR_PERSPECTIVE:
-                try:
-                    out.append(dlt_homography(_view_quad(w, h, taper), pitch_quad))
-                except (ValueError, np.linalg.LinAlgError):
+            for band_w, y_top in ANCHOR_VIEW_BANDS_M:
+                # Dar dilimler yalnız yakın çekimlerde anlamlı: 105 m uzunluk
+                # görürken 30 m genişlik görmek fiziksel değil.
+                if band_w < 68.0 and view_len > 2.0 * band_w:
                     continue
+                y0, y1 = y_top, y_top + band_w
+                pitch_quad = np.array([[x0, y0], [x1, y0], [x1, y1], [x0, y1]])
+                for taper in ANCHOR_PERSPECTIVE:
+                    try:
+                        out.append(dlt_homography(_view_quad(w, h, taper), pitch_quad))
+                    except (ValueError, np.linalg.LinAlgError):
+                        continue
     return out
 
 
@@ -366,8 +473,9 @@ def find_anchor(
     *,
     tolerance_px: float = DEFAULT_TOLERANCE_PX,
     hint_homography: np.ndarray | None = None,
+    assume_camera_side: bool = False,
 ) -> AnchorResult:
-    """Başlangıç homografisi olmadan çapa bul (kesme sonrası).
+    """Başlangıç homografisi olmadan çapa bul (kesme sonrası / çapasız başlangıç).
 
     Adaylar kabaca puanlanır (ucuz), en iyi birkaçı iyileştirilir (pahalı), sonra
     net kazanan aranır. Kazanan yoksa çapa üretilmez.
@@ -377,24 +485,50 @@ def find_anchor(
     verilmezse hangisinin doğru olduğu bilinemez ve sonuç KABUL EDİLMEZ; iki
     hipotez de döndürülür. İpucu tipik olarak kesmeden önceki son geçerli
     homografidir (kamera aynı yarıya dönüyorsa ikilik çözülür).
+
+    **`assume_camera_side` (TV kuralı):** ipucu yokken ikiliği uzlaşımla kapat —
+    görüntünün altı yakın taç çizgisi (y = 68), görüntünün solu küçük x. Yayının
+    tüm canlı kameraları aynı taraftaysa (rejinin 180° kuralı) bu çerçeve
+    maç boyunca tutarlıdır. Canlı karşı açıda o çekimin konumları aynalanır;
+    bu bilinen sınırdır ve kalite kapıları (inlier, ayırt edici yapı, net
+    kazanan) bunu YAKALAMAZ — geometri aynı puanı verir.
     """
     pts_m = model_points(1.0)
     cands = anchor_candidates(image_size)
+    samples = _line_samples(dist_map)
+    if samples is None:
+        return AnchorResult(None, None, len(cands), 0.0, False,
+                            "kadrajda çizgi pikseli yok")
+    recall_tol = 2.0 * tolerance_px
+
+    # Sıralama ölçüsü KESİNLİK × DUYARLILIK. `score` yalnız "model → çizgi"
+    # bakar ve modelin çoğunu kadraj dışına atıp kalan birkaç noktayı bir
+    # çizgiye oturtan duruşları öne çıkarır (ölçüldü: 303 adayla sentetik
+    # sahnede gerçek duruş ilk 8'e giremedi, 16 m yanlış aday kazandı; gerçek
+    # karede %97 inlier'lı çözüm 27 m yanlıştı). `_recall` tersini sorar:
+    # görüntüdeki çizgi piksellerinin ne kadarı bir model noktasına yakın?
+    def _key(h: np.ndarray, s: float) -> float:
+        return s * _recall(h, samples, pts_m, recall_tol)
+
     scored = []
     for h in cands:
         s, inl, vis = score_homography(h, dist_map, pts_m=pts_m, tolerance_px=tolerance_px)
         if vis >= MIN_VISIBLE_POINTS:
-            scored.append((s, inl, h))
+            scored.append((_key(h, s), inl, h))
     if not scored:
         return AnchorResult(None, None, len(cands), 0.0, False,
                             "hiçbir aday kadrajda yeterli saha göremedi")
     scored.sort(key=lambda t: t[0], reverse=True)
 
-    refined: list[FitResult] = []
-    for _s, _inl, h in scored[:ANCHOR_REFINE_TOP_N]:
-        refined.append(refine_homography(h, dist_map, tolerance_px=tolerance_px, step_px=30.0))
-    refined.sort(key=lambda f: f.score, reverse=True)
-    best = refined[0]
+    # İyileştirme pahalı; aday sayısı büyüdükçe iyileştirilen pay da büyür,
+    # yoksa kaba sıralamanın hatası son sözü söyler.
+    top_n = max(ANCHOR_REFINE_TOP_N, len(scored) // 12)
+    refined: list[tuple[float, FitResult]] = []
+    for _s, _inl, h in scored[:top_n]:
+        f = refine_homography(h, dist_map, tolerance_px=tolerance_px, step_px=30.0)
+        refined.append((_key(f.homography, f.score), f))
+    refined.sort(key=lambda t: t[0], reverse=True)
+    best_key, best = refined[0]
 
     # Rakip: en iyiden GEOMETRİK OLARAK farklı en yüksek puanlı çözüm
     runner_up = 0.0
@@ -407,9 +541,9 @@ def find_anchor(
         return q[:, :2] / q[:, 2:3]
 
     best_pts = _pitch(best.homography)
-    for f in refined[1:]:
+    for key, f in refined[1:]:
         if float(np.abs(_pitch(f.homography) - best_pts).max()) >= ANCHOR_DISTINCT_M:
-            runner_up = f.score
+            runner_up = key
             break
 
     lm_pts = model_points(1.0, "landmark")
@@ -437,21 +571,45 @@ def find_anchor(
             f"%{ANCHOR_MIN_INLIER * 100:.0f}) — çapa üretilmedi",
            mirror_homography=mirrored_homography(best.homography),
         )
-    if runner_up > 0.0 and best.score < runner_up * ANCHOR_WIN_MARGIN:
+    if runner_up > 0.0 and best_key < runner_up * ANCHOR_WIN_MARGIN:
         return AnchorResult(
             None, best, len(cands), runner_up, False,
-            f"sahne belirsiz: en iyi aday ({best.score:.3f}) farklı bir duruşu "
+            f"sahne belirsiz: en iyi aday ({best_key:.3f}) farklı bir duruşu "
             f"({runner_up:.3f}) belirgin geçemedi — çapa üretilmedi",
            mirror_homography=mirrored_homography(best.homography),
         )
+    # Kapsama: kadrajdaki çizgilerin çoğu bu duruşla açıklanıyor mu? Mesafe
+    # haritasında 0 olan pikseller çizgidir. Tolerans oturmanınkinin İKİ KATI:
+    # kapı "yapı hiç açıklanmıyor"u (27 m) yakalamak için, birkaç piksellik
+    # oturma kusurunu cezalandırmak için değil — ölçüldü, 0.24 m doğru bir
+    # çözüm yakın taçta 10 px kayıkken oturma toleransıyla %57 kapsama alıyordu.
+    coverage = line_coverage(best.homography, dist_map <= 0.5,
+                             tolerance_px=2.0 * tolerance_px)
+    if coverage < ANCHOR_MIN_COVERAGE:
+        return AnchorResult(
+            None, best, len(cands), runner_up, False,
+            f"kadrajdaki çizgilerin yalnız %{coverage * 100:.0f}'i modelle açıklanıyor "
+            f"(< %{ANCHOR_MIN_COVERAGE * 100:.0f}) — görünen yapının çoğu bu duruşa "
+            f"uymuyor, çapa üretilmedi",
+            mirror_homography=mirrored_homography(best.homography), coverage=coverage,
+        )
     mirror = mirrored_homography(best.homography)
     if hint_homography is None:
+        if assume_camera_side:
+            # Adaylar görüntünün altını y=68'e eşler; yerel iyileştirme yönelimi
+            # değiştiremez → `best` uzlaşımın kendisidir, ikizi karşı taraf.
+            return AnchorResult(
+                best.homography, best, len(cands), runner_up, True,
+                "TV kuralı ile kabul: yakın taç çizgisi y=68 varsayıldı "
+                "(kameralar aynı tarafta); karşı açıda konumlar aynalanır",
+                mirror_homography=mirror, coverage=coverage,
+            )
         return AnchorResult(
             None, best, len(cands), runner_up, False,
             "180° ikilik çözülemedi: saha çizgileri hangi yarıya bakıldığını "
             "belirlemez (model tam simetrik). Kesme öncesi homografi ya da "
             "operatör bilgisi gerekiyor.",
-            mirror_homography=mirror,
+            mirror_homography=mirror, coverage=coverage,
         )
     # İpucuna yakın olan hipotez seçilir
     probe = np.array([[image_size[0] / 2, image_size[1] / 2, 1.0]])
@@ -465,4 +623,4 @@ def find_anchor(
     d_mirror = float(np.hypot(*(_p(mirror) - ref)[0]))
     chosen = best.homography if d_best <= d_mirror else mirror
     return AnchorResult(chosen, best, len(cands), runner_up, True, "",
-                        mirror_homography=mirror)
+                        mirror_homography=mirror, coverage=coverage)
