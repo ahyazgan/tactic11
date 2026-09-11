@@ -1179,15 +1179,15 @@ def test_retest_classifies_each_player_by_own_baseline(client):
     c, _ = client
     before = ["2026-05-01", "2026-05-08", "2026-05-15"]
     # gelişen: 34-36 baseline → 42
-    _post_series(c, "801", "Gelişen", "cmj", list(zip(before, [34.0, 35.0, 36.0])) + [("2026-06-05", 42.0)])
+    _post_series(c, "801", "Gelişen", "cmj", list(zip(before, [34.0, 35.0, 36.0], strict=True)) + [("2026-06-05", 42.0)])
     # gerileyen: 34-36 → 28
-    _post_series(c, "802", "Gerileyen", "cmj", list(zip(before, [34.0, 35.0, 36.0])) + [("2026-06-05", 28.0)])
+    _post_series(c, "802", "Gerileyen", "cmj", list(zip(before, [34.0, 35.0, 36.0], strict=True)) + [("2026-06-05", 28.0)])
     # değişmeyen: 34-36 → 35.1 (SWC altı)
-    _post_series(c, "803", "Sabit", "cmj", list(zip(before, [34.0, 35.0, 36.0])) + [("2026-06-05", 35.1)])
+    _post_series(c, "803", "Sabit", "cmj", list(zip(before, [34.0, 35.0, 36.0], strict=True)) + [("2026-06-05", 35.1)])
     # yetersiz baseline: sadece 2 ölçüm
-    _post_series(c, "804", "Yeni", "cmj", list(zip(before[:2], [34.0, 36.0])) + [("2026-06-05", 50.0)])
+    _post_series(c, "804", "Yeni", "cmj", list(zip(before[:2], [34.0, 36.0], strict=True)) + [("2026-06-05", 50.0)])
     # split sonrası ölçümü yok → listelenmez
-    _post_series(c, "805", "Eksik", "cmj", list(zip(before, [34.0, 35.0, 36.0])))
+    _post_series(c, "805", "Eksik", "cmj", list(zip(before, [34.0, 35.0, 36.0], strict=True)))
 
     body = c.get("/physical-tests/retest?protocol=cmj&split=2026-06-01").json()
     assert body["split"] == "2026-06-01"
