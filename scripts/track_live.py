@@ -164,7 +164,7 @@ class WarmTracker:
         return mode
 
     def _ensure_detector(self, width: int, height: int):
-        from app.tracking.detect import RFDetrDetector
+        from app.tracking.detect import make_detector
 
         if self._detector is not None and self._size != (width, height):
             print(f"  ! çözünürlük {self._size} → {(width, height)} değişti, "
@@ -172,9 +172,11 @@ class WarmTracker:
             self._detector = None
         if self._detector is None:
             t0 = time.time()
-            self._detector = RFDetrDetector(self._detector_cfg)
+            self._detector = make_detector(self._detector_cfg)
             self._size = (width, height)
             self.warmup_seconds = time.time() - t0
+            print(f"  dedektör: {type(self._detector).__name__} · cihaz "
+                  f"{self._detector.device}", flush=True)
         return self._detector
 
     def run(self, video: Path, *, out_json: Path, offset_minutes: float,
@@ -306,6 +308,9 @@ def main() -> int:
     p.add_argument("--tiles", type=int, default=6)
     p.add_argument("--threshold", type=float, default=0.3)
     p.add_argument("--weights", default=None)
+    p.add_argument("--backend", default="auto", choices=["auto", "torch", "onnx"],
+                   help="Dedektör arka ucu: auto=ONNX modeli varsa ONNX, yoksa torch")
+    p.add_argument("--onnx-model", default=None, help="ONNX model yolu (bkz. export_detector_onnx.py)")
     p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast"],
                    help="Kamera davranışı. auto=ilk segmentten tespit et (sonra "
                         "kilitlenir), static=sabit geniş açı, broadcast=TV yayını "
@@ -351,6 +356,7 @@ def main() -> int:
             calibration=args.calibration,
             detector_cfg=DetectorConfig(
                 threshold=args.threshold, tiles=args.tiles, weights=args.weights,
+                backend=args.backend, onnx_model=args.onnx_model,
             ),
             pipeline_kwargs={
                 "fps_out": args.fps, "track_fps": args.track_fps,
@@ -386,6 +392,9 @@ def main() -> int:
         ]
         if args.weights:
             cmd += ["--weights", args.weights]
+        cmd += ["--backend", args.backend]
+        if args.onnx_model:
+            cmd += ["--onnx-model", args.onnx_model]
         rc = subprocess.run(cmd, check=False).returncode  # noqa: S603 — sabit komut listesi
         if rc != 0 or not frames_json.exists():
             print(f"  {seg.name}: işlenemedi (çıkış {rc}) — atlandı", flush=True)

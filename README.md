@@ -456,12 +456,33 @@ API'si ve Saha Overlay kaynağı ayırt etmez.
 
 ```bash
 py -3.12 -m venv venv-cv
-venv-cv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
-venv-cv\Scripts\python.exe -m pip install rfdetr supervision opencv-python-headless "scipy==1.15.3"
+# torch yalnız model yükleme/dışa aktarım için — CPU tekerleği yeter (bkz. aşağıdaki not)
+venv-cv\Scripts\python.exe -m pip install "torch==2.5.1" "torchvision==0.20.1" --index-url https://download.pytorch.org/whl/cpu
+venv-cv\Scripts\python.exe -m pip install rfdetr supervision opencv-python-headless "scipy==1.15.3" "numpy==2.3.5" "regex<2026"
+# GPU çıkarımı: ONNX Runtime (Microsoft imzalı) + CUDA 13 çalışma zamanı
+venv-cv\Scripts\python.exe -m pip install onnxruntime-gpu "onnx==1.17.0" onnx_graphsurgeon polygraphy "ml_dtypes<0.5" ^
+    "nvidia-cuda-runtime>=13,<14" "nvidia-cublas>=13,<14" "nvidia-cufft>=12,<13" nvidia-cudnn-cu13 "nvidia-cuda-nvrtc>=13,<14" nvidia-curand
 venv-cv\Scripts\python.exe -m pip install "rfdetr[train]"   # yalnız ince ayar için
+# Dedektörü bir kez ONNX'e aktar (torch CPU ile) + torch/ONNX paritesini ölç
+venv-cv\Scripts\python.exe -m scripts.export_detector_onnx --weights data/tracking/models/rfdetr_top_small
 ```
 
-> Windows Smart App Control açıkken çok yeni scipy derlemeleri engellenebilir; `scipy==1.15.3` sabit tutuldu.
+> **Windows Smart App Control — imza değil, bulut itibarı.** Ölçüldü (2026-09-11): SAC
+> ikili dosyayı imzasına göre değil hash'inin Microsoft bulutundaki itibarına göre engelliyor.
+> **Yeni çıkan tekerlekler engellenir, eski/yaygınlar geçer**: torch 2.11 (cu128 ve cpu),
+> 2.7.1+cu128, numpy 2.5.3, regex 2026.9, onnx 1.22, onnxsim 0.7, ml_dtypes 0.6 engelli;
+> torch 2.5.1+cpu, numpy 2.3.5, onnx 1.17, onnxruntime 1.30 (Microsoft imzalı) geçiyor.
+> GPU (RTX 5060, Blackwell) yalnız cu128 torch ile çalışırdı → **torch ile GPU yok**; bu
+> yüzden çıkarım ONNX Runtime'da (`CUDAExecutionProvider` aynı makinede doğrulandı), torch
+> yalnız dışa aktarımda. Yukarıdaki sürüm sabitleri bu yüzden var — **yükseltmeyin**.
+> `onnxsim` kurulamaz; aktarım scripti sadeleştirmeyi atlar (hız optimizasyonu, doğruluk
+> şartı değil) ve doğruluğu parite kontrolüyle ölçer.
+
+**Dedektör arka ucu** (`--backend auto|torch|onnx`): `auto`, `data/tracking/models/onnx/…`
+altında ONNX modeli varsa (ya da torch yüklenemiyorsa) ONNX Runtime'ı seçer; yoksa torch.
+İki arka uç aynı arayüzü verir, hat farkı bilmez. Ölçüldü (torch 2.5.1 **CPU**, ince ayarlı
+small, 1080p): tiles=1 → 165 ms/kare, tiles=4 → 3 sn/kare — CPU çevrimdışı analiz için yeter,
+canlı 15 fps için değil; canlı yol ONNX + GPU'dur.
 
 **Akış (arayüz):** `/video-tracking` → klip yükle → `/video-tracking/calibrate` ile karede 4+ saha
 işaretine tıkla (çizgiler kareye geri-izdüşülür, hata metre cinsinden) → "Video işle" → iş
