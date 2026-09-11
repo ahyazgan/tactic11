@@ -380,6 +380,21 @@ GET /admin/teams/{id}/decisions/uplift
       "öneri yüzünden ne oldu" karşı-olgu olmadan ayrılamıyor
 ```
 
+## Haftalık Rapor (PDF + e-posta)
+
+`/weekly-report` sayfası içeriği ekranda dizer (sağlık/yük, maç, performans, TD notu);
+backend içerik **üretmez**, dizer:
+
+```
+POST /reports/weekly/pdf   → reportlab ile tek sayfa PDF (indirme)
+POST /reports/weekly/send  → aynı PDF ekiyle e-posta; SMTP_HOST/SMTP_FROM/SMTP_TO yoksa
+                             kanal stub → {"sent": false, "stub": true, "note": "…GÖNDERİLMEDİ"}
+```
+
+Zamanlanmış: `python -m scripts.run_job send_weekly_report --league 203 [--to a@b]` —
+WeeklyDigestAgent özetini üretir, kaydeder, PDF ekiyle e-postalar (dış cron haftada bir).
+İlke: SMTP yapılandırılmadıysa arayüz de iş de **"gönderildi" demez**; `sent=False` döner.
+
 ## Canlı Maç (WebSocket)
 
 ```

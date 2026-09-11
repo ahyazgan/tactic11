@@ -183,6 +183,8 @@ bağlamı için `SCREEN_INVENTORY.md` ve `FOOTBALL_GLOSSARY.md`.
 | `GET` | `/reports/agents/{agent_name}/{subject_type}/{subject_id}/pdf` |  |
 | `POST` | `/reports/performance/pdf` |  ⚠️_deprecated_ |
 | `POST` | `/reports/agent-outputs/{output_id}/share` |  |
+| `POST` | `/reports/weekly/pdf` | Haftalık raporu (arayüzün dizdiği içerik) reportlab ile PDF'e dizer |
+| `POST` | `/reports/weekly/send` | Aynı raporu PDF ekiyle e-postalar; SMTP yoksa `sent=false, stub=true` (gönderilmedi der) |
 
 ## Paylaşılan  
 `app/api/shared.py`

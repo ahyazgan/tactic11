@@ -61,6 +61,13 @@ def _parse_job_args(job_name: str, extra: list[str]) -> dict:
         sub.add_argument("--last", type=int, default=10)
         ns = sub.parse_args(extra)
         return {"league_id": ns.league, "season": ns.season, "last": ns.last}
+    if job_name == "send_weekly_report":
+        sub = argparse.ArgumentParser(prog=f"run_job {job_name}")
+        sub.add_argument("--league", type=int, required=True)
+        sub.add_argument("--lookback-days", type=int, default=7)
+        sub.add_argument("--to", default=None, help="Alıcı e-posta (boşsa SMTP_TO)")
+        ns = sub.parse_args(extra)
+        return {"league_external_id": ns.league, "lookback_days": ns.lookback_days, "to": ns.to}
     if extra:
         raise SystemExit(f"{job_name} için ek argüman beklenmiyordu: {extra}")
     return {}
