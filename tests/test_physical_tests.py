@@ -1159,3 +1159,79 @@ def test_stale_players_listed_by_days_since_test(client):
     assert c.get("/physical-tests/stale?days=2").json()[0]["player_id"] == "12345"
     assert len(c.get("/physical-tests/stale?days=2").json()) == 2
     assert c.get("/physical-tests/stale?days=0").status_code == 422
+
+
+# --------------------------------------------------------------------------- #
+# Re-test kadro kıyası (GET /retest) — blok öncesi baseline vs sonrası ölçüm
+# --------------------------------------------------------------------------- #
+
+
+def _post_series(c, pid, name, protocol, dated_values):
+    for d, v in dated_values:
+        r = c.post("/physical-tests/", json={
+            "player_id": pid, "player_name": name, "test_date": d,
+            "protocol": protocol, "value": v,
+        })
+        assert r.status_code == 201, r.text
+
+
+def test_retest_classifies_each_player_by_own_baseline(client):
+    c, _ = client
+    before = ["2026-05-01", "2026-05-08", "2026-05-15"]
+    # gelişen: 34-36 baseline → 42
+    _post_series(c, "801", "Gelişen", "cmj", list(zip(before, [34.0, 35.0, 36.0])) + [("2026-06-05", 42.0)])
+    # gerileyen: 34-36 → 28
+    _post_series(c, "802", "Gerileyen", "cmj", list(zip(before, [34.0, 35.0, 36.0])) + [("2026-06-05", 28.0)])
+    # değişmeyen: 34-36 → 35.1 (SWC altı)
+    _post_series(c, "803", "Sabit", "cmj", list(zip(before, [34.0, 35.0, 36.0])) + [("2026-06-05", 35.1)])
+    # yetersiz baseline: sadece 2 ölçüm
+    _post_series(c, "804", "Yeni", "cmj", list(zip(before[:2], [34.0, 36.0])) + [("2026-06-05", 50.0)])
+    # split sonrası ölçümü yok → listelenmez
+    _post_series(c, "805", "Eksik", "cmj", list(zip(before, [34.0, 35.0, 36.0])))
+
+    body = c.get("/physical-tests/retest?protocol=cmj&split=2026-06-01").json()
+    assert body["split"] == "2026-06-01"
+    assert body["min_baseline"] == 3
+    assert body["n"] == 4
+    assert (body["improved"], body["declined"], body["unchanged"], body["insufficient"]) == (1, 1, 1, 1)
+    cats = {r["player_id"]: r["category"] for r in body["rows"]}
+    assert cats == {"801": "improved", "802": "declined", "803": "unchanged", "804": "insufficient"}
+    # sıra: gerileyen önce, yetersiz en sonda
+    assert [r["category"] for r in body["rows"]] == ["declined", "improved", "unchanged", "insufficient"]
+    imp = next(r for r in body["rows"] if r["player_id"] == "801")
+    assert imp["baseline_n"] == 3 and imp["baseline_mean"] == 35.0 and imp["current"] == 42.0
+    assert imp["delta"] == 7.0 and imp["delta_pct"] == 20.0
+    assert imp["current_date"] == "2026-06-05"
+    ins = next(r for r in body["rows"] if r["player_id"] == "804")
+    assert ins["baseline_mean"] is None and ins["swc"] is None and ins["delta"] is None
+    assert "yetersiz baseline" in ins["verdict"]
+
+
+def test_retest_uses_latest_post_split_measurement_and_direction(client):
+    c, _ = client
+    # sprint (düşük iyi): baseline 1.80 civarı; split sonrası iki ölçüm, SON'u sayılır
+    _post_series(c, "811", "Sprinter", "sprint_10m", [
+        ("2026-05-01", 1.80), ("2026-05-08", 1.82), ("2026-05-15", 1.78),
+        ("2026-06-02", 1.60), ("2026-06-09", 1.95),
+    ])
+    body = c.get("/physical-tests/retest?protocol=sprint_10m&split=2026-06-01").json()
+    assert body["higher_is_better"] is False
+    row = body["rows"][0]
+    assert row["current"] == 1.95 and row["current_date"] == "2026-06-09"
+    assert row["category"] == "declined"           # süre arttı → gerileme
+
+
+def test_retest_unknown_protocol_404_and_missing_split_422(client):
+    c, _ = client
+    assert c.get("/physical-tests/retest?protocol=bilinmeyen&split=2026-06-01").status_code == 404
+    assert c.get("/physical-tests/retest?protocol=cmj").status_code == 422
+
+
+def test_retest_is_tenant_isolated(client):
+    c, state = client
+    _post_series(c, "821", "A", "cmj", [
+        ("2026-05-01", 34.0), ("2026-05-08", 35.0), ("2026-05-15", 36.0), ("2026-06-05", 42.0),
+    ])
+    state["tenant_id"] = "t2"
+    body = c.get("/physical-tests/retest?protocol=cmj&split=2026-06-01").json()
+    assert body["n"] == 0 and body["rows"] == []

@@ -1203,6 +1203,110 @@ def squad_comparison(
     )
 
 
+# --------------------------------------------------------------------------- #
+# Re-test kadro kıyası — antrenman bloğu öncesi/sonrası, oyuncunun KENDİ
+# baseline'ına göre (SWC). Kadro ortalaması değil: "kim gerçekten gelişti,
+# kim geriledi, kimde ölçüm gürültüsü" sorusuna cevap.
+# --------------------------------------------------------------------------- #
+
+
+class RetestRowOut(BaseModel):
+    player_id: str
+    player_name: str
+    baseline_n: int                 # split öncesi ölçüm sayısı
+    baseline_mean: float | None     # yeterli baseline yoksa None
+    swc: float | None
+    current: float                  # split sonrası SON ölçüm
+    current_date: date
+    delta: float | None
+    delta_pct: float | None         # baseline ortalamasına göre %
+    category: str                   # declined | improved | unchanged | insufficient
+    verdict: str
+
+
+class RetestComparisonOut(BaseModel):
+    protocol: str
+    protocol_name: str
+    unit: str
+    higher_is_better: bool
+    split: date
+    min_baseline: int
+    n: int                          # split sonrası ölçümü olan oyuncu sayısı
+    improved: int
+    declined: int
+    unchanged: int
+    insufficient: int
+    rows: list[RetestRowOut]
+
+
+_RETEST_ORDER = {c: i for i, c in enumerate(perf.RETEST_CATEGORIES)}
+
+
+@router.get("/retest", response_model=RetestComparisonOut)
+def retest_comparison(
+    protocol: str,
+    split: date,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> RetestComparisonOut:
+    """Bir protokolde blok öncesi/sonrası kıyas.
+
+    baseline = `split` tarihinden ÖNCEKİ ölçümler (oyuncu başına), current =
+    `split` ve sonrasındaki SON ölçüm. Baseline < RETEST_MIN_BASELINE ise
+    'insufficient' (iddia yok). Sıra: gerileyen → gelişen → değişmeyen →
+    yetersiz. Split sonrası ölçümü olmayan oyuncu listelenmez. `/{player_id}`'den
+    ÖNCE tanımlı."""
+    proto = perf.PROTOCOLS.get(protocol)
+    if proto is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"bilinmeyen protokol: {protocol}")
+    rows = list(session.execute(
+        select(PhysicalTest)
+        .where(PhysicalTest.tenant_id == user.tenant_id,
+               PhysicalTest.protocol == protocol)
+        .order_by(PhysicalTest.test_date.asc(), PhysicalTest.id.asc())
+    ).scalars())
+    baseline: dict[str, list[float]] = {}
+    current: dict[str, PhysicalTest] = {}
+    for r in rows:
+        if r.test_date < split:
+            baseline.setdefault(r.player_id, []).append(r.value)
+        else:
+            current[r.player_id] = r     # asc → son yazılan = en son
+    out_rows: list[RetestRowOut] = []
+    counts = dict.fromkeys(perf.RETEST_CATEGORIES, 0)
+    for pid, rec in current.items():
+        base = baseline.get(pid, [])
+        o = perf.retest_outcome(
+            float(rec.value), base, higher_is_better=proto.higher_is_better,
+        )
+        counts[o.category] += 1
+        a = o.assessment
+        delta_pct = (round(100.0 * a.delta / a.baseline_mean, 1)
+                     if a is not None and a.baseline_mean else None)
+        out_rows.append(RetestRowOut(
+            player_id=pid, player_name=rec.player_name,
+            baseline_n=len(base),
+            baseline_mean=a.baseline_mean if a else None,
+            swc=a.swc if a else None,
+            current=float(rec.value), current_date=rec.test_date,
+            delta=a.delta if a else None, delta_pct=delta_pct,
+            category=o.category,
+            verdict=(a.verdict if a else
+                     f"yetersiz baseline (n={len(base)} < {perf.RETEST_MIN_BASELINE})"),
+        ))
+    out_rows.sort(key=lambda x: (_RETEST_ORDER[x.category], x.player_name))
+    return RetestComparisonOut(
+        protocol=protocol, protocol_name=proto.name, unit=proto.unit,
+        higher_is_better=proto.higher_is_better, split=split,
+        min_baseline=perf.RETEST_MIN_BASELINE, n=len(out_rows),
+        improved=counts["improved"], declined=counts["declined"],
+        unchanged=counts["unchanged"], insufficient=counts["insufficient"],
+        rows=out_rows,
+    )
+
+
 # Oyuncu özelliği (FM 1-20) fiziksel grubunu besleyen protokoller. Frontend
 # lib/attributes.ts physicalGroupFromPercentiles ile birebir.
 _ATTR_PHYS_PROTOCOLS = ("sprint_10m", "sprint_30m", "yoyo_irl1", "cmj", "vo2max")
