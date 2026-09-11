@@ -158,6 +158,9 @@ interface PlayerRow {
   latest_test_date: string | null;
   risk_label: string;
   risk_score: number;
+  // Veri güncelliği (backend): son testten bu yana gün; 28 günü aşarsa bayat.
+  days_since_test?: number | null;
+  stale?: boolean;
 }
 
 // --------------------------------------------------------------------------- //
@@ -543,7 +546,10 @@ export default function OverviewConsolePage() {
                   <td><span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><PlayerAvatar name={p.player_name} position={POS_BY_ID[p.player_id]} size={20} /><span className="nm">{p.player_name}</span> <span className="nat">#{SHIRT_BY_ID[p.player_id] ?? p.player_id}</span></span></td>
                   <td className="c" style={{ fontFamily: "JetBrains Mono", color: "var(--muted)" }}>{p.test_count}</td>
                   <td className="c"><span className="cond"><i style={{ width: `${cond}%`, background: condColor(cond) }} /></span></td>
-                  <td className="c" style={{ color: "var(--dim)", fontFamily: "JetBrains Mono", fontSize: "11px" }}>{p.latest_test_date ?? "—"}</td>
+                  <td className="c" style={{ color: p.stale ? "var(--mid)" : "var(--dim)", fontFamily: "JetBrains Mono", fontSize: "11px" }}
+                    title={p.stale ? `${p.days_since_test} gündür test yok — risk skoru eski ölçüme dayanıyor` : undefined}>
+                    {p.latest_test_date ?? "—"}{p.stale ? ` · ${p.days_since_test}g` : ""}
+                  </td>
                   <td className="c"><span className="risk" style={{ color: rv }}><span className="rd" style={{ background: rv, boxShadow: `0 0 7px ${rv}` }} />{p.risk_label}</span></td>
                   <td className="r" style={{ color: rv }}>{Math.round(p.risk_score * 100)}</td>
                 </tr>

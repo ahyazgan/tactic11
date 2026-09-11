@@ -1108,3 +1108,54 @@ def test_attribute_percentiles_requires_auth():
     c = TestClient(real_app)
     r = c.get("/physical-tests/1/attribute-percentiles")
     assert r.status_code in (401, 403)
+
+
+# --- giriş anı kontrolü + bayat test ------------------------------------------ #
+
+def test_entry_check_flags_outlier_against_own_history(client):
+    """Virgül/birim hatası: 1.78 sn koşan oyuncuya 17.8 girilirse |z| ≥ 3 → şüpheli.
+
+    Kayıt YİNE yapılır (engel değil), bayrak cevaba düşer."""
+    c, _ = client
+    for i, v in enumerate((1.76, 1.79, 1.78, 1.80)):
+        r = c.post("/physical-tests/", json={**_SPRINT_OK, "value": v, "test_date": f"2026-05-0{i + 1}"})
+        assert r.status_code == 201
+    r = c.post("/physical-tests/", json={**_SPRINT_OK, "value": 17.8, "test_date": "2026-06-06"})
+    assert r.status_code == 201
+    chk = r.json()["entry_check"]
+    assert chk["suspicious"] is True and chk["baseline_n"] == 4 and abs(chk["z"]) >= 3
+    assert "kontrol edin" in chk["note"]
+    assert len(c.get("/physical-tests/12345").json()) == 5     # kayıt düştü
+
+
+def test_entry_check_normal_value_is_not_flagged(client):
+    c, _ = client
+    for i, v in enumerate((1.76, 1.79, 1.78)):
+        c.post("/physical-tests/", json={**_SPRINT_OK, "value": v, "test_date": f"2026-05-0{i + 1}"})
+    chk = c.post("/physical-tests/", json={**_SPRINT_OK, "value": 1.77}).json()["entry_check"]
+    assert chk["suspicious"] is False and chk["baseline_n"] == 3
+
+
+def test_entry_check_absent_without_history(client):
+    c, _ = client
+    body = c.post("/physical-tests/", json=_SPRINT_OK).json()
+    assert body["entry_check"] is None
+
+
+def test_stale_players_listed_by_days_since_test(client):
+    from datetime import UTC, datetime, timedelta
+
+    c, _ = client
+    today = datetime.now(UTC).date()
+    old = (today - timedelta(days=40)).isoformat()
+    fresh = (today - timedelta(days=3)).isoformat()
+    c.post("/physical-tests/", json={**_SPRINT_OK, "test_date": old})
+    c.post("/physical-tests/", json={**_SPRINT_OK, "player_id": "777", "player_name": "Yeni", "test_date": fresh})
+    players = {p["player_id"]: p for p in c.get("/physical-tests/players").json()}
+    assert players["12345"]["stale"] is True and players["12345"]["days_since_test"] == 40
+    assert players["777"]["stale"] is False and players["777"]["days_since_test"] == 3
+    stale = c.get("/physical-tests/stale").json()
+    assert [p["player_id"] for p in stale] == ["12345"]
+    assert c.get("/physical-tests/stale?days=2").json()[0]["player_id"] == "12345"
+    assert len(c.get("/physical-tests/stale?days=2").json()) == 2
+    assert c.get("/physical-tests/stale?days=0").status_code == 422

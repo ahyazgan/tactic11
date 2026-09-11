@@ -422,6 +422,7 @@ function PerformanceFormConsole() {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [savedCount, setSavedCount] = React.useState<number | null>(null);
+  const [suspicious, setSuspicious] = React.useState<string[]>([]);
 
   function updateRow(id: number, patch: Partial<Row>) {
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
@@ -442,9 +443,10 @@ function PerformanceFormConsole() {
 
   async function persistResults(): Promise<number> {
     let ok = 0;
+    const flagged: string[] = [];
     for (const [protocol, value] of validResults()) {
       try {
-        await apiFetch("/physical-tests/", {
+        const saved = await apiFetch<{ entry_check?: { suspicious: boolean; note: string } | null }>("/physical-tests/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -456,10 +458,14 @@ function PerformanceFormConsole() {
           }),
         });
         ok++;
+        // Backend giriş kontrolü: oyuncunun kendi geçmişine göre aşırı sapma
+        // (virgül/birim hatası olabilir). Kayıt yapıldı; kullanıcı görsün.
+        if (saved.entry_check?.suspicious) flagged.push(`${protocol}: ${saved.entry_check.note}`);
       } catch {
         /* best-effort */
       }
     }
+    setSuspicious(flagged);
     return ok;
   }
 
@@ -592,6 +598,12 @@ function PerformanceFormConsole() {
 
         {error && <div style={{ marginTop: 10, fontSize: 12, color: "var(--crit)" }}>{error}</div>}
         {savedCount !== null && savedCount > 0 && <div style={{ marginTop: 10, fontSize: 12, color: "var(--low)" }}>{savedCount} sonuç kaydedildi — geçmiş, trend ve risk panellerine işlendi.</div>}
+        {suspicious.length > 0 && (
+          <div data-testid="entry-suspicious" style={{ marginTop: 8, fontSize: 12, color: "var(--mid)", lineHeight: 1.5 }}>
+            <b>Şüpheli ölçüm — kontrol edin:</b>
+            {suspicious.map((s, i) => <div key={i}>• {s}</div>)}
+          </div>
+        )}
 
         <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 8 }}>
           <button type="button" onClick={evaluate} disabled={!canSubmit} style={{ padding: "0 16px", height: 42, borderRadius: 7, background: "var(--besiktas)", color: "#fff", fontWeight: 600, fontSize: 13, border: 0, cursor: canSubmit ? "pointer" : "default", opacity: canSubmit ? 1 : 0.4, fontFamily: "inherit" }}>{busy ? "İşleniyor…" : "Kaydet & Değerlendir"}</button>
