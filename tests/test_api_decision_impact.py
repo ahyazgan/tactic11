@@ -70,6 +70,7 @@ def _seed(session, *, with_events: bool = True, with_decisions: bool = True):
             team_external_id=US, minute=60.0, period=2, decision_type="substitution",
             subject_player_external_id=5, related_player_external_id=9,
             notes="yorgun 8 numara çıktı", recommended=True, confidence=0.7, created_at=now,
+            applied=True,   # koç uyguladı — geri besleme yalnız bunlardan öğrenir
         ))
         session.add(models.Decision(
             sport=football.SPORT_NAME, tenant_id="t-default", match_external_id=MATCH,

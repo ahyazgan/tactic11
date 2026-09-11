@@ -199,6 +199,9 @@ def seed(args: argparse.Namespace) -> int:
                         "supporting_keys": list(primary.get("supporting_keys") or ()),
                     }, ensure_ascii=False),
                     outcome="pending",
+                    # Kimse uygulamadı: karşı-olgu YOK. Bilerek None — True
+                    # yazmak külliyatı sahte pilot verisine çevirirdi.
+                    applied=None,
                 ))
                 yazilan += 1
         s.commit()
@@ -345,6 +348,47 @@ def _katmanli_rapor(rows) -> None:
     print()
 
 
+def _uygulama_raporu(rows, team: int) -> None:
+    """Karşı-olgu var mı? Varsa uygulanan vs uygulanmayan öneri kıyası.
+
+    Külliyatın ASIL sınırı budur: kararlar uygulanmadı, `outcome` yalnız
+    "sonra ne oldu"yu ölçer. Bu rapor o sınırı her koşumda yüzüne vurur; pilot
+    kulüpte koç işaretledikçe (`applied` true/false) kıyas kendiliğinden dolar.
+    """
+    from app.engine.decision_uplift import UpliftSample, compute_decision_uplift
+
+    uygulanan = sum(1 for d in rows if d.applied is True)
+    uygulanmayan = sum(1 for d in rows if d.applied is False)
+    bilinmeyen = len(rows) - uygulanan - uygulanmayan
+    print(f"  koç işareti — uygulanan: {uygulanan} · uygulanmayan: {uygulanmayan}"
+          f" · işaretsiz: {bilinmeyen}")
+    if uygulanan == 0 or uygulanmayan == 0:
+        print("  UYARI: karşı-olgu yok. Bu karne 'sonra ne oldu'yu tartar, "
+              "'öneri yüzünden ne oldu'yu DEĞİL.\n")
+        return
+
+    samples: list[UpliftSample] = []
+    for d in rows:
+        if d.applied is None or d.outcome not in {"positive", "negative"}:
+            continue
+        try:
+            ctx = json.loads(d.context_json or "{}")
+        except (ValueError, TypeError):
+            continue
+        pre = ctx.get("pre_xg_diff")
+        if pre is None or d.outcome_value is None:
+            continue
+        samples.append(UpliftSample(
+            applied=d.applied, positive=d.outcome == "positive",
+            xg_delta=float(d.outcome_value), pre=float(pre),
+        ))
+    u = compute_decision_uplift(team, samples).value
+    print(f"  UYGULANAN vs UYGULANMAYAN (n={u.applied.n}/{u.not_applied.n})")
+    print(f"    isabet: {u.applied.hit_rate} vs {u.not_applied.hit_rate}"
+          f" · ham fark {u.raw_hit_rate_diff} · katmanlı fark {u.stratified_hit_rate_diff}")
+    print(f"    hüküm: {u.verdict} — {u.note}\n")
+
+
 def report(args: argparse.Namespace) -> int:
     """Ölçülmüş kararlardan sürücü karnesi: hangi sürücü sonucu ayırıyor?"""
     from app.engine.confidence.attribution import attribute
@@ -383,6 +427,7 @@ def report(args: argparse.Namespace) -> int:
 
     rep = attribute(samples)
     print(f"  {rep.headline}\n")
+    _uygulama_raporu(rows, args.team)
     _katmanli_rapor(rows)
     print(f"  {'sürücü':<18}{'AUC':>6}{'fark':>9}{'olumlu':>9}{'olumsuz':>9}  hüküm")
     print("  " + "-" * 74)

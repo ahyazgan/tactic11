@@ -1445,8 +1445,15 @@ def create_decision(
         "subject_player_external_id": int | null,
         "related_player_external_id": int | null,
         "notes": str (optional),
-        "payload_json": dict (optional)
+        "payload_json": dict (optional),
+        "recommended": bool (default false) — motor önerisi mi,
+        "applied": true | false | null — koç sahada uyguladı mı
     }
+
+    `applied` verilmezse: koçun KENDİ hamlesi (recommended=false) kaydediliyorsa
+    yapılmıştır → true. Motor önerisinde varsayılan yok → null (bilinmiyor);
+    koç işaretlemediyse uydurulmaz. Uygulanmayan öneri de KAYDEDİLMELİ — o
+    kayıt karşı-olgudur, öneri etkisi ancak onunla ölçülür (`decisions/uplift`).
     """
     import json as _json
     from datetime import UTC
@@ -1465,6 +1472,11 @@ def create_decision(
             status_code=400,
             detail=f"decision_type {allowed_types} içinde olmalı",
         )
+    recommended = bool(payload.get("recommended", False))
+    applied = _parse_applied(payload.get("applied"))
+    if applied is None and not recommended:
+        applied = True
+    now = _datetime.now(UTC)
 
     row = models.Decision(
         sport=football.SPORT_NAME,
@@ -1479,23 +1491,33 @@ def create_decision(
         payload_json=_json.dumps(payload.get("payload_json"))
             if payload.get("payload_json") else None,
         by_user_id=payload.get("by_user_id"),
-        created_at=_datetime.now(UTC),
+        created_at=now,
         # Faz 8 #4 — öneri kaynaklı mıydı + o anki güven + bağlam
-        recommended=bool(payload.get("recommended", False)),
+        recommended=recommended,
         confidence=(float(payload["confidence"])
                     if payload.get("confidence") is not None else None),
         context_json=_json.dumps(payload.get("context_json"))
             if payload.get("context_json") else None,
         outcome="pending",
+        applied=applied,
+        applied_at=now if applied is not None else None,
     )
     session.add(row)
     session.commit()
     return {
         "id": row.id, "match_id": match_id,
         "decision_type": row.decision_type, "minute": row.minute,
-        "recommended": row.recommended, "outcome": row.outcome,
+        "recommended": row.recommended, "applied": row.applied,
+        "outcome": row.outcome,
         "created_at": row.created_at.isoformat(),
     }
+
+
+def _parse_applied(value: Any) -> bool | None:
+    """`applied` alanı: true / false / null — başka her şey 400."""
+    if value is None or isinstance(value, bool):
+        return value
+    raise HTTPException(status_code=400, detail="applied true, false ya da null olmalı")
 
 
 @router.get(
@@ -1524,6 +1546,7 @@ def list_decisions(
             "related_player_id": r.related_player_external_id,
             "notes": r.notes,
             "recommended": r.recommended,
+            "applied": r.applied,
             "confidence": r.confidence,
             "outcome": r.outcome,
             "outcome_value": r.outcome_value,
@@ -1531,6 +1554,38 @@ def list_decisions(
         }
         for r in rows
     ]
+
+
+@router.post(
+    "/decisions/{decision_id}/applied",
+    tags=["admin"],
+    summary="Koç işareti: bu öneri sahada uygulandı mı? (karşı-olgu kaydı)",
+)
+def mark_decision_applied(
+    decision_id: int,
+    payload: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """payload: {"applied": true | false | null} — null işareti kaldırır.
+
+    Geri besleme (isabet oranı, kalibrasyon) yalnız `applied=true` kararlardan
+    öğrenir; `applied=false` kayıtlar `decisions/uplift` kıyasının karşı-olgu
+    koludur. İşaretsiz (null) karar iki tarafa da girmez.
+    """
+    if "applied" not in payload:
+        raise HTTPException(status_code=400, detail="eksik alan: ['applied']")
+    applied = _parse_applied(payload["applied"])
+    row = session.get(models.Decision, decision_id)
+    if row is None:
+        raise HTTPException(status_code=404,
+                            detail=f"decision {decision_id} yok")
+    row.applied = applied
+    row.applied_at = datetime.now(UTC) if applied is not None else None
+    session.commit()
+    return {
+        "id": row.id, "applied": row.applied,
+        "applied_at": row.applied_at.isoformat() if row.applied_at else None,
+    }
 
 
 @router.post(
@@ -1585,7 +1640,13 @@ def decisions_feedback(
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Bu takımın geçmiş kararlarının decision_type bazlı isabet oranı.
-    context_engine güven skorunu (#2) bu oranla kalibre eder."""
+    context_engine güven skorunu (#2) bu oranla kalibre eder.
+
+    Yalnız `applied=true` kararlar sayılır: uygulanmamış bir önerinin sonucu
+    öneriyi değil, "hiçbir şey yapılmayınca ne olduğunu" ölçer. İşaretsiz
+    (null) kararlar da dışarıda kalır — uydurulmaz. `excluded` kaç kararın
+    neden dışarıda kaldığını gösterir.
+    """
     rows = list(session.execute(
         select(models.Decision).where(
             models.Decision.sport == football.SPORT_NAME,
@@ -1594,7 +1655,13 @@ def decisions_feedback(
         )
     ).scalars())
     by_type: dict[str, dict[str, int]] = {}
+    excluded = {"not_applied": 0, "unknown": 0}
+    evaluated = 0
     for r in rows:
+        if r.applied is not True:
+            excluded["not_applied" if r.applied is False else "unknown"] += 1
+            continue
+        evaluated += 1
         b = by_type.setdefault(r.decision_type, {"positive": 0, "negative": 0})
         if r.outcome in ("positive", "negative"):
             b[r.outcome] += 1
@@ -1605,7 +1672,11 @@ def decisions_feedback(
         }
         for dtype, b in by_type.items()
     }
-    return {"team_id": team_id, "evaluated": len(rows), "by_decision_type": summary}
+    return {
+        "team_id": team_id, "evaluated": evaluated, "excluded": excluded,
+        "by_decision_type": summary,
+        "note": "yalnız koçun uyguladığı (applied=true) kararlar sayılır",
+    }
 @router.get(
     "/matches/{match_id}/decisions/learning",
     tags=["admin"],
@@ -1811,6 +1882,11 @@ def decisions_quality(
     2. Sistemin önerdiği kararlar, koçun kendi başına aldıklarından daha mı iyi?
 
     Etiket = decision_impact hükmü (positive/negative); ölçülemeyenler dışarıda.
+
+    Öneri tarafında yalnız koçun UYGULADIĞI öneriler sayılır (`applied=true`):
+    uygulanmamış önerinin sonucu sistemin güvenini tartmaz. Uygulanmayan ve
+    işaretsiz öneriler `recommended_vs_own.not_applied / unknown` altında
+    sayılır; uygulanan-uygulanmayan kıyası `decisions/uplift` ucundadır.
     """
     from app.engine.backtest import backtest
 
@@ -1825,7 +1901,7 @@ def decisions_quality(
     samples = [
         (float(row.confidence), imp.verdict == "positive")
         for row, imp in measured
-        if row.recommended and row.confidence is not None
+        if row.recommended and row.applied is True and row.confidence is not None
     ]
     report = backtest(samples)
 
@@ -1838,14 +1914,17 @@ def decisions_quality(
             "mean_xg_delta": round(sum(i.xg_diff_delta for _r, i in rows) / len(rows), 4),
         }
 
-    rec = _group([(r, i) for r, i in measured if r.recommended])
+    rec = _group([(r, i) for r, i in measured if r.recommended and r.applied is True])
     own = _group([(r, i) for r, i in measured if not r.recommended])
+    not_applied = sum(1 for r, _i in measured if r.recommended and r.applied is False)
+    unknown = sum(1 for r, _i in measured if r.recommended and r.applied is None)
     lift = (
         round(rec["mean_xg_delta"] - own["mean_xg_delta"], 4)
         if rec["n"] and own["n"] else None
     )
     if not samples:
-        verdict = "Kalibrasyon için yeterli öneri-kaynaklı karar yok (güven değeri kayıtlı olmalı)."
+        verdict = ("Kalibrasyon için yeterli uygulanmış öneri yok "
+                   "(güven değeri kayıtlı + koç 'uyguladım' işaretlemiş olmalı).")
     elif report.well_calibrated:
         verdict = (
             f"Güven kalibre: ortalama %{round(report.mean_predicted * 100)} güvende "
@@ -1878,12 +1957,58 @@ def decisions_quality(
                 for b in report.calibration
             ],
         },
-        "recommended_vs_own": {"recommended": rec, "own": own, "xg_lift": lift},
+        "recommended_vs_own": {
+            "recommended": rec, "own": own, "xg_lift": lift,
+            "not_applied": not_applied, "unknown": unknown,
+        },
         "verdict": verdict,
         "note": (
             "Etiketler decision_impact vekil ölçümünden gelir; kalibrasyon örneklem "
-            "büyüdükçe anlamlanır (n<20 ise yön göstergesi sayılmalı)."
+            "büyüdükçe anlamlanır (n<20 ise yön göstergesi sayılmalı). Öneri "
+            "tarafında yalnız koçun uyguladığı öneriler sayılır."
         ),
+    }
+
+
+@router.get(
+    "/teams/{team_id}/decisions/uplift",
+    tags=["admin"],
+    summary="Öneri etkisi: uygulanan vs uygulanmayan öneri, karar öncesi duruma göre katmanlı",
+)
+def decisions_uplift(
+    team_id: int,
+    window_min: float = Query(default=15.0, ge=3.0, le=30.0),
+    last_matches: int = Query(default=20, ge=1, le=100),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Öneri UYGULANINCA, uygulanmayınca olandan daha mı iyi gidiyor?
+
+    `outcome` "sonra ne oldu"yu ölçer; "öneri yüzünden ne oldu" ancak koçun
+    uyguladığı öneriler ile uygulamadığı öneriler (karşı-olgu) aynı cetvelle
+    kıyaslanınca ölçülür. Kıyas karar öncesi duruma göre katmanlıdır — cetvel
+    ortalamaya dönüş taşır, kötü giderken uygulanan öneri ham kıyasta haksız
+    yere iyi görünür (`engine.decision_uplift`).
+    """
+    from app.engine.decision_uplift import UpliftSample, compute_decision_uplift
+
+    impacts_by_id, rows_by_id, matches_used = _measured_decisions(
+        session, team_id, window_min=window_min, last_matches=last_matches,
+    )
+    samples = [
+        UpliftSample(
+            applied=row.applied, positive=imp.verdict == "positive",
+            xg_delta=imp.xg_diff_delta, pre=imp.pre.xg_diff,
+        )
+        for did, imp in impacts_by_id.items()
+        if (row := rows_by_id.get(did)) is not None
+        and row.recommended and imp.verdict in ("positive", "negative")
+    ]
+    payload = engine_result_to_dict(compute_decision_uplift(team_id, samples))
+    return {
+        "team_id": team_id, "window_minutes": window_min,
+        "matches_used": matches_used, "measured_recommendations": len(samples),
+        **payload["value"],
+        "formula": payload["audit"]["formula"],
     }
 
 
@@ -3438,6 +3563,11 @@ def decisions_recent_endpoint(
             models.Decision.decision_type, func.count(models.Decision.id),
         ).where(*where).group_by(models.Decision.decision_type)
     ).all())
+    applied_counts: dict[bool | None, int] = dict(session.execute(  # type: ignore[arg-type]
+        select(
+            models.Decision.applied, func.count(models.Decision.id),
+        ).where(*where).group_by(models.Decision.applied)
+    ).all())
 
     positive = int(outcome_counts.get("positive", 0))
     negative = int(outcome_counts.get("negative", 0))
@@ -3454,6 +3584,12 @@ def decisions_recent_endpoint(
             "positive": positive, "negative": negative, "neutral": neutral,
             "hit_rate": hit_rate,
             "by_decision_type": {k or "?": int(v) for k, v in type_counts.items()},
+            # Koç işareti: uygulanan / uygulanmayan (karşı-olgu) / işaretsiz
+            "applied": {
+                "yes": int(applied_counts.get(True, 0)),
+                "no": int(applied_counts.get(False, 0)),
+                "unknown": int(applied_counts.get(None, 0)),
+            },
         },
         "decisions": [
             {
@@ -3466,6 +3602,7 @@ def decisions_recent_endpoint(
                 "related_player_id": r.related_player_external_id,
                 "notes": r.notes,
                 "recommended": r.recommended,
+                "applied": r.applied,
                 "confidence": r.confidence,
                 "outcome": r.outcome,
                 "outcome_value": r.outcome_value,

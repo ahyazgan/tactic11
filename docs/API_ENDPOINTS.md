@@ -41,7 +41,9 @@ bağlamı için `SCREEN_INVENTORY.md` ve `FOOTBALL_GLOSSARY.md`.
 | `POST` | `/admin/matches/{match_id}/decisions` | TD hamlesi kaydet (substitution / formation_change / tactical_instruction) |
 | `GET` | `/admin/matches/{match_id}/decisions` | Bir maçtaki kayıtlı TD kararlarını listele |
 | `POST` | `/admin/decisions/{decision_id}/outcome` | Karar sonucunu kaydet (Faz 8 #4 — feedback loop) |
-| `GET` | `/admin/teams/{team_id}/decisions/feedback` | Karar tipine göre geçmiş isabet oranı (Faz 8 #4 → güven skoru) |
+| `POST` | `/admin/decisions/{decision_id}/applied` | Koç işareti: bu öneri sahada uygulandı mı? (`applied` true/false/null — false = karşı-olgu kaydı) |
+| `GET` | `/admin/teams/{team_id}/decisions/feedback` | Karar tipine göre geçmiş isabet oranı — yalnız `applied=true` kararlar (Faz 8 #4 → güven skoru) |
+| `GET` | `/admin/teams/{team_id}/decisions/uplift` | Öneri etkisi: uygulanan vs uygulanmayan öneri, karar öncesi duruma göre katmanlı (`engine.decision_uplift`) |
 | `GET` | `/admin/matches/{match_id}/decisions/learning` | Post-match learning: TD kararının sonuca etkisi (causal proxy) |
 | `GET` | `/admin/teams/{team_id}/set-piece-pattern-history` | Rakibin geçmiş set-piece pattern'leri (canlı maç alert için) |
 | `GET` | `/admin/matches/{match_id}/live-sub-recommendation` | Canlı maç oyuncu değişikliği önerisi (retrospective demo da) |

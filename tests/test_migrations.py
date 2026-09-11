@@ -106,6 +106,18 @@ def test_each_revision_individually_reversible(isolated_db):
     assert tables == set()
 
 
+def test_head_carries_decision_applied_columns(isolated_db):
+    """0031: koç işareti sütunları (`applied`, `applied_at`) head'de var."""
+    cfg = _alembic_cfg()
+    command.upgrade(cfg, "head")
+    engine = create_engine(isolated_db, future=True)
+    try:
+        cols = {c["name"] for c in inspect(engine).get_columns("decisions")}
+    finally:
+        engine.dispose()
+    assert {"applied", "applied_at"} <= cols
+
+
 def test_partial_upgrade_to_intermediate_revision(isolated_db):
     """Sadece 0001 → leagues/teams var, observability tabloları yok."""
     cfg = _alembic_cfg()

@@ -364,8 +364,20 @@ POST /admin/decisions/{decision_id}/outcome
     → Kararın sonucunu işle (positive|negative|neutral) — feedback loop
       payload: {"outcome", "outcome_value"?, "outcome_notes"?}
 
+POST /admin/decisions/{decision_id}/applied
+    → Koç işareti: öneri sahada uygulandı mı? payload: {"applied": true|false|null}
+      false = karşı-olgu kaydı (aynı durumda öneri uygulanmayınca ne oldu);
+      geri besleme YALNIZ applied=true kararlardan öğrenir, null uydurulmaz
+
 GET /admin/teams/{id}/decisions/feedback
     → decision_type bazlı geçmiş isabet oranı → güven skorunu kalibre eder
+      (yalnız koçun uyguladığı kararlar; `excluded` dışarıda kalanları sayar)
+
+GET /admin/teams/{id}/decisions/uplift
+    → Öneri etkisi: uygulanan vs uygulanmayan öneri, karar öncesi duruma göre
+      katmanlı isabet farkı (engine.decision_uplift). Karşı-olgu yoksa
+      hüküm vermez — 502 uygulanmamış öneride ölçüldü: "sonra ne oldu" ile
+      "öneri yüzünden ne oldu" karşı-olgu olmadan ayrılamıyor
 ```
 
 ## Canlı Maç (WebSocket)

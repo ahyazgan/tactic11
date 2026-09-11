@@ -31,7 +31,11 @@ export interface DecisionQuality {
     mean_predicted: number; observed_rate: number;
     well_calibrated: boolean; bins: CalibrationBin[];
   };
-  recommended_vs_own: { recommended: GroupStat; own: GroupStat; xg_lift: number | null };
+  recommended_vs_own: {
+    recommended: GroupStat; own: GroupStat; xg_lift: number | null;
+    // Öneri tarafında yalnız koçun UYGULADIĞI öneriler sayılır; bunlar dışarıda
+    not_applied?: number; unknown?: number;
+  };
   verdict: string; note?: string;
 }
 
@@ -150,7 +154,14 @@ export function DecisionQualityCard({ teamId, windowMin = 15 }: {
           )}
 
           <div style={{ marginTop: 14, paddingTop: 10, borderTop: "1px solid var(--line)" }}>
-            <div style={{ ...LABEL, marginBottom: 6 }}>Sistemin önerdiği vs koçun kendi kararı</div>
+            <div style={{ ...LABEL, marginBottom: 6 }}>
+              Sistemin önerdiği (uygulanan) vs koçun kendi kararı
+              {(cmp.not_applied || cmp.unknown) ? (
+                <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 500 }}>
+                  {" "}· dışarıda: {cmp.not_applied ?? 0} uygulanmadı, {cmp.unknown ?? 0} işaretsiz
+                </span>
+              ) : null}
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
               {([["Öneriden", cmp.recommended], ["Koçun kendi", cmp.own]] as const).map(([label, g]) => (
                 <div key={label}>

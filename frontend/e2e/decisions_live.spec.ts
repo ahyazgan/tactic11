@@ -101,6 +101,31 @@ test.describe("Decisions live (DEMO_MODE)", () => {
   });
 });
 
+test.describe("Koç işareti (DEMO_MODE)", () => {
+  /**
+   * Karşı-olgu kaydı: "Uygulamadım" boş bir tık değil, kayıttır. 502 ölçülmüş
+   * öneride hiçbir sinyal ayırt etmiyordu — kararlar uygulanmadığı için
+   * "sonra ne oldu" ile "öneri yüzünden ne oldu" ayrılamıyordu. Uygulanmayan
+   * öneri kaydedilmezse o karşı-olgu bir daha oluşmaz; bu test iki butonun da
+   * kaydettiğini kilitler.
+   */
+  test("uygulamadım da kaydedilir — karşı-olgu", async ({ page }) => {
+    await page.goto("/decisions/live");
+    const afis = page.getByTestId("primary-action");
+    await afis.getByTestId("apply-no").click();
+    await expect(afis.getByTestId("applied-saved")).toHaveText(/Uygulamadım/);
+    // Kaydedildikten sonra butonlar kalkar; işaret aynı dakika için tek seferliktir
+    await expect(afis.getByTestId("apply-yes")).toHaveCount(0);
+  });
+
+  test("uyguladım kaydedilir", async ({ page }) => {
+    await page.goto("/decisions/live");
+    const afis = page.getByTestId("primary-action");
+    await afis.getByTestId("apply-yes").click();
+    await expect(afis.getByTestId("applied-saved")).toHaveText(/Uyguladım/);
+  });
+});
+
 test.describe("Güven rozeti dürüstlüğü", () => {
   /**
    * ÜRÜNÜN TEK GERÇEK MOAT'I: kanıtlanabilir güven.

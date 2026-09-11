@@ -19,6 +19,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DecisionQualityCard } from "./decision-quality";
+import { DecisionUpliftCard } from "./decision-uplift";
 
 export interface WindowMetrics {
   minutes: number; xg_for: number; xg_against: number; xg_diff: number; xt: number;
@@ -303,6 +304,7 @@ export function MeasuredImpactSection({ teamId, matchId, windowMin = 15 }: {
       </div>
       <DecisionTrackRecordCard teamId={teamId} windowMin={windowMin} />
       <DecisionQualityCard teamId={teamId} windowMin={windowMin} />
+      <DecisionUpliftCard teamId={teamId} windowMin={windowMin} />
       <MatchDecisionImpactCard matchId={matchId} windowMin={windowMin} />
     </>
   );

@@ -100,6 +100,11 @@ interface ContextPrimary {
   // arayüz kesin bir yüzde GÖSTERMEMELİDİR — ölçüldü (n=513): kanıt seviyesi
   // sonucu ayırt etmiyor, gösterilen sayı takımın taban oranı.
   calibration_note?: string;
+  // Kararla birlikte SAKLANIR (context_json): ince kırılımlı isabet oranı
+  // sinyal tipine göre öğrenir (momentum_opp %44 / momentum_us %21 farkı tek
+  // kovada kaybolmasın); sürücü karnesi güven terimlerini ister.
+  signal_type?: string | null;
+  confidence_terms?: Record<string, number> | null;
 }
 interface ContextDecision {
   one_liner?: string;
@@ -533,11 +538,20 @@ function ConfidenceBadge({ primary }: { primary: ContextPrimary }) {
   );
 }
 
+/**
+ * Koç işareti — iki buton, ikisi de KAYDEDER.
+ *
+ * "Uygulamadım" kaydı boş bir tık değil, karşı-olgudur: aynı durumda öneri
+ * uygulanmayınca ne olduğu ancak bu kayıtla ölçülür (`decisions/uplift`).
+ * Ölçüldü (502 öneri, hiçbiri uygulanmamış): karşı-olgu olmadan hiçbir sinyal
+ * öneri kalitesini ayırt edemiyor. Bu yüzden tek "uygula" butonu yetmez.
+ */
 function PrimaryBanner({
-  ctx, onApply, applyState, onWatchClip,
+  ctx, onApply, applyState, appliedChoice, onWatchClip,
 }: { ctx: ContextDecision | undefined;
-     onApply?: () => void;
+     onApply?: (applied: boolean) => void;
      applyState?: "idle" | "saving" | "saved" | "error";
+     appliedChoice?: boolean | null;
      onWatchClip?: () => void }) {
   const p = ctx?.primary;
   const urgency = p?.urgency ?? 0;
@@ -625,25 +639,53 @@ function PrimaryBanner({
         {(onApply || onWatchClip) && (
           <div style={{ marginTop: 14, display: "flex",
             alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            {onApply && (
-              <button
-                type="button"
-                onClick={onApply}
-                disabled={applyState === "saving" || applyState === "saved"}
-                style={{
-                  padding: "8px 16px",
-                  background: applyState === "saved" ? "var(--low)" : tone,
-                  color: "var(--panel)", border: "none", borderRadius: 4,
-                  cursor: applyState === "saved" ? "default" : "pointer",
-                  fontWeight: 700, fontSize: 12.5, letterSpacing: 0.3,
-                  opacity: applyState === "saving" ? 0.6 : 1,
-                }}
-              >
-                {applyState === "saving" ? "Kaydediliyor…"
-                  : applyState === "saved" ? "✓ Kaydedildi"
-                  : applyState === "error" ? "⚠ Hata · Tekrar dene"
-                  : "✓ Bu kararı uygula & yansıt"}
-              </button>
+            {onApply && applyState === "saved" && (
+              <span data-testid="applied-saved" style={{
+                padding: "8px 14px", borderRadius: 4, fontWeight: 700,
+                fontSize: 12.5, letterSpacing: 0.3,
+                background: appliedChoice ? "var(--low)" : "var(--panel2)",
+                color: appliedChoice ? "var(--panel)" : "var(--ink)",
+                border: appliedChoice ? "none" : "1px solid var(--line)",
+              }}>
+                {appliedChoice ? "✓ Uyguladım · kaydedildi" : "✗ Uygulamadım · kaydedildi"}
+              </span>
+            )}
+            {onApply && applyState !== "saved" && (
+              <>
+                <button
+                  type="button"
+                  data-testid="apply-yes"
+                  onClick={() => onApply(true)}
+                  disabled={applyState === "saving"}
+                  style={{
+                    padding: "8px 16px", background: tone,
+                    color: "var(--panel)", border: "none", borderRadius: 4,
+                    cursor: "pointer", fontWeight: 700, fontSize: 12.5,
+                    letterSpacing: 0.3, opacity: applyState === "saving" ? 0.6 : 1,
+                  }}
+                >
+                  {applyState === "saving" && appliedChoice === true ? "Kaydediliyor…"
+                    : applyState === "error" && appliedChoice === true ? "⚠ Hata · Tekrar dene"
+                    : "✓ Uyguladım"}
+                </button>
+                <button
+                  type="button"
+                  data-testid="apply-no"
+                  onClick={() => onApply(false)}
+                  disabled={applyState === "saving"}
+                  title="Öneriyi uygulamadıysan da kaydet — karşı-olgu olarak ölçülür"
+                  style={{
+                    padding: "8px 14px", background: "var(--panel2)",
+                    color: "var(--ink)", border: "1px solid var(--line)",
+                    borderRadius: 4, cursor: "pointer", fontWeight: 600,
+                    fontSize: 12.5, opacity: applyState === "saving" ? 0.6 : 1,
+                  }}
+                >
+                  {applyState === "saving" && appliedChoice === false ? "Kaydediliyor…"
+                    : applyState === "error" && appliedChoice === false ? "⚠ Hata · Tekrar dene"
+                    : "✗ Uygulamadım"}
+                </button>
+              </>
             )}
             {onWatchClip && (
               <button
@@ -663,7 +705,7 @@ function PrimaryBanner({
             )}
             {applyState !== "saved" && (
               <span style={{ fontSize: 11, color: "var(--muted)" }}>
-                /decisions/track'e geçer · outcome maç sonunda ölçülür
+                ikisi de kaydedilir · uygulanmayan öneri karşı-olgu olur · sonuç maç sonunda ölçülür
               </span>
             )}
           </div>
@@ -1149,6 +1191,8 @@ export default function LiveDecisionPage() {
   const [notifyEnabled, setNotifyEnabled] = useState(false);
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const [applyState, setApplyState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  // Koçun son işareti: true = uyguladım, false = uygulamadım (ikisi de kaydedilir)
+  const [appliedChoice, setAppliedChoice] = useState<boolean | null>(null);
   const [clipMeta, setClipMeta] = useState<ClipMeta | null>(null);
   const [clipOpen, setClipOpen] = useState(false);
   const lastMinuteRef = useRef<number | null>(null);
@@ -1271,6 +1315,7 @@ export default function LiveDecisionPage() {
     lastMinuteRef.current = null;
     lastAppliedRef.current = null;
     setApplyState("idle");
+    setAppliedChoice(null);
   }
 
   // Dakika değişince apply state reset (her dakika için yeni karar)
@@ -1280,6 +1325,7 @@ export default function LiveDecisionPage() {
     if (!last) return;
     if (last.minute !== minute || last.headline !== (p?.headline ?? "")) {
       setApplyState("idle");
+      setAppliedChoice(null);
     }
   }, [minute, data]);
 
@@ -1318,9 +1364,12 @@ export default function LiveDecisionPage() {
     }
   }
 
-  async function handleApply() {
+  // applied=false da KAYDEDİLİR: uygulanmayan öneri, aynı durumda "hiçbir şey
+  // yapılmasaydı"nın gözlemi — öneri etkisi ancak onunla ölçülür.
+  async function handleApply(applied: boolean) {
     const p = data?.context?.primary;
     if (!p) return;
+    setAppliedChoice(applied);
     setApplyState("saving");
     // decision_type mapping (theme_label → backend tip)
     const themeToType: Record<string, string> = {
@@ -1349,12 +1398,17 @@ export default function LiveDecisionPage() {
             decision_type: decisionType,
             notes: p.headline,
             recommended: true,
+            applied,
             confidence: p.confidence,
             context_json: {
               score_state: closing?.score_state ?? null,
               closing_phase: closing?.closing_phase ?? null,
               theme: p.theme_label ?? null,
               urgency: p.urgency ?? null,
+              // Külliyat (`scripts/decision_corpus seed`) ile aynı alanlar:
+              // pilot verisi aynı karneden geçebilsin.
+              signal_type: p.signal_type ?? null,
+              confidence_terms: p.confidence_terms ?? null,
             },
           }),
         });
@@ -1530,6 +1584,7 @@ export default function LiveDecisionPage() {
         ctx={data?.context}
         onApply={data?.context?.primary ? handleApply : undefined}
         applyState={applyState}
+        appliedChoice={appliedChoice}
         onWatchClip={data?.context?.primary ? handleWatchClip : undefined}
       />
       <AiBriefPanel brief={aiBrief} />
