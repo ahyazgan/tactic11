@@ -87,11 +87,66 @@ class PhysicalTestOut(BaseModel):
     # Norm derecesi (elit/iyi/ortalama/zayıf) — eski batarya sisteminden, B'ye
     # taşındı. from_attributes ile alanlar dolduktan sonra hesaplanır.
     rating: str | None = None
+    # Giriş anı kontrolü: oyuncunun KENDİ geçmişine göre aşırı sapma (virgül/birim
+    # hatası yakalar). Kayıt yine yapılır; bayrak arayüze düşer, engel değil.
+    entry_check: EntryCheckOut | None = None
 
     @model_validator(mode="after")
     def _fill_rating(self) -> PhysicalTestOut:
         self.rating = rate_against_norms(self.protocol.value, self.value)
         return self
+
+
+# Oyuncunun kendi geçmişine göre |z| bu değeri aşarsa "şüpheli". Anomali
+# motorunun 2.0'ı form kırılması içindir; giriş hatası için daha yüksek eşik —
+# gerçek büyük değişimler (sakatlık dönüşü) de bayraklanır, bu istenen davranış:
+# "kontrol et", "reddet" değil.
+ENTRY_SUSPICIOUS_Z = 3.0
+ENTRY_MIN_HISTORY = 3
+# Bu kadar gündür testi olmayan oyuncu "bayat" — veri güncelliği uyarısı.
+STALE_TEST_DAYS = 28
+
+
+class EntryCheckOut(BaseModel):
+    suspicious: bool
+    z: float | None            # geçmiş sapması 0 ise None
+    baseline_n: int
+    baseline_mean: float
+    delta: float
+    swc: float                 # en küçük anlamlı değişim (0.2 × SD)
+    note: str
+
+
+def _entry_check(session: Session, record: PhysicalTest, tenant_id: str) -> EntryCheckOut | None:
+    """Yeni ölçümü oyuncunun aynı protokoldeki geçmişiyle kıyasla (kayıt hariç)."""
+    import statistics
+
+    rows = session.execute(
+        select(PhysicalTest.value).where(
+            PhysicalTest.tenant_id == tenant_id,
+            PhysicalTest.player_id == record.player_id,
+            PhysicalTest.protocol == record.protocol,
+            PhysicalTest.id != record.id,
+        ).order_by(PhysicalTest.test_date)
+    ).scalars().all()
+    history = [float(v) for v in rows]
+    if len(history) < ENTRY_MIN_HISTORY:
+        return None
+    proto = perf.PROTOCOLS.get(record.protocol)
+    hib = proto.higher_is_better if proto is not None else True
+    change = perf.assess_change(float(record.value), history, higher_is_better=hib)
+    sd = statistics.pstdev(history)
+    z = round((float(record.value) - change.baseline_mean) / sd, 2) if sd > 0 else None
+    suspicious = z is not None and abs(z) >= ENTRY_SUSPICIOUS_Z
+    if suspicious and z is not None:
+        note = (f"kendi geçmişine göre |z| {abs(z):.1f} (ort {change.baseline_mean:g}, n={len(history)}) — "
+                f"birim/virgül hatası olabilir; kayıt yapıldı, kontrol edin")
+    else:
+        note = change.verdict
+    return EntryCheckOut(
+        suspicious=suspicious, z=z, baseline_n=len(history),
+        baseline_mean=change.baseline_mean, delta=change.delta, swc=change.swc, note=note,
+    )
 
 
 class LoadRiskOut(BaseModel):
@@ -111,6 +166,10 @@ class PlayerSummaryOut(BaseModel):
     latest_test_date: date | None
     risk_label: str
     risk_score: float
+    # Veri güncelliği: son testten bu yana gün; STALE_TEST_DAYS'i aşarsa bayat.
+    # Risk skoru eski ölçüme dayanıyorsa kullanıcı bunu görmeli.
+    days_since_test: int | None = None
+    stale: bool = False
 
 
 class TrendOut(BaseModel):
@@ -219,8 +278,12 @@ def create_test(
     payload: PhysicalTestCreate,
     session: Session = Depends(get_session),
     user: models.User = Depends(get_current_user),
-) -> PhysicalTest:
-    """Saha test sonucunu kaydet."""
+) -> PhysicalTestOut:
+    """Saha test sonucunu kaydet.
+
+    Cevaptaki `entry_check`, ölçümü oyuncunun kendi geçmişiyle kıyaslar: |z| ≥ 3
+    ise `suspicious=true` (giriş hatası ya da gerçek büyük değişim — kontrol
+    edilmeli). Kayıt her durumda yapılır; veri girişi engellenmez."""
     unit = payload.unit or UNIT_MAP.get(payload.protocol, "")
     record = PhysicalTest(
         tenant_id=user.tenant_id,
@@ -247,7 +310,9 @@ def create_test(
     )
     if report is not None:
         _maybe_alert_critical(report)
-    return record
+    out = PhysicalTestOut.model_validate(record)
+    out.entry_check = _entry_check(session, record, user.tenant_id)
+    return out
 
 
 class ProtocolInfoOut(BaseModel):
@@ -750,20 +815,46 @@ def list_players(
         .group_by(PhysicalTest.player_id)
     )
     out: list[PlayerSummaryOut] = []
+    today = datetime.now(UTC).date()
     for row in session.execute(stmt).all():
         pid = row[0]
         report = _player_risk(session, tenant_id=user.tenant_id, player_id=pid)
+        latest = row[3]
+        days = (today - latest).days if latest is not None else None
         out.append(PlayerSummaryOut(
             player_id=pid,
             player_name=row[1],
             test_count=row[2],
-            latest_test_date=row[3],
+            latest_test_date=latest,
             risk_label=report.risk_label if report is not None else "Veri Yok",
             risk_score=report.risk_score if report is not None else 0.0,
+            days_since_test=days,
+            stale=days is not None and days > STALE_TEST_DAYS,
         ))
     # En riskli üstte (skora göre azalan).
     out.sort(key=lambda p: p.risk_score, reverse=True)
     return out
+
+
+@router.get("/stale", response_model=list[PlayerSummaryOut])
+def list_stale_players(
+    days: int = STALE_TEST_DAYS,
+    session: Session = Depends(get_session),
+    user: models.User = Depends(get_current_user),
+) -> list[PlayerSummaryOut]:
+    """`days` günden uzun süredir testi olmayan oyuncular (en eski üstte).
+
+    Test takvimi hatırlatması: risk skoru eski ölçüme dayanan oyuncu listesi.
+    NOT: yalnız en az bir testi olan oyuncular — hiç test edilmemişler burada
+    görünmez (kadro listesi test tablosundan türetiliyor)."""
+    if days < 1:
+        raise HTTPException(status_code=422, detail="days ≥ 1 olmalı")
+    rows = [p for p in list_players(session=session, user=user)
+            if p.days_since_test is not None and p.days_since_test > days]
+    rows.sort(key=lambda p: p.days_since_test or 0, reverse=True)
+    for p in rows:
+        p.stale = True
+    return rows
 
 
 def _readiness_kwargs_from_latest(latest: dict[str, PhysicalTest]) -> dict[str, Any]:

@@ -160,6 +160,7 @@ bağlamı için `SCREEN_INVENTORY.md` ve `FOOTBALL_GLOSSARY.md`.
 |--------|------|----------|
 | `POST` | `/physical-tests/` |  |
 | `GET` | `/physical-tests/players` |  |
+| `GET` | `/physical-tests/stale` | `days` günden uzun süredir testi olmayan oyuncular (veri güncelliği; varsayılan 28) |
 | `GET` | `/physical-tests/{player_id}` |  |
 | `GET` | `/physical-tests/{player_id}/risk` |  |
 | `GET` | `/physical-tests/{player_id}/trend` |  |
