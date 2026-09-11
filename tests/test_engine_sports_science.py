@@ -1,7 +1,12 @@
 """Spor bilimi: workload (ACWR) + SWC/bireysel baseline (saf)."""
 from __future__ import annotations
 
-from app.engine.performance_test import assess_change, smallest_worthwhile_change
+from app.engine.performance_test import (
+    RETEST_MIN_BASELINE,
+    assess_change,
+    retest_outcome,
+    smallest_worthwhile_change,
+)
 from app.engine.workload import compute_workload
 
 # --------------------------------------------------------------------------- #
@@ -66,6 +71,27 @@ def test_change_above_swc_improvement():
     a = assess_change(42.0, [34.0, 35.0, 36.0, 35.0], higher_is_better=True)
     assert a.beyond_swc is True
     assert a.verdict == "anlamlı gelişme"
+
+
+def test_retest_outcome_insufficient_below_min_baseline():
+    o = retest_outcome(50.0, [34.0, 36.0], higher_is_better=True)
+    assert RETEST_MIN_BASELINE == 3
+    assert o.category == "insufficient" and o.assessment is None
+
+
+def test_retest_outcome_categories_follow_direction():
+    base = [34.0, 35.0, 36.0, 35.0]
+    assert retest_outcome(42.0, base, higher_is_better=True).category == "improved"
+    assert retest_outcome(28.0, base, higher_is_better=True).category == "declined"
+    assert retest_outcome(35.1, base, higher_is_better=True).category == "unchanged"
+    # düşük-iyi protokolde aynı artış gerileme demektir
+    assert retest_outcome(42.0, base, higher_is_better=False).category == "declined"
+
+
+def test_retest_outcome_identical_baseline_is_unchanged_not_claimed():
+    # SWC=0 → gürültü tahmini yok → iddia üretme
+    o = retest_outcome(40.0, [35.0, 35.0, 35.0], higher_is_better=True)
+    assert o.category == "unchanged" and o.assessment is not None and o.assessment.swc == 0.0
 
 
 def test_change_above_swc_decline_lower_better():

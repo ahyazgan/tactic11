@@ -161,6 +161,8 @@ bağlamı için `SCREEN_INVENTORY.md` ve `FOOTBALL_GLOSSARY.md`.
 | `POST` | `/physical-tests/` |  |
 | `GET` | `/physical-tests/players` |  |
 | `GET` | `/physical-tests/stale` | `days` günden uzun süredir testi olmayan oyuncular (veri güncelliği; varsayılan 28) |
+| `GET` | `/physical-tests/squad-comparison` | `protocol` · kadronun son değerleri: norm rating + kadro-içi yüzdelik (en iyi üstte) |
+| `GET` | `/physical-tests/retest` | `protocol`, `split` · blok öncesi ölçümler (bireysel baseline, ≥3) vs blok sonrası son ölçüm; SWC=0.2×SD ile gerileme/gelişme/değişim yok/yetersiz; gerileyen üstte |
 | `GET` | `/physical-tests/{player_id}` |  |
 | `GET` | `/physical-tests/{player_id}/risk` |  |
 | `GET` | `/physical-tests/{player_id}/trend` |  |

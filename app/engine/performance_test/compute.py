@@ -406,6 +406,52 @@ def assess_change(
     )
 
 
+# Re-test (antrenman bloğu öncesi/sonrası) kadro kıyası. Bireysel baseline'da
+# SWC için en az bu kadar ölçüm gerekir: 2 ölçümün standart sapması güvenilir
+# değildir (battery uç noktasıyla aynı eşik).
+RETEST_MIN_BASELINE = 3
+
+RETEST_CATEGORIES = ("declined", "improved", "unchanged", "insufficient")
+
+
+@dataclass(frozen=True)
+class RetestOutcome:
+    """Bir oyuncunun blok sonrası ölçümü, blok öncesi baseline'ına göre.
+
+    category: declined | improved | unchanged | insufficient
+    assessment: yeterli baseline varsa SWC değerlendirmesi, yoksa None.
+    """
+
+    category: str
+    assessment: ChangeAssessment | None
+
+
+def retest_outcome(
+    current: float,
+    baseline_values: list[float],
+    *,
+    higher_is_better: bool,
+    min_baseline: int = RETEST_MIN_BASELINE,
+    factor: float = SWC_FACTOR,
+) -> RetestOutcome:
+    """assess_change'i kategoriye indirger; baseline kısa ise 'insufficient'.
+
+    Baseline değerleri birebir aynıysa SWC=0 → değişim 'unchanged' sayılır
+    (gürültü tahmini yapılamaz; iddia üretmeyiz)."""
+    if len(baseline_values) < min_baseline:
+        return RetestOutcome(category="insufficient", assessment=None)
+    a = assess_change(
+        current, baseline_values, higher_is_better=higher_is_better, factor=factor,
+    )
+    if not a.beyond_swc:
+        cat = "unchanged"
+    elif (a.delta > 0) == higher_is_better:
+        cat = "improved"
+    else:
+        cat = "declined"
+    return RetestOutcome(category=cat, assessment=a)
+
+
 # --------------------------------------------------------------------------- #
 # Türetilmiş metrikler — ham ölçümden spor-bilimi göstergesi üret (saf).
 # Tüm eşikler aşağıda adlandırılmış sabit (ev konvansiyonu: engine eşiği =
