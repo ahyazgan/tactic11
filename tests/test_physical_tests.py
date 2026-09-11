@@ -1294,3 +1294,56 @@ def test_target_is_tenant_isolated(client):
     state["tenant_id"] = "t2"
     assert c.get("/physical-tests/targets").json() == []
     assert c.delete(f"/physical-tests/targets/{tid}").status_code == 404
+
+
+# --------------------------------------------------------------------------- #
+# Mevkiye özel yüzdelik (attribute-percentiles → position_percentiles)
+# --------------------------------------------------------------------------- #
+
+
+def _seed_position(session, pid: str, position: str | None, tenant: str = "t1") -> None:
+    from app.sports import football
+    session.add(models.Player(
+        sport=football.SPORT_NAME, external_id=int(pid), name=f"P{pid}",
+        position=position, tenant_id=tenant,
+    ))
+    session.flush()
+
+
+def test_attribute_percentiles_position_pool_uses_same_position_only(client, session):
+    c, _ = client
+    # 2 stoper + 2 forvet; CMJ (yüksek iyi). 701 kadroda 3., mevkisinde 1.
+    for pid, pos, val in [("701", "DF", 45.0), ("702", "D", 40.0), ("703", "FW", 55.0), ("704", "F", 50.0)]:
+        _seed_position(session, pid, pos)
+        _post_test(c, pid, "cmj", val)
+    body = c.get("/physical-tests/701/attribute-percentiles").json()
+    assert body["position"] == "D"
+    assert body["squad_pool_n"]["cmj"] == 4 and body["position_pool_n"]["cmj"] == 2
+    assert body["percentiles"]["cmj"] == 0.5            # kadroda 2/4'ü yendi
+    assert body["position_percentiles"]["cmj"] == 1.0   # stoperler arasında en iyi
+    # kod normalizasyonu: "FW" ve "F" aynı havuz
+    b3 = c.get("/physical-tests/703/attribute-percentiles").json()
+    assert b3["position"] == "F" and b3["position_pool_n"]["cmj"] == 2
+
+
+def test_attribute_percentiles_without_position_is_honest_empty(client, session):
+    c, _ = client
+    _seed_position(session, "711", None)
+    _post_test(c, "711", "cmj", 45.0)
+    _post_test(c, "712", "cmj", 40.0)          # players tablosunda yok
+    for pid in ("711", "712"):
+        body = c.get(f"/physical-tests/{pid}/attribute-percentiles").json()
+        assert body["position"] is None
+        assert body["position_percentiles"] == {} and body["position_pool_n"] == {}
+        assert body["squad_pool_n"]["cmj"] == 2
+
+
+def test_attribute_percentiles_position_pool_is_tenant_scoped(client, session):
+    c, _ = client
+    _seed_position(session, "721", "M")
+    _seed_position(session, "722", "M", tenant="t2")   # başka tenant'ın oyuncusu
+    _post_test(c, "721", "cmj", 45.0)
+    _post_test(c, "722", "cmj", 60.0)                  # t1'de test var ama mevki bilgisi t2'de
+    body = c.get("/physical-tests/721/attribute-percentiles").json()
+    assert body["position"] == "M"
+    assert body["position_pool_n"]["cmj"] == 1 and body["position_percentiles"]["cmj"] == 0.5

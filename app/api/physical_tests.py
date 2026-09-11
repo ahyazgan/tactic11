@@ -1463,6 +1463,33 @@ class AttrPercentilesOut(BaseModel):
     player_id: str
     percentiles: dict[str, float]
     available: list[str]
+    squad_pool_n: dict[str, int] = {}
+    # Mevkiye özel havuz: players.position aynı olan oyuncuların SON değerleri.
+    # Oyuncu players tablosunda yoksa / mevkisi yoksa position=None ve boş dict
+    # (uydurma norm yok; kaynaklı mevki normu repo'da bulunmuyor).
+    position: str | None = None
+    position_percentiles: dict[str, float] = {}
+    position_pool_n: dict[str, int] = {}
+
+
+# Mevki kodu normalizasyonu: players.position farklı kaynaklardan
+# G/D/M/F (app.sports.football) ya da GK/DF/MF/FW gelebilir → tek harf.
+_POSITION_ALIAS = {"GK": "G", "DF": "D", "MF": "M", "FW": "F", "G": "G", "D": "D", "M": "M", "F": "F"}
+
+
+def _position_code(raw: str | None) -> str | None:
+    if not raw:
+        return None
+    return _POSITION_ALIAS.get(raw.strip().upper())
+
+
+def _direction_pct(my: float, pool: list[float], *, higher_is_better: bool) -> float:
+    """Yön-duyarlı yüzdelik 0..1 (1 = havuzun en iyisi); tek kişilik havuz 0.5."""
+    if len(pool) <= 1:
+        return 0.5
+    beaten = (sum(1 for v in pool if v <= my) if higher_is_better
+              else sum(1 for v in pool if v >= my))
+    return round(beaten / len(pool), 4)
 
 
 @router.get("/{player_id}/attribute-percentiles", response_model=AttrPercentilesOut)
@@ -1481,7 +1508,21 @@ def attribute_percentiles(
         session, player_id=player_id, action="read_attribute_percentiles",
         endpoint=f"/physical-tests/{player_id}/attribute-percentiles", user_id=user.id,
     )
+    # Mevki havuzu: tenant'ın players tablosundaki mevki kodları (external_id → kod).
+    pos_by_pid: dict[str, str] = {}
+    for ext_id, pos in session.execute(
+        select(models.Player.external_id, models.Player.position)
+        .where(models.Player.tenant_id == user.tenant_id)
+    ).all():
+        code = _position_code(pos)
+        if code is not None:
+            pos_by_pid[str(ext_id)] = code
+    my_position = pos_by_pid.get(player_id)
+
     percentiles: dict[str, float] = {}
+    squad_pool_n: dict[str, int] = {}
+    position_percentiles: dict[str, float] = {}
+    position_pool_n: dict[str, int] = {}
     available: list[str] = []
     for proto_key in _ATTR_PHYS_PROTOCOLS:
         proto = perf.PROTOCOLS.get(proto_key)
@@ -1498,19 +1539,17 @@ def attribute_percentiles(
             latest.setdefault(r.player_id, r.value)   # desc → ilk = en son
         if player_id not in latest:
             continue
-        pool = list(latest.values())
         my = latest[player_id]
-        if len(pool) <= 1:
-            pct = 0.5
-        else:
-            # Yön-duyarlı: higher_is_better → büyük değer üstte; sprint → küçük üstte.
-            if proto.higher_is_better:
-                beaten = sum(1 for v in pool if v <= my)
-            else:
-                beaten = sum(1 for v in pool if v >= my)
-            pct = beaten / len(pool)
-        percentiles[proto_key] = round(pct, 4)
+        pool = list(latest.values())
+        percentiles[proto_key] = _direction_pct(
+            my, pool, higher_is_better=proto.higher_is_better)
+        squad_pool_n[proto_key] = len(pool)
         available.append(proto_key)
+        if my_position is not None:
+            pos_pool = [v for pid, v in latest.items() if pos_by_pid.get(pid) == my_position]
+            position_percentiles[proto_key] = _direction_pct(
+                my, pos_pool, higher_is_better=proto.higher_is_better)
+            position_pool_n[proto_key] = len(pos_pool)
 
     if not available:
         raise HTTPException(
@@ -1519,6 +1558,8 @@ def attribute_percentiles(
         )
     return AttrPercentilesOut(
         player_id=player_id, percentiles=percentiles, available=available,
+        squad_pool_n=squad_pool_n, position=my_position,
+        position_percentiles=position_percentiles, position_pool_n=position_pool_n,
     )
 
 
