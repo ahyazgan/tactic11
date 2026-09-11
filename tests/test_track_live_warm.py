@@ -6,8 +6,9 @@ segmentler arasında paylaşıldığı için, kaynak çözünürlük değişirse
 sabit batch ile dilim sayısı uyuşmaz → sessizce yanlış/eksik tespit. Bu yüzden
 çözünürlük değişince dedektör yeniden kurulmalı.
 
-Torch/rfdetr ana venv'de yok; `RFDetrDetector` sahte bir sınıfla değiştirilir
-(ağır import'lar zaten fonksiyon içinde, modül seviyesinde değil).
+Torch/rfdetr ana venv'de yok; `make_detector` (arka uç seçici) sahte bir sınıf
+döndürecek şekilde değiştirilir — WarmTracker hangi arka ucun (torch/ONNX)
+seçildiğini bilmez, yalnız fabrikayı çağırır.
 """
 from __future__ import annotations
 
@@ -34,6 +35,7 @@ class FakeDetector:
     """Kaç kez kurulduğunu sayar — gerçek model yüklenmez."""
 
     built = 0
+    device = "cpu"
 
     def __init__(self, cfg=None):
         FakeDetector.built += 1
@@ -43,7 +45,7 @@ class FakeDetector:
 @pytest.fixture()
 def warm(tmp_path, monkeypatch):
     FakeDetector.built = 0
-    monkeypatch.setattr(detect_mod, "RFDetrDetector", FakeDetector)
+    monkeypatch.setattr(detect_mod, "make_detector", lambda cfg=None: FakeDetector(cfg))
     path = tmp_path / "calib.json"
     path.write_text(json.dumps(CALIB), encoding="utf-8")
     return WarmTracker(

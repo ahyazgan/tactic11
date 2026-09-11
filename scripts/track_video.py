@@ -53,6 +53,10 @@ def main() -> int:
     p.add_argument("--tiles", type=int, default=1, help="1=tam kare, 2=2×2 dilim (küçük oyuncular için)")
     p.add_argument("--resolution", type=int, default=None)
     p.add_argument("--weights", default=None, help="İnce ayarlı ağırlık klasörü (meta.json + checkpoint_best_total.pth)")
+    p.add_argument("--backend", default="auto", choices=["auto", "torch", "onnx"],
+                   help="Dedektör arka ucu. auto=ONNX modeli varsa (ya da torch yüklenemiyorsa) ONNX, "
+                        "yoksa torch. ONNX modeli: scripts/export_detector_onnx.py")
+    p.add_argument("--onnx-model", default=None, help="ONNX model yolu (varsayılan: data/tracking/models/onnx/…)")
     p.add_argument("--clip-offset-minutes", type=float, default=0.0, help="Klibin maç dakikası başlangıcı")
     p.add_argument("--period", type=int, default=1)
     p.add_argument("--preview", default=None, help="Etiketli önizleme mp4 yolu")
@@ -141,7 +145,8 @@ def main() -> int:
         detect_replays=per_frame and moving,
         source_name=source_name,
         fps_out=args.fps, track_fps=args.track_fps, max_seconds=args.max_seconds,
-        detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution, weights=args.weights),
+        detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution, weights=args.weights,
+                                backend=args.backend, onnx_model=args.onnx_model),
         clip_offset_minutes=args.clip_offset_minutes, period=args.period,
         preview_path=args.preview, ball_threshold=args.ball_threshold,
     )
@@ -168,7 +173,8 @@ def main() -> int:
         "derived_passes": [asdict(p) for p in extract_passes(frames).passes],
         "video": Path(args.video).name, "video_info": info,
         "home_team_external_id": args.home_team, "away_team_external_id": args.away_team,
-        "config": {"fps": args.fps, "track_fps": args.track_fps, "model": args.model, "tiles": args.tiles, "threshold": args.threshold, "weights": args.weights},
+        "config": {"fps": args.fps, "track_fps": args.track_fps, "model": args.model, "tiles": args.tiles, "threshold": args.threshold, "weights": args.weights,
+                   "backend": args.backend, "onnx_model": args.onnx_model},
         "summary": summary,
     })
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

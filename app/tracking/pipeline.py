@@ -26,9 +26,12 @@ import numpy as np
 
 from app.domain.tracking import TrackingFrame
 from app.tracking.calibration import PitchCalibration
-from app.tracking.detect import DetectorConfig, RFDetrDetector
+from app.tracking.detect import DetectorConfig, OnnxDetector, RFDetrDetector, make_detector
 from app.tracking.frames import BallObservation, TrackObservation, build_frame
 from app.tracking.teams import TeamAssigner, torso_color
+
+# İki arka uç aynı arayüzü verir (detect / split / predict_single / device)
+Detector = RFDetrDetector | OnnxDetector
 
 MAX_PLAYER_SPEED_MPS = 12.0
 MAX_BALL_SPEED_MPS = 45.0
@@ -142,7 +145,7 @@ def _on_pitch_mask(det, calib: PitchCalibration | None, margin_m: float) -> np.n
     ], dtype=bool)
 
 
-def _search_ball_roi(det: RFDetrDetector, rgb: np.ndarray, center: tuple[float, float], roi_w: int, threshold: float) -> tuple[float, float, float] | None:
+def _search_ball_roi(det: Detector, rgb: np.ndarray, center: tuple[float, float], roi_w: int, threshold: float) -> tuple[float, float, float] | None:
     """Son bilinen top konumu çevresinde küçük pencerede (native çözünürlük) top ara."""
     h, w = rgb.shape[:2]
     roi_h = int(roi_w * 9 / 16)
@@ -184,7 +187,7 @@ def collect_observations(
     video_path: str | Path,
     cfg: PipelineConfig,
     *,
-    detector: RFDetrDetector | None = None,
+    detector: Detector | None = None,
     calib: PitchCalibration | None = None,
     progress: bool = True,
 ) -> tuple[list[SampledObservation], TeamAssigner, dict[str, Any]]:
@@ -196,7 +199,7 @@ def collect_observations(
     çıktının ne kadarına güvenilebileceğini söyler ve özete yazılır."""
     import supervision as sv
 
-    det = detector or RFDetrDetector(cfg.detector)
+    det = detector or make_detector(cfg.detector)
     tracker = sv.ByteTrack(
         track_activation_threshold=cfg.track_activation_threshold,
         lost_track_buffer=max(1, int(cfg.lost_track_seconds * cfg.track_fps)),
@@ -542,7 +545,7 @@ def process_video(
     home_team_id: int,
     away_team_id: int,
     cfg: PipelineConfig | None = None,
-    detector: RFDetrDetector | None = None,
+    detector: Detector | None = None,
     team_anchor: np.ndarray | None = None,
 ) -> tuple[list[TrackingFrame], dict[str, Any]]:
     """`team_anchor` (2×3 forma rengi) verilirse takım kimliği küme büyüklüğü
