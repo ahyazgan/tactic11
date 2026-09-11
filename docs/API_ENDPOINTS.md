@@ -166,6 +166,7 @@ bağlamı için `SCREEN_INVENTORY.md` ve `FOOTBALL_GLOSSARY.md`.
 | `GET` | `/physical-tests/targets` | hedefler + ilerleme (`assess_target`: ulaşıldı / yolda ~N ölçüm / rotadan sapan / yetersiz); `player_id` süzgeci |
 | `DELETE` | `/physical-tests/targets/{target_id}` | hedefi sil |
 | `GET` | `/physical-tests/retest` | `protocol`, `split` · blok öncesi ölçümler (bireysel baseline, ≥3) vs blok sonrası son ölçüm; SWC=0.2×SD ile gerileme/gelişme/değişim yok/yetersiz; gerileyen üstte |
+| `GET` | `/physical-tests/{player_id}/attribute-percentiles` | 5 protokolde yön-duyarlı yüzdelik (0..1): kadro havuzu + aynı-mevki havuzu (`players.position`; mevki yoksa boş — uydurma norm yok); havuz boyutları |
 | `GET` | `/physical-tests/{player_id}` |  |
 | `GET` | `/physical-tests/{player_id}/risk` |  |
 | `GET` | `/physical-tests/{player_id}/trend` |  |
