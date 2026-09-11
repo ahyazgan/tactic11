@@ -92,6 +92,8 @@ def _seed(session, *, decisions=DECISIONS):
             team_external_id=US, minute=minute, period=1 if minute < 45 else 2,
             decision_type="tactical", notes=f"karar @{minute:.0f}",
             recommended=recommended, confidence=confidence, created_at=now,
+            # Öneri tarafı yalnız koçun UYGULADIĞI önerileri sayar
+            applied=True,
         ))
     session.commit()
 
@@ -147,7 +149,7 @@ def test_quality_without_confidence_says_so_instead_of_crashing(session, client)
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["confidence_calibration"]["n"] == 0
-    assert "yeterli öneri-kaynaklı karar yok" in body["verdict"]
+    assert "yeterli uygulanmış öneri yok" in body["verdict"]
     assert body["recommended_vs_own"]["own"]["n"] == 2
     assert body["recommended_vs_own"]["xg_lift"] is None
 

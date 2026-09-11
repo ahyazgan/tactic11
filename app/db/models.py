@@ -690,6 +690,17 @@ class Decision(Base):
     outcome_recorded_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True,
     )
+    # Koç bu kararı sahada GERÇEKTEN uyguladı mı?
+    #   True  = uyguladım · False = uygulamadım · None = bilinmiyor (eski kayıt,
+    #   külliyat). `outcome` "sonra ne oldu"yu ölçer; "öneri YÜZÜNDEN ne oldu"
+    #   ancak uygulanan ile uygulanmayan kıyaslanınca ölçülür. Ölçüldü (502
+    #   karar): uygulanmamış önerilerde hiçbir sinyal sonucu ayırmıyor — karşı-olgu
+    #   olmadan öneri kalitesi ölçülemez. Geri besleme (isabet oranı, kalibrasyon)
+    #   bu yüzden yalnız `applied IS TRUE` satırlardan öğrenir.
+    applied: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    applied_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+    )
 
 
 class MatchSnapshot(Base):

@@ -24,6 +24,8 @@ def _seed(session, *, team_id: int, decisions: list[dict]):
             period=2, decision_type=d.get("type", "tactical_instruction"),
             outcome=d.get("outcome", "positive"),
             context_json=json.dumps(ctx) if ctx else None,
+            # Geri besleme yalnız koçun UYGULADIĞI kararlardan öğrenir
+            applied=d.get("applied", True),
             created_at=datetime.now(UTC),
         ))
     session.commit()
@@ -148,3 +150,34 @@ def test_rows_without_signal_type_still_feed_the_coarse_rate(session):
     out = _hit_rate(session, 11)
     assert out["tactical"] == 0.5
     assert out["momentum_us"] == 0.5    # kaba yayma yeni tiplere de ulaşır
+
+
+# --- yalnız uygulanan karar öğretir (külliyat bulgusu) --------------------- #
+
+def test_unapplied_and_unmarked_decisions_do_not_teach(session):
+    """Uygulanmamış önerinin sonucu öneriyi tartmaz; işaretsiz olan uydurulmaz.
+
+    Ölçüldü (502 uygulanmamış öneri): hiçbir sinyal sonucu ayırmıyor. O
+    satırlardan oran öğrenmek gürültüyü öğrenmektir. Burada olumsuzların
+    hepsi uygulanmamış/işaretsiz: oran yine de %100 kalmalı.
+    """
+    session.info["tenant_id"] = "t-test"
+    kararlar = [{"type": "tactical_instruction", "outcome": "positive",
+                 "match_id": 700 + i, "applied": True} for i in range(2)]
+    kararlar += [{"type": "tactical_instruction", "outcome": "negative",
+                  "match_id": 710 + i, "applied": False} for i in range(3)]
+    kararlar += [{"type": "tactical_instruction", "outcome": "negative",
+                  "match_id": 720 + i, "applied": None} for i in range(3)]
+    _seed(session, team_id=11, decisions=kararlar)
+    out = _hit_rate(session, 11)
+    assert out["tactical"] == 1.0
+
+
+def test_only_unmarked_history_yields_no_rate(session):
+    """Külliyat gibi tamamen işaretsiz geçmiş → geri besleme boş kalır."""
+    session.info["tenant_id"] = "t-test"
+    _seed(session, team_id=11, decisions=[
+        {"type": "tactical_instruction", "outcome": "positive",
+         "match_id": 800 + i, "applied": None} for i in range(5)
+    ])
+    assert _hit_rate(session, 11) == {}

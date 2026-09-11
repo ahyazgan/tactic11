@@ -27,6 +27,8 @@ interface DecisionRow {
   related_player_id: number | null;
   notes: string | null;
   recommended: boolean;
+  // Koç işareti: true = uyguladım · false = uygulamadım (karşı-olgu) · null = işaretsiz
+  applied: boolean | null;
   confidence: number | null;
   outcome: string | null;
   outcome_value: number | null;
@@ -44,6 +46,7 @@ interface RecentDecisionsResponse {
     neutral: number;
     hit_rate: number | null;
     by_decision_type: Record<string, number>;
+    applied?: { yes: number; no: number; unknown: number };
   };
   decisions: DecisionRow[];
 }
@@ -58,72 +61,72 @@ function demoData(): RecentDecisionsResponse {
   const decisions: DecisionRow[] = [
     { id: 22, match_id: 16029, team_id: 217, minute: 82, decision_type: "substitution",
       subject_player_id: 14, related_player_id: 25, notes: "Hücum takviye, son 15 dk",
-      recommended: true, confidence: 0.79, outcome: "pending",
+      recommended: true, applied: null, confidence: 0.79, outcome: "pending",
       outcome_value: null, outcome_notes: null,
       created_at: "2026-06-14T19:28:01Z" },
     { id: 21, match_id: 16029, team_id: 217, minute: 70, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Pres yüksekliği düşür — fatigue yığını",
-      recommended: true, confidence: 0.74, outcome: "pending",
+      recommended: true, applied: true, confidence: 0.74, outcome: "pending",
       outcome_value: null, outcome_notes: null,
       created_at: "2026-06-14T19:15:43Z" },
     { id: 20, match_id: 16029, team_id: 217, minute: 55, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Sağ kanat overload",
-      recommended: false, confidence: null, outcome: "pending",
+      recommended: false, applied: true, confidence: null, outcome: "pending",
       outcome_value: null, outcome_notes: null,
       created_at: "2026-06-14T19:00:20Z" },
     { id: 19, match_id: 15973, team_id: 217, minute: 88, decision_type: "substitution",
       subject_player_id: 3, related_player_id: 17,
       notes: "Yıldız geri çek, sonuç kilitle",
-      recommended: true, confidence: 0.85, outcome: "positive",
+      recommended: true, applied: true, confidence: 0.85, outcome: "positive",
       outcome_value: 0.7, outcome_notes: "3-2 korundu",
       created_at: "2026-06-13T20:32:01Z" },
     { id: 18, match_id: 15973, team_id: 217, minute: 78, decision_type: "substitution",
       subject_player_id: 12, related_player_id: 23,
       notes: "Yorgun, defansif takviye",
-      recommended: true, confidence: 0.81, outcome: "positive",
+      recommended: true, applied: true, confidence: 0.81, outcome: "positive",
       outcome_value: 0.6, outcome_notes: "Kontra durdu",
       created_at: "2026-06-13T20:18:12Z" },
     { id: 17, match_id: 15973, team_id: 217, minute: 65, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Pres yüksekliği düşür",
-      recommended: true, confidence: 0.72, outcome: "positive",
+      recommended: true, applied: false, confidence: 0.72, outcome: "positive",
       outcome_value: 0.6, outcome_notes: "Rakip ritmi kırıldı",
       created_at: "2026-06-13T20:05:45Z" },
     { id: 16, match_id: 15978, team_id: 217, minute: 82, decision_type: "formation_change",
       subject_player_id: null, related_player_id: null, notes: "4-2-3-1 → 4-3-3",
-      recommended: true, confidence: 0.78, outcome: "positive",
+      recommended: true, applied: true, confidence: 0.78, outcome: "positive",
       outcome_value: 0.8, outcome_notes: "85'te beraberlik golü geldi",
       created_at: "2026-06-08T19:34:21Z" },
     { id: 15, match_id: 15978, team_id: 217, minute: 70, decision_type: "substitution",
       subject_player_id: 7, related_player_id: 19,
       notes: "Yıldız aç → hücumcu girdi",
-      recommended: true, confidence: 0.69, outcome: "negative",
+      recommended: true, applied: true, confidence: 0.69, outcome: "negative",
       outcome_value: -0.3, outcome_notes: "Etki yok, kontradan yedik",
       created_at: "2026-06-08T19:22:10Z" },
     { id: 14, match_id: 15986, team_id: 217, minute: 55, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Kanat değişikliği — sağa overload",
-      recommended: false, confidence: null, outcome: "positive",
+      recommended: false, applied: true, confidence: null, outcome: "positive",
       outcome_value: 0.5, outcome_notes: "Sağdan 2 köşe geldi",
       created_at: "2026-06-01T20:00:00Z" },
     { id: 13, match_id: 15986, team_id: 217, minute: 80, decision_type: "formation_change",
       subject_player_id: null, related_player_id: null,
       notes: "4-3-3 → 4-4-2 (skoru koru)",
-      recommended: true, confidence: 0.66, outcome: "neutral",
+      recommended: true, applied: false, confidence: 0.66, outcome: "neutral",
       outcome_value: 0.0, outcome_notes: "Skor değişmedi",
       created_at: "2026-06-01T19:48:18Z" },
     { id: 12, match_id: 15998, team_id: 217, minute: 60, decision_type: "tactical_instruction",
       subject_player_id: null, related_player_id: null,
       notes: "Top oyununu yavaşlat",
-      recommended: true, confidence: 0.71, outcome: "positive",
+      recommended: true, applied: true, confidence: 0.71, outcome: "positive",
       outcome_value: 0.5, outcome_notes: "Tempo düştü, kontrol arttı",
       created_at: "2026-05-25T17:50:00Z" },
     { id: 11, match_id: 15998, team_id: 217, minute: 75, decision_type: "substitution",
       subject_player_id: 8, related_player_id: 21,
       notes: "Sakatlık şüphesi — değiş",
-      recommended: false, confidence: null, outcome: "negative",
+      recommended: false, applied: true, confidence: null, outcome: "negative",
       outcome_value: -0.2, outcome_notes: "Yedek hazır değildi, etkisiz",
       created_at: "2026-05-25T18:05:00Z" },
   ];
@@ -135,6 +138,7 @@ function demoData(): RecentDecisionsResponse {
       by_decision_type: {
         substitution: 5, tactical_instruction: 5, formation_change: 2,
       },
+      applied: { yes: 9, no: 2, unknown: 1 },
     },
     decisions,
   };
@@ -238,6 +242,13 @@ function SummaryCards({
         <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
           {summary.pending} bekliyor, {summary.resolved} sonuçlandı
         </div>
+        {summary.applied && (
+          <div data-testid="applied-summary"
+            style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
+            {summary.applied.yes} uygulandı · {summary.applied.no} uygulanmadı
+            {summary.applied.unknown > 0 ? ` · ${summary.applied.unknown} işaretsiz` : ""}
+          </div>
+        )}
       </div>
       <div className="rc">
         <div style={{ fontSize: 10, textTransform: "uppercase",
@@ -261,15 +272,57 @@ function SummaryCards({
   );
 }
 
+/**
+ * Koç işareti hücresi — öneri sahada uygulandı mı?
+ *
+ * Öneri satırlarında ✓/✗ tıklanabilir (aktif olana tekrar tıklamak işareti
+ * kaldırır → işaretsiz). Koçun kendi hamlesi (öneri değil) tanım gereği
+ * uygulanmıştır; orada buton yok. "Uygulanmadı" işareti silinecek bir hata
+ * değil, karşı-olgu kaydıdır — öneri etkisi ancak onunla ölçülür.
+ */
+function AppliedCell({ row, onMark }: {
+  row: DecisionRow;
+  onMark?: (id: number, applied: boolean | null) => void;
+}) {
+  if (!row.recommended) {
+    return <span style={{ color: "var(--muted)", fontSize: 11 }} title="Koçun kendi hamlesi">koçun</span>;
+  }
+  const btn = (value: boolean, label: string, tone: string) => {
+    const active = row.applied === value;
+    return (
+      <button type="button" key={label}
+        title={value ? "Uyguladım" : "Uygulamadım (karşı-olgu)"}
+        onClick={() => onMark?.(row.id, active ? null : value)}
+        disabled={!onMark}
+        style={{
+          border: `1px solid ${active ? tone : "var(--line)"}`,
+          color: active ? "var(--panel)" : tone,
+          background: active ? tone : "transparent", borderRadius: 4,
+          padding: "2px 7px", fontSize: 11, cursor: onMark ? "pointer" : "default",
+          fontWeight: 700,
+        }}>{label}</button>
+    );
+  };
+  return (
+    <div style={{ display: "inline-flex", gap: 4 }}
+      data-applied={row.applied === null ? "unknown" : row.applied ? "yes" : "no"}>
+      {btn(true, "✓", "var(--low)")}
+      {btn(false, "✗", "var(--mid)")}
+    </div>
+  );
+}
+
 function DecisionsTable({
-  rows, onMarkOutcome,
+  rows, onMarkOutcome, onMarkApplied,
 }: { rows: DecisionRow[];
-     onMarkOutcome?: (id: number, outcome: "positive" | "negative" | "neutral") => void }) {
+     onMarkOutcome?: (id: number, outcome: "positive" | "negative" | "neutral") => void;
+     onMarkApplied?: (id: number, applied: boolean | null) => void }) {
   if (rows.length === 0) {
     return (
       <div className="rc" style={{ textAlign: "center", color: "var(--dim)",
         padding: 24 }}>
-        Henüz kayıtlı karar yok — `/decisions/live` ekranından öneri uygula.
+        Henüz kayıtlı karar yok — `/decisions/live` ekranından öneriyi işaretle
+        (uyguladım / uygulamadım).
       </div>
     );
   }
@@ -285,6 +338,7 @@ function DecisionsTable({
             <th>Not</th>
             <th className="c">Güven</th>
             <th className="c">Öneri</th>
+            <th className="c" title="Koç sahada uyguladı mı? ✗ = karşı-olgu kaydı">Uygulandı</th>
             <th className="c">Sonuç</th>
           </tr>
         </thead>
@@ -311,6 +365,9 @@ function DecisionsTable({
               </td>
               <td className="c" style={{ fontSize: 11.5 }}>
                 {r.recommended ? "✓" : "—"}
+              </td>
+              <td className="c">
+                <AppliedCell row={r} onMark={onMarkApplied} />
               </td>
               <td className="c">
                 {r.outcome === "pending" && onMarkOutcome ? (
@@ -392,6 +449,7 @@ export default function DecisionsTrackPage() {
   const [demoOverrides, setDemoOverrides] = useState<
     Record<number, "positive" | "negative" | "neutral">
   >({});
+  const [demoApplied, setDemoApplied] = useState<Record<number, boolean | null>>({});
 
   const apiPath = !DEMO_MODE
     ? `/admin/decisions/recent?limit=${limit}`
@@ -404,10 +462,14 @@ export default function DecisionsTrackPage() {
   // DEMO_MODE overrides uygula → summary'yi yeniden hesapla
   const data = (() => {
     if (!rawData) return rawData;
-    if (Object.keys(demoOverrides).length === 0) return rawData;
-    const patched = rawData.decisions.map((d) =>
-      demoOverrides[d.id] ? { ...d, outcome: demoOverrides[d.id] } : d,
-    );
+    if (Object.keys(demoOverrides).length === 0 && Object.keys(demoApplied).length === 0) {
+      return rawData;
+    }
+    const patched: DecisionRow[] = rawData.decisions.map((d) => ({
+      ...d,
+      outcome: demoOverrides[d.id] ?? d.outcome,
+      applied: d.id in demoApplied ? demoApplied[d.id] : d.applied,
+    }));
     const positive = patched.filter((d) => d.outcome === "positive").length;
     const negative = patched.filter((d) => d.outcome === "negative").length;
     const neutral = patched.filter((d) => d.outcome === "neutral").length;
@@ -420,9 +482,31 @@ export default function DecisionsTrackPage() {
         ...rawData.summary,
         positive, negative, neutral, pending, resolved,
         hit_rate: resolved > 0 ? Number((positive / resolved).toFixed(3)) : null,
+        applied: {
+          yes: patched.filter((d) => d.applied === true).length,
+          no: patched.filter((d) => d.applied === false).length,
+          unknown: patched.filter((d) => d.applied === null).length,
+        },
       },
     };
   })();
+
+  async function handleMarkApplied(id: number, applied: boolean | null) {
+    if (DEMO_MODE) {
+      setDemoApplied((prev) => ({ ...prev, [id]: applied }));
+      return;
+    }
+    try {
+      await apiFetch(`/admin/decisions/${id}/applied`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applied }),
+      });
+      if (apiPath) swrMutate(apiPath);
+    } catch {
+      // sessizce yut — kullanıcı tekrar dener
+    }
+  }
 
   async function handleMarkOutcome(
     id: number, outcome: "positive" | "negative" | "neutral",
@@ -472,8 +556,11 @@ export default function DecisionsTrackPage() {
         <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.6 }}>
           Her karar için sonradan <b>outcome</b> kaydedilir (positive/negative/
           neutral). İsabet yüzdesi = pozitif / (pozitif+negatif+nötr).
-          Pilot kulüpte ilk birkaç hafta bu sayı düşük çıkar; veri biriktikçe
-          orkestra güven skoru kalibre olur.
+          <br /><b>Uygulandı</b> sütunu koçun işaretidir: sistem yalnız
+          uygulanan kararlardan öğrenir; <b>✗ uygulanmadı</b> kayıtları
+          karşı-olgudur — öneri etkisi ancak onlarla ölçülür.
+          Pilot kulüpte ilk birkaç hafta bu sayılar düşük çıkar; veri
+          biriktikçe orkestra güven skoru kalibre olur.
         </div>
       </div>
     </>
@@ -518,7 +605,8 @@ export default function DecisionsTrackPage() {
         <h2>Son Kararlar</h2>
         <span className="ep">en yeni önce, max {limit}</span>
       </div>
-      <DecisionsTable rows={rows} onMarkOutcome={handleMarkOutcome} />
+      <DecisionsTable rows={rows} onMarkOutcome={handleMarkOutcome}
+        onMarkApplied={handleMarkApplied} />
     </ConsoleShell>
   );
 }

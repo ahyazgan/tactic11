@@ -55,8 +55,9 @@ def _players():
     return rows
 
 
-def _seed(session, *, history: int, hit_rate: float, confidence: float = 0.9):
-    """Kare verisi + `history` kadar ölçülmüş geçmiş karar."""
+def _seed(session, *, history: int, hit_rate: float, confidence: float = 0.9,
+          applied: bool | None = True):
+    """Kare verisi + `history` kadar ölçülmüş geçmiş karar (koç uygulamış)."""
     now = datetime.now(UTC)
     session.add(models.Tenant(id="t-default", slug="t-default", name="X",
                               settings_json="{}", active=True, created_at=now))
@@ -84,7 +85,7 @@ def _seed(session, *, history: int, hit_rate: float, confidence: float = 0.9):
             minute=60.0, period=2, decision_type="tactical", notes="geçmiş",
             recommended=True, confidence=confidence, created_at=now,
             outcome="positive" if i < hits else "negative",
-            outcome_recorded_at=now,
+            outcome_recorded_at=now, applied=applied,
         ))
     session.commit()
 
@@ -117,6 +118,18 @@ def test_thin_history_leaves_confidence_untouched(session, client) -> None:
     # Kalibre EDİLSEYDİ %20'lik geçmiş oranına yakın çıkardı. Ham kanıt skoru
     # (bu kurguda ~0.69) korunmuş olmalı; eşik ham değere değil DAVRANIŞA bağlı.
     assert conf > 0.6, f"yetersiz geçmişe rağmen kalibre edildi: {conf}"
+
+
+def test_unmarked_history_does_not_calibrate(session, client) -> None:
+    """Külliyat gibi işaretsiz (applied=None) geçmiş kalibrasyon kurmaz.
+
+    Uygulanmamış önerinin sonucu sistemin güvenini tartmaz; 40 böyle karar
+    %40 tutmuş olsa da panel bundan "fazla güvenliyim" sonucu çıkaramaz.
+    """
+    _seed(session, history=40, hit_rate=0.40, confidence=0.9, applied=None)
+    conf = _confidence(client)
+    assert conf is not None
+    assert conf > 0.6, f"işaretsiz geçmişten kalibre edildi: {conf}"
 
 
 def test_confidence_label_follows_the_calibrated_value(session, client) -> None:

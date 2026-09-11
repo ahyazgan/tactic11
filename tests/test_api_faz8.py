@@ -68,18 +68,23 @@ def test_live_decision_has_context(session, client):
 
 
 def test_decision_outcome_and_feedback(session, client):
-    """#4 audit trail: karar kaydet → sonuç işle → feedback hit-rate."""
+    """#4 audit trail: karar kaydet → sonuç işle → feedback hit-rate.
+
+    Koç 'uyguladım' işaretler (`applied: true`); işaretsiz öneri geri
+    beslemeye GİRMEZ — uygulanmamış önerinin sonucu öneriyi tartmaz.
+    """
     _seed_match_events(session)
-    # karar kaydet (öneri kaynaklı, güvenli)
+    # karar kaydet (öneri kaynaklı, güvenli, koç uygulamış)
     r = client.post("/admin/matches/9500/decisions", json={
         "team_external_id": 11, "minute": 67.0,
         "decision_type": "substitution",
         "subject_player_external_id": 100,
-        "recommended": True, "confidence": 0.72,
+        "recommended": True, "confidence": 0.72, "applied": True,
     })
     assert r.status_code == 200
     body = r.json()
     assert body["recommended"] is True
+    assert body["applied"] is True
     assert body["outcome"] == "pending"
     decision_id = body["id"]
 
@@ -95,6 +100,7 @@ def test_decision_outcome_and_feedback(session, client):
     assert r3.status_code == 200
     fb = r3.json()
     assert fb["evaluated"] == 1
+    assert fb["excluded"] == {"not_applied": 0, "unknown": 0}
     assert fb["by_decision_type"]["substitution"]["hit_rate"] == 1.0
 
 

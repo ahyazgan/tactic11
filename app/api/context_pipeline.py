@@ -498,6 +498,11 @@ def _confidence_calibration(session, team_id: int):
 
     Burada geçmişteki (kaydedilmiş güven, ölçülmüş sonuç) çiftlerinden eşleme
     kurulur. Yetersiz geçmişte eşleme kurulmaz ve ham skor korunur.
+
+    Yalnız koçun UYGULADIĞI öneriler (`applied=true`) öğretir: uygulanmamış
+    önerinin sonucu güveni tartmaz, "hiçbir şey yapılmayınca ne olduğunu"
+    ölçer. Ölçüldü (502 uygulanmamış öneri): hiçbir sinyal sonucu ayırmıyor —
+    o veriden kalibrasyon kurmak gürültüyü öğrenmektir.
     """
     from app.engine.confidence.calibration import fit_calibration
 
@@ -506,6 +511,7 @@ def _confidence_calibration(session, team_id: int):
             models.Decision.sport == football.SPORT_NAME,
             models.Decision.team_external_id == team_id,
             models.Decision.recommended.is_(True),
+            models.Decision.applied.is_(True),
             models.Decision.confidence.is_not(None),
             models.Decision.outcome.in_(("positive", "negative")),
         )
@@ -522,11 +528,16 @@ def _hit_rate(
     score_state verilirse aynı durumdaki kararlara filtreler (örn. "trailing"
     + "tactical_instruction" → 'Geride 0-1 80. dk tempo yükselt' tipi
     kararların oranı). context_json'da score_state alanı varsa kullanılır.
+
+    Yalnız koçun UYGULADIĞI kararlar (`applied=true`) sayılır — bkz.
+    `_confidence_calibration`. Uygulanmayan (false) ve işaretsiz (null)
+    kararlar geri beslemeye girmez.
     """
     rows = session.execute(
         select(models.Decision).where(
             models.Decision.sport == football.SPORT_NAME,
             models.Decision.team_external_id == team_id,
+            models.Decision.applied.is_(True),
             models.Decision.outcome.in_(("positive", "negative")),
         )
     ).scalars().all()
