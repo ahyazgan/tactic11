@@ -261,7 +261,10 @@ def video_frame(
 
 class JobCreate(BaseModel):
     video: str
-    calibration: str
+    # None → çapasız başlangıç: kalibratör çapayı saha çizgilerinden kendisi bulur
+    # (TV kuralı; bkz. scripts/track_video.py). Elle kalibrasyon daha doğrudur
+    # (ölçüldü: 0.09 m vs ~1.7 m), yayın gibi kalibrasyonu olmayan kaynaklar için.
+    calibration: str | None = None
     match_id: int | None = None
     home_team_id: int = 9001
     away_team_id: int = 9002
@@ -339,9 +342,11 @@ def _run_job(job: dict[str, Any]) -> None:
 @router.post("/jobs", status_code=202, summary="Video işleme işi başlat")
 def create_job(body: JobCreate, user: models.User = Depends(get_current_user)) -> dict[str, Any]:
     video = _video_path(body.video)
-    calib_path = _dir("calibrations") / f"{_safe(body.calibration, 'kalibrasyon')}.json"
-    if not calib_path.exists():
-        raise HTTPException(status_code=404, detail="kalibrasyon yok")
+    calib_path: Path | None = None
+    if body.calibration:
+        calib_path = _dir("calibrations") / f"{_safe(body.calibration, 'kalibrasyon')}.json"
+        if not calib_path.exists():
+            raise HTTPException(status_code=404, detail="kalibrasyon yok")
     weights = body.weights or default_weights()
     if weights and not (Path(weights) / "meta.json").exists():
         raise HTTPException(status_code=422, detail=f"ağırlık klasörü geçersiz: {weights}")
@@ -355,7 +360,9 @@ def create_job(body: JobCreate, user: models.User = Depends(get_current_user)) -
     preview = out_dir / f"job_{job_id}_preview.mp4" if body.preview else None
     cmd = [
         *worker_cmd("scripts.track_video"),
-        "--video", str(video), "--calibration", str(calib_path), "--out", str(out_json),
+        "--video", str(video),
+        *(["--calibration", str(calib_path)] if calib_path else []),
+        "--out", str(out_json),
         "--match-id", str(match_id), "--home-team", str(body.home_team_id), "--away-team", str(body.away_team_id),
         "--fps", str(body.fps), "--track-fps", str(body.track_fps), "--tiles", str(body.tiles),
         "--threshold", str(body.threshold), "--ball-threshold", str(body.ball_threshold),
@@ -372,7 +379,8 @@ def create_job(body: JobCreate, user: models.User = Depends(get_current_user)) -
         "id": job_id, "state": "queued",
         "created_at": datetime.now(UTC).isoformat(),
         "tenant_id": user.tenant_id, "user": user.email,
-        "video": video.name, "calibration": calib_path.stem, "label": body.label,
+        "video": video.name, "calibration": calib_path.stem if calib_path else None,
+        "auto_anchor": calib_path is None, "label": body.label,
         "match_id": match_id, "home_team_id": body.home_team_id, "away_team_id": body.away_team_id,
         "params": body.model_dump(exclude={"video", "calibration", "match_id", "label"}),
         "weights": weights, "command": cmd,
