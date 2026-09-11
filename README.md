@@ -456,43 +456,43 @@ API'si ve Saha Overlay kaynağı ayırt etmez.
 
 ```bash
 py -3.12 -m venv venv-cv
-# torch yalnız model yükleme/dışa aktarım için — CPU tekerleği yeter (bkz. aşağıdaki not)
-venv-cv\Scripts\python.exe -m pip install "torch==2.5.1" "torchvision==0.20.1" --index-url https://download.pytorch.org/whl/cpu
-venv-cv\Scripts\python.exe -m pip install rfdetr supervision opencv-python-headless "scipy==1.15.3" "numpy==2.3.5" "regex<2026"
-# GPU çıkarımı: ONNX Runtime (Microsoft imzalı) + CUDA 13 çalışma zamanı
-venv-cv\Scripts\python.exe -m pip install onnxruntime-gpu "onnx==1.17.0" onnx_graphsurgeon polygraphy "ml_dtypes<0.5" ^
-    "nvidia-cuda-runtime>=13,<14" "nvidia-cublas>=13,<14" "nvidia-cufft>=12,<13" nvidia-cudnn-cu13 "nvidia-cuda-nvrtc>=13,<14" nvidia-curand
+venv-cv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+venv-cv\Scripts\python.exe -m pip install rfdetr supervision opencv-python-headless "scipy==1.15.3"
 venv-cv\Scripts\python.exe -m pip install "rfdetr[train]"   # yalnız ince ayar için
-# Dedektörü bir kez ONNX'e aktar (torch CPU ile) + torch/ONNX paritesini ölç
-venv-cv\Scripts\python.exe -m scripts.export_detector_onnx --weights data/tracking/models/rfdetr_top_small
+# İsteğe bağlı yedek arka uç (torch'un yüklenemediği / GPU'suz makine): ONNX Runtime
+venv-cv\Scripts\python.exe -m pip install onnxruntime-gpu "onnx>=1.16,<2" onnx_graphsurgeon polygraphy ^
+    "nvidia-cuda-runtime>=13,<14" "nvidia-cublas>=13,<14" "nvidia-cufft>=12,<13" nvidia-cudnn-cu13 "nvidia-cuda-nvrtc>=13,<14" nvidia-curand
+venv-cv\Scripts\python.exe -m scripts.export_detector_onnx --weights data/tracking/models/rfdetr_top_small   # ONNX + parite
 ```
 
-> **Windows Smart App Control — imza değil, bulut itibarı.** Ölçüldü (2026-09-11): SAC
-> ikili dosyayı imzasına göre değil hash'inin Microsoft bulutundaki itibarına göre engelliyor.
-> **Yeni çıkan tekerlekler engellenir, eski/yaygınlar geçer**: torch 2.11 (cu128 ve cpu),
-> 2.7.1+cu128, numpy 2.5.3, regex 2026.9, onnx 1.22, onnxsim 0.7, ml_dtypes 0.6 engelli;
-> torch 2.5.1+cpu, numpy 2.3.5, onnx 1.17, onnxruntime 1.30 (Microsoft imzalı) geçiyor.
-> GPU (RTX 5060, Blackwell) yalnız cu128 torch ile çalışırdı → **torch ile GPU yok**; bu
-> yüzden çıkarım ONNX Runtime'da (`CUDAExecutionProvider` aynı makinede doğrulandı), torch
-> yalnız dışa aktarımda. Yukarıdaki sürüm sabitleri bu yüzden var — **yükseltmeyin**.
-> `onnxsim` kurulamaz; aktarım scripti sadeleştirmeyi atlar (hız optimizasyonu, doğruluk
-> şartı değil) ve doğruluğu parite kontrolüyle ölçer.
+> **Windows Smart App Control (SAC) açık makinede — imza değil, bulut itibarı.** Ölçüldü
+> (2026-09-11): SAC ikili dosyayı imzasına göre değil hash'inin Microsoft bulutundaki
+> itibarına göre engelliyor. **Yeni çıkan tekerlekler engellenir, eski/yaygınlar geçer**:
+> torch 2.11 (cu128 ve cpu), 2.7.1+cu128, numpy 2.5.3, regex 2026.9, onnx 1.22, onnxsim
+> 0.7, ml_dtypes 0.6 engelli; torch 2.5.1+cpu, numpy 2.3.5, onnx 1.17, onnxruntime 1.30
+> (Microsoft imzalı) geçiyor. Böyle bir makinede (ör. bir alıcının kulüp bilgisayarı) **torch
+> ile GPU yok**; çalışan reçete: `"torch==2.5.1" "torchvision==0.20.1"` (cpu index),
+> `"numpy==2.3.5" "regex<2026" "onnx==1.17.0" "ml_dtypes<0.5"`, `onnxsim` yok (aktarım
+> scripti sadeleştirmeyi atlar, doğruluğu pariteyle ölçer) ve çıkarım **ONNX Runtime**'da
+> (`CUDAExecutionProvider` doğrulandı). SAC bir kez kapatılırsa Windows yeniden kurulmadan
+> açılamaz — kararı makinenin sahibi verir; kod iki durumda da çalışır.
 
-**Dedektör arka ucu** (`--backend auto|torch|onnx`): `auto`, `data/tracking/models/onnx/…`
-altında ONNX modeli varsa (ya da torch yüklenemiyorsa) ONNX Runtime'ı seçer; yoksa torch.
-İki arka uç aynı arayüzü verir, hat farkı bilmez. Ölçüldü (ince ayarlı small, 1080p, aynı kare):
+**Dedektör arka ucu** (`--backend auto|torch|onnx`): `auto` sırayla — CUDA'lı torch varsa
+**torch**; yoksa ONNX modeli varsa **ONNX**; yoksa torch CPU. Ölçüldü (ince ayarlı small,
+1080p, aynı kare, RTX 5060):
 
-| tiles | dilim | torch CPU | ONNX GPU (RTX 5060) | bulunan oyuncu |
-|---|---|---|---|---|
-| 1 | 1 | 165 ms | **18 ms → 57 fps** | 1 (üstten çekimde oyuncu çok küçük) |
-| 2 | 9 | — | 153 ms → 6.5 fps | 15 |
-| 3 | 16 | — | 270 ms → 3.7 fps | 22 |
-| 4 | 25 | ~3 sn | 423 ms → 2.4 fps | 23 |
+| tiles | dilim | torch GPU fp16 | ONNX GPU | torch CPU | bulunan oyuncu |
+|---|---|---|---|---|---|
+| 1 | 1 | 45 ms | **18–41 ms** | 165 ms | 1 (üstten çekimde oyuncu çok küçük) |
+| 2 | 9 | **88 ms → 11 fps** | 153–244 ms | — | 15 |
+| 4 | 25 | **156 ms → 6.4 fps** | 423–600 ms | ~3 sn | 23 |
 
-Dilim başına maliyet sabit (~17 ms): **gerçek zaman (15 fps) yalnız tiles=1 ile mümkün.**
-Yayın karesinde oyuncular büyük olduğu için tiles=1 yeter (COCO medium, 4K yayın karesi:
-16 kutu, 85 ms); üstten/drone geniş açıda oyuncular küçüktür, tiles ≥ 3 gerekir → o kaynak
-çevrimdışı işlenir (2-4 fps). CPU yolu yalnız model yükleme/dışa aktarım ve acil yedek içindir.
+Dilimli çıkarımda torch'un fp16 derlenmiş batch'i ONNX'ten 3-4 kat hızlı; tek dilimde başa
+baş. **Gerçek zaman (15 fps): tiles=1, ya da torch GPU ile tiles=2'ye yakın.** Yayın
+karesinde oyuncular büyük olduğu için tiles=1 yeter (COCO medium, 4K yayın karesi: 16 kutu,
+85 ms ONNX); üstten/drone geniş açıda tiles ≥ 3 gerekir → o kaynak çevrimdışı işlenir.
+ONNX ölçümlerindeki aralık: torch cu128 ile aynı süreçte CUDA 12/13 kütüphaneleri
+karışınca ORT yavaşlıyor (uyarı basar) — ONNX yedeğini torch'suz makinede kullan.
 
 **Akış (arayüz):** `/video-tracking` → klip yükle → `/video-tracking/calibrate` ile karede 4+ saha
 işaretine tıkla (çizgiler kareye geri-izdüşülür, hata metre cinsinden) → "Video işle" → iş
@@ -807,6 +807,28 @@ karenin **gerçek** homografisi analitik hesaplanır; hata metre cinsinden ölç
 > Sentetik hareket düzgündür (gerçek kameramanın ani düzeltmeleri yoktur) ve
 > sıkıştırma bozulmaları azdır — bu sayılar **iyimser taraftadır** ve gerçek yayın
 > görüntüsünde doğrulanması gerekir.
+>
+> **Tablo 60 karelik ölçümdür.** 500 karede (17 sn, aynı elle çapa) ölçüldü: hata
+> ort **0.32 m**, %90 0.98 m, en kötü **1.95 m**. Kayma kadrajda az çizgi göründüğü
+> (yakın zoom) anlarda birikiyor ve inlier'la ilişkili (hatası <0.5 m karelerde inlier
+> 0.99, >0.5 m karelerde ~0.7); kadraj "belirleyicilik" ölçüleri (segment sayısı, yön
+> çeşitliliği) ve tolerans daraltma ayırt etmiyor — denendi. Uzun koşumda güvenilirlik
+> için takipte inlier tabanı + sürüklenme (aşağıda).
+
+**Takip inlier tabanı + sürüklenme** (`PerFrameCalibrator.TRACK_MIN_INLIER`, `COAST_FRAMES`).
+Oturma kabul sınırını (0.45) geçen ama takip tabanının (0.85) altındaki kare **üretilmez**;
+son iyi duruş korunur ve kamera 15 kare boyunca oradan aranır (çapaya düşülmez). Kesmede
+sürüklenme yok. Ölçüldü (500 kare):
+
+| ayar | kalibre kare | hata ort | en kötü | kesmeli yayın |
+|---|---|---|---|---|
+| taban 0.45, sürüklenme yok (eski) | 500 | 0.32 m | 1.95 m | 146 |
+| **taban 0.85, sürüklenme 15** | 396 | **0.18 m** | **1.01 m** | **179** |
+| taban 0.85, sürüklenme 45, sıçrama tavansız | 382 | 13.8 m ✗ | 157 m ✗ | — |
+
+Karelerin %21'i "veri yok" olur, kalanların hatası yarıya iner. Uzun sürüklenme tavansız
+sıçrama iziniyle yanlış çizgiye kilitleniyordu → izin verilen sıçrama geçen kareyle büyür
+ama 3× ile **tavanlıdır**; tavanla 45 kare de 0.18 m'de kalır.
 
 **`--track-fps 15` şart.** Kalibrasyon kamerayı ancak ardışık örnekler yakınsa takip
 eder; 30 fps kaynakta her 3. kareye kadar sorunsuz, her 5. karede kopuyor. `track-fps 5`

@@ -162,6 +162,18 @@ class PerFrameCalibrator:
     SEARCH_STEPS_PX = (12.0, 40.0, 110.0)
     MAX_PITCH_JUMP_M = 5.0
     REACQUIRE_MIN_INLIER = 0.85
+    # Takipte KARE ÜRETMEK için en düşük inlier — oturma kabul sınırından
+    # (MIN_INLIER_RATIO 0.45) ayrı. Ölçüldü (500 kare, elle çapa): tabansız hata
+    # ort 0.32 m / en kötü 1.95 m; 0.85 tabanla ort 0.18 m / en kötü 1.01 m,
+    # karelerin %79'u kalır. 0.80 ve 0.90 aynı yerde; 0.85 seçildi.
+    TRACK_MIN_INLIER = 0.85
+    # Takip koptuktan sonra kaç kare son iyi duruştan (çapadan değil) aranır.
+    # Ölçüldü: 15 kare kesmeli yayında kalibre kareyi 131 → 168 çıkarıyor;
+    # 45 kare FELAKET (hata 156 m — uzun sürüklenme yanlış çizgiye kilitleniyor).
+    COAST_FRAMES = 15
+    # Sürüklenirken izin verilen sıçrama geçen kareyle büyür ama TAVANLIDIR;
+    # tavansız hâli 45 karelik sürüklenmede 230 m'ye izin verip felaketi yarattı.
+    COAST_MAX_JUMP_FACTOR = 3
     # Tahmini başlangıç ancak BELİRGİN daha iyiyse kullanılır. Eşit skorlarda
     # tahmini seçmek yavaş kaymaya yol açıyordu (ölçüldü: 0.09 m → 2.81 m).
     PREDICTION_MARGIN = 1.02
@@ -353,15 +365,30 @@ class PerFrameCalibrator:
 
         anchor = self._anchor
         was_tracking = self.tracking
+        # SÜRÜKLENME (coast): takip kısa süre önce koptuysa (kötü oturma) son
+        # İYİ duruştan büyük adımla aramaya devam et — çapaya düşme. Kamera
+        # büyük olasılıkla son iyi duruşun yakınında; çapa ise çok uzakta olabilir.
+        coasting = (not was_tracking and self._h is not None
+                    and 0 < self._misses <= self.COAST_FRAMES)
         step = self.SEARCH_STEPS_PX[min(self._misses, len(self.SEARCH_STEPS_PX) - 1)]
-        if was_tracking:
+        if was_tracking or coasting:
             assert self._h is not None
             fit = self._best_fit(dist_map, step)
             if not fit.accepted:
                 self._pending = None
                 return self._miss(fit, fit.note)
+            if fit.inlier_ratio < self.TRACK_MIN_INLIER:
+                # Oturma kabul sınırını geçti ama takip kalitesi düşük: ölçüldü,
+                # hatası 0.5 m'yi aşan karelerin inlier'ı ~0.7, iyilerin 0.99.
+                # Bu kareyi ÜRETME; son iyi duruşu koru, sürüklenmeye geç.
+                return self._miss(
+                    fit,
+                    f"takip zayıf (inlier %{fit.inlier_ratio * 100:.0f} < "
+                    f"%{self.TRACK_MIN_INLIER * 100:.0f}) — kare üretilmedi, son iyi duruş korunuyor",
+                )
             jump = self._jump_m(fit.homography, self._h)
-            if jump is not None and jump > self.MAX_PITCH_JUMP_M:
+            allowed = self.MAX_PITCH_JUMP_M * min(1 + self._misses, self.COAST_MAX_JUMP_FACTOR)
+            if jump is not None and jump > allowed:
                 return self._miss(
                     fit,
                     f"kalibrasyon bir karede {jump:.0f} m sıçradı (inlier "
@@ -453,4 +480,6 @@ class PerFrameCalibrator:
         if self._anchor is None:
             return                      # çapasız: arama zaten sürüyor
         self._h = self._anchor.homography
-        self._misses = max(self._misses, 1)
+        # Kesmede SÜRÜKLENME de yok: son iyi duruş başka bir kameranındır,
+        # oradan aramak anlamsız — doğrudan çapa yolu.
+        self._misses = max(self._misses, self.COAST_FRAMES + 1)

@@ -85,6 +85,34 @@ def test_decode_empty_when_nothing_clears_threshold() -> None:
     assert xyxy.shape == (0, 4)
 
 
+def test_auto_backend_prefers_cuda_torch_then_onnx(monkeypatch, tmp_path) -> None:
+    """Ölçüldü: dilimli çıkarımda torch fp16 ONNX'ten 3-4 kat hızlı → CUDA varsa torch.
+
+    CUDA yoksa ONNX modeli varsa ONNX (SAC'lı / GPU'suz makine yedeği).
+    """
+    from app.tracking import detect as detect_mod
+
+    built: list[str] = []
+    monkeypatch.setattr(detect_mod, "RFDetrDetector", lambda cfg: built.append("torch"))
+    monkeypatch.setattr(detect_mod, "OnnxDetector", lambda cfg: built.append("onnx"))
+    onnx_file = tmp_path / "m.onnx"
+    onnx_file.write_bytes(b"\x00")
+    cfg = detect_mod.DetectorConfig(onnx_model=str(onnx_file))
+
+    monkeypatch.setattr(detect_mod, "torch_cuda_available", lambda: True)
+    detect_mod.make_detector(cfg)
+    monkeypatch.setattr(detect_mod, "torch_cuda_available", lambda: False)
+    detect_mod.make_detector(cfg)
+    assert built == ["torch", "onnx"]
+
+    # Zorlamalar seçiciyi atlar
+    detect_mod.make_detector(detect_mod.DetectorConfig(backend="onnx"))
+    detect_mod.make_detector(detect_mod.DetectorConfig(backend="torch"))
+    assert built[2:] == ["onnx", "torch"]
+    with pytest.raises(ValueError):
+        detect_mod.make_detector(detect_mod.DetectorConfig(backend="tpu"))
+
+
 def test_default_onnx_path_follows_weights_or_model() -> None:
     assert DetectorConfig(weights="data/tracking/models/rfdetr_top_small").default_onnx_path().name \
         == "rfdetr_top_small.onnx"

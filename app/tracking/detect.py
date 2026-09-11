@@ -89,12 +89,28 @@ class DetectorConfig:
         return ONNX_MODEL_DIR / f"rfdetr_{self.model}{res}.onnx"
 
 
-def make_detector(cfg: DetectorConfig | None = None) -> RFDetrDetector | OnnxDetector:
-    """Arka ucu seç: ONNX modeli hazırsa (ya da torch bu makinede yüklenemiyorsa) ONNX.
+def torch_cuda_available() -> bool:
+    """torch yükleniyor VE CUDA görüyor mu? (Smart App Control'lü makinede import
+    OSError verir; GPU'suz makinede False.) Testlerde sahtelenir."""
+    try:
+        import torch
+    except (ImportError, OSError):
+        return False
+    return bool(torch.cuda.is_available())
 
-    torch'un yüklenememesi gerçek bir durumdur (Smart App Control yeni
-    tekerlekleri engelliyor); o zaman anlaşılır bir hata verilir — sessizce
-    CPU'ya ya da hiçbir şeye düşülmez.
+
+def make_detector(cfg: DetectorConfig | None = None) -> RFDetrDetector | OnnxDetector:
+    """Arka ucu seç — ölçüme göre:
+
+    1. CUDA'lı torch varsa **torch**: dilimli çıkarımda fp16 derlenmiş batch
+       ONNX'ten 3-4 kat hızlı (1080p, RTX 5060: tiles 2 → 88 vs 244 ms,
+       tiles 4 → 156 vs 600 ms; tiles 1 başa baş 45 vs 41 ms).
+    2. Yoksa ONNX modeli varsa **ONNX** (GPU'da CUDA EP, yoksa CPU): torch'un
+       yüklenemediği (Smart App Control) ya da GPU'suz makineler için yedek.
+    3. İkisi de yoksa torch CPU (yavaş ama çalışır).
+
+    torch yüklenemez VE ONNX modeli yoksa anlaşılır hata — sessizce hiçbir
+    şeye düşülmez.
     """
     cfg = cfg or DetectorConfig()
     if cfg.backend == "onnx":
@@ -103,6 +119,8 @@ def make_detector(cfg: DetectorConfig | None = None) -> RFDetrDetector | OnnxDet
         return RFDetrDetector(cfg)
     if cfg.backend != "auto":
         raise ValueError(f"backend {cfg.backend!r}: auto | torch | onnx")
+    if torch_cuda_available():
+        return RFDetrDetector(cfg)
     onnx_path = Path(cfg.onnx_model) if cfg.onnx_model else cfg.default_onnx_path()
     if onnx_path.exists():
         return OnnxDetector(cfg)
