@@ -3,7 +3,9 @@ from __future__ import annotations
 
 from app.engine.performance_test import (
     RETEST_MIN_BASELINE,
+    TARGET_MAX_HORIZON,
     assess_change,
+    assess_target,
     retest_outcome,
     smallest_worthwhile_change,
 )
@@ -92,6 +94,34 @@ def test_retest_outcome_identical_baseline_is_unchanged_not_claimed():
     # SWC=0 → gürültü tahmini yok → iddia üretme
     o = retest_outcome(40.0, [35.0, 35.0, 35.0], higher_is_better=True)
     assert o.category == "unchanged" and o.assessment is not None and o.assessment.swc == 0.0
+
+
+def test_target_reached_when_current_meets_target():
+    t = assess_target(50.0, [45.0, 48.0, 51.0], higher_is_better=True)
+    assert t.status == "reached" and t.tests_to_target == 0 and t.progress_pct == 100.0
+    # düşük-iyi: süre hedefin altına indi
+    assert assess_target(1.70, [1.80, 1.75, 1.69], higher_is_better=False).status == "reached"
+
+
+def test_target_on_track_estimates_tests_from_slope():
+    # +2/ölçüm eğim, 4 kaldı → 2 ölçüm
+    t = assess_target(50.0, [40.0, 42.0, 44.0, 46.0], higher_is_better=True)
+    assert t.status == "on_track" and t.tests_to_target == 2 and t.slope == 2.0
+    assert t.gap == 4.0 and t.progress_pct == 60.0
+
+
+def test_target_off_track_when_slope_points_away_or_too_slow():
+    away = assess_target(50.0, [46.0, 44.0, 42.0], higher_is_better=True)
+    assert away.status == "off_track" and away.tests_to_target is None
+    slow = assess_target(50.0, [40.0, 40.1, 40.2], higher_is_better=True)
+    assert slow.status == "off_track" and slow.tests_to_target is not None
+    assert slow.tests_to_target > TARGET_MAX_HORIZON
+
+
+def test_target_insufficient_without_enough_points():
+    assert assess_target(50.0, [], higher_is_better=True).status == "insufficient"
+    t = assess_target(50.0, [40.0, 42.0], higher_is_better=True)
+    assert t.status == "insufficient" and t.current == 42.0 and t.gap == 8.0
 
 
 def test_change_above_swc_decline_lower_better():
