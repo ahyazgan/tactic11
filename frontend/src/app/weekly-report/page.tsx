@@ -306,7 +306,8 @@ export default function WeeklyReportPage() {
   };
 
   const sendToDirector = async (sections: Section[]) => {
-    if (DEMO_MODE) { setSend({ state: "stub", msg: "Demo: backend yok, gönderim simüle edildi" }); return; }
+    // Demo: backend yok — hiçbir şey gönderilmez; etiket bunu açıkça söyler.
+    if (DEMO_MODE) { setSend({ state: "stub", msg: "demo — backend yok, gönderim yapılmadı" }); return; }
     setSend({ state: "busy" });
     try {
       const r = await apiFetch<{ sent: boolean; stub: boolean; to: string | null; note: string | null; error: string | null }>(
@@ -447,7 +448,7 @@ export default function WeeklyReportPage() {
             title={DEMO_MODE ? "Demo: backend yok" : "PDF ekiyle e-posta (SMTP_HOST/FROM/TO gerekir; yoksa gönderilmez)"}
             style={{ padding: "8px 14px", borderRadius: 9, border: 0, background: send.state === "sent" ? "var(--low)" : send.state === "stub" || send.state === "error" ? "var(--mid)" : "var(--besiktas)", color: "#fff", fontWeight: 700, fontSize: 12.5, cursor: send.state === "sent" ? "default" : "pointer", fontFamily: "inherit", opacity: send.state === "busy" ? 0.6 : 1 }}>
             <i className={`ti ${send.state === "sent" ? "ti-check" : send.state === "stub" || send.state === "error" ? "ti-alert-triangle" : "ti-send"}`} style={{ marginRight: 6 }} />
-            {send.state === "busy" ? "Gönderiliyor…" : send.state === "sent" ? "Gönderildi" : send.state === "stub" ? "Gönderilmedi (SMTP yok)" : send.state === "error" ? "Hata · tekrar dene" : DEMO_MODE ? "Direktöre gönder (demo)" : "Direktöre gönder"}
+            {send.state === "busy" ? "Gönderiliyor…" : send.state === "sent" ? "Gönderildi" : send.state === "stub" ? (DEMO_MODE ? "Gönderilmedi (demo)" : "Gönderilmedi (SMTP yok)") : send.state === "error" ? "Hata · tekrar dene" : DEMO_MODE ? "Direktöre gönder (demo)" : "Direktöre gönder"}
           </button>
           {send.msg && <span style={{ fontSize: 11, color: "var(--muted)" }}>{send.msg}</span>}
         </div>
