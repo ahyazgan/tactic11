@@ -9,6 +9,8 @@ GET  /tracking/jobs, /tracking/jobs/{id}  — durum + log
 
 İşçi: ayrı `venv-cv` yorumlayıcısı (torch) alt süreç olarak `scripts.track_video`
 çalıştırır; bitince kareler ana süreçte `ingest_tracking_json` ile DB'ye alınır.
+İşler TEK işçiyle sırayla koşar (kuyruk): iki iş aynı anda GPU'ya binmez.
+Kalibrasyon isteğe bağlı — verilmezse çapa görüntüden bulunur (TV kuralı).
 Durum dosyaları data/tracking/jobs/<id>.json (+ .log) — API yeniden başlasa da
 görünür kalır.
 
@@ -23,6 +25,7 @@ from __future__ import annotations
 
 import json
 import os
+import queue
 import re
 import shutil
 import subprocess
@@ -51,6 +54,42 @@ SAFE_NAME = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".avi", ".m4v"}
 LOG_TAIL_LINES = 30
 _jobs_lock = threading.Lock()
+
+# İşler TEK işçiyle SIRAYLA koşar. Her iş kendi iş parçacığında başlatılıyordu:
+# iki iş aynı anda GPU'ya biner, bellek dolar (8 GB kartta tek eğitim 7.8 GB
+# alıyor), ikisi de çöker ya da sürünür. Kuyruk: ikinci iş "queued" kalır,
+# ilki bitince başlar. Kuyruk konumu iş kaydında görünür.
+_job_queue: queue.Queue[dict[str, Any]] = queue.Queue()
+_worker_started = threading.Lock()
+_worker_thread: threading.Thread | None = None
+
+
+def _worker_loop() -> None:
+    while True:
+        job = _job_queue.get()
+        try:
+            _run_job(job)
+        except Exception:  # noqa: BLE001 — bir işin hatası kuyruğu öldürmesin
+            log.exception("tracking job worker: %s", job.get("id"))
+        finally:
+            _job_queue.task_done()
+
+
+def _ensure_worker() -> None:
+    global _worker_thread
+    with _worker_started:
+        if _worker_thread is None or not _worker_thread.is_alive():
+            _worker_thread = threading.Thread(target=_worker_loop, daemon=True,
+                                              name="tracking-job-worker")
+            _worker_thread.start()
+
+
+def enqueue_job(job: dict[str, Any]) -> int:
+    """İşi kuyruğa koy; önünde kaç iş beklediğini döndür. Testlerde monkeypatch edilir."""
+    _ensure_worker()
+    ahead = _job_queue.qsize()
+    _job_queue.put(job)
+    return ahead
 
 
 # --------------------------------------------------------------------------- #
@@ -388,7 +427,8 @@ def create_job(body: JobCreate, user: models.User = Depends(get_current_user)) -
         "log": str(_dir("jobs") / f"{job_id}.log"),
     }
     _write_job(job)
-    threading.Thread(target=_run_job, args=(job,), daemon=True, name=f"tracking-job-{job_id}").start()
+    ahead = enqueue_job(job)
+    job["queue_ahead"] = ahead          # bilgi: önünde bekleyen iş sayısı (kayda yazılmaz)
     return _public(job)
 
 
