@@ -235,6 +235,77 @@ def test_stays_lost_until_re_anchored(calibrator) -> None:
     assert calibrator.tracking
 
 
+# --- takip inlier tabanı + sürüklenme (uzun koşumda kayma) ------------------ #
+
+def _weak_fit(h: np.ndarray, inlier: float = 0.6):
+    from app.tracking.homography_fit import FitResult
+
+    return FitResult(homography=h, score=0.6, inlier_ratio=inlier,
+                     visible_points=100, iterations=1, accepted=True)
+
+
+def test_weak_tracking_fit_is_withheld_and_last_good_pose_kept(calibrator, monkeypatch) -> None:
+    """Ölçüldü (500 kare): hatası 0.5 m'yi aşan karelerin inlier'ı ~0.7, iyilerin 0.99.
+
+    Oturma kabul sınırını (0.45) geçen ama takip tabanının altındaki kare
+    ÜRETİLMEZ; son iyi duruş korunur — kaymış duruş referans olmaz.
+    """
+    calibrator.TRACK_MIN_INLIER = 0.85
+    assert _feed(calibrator, homography_for()).ok
+    h_before = calibrator._h.copy()
+    monkeypatch.setattr(calibrator, "_best_fit",
+                        lambda dist_map, step: _weak_fit(homography_for((4.0, 0.0))))
+    r = _feed(calibrator, homography_for((4.0, 0.0)))
+    assert not r.ok and "takip zayıf" in r.reason
+    assert np.allclose(calibrator._h, h_before)
+    assert calibrator.frames_rejected == 1 and not calibrator.tracking
+
+
+def test_coasting_searches_from_last_good_pose_not_the_anchor() -> None:
+    """Takip bir kare koptu diye ÇAPAYA düşülmez: kamera son iyi duruşun yakınında.
+
+    Kurgu: kamera çapadan 60 px uzaklaşmış; bir kare zayıf oturmayla atlanır;
+    sonraki kare — sürüklenme açıkken son iyi duruştan bulunur, kapalıyken
+    çapadan aranır ve (yeniden yakalama kapalı) reddedilir.
+    """
+    for coast, expect_ok in ((15, True), (0, False)):
+        cal = PerFrameCalibrator(calibration_from_homography(homography_for(), (W, H)),
+                                 image_size=(W, H))
+        cal.TRACK_MIN_INLIER = 0.85
+        cal.COAST_FRAMES = coast
+        for k in range(1, 11):
+            assert _feed(cal, homography_for((k * 6.0, k * 2.0))).ok
+        real_best_fit = cal._best_fit
+        cal._best_fit = lambda dist_map, step: _weak_fit(homography_for((66.0, 22.0)))  # type: ignore[method-assign]
+        assert not _feed(cal, homography_for((66.0, 22.0))).ok
+        cal._best_fit = real_best_fit  # type: ignore[method-assign]
+        r = _feed(cal, homography_for((66.0, 22.0)))
+        assert r.ok is expect_ok, (coast, r.reason)
+        if expect_ok:
+            assert cal.tracking and cal.frames_rejected == 1
+
+
+def test_coasting_gives_up_after_its_budget() -> None:
+    """Sürüklenme sınırsız değil: COAST_FRAMES aşılınca çapa yolu (kayıp) devreye girer."""
+    cal = PerFrameCalibrator(calibration_from_homography(homography_for(), (W, H)),
+                             image_size=(W, H))
+    cal.TRACK_MIN_INLIER = 0.85
+    cal.COAST_FRAMES = 3
+    for k in range(1, 11):
+        assert _feed(cal, homography_for((k * 6.0, k * 2.0))).ok
+    real_best_fit = cal._best_fit
+    cal._best_fit = lambda dist_map, step: _weak_fit(homography_for((60.0, 20.0)))  # type: ignore[method-assign]
+    for _ in range(4):                       # bütçe (3) + 1
+        assert not _feed(cal, homography_for((60.0, 20.0))).ok
+    cal._best_fit = real_best_fit  # type: ignore[method-assign]
+    assert cal._misses > cal.COAST_FRAMES
+    # Artık kayıp yolundayız: son iyi duruştan DEĞİL çapadan aranır; yeniden
+    # yakalama kapalı → kare üretilmez (sürüklenme açıkken bu kare kabul edilirdi,
+    # bkz. önceki test).
+    r = _feed(cal, homography_for((60.0, 20.0)))
+    assert not r.ok and not cal.tracking, r.reason
+
+
 def test_produces_a_usable_calibration_object(calibrator) -> None:
     """Dönen nesne hattın geri kalanının beklediği PitchCalibration olmalı."""
     res = _feed(calibrator, homography_for((8.0, 3.0)))
@@ -266,12 +337,18 @@ def test_reacquire_searches_from_the_anchor_not_the_drifted_pose() -> None:
 
 
 def test_reacquire_stays_closed_by_default() -> None:
-    """Varsayılan güvenli: yeniden yakalama kapalı, dışarıdan çapa beklenir."""
+    """Varsayılan güvenli: yeniden yakalama kapalı, dışarıdan çapa beklenir.
+
+    Kısa bir kopma (≤ COAST_FRAMES kare) son iyi duruştan toparlanır — bu
+    sürüklenmedir ve güvenlidir (aynı kameranın devamı). Kopma sürerse çapa
+    yolu devreye girer ve yeniden yakalama kapalıyken kare üretilmez.
+    """
     cal = PerFrameCalibrator(
         calibration_from_homography(homography_for(), (W, H)), image_size=(W, H),
     )
     assert _feed(cal, homography_for()).ok
-    assert not _feed(cal, homography_for((300.0, 120.0))).ok
+    for _ in range(PerFrameCalibrator.COAST_FRAMES + 1):
+        assert not _feed(cal, homography_for((300.0, 120.0))).ok
     back = _feed(cal, homography_for((10.0, 4.0)))
     assert not back.ok
     assert "çapa" in back.reason, back.reason

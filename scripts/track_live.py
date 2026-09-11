@@ -481,6 +481,12 @@ def main() -> int:
             f"{'✓ gerçek zamana yetişiyor' if real_time else '⚠ segmentten yavaş'}",
             flush=True,
         )
+        if not real_time:
+            # Ölçüldü (RTX 5060, ONNX): dilim başına ~17 ms sabit — tiles=1 57 fps,
+            # tiles=2 6.5 fps, tiles=4 2.4 fps. Yayın karesinde oyuncu büyüktür,
+            # tiles=1 yeter; track-fps'i DÜŞÜRME (kaliteyi yıkar, bkz. README).
+            print(f"    → hız için --tiles düşür (şu an {args.tiles}; dilim başına ~17 ms, "
+                  f"tiles=1 gerçek zaman). --track-fps'e dokunma.", flush=True)
         _done(seg.name)
 
     mode = "ayrı süreç (--isolate)" if args.isolate else "sıcak model"
