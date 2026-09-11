@@ -15,7 +15,7 @@ import useSWR from "swr";
 import { ConsoleShell } from "../_console/shell";
 import { InsightFeed } from "../_console/insights";
 import { weeklyInsights } from "@/lib/weekly-insights";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiFetchResponse } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { demoLive, DEMO_CLUB, DEMO_OPPONENT } from "@/lib/demo-data";
 import { squadReadiness, type ReadinessDecision } from "@/lib/readiness";
@@ -197,7 +197,9 @@ export default function WeeklyReportPage() {
   const [derived, setDerived] = React.useState<SavedRecord[]>([]);
   const [loads, setLoads] = React.useState<LoadSession[]>([]);
   const [wellness, setWellness] = React.useState<WellnessEntry[]>([]);
-  const [sent, setSent] = React.useState(false);
+  // Gönderim durumu DÜRÜST: backend SMTP yoksa "stub" döner → "gönderilmedi" yazılır.
+  const [send, setSend] = React.useState<{ state: "idle" | "busy" | "sent" | "stub" | "error"; msg?: string }>({ state: "idle" });
+  const [pdfBusy, setPdfBusy] = React.useState(false);
   const [note, setNote] = React.useState("");
   const [weekIdx, setWeekIdx] = React.useState(2); // varsayılan: en güncel hafta
   const [tpl, setTpl] = React.useState<Record<string, boolean>>({ mac: true, saglik: true, antrenman: true, performans: true });
@@ -266,6 +268,56 @@ export default function WeeklyReportPage() {
       try { window.localStorage.setItem(TPL_KEY, JSON.stringify(next)); } catch { /* yok say */ }
       return next;
     });
+  };
+
+  /** Backend'e giden rapor gövdesi — ekranda görünen bölümlerin metniyle birebir
+   *  (backend içerik üretmez, dizer: app/reports/weekly_pdf.py). */
+  const buildReportPayload = (sections: Section[]) => ({
+    club: DEMO_CLUB, week_no: wk.no, week_range: `${wk.range} 2026`, opponent: wk.oppLabel,
+    score: wk.score, xg_for: wk.xgF, xg_against: wk.xgA,
+    kpis: [
+      { label: "Sahaya hazır", value: `${wk.ready}/${wk.total}`, delta: prevW ? sgn(wk.ready - prevW.ready) : null },
+      { label: "Kritik risk", value: String(wk.risky), delta: prevW ? sgn(wk.risky - prevW.risky) : null },
+      { label: "Ort. ACWR", value: fmt2(wk.avgAcwr), delta: prevW ? sgn(wk.avgAcwr - prevW.avgAcwr, 2) : null },
+      { label: "xG farkı", value: sgn(wkXgDiff, 2), delta: null },
+    ],
+    sections: sections.filter((s) => tpl[s.key]).map((s) => ({ title: s.title, lines: s.lines.slice(0, 12) })),
+    note: note.trim() || null,
+  });
+
+  const downloadPdf = async (sections: Section[]) => {
+    if (DEMO_MODE) { window.print(); return; }
+    setPdfBusy(true);
+    try {
+      const res = await apiFetchResponse("/reports/weekly/pdf", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(buildReportPayload(sections)),
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `haftalik_rapor_hafta${wk.no}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setSend({ state: "error", msg: `PDF üretilemedi: ${String(e).slice(0, 120)}` });
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
+  const sendToDirector = async (sections: Section[]) => {
+    if (DEMO_MODE) { setSend({ state: "stub", msg: "Demo: backend yok, gönderim simüle edildi" }); return; }
+    setSend({ state: "busy" });
+    try {
+      const r = await apiFetch<{ sent: boolean; stub: boolean; to: string | null; note: string | null; error: string | null }>(
+        "/reports/weekly/send", { method: "POST", body: JSON.stringify(buildReportPayload(sections)) },
+      );
+      if (r.sent) setSend({ state: "sent", msg: `Gönderildi → ${r.to ?? "SMTP_TO"}` });
+      else if (r.stub) setSend({ state: "stub", msg: r.note ?? "SMTP yapılandırılmamış — gönderilmedi" });
+      else setSend({ state: "error", msg: r.error ?? "gönderilemedi" });
+    } catch (e) {
+      setSend({ state: "error", msg: String(e).slice(0, 160) });
+    }
   };
 
   const ALL_SECTIONS: Section[] = [
@@ -385,14 +437,19 @@ export default function WeeklyReportPage() {
               <button key={w.no} className={weekIdx === i ? "on" : ""} onClick={() => setWeekIdx(i)}>{w.no}. Hafta</button>
             ))}
           </div>
-          <button type="button" onClick={() => window.print()} style={{ padding: "8px 14px", borderRadius: 9, border: "1px solid var(--line)", background: "var(--panel)", color: "var(--ink)", fontWeight: 600, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit" }}>
-            <i className="ti ti-file-type-pdf" style={{ marginRight: 6 }} />PDF indir
+          <button type="button" onClick={() => downloadPdf(ALL_SECTIONS)} disabled={pdfBusy}
+            title={DEMO_MODE ? "Demo: tarayıcı yazdırması" : "Sunucuda reportlab ile üretilir (POST /reports/weekly/pdf)"}
+            style={{ padding: "8px 14px", borderRadius: 9, border: "1px solid var(--line)", background: "var(--panel)", color: "var(--ink)", fontWeight: 600, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", opacity: pdfBusy ? 0.6 : 1 }}>
+            <i className="ti ti-file-type-pdf" style={{ marginRight: 6 }} />{pdfBusy ? "Üretiliyor…" : "PDF indir"}
           </button>
-          <button type="button" onClick={() => setSent(true)} disabled={sent}
-            title="Demo: gerçek e-posta gönderimi backend bağlanınca aktifleşir (SMTP)."
-            style={{ padding: "8px 14px", borderRadius: 9, border: 0, background: sent ? "var(--low)" : "var(--besiktas)", color: "#fff", fontWeight: 700, fontSize: 12.5, cursor: sent ? "default" : "pointer", fontFamily: "inherit", opacity: sent ? 0.85 : 1 }}>
-            <i className={`ti ${sent ? "ti-check" : "ti-send"}`} style={{ marginRight: 6 }} />{sent ? "Gönderildi (demo)" : "Direktöre gönder (demo)"}
+          <button type="button" onClick={() => sendToDirector(ALL_SECTIONS)} disabled={send.state === "busy" || send.state === "sent"}
+            data-testid="send-report" data-state={send.state}
+            title={DEMO_MODE ? "Demo: backend yok" : "PDF ekiyle e-posta (SMTP_HOST/FROM/TO gerekir; yoksa gönderilmez)"}
+            style={{ padding: "8px 14px", borderRadius: 9, border: 0, background: send.state === "sent" ? "var(--low)" : send.state === "stub" || send.state === "error" ? "var(--mid)" : "var(--besiktas)", color: "#fff", fontWeight: 700, fontSize: 12.5, cursor: send.state === "sent" ? "default" : "pointer", fontFamily: "inherit", opacity: send.state === "busy" ? 0.6 : 1 }}>
+            <i className={`ti ${send.state === "sent" ? "ti-check" : send.state === "stub" || send.state === "error" ? "ti-alert-triangle" : "ti-send"}`} style={{ marginRight: 6 }} />
+            {send.state === "busy" ? "Gönderiliyor…" : send.state === "sent" ? "Gönderildi" : send.state === "stub" ? "Gönderilmedi (SMTP yok)" : send.state === "error" ? "Hata · tekrar dene" : DEMO_MODE ? "Direktöre gönder (demo)" : "Direktöre gönder"}
           </button>
+          {send.msg && <span style={{ fontSize: 11, color: "var(--muted)" }}>{send.msg}</span>}
         </div>
       </div>
 

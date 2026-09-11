@@ -3,6 +3,8 @@
 - GET /reports/agent-outputs/{id}/pdf — bir AgentOutput'tan PDF üretir
 - GET /reports/agents/{name}/{type}/{id}/pdf — agent + subject ile son output
 - POST /reports/agent-outputs/{id}/share — paylaşılabilir kısa token (#40)
+- POST /reports/weekly/pdf  — arayüzün hazırladığı haftalık raporu PDF'e dizer
+- POST /reports/weekly/send — aynı raporu PDF ekiyle e-postalar (SMTP yoksa stub)
 
 reportlab yoksa PDF endpoint'leri 503; share endpoint ek olarak
 JWT_SECRET_KEY ister.
@@ -13,12 +15,14 @@ import json
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.db import models
 from app.db.session import get_session
+from app.notifications.email import EmailChannel
 from app.reports.pdf import (
     REPORTLAB_AVAILABLE,
     ReportlabNotInstalled,
@@ -31,6 +35,7 @@ from app.reports.share import (
     ShareTokenError,
     encode_share_token,
 )
+from app.reports.weekly_pdf import build_weekly_report_pdf
 
 router = APIRouter(tags=["reports"])
 
@@ -252,4 +257,106 @@ def create_share_link(
         "token": token,
         "url": f"{base}/shared/reports/{token}",
         "ttl_hours": ttl_hours,
+    }
+
+
+# --- Haftalık rapor: PDF + e-posta ------------------------------------------- #
+
+
+class WeeklyKpi(BaseModel):
+    label: str = Field(max_length=40)
+    value: str = Field(max_length=40)
+    delta: str | None = Field(default=None, max_length=40)
+
+
+class WeeklySection(BaseModel):
+    title: str = Field(max_length=80)
+    lines: list[str] = Field(default_factory=list, max_length=12)
+
+
+class WeeklyReportIn(BaseModel):
+    """Arayüzün (`/weekly-report`) dizdiği içerik — backend içerik üretmez, dizer."""
+
+    club: str = Field(default="tactic11", max_length=80)
+    week_no: int | None = Field(default=None, ge=1, le=60)
+    week_range: str = Field(default="", max_length=60)
+    opponent: str | None = Field(default=None, max_length=80)
+    score: list[int] | None = None
+    xg_for: float | None = None
+    xg_against: float | None = None
+    kpis: list[WeeklyKpi] = Field(default_factory=list, max_length=6)
+    sections: list[WeeklySection] = Field(default_factory=list, max_length=8)
+    note: str | None = Field(default=None, max_length=4000)
+    # yalnız /send: alıcı; boşsa SMTP_TO
+    to: str | None = Field(default=None, max_length=200)
+
+
+def _weekly_filename(body: WeeklyReportIn) -> str:
+    wk = f"_hafta{body.week_no}" if body.week_no else ""
+    return f"haftalik_rapor{wk}.pdf"
+
+
+def _weekly_pdf_bytes(body: WeeklyReportIn) -> bytes:
+    _ensure_reportlab()
+    try:
+        return build_weekly_report_pdf(body.model_dump(exclude={"to"}))
+    except ReportlabNotInstalled as e:
+        raise HTTPException(status_code=503, detail=str(e)) from e
+
+
+@router.post("/reports/weekly/pdf")
+def weekly_report_pdf(body: WeeklyReportIn) -> Response:
+    """Haftalık raporu PDF olarak indir (tarayıcı yazdırması yerine sunucu üretimi)."""
+    pdf = _weekly_pdf_bytes(body)
+    return Response(
+        content=pdf, media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{_weekly_filename(body)}"'},
+    )
+
+
+def build_email_channel() -> EmailChannel:
+    """Settings'ten e-posta kanalı — SMTP yoksa stub (gönderim YOK, dürüstçe söyler)."""
+
+    s = get_settings()
+    return EmailChannel(
+        host=s.smtp_host, port=s.smtp_port, username=s.smtp_username,
+        password=s.smtp_password, from_addr=s.smtp_from, default_to=s.smtp_to,
+        use_tls=s.smtp_use_tls,
+    )
+
+
+@router.post("/reports/weekly/send")
+def weekly_report_send(body: WeeklyReportIn) -> dict[str, Any]:
+    """Raporu PDF ekiyle e-postala.
+
+    SMTP yapılandırılmamışsa (SMTP_HOST/FROM/TO) kanal stub döner: `sent=false,
+    stub=true` — arayüz bunu "gönderilmedi" diye gösterir, "gönderildi" diye
+    değil. Gerçek gönderim yalnız env vars doluyken olur.
+    """
+    pdf = _weekly_pdf_bytes(body)
+    channel = build_email_channel()
+    wk = f"{body.week_no}. Hafta" if body.week_no else "Haftalık rapor"
+    subject = f"{body.club} — {wk} raporu"
+    text_lines = [subject, ""]
+    for k in body.kpis:
+        text_lines.append(f"{k.label}: {k.value}" + (f" ({k.delta})" if k.delta else ""))
+    if body.note:
+        text_lines += ["", "TD notu:", body.note]
+    text_lines += ["", "PDF ektedir. — tactic11"]
+    res = channel.send(
+        "\n".join(text_lines), recipient=body.to or None, subject=subject,
+        attachments=[(_weekly_filename(body), pdf, "application/pdf")],
+    )
+    sent = bool(res.success and not res.stub)
+    if sent:
+        note = None
+    elif res.stub:
+        note = "SMTP yapılandırılmamış (SMTP_HOST/SMTP_FROM/SMTP_TO) — e-posta GÖNDERİLMEDİ"
+    else:
+        note = res.error
+    return {
+        "sent": sent, "stub": res.stub, "configured": channel.is_configured(),
+        "error": res.error,
+        "to": res.extra.get("to") or body.to or get_settings().smtp_to or None,
+        "attachment": _weekly_filename(body), "note": note,
     }

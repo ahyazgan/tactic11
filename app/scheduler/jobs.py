@@ -338,6 +338,54 @@ register(JobSpec(
 ))
 
 
+def send_weekly_report_handler(*, league_external_id: int, lookback_days: int = 7,
+                               to: str | None = None) -> dict:
+    """Haftalık özeti üret, PDF'e diz, e-postala (dış cron: haftada bir).
+
+    SMTP yapılandırılmamışsa kanal stub döner ve bu açıkça loglanır — iş
+    "başarılı" sayılır (özet üretildi ve kaydedildi) ama `sent=False`.
+    Sessizce "gönderildi" denmez.
+    """
+    from app.api.reports import build_email_channel
+    from app.reports.pdf import build_agent_output_pdf
+
+    agent = WeeklyDigestAgent()
+    with SessionLocal() as session:
+        result = agent.run(session, context={
+            "league_external_id": league_external_id,
+            "lookback_days": lookback_days,
+        })
+        row = save_agent_output(
+            session, result=result,
+            agent_name=agent.name, agent_version=agent.version,
+        )
+        session.commit()
+        pdf = build_agent_output_pdf(
+            agent_name=agent.name, agent_version=agent.version,
+            subject_type=row.subject_type, subject_id=row.subject_id,
+            summary=row.summary, output_json=row.output_json, updated_at=row.updated_at,
+        )
+    channel = build_email_channel()
+    subject = f"tactic11 haftalık özet — lig {league_external_id}"
+    res = channel.send(
+        "\n".join([subject, "", result.summary, "", "PDF ektedir."]),
+        recipient=to, subject=subject,
+        attachments=[(f"haftalik_ozet_lig{league_external_id}.pdf", pdf, "application/pdf")],
+    )
+    sent = bool(res.success and not res.stub)
+    log.info("job send_weekly_report: league=%d sent=%s stub=%s error=%s",
+             league_external_id, sent, res.stub, res.error or "-")
+    return {"sent": sent, "stub": res.stub, "error": res.error,
+            "agent_output_id": row.id, "summary": result.summary}
+
+
+register(JobSpec(
+    name="send_weekly_report",
+    handler=send_weekly_report_handler,
+    description="Haftalık özeti PDF ekiyle e-postala (SMTP yoksa stub, sent=False).",
+))
+
+
 def run_opponent_scouts_handler() -> None:
     """Tüm takımlar için sıradaki rakip scout raporu."""
     agent = OpponentScoutAgent()

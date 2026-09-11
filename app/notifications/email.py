@@ -66,7 +66,11 @@ class EmailChannel(NotificationChannel):
         *,
         recipient: str | None = None,
         timeout_seconds: float = 10.0,
+        subject: str | None = None,
+        attachments: list[tuple[str, bytes, str]] | None = None,
     ) -> NotificationResult:
+        """`attachments`: (dosya adı, içerik, MIME "ana/alt") listesi — ör. PDF rapor.
+        `subject` verilmezse metnin ilk satırı konu olur."""
         to_addr = recipient or self._default_to
 
         if not self._host or not self._from or not to_addr:
@@ -75,14 +79,19 @@ class EmailChannel(NotificationChannel):
                 channel=self.name,
                 success=True,
                 stub=True,
-                extra={"reason": "missing_credentials"},
+                extra={"reason": "missing_credentials",
+                       "attachments": [a[0] for a in attachments or ()]},
             )
 
         msg = EmailMessage()
         msg["From"] = self._from
         msg["To"] = to_addr
-        msg["Subject"] = _subject_from_text(text)
+        msg["Subject"] = subject or _subject_from_text(text)
         msg.set_content(text)
+        for filename, payload, mime in attachments or ():
+            maintype, _, subtype = (mime or "application/octet-stream").partition("/")
+            msg.add_attachment(payload, maintype=maintype or "application",
+                               subtype=subtype or "octet-stream", filename=filename)
 
         try:
             with smtplib.SMTP(self._host, self._port, timeout=timeout_seconds) as smtp:
@@ -101,5 +110,6 @@ class EmailChannel(NotificationChannel):
         return NotificationResult(
             channel=self.name,
             success=True,
-            extra={"to": to_addr, "from": self._from},
+            extra={"to": to_addr, "from": self._from,
+                   "attachments": [a[0] for a in attachments or ()]},
         )
