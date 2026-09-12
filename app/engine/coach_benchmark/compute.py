@@ -143,6 +143,30 @@ class WhoSample:
 
 
 @dataclass(frozen=True)
+class WhoCandidate:
+    """Hamle anında sahadaki bir oyuncu — elit "kim çıkar" önseli bunlardan öğrenir."""
+
+    player_id: int
+    group: str          # "GK" | "DEF" | "MID" | "FWD" | "UNK"
+    starter: bool       # ilk 11'den mi (değişiklikle girenler nadiren çıkar)
+
+
+@dataclass(frozen=True)
+class WhoState:
+    match_external_id: int
+    player_off: int
+    candidates: tuple[WhoCandidate, ...]
+
+
+@dataclass(frozen=True)
+class WhoPrior:
+    """(mevki grubu, ilk 11 mi) → P(çıkar). Ayrık yarıda öğrenilir."""
+
+    table: dict[tuple[str, bool], float]
+    fitted_on: int
+
+
+@dataclass(frozen=True)
 class WhoStat:
     n: int
     hit_at_1: float | None
@@ -418,6 +442,44 @@ def who_agreement(samples: Sequence[WhoSample], *, k: int = WHO_TOP_K) -> WhoSta
         baseline_at_1=round(base1, 3), baseline_at_k=round(basek, 3),
         off_pitch_candidate_rate=off_rate, verdict=verdict, note=note,
     )
+
+
+def fit_who_prior(states: Sequence[WhoState]) -> WhoPrior:
+    """Hücre başına: çıkan / sahada olan (Laplace düzeltmeli)."""
+    off: dict[tuple[str, bool], int] = {}
+    seen: dict[tuple[str, bool], int] = {}
+    for st in states:
+        for c in st.candidates:
+            key = (c.group, c.starter)
+            seen[key] = seen.get(key, 0) + 1
+            if c.player_id == st.player_off:
+                off[key] = off.get(key, 0) + 1
+    table = {k: (off.get(k, 0) + PRIOR_LAPLACE) / (n + 2 * PRIOR_LAPLACE)
+             for k, n in seen.items()}
+    return WhoPrior(table=table, fitted_on=len(states))
+
+
+def apply_who_prior(prior: WhoPrior, state: WhoState) -> tuple[int, ...]:
+    """Adayları P(çıkar)'a göre sırala; görülmemiş hücre 0.5 (bilinmiyor)."""
+    ranked = sorted(
+        state.candidates,
+        key=lambda c: (-prior.table.get((c.group, c.starter), 0.5), c.player_id),
+    )
+    return tuple(c.player_id for c in ranked)
+
+
+def split_half_who_prior(states: Sequence[WhoState], *, k: int = WHO_TOP_K) -> WhoStat:
+    """Önsel ÖTEKİ yarıda öğrenilir, bu yarıda isabet@k ölçülür; taban rastgele."""
+    ids = sorted({s.match_external_id for s in states})
+    a_ids = {m for i, m in enumerate(ids) if i % 2 == 0}
+    a = [s for s in states if s.match_external_id in a_ids]
+    b = [s for s in states if s.match_external_id not in a_ids]
+    prior_for_a, prior_for_b = fit_who_prior(b), fit_who_prior(a)
+    samples = [
+        WhoSample(s.player_off, apply_who_prior(pr, s), tuple(c.player_id for c in s.candidates))
+        for half, pr in ((a, prior_for_a), (b, prior_for_b)) for s in half
+    ]
+    return who_agreement(samples, k=k)
 
 
 # --------------------------------------------------------------------------- #

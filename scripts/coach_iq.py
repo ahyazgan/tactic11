@@ -41,6 +41,8 @@ from app.data.sources.statsbomb_open import (
     CoachMove,
     appearances_from_events_json,
     coach_moves_from_events_json,
+    lineup_positions_from_events_json,
+    position_group,
 )
 from app.db import models
 from app.db.session import SessionLocal
@@ -48,13 +50,16 @@ from app.engine.coach_benchmark import (
     Dimension,
     TickObservation,
     TickState,
+    WhoCandidate,
     WhoSample,
+    WhoState,
     build_scorecard,
     expected_calibration_error,
     lead_times,
     skill_from_auc,
     split_half_agreement,
     split_half_timing_prior,
+    split_half_who_prior,
     who_agreement,
 )
 from app.engine.confidence.attribution import MIN_SAMPLES, attribute_stratified
@@ -267,6 +272,7 @@ def main() -> int:
         coach_all_subs: dict[int, list[float]] = {}
         moves_by_match: dict[int, list[CoachMove]] = {}
         appearances: dict[int, list[dict[str, Any]]] = {}
+        positions: dict[int, dict[int, int]] = {}
         injury_subs = 0
         for mid in sorted(matches):
             ev = _events_json(mid, args.events_dir)
@@ -276,6 +282,7 @@ def main() -> int:
             moves_by_match[mid] = moves
             appearances[mid] = [a for a in appearances_from_events_json(ev)
                                 if a["team_external_id"] == args.team]
+            positions[mid] = lineup_positions_from_events_json(ev)
             coach_subs[mid] = _sub_minutes(moves, args.team, tactical_only=True)
             coach_shifts[mid] = _shift_minutes(moves, args.team)
             coach_all_subs[mid] = _sub_minutes(moves, args.team, tactical_only=False)
@@ -373,7 +380,15 @@ def main() -> int:
         if isinstance(cands, list):
             cand_by_tick[(d.match_external_id, d.minute)] = tuple(int(c) for c in cands)
     who_samples: list[WhoSample] = []
+    who_states: list[WhoState] = []
     for mid, moves in moves_by_match.items():
+        # değişiklikle giren oyuncu çıkanın mevkisini devralır (diziliş olayı yoksa)
+        pos = dict(positions.get(mid, {}))
+        for mv in sorted(moves, key=lambda x: x.minute):
+            if (mv.kind == "substitution" and mv.player_on is not None
+                    and mv.player_off is not None and mv.player_on not in pos
+                    and mv.player_off in pos):
+                pos[mv.player_on] = pos[mv.player_off]
         for mv in moves:
             if (mv.team_external_id != args.team or mv.kind != "substitution"
                     or not mv.tactical or mv.player_off is None):
@@ -394,7 +409,14 @@ def main() -> int:
                 candidates=cand_by_tick[(mid, prior_ticks[-1])],
                 on_pitch=on_pitch,
             ))
+            starters = {int(a["player_external_id"]) for a in appearances.get(mid, [])
+                        if a["start_minute"] == 0.0}
+            who_states.append(WhoState(mid, int(mv.player_off), tuple(
+                WhoCandidate(pid, position_group(pos.get(pid, 0)), pid in starters)
+                for pid in on_pitch
+            )))
     who = who_agreement(who_samples)
+    who_prior = split_half_who_prior(who_states)
 
     # ---- boyut 1: öngörü ------------------------------------------------- #
     dims: list[Dimension] = []
@@ -534,6 +556,11 @@ def main() -> int:
     print(f"      önsel   F1 {sh_prior.engine_f1} · precision {pa.precision}/{pb.precision} · "
           f"recall {pa.recall}/{pb.recall} · bayrak oranı {pa.flag_rate}/{pb.flag_rate}")
     print(f"      saat    F1 {sh_prior.baseline_f1} · hüküm: {sh_prior.verdict}")
+    print("    ADAY — elit 'kim çıkar' önseli (mevki grubu × ilk 11, ayrık yarıda öğrenildi):")
+    print(f"      önsel   isabet@3 {who_prior.hit_at_k} · isabet@1 {who_prior.hit_at_1} · "
+          f"rastgele {who_prior.baseline_at_k}/{who_prior.baseline_at_1} · n={who_prior.n}")
+    print(f"      motor   isabet@3 {who.hit_at_k} · isabet@1 {who.hit_at_1} · hüküm (önsel): "
+          f"{who_prior.verdict}")
     print(f"    öncü süre: {lt.moves} gerçek değişikliğin {lt.covered}'inde motor önceki "
           f"{args.lookback:.0f} dk içinde sinyal vermiş (kapsama {lt.coverage}); "
           f"ort. {lt.mean_lead_min} dk, medyan {lt.median_lead_min} dk önce")

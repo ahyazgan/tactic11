@@ -267,3 +267,33 @@ def test_who_agreement_random_level_is_same_and_small_n_no_verdict() -> None:
     assert who_agreement(rows).verdict == "taban çizgisiyle aynı"
     assert who_agreement(rows[:3]).verdict == "yetersiz veri"
     assert who_agreement([]).n == 0
+
+
+# --- "kim" önseli (elit antrenörden öğrenilen) ----------------------------------- #
+
+def _pitch(off_group: str = "FWD"):
+    """11 kişilik saha: 1 GK, 4 DEF, 3 MID, 3 FWD; ilk 3 FWD'den biri (id 9) çıkar."""
+    from app.engine.coach_benchmark import WhoCandidate
+    groups = ["GK"] + ["DEF"] * 4 + ["MID"] * 3 + ["FWD"] * 3
+    return tuple(WhoCandidate(i + 1, g, True) for i, g in enumerate(groups))
+
+
+def test_who_prior_learns_group_and_beats_random_split_half() -> None:
+    """Antrenör hep bir forveti çıkarıyor → önsel forvetleri öne alır, isabet@3 = 1."""
+    from app.engine.coach_benchmark import WhoState, fit_who_prior, split_half_who_prior
+
+    states = [WhoState(mid, 9 + (mid % 3), _pitch()) for mid in range(1, 2 * MIN_TICKS_PER_HALF + 1)]
+    prior = fit_who_prior(states)
+    assert prior.table[("FWD", True)] > prior.table[("DEF", True)]
+    w = split_half_who_prior(states)
+    assert w.hit_at_k == 1.0 and w.baseline_at_k == round(3 / 11, 3)
+    assert w.verdict == "taban çizgisini geçiyor"
+
+
+def test_who_prior_unseen_cell_is_unknown_not_zero() -> None:
+    from app.engine.coach_benchmark import WhoCandidate, WhoPrior, WhoState, apply_who_prior
+
+    prior = WhoPrior(table={("DEF", True): 0.2}, fitted_on=1)
+    st = WhoState(1, 5, (WhoCandidate(1, "DEF", True), WhoCandidate(2, "MID", False)))
+    # MID/sub görülmemiş → 0.5 > 0.2 → önce 2
+    assert apply_who_prior(prior, st) == (2, 1)

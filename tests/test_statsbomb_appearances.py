@@ -118,3 +118,26 @@ def test_coach_moves_parse_sub_shift_and_injury_flag() -> None:
     assert shift.kind == "tactical_shift" and shift.formation == "433" and shift.tactical
     assert sub.team_external_id == TEAM_A and sub.tactical and sub.player_off == 1
     assert no_outcome.tactical is True
+
+
+def test_lineup_positions_and_groups() -> None:
+    from app.data.sources.statsbomb_open import (
+        lineup_positions_from_events_json,
+        position_group,
+    )
+
+    xi = {
+        "type": {"id": 35}, "team": {"id": TEAM_A}, "minute": 0,
+        "tactics": {"lineup": [
+            {"player": {"id": 1}, "position": {"id": 1}},
+            {"player": {"id": 2}, "position": {"id": 5}},
+            {"player": {"id": 3}, "position": {"id": 13}},
+        ]},
+    }
+    shift = {
+        "type": {"id": 36}, "team": {"id": TEAM_A}, "minute": 60,
+        "tactics": {"formation": 433, "lineup": [{"player": {"id": 3}, "position": {"id": 23}}]},
+    }
+    pos = lineup_positions_from_events_json([xi, shift])
+    assert pos == {1: 1, 2: 5, 3: 23}          # son diziliş kazanır
+    assert [position_group(p) for p in (1, 5, 13, 23, 99)] == ["GK", "DEF", "MID", "FWD", "UNK"]

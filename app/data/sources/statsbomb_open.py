@@ -328,3 +328,36 @@ def coach_moves_from_events_json(events_json: list[dict[str, Any]]) -> list[Coac
             ))
     moves.sort(key=lambda m: m.minute)
     return moves
+
+
+# StatsBomb position.id → kaba mevki grubu. 1 kaleci; 2-8 savunma (bek/stoper/
+# kanat bek); 9-16 orta saha; 17-25 hücum (kanat, ofansif orta, forvet).
+def position_group(position_id: int) -> str:
+    if position_id == 1:
+        return "GK"
+    if 2 <= position_id <= 8:
+        return "DEF"
+    if 9 <= position_id <= 16:
+        return "MID"
+    if 17 <= position_id <= 25:
+        return "FWD"
+    return "UNK"
+
+
+def lineup_positions_from_events_json(events_json: list[dict[str, Any]]) -> dict[int, int]:
+    """Oyuncu → son bilinen position.id (Starting XI + Tactical Shift dizilişlerinden).
+
+    Değişiklikle giren oyuncunun mevkisi diziliş olayında yoksa burada YOKTUR;
+    çağıran, çıkan oyuncunun mevkisini devralmış sayabilir (yaklaşıklık).
+    """
+    out: dict[int, int] = {}
+    for ev in events_json:
+        type_id = int((ev.get("type") or {}).get("id", 0))
+        if type_id not in (STARTING_XI_EVENT_TYPE_ID, TACTICAL_SHIFT_EVENT_TYPE_ID):
+            continue
+        for slot in ((ev.get("tactics") or {}).get("lineup")) or []:
+            pid = (slot.get("player") or {}).get("id")
+            pos = (slot.get("position") or {}).get("id")
+            if pid is not None and pos is not None:
+                out[int(pid)] = int(pos)
+    return out
