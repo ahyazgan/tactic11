@@ -142,12 +142,24 @@ def build_candidates(
         now = [a for a in advices if a.get("timing_verdict") == "now"]
         wait10 = [a for a in advices if a.get("timing_verdict") == "wait_10"]
         pkg = st.get("package_recommendation") or []
-        fired = bool(now) or bool(pkg)
+        # Elit zamanlama penceresi (sub_timing.elite_prior): yorgunluk projeksiyonu
+        # tek başına elit antrenörün takviminin çok gerisindeydi (F1 0.49 vs saat 0.74).
+        window_p = st.get("elite_window_probability")
+        window = bool(st.get("elite_window"))
+        fired = bool(now) or bool(pkg) or window
         urgency = 0.9 if now else (0.6 if wait10 else 0.3)
+        if window and isinstance(window_p, (int, float)):
+            urgency = max(urgency, float(window_p))
         mag = max((float(a.get("impact_estimate", 0.0)) for a in advices),
                   default=0.0)
+        if window and isinstance(window_p, (int, float)):
+            mag = max(mag, float(window_p))
         if now:
             head = f"Şimdi değiştir: {[a.get('player_external_id') for a in now]}"
+        elif window and isinstance(window_p, (int, float)):
+            top = [a.get("player_external_id") for a in advices[:3]]
+            head = (f"Değişiklik penceresi: elit antrenörler bu durumda %{window_p * 100:.0f} "
+                    f"değiştiriyor — adaylar {top}")
         else:
             head = st.get("package_rationale", "Değişiklik penceresini izle")
         cands.append(CandidateSignal(

@@ -271,7 +271,7 @@ def lineups(args: argparse.Namespace) -> int:
 
 
 def enrich(args: argparse.Namespace) -> int:
-    """Mevcut kararlara motorun DEĞİŞİKLİK ADAY LİSTESİNİ ekle (yeniden üretmeden).
+    """Mevcut kararlara motorun DEĞİŞİKLİK SİNYALİNİ ve ADAY LİSTESİNİ ekle (yeniden üretmeden).
 
     Koç zekâ karnesinin "kim" boyutu için: antrenörün çıkardığı oyuncu, motorun
     hamleden önceki son tikteki aday listesinde miydi? `seed` bunu yazmıyordu;
@@ -314,7 +314,15 @@ def enrich(args: argparse.Namespace) -> int:
             advices = st.get("advices") if isinstance(st, dict) else None
             cands = [int(a["player_external_id"]) for a in (advices or [])
                      if isinstance(a, dict) and a.get("player_external_id") is not None]
-            _ekle_baglam(d, {"sub_candidates": cands})
+            # Sinyal yandı mı: context_pipeline ile aynı kural (şimdi / paket / elit pencere).
+            now = any(isinstance(a, dict) and a.get("timing_verdict") == "now"
+                      for a in (advices or []))
+            fired = bool(now) or bool(st.get("package_recommendation")) or bool(st.get("elite_window"))
+            _ekle_baglam(d, {
+                "sub_candidates": cands,
+                "sub_signal_fired": fired,
+                "sub_window_probability": st.get("elite_window_probability"),
+            })
             yazilan += 1
             if (i + 1) % 100 == 0:
                 s.commit()

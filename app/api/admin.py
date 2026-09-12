@@ -3217,7 +3217,12 @@ def live_decision_endpoint(
     appearances = load_match_appearances(session, match_id)
     eligible_ids: set[int] | None = None
     off_prior: dict[int, float] | None = None
+    subs_used: int | None = None
     if appearances:
+        subs_used = sum(
+            1 for a in appearances
+            if a.team_external_id == my_team_id and 0.0 < a.start_minute <= current_minute
+        )
         eligible_ids = set(resolve_on_pitch(
             appearances, current_minute, team_external_id=my_team_id,
         ).player_ids)
@@ -3249,7 +3254,7 @@ def live_decision_endpoint(
     _safe("sub_timing", lambda: compute_sub_timing(
         my_team_id, p, d, current_minute=current_minute,
         my_score=my_score or 0, opponent_score=opp_score or 0,
-        eligible_player_ids=eligible_ids, off_prior=off_prior,
+        eligible_player_ids=eligible_ids, off_prior=off_prior, subs_used=subs_used,
     ))
     _safe("tactical_triggers", lambda: compute_live_tactical_trigger(
         my_team_id, current_minute=current_minute,

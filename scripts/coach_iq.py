@@ -347,7 +347,11 @@ def main() -> int:
             continue
         ctx = _ctx(d)
         is_sub = d.decision_type == "substitution"
-        has_sub_signal = is_sub or SUB_SIGNAL_KEY in (ctx.get("supporting_keys") or [])
+        # Panel sinyali (enrich ile yazılır) varsa doğrudan o; yoksa külliyat
+        # kaydındaki birincil/destekleyici anahtarlardan çıkarım.
+        fired = ctx.get("sub_signal_fired")
+        has_sub_signal = (bool(fired) if isinstance(fired, bool)
+                          else is_sub or SUB_SIGNAL_KEY in (ctx.get("supporting_keys") or []))
         acted_sub = _acted(d.minute, coach_subs[mid], args.window)
         acted_shift = _acted(d.minute, coach_shifts.get(mid, []), args.window)
         strict.append(TickObservation(mid, d.minute, is_sub, acted_sub))
@@ -536,8 +540,8 @@ def main() -> int:
 
     print("\n  UYUM AYRINTISI (antrenör değişikliği, pencere "
           f"{args.window:.0f} dk, eşik ayrık yarıda seçildi)")
-    for ad, sh in (("motor 'değişiklik' dedi", sh_strict),
-                   ("değişiklik sinyali yandı (destekleyici dahil)", sh_loose)):
+    for ad, sh in (("motor birincil öneri 'değişiklik' (külliyat kaydı)", sh_strict),
+                   ("değişiklik sinyali yandı (panel: şimdi / paket / elit pencere)", sh_loose)):
         ea, eb, ba, bb = sh.engine_a, sh.engine_b, sh.baseline_a, sh.baseline_b
         print(f"    {ad}:")
         print(f"      motor    F1 {sh.engine_f1} · precision {ea.precision}/{eb.precision} · "

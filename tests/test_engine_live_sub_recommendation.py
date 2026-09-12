@@ -143,3 +143,25 @@ def test_off_prior_reorders_candidates_and_explains():
     # bilinmeyen mevki → orta saha/ilk 11 varsayımı; değişiklikle giren düşük
     assert elite_off_prior(None, True) == ELITE_OFF_PRIOR[("M", True)]
     assert elite_off_prior("FC", False) < elite_off_prior("FC", True)
+
+
+def test_sub_timing_elite_window_needs_subs_used():
+    """subs_used yoksa pencere kapalı; verilince elit önsel olasılığı ve bayrak döner."""
+    from app.engine.sub_timing import compute_sub_timing
+    from app.engine.sub_timing.elite_prior import (
+        SUB_WINDOW_THRESHOLD,
+        elite_sub_window_probability,
+    )
+
+    passes = [_p(1, 10.0)] * 15 + [_p(1, 65.0, False)] * 2
+    off = compute_sub_timing(11, passes, [], current_minute=66.0, my_score=1, opponent_score=0).value
+    assert off.elite_window_probability is None and off.elite_window is False
+    on = compute_sub_timing(11, passes, [], current_minute=66.0, my_score=1, opponent_score=0,
+                            subs_used=0).value
+    assert on.elite_window_probability == round(elite_sub_window_probability(66.0, "leading", 0), 3)
+    assert on.elite_window is (on.elite_window_probability >= SUB_WINDOW_THRESHOLD)
+    # 20. dakika berabere, hak kullanılmamış → pencere kapalı; 3 hak bitmişse geç dakikada da düşük
+    early = compute_sub_timing(11, passes, [], current_minute=20.0, subs_used=0).value
+    assert early.elite_window is False
+    assert elite_sub_window_probability(85.0, "trailing", 3) < SUB_WINDOW_THRESHOLD
+    assert elite_sub_window_probability(66.0, "trailing", 0) > elite_sub_window_probability(20.0, "trailing", 0)
