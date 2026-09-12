@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:  # yalnız tip denetimi için — çalışma zamanı import'u tembel
     from app.data.sources._resilience import CircuitBreaker
 
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
@@ -74,6 +75,7 @@ SHOT_EVENT_TYPE_ID = 16
 # Lineup/substitution event tipleri (Faz B — maç-içi kadro farkındalığı)
 STARTING_XI_EVENT_TYPE_ID = 35   # tactics.lineup ilk 11'i taşır
 SUBSTITUTION_EVENT_TYPE_ID = 19  # player = çıkan, substitution.replacement = giren
+TACTICAL_SHIFT_EVENT_TYPE_ID = 36  # tactics.formation = yeni diziliş (ör. 433)
 
 
 class StatsBombOpen:
@@ -268,3 +270,61 @@ def appearances_from_events_json(
                 }
 
     return list(appearances.values())
+
+
+@dataclass(frozen=True)
+class CoachMove:
+    """Gerçek antrenörün maç içinde yaptığı bir hamle (StatsBomb'dan).
+
+    Motorun önerileri bunlarla kıyaslanır (`engine.coach_benchmark`): elit
+    antrenör bu dakikada değişiklik yaptıysa motor da önceden "değişiklik"
+    demiş miydi? Bu, uygulanmamış öneriler için elimizdeki tek dış ölçüt.
+    """
+
+    minute: float
+    team_external_id: int
+    kind: str                      # "substitution" | "tactical_shift"
+    tactical: bool                 # substitution.outcome == "Tactical"; shift her zaman True
+    player_off: int | None = None
+    player_on: int | None = None
+    formation: str | None = None   # tactical_shift: yeni diziliş kodu ("433")
+
+
+def coach_moves_from_events_json(events_json: list[dict[str, Any]]) -> list[CoachMove]:
+    """StatsBomb events JSON → gerçek antrenör hamleleri (saf parse, HTTP yok).
+
+    - Substitution (tip 19): `substitution.outcome.name` "Tactical" ise
+      antrenör kararı, "Injury" ise zorunlu değişiklik (`tactical=False`).
+      Sonuç alanı yoksa "Tactical" varsayılır — açık veride hemen her kayıtta var.
+    - Tactical Shift (tip 36): `tactics.formation` yeni diziliş.
+
+    Bozuk/takımsız kayıtlar atlanır. Dakika sırasına göre döner.
+    """
+    moves: list[CoachMove] = []
+    for ev in events_json:
+        type_id = int((ev.get("type") or {}).get("id", 0))
+        team_id = int((ev.get("team") or {}).get("id", 0)) or None
+        if team_id is None:
+            continue
+        minute = float(ev.get("minute", 0))
+
+        if type_id == SUBSTITUTION_EVENT_TYPE_ID:
+            sub = ev.get("substitution") or {}
+            outcome = str((sub.get("outcome") or {}).get("name") or "Tactical")
+            off_id = (ev.get("player") or {}).get("id")
+            on_id = (sub.get("replacement") or {}).get("id")
+            moves.append(CoachMove(
+                minute=minute, team_external_id=team_id, kind="substitution",
+                tactical=outcome.lower() == "tactical",
+                player_off=int(off_id) if off_id is not None else None,
+                player_on=int(on_id) if on_id is not None else None,
+            ))
+        elif type_id == TACTICAL_SHIFT_EVENT_TYPE_ID:
+            formation = (ev.get("tactics") or {}).get("formation")
+            moves.append(CoachMove(
+                minute=minute, team_external_id=team_id, kind="tactical_shift",
+                tactical=True,
+                formation=str(formation) if formation is not None else None,
+            ))
+    moves.sort(key=lambda m: m.minute)
+    return moves

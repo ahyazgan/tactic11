@@ -81,3 +81,40 @@ def test_malformed_events_skipped() -> None:
     ]
     # Bozuk lineup slot'u (player.id yok) ve replacement'sız sub → boş sonuç.
     assert appearances_from_events_json(events) == []
+
+
+# --- coach_moves_from_events_json — gerçek antrenör hamleleri ------------------ #
+
+def _tactical_sub(team_id: int, minute: int, off_id: int, on_id: int, outcome: str) -> dict:
+    ev = _sub(team_id, minute, off_id, on_id)
+    ev["substitution"]["outcome"] = {"id": 0, "name": outcome}
+    return ev
+
+
+def _shift(team_id: int, minute: int, formation: int) -> dict:
+    return {
+        "type": {"id": 36, "name": "Tactical Shift"},
+        "team": {"id": team_id},
+        "minute": minute,
+        "tactics": {"formation": formation},
+    }
+
+
+def test_coach_moves_parse_sub_shift_and_injury_flag() -> None:
+    from app.data.sources.statsbomb_open import coach_moves_from_events_json
+
+    moves = coach_moves_from_events_json([
+        _shift(TEAM_B, 49, 433),
+        _tactical_sub(TEAM_A, 60, 1, 2, "Tactical"),
+        _tactical_sub(TEAM_A, 30, 3, 4, "Injury"),
+        _sub(TEAM_B, 75, 5, 6),                   # outcome alanı yok → Tactical varsayılır
+        {"type": {"id": 19}, "minute": 80},        # takımsız → atlanır
+        _starting_xi(TEAM_A, [1, 3]),              # hamle değil
+    ])
+    assert [m.minute for m in moves] == [30.0, 49.0, 60.0, 75.0]   # dakika sıralı
+    injury, shift, sub, no_outcome = moves
+    assert injury.kind == "substitution" and injury.tactical is False
+    assert injury.player_off == 3 and injury.player_on == 4
+    assert shift.kind == "tactical_shift" and shift.formation == "433" and shift.tactical
+    assert sub.team_external_id == TEAM_A and sub.tactical and sub.player_off == 1
+    assert no_outcome.tactical is True
