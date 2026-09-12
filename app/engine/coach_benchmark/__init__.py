@@ -9,6 +9,8 @@ from app.engine.coach_benchmark.compute import (
     TickObservation,
     TickState,
     TimingPrior,
+    WhoSample,
+    WhoStat,
     agreement,
     apply_timing_prior,
     build_scorecard,
@@ -19,6 +21,7 @@ from app.engine.coach_benchmark.compute import (
     skill_from_auc,
     split_half_agreement,
     split_half_timing_prior,
+    who_agreement,
 )
 
 __all__ = [
@@ -32,6 +35,8 @@ __all__ = [
     "TickObservation",
     "TickState",
     "TimingPrior",
+    "WhoSample",
+    "WhoStat",
     "agreement",
     "apply_timing_prior",
     "build_scorecard",
@@ -42,4 +47,5 @@ __all__ = [
     "skill_from_auc",
     "split_half_agreement",
     "split_half_timing_prior",
+    "who_agreement",
 ]

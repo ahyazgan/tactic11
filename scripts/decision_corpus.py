@@ -13,6 +13,7 @@ Bu script döngüyü kapatır ve **tekrarlanabilir** kılar:
              öneriyi kararla birlikte **güven sürücüleriyle** kaydet
 2. `score` — `auto-outcome` mantığıyla her kararın gerçek etkisini ölç
 3. `report`— ölçülmüş kararlardan sürücü karnesi çıkar (hangi sürücü ayırıyor?)
+4. `enrich`— kararlara motorun değişiklik aday listesini ekle (`coach_iq` "kim")
 
 ## Kararlar UYDURULMAZ
 
@@ -209,6 +210,60 @@ def seed(args: argparse.Namespace) -> int:
     print(f"karar yazıldı: {yazilan} · zaten vardı: {atlanan} · sinyal yok: {sinyalsiz}")
     if yazilan == 0 and atlanan:
         print("(hepsi mevcut — külliyat büyütmek için --limit artır)")
+    return 0
+
+
+def enrich(args: argparse.Namespace) -> int:
+    """Mevcut kararlara motorun DEĞİŞİKLİK ADAY LİSTESİNİ ekle (yeniden üretmeden).
+
+    Koç zekâ karnesinin "kim" boyutu için: antrenörün çıkardığı oyuncu, motorun
+    hamleden önceki son tikteki aday listesinde miydi? `seed` bunu yazmıyordu;
+    paneli aynı (maç, dakika) için yeniden çalıştırıp `context_json`'a
+    `sub_candidates` (sıralı oyuncu id) ekler. Var olan alanlar korunur;
+    zaten dolu satırlar atlanır (idempotent).
+    """
+    from app.api.admin import live_decision_endpoint
+
+    with SessionLocal() as s:
+        s.info["tenant_id"] = args.tenant
+        rows = list(s.execute(select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.tenant_id == args.tenant,
+            models.Decision.team_external_id == args.team,
+            models.Decision.notes.like(SOURCE_NOTE + "%"),
+        )).scalars())
+        yazilan = atlanan = hata = 0
+        for i, d in enumerate(rows):
+            ctx: dict = {}
+            if d.context_json:
+                try:
+                    ctx = json.loads(d.context_json) or {}
+                except (ValueError, TypeError):
+                    ctx = {}
+            if "sub_candidates" in ctx:
+                atlanan += 1
+                continue
+            try:
+                payload = live_decision_endpoint(
+                    match_id=d.match_external_id, my_team_id=args.team,
+                    current_minute=d.minute, star_player_id=None,
+                    draw_is_enough=False, must_win=False, session=s,
+                )
+            except Exception as e:      # noqa: BLE001 — bir tik düşerse sürsün
+                print(f"  maç {d.match_external_id} dk {d.minute:.0f}: ({type(e).__name__}) — atlandı")
+                hata += 1
+                continue
+            st = payload.get("sub_timing") or {}
+            advices = st.get("advices") if isinstance(st, dict) else None
+            cands = [int(a["player_external_id"]) for a in (advices or [])
+                     if isinstance(a, dict) and a.get("player_external_id") is not None]
+            _ekle_baglam(d, {"sub_candidates": cands})
+            yazilan += 1
+            if (i + 1) % 100 == 0:
+                s.commit()
+                print(f"  {i + 1}/{len(rows)}")
+        s.commit()
+    print(f"aday listesi yazıldı: {yazilan} · zaten vardı: {atlanan} · hata: {hata}")
     return 0
 
 
@@ -451,6 +506,7 @@ def main() -> int:
         ("seed", seed, "Motor önerilerini sürücüleriyle karar olarak kaydet"),
         ("score", score, "Kararların gerçek etkisini ölç"),
         ("report", report, "Sürücü karnesi: hangi sürücü sonucu ayırıyor?"),
+        ("enrich", enrich, "Kararlara motorun değişiklik aday listesini ekle (kim boyutu)"),
     ):
         c = sub.add_parser(ad, help=yardim)
         c.add_argument("--tenant", default="t-default")

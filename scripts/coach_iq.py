@@ -37,19 +37,25 @@ from typing import Any
 
 from sqlalchemy import select
 
-from app.data.sources.statsbomb_open import CoachMove, coach_moves_from_events_json
+from app.data.sources.statsbomb_open import (
+    CoachMove,
+    appearances_from_events_json,
+    coach_moves_from_events_json,
+)
 from app.db import models
 from app.db.session import SessionLocal
 from app.engine.coach_benchmark import (
     Dimension,
     TickObservation,
     TickState,
+    WhoSample,
     build_scorecard,
     expected_calibration_error,
     lead_times,
     skill_from_auc,
     split_half_agreement,
     split_half_timing_prior,
+    who_agreement,
 )
 from app.engine.confidence.attribution import MIN_SAMPLES, attribute_stratified
 from app.engine.decision_baseline import (
@@ -260,6 +266,7 @@ def main() -> int:
         coach_shifts: dict[int, list[float]] = {}
         coach_all_subs: dict[int, list[float]] = {}
         moves_by_match: dict[int, list[CoachMove]] = {}
+        appearances: dict[int, list[dict[str, Any]]] = {}
         injury_subs = 0
         for mid in sorted(matches):
             ev = _events_json(mid, args.events_dir)
@@ -267,6 +274,8 @@ def main() -> int:
                 continue
             moves = coach_moves_from_events_json(ev)
             moves_by_match[mid] = moves
+            appearances[mid] = [a for a in appearances_from_events_json(ev)
+                                if a["team_external_id"] == args.team]
             coach_subs[mid] = _sub_minutes(moves, args.team, tactical_only=True)
             coach_shifts[mid] = _shift_minutes(moves, args.team)
             coach_all_subs[mid] = _sub_minutes(moves, args.team, tactical_only=False)
@@ -357,6 +366,36 @@ def main() -> int:
         elif d.applied is False:
             applied_f += 1
 
+    # ---- "kim": antrenörün çıkardığı oyuncu motorun listesinde miydi? ----- #
+    cand_by_tick: dict[tuple[int, float], tuple[int, ...]] = {}
+    for d in decisions:
+        cands = _ctx(d).get("sub_candidates")
+        if isinstance(cands, list):
+            cand_by_tick[(d.match_external_id, d.minute)] = tuple(int(c) for c in cands)
+    who_samples: list[WhoSample] = []
+    for mid, moves in moves_by_match.items():
+        for mv in moves:
+            if (mv.team_external_id != args.team or mv.kind != "substitution"
+                    or not mv.tactical or mv.player_off is None):
+                continue
+            prior_ticks = sorted(
+                t for (m_id, t) in cand_by_tick
+                if m_id == mid and mv.minute - args.lookback <= t < mv.minute
+            )
+            if not prior_ticks:
+                continue
+            on_pitch = tuple(
+                int(a["player_external_id"]) for a in appearances.get(mid, [])
+                if a["start_minute"] <= mv.minute
+                and (a["end_minute"] is None or a["end_minute"] >= mv.minute)
+            )
+            who_samples.append(WhoSample(
+                player_off=int(mv.player_off),
+                candidates=cand_by_tick[(mid, prior_ticks[-1])],
+                on_pitch=on_pitch,
+            ))
+    who = who_agreement(who_samples)
+
     # ---- boyut 1: öngörü ------------------------------------------------- #
     dims: list[Dimension] = []
     if len(fc_samples) >= MIN_SAMPLES:
@@ -406,6 +445,14 @@ def main() -> int:
         value=best.engine_f1, baseline=best.baseline_f1,
         skill=None, measurable=best.verdict != "yetersiz veri", verdict=best.verdict,
         note=best.note,
+    ))
+
+    dims.append(Dimension(
+        name="Kim çıkacak (elit antrenörle)", metric="isabet@3 vs rastgele sahadaki",
+        value=who.hit_at_k, baseline=who.baseline_at_k, skill=None,
+        measurable=who.verdict != "yetersiz veri", verdict=who.verdict,
+        note=(f"n={who.n} gerçek değişiklik · isabet@1 {who.hit_at_1} (rastgele "
+              f"{who.baseline_at_1}) · {who.note}"),
     ))
 
     # ---- boyut 4: cetvel kontrolü (v1 ve v2) ----------------------------- #

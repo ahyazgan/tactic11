@@ -53,6 +53,9 @@ PRIOR_MINUTE_BANDS: tuple[float, ...] = (45.0, 60.0, 70.0, 80.0)
 PRIOR_MAX_SUBS = 3          # 3+ değişiklik tek hücrede toplanır (seyrek)
 PRIOR_LAPLACE = 1.0
 PRIOR_THRESHOLDS: tuple[float, ...] = (0.3, 0.4, 0.5, 0.6)
+# "Kim" boyutu: motorun aday listesi bu uzunlukta değerlendirilir; kazanç eşiği.
+WHO_TOP_K = 3
+WHO_MIN_GAIN = 0.10
 
 
 @dataclass(frozen=True)
@@ -128,6 +131,27 @@ class LeadTimeStat:
     coverage: float | None
     mean_lead_min: float | None   # yalnız kapsananlarda
     median_lead_min: float | None
+
+
+@dataclass(frozen=True)
+class WhoSample:
+    """Gerçek bir değişiklik: antrenör KİMİ çıkardı, motor kimleri önermişti?"""
+
+    player_off: int
+    candidates: tuple[int, ...]   # motorun sıralı aday listesi (hamleden önceki son tik)
+    on_pitch: tuple[int, ...]     # hamle anında sahadaki kendi oyuncuları
+
+
+@dataclass(frozen=True)
+class WhoStat:
+    n: int
+    hit_at_1: float | None
+    hit_at_k: float | None
+    baseline_at_1: float | None   # rastgele sahadaki oyuncu: 1/n_saha ortalaması
+    baseline_at_k: float | None   # k/n_saha ortalaması
+    off_pitch_candidate_rate: float | None   # aday listesinde sahada olmayan oyuncu payı
+    verdict: str
+    note: str
 
 
 @dataclass(frozen=True)
@@ -348,6 +372,52 @@ def split_half_timing_prior(states: Sequence[TickState]) -> SplitHalfAgreement:
     prior_for_b = fit_timing_prior(a)
     merged = apply_timing_prior(prior_for_a, a) + apply_timing_prior(prior_for_b, b)
     return split_half_agreement(merged)
+
+
+# --------------------------------------------------------------------------- #
+# "Kim" — antrenörün çıkardığı oyuncu motorun listesinde miydi?
+# --------------------------------------------------------------------------- #
+
+def who_agreement(samples: Sequence[WhoSample], *, k: int = WHO_TOP_K) -> WhoStat:
+    """İsabet@1 / isabet@k vs rastgele sahadaki oyuncu taban çizgisi.
+
+    Taban analitik: sahada n oyuncu varsa rastgele seçim 1/n (ve k/n) tutturur.
+    Kaleci dahil sayıldığından taban hafif düşüktür; bu belirsizlik hükme değil
+    nota yazılır.
+    """
+    rows = [r for r in samples if r.on_pitch]
+    n = len(rows)
+    if n == 0:
+        return WhoStat(0, None, None, None, None, None, "yetersiz veri", "gerçek değişiklik yok")
+    hit1 = sum(1 for r in rows if r.candidates and r.candidates[0] == r.player_off) / n
+    hitk = sum(1 for r in rows if r.player_off in r.candidates[:k]) / n
+    base1 = sum(1.0 / len(r.on_pitch) for r in rows) / n
+    basek = sum(min(1.0, k / len(r.on_pitch)) for r in rows) / n
+    cand_total = sum(len(r.candidates[:k]) for r in rows)
+    off_pitch = sum(1 for r in rows for c in r.candidates[:k] if c not in r.on_pitch)
+    off_rate = None if cand_total == 0 else round(off_pitch / cand_total, 3)
+
+    if n < MIN_SAMPLES:
+        verdict = "yetersiz veri"
+        note = f"n={n} < {MIN_SAMPLES}"
+    elif hitk - basek >= WHO_MIN_GAIN:
+        verdict = "taban çizgisini geçiyor"
+        note = (f"isabet@{k} {hitk:.0%} vs rastgele {basek:.0%} — motor çıkacak oyuncuyu "
+                f"tesadüften iyi biliyor")
+    elif basek - hitk >= WHO_MIN_GAIN:
+        verdict = "taban çizgisinin altında"
+        note = (f"isabet@{k} {hitk:.0%} vs rastgele {basek:.0%} — motorun listesi "
+                f"rastgeleden KÖTÜ")
+    else:
+        verdict = "taban çizgisiyle aynı"
+        note = f"isabet@{k} {hitk:.0%} vs rastgele {basek:.0%} — fark ±{WHO_MIN_GAIN:.2f} bandında"
+    if off_rate:
+        note += f"; adayların {off_rate:.0%}'i hamle anında sahada değildi"
+    return WhoStat(
+        n=n, hit_at_1=round(hit1, 3), hit_at_k=round(hitk, 3),
+        baseline_at_1=round(base1, 3), baseline_at_k=round(basek, 3),
+        off_pitch_candidate_rate=off_rate, verdict=verdict, note=note,
+    )
 
 
 # --------------------------------------------------------------------------- #

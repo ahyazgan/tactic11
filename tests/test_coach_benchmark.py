@@ -223,3 +223,47 @@ def test_timing_prior_split_half_learns_from_other_half() -> None:
     assert sh.engine_f1 == 1.0
     assert sh.baseline_f1 is not None and sh.baseline_f1 < 1.0
     assert sh.verdict == "taban çizgisini geçiyor"
+
+
+# --- "kim" boyutu --------------------------------------------------------------- #
+
+def _who(off: int, cands: tuple[int, ...], pitch: tuple[int, ...] = tuple(range(1, 12))):
+    from app.engine.coach_benchmark import WhoSample
+    return WhoSample(off, cands, pitch)
+
+
+def test_who_agreement_hits_and_random_baseline() -> None:
+    from app.engine.coach_benchmark import who_agreement
+
+    n = MIN_TICKS_PER_HALF
+    # yarısında ilk aday doğru, çeyreğinde 3. aday doğru, kalanında ıska
+    rows = ([_who(5, (5, 6, 7))] * (n // 2) + [_who(5, (6, 7, 5))] * (n // 4)
+            + [_who(5, (6, 7, 8))] * (n - n // 2 - n // 4))
+    w = who_agreement(rows)
+    assert w.n == n
+    assert w.hit_at_1 == round((n // 2) / n, 3)
+    assert w.hit_at_k == round((n // 2 + n // 4) / n, 3)
+    assert w.baseline_at_1 == round(1 / 11, 3) and w.baseline_at_k == round(3 / 11, 3)
+    assert w.verdict == "taban çizgisini geçiyor"
+    assert w.off_pitch_candidate_rate == 0.0
+
+
+def test_who_agreement_off_pitch_candidates_counted() -> None:
+    from app.engine.coach_benchmark import who_agreement
+
+    rows = [_who(5, (99, 98, 5))] * MIN_TICKS_PER_HALF   # 99/98 sahada değil
+    w = who_agreement(rows)
+    assert w.off_pitch_candidate_rate == round(2 / 3, 3)
+    assert w.hit_at_k == 1.0 and w.hit_at_1 == 0.0
+    assert "sahada değildi" in w.note
+
+
+def test_who_agreement_random_level_is_same_and_small_n_no_verdict() -> None:
+    from app.engine.coach_benchmark import who_agreement
+
+    n = MIN_TICKS_PER_HALF
+    hits = round(3 / 11 * n)
+    rows = [_who(5, (5, 6, 7))] * hits + [_who(5, (6, 7, 8))] * (n - hits)
+    assert who_agreement(rows).verdict == "taban çizgisiyle aynı"
+    assert who_agreement(rows[:3]).verdict == "yetersiz veri"
+    assert who_agreement([]).n == 0
