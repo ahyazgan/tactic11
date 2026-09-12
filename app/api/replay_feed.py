@@ -20,6 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.data.loaders import load_match_events
+from app.data.loaders.appearances import load_match_appearances
 from app.db import models
 from app.engine.live_lineup import PlayerAppearance
 from app.engine.live_score import running_score_as_of
@@ -65,7 +66,7 @@ class StatsBombReplayFeed:
         self.home_team_id: int = match.home_team_external_id
         self.away_team_id: int = match.away_team_external_id
         self._loaded = load_match_events(session, match_id)
-        self._appearances = _load_appearances(session, match_id)
+        self._appearances = load_match_appearances(session, match_id)
         all_minutes = [
             e.minute
             for group in (
@@ -109,37 +110,3 @@ class StatsBombReplayFeed:
         davranışına döner. Böylece appearance verisi seed'lenmemiş maçlar bozulmaz.
         """
         return self._appearances or None
-
-
-def _load_appearances(
-    session: Session, match_id: int,
-) -> list[PlayerAppearance]:
-    """PlayerAppearance satırlarını engine `PlayerAppearance`'a çevir.
-
-    `substituted_in_minute` → sahaya giriş (None → ilk 11, start 0.0).
-    `substituted_out_minute` → sahadan çıkış (None → maç sonuna kadar).
-    Sadece gerçekten oynamış satırlar (minutes>0 veya sonradan girmiş) alınır;
-    kadroda olup hiç oynamamış (minutes=0, in=None) oyuncu hariç tutulur.
-    """
-    rows = session.execute(
-        select(models.PlayerAppearance).where(
-            models.PlayerAppearance.sport == football.SPORT_NAME,
-            models.PlayerAppearance.match_external_id == match_id,
-        )
-    ).scalars().all()
-    out: list[PlayerAppearance] = []
-    for r in rows:
-        played = bool(r.minutes and r.minutes > 0)
-        came_on = r.substituted_in_minute is not None
-        if not (played or came_on) or r.team_external_id is None:
-            continue
-        out.append(PlayerAppearance(
-            player_external_id=r.player_external_id,
-            team_external_id=r.team_external_id,
-            start_minute=float(r.substituted_in_minute or 0),
-            end_minute=(
-                float(r.substituted_out_minute)
-                if r.substituted_out_minute is not None else None
-            ),
-        ))
-    return out

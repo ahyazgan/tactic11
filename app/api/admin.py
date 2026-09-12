@@ -3202,17 +3202,36 @@ def live_decision_endpoint(
         else:
             tracking_only["note"] = "Event ingest yok ve pozisyon karesi de yok"
         return tracking_only
-    my_score = match.home_score if my_team_id == home_id else match.away_score
-    opp_score = match.away_score if my_team_id == home_id else match.home_score
-
     p = [x for x in loaded.passes if x.minute <= current_minute]
     d = [x for x in loaded.defensive_actions if x.minute <= current_minute]
     s = [x for x in loaded.shots if x.minute <= current_minute]
+    # O ANKİ skor: maç sonucu değil (külliyat ölçümünde sızıntıydı). Kendi
+    # kalesine goller şut listesinde yoktur — bilinen yaklaşıklık.
+    my_score = sum(1 for x in s if x.is_goal and x.team_external_id == my_team_id)
+    opp_score = sum(1 for x in s if x.is_goal and x.team_external_id == opp_id)
+
+    # Kadro farkındalığı: kim sahada, kimin çıkma önseli ne (player_appearances).
+    from app.data.loaders.appearances import load_match_appearances
+    from app.engine.live_lineup import resolve_on_pitch
+    from app.engine.live_sub_recommendation import elite_off_prior
+    appearances = load_match_appearances(session, match_id)
+    eligible_ids: set[int] | None = None
+    off_prior: dict[int, float] | None = None
+    if appearances:
+        eligible_ids = set(resolve_on_pitch(
+            appearances, current_minute, team_external_id=my_team_id,
+        ).player_ids)
+        off_prior = {
+            a.player_external_id: elite_off_prior(a.position, a.start_minute == 0.0)
+            for a in appearances if a.team_external_id == my_team_id
+        }
 
     out: dict[str, Any] = {
         "match_id": match_id, "my_team_id": my_team_id,
         "current_minute": current_minute,
-        "score": f"{match.home_score}-{match.away_score}",
+        "score": (f"{my_score}-{opp_score}" if my_team_id == home_id
+                  else f"{opp_score}-{my_score}"),
+        "lineup_aware": appearances != [],
     }
 
     def _safe(key: str, fn):
@@ -3230,6 +3249,7 @@ def live_decision_endpoint(
     _safe("sub_timing", lambda: compute_sub_timing(
         my_team_id, p, d, current_minute=current_minute,
         my_score=my_score or 0, opponent_score=opp_score or 0,
+        eligible_player_ids=eligible_ids, off_prior=off_prior,
     ))
     _safe("tactical_triggers", lambda: compute_live_tactical_trigger(
         my_team_id, current_minute=current_minute,

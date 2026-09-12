@@ -10,7 +10,7 @@ Saf hesap. live_sub_recommendation + substitution_chess üstüne kurulu.
 """
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from app.audit import AuditRecord, EngineResult
@@ -81,8 +81,14 @@ def compute_sub_timing(
     match_total_minutes: float = 90.0,
     my_score: int = 0,
     opponent_score: int = 0,
+    eligible_player_ids: Iterable[int] | None = None,
+    off_prior: Mapping[int, float] | None = None,
 ) -> EngineResult[SubTimingReport]:
-    """Optimal sub zamanlaması + etki + paket önerisi."""
+    """Optimal sub zamanlaması + etki + paket önerisi.
+
+    `eligible_player_ids` / `off_prior` doğrudan `live_sub_recommendation`'a
+    geçer (sahadakilerle sınırla; elit "kim çıkar" önseli).
+    """
     passes = list(all_passes)
     defs = list(all_def_actions)
     minutes_remaining = max(0.0, match_total_minutes - current_minute)
@@ -91,6 +97,7 @@ def compute_sub_timing(
         team_external_id, passes, defs,
         current_minute=current_minute,
         my_score=my_score, opponent_score=opponent_score,
+        eligible_player_ids=eligible_player_ids, off_prior=off_prior,
     ).value
 
     advices: list[SubTimingAdvice] = []

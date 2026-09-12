@@ -14,6 +14,7 @@ Bu script döngüyü kapatır ve **tekrarlanabilir** kılar:
 2. `score` — `auto-outcome` mantığıyla her kararın gerçek etkisini ölç
 3. `report`— ölçülmüş kararlardan sürücü karnesi çıkar (hangi sürücü ayırıyor?)
 4. `enrich`— kararlara motorun değişiklik aday listesini ekle (`coach_iq` "kim")
+5. `lineups`— maç kadrolarını (ilk 11/değişiklik/mevki) `player_appearances`'a yaz
 
 ## Kararlar UYDURULMAZ
 
@@ -213,6 +214,62 @@ def seed(args: argparse.Namespace) -> int:
     return 0
 
 
+def _events_json(match_id: int, events_dir):
+    """Ham StatsBomb olayları: `--events-dir` varsa dosyadan, yoksa adapter (önbellekli)."""
+    if events_dir is not None:
+        from pathlib import Path
+        p = Path(events_dir) / f"{match_id}.json"
+        if not p.is_file():
+            return None
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except ValueError:
+            return None
+        return data if isinstance(data, list) else None
+    from app.data.sources.statsbomb_open import StatsBombOpen
+    try:
+        return StatsBombOpen().get_events(match_id)
+    except Exception as e:      # noqa: BLE001
+        print(f"  maç {match_id}: olaylar alınamadı ({type(e).__name__})")
+        return None
+
+
+def lineups(args: argparse.Namespace) -> int:
+    """Külliyat maçları için ilk 11 + değişiklik + mevki → player_appearances.
+
+    Panel bununla kadro-farkında çalışır (sahadakilerle sınırlı aday, elit
+    "kim çıkar" önseli). Idempotent.
+    """
+    from app.data.ingest.statsbomb_appearance import ingest_statsbomb_appearances
+
+    with SessionLocal() as s:
+        s.info["tenant_id"] = args.tenant
+        mids = sorted({d.match_external_id for d in s.execute(select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.tenant_id == args.tenant,
+            models.Decision.team_external_id == args.team,
+        )).scalars()})
+        eklenen = guncellenen = atlanan = 0
+        for mid in mids:
+            ev = _events_json(mid, args.events_dir)
+            if not ev:
+                atlanan += 1
+                continue
+            try:
+                rep = ingest_statsbomb_appearances(
+                    s, match_external_id=mid, tenant_id=args.tenant, events_json=ev,
+                )
+            except ValueError as e:
+                print(f"  maç {mid}: {e}")
+                atlanan += 1
+                continue
+            eklenen += rep.rows_inserted
+            guncellenen += rep.rows_updated
+        s.commit()
+    print(f"kadro satırı eklendi: {eklenen} · güncellendi: {guncellenen} · maç atlandı: {atlanan}")
+    return 0
+
+
 def enrich(args: argparse.Namespace) -> int:
     """Mevcut kararlara motorun DEĞİŞİKLİK ADAY LİSTESİNİ ekle (yeniden üretmeden).
 
@@ -240,7 +297,7 @@ def enrich(args: argparse.Namespace) -> int:
                     ctx = json.loads(d.context_json) or {}
                 except (ValueError, TypeError):
                     ctx = {}
-            if "sub_candidates" in ctx:
+            if "sub_candidates" in ctx and not args.force:
                 atlanan += 1
                 continue
             try:
@@ -507,11 +564,16 @@ def main() -> int:
         ("score", score, "Kararların gerçek etkisini ölç"),
         ("report", report, "Sürücü karnesi: hangi sürücü sonucu ayırıyor?"),
         ("enrich", enrich, "Kararlara motorun değişiklik aday listesini ekle (kim boyutu)"),
+        ("lineups", lineups, "Külliyat maçlarının kadrolarını player_appearances'a yaz"),
     ):
         c = sub.add_parser(ad, help=yardim)
         c.add_argument("--tenant", default="t-default")
         c.add_argument("--team", type=int, default=217)
         c.add_argument("--limit", type=int, default=0, help="0 = tüm maçlar")
+        c.add_argument("--events-dir", default=None,
+                       help="ham StatsBomb events/<id>.json klasörü (yoksa adapter çeker)")
+        c.add_argument("--force", action="store_true",
+                       help="enrich: mevcut aday listelerini yeniden hesapla")
         c.set_defaults(func=fn)
 
     args = p.parse_args()

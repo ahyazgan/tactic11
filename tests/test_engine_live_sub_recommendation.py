@@ -120,3 +120,26 @@ def test_top_3_ranked():
     assert len(r.recommendations) <= 3
     # Player 100 ilk olmalı (en yorgun)
     assert r.recommendations[0].player_external_id == 100
+
+
+def test_off_prior_reorders_candidates_and_explains():
+    """Aynı yorgunlukta iki oyuncu: elit önsel orta sahayı stoperin önüne alır."""
+    from app.engine.live_sub_recommendation import ELITE_OFF_PRIOR, elite_off_prior
+
+    passes = ([_p(1, 10.0)] * 15 + [_p(1, 65.0, False)] * 2
+              + [_p(2, 10.0)] * 15 + [_p(2, 65.0, False)] * 2)
+    base = compute_live_sub_recommendation(
+        team_external_id=11, all_passes=passes, all_def_actions=[], current_minute=70.0,
+    ).value
+    assert {r.player_external_id for r in base.recommendations} == {1, 2}
+    prior = {1: elite_off_prior("DC", True), 2: elite_off_prior("MC", True)}
+    assert prior[2] == ELITE_OFF_PRIOR[("M", True)] > prior[1]
+    r = compute_live_sub_recommendation(
+        team_external_id=11, all_passes=passes, all_def_actions=[], current_minute=70.0,
+        off_prior=prior,
+    ).value
+    assert r.recommendations[0].player_external_id == 2
+    assert any("elit önsel" in x for x in r.recommendations[0].reasons)
+    # bilinmeyen mevki → orta saha/ilk 11 varsayımı; değişiklikle giren düşük
+    assert elite_off_prior(None, True) == ELITE_OFF_PRIOR[("M", True)]
+    assert elite_off_prior("FC", False) < elite_off_prior("FC", True)

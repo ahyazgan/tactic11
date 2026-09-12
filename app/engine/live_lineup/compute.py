@@ -31,6 +31,7 @@ class PlayerAppearance:
     team_external_id: int
     start_minute: float
     end_minute: float | None = None
+    position: str | None = None     # position_played kodu (GK/DC/MC/FC…); None → bilinmiyor
 
 
 @dataclass(frozen=True)
