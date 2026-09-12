@@ -28,6 +28,25 @@ dakikada "değişiklik yap" diyen bir sayaç da elit antrenörle sık sık uyuş
 5. **Karşı-olgu** — uygulanan vs uygulanmayan (`decision_uplift`). Pilot
    verisi gelmeden "ölçülemez"; sayı uydurulmaz.
 
+## Ölçüm günlüğü (2026-09-12) — derinleşme bulguları
+
+- **Kim çıkar** (mevki grubu × ilk 11): Barcelona ayrık yarı isabet@3 %56; iki
+  takım (671 değişiklik) %47. Ek özellikler denendi (ayrık yarı, iki takım):
+  sarı kart, son 15 dk düşük katılım, skor durumu → sıfır ya da eksi; ≥60 dk
+  oynamış +2; dakika bandı +4 (%52, @1 %19). Tavan bu civarda: antrenörün
+  seçiminin yarısı olay verisinde olmayan bilgiye (GPS yorgunluk, sakatlık,
+  plan) dayanıyor. +4 puan n=671'de ~1.6σ — motora bağlanmadı.
+- **Diziliş değişimi** (StatsBomb Tactical Shift, 224 olay/100 maç, iki takım):
+  %74'ü bir değişiklikten ±2 dk içinde geliyor (kadro değişince diziliş yeniden
+  etiketleniyor); en sık geçiş 433→433 (mevki takası). 12 dk pencerede taban
+  oranı %15; durum önseli F1 0.27, saat 0.32, hep-evet 0.26 — hiçbir şey
+  öngörmüyor. Motorun "şekil ayarla" teması ise taktik/momentum/uzamsal/eşleşme
+  sinyallerinin ortak çatısı (birincil kararların %75'i, büyüklük medyanı 1.0 —
+  doygun). İkisi aynı şey DEĞİL: karnedeki diziliş satırı zayıf bir vekildir,
+  motor bu satıra göre ayarlanmadı.
+- **Zamanlama**: elit pencere önseli motoru saatle eşitledi (F1 0.69 / 0.74);
+  saat, iki takımdan 3200 tikte önselin de tavanıydı.
+
 Saf fonksiyonlar; DB/IO yok. Sayısal eşikler sabit ve dokümante — bir sonraki
 ölçüm aynı cetvelle yapılsın diye.
 """

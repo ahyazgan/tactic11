@@ -549,6 +549,9 @@ def main() -> int:
         print(f"      saat     F1 {sh.baseline_f1} · precision {ba.precision}/{bb.precision} · "
               f"recall {ba.recall}/{bb.recall} · eşik {sh.threshold_for_a}/{sh.threshold_for_b} dk")
         print(f"      hüküm: {sh.verdict}")
+    print("    (diziliş satırı ZAYIF VEKİL: elit diziliş değişimlerinin %74'ü değişiklikle "
+          "birlikte, hiçbir durum önseli öngörmüyor; motorun 'şekil ayarla' teması "
+          "taktik sinyallerin ortak çatısı — bkz. coach_benchmark doküstringi)")
     print(f"    diziliş değişimi ↔ motor 'şekil ayarla': motor F1 {sh_shape.engine_f1} vs saat "
           f"{sh_shape.baseline_f1} · motor bayrak oranı "
           f"{sh_shape.engine_a.flag_rate}/{sh_shape.engine_b.flag_rate} "
