@@ -9,6 +9,12 @@ boyutlarını tek karnede toplar ve her birini bir taban çizgisiyle kıyaslar
 hamleleri (oyuncu değişikliği, diziliş değişimi) — motor önerileri ilk kez
 elit bir antrenörün fiilen yaptığıyla kıyaslanıyor.
 
+Cetvel kontrolü iki cetveli yan yana tartar: v1 (mutlak xG farkı,
+`decision_impact`) ve v2 adayı (aynı Δ, "bu durumda olağan olan"a göre
+düzeltilmiş, `decision_baseline`). Üç küme: elit hamle · motor tiki · plasebo
+(kimsenin bir şey yapmadığı anlar). İyi cetvel eliti plasebodan ayırmalı.
+2026-09-12 ölçümü: ikisi de ayırmıyor (bkz. `decision_baseline` doküstringi).
+
 ## Kullanım
 
     venv\\Scripts\\python.exe -m scripts.coach_iq --tenant t-default --team 217
@@ -46,6 +52,13 @@ from app.engine.coach_benchmark import (
     split_half_timing_prior,
 )
 from app.engine.confidence.attribution import MIN_SAMPLES, attribute_stratified
+from app.engine.decision_baseline import (
+    BaselineSample,
+    adjusted_delta,
+    fit_state_baseline,
+    minute_band,
+    score_state,
+)
 from app.sports import football
 
 # Antrenör hamlesi motor tikinden en fazla bu kadar dakika SONRA gelirse "uyuştu".
@@ -53,6 +66,11 @@ DEFAULT_WINDOW_MIN = 12.0
 # Hamleden önce bu kadar dakikaya kadar geriye bakılır (öncü süre).
 DEFAULT_LOOKBACK_MIN = 15.0
 SUB_SIGNAL_KEY = "sub_timing"
+# Plasebo ve taban ızgarası: her 5 dk; kendi değişikliğine ±12 dk yakın anlar atılır.
+GRID_MINUTES: tuple[float, ...] = tuple(float(m) for m in range(10, 90, 5))
+GRID_EXCLUDE_MIN = 12.0
+# Cetvel kabul ölçütü: elit − plasebo (ham isabet VE hücre-içi fark) en az bu kadar.
+RULER_MIN_GAP = 0.10
 
 
 def _events_json(match_id: int, events_dir: Path | None) -> list[dict[str, Any]] | None:
@@ -81,10 +99,11 @@ def _ctx(d: models.Decision) -> dict[str, Any]:
     return x if isinstance(x, dict) else {}
 
 
-def _sub_minutes(moves: list[CoachMove], team: int) -> list[float]:
-    """Takımın TAKTİK değişiklik anları; çifte değişiklik tek an sayılır."""
+def _sub_minutes(moves: list[CoachMove], team: int, *, tactical_only: bool) -> list[float]:
+    """Takımın değişiklik anları; çifte değişiklik tek an sayılır."""
     return sorted({m.minute for m in moves
-                   if m.team_external_id == team and m.kind == "substitution" and m.tactical})
+                   if m.team_external_id == team and m.kind == "substitution"
+                   and (m.tactical or not tactical_only)})
 
 
 def _shift_minutes(moves: list[CoachMove], team: int) -> list[float]:
@@ -92,34 +111,37 @@ def _shift_minutes(moves: list[CoachMove], team: int) -> list[float]:
                    if m.team_external_id == team and m.kind == "tactical_shift"})
 
 
-def _all_sub_minutes(moves: list[CoachMove], team: int) -> list[float]:
-    """Sakatlık dahil TÜM değişiklikler — 'o ana kadar kaç değişiklik' sayacı için."""
-    return sorted(m.minute for m in moves
-                  if m.team_external_id == team and m.kind == "substitution")
-
-
 def _acted(minute: float, coach: list[float], window: float) -> bool:
     return any(minute < c <= minute + window for c in coach)
 
 
-def _score_state_asof(minute: float, goals: list[tuple[float, int]], team: int) -> str:
-    """O an itibarıyla skor durumu — `events.is_goal`'dan (kendi kalesine gol yok)."""
-    mine = sum(1 for m, t in goals if m < minute and t == team)
-    theirs = sum(1 for m, t in goals if m < minute and t != team)
-    return "leading" if mine > theirs else "trailing" if mine < theirs else "drawing"
+def _near(minute: float, subs: list[float], w: float) -> bool:
+    return any(abs(c - minute) <= w for c in subs)
 
 
-def _ruler_on_coach(session, match, team: int, minutes: list[float]) -> tuple[int, int, int]:
-    """Bizim etki cetveli elit antrenörün hamlelerine ne diyor? (olumlu, olumsuz, nötr)"""
+def _asof(goals: list[tuple[float, int]], minute: float, team: int) -> str:
+    """O an itibarıyla skor durumu — şut listesindeki gollerden (kendi kalesine gol yok)."""
+    mine = sum(1 for g, t in goals if g < minute and t == team)
+    theirs = sum(1 for g, t in goals if g < minute and t != team)
+    return score_state(mine, theirs)
+
+
+# (dakika, skor durumu, Δxg_diff, v1 hükmü)
+Moment = tuple[float, str, float, str]
+
+
+def _moments(session, match, team: int, minutes: list[float]) -> list[Moment]:
+    """Her an için v1 etki ölçümü; v2 aynı Δ'yı duruma göre düzeltir."""
     from app.data.loaders.events import load_match_events
     from app.engine.decision_impact import DecisionContext, compute_decision_impact
 
     loaded = load_match_events(session, match.external_id)
     if loaded.total == 0:
-        return 0, 0, 0
+        return []
     opp = (match.away_team_external_id if team == match.home_team_external_id
            else match.home_team_external_id)
-    pos = neg = neu = 0
+    goals = [(sh.minute, sh.team_external_id or 0) for sh in loaded.shots if sh.is_goal]
+    out: list[Moment] = []
     for i, m in enumerate(minutes):
         ctx = DecisionContext(
             decision_id=-(i + 1), match_external_id=match.external_id,
@@ -127,21 +149,74 @@ def _ruler_on_coach(session, match, team: int, minutes: list[float]) -> tuple[in
             minute=m, decision_type="substitution", period=1 if m < 45 else 2,
             recommended=False,
         )
-        v = compute_decision_impact(
+        imp = compute_decision_impact(
             ctx, passes=loaded.passes, carries=loaded.carries, shots=loaded.shots,
             defensive_actions=loaded.defensive_actions,
-        ).value.verdict
+        ).value
+        if imp.verdict == "insufficient_data":
+            continue
+        out.append((imp.minute, _asof(goals, imp.minute, team), imp.xg_diff_delta, imp.verdict))
+    return out
+
+
+def _verdict_from_delta(delta: float) -> str:
+    from app.engine.decision_impact.compute import NEGATIVE_XG_DELTA, POSITIVE_XG_DELTA
+
+    if delta >= POSITIVE_XG_DELTA:
+        return "positive"
+    if delta <= NEGATIVE_XG_DELTA:
+        return "negative"
+    return "neutral"
+
+
+class _Tally:
+    """Bir cetvelin bir kümedeki olumlu/olumsuz/nötr sayımı."""
+
+    def __init__(self) -> None:
+        self.pos = self.neg = self.neu = 0
+
+    def add(self, verdict: str) -> None:
+        if verdict == "positive":
+            self.pos += 1
+        elif verdict == "negative":
+            self.neg += 1
+        elif verdict == "neutral":
+            self.neu += 1
+
+    @property
+    def n(self) -> int:
+        return self.pos + self.neg
+
+    @property
+    def hit(self) -> float | None:
+        return round(self.pos / self.n, 3) if self.n else None
+
+    def __str__(self) -> str:
+        h = "—" if self.hit is None else f"{self.hit:.0%}"
+        return f"{h} (n={self.n}, nötr {self.neu})"
+
+
+def _mh_gap(rows: list[tuple[tuple[int, str], str, str]], grp: str) -> tuple[float | None, int]:
+    """Hücre-içi (dakika bandı × skor) isabet farkı grp − plasebo, Mantel-Haenszel ağırlıklı."""
+    cells: dict[tuple[int, str], dict[str, list[int]]] = defaultdict(
+        lambda: defaultdict(lambda: [0, 0]))
+    for cell, key, v in rows:
         if v == "positive":
-            pos += 1
+            cells[cell][key][0] += 1
         elif v == "negative":
-            neg += 1
-        elif v == "neutral":
-            neu += 1
-    return pos, neg, neu
-
-
-def _hit(pos: int, neg: int) -> float | None:
-    return round(pos / (pos + neg), 3) if pos + neg else None
+            cells[cell][key][1] += 1
+    num = den = 0.0
+    used = 0
+    for g in cells.values():
+        a, b = g[grp], g["plasebo"]
+        na, nb = sum(a), sum(b)
+        if not na or not nb:
+            continue
+        w = na * nb / (na + nb)
+        num += w * (a[0] / na - b[0] / nb)
+        den += w
+        used += 1
+    return (None if not den else round(num / den, 3)), used
 
 
 def main() -> int:
@@ -184,28 +259,61 @@ def main() -> int:
         coach_subs: dict[int, list[float]] = {}
         coach_shifts: dict[int, list[float]] = {}
         coach_all_subs: dict[int, list[float]] = {}
+        moves_by_match: dict[int, list[CoachMove]] = {}
         injury_subs = 0
         for mid in sorted(matches):
             ev = _events_json(mid, args.events_dir)
             if ev is None:
                 continue
             moves = coach_moves_from_events_json(ev)
-            coach_subs[mid] = _sub_minutes(moves, args.team)
+            moves_by_match[mid] = moves
+            coach_subs[mid] = _sub_minutes(moves, args.team, tactical_only=True)
             coach_shifts[mid] = _shift_minutes(moves, args.team)
-            coach_all_subs[mid] = _all_sub_minutes(moves, args.team)
+            coach_all_subs[mid] = _sub_minutes(moves, args.team, tactical_only=False)
             injury_subs += sum(1 for m in moves if m.team_external_id == args.team
                                and m.kind == "substitution" and not m.tactical)
         if not coach_subs:
             print("hiçbir maçın ham olayı okunamadı — --events-dir ya da ağ gerekli")
             return 1
 
-        # ---- cetvel kontrolü: elit antrenörün hamleleri bizim cetvelde ----- #
-        c_pos = c_neg = c_neu = 0
-        for mid, mins in coach_subs.items():
-            if not mins:
-                continue
-            a, b, c = _ruler_on_coach(s, matches[mid], args.team, mins)
-            c_pos, c_neg, c_neu = c_pos + a, c_neg + b, c_neu + c
+        # ---- cetvel kontrolü: taban ızgarası + üç küme ------------------------ #
+        # Taban: karar OLMAYAN anlar, iki takım perspektifi; her maç için taban
+        # tablosu o maç HARİÇ kurulur (leave-one-out).
+        grid_samples: dict[int, list[BaselineSample]] = {}
+        per_match: dict[int, dict[str, list[Moment]]] = {}
+        for mid, moves in moves_by_match.items():
+            m = matches[mid]
+            rows: list[BaselineSample] = []
+            for team_id in (m.home_team_external_id, m.away_team_external_id):
+                own = _sub_minutes(moves, team_id, tactical_only=False)
+                grid = [g for g in GRID_MINUTES if not _near(g, own, GRID_EXCLUDE_MIN)]
+                rows.extend(BaselineSample(mn, st, delta)
+                            for mn, st, delta, _v1 in _moments(s, m, team_id, grid))
+            grid_samples[mid] = rows
+
+            own = coach_all_subs[mid]
+            ticks_here = sorted({d.minute for d in decisions if d.match_external_id == mid})
+            placebo = [g for g in GRID_MINUTES if not _near(g, own, GRID_EXCLUDE_MIN)]
+            per_match[mid] = {
+                key: _moments(s, m, args.team, minutes)
+                for key, minutes in (("elit", coach_subs[mid]), ("motor", ticks_here),
+                                     ("plasebo", placebo))
+            }
+
+    tal = {k: (_Tally(), _Tally()) for k in ("elit", "motor", "plasebo")}
+    cell_rows: dict[int, list[tuple[tuple[int, str], str, str]]] = {0: [], 1: []}
+    for mid, sets in per_match.items():
+        base = fit_state_baseline(
+            r for other, rows in grid_samples.items() if other != mid for r in rows
+        )
+        for key, moments in sets.items():
+            for minute, st, delta, v1 in moments:
+                v2 = _verdict_from_delta(
+                    adjusted_delta(base, minute=minute, score_state=st, xg_delta=delta))
+                for idx, v in ((0, v1), (1, v2)):
+                    tal[key][idx].add(v)
+                    cell_rows[idx].append(((minute_band(minute), st), key, v))
+    baseline_n = sum(len(v) for v in grid_samples.values())
 
     # ---- motor tikleri --------------------------------------------------- #
     strict: list[TickObservation] = []
@@ -215,7 +323,6 @@ def main() -> int:
     eng_sub_minutes: dict[int, list[float]] = defaultdict(list)
     fc_samples: list[tuple[float, bool, float]] = []
     cal_samples: list[tuple[float, bool]] = []
-    e_pos = e_neg = 0
     applied_t = applied_f = 0
 
     for d in decisions:
@@ -232,17 +339,13 @@ def main() -> int:
         shape.append(TickObservation(mid, d.minute, ctx.get("theme") == "adjust_shape", acted_shift))
         states.append(TickState(
             mid, d.minute,
-            score_state=_score_state_asof(d.minute, goals.get(mid, []), args.team),
+            score_state=_asof(goals.get(mid, []), d.minute, args.team),
             subs_used=sum(1 for c in coach_all_subs.get(mid, []) if c <= d.minute),
             coach_acted=acted_sub,
         ))
         if has_sub_signal:
             eng_sub_minutes[mid].append(d.minute)
 
-        if d.outcome == "positive":
-            e_pos += 1
-        elif d.outcome == "negative":
-            e_neg += 1
         if d.outcome in {"positive", "negative"} and d.confidence is not None:
             ok = d.outcome == "positive"
             cal_samples.append((float(d.confidence), ok))
@@ -294,8 +397,8 @@ def main() -> int:
     sh_strict = split_half_agreement(strict)
     sh_loose = split_half_agreement(loose)
     sh_shape = split_half_agreement(shape)
-    lt = lead_times(coach_subs, eng_sub_minutes, lookback_min=args.lookback)
     sh_prior = split_half_timing_prior(states)
+    lt = lead_times(coach_subs, eng_sub_minutes, lookback_min=args.lookback)
     best = sh_loose if (sh_loose.engine_f1 or 0) >= (sh_strict.engine_f1 or 0) else sh_strict
     dims.append(Dimension(
         name="Elit antrenörle uyum (değişiklik)",
@@ -305,25 +408,30 @@ def main() -> int:
         note=best.note,
     ))
 
-    # ---- boyut 4: cetvel kontrolü --------------------------------------- #
-    coach_hit, engine_hit = _hit(c_pos, c_neg), _hit(e_pos, e_neg)
-    if coach_hit is not None and c_pos + c_neg >= MIN_SAMPLES:
-        if coach_hit >= 0.6:
+    # ---- boyut 4: cetvel kontrolü (v1 ve v2) ----------------------------- #
+    # Kabul ölçütü (önceden yazıldı): elit − plasebo ≥ RULER_MIN_GAP hem ham
+    # isabette hem hücre-içi (Mantel-Haenszel) kıyasta.
+    for idx, label in ((0, "v1 (mutlak xG farkı)"), (1, "v2 (duruma göre düzeltilmiş)")):
+        e, pl, mo = tal["elit"][idx], tal["plasebo"][idx], tal["motor"][idx]
+        mh_e, cells_e = _mh_gap(cell_rows[idx], "elit")
+        mh_m, _ = _mh_gap(cell_rows[idx], "motor")
+        if (e.n < MIN_SAMPLES or pl.n < MIN_SAMPLES or e.hit is None or pl.hit is None
+                or mh_e is None):
+            verdict = "yetersiz veri"
+        elif e.hit - pl.hit >= RULER_MIN_GAP and mh_e >= RULER_MIN_GAP:
             verdict = "taban çizgisini geçiyor"
-            note = (f"cetvel elit antrenörün hamlelerini {coach_hit:.0%} olumlu görüyor "
-                    f"(n={c_pos + c_neg}, nötr {c_neu}) — cetvel iyi hamleyi tanıyor")
         else:
             verdict = "taban çizgisiyle aynı"
-            note = (f"cetvel ELİT antrenörün gerçek hamlelerini bile yalnız {coach_hit:.0%} "
-                    f"olumlu görüyor (n={c_pos + c_neg}, nötr {c_neu}); motor {engine_hit}. "
-                    f"Cetvel iyi ile kötüyü ayıramıyorsa motorun puanı cetvelin körlüğüdür")
+        note = f"elit {e} · plasebo {pl} · motor {mo}"
+        if mh_e is not None:
+            note += f" · hücre-içi fark elit {mh_e:+.3f} ({cells_e} hücre)"
+        if mh_m is not None:
+            note += f", motor {mh_m:+.3f}"
         dims.append(Dimension(
-            name="Cetvel kontrolü (elit hamle isabeti)", metric="isabet, aynı cetvel",
-            value=coach_hit, baseline=0.5, skill=None, measurable=True, verdict=verdict, note=note,
+            name=f"Cetvel kontrolü {label}", metric="elit isabet − plasebo isabet",
+            value=e.hit, baseline=pl.hit, skill=None,
+            measurable=verdict != "yetersiz veri", verdict=verdict, note=note,
         ))
-    else:
-        dims.append(Dimension("Cetvel kontrolü", "isabet", coach_hit, 0.5, None, False,
-                              "yetersiz veri", f"ölçülen elit hamle {c_pos + c_neg}"))
 
     # ---- boyut 5: karşı-olgu ------------------------------------------- #
     dims.append(Dimension(
@@ -344,7 +452,7 @@ def main() -> int:
     print(f"\n=== KOÇ ZEKÂ KARNESİ — takım {args.team} ===")
     print(f"  {n_matches} maç · {len(strict)} motor tiki · gerçek antrenör: "
           f"{n_subs} taktik değişiklik anı, {injury_subs} sakatlık değişikliği, "
-          f"{n_shifts} diziliş değişimi\n")
+          f"{n_shifts} diziliş değişimi · taban ızgarası {baseline_n} karar-dışı an\n")
     print(f"  {card.headline}\n")
     print(f"  {'boyut':<40}{'ölçü':>8}{'taban':>8}{'beceri':>8}  hüküm")
     print("  " + "-" * 92)
