@@ -10,6 +10,10 @@ Kurallar (saf, sezgisel — gerçek feed gelince kalibre edilir):
 - sample_size < tip-eşiği → "suppressed" (insufficient_data).
 - current_minute ısınma penceresinde (yarı başı ilk dk) → "degraded" (warmup).
 - aksi halde "ok"; kalite skoru örnek doygunluğu × ısınma faktörü.
+- sinyal `detail["data_quality"]` (0..1) taşıyorsa skor bununla ÇARPILIR: kaynak
+  motor kendi ölçümünün eksikliğini bildirir (ör. tracking_signals kapsama:
+  görünen oyuncu/22). 0 → "suppressed" (partial_data), < DEGRADED_QUALITY →
+  "degraded"; örnek sayısı bol olsa da eksik ölçüm tam güven alamaz.
 """
 from __future__ import annotations
 
@@ -36,6 +40,8 @@ DEFAULT_MIN_SAMPLE = 3
 # Isınma: yarı başlangıcından sonraki bu kadar dk içinde event-temelli sinyal şüpheli
 WARMUP_MIN = 5.0
 SAMPLE_FULL = 12
+# detail.data_quality bu değerin altındaysa verdict "degraded" (skor yine çarpılır)
+DEGRADED_QUALITY = 0.75
 
 
 @dataclass(frozen=True)
@@ -60,8 +66,33 @@ def _in_warmup(minute: float) -> bool:
     return minute < WARMUP_MIN or (45.0 <= minute < 45.0 + WARMUP_MIN)
 
 
+def _declared_quality(sig: CandidateSignal) -> float | None:
+    """Kaynak motorun bildirdiği veri kalitesi (detail.data_quality, 0..1) — yoksa None."""
+    raw = sig.detail.get("data_quality") if sig.detail else None
+    if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+        return None
+    return max(0.0, min(1.0, float(raw)))
+
+
+def _apply_declared_quality(v: QualityVerdict, dq: float | None) -> QualityVerdict:
+    if dq is None or dq >= 1.0 or v.verdict == "suppressed":
+        return v
+    if dq <= 0.0:
+        return QualityVerdict(key=v.key, verdict="suppressed", score=0.0,
+                              reason="kaynak veri kalitesi 0 (kısmi ölçüm)")
+    verdict = "degraded" if dq < DEGRADED_QUALITY else v.verdict
+    return QualityVerdict(
+        key=v.key, verdict=verdict, score=round(v.score * dq, 3),
+        reason=f"{v.reason}; kaynak veri kalitesi {dq:.2f}",
+    )
+
+
 def assess_signal(sig: CandidateSignal) -> QualityVerdict:
     """Tek bir sinyalin kalite verdict'i."""
+    return _apply_declared_quality(_assess_sample(sig), _declared_quality(sig))
+
+
+def _assess_sample(sig: CandidateSignal) -> QualityVerdict:
     min_sample = MIN_SAMPLE_BY_TYPE.get(sig.signal_type, DEFAULT_MIN_SAMPLE)
     if min_sample > 0 and sig.sample_size < min_sample:
         return QualityVerdict(

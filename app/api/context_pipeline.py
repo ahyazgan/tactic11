@@ -380,6 +380,13 @@ def build_candidates(
     ts = out.get("tracking_signals")
     if _is_dict(ts):
         frames = int(ts.get("frames_used", 0) or 0)
+        # Kapsama (görünen oyuncu/22) → veri kalitesi; signal_quality skoru bununla
+        # çarpar. Kare sayısı bol olsa da eksik ölçüm güven 1.00 alamaz.
+        quality_meta = {
+            "coverage": float(ts.get("coverage", 1.0) or 0.0),
+            "data_quality": float(ts.get("data_quality", 1.0) or 0.0),
+            "players_seen": ts.get("players_seen"),
+        }
         for f in (ts.get("findings") or [])[:2]:   # en acil iki bulgu
             if not isinstance(f, dict):
                 continue
@@ -389,7 +396,7 @@ def build_candidates(
                 urgency=float(f.get("urgency", 0.5)), fired=True, minute=current_minute,
                 # kare sayısı = kanıt; sample_size event sayısıyla aynı ölçekte olsun
                 sample_size=frames, magnitude=float(f.get("magnitude", 0.0)),
-                detail={"source": "tracking", **(f.get("detail") or {})},
+                detail={"source": "tracking", **quality_meta, **(f.get("detail") or {})},
             ))
 
     # space_map (spatial) — "nerede boşluk var": bölgesel üstünlük, hat boşluğu,

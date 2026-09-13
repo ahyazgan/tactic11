@@ -19,6 +19,14 @@ tepki verebileceği şeydir ("blok açıldı" — "blok 18 m" değil).
 Sınır: kamera görüş alanı dışındaki oyuncular sayılmaz. Az oyuncu görünen
 pencerelerde sinyal üretilmez (`MIN_PLAYERS`), kısmi görünürlükte yanıltmasın.
 
+KAPSAMA → VERİ KALİTESİ: sinyal üretilse bile görünen oyuncu sayısı 22'nin
+altındaysa "blok"un şekli eksik ölçülür. Rapor `coverage` (görünen/22) ve
+`data_quality` (0..1) taşır; kalite = (kapsama − 0.5) / 0.5 — oyuncuların yarısı
+görünmüyorsa şekil bilgisi YOK (0), hepsi görünüyorsa tam (1). context_pipeline
+bunu sinyalin detail'ine yazar, signal_quality skoru bununla çarpar ve confidence
+kapısı düşer. Ölçülen sebep: SoccerTrack v2 hızlı geçişinde ~18 oyuncu görünürken
+bulgular güven 1.00 ile çıkıyordu; eksik ölçüm "kesin" diye sunulamaz.
+
 ÖNEMLİ — şekil sinyalleri yalnız SÜREKLİ takipte (sabit kamera video) üretilir.
 StatsBomb 360 gibi event-çapalı freeze frame'lerde her kare topun çevresini
 gösterir; top sahanın öbür ucuna gidince "geri hat" gerçekte kaymadan zıplar.
@@ -44,6 +52,8 @@ COMPACTNESS_DELTA_M = 2.5  # blok açılma/kapanma eşiği
 LINE_DELTA_M = 4.0         # geri hat kayması eşiği
 WIDTH_DELTA_M = 4.0        # genişlik değişimi eşiği
 PRESS_DELTA = 0.15         # pres endeksi değişimi eşiği
+FULL_PLAYERS = 22.0        # iki takım sahada
+COVERAGE_FLOOR = 0.5       # bu kapsamanın altında şekil bilgisi yok sayılır (kalite 0)
 
 
 @dataclass(frozen=True)
@@ -64,6 +74,15 @@ class TrackingSignalReport:
     players_seen: float
     findings: tuple[TrackingFinding, ...]
     note: str | None = None
+    coverage: float = 1.0      # görünen oyuncu (iki takım) / 22
+    data_quality: float = 1.0  # 0..1 — kapsamadan türetilen veri kalitesi
+
+
+def coverage_quality(our_players_mean: float, their_players_mean: float) -> tuple[float, float]:
+    """(kapsama, veri kalitesi): kapsama = görünen/22; kalite = (kapsama − taban)/(1 − taban)."""
+    coverage = max(0.0, min(1.0, (our_players_mean + their_players_mean) / FULL_PLAYERS))
+    quality = max(0.0, min(1.0, (coverage - COVERAGE_FLOOR) / (1.0 - COVERAGE_FLOOR)))
+    return round(coverage, 3), round(quality, 3)
 
 
 def _m(x_pct: float) -> float:
@@ -99,6 +118,10 @@ def compute_tracking_signals(
     for s in (our_shape, their_shape):
         if s:
             seen = max(seen, float(s.get("players_mean") or 0.0))
+    coverage, data_quality = coverage_quality(
+        float((our_shape or {}).get("players_mean") or 0.0),
+        float((their_shape or {}).get("players_mean") or 0.0),
+    )
 
     if not our_shape or not their_shape or seen < MIN_PLAYERS:
         note = (
@@ -201,10 +224,17 @@ def compute_tracking_signals(
                 ))
 
         findings.sort(key=lambda f: (-f.urgency, -f.magnitude))
+        if findings and data_quality < 1.0:
+            quality_note = (
+                f"kapsama %{coverage * 100:.0f} (görünen {coverage * FULL_PLAYERS:.0f}/22) — "
+                f"veri kalitesi {data_quality:.2f}, güven buna göre düşürülür"
+            )
+            note = f"{note}; {quality_note}" if note else quality_note
         report = TrackingSignalReport(
             minute=minute, frames_used=frames_used, players_seen=round(seen, 1),
             findings=tuple(findings),
             note=note or (None if findings else "şekil/pres değişimi eşiklerin altında"),
+            coverage=coverage, data_quality=data_quality,
         )
 
     audit = AuditRecord(
@@ -213,6 +243,7 @@ def compute_tracking_signals(
         value=asdict(report),
         inputs={
             "minute": minute, "frames_used": frames_used, "players_seen": round(seen, 1),
+            "coverage": coverage, "data_quality": data_quality,
             "thresholds": {
                 "compactness_m": COMPACTNESS_DELTA_M, "line_m": LINE_DELTA_M,
                 "width_m": WIDTH_DELTA_M, "press": PRESS_DELTA, "min_players": MIN_PLAYERS,
@@ -221,7 +252,8 @@ def compute_tracking_signals(
         formula=(
             "ardışık iki pencere farkı: kompaktlık/genişlik metre, geri hat x%→metre, "
             "pres endeksi 0-1; eşiği aşan değişim sinyal olur, magnitude = |Δ|/(3·eşik). "
-            "Kamera dışı oyuncular sayılmaz — görünen oyuncu < 8 ise sinyal üretilmez."
+            "Kamera dışı oyuncular sayılmaz — görünen oyuncu < 8 ise sinyal üretilmez. "
+            "coverage = görünen/22; data_quality = (coverage − 0.5)/0.5 → signal_quality çarpanı."
         ),
     )
     return EngineResult(value=report, audit=audit)
