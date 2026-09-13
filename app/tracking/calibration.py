@@ -47,6 +47,58 @@ def _normalize_points(pts: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return (T @ homog.T).T, T
 
 
+TPS_MIN_POINTS = 8
+
+
+def _tps_kernel(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    r2 = ((a[:, None, :] - b[None, :, :]) ** 2).sum(-1)
+    return np.where(r2 > 0, r2 * np.log(np.sqrt(r2) + 1e-12), 0.0)
+
+
+def tps_fit(src: np.ndarray, dst: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """İnce-levha spline: src (n,2) → dst (n,2), kontrol noktalarını tam geçer.
+
+    Çekirdek U(r) = r²·log r + afin terim; (n+3)×(n+3) doğrusal sistem. Küçük n
+    (onlarca nokta) için kütüphane gerekmez; sonuç deterministik ve şeffaftır.
+    """
+    src = np.asarray(src, dtype=float)
+    dst = np.asarray(dst, dtype=float)
+    n = len(src)
+    if n < TPS_MIN_POINTS or src.shape != dst.shape:
+        raise CalibrationError(f"tps için en az {TPS_MIN_POINTS} eşleşmiş nokta gerekli")
+    k = _tps_kernel(src, src)
+    p = np.hstack([np.ones((n, 1)), src])
+    a = np.zeros((n + 3, n + 3))
+    a[:n, :n] = k
+    a[:n, n:] = p
+    a[n:, :n] = p.T
+    b = np.zeros((n + 3, 2))
+    b[:n] = dst
+    try:
+        w = np.linalg.solve(a, b)
+    except np.linalg.LinAlgError as e:
+        raise CalibrationError("tps sistemi tekil — noktalar çakışık") from e
+    return src, w
+
+
+def tps_apply(model: tuple[np.ndarray, np.ndarray], q: np.ndarray) -> np.ndarray:
+    src, w = model
+    q = np.atleast_2d(np.asarray(q, dtype=float))
+    u = _tps_kernel(q, src)
+    return u @ w[:len(src)] + np.hstack([np.ones((len(q), 1)), q]) @ w[len(src):]
+
+
+def _fit_residual_tps(src: np.ndarray, dst: np.ndarray, h: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    base = np.array([apply_homography(h, float(u), float(v)) for u, v in src])
+    return tps_fit(src, np.asarray(dst, dtype=float) - base)
+
+
+def _apply_residual_tps(h: np.ndarray, model: tuple[np.ndarray, np.ndarray], q: np.ndarray) -> np.ndarray:
+    q = np.atleast_2d(np.asarray(q, dtype=float))
+    base = np.array([apply_homography(h, float(u), float(v)) for u, v in q])
+    return base + tps_apply(model, q)
+
+
 def dlt_homography(src: np.ndarray, dst: np.ndarray) -> np.ndarray:
     """src (n,2) → dst (n,2) homografisi (n ≥ 4). Dönen H: dst ~ H·src."""
     src = np.asarray(src, dtype=float)
@@ -89,12 +141,24 @@ class PitchCalibration:
     pitch_length_m: float = PITCH_LENGTH_M
     pitch_width_m: float = PITCH_WIDTH_M
     meta: dict[str, Any] = field(default_factory=dict)
+    # "homography": tek düzlem homografisi (varsayılan; drone/sabit dar açı).
+    # "tps": homografi + ince-levha spline ARTIK düzeltmesi — panoramik/balıkgözü
+    # sabit kamera gibi tek homografinin oturmadığı görüntüler için. Ölçüldü
+    # (SoccerTrack v2 panoraması, 65 nokta, leave-one-out): yalnız homografi
+    # 10.1 m, saf TPS 2.35 m (iç bölgede salınıyor, taç ötesine taşıyor),
+    # homografi+TPS artık 1.76 m / medyan 1.18 m ve iç bölgede monoton.
+    # Homografi perspektifi (1/w) taşır, TPS yalnız küçük ve düzgün kalanı.
+    method: str = "homography"
 
     def __post_init__(self) -> None:
         if len(self.points) < 4:
             raise CalibrationError("en az 4 kalibrasyon noktası gerekli")
         if self.image_size[0] <= 0 or self.image_size[1] <= 0:
             raise CalibrationError("image_size pozitif olmalı")
+        if self.method not in ("homography", "tps"):
+            raise CalibrationError(f"bilinmeyen kalibrasyon yöntemi: {self.method}")
+        if self.method == "tps" and len(self.points) < TPS_MIN_POINTS:
+            raise CalibrationError(f"tps için en az {TPS_MIN_POINTS} nokta gerekli")
 
     @cached_property
     def homography(self) -> np.ndarray:
@@ -103,8 +167,32 @@ class PitchCalibration:
         return dlt_homography(src, dst)
 
     @cached_property
+    def _tps(self) -> tuple[np.ndarray, np.ndarray]:
+        """Homografi artıklarının (saha m) TPS modeli."""
+        src = np.array([p.image for p in self.points])
+        dst = np.array([p.pitch for p in self.points])
+        return _fit_residual_tps(src, dst, self.homography)
+
+    @cached_property
     def reprojection_error_m(self) -> float:
-        """Kalibrasyon noktalarının ortalama geri-izdüşüm hatası (m)."""
+        """Kalibrasyon noktalarının ortalama hatası (m).
+
+        Homografi: geri-izdüşüm. TPS kontrol noktalarını tam geçer (hata 0 olurdu,
+        anlamsız); onun yerine LEAVE-ONE-OUT hatası verilir — her nokta modelden
+        çıkarılıp geri kalanla tahmin edilir. Saha içinde beklenen hatanın dürüst
+        (kötümser) ölçüsüdür.
+        """
+        src = np.array([p.image for p in self.points])
+        dst = np.array([p.pitch for p in self.points])
+        if self.method == "tps":
+            errs = []
+            for i in range(len(src)):
+                idx = [j for j in range(len(src)) if j != i]
+                h = dlt_homography(src[idx], dst[idx])
+                model = _fit_residual_tps(src[idx], dst[idx], h)
+                pred = _apply_residual_tps(h, model, src[i:i + 1])[0]
+                errs.append(float(np.hypot(*(pred - dst[i]))))
+            return float(np.mean(errs))
         errs = []
         for p in self.points:
             x, y = apply_homography(self.homography, *p.image)
@@ -112,6 +200,9 @@ class PitchCalibration:
         return float(np.mean(errs))
 
     def image_to_pitch_m(self, u: float, v: float) -> tuple[float, float]:
+        if self.method == "tps":
+            x, y = _apply_residual_tps(self.homography, self._tps, np.array([[u, v]], dtype=float))[0]
+            return float(x), float(y)
         return apply_homography(self.homography, u, v)
 
     def image_to_normalized(self, u: float, v: float, *, clamp: bool = True) -> tuple[float, float]:
@@ -141,6 +232,7 @@ class PitchCalibration:
             "image_size": list(self.image_size),
             "pitch_length_m": self.pitch_length_m,
             "pitch_width_m": self.pitch_width_m,
+            "method": self.method,
             "points": [
                 {"image": list(p.image), "pitch": list(p.pitch), "label": p.label}
                 for p in self.points
@@ -165,6 +257,7 @@ class PitchCalibration:
             pitch_length_m=float(d.get("pitch_length_m", PITCH_LENGTH_M)),
             pitch_width_m=float(d.get("pitch_width_m", PITCH_WIDTH_M)),
             meta=dict(d.get("meta") or {}),
+            method=str(d.get("method") or "homography"),
         )
 
     @classmethod
