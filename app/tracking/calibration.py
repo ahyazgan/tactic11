@@ -48,6 +48,7 @@ def _normalize_points(pts: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 
 TPS_MIN_POINTS = 8
+TPS_LOO_MAX_POINTS = 120
 
 
 def _tps_kernel(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -76,8 +77,16 @@ def tps_fit(src: np.ndarray, dst: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     b[:n] = dst
     try:
         w = np.linalg.solve(a, b)
-    except np.linalg.LinAlgError as e:
-        raise CalibrationError("tps sistemi tekil — noktalar çakışık") from e
+    except np.linalg.LinAlgError:
+        # Çakışık/çok yakın noktalar sistemi tekilleştirir (ör. aynı pikselde iki
+        # örnek). Küçük bir sırt terimi ile çöz: kontrol noktaları artık "tam"
+        # değil ama ~mm hassasiyetle geçilir; bu, reddetmekten daha kullanışlı.
+        ridge = 1e-6 * float(np.abs(k).mean() + 1.0)
+        a[:n, :n] += ridge * np.eye(n)
+        try:
+            w = np.linalg.solve(a, b)
+        except np.linalg.LinAlgError as e:
+            raise CalibrationError("tps sistemi tekil — noktalar çakışık") from e
     return src, w
 
 
@@ -185,8 +194,13 @@ class PitchCalibration:
         src = np.array([p.image for p in self.points])
         dst = np.array([p.pitch for p in self.points])
         if self.method == "tps":
+            # Yüzlerce noktada tam LOO pahalı (n çözüm); sabit tohumlu ≤120 noktalık
+            # alt kümede ölçülür — kestirim, ama tekrarlanabilir.
+            rng = np.random.default_rng(0)
+            sample = (rng.choice(len(src), TPS_LOO_MAX_POINTS, replace=False)
+                      if len(src) > TPS_LOO_MAX_POINTS else np.arange(len(src)))
             errs = []
-            for i in range(len(src)):
+            for i in sample:
                 idx = [j for j in range(len(src)) if j != i]
                 h = dlt_homography(src[idx], dst[idx])
                 model = _fit_residual_tps(src[idx], dst[idx], h)
