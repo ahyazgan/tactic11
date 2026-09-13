@@ -145,17 +145,21 @@ class Latency:
 
 
 def latency(processed_segments: int, written_segments: int, *, segment_seconds: float,
-            start_minute: float, elapsed_seconds: float | None) -> Latency:
+            start_minute: float, elapsed_seconds: float | None,
+            source_ended: bool = False) -> Latency:
     """Gecikme = akışın maç saati − panelin gördüğü son kare.
 
     Akış saati: dosya provasında geçen duvar saati (gerçek hız); akışta yazılan
-    segment sayısı (duvar saati bilinmez, kamera ne yazdıysa o).
+    segment sayısı (duvar saati bilinmez, kamera ne yazdıysa o). Kaynak bittiyse
+    akış saati yazılan son segmentte durur — duvar saati akmaya devam etse de
+    maç akmıyor (ölçüldü: prova sonunda "akış dk 23.8" gibi sahte büyüme).
     """
     processed = start_minute + processed_segments * segment_seconds / 60.0
-    if elapsed_seconds is not None:
+    written = start_minute + written_segments * segment_seconds / 60.0
+    if elapsed_seconds is not None and not source_ended:
         stream = start_minute + elapsed_seconds / 60.0
     else:
-        stream = start_minute + written_segments * segment_seconds / 60.0
+        stream = written
     return Latency(
         processed_minute=round(processed, 2), stream_minute=round(stream, 2),
         lag_seconds=round(max(0.0, (stream - processed) * 60.0), 1),
@@ -246,7 +250,7 @@ def main() -> int:
             elapsed = (time.time() - t0) if kind.realtime else None
             lat = latency(_processed_count(watch), _written_count(watch),
                           segment_seconds=args.segment_seconds, start_minute=args.start_minute,
-                          elapsed_seconds=elapsed)
+                          elapsed_seconds=elapsed, source_ended=seg_proc.poll() is not None)
             print(f"[canlı] işlenen dk {lat.processed_minute:.1f} · akış dk {lat.stream_minute:.1f} "
                   f"· gecikme {lat.lag_seconds:.0f} sn", flush=True)
             if seg_proc.poll() is not None and _processed_count(watch) >= _written_count(watch):

@@ -65,3 +65,11 @@ def test_latency_stream_uses_written_segments_and_start_minute() -> None:
     assert lat.processed_minute == 46.5 and lat.stream_minute == 47.5 and lat.lag_seconds == 60.0
     # işlenen akışı geçemez (tam yetişme) → 0
     assert latency(5, 5, segment_seconds=30.0, start_minute=0.0, elapsed_seconds=None).lag_seconds == 0.0
+
+
+def test_latency_freezes_stream_clock_when_source_ended() -> None:
+    # kaynak bitti: 12 segment yazıldı (6 dk), 10 işlendi; duvar saati 20 dk geçmiş olsa da
+    # akış saati yazılan son segmentte durur → gecikme 60 sn, 9 dk değil
+    lat = latency(10, 12, segment_seconds=30.0, start_minute=0.0, elapsed_seconds=1200.0,
+                  source_ended=True)
+    assert lat.stream_minute == 6.0 and lat.lag_seconds == 60.0
