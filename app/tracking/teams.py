@@ -1,9 +1,26 @@
 """Takım ataması — forma rengi kümeleme (saf numpy).
 
-Her takip (track) için gövde bölgesinin ortalama rengi biriktirilir; klip
-sonunda k=3 k-means (çoklu başlangıç, en düşük atalet) çalışır: en kalabalık
-iki küme takım 0/1, üçüncü küme (hakem, kaleci, seyirci) None. Merkezine
-uzak kalan takipler de None alır.
+Her takip (track) için gövde bölgesinin FORMA rengi biriktirilir; klip sonunda
+k=2 k-means (çoklu başlangıç, en düşük atalet) çalışır: iki küme takım 0/1,
+merkezine uzak kalan takipler (hakem, kaleci, seyirci) None alır.
+
+## Ölçüm (SoccerTrack v2 117092, gece panoraması, 540 GT-etiketli tespit, 43 kare)
+
+Kare başına kümeleme doğruluğu (iki büyük küme ↔ iki takım, en iyi eşleme):
+
+    gövde ortalama RGB, k=3 (eski)   %55
+    gövde ortalama RGB, k=2          %69
+    parlak %40 piksel RGB, k=3       %62
+    parlak %40 piksel RGB, k=2       %80  ← şimdiki
+
+k=2 sonrası medyan yeniden-merkezleme (`median_recenter`, hakem koruması) aynı
+verinin 8 karelik alt kümesinde doğruluğu değiştirmedi (k=2 %87 = %87; k=3 %65).
+
+Neden: gece/küçük kutuda (30×50 px) gövde bölgesinin ortalaması karanlık arka
+planla doluyor, iki takım da "koyu gri" çıkıyordu (küme merkezleri 82/59).
+Forma, bölgedeki EN PARLAK piksellerdir; onların ortalaması beyaz–mavi ayrımını
+korur. k=3'te beyaz formalar gölge/ışık diye ikiye bölünüp maviyle karışıyordu;
+üçüncü grup (hakem/kaleci) zaten uzaklık eşiğiyle None'a düşer.
 
 Kimlik yine "tahmini": takım bilinir, oyuncu bilinmez.
 """
@@ -15,12 +32,17 @@ from dataclasses import dataclass
 
 import numpy as np
 
+# Forma rengi = gövde bölgesindeki (çim hariç) en parlak piksellerin ortalaması.
+BRIGHT_FRACTION = 0.4
+
 
 def torso_color(frame_rgb: np.ndarray, xyxy: tuple[float, float, float, float]) -> np.ndarray | None:
-    """bbox'ın gövde bölgesinin (forma) ortalama RGB'si; çim pikselleri hariç.
+    """bbox'ın gövde bölgesinin FORMA rengi: çim hariç en parlak %40 pikselin ortalama RGB'si.
 
-    Tepeden bakışta kutu küçüktür (30×40 px); bölge geniş tutulur (yükseklik
-    %10–70, genişlik %15–85) ki yeterli forma pikseli kalsın.
+    Bölge: yükseklik %10–55 (şort hariç), genişlik %20–80. Küçük kutuda (30×50 px)
+    düz ortalama arka planla doluyordu; parlak pikseller formayı temsil eder
+    (ölçüm modül doküstringinde). Gündüz çim parlak olduğu için çim pikselleri
+    önce elenir.
     """
     x1, y1, x2, y2 = (round(v) for v in xyxy)
     h, w = frame_rgb.shape[:2]
@@ -29,8 +51,8 @@ def torso_color(frame_rgb: np.ndarray, xyxy: tuple[float, float, float, float]) 
     if x2 - x1 < 2 or y2 - y1 < 4:
         return None
     bw, bh = x2 - x1, y2 - y1
-    cx1, cx2 = x1 + int(bw * 0.15), x1 + int(bw * 0.85)
-    cy1, cy2 = y1 + int(bh * 0.10), y1 + int(bh * 0.70)
+    cx1, cx2 = x1 + int(bw * 0.20), x1 + int(bw * 0.80)
+    cy1, cy2 = y1 + int(bh * 0.10), y1 + int(bh * 0.55)
     crop = frame_rgb[cy1:cy2, cx1:cx2].reshape(-1, 3).astype(float)
     if crop.size == 0:
         return None
@@ -39,7 +61,9 @@ def torso_color(frame_rgb: np.ndarray, xyxy: tuple[float, float, float, float]) 
     kept = crop[not_grass]
     if len(kept) < max(4, len(crop) * 0.12):
         kept = crop
-    return kept.mean(axis=0)
+    k = max(4, int(len(kept) * BRIGHT_FRACTION))
+    brightest = kept[np.argsort(kept.max(axis=1))[-k:]]
+    return brightest.mean(axis=0)
 
 
 def kmeans(features: np.ndarray, k: int, *, iters: int = 30, n_init: int = 8, seed: int = 0) -> tuple[np.ndarray, np.ndarray]:
@@ -84,6 +108,29 @@ def kmeans(features: np.ndarray, k: int, *, iters: int = 30, n_init: int = 8, se
             best_inertia, best_labels, best_centers = inertia, labels.copy(), centers.copy()
     assert best_labels is not None and best_centers is not None
     return best_labels, best_centers
+
+
+def median_recenter(features: np.ndarray, labels: np.ndarray, centers: np.ndarray, *, rounds: int = 2) -> tuple[np.ndarray, np.ndarray]:
+    """Küme merkezlerini koordinat-medyanına çekip yeniden ata (k=2 için hakem koruması).
+
+    k=2'de üçüncü renk (sarı hakem) en yakın takımın kümesine düşer ve ORTALAMA
+    merkezi kendine çeker; takım küçükse (4 oyuncu + 2 hakem) oyuncular kendi
+    merkezlerinden uzaklaşıp aykırı sayılır. Medyan merkez çoğunluğun (forma)
+    rengini korur; hakem sonra uzaklık eşiğiyle None'a düşer.
+    """
+    X = np.asarray(features, dtype=float)
+    labels = labels.copy()
+    centers = centers.copy()
+    for _ in range(rounds):
+        for j in range(len(centers)):
+            if np.any(labels == j):
+                centers[j] = np.median(X[labels == j], axis=0)
+        dist = np.stack([np.linalg.norm(X - c, axis=1) for c in centers], axis=1)
+        new_labels = dist.argmin(axis=1)
+        if np.array_equal(new_labels, labels):
+            break
+        labels = new_labels
+    return labels, centers
 
 
 def kmeans2(features: np.ndarray, *, iters: int = 25, seed: int = 0) -> tuple[np.ndarray, np.ndarray]:
@@ -139,8 +186,11 @@ class TeamAssigner:
         if len(tracks) < 2:
             return TeamAssignment({t: None for t in self._obs}, np.zeros((2, 3)), frozenset(self._obs))
         feats = np.array([np.median(np.vstack(self._obs[t]), axis=0) for t in tracks])
-        k = 3 if len(tracks) >= 6 else 2
+        # k=2: iki takım; hakem/kaleci uzaklık eşiğiyle None'a düşer. k=3 beyaz
+        # formayı gölge/ışık diye bölüp maviyle karıştırıyordu (ölçüm: modül doküstringi).
+        k = 2
         labels, centers = kmeans(feats, k)
+        labels, centers = median_recenter(feats, labels, centers)
         sizes = [(int(np.sum(labels == j)), j) for j in range(k)]
         sizes.sort(reverse=True)
         team_clusters = [j for _, j in sizes[:2]]
