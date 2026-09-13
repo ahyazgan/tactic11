@@ -461,3 +461,14 @@ def test_calibration_from_homography_survives_corners_beyond_horizon() -> None:
         a = anchor.image_to_pitch_m(u, v)
         b = rebuilt.image_to_pitch_m(u, v)
         assert abs(a[0] - b[0]) < 0.05 and abs(a[1] - b[1]) < 0.05, (u, v, a, b)
+
+
+def test_calibration_from_homography_rejects_collapsed_homography() -> None:
+    """Tüm görüntüyü sahada tek noktaya/çizgiye indiren homografi kurulmaz."""
+    import numpy as np
+    import pytest
+
+    # Rank-2'ye yakın: görüntünün tamamı (0, 68) civarına düşer.
+    h = np.array([[1e-6, 0.0, 0.0], [0.0, 1e-6, 68.0], [0.0, 0.0, 1.0]])
+    with pytest.raises(ValueError, match="çökmüş"):
+        calibration_from_homography(h, (1920, 1080))

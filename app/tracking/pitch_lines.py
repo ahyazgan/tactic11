@@ -42,6 +42,7 @@ GRASS_HSV_HIGH = (90, 255, 255)
 LINE_THICKNESS_PX = 9
 WHITE_MIN_VALUE = 140          # çizgi pikseli en az bu parlaklıkta olmalı
 MIN_LINE_PIXELS = 400          # bu kadar çizgi pikseli yoksa kalibrasyon denenmez
+MIN_GRID_SPREAD_M = 8.0        # görüntü içi ızgaranın sahadaki yayılımı bundan azsa homografi çökmüş
 
 
 @dataclass(frozen=True)
@@ -99,6 +100,13 @@ def calibration_from_homography(
     koşullama bozulmaz.
     """
     w, h = int(image_size[0]), int(image_size[1])
+    # H ile −H aynı eşlemedir; ufuk kontrolü (w > 0) için işareti görüntü
+    # merkezine göre sabitle — aksi halde sahadaki noktalar "ufkun ötesi" sanılıp
+    # gökyüzü noktaları kalır (ölçüldü: gerçek çapada merkezde w = −0.4).
+    h_img_to_pitch = np.asarray(h_img_to_pitch, dtype=float)
+    q_c = h_img_to_pitch @ np.array([w / 2.0, h / 2.0, 1.0])
+    if q_c[2] < 0:
+        h_img_to_pitch = -h_img_to_pitch
     grid = 5
     src: list[tuple[float, float]] = []
     dst: list[tuple[float, float]] = []
@@ -109,11 +117,27 @@ def calibration_from_homography(
             q = h_img_to_pitch @ np.array([u, v, 1.0])
             if not np.isfinite(q).all() or q[2] <= 1e-9:
                 continue
+            x, y = float(q[0] / q[2]), float(q[1] / q[2])
+            # Ufka yakın noktalar sahadan yüzlerce metre öteye düşer ve DLT'yi
+            # koşulsuz bozar; saha çevresindeki makul bant dışındakiler alınmaz.
+            if not (-60.0 <= x <= pitch_length_m + 60.0 and -40.0 <= y <= pitch_width_m + 40.0):
+                continue
             src.append((u, v))
-            dst.append((float(q[0] / q[2]), float(q[1] / q[2])))
+            dst.append((x, y))
     if len(src) < 4:
         raise ValueError("homografi görüntü içinde 4 geçerli nokta üretmiyor (ufkun ötesinde)")
-    return PitchCalibration.from_dict({
+    # Çökme kapısı: görüntünün ortası sahada birkaç metreye sıkışıyorsa homografi
+    # dejeneredir — tüm sahayı tek çizgiye indirip yine %90+ inlier alabilir
+    # (ölçüldü: yeniden yakalama böyle bir çözümü kabul etti, bütün oyuncular
+    # (0, 68 m) köşesine düştü). Böyle bir kalibrasyon KURULMAZ.
+    xs = np.array([d[0] for d in dst])
+    ys = np.array([d[1] for d in dst])
+    if float(np.ptp(xs)) < MIN_GRID_SPREAD_M or float(np.ptp(ys)) < MIN_GRID_SPREAD_M:
+        raise ValueError(
+            f"homografi çökmüş: görüntü ızgarası sahada {np.ptp(xs):.1f}×{np.ptp(ys):.1f} m'ye "
+            f"sıkışıyor (< {MIN_GRID_SPREAD_M} m)"
+        )
+    calib = PitchCalibration.from_dict({
         "image_size": [w, h],
         "pitch_length_m": pitch_length_m,
         "pitch_width_m": pitch_width_m,
@@ -122,6 +146,10 @@ def calibration_from_homography(
             for (u, v), (x, y) in zip(src, dst, strict=True)
         ],
     })
+    # Homografi tembel hesaplanır; dejenere nokta seti burada patlasın ki çağıran
+    # (`_accept`) kareyi REDDEDEBİLSİN — konum hesabında değil.
+    _ = calib.homography
+    return calib
 
 
 @dataclass
