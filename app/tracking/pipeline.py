@@ -108,6 +108,22 @@ def video_info(path: str | Path) -> dict[str, Any]:
         cap.release()
 
 
+def sample_stride(src_fps: float, requested_fps: float) -> int:
+    """Kaynak kare adımı: her `stride`. karede bir örnek (tam sayı, yuvarlanır)."""
+    return max(1, round(src_fps / max(requested_fps, 1e-6)))
+
+
+def effective_track_fps(src_fps: float, requested_fps: float) -> float:
+    """İstenen track-fps'in KAYNAKTA gerçekleşen değeri.
+
+    Örnekleme tam kare adımıyla yapılır: 25 fps kaynakta 15 de 10 da 2 adım → 12.5 fps;
+    8 → 3 adım → 8.33 fps. Takipçi parametreleri (kayıp tamponu, kare hızı, kısa
+    takip eşiği) istenen değil bu gerçek hızla kurulmalı; ölçüm (SoccerTrack v2
+    30 sn segment): --track-fps 15 ve 10 aynı 375 kareyi işledi.
+    """
+    return float(src_fps) / sample_stride(src_fps, requested_fps)
+
+
 def iter_video_frames(path: str | Path, fps: float, max_seconds: float | None = None) -> Iterator[tuple[int, int, float, np.ndarray]]:
     """(order, frame_idx, seconds, frame_rgb) — kaynak fps'e göre atlayarak örnekler."""
     import cv2
@@ -116,7 +132,7 @@ def iter_video_frames(path: str | Path, fps: float, max_seconds: float | None = 
     if not cap.isOpened():
         raise FileNotFoundError(f"video açılamadı: {path}")
     src_fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
-    stride = max(1, round(src_fps / fps))
+    stride = sample_stride(src_fps, fps)
     idx = 0
     order = 0
     try:
@@ -207,11 +223,17 @@ def collect_observations(
     import supervision as sv
 
     det = detector or make_detector(cfg.detector)
+    # Takipçi GERÇEK örnekleme hızıyla kurulur (kaynak fps / tam adım), istenenle değil.
+    fps_eff = effective_track_fps(float(video_info(video_path)["fps"]), cfg.track_fps)
+    if progress and abs(fps_eff - cfg.track_fps) > 0.05 * cfg.track_fps:
+        print(f"  track-fps: istenen {cfg.track_fps:g} → etkin {fps_eff:.2f} "
+              f"(kaynak adımı {sample_stride(float(video_info(video_path)['fps']), cfg.track_fps)})",
+              flush=True)
     tracker = sv.ByteTrack(
         track_activation_threshold=cfg.track_activation_threshold,
-        lost_track_buffer=max(1, int(cfg.lost_track_seconds * cfg.track_fps)),
+        lost_track_buffer=max(1, int(cfg.lost_track_seconds * fps_eff)),
         minimum_matching_threshold=0.8,
-        frame_rate=round(cfg.track_fps),
+        frame_rate=max(1, round(fps_eff)),
         minimum_consecutive_frames=1,
     )
     teams = TeamAssigner()
@@ -255,7 +277,7 @@ def collect_observations(
     samples: list[SampledObservation] = []
     hits: dict[int, int] = {}
     last_ball: tuple[float, float, int] | None = None   # cx, cy, order
-    roi_max_age = max(1, int(cfg.ball_gap_seconds * cfg.track_fps))
+    roi_max_age = max(1, int(cfg.ball_gap_seconds * fps_eff))
 
     for order, frame_idx, seconds, rgb in iter_video_frames(video_path, cfg.track_fps, cfg.max_seconds):
         frame_calib = calib
@@ -326,7 +348,7 @@ def collect_observations(
             print(f"  kare {order} · t={seconds:6.1f}s · oyuncu={len(rows)} · top={ball_source or '-'}", flush=True)
 
     # Kısa ömürlü (gürültü) takipleri at
-    min_hits = max(1, round(cfg.min_track_seconds * cfg.track_fps))
+    min_hits = max(1, round(cfg.min_track_seconds * fps_eff))
     weak = {t for t, n in hits.items() if n < min_hits}
     for s in samples:
         s.persons = [r for r in s.persons if r[0] not in weak]
@@ -348,7 +370,8 @@ def collect_observations(
                 " (skorboard bindirmesi bulunamadı — tekrar süzgeci etkisiz, "
                 "hiçbir kare atılmadı)")
             print(f"  tekrar: {replays_seen} kare atıldı{uyari}", flush=True)
-    stats: dict[str, Any] = {"per_frame_calibration": per_frame is not None}
+    stats: dict[str, Any] = {"per_frame_calibration": per_frame is not None,
+                             "effective_track_fps": round(fps_eff, 2)}
     if per_frame is not None:
         d_cal = per_frame.frames_calibrated - base[0]
         d_rej = per_frame.frames_rejected - base[1]
@@ -589,6 +612,7 @@ def process_video(
     summary = {
         "sampled_frames": len(samples),
         "track_fps": cfg.track_fps,
+        "effective_track_fps": calib_stats.get("effective_track_fps"),
         "frames_written": len(frames),
         "fps_out": cfg.fps_out,
         "tracks": len(tracks),

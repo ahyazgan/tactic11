@@ -419,3 +419,14 @@ def test_anchor_with_swapped_colors_maps_teams_the_other_way() -> None:
     swapped = np.array([colors[1], colors[0]])
     red_team, _ = _assign(8, 4, anchor=swapped)
     assert red_team == 1
+
+
+def test_effective_track_fps_follows_integer_stride() -> None:
+    """25 fps kaynakta 15 de 10 da 2 adım → 12.5; 8 → 3 adım → 8.33; 60 fps'te 15 → 4 adım → 15."""
+    from app.tracking.pipeline import effective_track_fps, sample_stride
+
+    assert sample_stride(25.0, 15.0) == 2 and sample_stride(25.0, 10.0) == 2
+    assert effective_track_fps(25.0, 15.0) == 12.5 and effective_track_fps(25.0, 10.0) == 12.5
+    assert round(effective_track_fps(25.0, 8.0), 2) == 8.33
+    assert effective_track_fps(60.0, 15.0) == 15.0
+    assert effective_track_fps(25.0, 100.0) == 25.0     # adım 1'in altına inmez
