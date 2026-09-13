@@ -433,3 +433,31 @@ def test_cut_recovery_still_demands_a_strong_fit() -> None:
     far = _feed(cal, homography_for((300.0, 120.0)))
     assert not far.ok, far.reason
     assert not cal.tracking
+
+
+def test_calibration_from_homography_survives_corners_beyond_horizon() -> None:
+    """Yan taç kamerası: yakın köşeler ufkun ötesinde → dört köşeli kurulum bozulurdu.
+
+    Görüntü içi ızgara kurulumu homografiyi kayıpsız geri vermeli.
+    """
+    import numpy as np
+
+    from app.tracking.calibration import CalibrationPoint, PitchCalibration
+
+    # Gerçek çapa (VLSC U19, 1920×1080): yalnız uzak yarı görünüyor.
+    pts = [((762.0, 606.0), (52.5, 0.0)), ((405.0, 752.0), (43.35, 34.0)),
+           ((1093.0, 722.0), (61.65, 34.0)), ((770.0, 688.0), (52.5, 24.85)),
+           ((762.0, 737.0), (52.5, 34.0))]
+    anchor = PitchCalibration(
+        points=tuple(CalibrationPoint(image=i, pitch=p) for i, p in pts), image_size=(1920, 1080))
+    h = anchor.homography
+    # Yakın köşe (0, 68) görüntüde ufkun ötesinde mi? (w ≤ 0 ya da çok uzak)
+    q = np.linalg.inv(h) @ np.array([0.0, 68.0, 1.0])
+    near_corner_off = (q[2] <= 1e-9) or abs(q[1] / q[2]) > 5000
+    assert near_corner_off, "kurgu: yakın köşe görüntü dışında olmalı"
+
+    rebuilt = calibration_from_homography(h, (1920, 1080))
+    for u, v in ((960.0, 700.0), (405.0, 752.0), (300.0, 1000.0), (1500.0, 650.0)):
+        a = anchor.image_to_pitch_m(u, v)
+        b = rebuilt.image_to_pitch_m(u, v)
+        assert abs(a[0] - b[0]) < 0.05 and abs(a[1] - b[1]) < 0.05, (u, v, a, b)

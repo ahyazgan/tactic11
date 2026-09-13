@@ -85,23 +85,41 @@ def calibration_from_homography(
     h_img_to_pitch: np.ndarray, image_size: tuple[int, int],
     *, pitch_length_m: float = 105.0, pitch_width_m: float = 68.0,
 ) -> PitchCalibration:
-    """Homografiden `PitchCalibration` üret (dört köşe eşlemesi olarak).
+    """Homografiden `PitchCalibration` üret — GÖRÜNTÜ İÇİ noktalardan.
 
-    Dört tam eşleşmeden DLT aynı homografiyi geri verir, yani bu kayıpsızdır.
-    Böylece hattın geri kalanı (saha-içi kontrolü, görünür alan, hız hesabı)
-    hiç değişmeden kare başına homografiyle çalışabilir.
+    Eskiden sahanın dört köşesi kullanılıyordu. Yan taç kamerasında yakın
+    köşeler görüntünün çok dışına, hatta ufkun ÖTESİNE düşer (w ≤ 0); dört
+    köşeden kurulan DLT o zaman başka bir homografi verir ve tüm oyuncular
+    sahanın bir köşesine yapışır. Ölçüldü (VLSC U19, operatörlü kamera): kare
+    kalibrasyonu "%99 oturdu" derken konumların %90'ı (0, 68 m) köşesindeydi.
+
+    Şimdi görüntü içinde düzenli bir ızgara sahaya izdüşürülür; yalnız ufkun
+    doğru tarafındaki (w > 0) noktalar alınır ve en küçük kareler DLT'si aynı
+    homografiyi kayıpsız geri verir. Nokta seti her zaman görüntüde olduğu için
+    koşullama bozulmaz.
     """
-    from app.tracking.homography_fit import corners_from_homography
-    from app.tracking.pitch_model import pitch_corners
-
-    corners_px = corners_from_homography(h_img_to_pitch)
+    w, h = int(image_size[0]), int(image_size[1])
+    grid = 5
+    src: list[tuple[float, float]] = []
+    dst: list[tuple[float, float]] = []
+    for i in range(grid):
+        for j in range(grid):
+            u = w * (0.1 + 0.8 * i / (grid - 1))
+            v = h * (0.1 + 0.8 * j / (grid - 1))
+            q = h_img_to_pitch @ np.array([u, v, 1.0])
+            if not np.isfinite(q).all() or q[2] <= 1e-9:
+                continue
+            src.append((u, v))
+            dst.append((float(q[0] / q[2]), float(q[1] / q[2])))
+    if len(src) < 4:
+        raise ValueError("homografi görüntü içinde 4 geçerli nokta üretmiyor (ufkun ötesinde)")
     return PitchCalibration.from_dict({
-        "image_size": list(image_size),
+        "image_size": [w, h],
         "pitch_length_m": pitch_length_m,
         "pitch_width_m": pitch_width_m,
         "points": [
             {"image": [float(u), float(v)], "pitch": [float(x), float(y)]}
-            for (u, v), (x, y) in zip(corners_px, pitch_corners(), strict=True)
+            for (u, v), (x, y) in zip(src, dst, strict=True)
         ],
     })
 
