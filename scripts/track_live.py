@@ -129,7 +129,7 @@ class WarmTracker:
             moving = v.source_name == BROADCAST_SOURCE
             print(f"  kamera: {v.kind} · {v.note}", flush=True)
         else:
-            moving = self._camera == "broadcast"
+            moving = self._camera in ("broadcast", "operated")
             print(f"  kamera: {self._camera} (elle verildi)", flush=True)
 
         mode = plan_mode(moving=moving, per_frame_mode=self._per_frame_mode,
@@ -196,10 +196,11 @@ class WarmTracker:
             clip_offset_minutes=offset_minutes, period=period,
             per_frame_calibration=mode["per_frame"],
             allow_reacquire=mode["per_frame"] and mode["reacquire"],
-            detect_cuts=mode["per_frame"],
-            # Tekrar ayıklama yalnız YAYINDA anlamlı: kulüp kamerası tekrar
-            # yayınlamaz, sabit kamerada süzgeci çalıştırmak boş maliyettir.
-            detect_replays=mode["per_frame"] and mode["moving"],
+            # Kesme/tekrar tespiti yalnız YAYINDA anlamlı. Operatörlü tek kamera
+            # (pan/zoom, kesme yok) yayın sanılırsa tekrar süzgeci sahte "overlay"
+            # bulup karelerin %90'ını atıyor (ölçüldü: VLSC U19, 407/450 kare).
+            detect_cuts=mode["per_frame"] and self._camera != "operated",
+            detect_replays=mode["per_frame"] and mode["moving"] and self._camera != "operated",
             source_name=mode["source"],
             **self._pipeline_kwargs,
         )
@@ -311,10 +312,13 @@ def main() -> int:
     p.add_argument("--backend", default="auto", choices=["auto", "torch", "onnx"],
                    help="Dedektör arka ucu: auto=ONNX modeli varsa ONNX, yoksa torch")
     p.add_argument("--onnx-model", default=None, help="ONNX model yolu (bkz. export_detector_onnx.py)")
-    p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast"],
+    p.add_argument("--camera", default="auto",
+                   choices=["auto", "static", "broadcast", "operated"],
                    help="Kamera davranışı. auto=ilk segmentten tespit et (sonra "
                         "kilitlenir), static=sabit geniş açı, broadcast=TV yayını "
-                        "(çoklu kamera + kesme)")
+                        "(çoklu kamera + kesme), operated=tek operatörlü geniş kamera "
+                        "(pan/zoom var, kesme ve tekrar YOK — kare başına kalibrasyon "
+                        "açık, kesme/tekrar süzgeci kapalı)")
     p.add_argument("--per-frame-calibration", default="auto",
                    choices=["auto", "on", "off"],
                    help="Homografiyi her karede yeniden bul. auto=kamera hareketliyse "

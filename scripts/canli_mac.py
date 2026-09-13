@@ -191,7 +191,8 @@ def main() -> int:
     p.add_argument("--no-realtime", action="store_true", help="dosyayı gerçek hızda değil, olabildiğince hızlı oku")
     p.add_argument("--height", type=int, default=None, help="segmentleri bu yüksekliğe indir (ör. 1080)")
     p.add_argument("--ffmpeg", default=None)
-    p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast"])
+    p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast", "operated"],
+                   help="static=sabit, broadcast=TV, operated=operatörlü tek kamera (pan/zoom, kesme yok)")
     p.add_argument("--tiles", type=int, default=4)
     p.add_argument("--track-fps", type=float, default=15.0)
     p.add_argument("--weights", default=None)

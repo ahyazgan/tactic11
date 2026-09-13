@@ -65,6 +65,7 @@ interface Snapshot {
   events_so_far?: number;
   score?: string;
   mode?: string;
+  source?: { kind?: string; latest_frame_minute?: number | null; latency_seconds?: number | null; frames?: number; note?: string };
   provider?: { id?: string; name?: string; status?: string; api_key_masked?: string; feed?: string; latency_ms?: number };
   phase?: string;
   data_quality?: { status?: string; score?: number };
@@ -518,6 +519,7 @@ function LiveWsView() {
   const interval = search.get("interval_seconds") ?? "10";
   const maxMinute = search.get("max_minute") ?? "90";
   const tenantId = search.get("tenant_id") ?? "t-default";
+  const feedMode = search.get("feed"); // "camera" → canlı kamera hattı; yoksa sunucu ayarı (replay)
 
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [wsState, setWsState] = useState<"connecting" | "open" | "reconnecting" | "closed">("connecting");
@@ -541,7 +543,7 @@ function LiveWsView() {
     if (!myTeam || ended) return;
     const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
-    const url = `${proto}//${host}/api/ws/matches/${matchId}/live?my_team_id=${myTeam}&interval_seconds=${interval}&max_minute=${maxMinute}&tenant_id=${tenantId}`;
+    const url = `${proto}//${host}/api/ws/matches/${matchId}/live?my_team_id=${myTeam}&interval_seconds=${interval}&max_minute=${maxMinute}&tenant_id=${tenantId}${feedMode ? `&feed=${encodeURIComponent(feedMode)}` : ""}`;
 
     intentionalCloseRef.current = false;
     setWsState("connecting");
@@ -648,6 +650,21 @@ function LiveWsView() {
         )}
         <div style={{ fontSize: 11, color: "var(--dim)", marginTop: 10, fontFamily: "JetBrains Mono" }}>geçmiş: {history.length} kayıt · {interval}sn</div>
         <DataQualityLine status={snapshot?.data_quality?.status} score={snapshot?.data_quality?.score} />
+        {snapshot?.source?.kind === "camera" && (
+          <div
+            role="status"
+            style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "baseline", padding: "8px 12px", marginTop: 8, borderRadius: 8, background: "var(--panel-2, rgba(0,0,0,0.04))", border: "1px solid var(--line, rgba(0,0,0,0.12))", fontSize: 13 }}
+          >
+            <b>KAYNAK: KAMERA</b>
+            <span>{snapshot.source.note}</span>
+            {snapshot.source.latency_seconds != null && (
+              <span style={{ color: snapshot.source.latency_seconds > 180 ? "var(--warn, #b45309)" : "var(--muted)" }}>
+                gecikme {Math.round(snapshot.source.latency_seconds)} sn ({(snapshot.source.latency_seconds / 60).toFixed(1)} dk geriden)
+              </span>
+            )}
+            <span style={{ color: "var(--muted)" }}>{snapshot.source.frames ?? 0} kare</span>
+          </div>
+        )}
       </div>
       {snapshot?.live_risk_monitor && (
         <RiskPanel
