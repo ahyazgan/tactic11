@@ -190,13 +190,20 @@ def collect_observations(
     detector: Detector | None = None,
     calib: PitchCalibration | None = None,
     progress: bool = True,
+    calibrator: Any = None,
 ) -> tuple[list[SampledObservation], TeamAssigner, dict[str, Any]]:
     """Kalibrasyon verilirse saha dışı tespitler (yedek kulübesi, seyirci) takipten
     ÖNCE elenir: takım kümelemesi ve takip kimlikleri yalnız sahadakilerle kurulur.
 
     Üçüncü dönen değer kare başına kalibrasyonun **dürüstlük karnesi**: kaç kare
     kalibre oldu, kaç kare atıldı, kaç kesme görüldü. Yayın görüntüsünde bu oran
-    çıktının ne kadarına güvenilebileceğini söyler ve özete yazılır."""
+    çıktının ne kadarına güvenilebileceğini söyler ve özete yazılır.
+
+    `calibrator`: dışarıdan verilen kalıcı `PerFrameCalibrator`. Canlı segment
+    akışında her segment ÇAPADAN başlarsa kamera çapa anından uzaklaştığında
+    segment baştan kayıp olur (ölçüldü: VLSC U19, seg_0001 kalibre %1). Kalıcı
+    kalibratör bir önceki segmentin son duruşundan devam eder; karne bu
+    segmentin FARKI olarak yazılır (sayaçlar kümülatif)."""
     import supervision as sv
 
     det = detector or make_detector(cfg.detector)
@@ -220,7 +227,7 @@ def collect_observations(
             # kadar kare üretilmez.
             info = video_info(video_path)
             size = (int(info["width"]), int(info["height"]))
-        per_frame = PerFrameCalibrator(
+        per_frame = calibrator if calibrator is not None else PerFrameCalibrator(
             calib, image_size=size, allow_reacquire=cfg.allow_reacquire,
         )
     elif calib is None:
@@ -241,6 +248,10 @@ def collect_observations(
     cuts_seen = 0
     replays_seen = 0
     skipped_uncalibrated = 0
+    # Kalıcı kalibratörde sayaçlar birikir; bu segmentin karnesi = fark.
+    base = ((per_frame.frames_calibrated, per_frame.frames_rejected,
+             per_frame.anchor_attempts, per_frame.anchors_found, per_frame.reanchors)
+            if per_frame is not None else (0, 0, 0, 0, 0))
     samples: list[SampledObservation] = []
     hits: dict[int, int] = {}
     last_ball: tuple[float, float, int] | None = None   # cx, cy, order
@@ -339,10 +350,13 @@ def collect_observations(
             print(f"  tekrar: {replays_seen} kare atıldı{uyari}", flush=True)
     stats: dict[str, Any] = {"per_frame_calibration": per_frame is not None}
     if per_frame is not None:
+        d_cal = per_frame.frames_calibrated - base[0]
+        d_rej = per_frame.frames_rejected - base[1]
         stats.update({
-            "frames_calibrated": per_frame.frames_calibrated,
-            "frames_rejected": per_frame.frames_rejected,
-            "calibrated_ratio": per_frame.calibrated_ratio,
+            "frames_calibrated": d_cal,
+            "frames_rejected": d_rej,
+            "calibrated_ratio": round(d_cal / (d_cal + d_rej), 3) if d_cal + d_rej else 0.0,
+            "persistent_calibrator": calibrator is not None,
             "cuts": cuts_seen if cfg.detect_cuts else None,
             "allow_reacquire": cfg.allow_reacquire,
             "replays_dropped": replays_seen if replay_filter is not None else None,
@@ -351,9 +365,9 @@ def collect_observations(
             # Çapa karnesi: elle mi otomatik mi, kaç arama, kaç bulundu,
             # kayıpta çapa kaç kez DEĞİŞTİ (çekim başına çapa).
             "auto_anchor": calib is None,
-            "anchor_attempts": per_frame.anchor_attempts,
-            "anchors_found": per_frame.anchors_found,
-            "reanchors": per_frame.reanchors,
+            "anchor_attempts": per_frame.anchor_attempts - base[2],
+            "anchors_found": per_frame.anchors_found - base[3],
+            "reanchors": per_frame.reanchors - base[4],
         })
     return samples, teams, stats
 
@@ -547,6 +561,7 @@ def process_video(
     cfg: PipelineConfig | None = None,
     detector: Detector | None = None,
     team_anchor: np.ndarray | None = None,
+    calibrator: Any = None,
 ) -> tuple[list[TrackingFrame], dict[str, Any]]:
     """`team_anchor` (2×3 forma rengi) verilirse takım kimliği küme büyüklüğü
     yerine bu renklere sabitlenir — canlı segment akışında takımların
@@ -556,7 +571,7 @@ def process_video(
     bulunur, her kare kendi kalibrasyonuyla gelir."""
     cfg = cfg or PipelineConfig()
     samples, assigner, calib_stats = collect_observations(
-        video_path, cfg, detector=detector, calib=calib)
+        video_path, cfg, detector=detector, calib=calib, calibrator=calibrator)
     assignment = assigner.fit(team_anchor)
     frames = build_frames(
         samples, assignment.team_by_track, calib,

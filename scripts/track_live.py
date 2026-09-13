@@ -119,6 +119,10 @@ class WarmTracker:
         self._reacquire_mode = reacquire_mode
         self._segment_seconds = segment_seconds
         self._mode: dict | None = None       # ilk segmentte kilitlenir
+        # Kalıcı kare-başına kalibratör: segmentler arasında kamera duruşu
+        # taşınır (her segment çapadan başlasaydı kamera çapadan uzaklaşınca
+        # segment baştan kayıp olurdu — ölçüldü: seg_0001 kalibre %1).
+        self._calibrator = None
 
     def _decide_mode(self, video: Path) -> dict:
         """Kamera kipini bir kez belirle: sabit mi, yayın mı; ne açılacak?"""
@@ -204,10 +208,19 @@ class WarmTracker:
             source_name=mode["source"],
             **self._pipeline_kwargs,
         )
+        if mode["per_frame"] and self._calibrator is None:
+            from app.tracking.pipeline import video_info
+            from app.tracking.pitch_lines import PerFrameCalibrator
+
+            info = video_info(str(video))
+            self._calibrator = PerFrameCalibrator(
+                self.calib, image_size=(int(info["width"]), int(info["height"])),
+                allow_reacquire=cfg.allow_reacquire,
+            )
         frames, summary = process_video(
             str(video), self.calib, match_id=match_id,
             home_team_id=home_team, away_team_id=away_team, cfg=cfg, detector=det,
-            team_anchor=self.team_anchor,
+            team_anchor=self.team_anchor, calibrator=self._calibrator,
         )
         # Etiketi TAHMİNE göre değil, GERÇEKLEŞENE göre ver. Kalibrasyonun
         # tutacağını baştan varsayıp "tam saha analizi açık" demek, tutmadığında
