@@ -405,6 +405,11 @@ def build_candidates(
     sm = out.get("space_map")
     if _is_dict(sm):
         frames = int(sm.get("frames_used", 0) or 0)
+        quality_meta = {
+            "coverage": float(sm.get("player_coverage", 1.0) or 0.0),
+            "data_quality": float(sm.get("data_quality", 1.0) or 0.0),
+            "players_seen": sm.get("players_seen"),
+        }
         for f in (sm.get("findings") or [])[:2]:
             if not isinstance(f, dict):
                 continue
@@ -413,7 +418,7 @@ def build_candidates(
                 headline=str(f.get("headline", "Bölge sinyali")),
                 urgency=float(f.get("urgency", 0.5)), fired=True, minute=current_minute,
                 sample_size=frames, magnitude=float(f.get("magnitude", 0.0)),
-                detail={"source": "space_map", **(f.get("detail") or {})},
+                detail={"source": "space_map", **quality_meta, **(f.get("detail") or {})},
             ))
 
     return cands

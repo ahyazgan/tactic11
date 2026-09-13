@@ -39,6 +39,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from app.audit import AuditRecord, EngineResult
+from app.engine.tracking.coverage import coverage_note, coverage_quality
 
 ENGINE_NAME = "engine.tracking_signals"
 ENGINE_VERSION = "1"
@@ -52,8 +53,6 @@ COMPACTNESS_DELTA_M = 2.5  # blok açılma/kapanma eşiği
 LINE_DELTA_M = 4.0         # geri hat kayması eşiği
 WIDTH_DELTA_M = 4.0        # genişlik değişimi eşiği
 PRESS_DELTA = 0.15         # pres endeksi değişimi eşiği
-FULL_PLAYERS = 22.0        # iki takım sahada
-COVERAGE_FLOOR = 0.5       # bu kapsamanın altında şekil bilgisi yok sayılır (kalite 0)
 
 
 @dataclass(frozen=True)
@@ -74,15 +73,8 @@ class TrackingSignalReport:
     players_seen: float
     findings: tuple[TrackingFinding, ...]
     note: str | None = None
-    coverage: float = 1.0      # görünen oyuncu (iki takım) / 22
+    coverage: float = 1.0      # görünen oyuncu (iki takım) / 22 (engine.tracking.coverage)
     data_quality: float = 1.0  # 0..1 — kapsamadan türetilen veri kalitesi
-
-
-def coverage_quality(our_players_mean: float, their_players_mean: float) -> tuple[float, float]:
-    """(kapsama, veri kalitesi): kapsama = görünen/22; kalite = (kapsama − taban)/(1 − taban)."""
-    coverage = max(0.0, min(1.0, (our_players_mean + their_players_mean) / FULL_PLAYERS))
-    quality = max(0.0, min(1.0, (coverage - COVERAGE_FLOOR) / (1.0 - COVERAGE_FLOOR)))
-    return round(coverage, 3), round(quality, 3)
 
 
 def _m(x_pct: float) -> float:
@@ -119,8 +111,8 @@ def compute_tracking_signals(
         if s:
             seen = max(seen, float(s.get("players_mean") or 0.0))
     coverage, data_quality = coverage_quality(
-        float((our_shape or {}).get("players_mean") or 0.0),
-        float((their_shape or {}).get("players_mean") or 0.0),
+        float((our_shape or {}).get("players_mean") or 0.0)
+        + float((their_shape or {}).get("players_mean") or 0.0)
     )
 
     if not our_shape or not their_shape or seen < MIN_PLAYERS:
@@ -225,10 +217,7 @@ def compute_tracking_signals(
 
         findings.sort(key=lambda f: (-f.urgency, -f.magnitude))
         if findings and data_quality < 1.0:
-            quality_note = (
-                f"kapsama %{coverage * 100:.0f} (görünen {coverage * FULL_PLAYERS:.0f}/22) — "
-                f"veri kalitesi {data_quality:.2f}, güven buna göre düşürülür"
-            )
+            quality_note = coverage_note(coverage, data_quality)
             note = f"{note}; {quality_note}" if note else quality_note
         report = TrackingSignalReport(
             minute=minute, frames_used=frames_used, players_seen=round(seen, 1),

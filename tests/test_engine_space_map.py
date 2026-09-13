@@ -224,3 +224,22 @@ def test_attacking_third_overload_outranks_midfield_one() -> None:
     u_att = _findings((att,), gap, att)[0].urgency
     assert u_att > u_mid
     assert u_mid < 0.6, "orta saha üstünlüğü şekil sinyalini (0.6) ezmemeli"
+
+
+def test_player_coverage_and_data_quality_follow_visible_count() -> None:
+    """22 görünen → kalite 1; 9+9 görünen → kapsama 0.818, kalite 0.636 ve not kapsamayı söyler."""
+    full = compute_space_map(_standard_frames(), our_team_external_id=US, their_team_external_id=THEM,
+                             minute=30.0).value
+    assert full.player_coverage == 1.0 and full.data_quality == 1.0
+
+    def trim(f: TrackingFrame) -> TrackingFrame:
+        ours = [p for p in f.players if p.team_external_id == US][:9]
+        theirs = [p for p in f.players if p.team_external_id == THEM][:9]
+        return _frame(ours + theirs, minute=f.minute)
+
+    part = compute_space_map([trim(f) for f in _standard_frames()], our_team_external_id=US,
+                             their_team_external_id=THEM, minute=30.0).value
+    assert part.players_seen == 18.0
+    assert part.player_coverage == 0.818 and part.data_quality == 0.636
+    if part.findings:
+        assert "kapsama %82" in (part.note or "")
