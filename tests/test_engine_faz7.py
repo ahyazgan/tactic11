@@ -34,12 +34,27 @@ def _d(team: int, minute: float, x: float = 50, y: float = 50,
 
 
 def test_spatial_gap_between_lines():
-    """Zone-14'e 4 tamamlanan pasımız, rakip 0 def → boşluk."""
+    """Zone-14'e 4 tamamlanan pasımız, rakip zone-14'te 0 def (başka yerde var) → boşluk."""
     passes = [_p(11, 60 + i, ex=75, ey=50) for i in range(4)]
-    r = compute_spatial_control(11, 22, passes, [], current_minute=65).value
+    defs = [_d(22, 61, x=80, y=10)]     # rakip savunuyor ama zone-14 dışında
+    r = compute_spatial_control(11, 22, passes, defs, current_minute=65).value
     assert r.gap_between_lines is True
     assert r.our_zone14_passes >= 3
     assert any("BOŞLUK" in a for a in r.alerts)
+
+
+def test_spatial_no_opponent_defensive_actions_means_no_comparison():
+    """Rakip def aksiyonu HİÇ yoksa "N'e 0 üstünlük" ve "rakip 0 def boşluk" üretilmez.
+
+    Videodan türetilen olaylar yalnız pas içeriyordu; sıfır def rakibin yokluğu
+    değil kaynağın eksikliğidir — her dakika "10'a 0, oraya çevir" çıkıyordu.
+    """
+    passes = [_p(11, 60 + i * 0.2, ex=75, ey=15) for i in range(5)]
+    r = compute_spatial_control(11, 22, passes, [], current_minute=65).value
+    assert r.gap_between_lines is False and r.superiority_flank is None
+    assert not any("ÜSTÜNLÜK" in a or "BOŞLUK" in a for a in r.alerts)
+    assert r.note and "rakip savunma aksiyonu yok" in r.note
+    assert r.shape_state == "narrow"      # genişlik ölçüsü rakipten bağımsız, kalır
 
 
 def test_spatial_no_gap_when_opponent_present():

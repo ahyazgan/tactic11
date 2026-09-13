@@ -10,6 +10,13 @@
    kompaktlık bozuldu uyarısı.
 
 Saf hesap. Pas + def listesi + current_minute + window → mekânsal rapor.
+
+SINIR — rakip savunma aksiyonu HİÇ yoksa kıyas yapılmaz: "N'e 0" üstünlük ve
+"rakip 0 def" boşluğu, rakibin yokluğu değil KAYNAĞIN eksikliğidir. Ölçüldü
+(SoccerTrack v2 990401, videodan türetilen olaylar yalnız pas, def 0): her
+dakikada "merkez kanatta 10'a 0 — oyunu oraya çevir" güven 0.9 ile çıkıyordu.
+Gerçek olay verisinde 10 dakikalık pencerede 0 savunma aksiyonu olmaz; sıfır,
+kaynağın savunma aksiyonu üretmediğinin işaretidir (`note` bunu söyler).
 """
 from __future__ import annotations
 
@@ -61,6 +68,7 @@ class SpatialControlReport:
     shape_state: str = "balanced"   # "narrow" | "wide" | "balanced"
     width_y_std: float = 0.0
     alerts: tuple[str, ...] = field(default_factory=tuple)
+    note: str | None = None         # kıyas yapılamadıysa sebebi
 
 
 def _flank(y: float) -> str:
@@ -99,7 +107,13 @@ def compute_spatial_control(
         if Z14_X_LO <= (100.0 - d.x) <= Z14_X_HI
         and Z14_Y_LO <= d.y <= Z14_Y_HI
     )
-    gap = our_z14 >= GAP_OUR_MIN and opp_z14_def <= GAP_OPP_MAX
+    # Rakip savunma aksiyonu hiç yoksa pas-vs-def kıyası tanımsız (modül doküstringi).
+    comparable = len(opp_d) > 0
+    note = None if comparable else (
+        "rakip savunma aksiyonu yok — boşluk/üstünlük kıyaslanamadı "
+        "(kaynak yalnız pas üretiyor olabilir)"
+    )
+    gap = comparable and our_z14 >= GAP_OUR_MIN and opp_z14_def <= GAP_OPP_MAX
 
     # #2 sayısal üstünlük — kanat bazlı katılım
     balances: list[FlankBalance] = []
@@ -109,7 +123,8 @@ def compute_spatial_control(
         opp_c = sum(1 for d in opp_d if _flank(d.y) == fl)
         balances.append(FlankBalance(fl, our_c, opp_c, our_c - opp_c))
     sup = max(balances, key=lambda b: b.diff)
-    sup_flank = sup.flank if sup.diff >= SUPERIORITY_DIFF and sup.our_count > 0 else None
+    sup_flank = (sup.flank if comparable and sup.diff >= SUPERIORITY_DIFF and sup.our_count > 0
+                 else None)
 
     # #3 genişlik/darlık — pas konum y dağılımı
     ys = [p.end_y for p in our_p]
@@ -154,6 +169,7 @@ def compute_spatial_control(
         shape_state=shape,
         width_y_std=round(y_std, 2),
         alerts=tuple(alerts),
+        note=note,
     )
     audit = AuditRecord(
         engine=ENGINE_NAME, engine_version=ENGINE_VERSION,
@@ -161,7 +177,7 @@ def compute_spatial_control(
         metric="spatial_control",
         value={
             "gap_between_lines": gap, "superiority_flank": sup_flank,
-            "shape_state": shape, "alerts": list(alerts),
+            "shape_state": shape, "alerts": list(alerts), "note": note,
         },
         inputs={
             "current_minute": current_minute, "window_min": window_min,
