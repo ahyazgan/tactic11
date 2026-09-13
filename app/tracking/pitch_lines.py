@@ -25,7 +25,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from app.tracking.calibration import PitchCalibration
+from app.tracking.calibration import CalibrationError, PitchCalibration
 from app.tracking.homography_fit import (
     DEFAULT_TOLERANCE_PX,
     FitResult,
@@ -302,7 +302,11 @@ class PerFrameCalibrator:
         self._last_anchor_note = res.note
         if not res.accepted or res.homography is None or res.fit is None:
             return None
-        self._anchor = calibration_from_homography(res.homography, self._image_size)
+        try:
+            self._anchor = calibration_from_homography(res.homography, self._image_size)
+        except (ValueError, CalibrationError):
+            self._last_anchor_note = "bulunan çapa dejenere — reddedildi"
+            return None
         self.anchors_found += 1
         self._lost_streak = 0
         self._last_corners = self._prev_corners = self._pending = None
@@ -335,6 +339,14 @@ class PerFrameCalibrator:
         return FrameCalibration(None, fit, reason)
 
     def _accept(self, fit: FitResult, *, jump_m: float | None = None) -> FrameCalibration:
+        # Önce kalibrasyonu KUR: homografi görüntü içinde geçerli nokta üretmiyorsa
+        # (ufkun ötesi / dejenere) bu bir kabul değil rettir — durum güncellenmez,
+        # son iyi duruş korunur. Eskiden böyle bir homografi sessizce kabul edilip
+        # köşeye yapışık konumlar üretiyordu.
+        try:
+            calib = calibration_from_homography(fit.homography, self._image_size)
+        except (ValueError, CalibrationError) as e:
+            return self._miss(fit, f"homografi dejenere ({e}) — kare atlandı, son iyi duruş korunuyor")
         self._last_jump_m = jump_m if jump_m is not None else 0.0
         self._misses = 0
         self._lost_streak = 0
@@ -343,9 +355,7 @@ class PerFrameCalibrator:
         self._prev_corners = self._last_corners
         self._last_corners = corners_from_homography(fit.homography)
         self.frames_calibrated += 1
-        return FrameCalibration(
-            calibration_from_homography(fit.homography, self._image_size), fit,
-        )
+        return FrameCalibration(calib, fit)
 
     def process(self, bgr: np.ndarray) -> FrameCalibration:
         """Kareyi işle (cv2 ile çizgi çıkarımı + karar)."""
