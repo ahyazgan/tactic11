@@ -18,6 +18,12 @@ dakikada "değişiklik yap" diyen bir sayaç da elit antrenörle sık sık uyuş
 2. **Kalibrasyon** — sistem "%X güveniyorum" dediğinde %X tutuyor mu?
    Ölçü: beklenen kalibrasyon hatası (ECE). Taban: hiç öğrenmemiş bir sistemin
    sabit taban oranı söylemesi (ECE = |ort. güven − isabet|).
+   Yalnız KALİBRE olasılıkta ölçülür: kalibrasyon kurulmamışsa saklanan sayı
+   ham kanıt gücüdür, olasılık değil (panel de yüzde göstermez). Ham skoru
+   0.5'e doğru "küçültüp" ECE'yi düşürmek değerlendirildi ve REDDEDİLDİ: koça
+   gösterilen hiçbir şeyi değiştirmez, yalnız ölçüyü süsler. Külliyat
+   uygulanmamış öneriden oluştuğu için (applied=None) bu boyut orada "ölçülemez"
+   çıkar; ölçülebilmesi için koçun uyguladığı ve sonucu işaretlenmiş kararlar gerekir.
 3. **Elit antrenörle uyum** — gerçek antrenör (StatsBomb) oyuncu değiştirdiği
    pencerede motor da "değişiklik" demiş miydi? Ölçü: F1. Taban: yalnız
    dakikaya bakan kural ("t ≥ T ise değiştir"), eşiği AYRIK yarıda seçilir.

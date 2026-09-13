@@ -339,6 +339,7 @@ def main() -> int:
     eng_sub_minutes: dict[int, list[float]] = defaultdict(list)
     fc_samples: list[tuple[float, bool, float]] = []
     cal_samples: list[tuple[float, bool]] = []
+    raw_conf_samples: list[tuple[float, bool]] = []   # kalibre edilmemiş ham kanıt skoru
     applied_t = applied_f = 0
 
     for d in decisions:
@@ -368,7 +369,10 @@ def main() -> int:
 
         if d.outcome in {"positive", "negative"} and d.confidence is not None:
             ok = d.outcome == "positive"
-            cal_samples.append((float(d.confidence), ok))
+            # ECE yalnız KALİBRE olasılıkta anlamlı. Ham kanıt skoru (kalibrasyon
+            # kurulmadıysa saklanan sayı) olasılık değildir; panel de bunu yüzde
+            # olarak göstermez. Olasılık gibi okuyup ECE hesaplamak ölçüm hatası olur.
+            (cal_samples if ctx.get("calibrated") else raw_conf_samples).append((float(d.confidence), ok))
             pre = ctx.get("pre_xg_diff")
             if pre is not None:
                 fc_samples.append((float(d.confidence), ok, float(pre)))
@@ -455,8 +459,20 @@ def main() -> int:
                   f"{mean_conf:.0%} demenin hatası"),
         ))
     else:
-        dims.append(Dimension("Kalibrasyon", "ECE", None, None, None, False,
-                              "yetersiz veri", f"n={len(cal_samples)} < {MIN_SAMPLES}"))
+        raw_ece, raw_mean, raw_hit = expected_calibration_error(raw_conf_samples)
+        if raw_ece is not None and raw_mean is not None and raw_hit is not None:
+            raw_note = (f" Ham kanıt skoru olasılık gibi okunsaydı: ECE {raw_ece:.2f}, ortalama "
+                        f"{raw_mean:.0%} vs isabet {raw_hit:.0%} (n={len(raw_conf_samples)}) — "
+                        "bu yüzden gösterilmiyor.")
+        else:
+            raw_note = ""
+        dims.append(Dimension(
+            "Kalibrasyon", "ECE", None, None, None, False,
+            "ölçülemez — kalibre olasılık yok",
+            (f"kalibre güvenli karar n={len(cal_samples)} < {MIN_SAMPLES}; saklanan sayı KANIT GÜCÜ, "
+             "olasılık değil (kalibrasyon uygulanmış kararların geçmişinden kurulur; külliyat "
+             f"uygulanmamış öneri).{raw_note}"),
+        ))
 
     # ---- boyut 3: elit antrenörle uyum --------------------------------- #
     sh_strict = split_half_agreement(strict)

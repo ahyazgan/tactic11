@@ -193,6 +193,11 @@ def seed(args: argparse.Namespace) -> int:
                     # ASIL YENİLİK: güvenin sayısal kırılımı kararla saklanır.
                     context_json=json.dumps({
                         "confidence_terms": primary.get("confidence_terms") or {},
+                        # Saklanan `confidence` kalibre OLASILIK mı, ham KANIT skoru mu?
+                        # Karne (coach_iq) ECE'yi yalnız kalibre olasılıkta ölçer.
+                        "calibrated": "kalibre edildi" in str(primary.get("calibration_note") or ""),
+                        "evidence": primary.get("evidence"),
+                        "calibration_note": primary.get("calibration_note"),
                         "signal_type": primary.get("signal_type"),
                         "theme": primary.get("theme"),
                         "urgency": primary.get("urgency"),
