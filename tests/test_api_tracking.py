@@ -152,10 +152,21 @@ def test_frames_between_filters_and_limits(session, client):
     assert [f["minute"] for f in body["frames"]] == [20.0, 30.0]
 
 
-def test_identities_roundtrip_applies_to_frames_and_tracks(session, client):
+@pytest.mark.parametrize("track_id,mapped_id", [
+    (20001, 777), (30_000_030_001, 777), (690_000_030_001, 30_000_030_002),
+])
+def test_identities_roundtrip_applies_to_frames_and_tracks(session, client, track_id, mapped_id):
     _seed(session)
+    # A segment-scoped anonymous ID must survive JSON, SQL upsert and URL lookup.
+    for row in session.query(models.TrackingFrameRow).all():
+        players = json.loads(row.players_json)
+        for player in players:
+            if player["player_external_id"] == 20001:
+                player["player_external_id"] = track_id
+        row.players_json = json.dumps(players)
+    session.commit()
     body = {"identities": [
-        {"track_player_external_id": 20001, "player_name": "Ali Kaya", "jersey_number": 7, "player_external_id": 777},
+        {"track_player_external_id": track_id, "player_name": "Ali Kaya", "jersey_number": 7, "player_external_id": mapped_id},
     ]}
     r = client.put("/tracking/matches/9600/identities", json=body)
     assert r.status_code == 200, r.text
@@ -163,17 +174,21 @@ def test_identities_roundtrip_applies_to_frames_and_tracks(session, client):
 
     fr = client.get("/tracking/matches/9600/frame?minute=25").json()["frame"]
     mapped = next(p for p in fr["players"] if p.get("name") == "Ali Kaya")
-    assert mapped["player_external_id"] == 777 and mapped["track_player_external_id"] == 20001
+    assert mapped["player_external_id"] == mapped_id and mapped["track_player_external_id"] == track_id
     assert mapped["identity_estimated"] is False and mapped["jersey_number"] == 7
     other = next(p for p in fr["players"] if p["player_external_id"] == 5503)
     assert "name" not in other
 
     tr = client.get("/tracking/matches/9600/tracks").json()
     assert tr["total"] == 2 and tr["frames"] == 3
-    t = next(x for x in tr["tracks"] if x["player_external_id"] == 20001)
+    t = next(x for x in tr["tracks"] if x["player_external_id"] == track_id)
     assert t["identity"]["player_name"] == "Ali Kaya" and t["frames"] == 3
     actor = next(x for x in tr["tracks"] if x["player_external_id"] == 5503)
     assert actor["actor_frames"] == 3 and actor["identity"] is None
+    # Updating the same large ID must retain one row and deleting by path must find it.
+    assert client.put("/tracking/matches/9600/identities", json=body).json()["total"] == 1
+    assert client.delete(f"/tracking/matches/9600/identities/{track_id}").json()["deleted"] == track_id
+    assert client.put("/tracking/matches/9600/identities", json=body).json()["total"] == 1
 
     # replace=True listede olmayanı siler; upsert isim günceller
     r = client.put("/tracking/matches/9600/identities", json={"replace": True, "identities": [
@@ -183,6 +198,68 @@ def test_identities_roundtrip_applies_to_frames_and_tracks(session, client):
     assert client.delete("/tracking/matches/9600/identities/5503").status_code == 200
     assert client.get("/tracking/matches/9600/identities").json()["total"] == 0
     assert client.delete("/tracking/matches/9600/identities/5503").status_code == 404
+
+
+def test_track_summary_uses_explicit_scope_frames_across_many_clips(session, client):
+    _seed(session, frames=0)
+    base = datetime(2000, 1, 1, tzinfo=UTC)
+    # Eight independent clips reuse the same local suffix. Each track appears
+    # in three of ten frames, so a match-wide 20% filter would hide every one.
+    for clip in range(8):
+        for frame in range(10):
+            pid = 30_007 + clip * 1_000_000
+            session.add(models.TrackingFrameRow(
+                sport=football.SPORT_NAME, tenant_id="t-default", match_external_id=9600,
+                timestamp=base + timedelta(seconds=clip * 30 + frame),
+                period=1 if clip < 4 else 2, minute=(clip * 30 + frame) / 60,
+                players_json=json.dumps([{"player_external_id": pid, "x": 50, "y": 40,
+                                          "identity_estimated": True}] if frame < 3 else []),
+                # Continuity values deliberately repeat in another period.
+                meta_json=json.dumps({"source": "video_tracking", "continuity_id": clip % 4}),
+                created_at=base,
+            ))
+    session.commit()
+    body = client.get("/tracking/matches/9600/tracks").json()
+    assert body["frames"] == 80 and body["total"] == 8
+    assert all(t["frames"] == 3 and t["scope_frame_count"] == 10 for t in body["tracks"])
+    assert len({t["display_label"] for t in body["tracks"]}) == 8
+    assert {tuple(t["scope_ordinals"]) for t in body["tracks"]} == {(i,) for i in range(1, 9)}
+
+
+def test_track_summary_without_scope_preserves_legacy_denominator_and_full_id(session, client):
+    _seed(session)
+    body = client.get("/tracking/matches/9600/tracks").json()
+    assert all(t["scope_frame_count"] == body["frames"] for t in body["tracks"])
+    assert all(t["scope_ordinals"] == [] for t in body["tracks"])
+    assert all(int(t["display_label"][1:], 36) == t["player_external_id"] for t in body["tracks"])
+
+
+def test_track_tokens_agree_across_frame_endpoints_mapping_and_segment_scopes(session, client):
+    _seed(session)
+    scoped_ids = [30_000_030_007, 60_000_030_007, 432_000_000_029_999]
+    rows = session.query(models.TrackingFrameRow).order_by(models.TrackingFrameRow.timestamp).all()
+    for row, pid in zip(rows, scoped_ids, strict=True):
+        people = json.loads(row.players_json)
+        people[1]["player_external_id"] = pid
+        row.players_json = json.dumps(people)
+    session.commit()
+    tracks = client.get("/tracking/matches/9600/tracks").json()["tracks"]
+    tokens = {t["player_external_id"]: t["display_label"] for t in tracks}
+    assert len({tokens[pid] for pid in scoped_ids}) == 3  # every ID ends in 007 except the boundary
+    assert all(tokens[pid].startswith("T") and int(tokens[pid][1:], 36) == pid for pid in scoped_ids)
+    frames = client.get("/tracking/matches/9600/frames").json()["frames"]
+    assert all(p["display_label"] == tokens[p["player_external_id"]] for f in frames for p in f["players"])
+
+    # Naming a track can replace its roster ID, but its mapping token stays put.
+    response = client.put("/tracking/matches/9600/identities", json={"identities": [{
+        "track_player_external_id": scoped_ids[0], "player_external_id": 777,
+        "player_name": "Named player", "jersey_number": 7,
+    }]})
+    assert response.status_code == 200
+    frame = client.get("/tracking/matches/9600/frame?minute=15").json()["frame"]
+    mapped = next(p for p in frame["players"] if p.get("name") == "Named player")
+    assert mapped["player_external_id"] == 777 and mapped["track_player_external_id"] == scoped_ids[0]
+    assert mapped["display_label"] == tokens[scoped_ids[0]]
 
 
 def _seed_shape(session, match_id: int = 9700):

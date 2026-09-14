@@ -10,6 +10,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     Date,
     DateTime,
@@ -72,7 +73,7 @@ class Player(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     sport: Mapped[str] = mapped_column(String(32), index=True)
-    external_id: Mapped[int] = mapped_column(Integer, index=True)
+    external_id: Mapped[int] = mapped_column(BigInteger, index=True)
     name: Mapped[str] = mapped_column(String(255))
     position: Mapped[str | None] = mapped_column(String(8), nullable=True)
     birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
@@ -214,7 +215,7 @@ class PlayerAppearance(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     sport: Mapped[str] = mapped_column(String(32))
-    player_external_id: Mapped[int] = mapped_column(Integer)
+    player_external_id: Mapped[int] = mapped_column(BigInteger)
     match_external_id: Mapped[int] = mapped_column(Integer)
     minutes: Mapped[int] = mapped_column(Integer)
     kickoff: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -399,8 +400,8 @@ class TrackingIdentity(Base):
     )
     sport: Mapped[str] = mapped_column(String(32))
     match_external_id: Mapped[int] = mapped_column(Integer)
-    track_player_external_id: Mapped[int] = mapped_column(Integer)
-    player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    track_player_external_id: Mapped[int] = mapped_column(BigInteger)
+    player_external_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     player_name: Mapped[str] = mapped_column(String(120))
     jersey_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
     team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -483,7 +484,7 @@ class ScoutWatchlist(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[str] = mapped_column(String(64), default="default")
-    player_external_id: Mapped[int] = mapped_column(Integer)
+    player_external_id: Mapped[int] = mapped_column(BigInteger)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -629,7 +630,7 @@ class EventRow(Base):
     source_event_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     match_external_id: Mapped[int] = mapped_column(Integer)
     team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    player_external_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     event_type: Mapped[str] = mapped_column(String(32))  # shot|pass|carry|defensive_action
     minute: Mapped[float] = mapped_column(Float)
     period: Mapped[int] = mapped_column(Integer, default=1)
@@ -672,9 +673,9 @@ class Decision(Base):
     period: Mapped[int] = mapped_column(Integer, default=1)
     decision_type: Mapped[str] = mapped_column(String(32))
     # subject = ana özne (sub'ta çıkan oyuncu)
-    subject_player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    subject_player_external_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     # related = ilişkili oyuncu (sub'ta giren)
-    related_player_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    related_player_external_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
     by_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
@@ -750,7 +751,7 @@ class PlayerContract(Base):
     tenant_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
     )
-    player_external_id: Mapped[int] = mapped_column(Integer)
+    player_external_id: Mapped[int] = mapped_column(BigInteger)
     team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     contract_end: Mapped[date] = mapped_column(Date)
     annual_salary_eur: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -775,7 +776,7 @@ class PlayerRehabilitation(Base):
     tenant_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
     )
-    player_external_id: Mapped[int] = mapped_column(Integer)
+    player_external_id: Mapped[int] = mapped_column(BigInteger)
     injury_type: Mapped[str] = mapped_column(String(128))
     injury_start: Mapped[date] = mapped_column(Date)
     expected_return: Mapped[date | None] = mapped_column(Date, nullable=True)
@@ -802,7 +803,7 @@ class PlayerGoal(Base):
     tenant_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
     )
-    player_external_id: Mapped[int] = mapped_column(Integer)
+    player_external_id: Mapped[int] = mapped_column(BigInteger)
     title: Mapped[str] = mapped_column(String(255))
     metric: Mapped[str | None] = mapped_column(String(64), nullable=True)
     target_value: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -935,7 +936,7 @@ class PlayerMatchRating(Base):
     )
     sport: Mapped[str] = mapped_column(String(32))
     match_external_id: Mapped[int] = mapped_column(Integer)
-    player_external_id: Mapped[int] = mapped_column(Integer)
+    player_external_id: Mapped[int] = mapped_column(BigInteger)
     # Kronolojik sıralama için maç tarihi (anomaly/trajectory game_index)
     kickoff: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True,

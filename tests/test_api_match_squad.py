@@ -189,30 +189,32 @@ def test_lineup_feeds_the_live_decision_panel(client, match, session) -> None:
 
 # --- maç içi yük girişi ------------------------------------------------------- #
 
-def test_load_samples_are_cumulative_and_upserted(client, match, session) -> None:
+@pytest.mark.parametrize("player_id,source", [(5, "gps"), (30_000_030_001, "tracking")])
+def test_load_samples_are_cumulative_and_upserted(client, match, session, player_id, source) -> None:
     """Aynı oyuncu+dakika ikinci kez yazılınca yeni satır açılmaz, güncellenir."""
     from app.db.match_load import MatchLoadSample
 
     body = {
-        "team_external_id": 11, "source": "gps",
+        "team_external_id": 11, "source": source,
         "speed_thresholds": "hsr>5.5,sprint>7.0 m/s",
         "samples": [
-            {"player_external_id": 5, "minute": 30, "total_distance_m": 3100.0,
+            {"player_external_id": player_id, "minute": 30, "total_distance_m": 3100.0,
              "high_speed_m": 240.0},
-            {"player_external_id": 5, "minute": 60, "total_distance_m": 6200.0,
+            {"player_external_id": player_id, "minute": 60, "total_distance_m": 6200.0,
              "high_speed_m": 480.0},
         ],
     }
     first = client.post("/admin/matches/7001/load-samples", json=body).json()
     assert first["yazilan"] == 2
     assert first["oyuncu"] == 1
-    assert first["kaynak"] == "gps"
+    assert first["kaynak"] == source
 
     body["samples"][1]["total_distance_m"] = 6400.0
     again = client.post("/admin/matches/7001/load-samples", json=body).json()
     assert again["maçtaki_toplam_ornek"] == 2      # yeni satır açılmadı
     rows = session.query(MatchLoadSample).order_by(MatchLoadSample.minute).all()
     assert [r.minute for r in rows] == [30.0, 60.0]
+    assert {r.player_external_id for r in rows} == {player_id}
     assert rows[1].total_distance_m == 6400.0
     assert rows[0].speed_thresholds == "hsr>5.5,sprint>7.0 m/s"
 

@@ -26,6 +26,7 @@ import numpy as np
 
 from app.domain.tracking import TrackingFrame
 from app.tracking.calibration import CalibrationError, PitchCalibration
+from app.tracking.camera import STATIC_SOURCE
 from app.tracking.detect import DetectorConfig, OnnxDetector, RFDetrDetector, make_detector
 from app.tracking.frames import BallObservation, TrackObservation, build_frame
 from app.tracking.identity_namespace import SegmentIdentityNamespace
@@ -107,9 +108,10 @@ class SampledObservation:
 
 
 def identity_refinement_enabled(cfg: PipelineConfig, calib: PitchCalibration | None) -> bool:
-    supported = calib is not None and not cfg.per_frame_calibration and not cfg.normalize_kit_light
+    supported = (calib is not None and cfg.source_name == STATIC_SOURCE
+                 and not cfg.per_frame_calibration and not cfg.normalize_kit_light)
     if cfg.refine_player_identities is True and not supported:
-        raise ValueError("kimlik iyileştirme sabit kalibrasyon ve ham forma rengi gerektirir")
+        raise ValueError("kimlik iyileştirme sabit kamera kaynağı, sabit kalibrasyon ve ham forma rengi gerektirir")
     if cfg.refine_player_identities is not None:
         return cfg.refine_player_identities
     return bool(supported and getattr(calib, "meta", {}).get("identity_profile")

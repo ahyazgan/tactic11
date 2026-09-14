@@ -58,6 +58,7 @@ etkilemez, karşılığında her segment yeniden ısınır).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -65,6 +66,8 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
+from app.tracking.anchor_state import team_anchor as valid_team_anchor
 
 VIDEO_EXT = {".mp4", ".mkv", ".ts", ".mov"}
 STATE_FILE = ".track_live_state.json"
@@ -270,8 +273,12 @@ def _load_state(watch: Path) -> dict:
 
 
 def _save_state(watch: Path, state: dict) -> None:
-    with open(watch / STATE_FILE, "w", encoding="utf-8") as f:
+    temporary = watch / (STATE_FILE + ".tmp")
+    with open(temporary, "w", encoding="utf-8") as f:
         json.dump(state, f, ensure_ascii=False, indent=1)
+        f.flush()
+        os.fsync(f.fileno())
+    temporary.replace(watch / STATE_FILE)
 
 
 def _segments(watch: Path) -> list[Path]:
@@ -352,11 +359,37 @@ def main() -> int:
                         "yüklenir — yavaş, ama segment çökmesi izleyiciyi etkilemez)")
     args = p.parse_args()
 
-    watch = Path(args.watch)
+    watch = Path(args.watch).resolve()
+    if args.calibration:
+        args.calibration = str(Path(args.calibration).resolve())
+    # Child workers run from the project root. Resolve model paths against the
+    # caller first so warm and isolated workers select the same model/backend.
+    from app.tracking.detect import DetectorConfig
+
+    if args.weights:
+        args.weights = str(Path(args.weights).resolve())
+    onnx_path = (Path(args.onnx_model) if args.onnx_model
+                 else DetectorConfig(weights=args.weights).default_onnx_path())
+    args.onnx_model = str(onnx_path.resolve())
     watch.mkdir(parents=True, exist_ok=True)
     out_dir = watch / "frames"
     out_dir.mkdir(exist_ok=True)
     state = _load_state(watch)
+    anchor_context = {
+        "match_id": args.match_id, "home_team": args.home_team, "away_team": args.away_team,
+        "calibration_sha256": (hashlib.sha256(Path(args.calibration).read_bytes()).hexdigest()
+                               if args.calibration else None),
+        "refine_identities": args.refine_identities,
+        "camera": args.camera, "per_frame_calibration": args.per_frame_calibration,
+        "reacquire": args.reacquire,
+    }
+    anchor = None
+    if state.get("team_anchor") is not None:
+        if state.get("team_anchor_context") != anchor_context:
+            p.error("kayıtlı takım renk çapası bu maç/takım/kalibrasyon ayarlarıyla uyuşmuyor")
+        anchor = valid_team_anchor(state["team_anchor"])
+        if anchor is None:
+            p.error("kayıtlı takım renk çapası geçersiz")
     processed: set[str] = set(state.get("processed", []))
     index = len(processed)
     retries: dict[str, int] = {}
@@ -368,8 +401,6 @@ def main() -> int:
     warm: WarmTracker | None = None
     if not args.isolate:
         # Ağır import'lar (torch/rfdetr) yalnız sıcak yolda; --isolate'te alt süreç yükler.
-        from app.tracking.detect import DetectorConfig
-
         warm = WarmTracker(
             calibration=args.calibration,
             detector_cfg=DetectorConfig(
@@ -385,15 +416,19 @@ def main() -> int:
             camera=args.camera, per_frame_mode=args.per_frame_calibration,
             reacquire_mode=args.reacquire, segment_seconds=args.segment_seconds,
         )
+        warm.team_anchor = anchor
 
     def _done(name: str) -> None:
         nonlocal index
         processed.add(name)
         index += 1
-        _save_state(watch, {"processed": sorted(processed)})
+        _save_state(watch, {"processed": sorted(processed),
+                            "team_anchor": anchor.tolist() if anchor is not None else None,
+                            "team_anchor_context": anchor_context})
 
     def _track_isolated(seg: Path, offset: float, frames_json: Path) -> bool:
         """Eski yol: her segment ayrı süreçte (model her seferinde yeniden yüklenir)."""
+        nonlocal anchor
         cmd = [
             sys.executable, "-m", "scripts.track_video",
             *(["--dense-events"] if args.dense_events else []),
@@ -417,16 +452,23 @@ def main() -> int:
         cmd += ["--backend", args.backend]
         if args.onnx_model:
             cmd += ["--onnx-model", args.onnx_model]
-        rc = subprocess.run(cmd, check=False).returncode  # noqa: S603 — sabit komut listesi
+        if anchor is not None:
+            cmd += ["--team-anchor-json", json.dumps(anchor.tolist(), allow_nan=False)]
+        rc = subprocess.run(cmd, check=False, cwd=str(PROJECT_ROOT)).returncode  # noqa: S603
         if rc != 0 or not frames_json.exists():
             print(f"  {seg.name}: işlenemedi (çıkış {rc}) — atlandı", flush=True)
             return False
+        last_summary.clear()
+        last_summary.update(json.loads(frames_json.read_text(encoding="utf-8")).get("summary") or {})
+        if anchor is None:
+            anchor = valid_team_anchor(last_summary.get("team_colors"))
         return True
 
     last_summary: dict = {}
 
     def _track_warm(seg: Path, offset: float, frames_json: Path) -> bool:
         """Sıcak model: aynı süreçte, dedektör yeniden yüklenmeden."""
+        nonlocal anchor
         assert warm is not None
         last_summary.clear()
         last_summary.update(warm.run(
@@ -434,6 +476,7 @@ def main() -> int:
             match_id=args.match_id, home_team=args.home_team,
             away_team=args.away_team, period=args.period,
         ))
+        anchor = warm.team_anchor
         return frames_json.exists()
 
     def _calib_note() -> str:
