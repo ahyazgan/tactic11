@@ -454,3 +454,37 @@ def test_prior_source_has_one_home():
 
     assert imported is PRIOR_SOURCE
     assert "yedi küme" in PRIOR_SOURCE
+
+
+def test_within_group_baseline_uses_the_same_cases_as_the_hit_average() -> None:
+    """Rastgele taban, isabetin ölçüldüğü AYNI vakalardan gelmeli.
+
+    Eski hâlde isabet yalnız sinyali TANIMLI vakalardan, taban ise TÜM
+    vakalardan hesaplanıyordu. İki farklı payda: sinyalin tanımsız olduğu
+    vakaların grup boyutu ötekilerden farklıysa fark sistematik olarak kayar.
+
+    Yayımlanmış ölçümde (docs/measurements/within-group-signal-2026-09-14.json)
+    seçilen iki sinyal de 329 vakanın hepsinde tanımlıydı, bu yüzden +0,001
+    sonucu ETKİLENMEDİ. Ama pas isabeti sinyalleri 321 ve 318 vakada tanımlıydı;
+    onlardan biri seçilseydi hata sayıya girerdi.
+    """
+    m = measure_within_group_signal
+    Case = m.Case
+
+    def case(mid: int, off: int, peers: tuple[int, ...],
+             feats: dict[int, dict[str, float]]) -> object:
+        return Case(mid, off, "MID", peers, feats)
+
+    # İki vaka: birincide sinyal tanımlı (2 aday), ikincide TANIMSIZ (4 aday).
+    # Eski kural tabanı (1/2 + 1/4) / 2 = 0.375 sayardı; isabet ise yalnız
+    # birinci vakadan gelirdi. Doğrusu: taban da yalnız birinci vakadan, 1/2.
+    tanimli = case(1, 7, (7, 8), {7: {"x": 2.0}, 8: {"x": 1.0}})
+    tanimsiz = case(2, 9, (9, 10, 11, 12), {p: {} for p in (9, 10, 11, 12)})
+
+    value, n, rnd = m._mean_hit([tanimli, tanimsiz], "x", 1)
+    assert n == 1, "sinyali tanımsız vaka isabet ortalamasına girmemeli"
+    assert value == 1.0
+    assert rnd == 0.5, "taban da yalnız o tek vakadan gelmeli, 0.375 değil"
+
+    # Hiç tanımlı vaka yoksa üçü de None döner — uydurma taban üretilmez.
+    assert m._mean_hit([tanimsiz], "x", 1) == (None, 0, None)

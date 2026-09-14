@@ -86,7 +86,7 @@ Saf fonksiyonlar; DB/IO yok. Sayısal eşikler sabit ve dokümante — bir sonra
 """
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 from app.engine.confidence.attribution import MIN_SAMPLES
@@ -185,6 +185,32 @@ class SplitHalfAgreement:
     engine_f1: float | None         # iki yarının ortalaması
     baseline_f1: float | None
     verdict: str                    # "taban çizgisini geçiyor" | "aynı" | "altında" | "yetersiz veri"
+    note: str
+
+
+@dataclass(frozen=True)
+class DefinitionChoice:
+    """İki motor TANIMI arasındaki seçimin bedeli ÖDENMİŞ hâli.
+
+    `split_half_agreement` eşik seçiminin bedelini ödüyor ama hangi TANIMIN
+    (dar: külliyata yazılmış birincil öneri; geniş: panelde değişiklik sinyali
+    yanmış) raporlanacağı ayrı bir seçimdir. İki tanımın ölçülmüş F1'inden
+    büyüğünü almak, tabanı sabitken, tam olarak deponun başka yerde eleştirdiği
+    çoklu-karşılaştırma tuzağıdır: hiçbir bilgi olmasa bile iki adayın en iyisi
+    tabanın üstüne çıkar.
+
+    Burada tanım ÖTEKİ yarıda seçilir, bu yarıda ölçülür. İki yarı farklı tanım
+    seçerse bu da raporlanır — kararsızlık, sonucun gürültü olduğunun işaretidir
+    (aynı kural `docs/MAC-ICI-YUK-PLANI.md`'de yük sinyalleri için de yazılı).
+    """
+
+    chosen_for_a: str | None        # B'de seçildi, A'da ölçüldü
+    chosen_for_b: str | None
+    engine_f1: float | None         # iki yarının ortalaması, ÖRNEKLEM DIŞI
+    baseline_f1: float | None       # saat kuralı; tanımdan bağımsız (hedefler ortak)
+    in_sample: dict[str, float | None]   # yalnız gösterim; hüküm buradan VERİLMEZ
+    stable: bool                    # iki yarı aynı tanımı mı seçti
+    verdict: str
     note: str
 
 
@@ -804,6 +830,100 @@ def apply_shape_gate(
     if prior.threshold is None or prior.support_threshold is None:
         return _shape_obs(states, lambda s: False)
     return _shape_obs(states, _gated(prior.table, prior.threshold, prior.support_threshold))
+
+
+def split_half_definition(
+    definitions: Mapping[str, Sequence[TickObservation]], *,
+    candidates: Sequence[float] = DEFAULT_MINUTE_THRESHOLDS,
+) -> DefinitionChoice:
+    """Tanımı ÖTEKİ yarıda seç, bu yarıda ölç — seçim bedeli ödensin.
+
+    Tanımlar AYNI tikleri ve AYNI hedefleri paylaşmalıdır; yalnız motor bayrağı
+    değişir. Paylaşmıyorlarsa taban çizgisi tanımdan tanıma kayar ve kıyas
+    anlamını yitirir, bu yüzden kontrol edilir.
+    """
+    names = sorted(definitions)
+    if len(names) < 2:
+        only = names[0] if names else None
+        obs = list(definitions[only]) if only else []
+        sh = split_half_agreement(obs, candidates=candidates) if obs else None
+        return DefinitionChoice(
+            chosen_for_a=only, chosen_for_b=only,
+            engine_f1=sh.engine_f1 if sh else None,
+            baseline_f1=sh.baseline_f1 if sh else None,
+            in_sample={only: agreement(obs).f1} if only else {},
+            stable=True,
+            verdict=sh.verdict if sh else "yetersiz veri",
+            note="tek tanım — seçim yok, bedel de yok" if sh else "tanım verilmedi",
+        )
+
+    keys = {n: [(o.match_external_id, o.minute, o.coach_acted) for o in definitions[n]]
+            for n in names}
+    if len({tuple(v) for v in keys.values()}) != 1:
+        return DefinitionChoice(
+            chosen_for_a=None, chosen_for_b=None, engine_f1=None, baseline_f1=None,
+            in_sample={n: agreement(definitions[n]).f1 for n in names},
+            stable=False, verdict="yetersiz veri",
+            note=("tanımlar aynı tik/hedef kümesini paylaşmıyor — taban çizgisi "
+                  "tanımdan tanıma kayar, kıyas geçersiz"),
+        )
+
+    halves = {n: _halves(list(definitions[n])) for n in names}
+    a_len, b_len = (len(h) for h in halves[names[0]])
+    if a_len < MIN_TICKS_PER_HALF or b_len < MIN_TICKS_PER_HALF:
+        return DefinitionChoice(
+            chosen_for_a=None, chosen_for_b=None, engine_f1=None, baseline_f1=None,
+            in_sample={n: agreement(definitions[n]).f1 for n in names},
+            stable=False, verdict="yetersiz veri",
+            note=(f"yarılar {a_len}/{b_len} tik — hüküm için her yarıda en az "
+                  f"{MIN_TICKS_PER_HALF} gerekir"),
+        )
+
+    def _pick(idx: int) -> str:
+        """idx yarısında en iyi F1'i veren tanımın adı (berabere kalırsa ada göre)."""
+        return min(names, key=lambda n: (-(agreement(halves[n][idx]).f1 or -1.0), n))
+
+    # B'de (idx 1) seç → A'da (idx 0) ölç, ve tersi.
+    chosen_for_a, chosen_for_b = _pick(1), _pick(0)
+    f1_a = agreement(halves[chosen_for_a][0]).f1
+    f1_b = agreement(halves[chosen_for_b][1]).f1
+
+    # Taban tanımdan bağımsız: hedefler ortak, saat kuralı motora bakmıyor.
+    ref_a, ref_b = halves[names[0]]
+    t_a, t_b = _best_threshold(ref_b, candidates), _best_threshold(ref_a, candidates)
+    base_a = minute_rule(ref_a, t_a) if t_a is not None else agreement([])
+    base_b = minute_rule(ref_b, t_b) if t_b is not None else agreement([])
+
+    def _mean(x: float | None, y: float | None) -> float | None:
+        vals = [v for v in (x, y) if v is not None]
+        return round(sum(vals) / len(vals), 3) if vals else None
+
+    eng_f1, base_f1 = _mean(f1_a, f1_b), _mean(base_a.f1, base_b.f1)
+    stable = chosen_for_a == chosen_for_b
+    in_sample = {n: agreement(definitions[n]).f1 for n in names}
+
+    if eng_f1 is None or base_f1 is None:
+        verdict = "yetersiz veri"
+        note = "bir kolda hiç bayrak ya da hiç hamle yok — F1 tanımsız"
+    else:
+        gap = eng_f1 - base_f1
+        verdict = ("taban çizgisini geçiyor" if gap >= MIN_F1_GAIN
+                   else "taban çizgisinin altında" if gap <= -MIN_F1_GAIN
+                   else "taban çizgisiyle aynı")
+        best_in = max(v for v in in_sample.values() if v is not None) if any(
+            v is not None for v in in_sample.values()) else None
+        note = (f"tanım öteki yarıda seçildi: A için '{chosen_for_a}', B için "
+                f"'{chosen_for_b}'" + ("" if stable else " — İKİ YARI FARKLI TANIM SEÇTİ, "
+                                       "sonuç kararsız")
+                + f" · örneklem içi en iyi {best_in}"
+                + (" (örneklem dışı ile arasındaki fark seçim bedelidir)"
+                   if best_in is not None and eng_f1 is not None and best_in > eng_f1 else ""))
+
+    return DefinitionChoice(
+        chosen_for_a=chosen_for_a, chosen_for_b=chosen_for_b,
+        engine_f1=eng_f1, baseline_f1=base_f1, in_sample=in_sample,
+        stable=stable, verdict=verdict, note=note,
+    )
 
 
 def split_half_shape_gate(states: Sequence[ShapeState]) -> ShapeGate:

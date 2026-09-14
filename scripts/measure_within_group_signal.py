@@ -160,13 +160,22 @@ def expected_hit(case: Case, signal: str, direction: int) -> float | None:
     return (1.0 / len(tied)) if case.player_off in tied else 0.0
 
 
-def _mean_hit(cases: Sequence[Case], signal: str, direction: int) -> tuple[float | None, int]:
-    vals = [h for c in cases if (h := expected_hit(c, signal, direction)) is not None]
-    return (statistics.mean(vals), len(vals)) if vals else (None, 0)
+def _mean_hit(cases: Sequence[Case], signal: str,
+              direction: int) -> tuple[float | None, int, float | None]:
+    """Ortalama isabet, örneklem büyüklüğü ve AYNI örneklemin rastgele tabanı.
 
-
-def _random_baseline(cases: Sequence[Case]) -> float:
-    return statistics.mean(1.0 / len(c.peers) for c in cases) if cases else 0.0
+    Taban buradan döner, ayrı bir fonksiyondan değil. Sebebi bir hata: taban
+    TÜM vakalardan, isabet ise yalnız sinyali TANIMLI vakalardan hesaplanıyordu
+    — iki farklı payda. Sinyali tanımsız vakaların grup boyutu ötekilerden
+    farklıysa (ki farklı: sinyal çoğu kez az oynamış oyuncuda tanımsız) fark
+    sistematik olarak kayıyor. Aynı kümeden hesaplanması ŞART.
+    """
+    pairs = [(h, 1.0 / len(c.peers)) for c in cases
+             if (h := expected_hit(c, signal, direction)) is not None]
+    if not pairs:
+        return (None, 0, None)
+    return (statistics.mean(h for h, _ in pairs), len(pairs),
+            statistics.mean(r for _, r in pairs))
 
 
 def _halves(cases: Sequence[Case]) -> tuple[list[Case], list[Case]]:
@@ -183,12 +192,13 @@ def _split_half(cases: Sequence[Case]) -> dict[str, Any]:
     for train, test, label in ((a, b, "A'da seç → B'de ölç"), (b, a, "B'de seç → A'da ölç")):
         best = max(((s, d) for s in SIGNALS for d in DIRECTIONS),
                    key=lambda sd: _mean_hit(train, *sd)[0] or 0.0)
-        value, n = _mean_hit(test, *best)
+        value, n, rnd = _mean_hit(test, *best)
         rows.append({"kol": label, "secilen_sinyal": best[0], "yon": best[1],
                      "isabet_at_1": None if value is None else round(value, 3),
-                     "rastgele": round(_random_baseline(test), 3), "n": n})
+                     "rastgele": None if rnd is None else round(rnd, 3), "n": n,
+                     "not": "isabet ve rastgele AYNI vakalardan (sinyali tanımlı olanlar)"})
     hits = [r["isabet_at_1"] or 0.0 for r in rows]
-    rnd = [r["rastgele"] for r in rows]
+    rnd = [r["rastgele"] or 0.0 for r in rows]
     return {"kollar": rows,
             "ortalama": round(statistics.mean(hits), 3),
             "rastgele_ortalama": round(statistics.mean(rnd), 3),
@@ -229,9 +239,10 @@ def main() -> int:
     split = _split_half(cases)
     perm = _permutation(cases, split["ortalama"], args.permutations, args.seed)
     in_sample = {
-        f"{s} ({d:+d})": {"isabet_at_1": None if v is None else round(v, 3), "n": n}
+        f"{s} ({d:+d})": {"isabet_at_1": None if v is None else round(v, 3), "n": n,
+                          "rastgele": None if r is None else round(r, 3)}
         for s in SIGNALS for d in DIRECTIONS
-        for v, n in [_mean_hit(cases, s, d)]
+        for v, n, r in [_mean_hit(cases, s, d)]
     }
     verdict = ("grup içi bilgi VAR" if split["fark"] >= 0.05 and perm["p"] <= 0.05
                else "grup içi bilgi YOK")

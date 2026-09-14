@@ -225,13 +225,30 @@ def _compute_live_snapshot(
     # eligible=None (tüm aktörler), VAEP current_minute'a normalize.
     appearances = feed.appearances()
     eligible_ids: set[int] | None = None
+    # Kim çıkar önseli ve kullanılmış hak — admin'deki canlı karar ucuyla AYNI
+    # şekilde kurulur. Geçilmezse elit zamanlama penceresi hak-bitti kapısını
+    # hiç göremez (subs_used=None) ve mevki önseli devreye girmez: WebSocket
+    # panelinde ölçülen motor, admin ucunda ölçülenle aynı motor olmaz.
+    off_prior: dict[int, float] | None = None
+    subs_used: int | None = None
     if appearances is not None:
         from app.engine.live_lineup import resolve_on_pitch
+        from app.engine.live_sub_recommendation import elite_off_prior
         eligible_ids = set(
             resolve_on_pitch(
                 appearances, current_minute, team_external_id=my_team_id,
             ).player_ids
         )
+        # start_minute > 0 olan her görünüm bir değişikliktir; aynı dakikadaki
+        # iki değişiklik AYRI sayılır (tekilleştirmek hakkı eksik gösterirdi).
+        subs_used = sum(
+            1 for a in appearances
+            if a.team_external_id == my_team_id and 0.0 < a.start_minute <= current_minute
+        )
+        off_prior = {
+            a.player_external_id: elite_off_prior(a.position, a.start_minute == 0.0)
+            for a in appearances if a.team_external_id == my_team_id
+        }
 
     snapshot: dict[str, Any] = {
         "match_id": match_id,
@@ -265,6 +282,7 @@ def _compute_live_snapshot(
             my_team_id, passes_so_far, defs_so_far,
             current_minute=current_minute, my_score=my_score,
             opponent_score=opp_score, eligible_player_ids=eligible_ids,
+            off_prior=off_prior,
         )
         snapshot["live_sub_recommendation"] = engine_result_to_dict(sub_rec)["value"]
         shape = compute_live_shape_drift(
@@ -288,7 +306,8 @@ def _compute_live_snapshot(
         timing = compute_sub_timing(
             my_team_id, passes_so_far, defs_so_far,
             current_minute=current_minute, my_score=my_score,
-            opponent_score=opp_score,
+            opponent_score=opp_score, eligible_player_ids=eligible_ids,
+            off_prior=off_prior, subs_used=subs_used,
         ).value
         snapshot["sub_timing"] = {
             "package": list(timing.package_recommendation),

@@ -98,10 +98,16 @@ artıyor, hiçbirinde düşmüyor, yakalama sabit:
   La Liga 2015/16      0.741 → 0.751      0.900 (sabit)
   Premier League 15/16 0.693 → 0.698      0.884 (sabit)
 
-Tablonun KENDİSİ hâlâ karışımdan geliyor. Kapı+yeniden fit ölçüldü ve 5-hak
-döneminde 0.746'ya çıkıyor (kapısız fit 0.719); yeniden fit EDİLMEDİ çünkü
-5-hak örneği yalnız 46 maç. Hangi veriyle fit edileceği ayrı bir karardır.
-docs/KARNE-DEGISIKLIK-HAKKI.md.
+Yukarıdaki dört satırlık ölçüm ESKİ tabloya aittir (tek kulüp, 3200 tik) ve
+kapının tek başına ne yaptığını gösterir. O sırada tablonun kendisi hâlâ
+karışımdan geliyordu ve "yeniden fit edilmedi, çünkü 5-hak örneği yalnız 46
+maç" yazıyordu.
+
+**Sonradan yapıldı.** 5-hak örneği altı ayrı kümeyle genişletildi ve tablo
+yedi kümeden yeniden fit edildi (yukarı bakın, 16559 tik). Karışım sorunu
+böylece kapandı: hak-bitmiş tikler elendiği için "3 kullanılmış" hücresi artık
+her rejimde aynı şeyi anlatıyor. docs/KARNE-DEGISIKLIK-HAKKI.md ve
+docs/KARNE-ZAMANLAMA-YENIDEN-FIT.md.
 """
 from __future__ import annotations
 
