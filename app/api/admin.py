@@ -3395,6 +3395,19 @@ def live_decision_endpoint(
         session, match_id, my_team_id, opp_id, current_minute,
     ))
 
+    # Kadro farkındalığı SESSİZ kalmasın: kadro girilmemişse zamanlama ve
+    # "kim çıkar" tabloları çalışmaz ve panel boş öneri döner. Sebebini söyle.
+    out["kadro"] = {
+        "girildi": bool(appearances),
+        "kullanilmis_hak": subs_used,
+        "degisiklik_hakki": subs_allowed,
+        "sahadaki": len(eligible_ids) if eligible_ids is not None else None,
+        "uyari": (None if appearances else
+                  "kadro girilmedi: zamanlama penceresi ve 'kim çıkar' önerisi bu "
+                  "maçta devre dışı. PUT /admin/matches/{id}/lineup ile ilk 11'i, "
+                  "POST /admin/matches/{id}/substitution ile değişiklikleri girin."),
+    }
+
     # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
     from app.api.context_pipeline import run_context_pipeline
     out.update(run_context_pipeline(
