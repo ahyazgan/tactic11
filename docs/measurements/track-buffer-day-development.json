@@ -1,0 +1,961 @@
+{
+  "results": {
+    "baseline": {
+      "score": {
+        "correct": 195,
+        "wrong": 22,
+        "unassigned": 1,
+        "kit_boxes_missing": 0,
+        "other_assigned": 16,
+        "not_person_remaining": 1,
+        "conflicting_track_labels": 7
+      },
+      "blue_slot": 0,
+      "per_segment_scores": {
+        "0": {
+          "correct": 68,
+          "wrong": 5,
+          "unassigned": 1,
+          "kit_boxes_missing": 0,
+          "other_assigned": 10,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "3": {
+          "correct": 72,
+          "wrong": 7,
+          "unassigned": 0,
+          "kit_boxes_missing": 0,
+          "other_assigned": 3,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 4
+        },
+        "6": {
+          "correct": 55,
+          "wrong": 10,
+          "unassigned": 0,
+          "kit_boxes_missing": 0,
+          "other_assigned": 3,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        }
+      },
+      "segments": {
+        "0": {
+          "lost_frames": 7,
+          "lost_seconds": 0.56,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": true,
+            "skip_reason": null,
+            "observations_before": 10680,
+            "observations_removed": 1819,
+            "tracks_removed": 27,
+            "min_field_observations": 2,
+            "tolerance_px": 2.16,
+            "rejected_tracks": [
+              {
+                "continuity_id": 0,
+                "track_id": 6
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 24
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 25
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 27
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 28
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 29
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 32
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 38
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 66
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 79
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 84
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 95
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 108
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 117
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 120
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 123
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 124
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 141
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 156
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 159
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 161
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 178
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 180
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 186
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 195
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 205
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 207
+              }
+            ]
+          },
+          "tracks": 94,
+          "observations": 8861,
+          "palette": [
+            [
+              119.88636363636364,
+              149.66555669398906,
+              187.96190476190475
+            ],
+            [
+              205.40553289138194,
+              216.75305084745764,
+              235.54464150943397
+            ]
+          ]
+        },
+        "3": {
+          "lost_frames": 7,
+          "lost_seconds": 0.56,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": true,
+            "skip_reason": null,
+            "observations_before": 11269,
+            "observations_removed": 2441,
+            "tracks_removed": 28,
+            "min_field_observations": 2,
+            "tolerance_px": 2.16,
+            "rejected_tracks": [
+              {
+                "continuity_id": 0,
+                "track_id": 1
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 2
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 3
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 4
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 28
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 29
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 30
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 31
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 32
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 41
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 42
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 53
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 60
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 61
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 81
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 82
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 89
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 91
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 97
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 104
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 113
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 115
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 123
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 138
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 141
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 150
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 155
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 156
+              }
+            ]
+          },
+          "tracks": 85,
+          "observations": 8828,
+          "palette": [
+            [
+              121.64968528717546,
+              161.73677248677248,
+              215.83181225554108
+            ],
+            [
+              236.57256410256412,
+              239.08695652173913,
+              245.15075757575758
+            ]
+          ]
+        },
+        "6": {
+          "lost_frames": 7,
+          "lost_seconds": 0.56,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": true,
+            "skip_reason": null,
+            "observations_before": 10346,
+            "observations_removed": 2955,
+            "tracks_removed": 37,
+            "min_field_observations": 2,
+            "tolerance_px": 2.16,
+            "rejected_tracks": [
+              {
+                "continuity_id": 0,
+                "track_id": 2
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 3
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 25
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 26
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 28
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 29
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 30
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 35
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 39
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 40
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 41
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 42
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 47
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 56
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 62
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 71
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 81
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 82
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 83
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 86
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 99
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 100
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 102
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 108
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 110
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 117
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 119
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 120
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 124
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 125
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 127
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 150
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 154
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 165
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 169
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 170
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 173
+              }
+            ]
+          },
+          "tracks": 78,
+          "observations": 7391,
+          "palette": [
+            [
+              106.84402744148508,
+              128.53197674418607,
+              166.2883896151053
+            ],
+            [
+              182.89128205128205,
+              193.05088702147526,
+              231.51069769602378
+            ]
+          ]
+        }
+      }
+    },
+    "seconds_once": {
+      "score": {
+        "correct": 194,
+        "wrong": 23,
+        "unassigned": 1,
+        "kit_boxes_missing": 0,
+        "other_assigned": 13,
+        "not_person_remaining": 1,
+        "conflicting_track_labels": 8
+      },
+      "blue_slot": 0,
+      "per_segment_scores": {
+        "0": {
+          "correct": 68,
+          "wrong": 5,
+          "unassigned": 1,
+          "kit_boxes_missing": 0,
+          "other_assigned": 9,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "3": {
+          "correct": 71,
+          "wrong": 8,
+          "unassigned": 0,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 5
+        },
+        "6": {
+          "correct": 55,
+          "wrong": 10,
+          "unassigned": 0,
+          "kit_boxes_missing": 0,
+          "other_assigned": 3,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        }
+      },
+      "segments": {
+        "0": {
+          "lost_frames": 19,
+          "lost_seconds": 1.52,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": true,
+            "skip_reason": null,
+            "observations_before": 10732,
+            "observations_removed": 1854,
+            "tracks_removed": 24,
+            "min_field_observations": 2,
+            "tolerance_px": 2.16,
+            "rejected_tracks": [
+              {
+                "continuity_id": 0,
+                "track_id": 6
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 24
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 25
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 27
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 28
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 29
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 32
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 38
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 80
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 89
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 99
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 108
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 111
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 114
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 115
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 130
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 142
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 143
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 145
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 161
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 163
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 169
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 178
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 187
+              }
+            ]
+          },
+          "tracks": 91,
+          "observations": 8878,
+          "palette": [
+            [
+              121.82608695652173,
+              154.47435897435898,
+              199.47747747747746
+            ],
+            [
+              205.03823365446195,
+              216.8810251290378,
+              235.82913893653517
+            ]
+          ]
+        },
+        "3": {
+          "lost_frames": 19,
+          "lost_seconds": 1.52,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": true,
+            "skip_reason": null,
+            "observations_before": 11331,
+            "observations_removed": 2416,
+            "tracks_removed": 22,
+            "min_field_observations": 2,
+            "tolerance_px": 2.16,
+            "rejected_tracks": [
+              {
+                "continuity_id": 0,
+                "track_id": 1
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 2
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 4
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 28
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 29
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 30
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 31
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 32
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 41
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 42
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 50
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 58
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 75
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 81
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 94
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 99
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 101
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 110
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 124
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 134
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 137
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 138
+              }
+            ]
+          },
+          "tracks": 82,
+          "observations": 8915,
+          "palette": [
+            [
+              121.64968528717546,
+              161.83793501751248,
+              217.83730676103556
+            ],
+            [
+              236.48905982905984,
+              239.13607085346217,
+              246.02344654319688
+            ]
+          ]
+        },
+        "6": {
+          "lost_frames": 19,
+          "lost_seconds": 1.52,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": true,
+            "skip_reason": null,
+            "observations_before": 10421,
+            "observations_removed": 2792,
+            "tracks_removed": 31,
+            "min_field_observations": 2,
+            "tolerance_px": 2.16,
+            "rejected_tracks": [
+              {
+                "continuity_id": 0,
+                "track_id": 2
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 3
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 25
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 26
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 28
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 29
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 30
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 31
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 35
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 40
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 41
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 42
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 46
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 60
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 69
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 78
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 81
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 82
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 91
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 92
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 94
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 100
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 102
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 108
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 112
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 123
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 132
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 140
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 143
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 144
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 146
+              }
+            ]
+          },
+          "tracks": 74,
+          "observations": 7629,
+          "palette": [
+            [
+              106.54285714285714,
+              130.55,
+              168.03529411764706
+            ],
+            [
+              182.76333333333332,
+              190.03083333333333,
+              232.7594936708861
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "input_sha256": {
+    "data/tracking/bench/identity_day_detections/seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    "data/tracking/bench/identity_day_detections/seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+    "data/tracking/bench/identity_day_detections/seg_0006.json": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9",
+    "docs/measurements/daylight-117093-labels.json": "3ee2db96a0836730320d05b5e3edf120ae96871bf1776164ec7a6d7788e5f872",
+    "docs/measurements/perimeter-control-day-labels.json": "02aecfd791292dadf1a0cbe3ce1e62df47c6d7dbfb405910dac0231217c91fe8"
+  },
+  "experiment_sha256": "db6897bcde785b705abf63583fb751b9c18639f889618ff90a9aa17399f5c135",
+  "regressions": [
+    "correct",
+    "wrong",
+    "conflicting_track_labels"
+  ],
+  "no_regression": false,
+  "scope": "Development only. Same detector boxes; kit conflicts are not complete ID-switch ground truth."
+}

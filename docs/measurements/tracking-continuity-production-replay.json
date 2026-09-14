@@ -1,0 +1,31 @@
+{
+  "results": {
+    "0": {
+      "frames": 375,
+      "persons_equal": true,
+      "colors_equal": true,
+      "tracker_resets": 0,
+      "effective_lost_track_seconds": 0.56,
+      "cache_sha256": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad"
+    },
+    "3": {
+      "frames": 375,
+      "persons_equal": true,
+      "colors_equal": true,
+      "tracker_resets": 0,
+      "effective_lost_track_seconds": 0.56,
+      "cache_sha256": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4"
+    },
+    "6": {
+      "frames": 375,
+      "persons_equal": true,
+      "colors_equal": true,
+      "tracker_resets": 0,
+      "effective_lost_track_seconds": 0.56,
+      "cache_sha256": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9"
+    }
+  },
+  "pipeline_sha256_lf": "1c115c589e955f0c627075525ead6ecb2d891641f5bf4776ce15b9c82188b792",
+  "supervision_version": "0.30.2",
+  "scope": "Real production collect_observations and ByteTrack; immutable cached detections/colours and recorded ROI inputs. No fresh model inference in this verification."
+}
