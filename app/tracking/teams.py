@@ -29,6 +29,10 @@ kimlikler merkezlerin öğrenilmesine katılmaz. Ölçüm ve sınırlar:
 docs/SABIT-KAMERA-SINYAL-KALITESI.md.
 
 Kimlik yine "tahmini": takım bilinir, oyuncu bilinmez.
+
+Üretim renk gözlemi artık `kit_color` ile çevredeki çim aydınlığına göre
+ölçeklenir. Yukarıdaki RGB sayıları tarihsel ham yöntem içindir. Yeni doğrudan
+görüntü ölçümü ve kapsam kaybı: docs/YEREL-CIM-ISIGI-SONUCLARI.md.
 """
 
 from __future__ import annotations
@@ -90,6 +94,55 @@ def torso_color(frame_rgb: np.ndarray, xyxy: tuple[float, float, float, float]) 
     k = max(4, int(len(kept) * BRIGHT_FRACTION))
     brightest = kept[np.argsort(kept.max(axis=1))[-k:]]
     return brightest.mean(axis=0)
+
+
+def normalize_kit_light(
+    frame_rgb: np.ndarray, xyxy: tuple[float, float, float, float],
+    color: np.ndarray, *, grass_only: bool = True,
+) -> np.ndarray:
+    """Scale shirt colour by nearby field illumination, with bounded gain.
+
+    Side bands avoid the shirt itself; green pixels exclude most neighbouring
+    players and field markings. Sparse or very dark surroundings retain the
+    raw colour. Parameters were frozen before the 1/7 control clips were read:
+    docs/measurements/kit-local-light-decision.json.
+    """
+    x1, y1, x2, y2 = (round(v) for v in xyxy)
+    height, width = frame_rgb.shape[:2]
+    bw, bh = x2 - x1, y2 - y1
+    if bw < 2 or bh < 4 or x2 <= 0 or x1 >= width or y2 <= 0 or y1 >= height:
+        return color
+    top, bottom = max(0, y1 + round(.1 * bh)), min(height, y1 + round(.55 * bh))
+    if bottom <= top:
+        return color
+    bands = []
+    for left, right in ((x1 - bw, x1 - round(.1 * bw)),
+                        (x2 + round(.1 * bw), x2 + bw)):
+        left, right = max(0, min(width, left)), max(0, min(width, right))
+        bands.append(frame_rgb[top:bottom, left:right].reshape(-1, 3))
+    pixels = np.concatenate(bands).astype(float)
+    if len(pixels) < 8:
+        return color
+    if grass_only:
+        r, g, b = pixels.T
+        green = (g > r * 1.05) & (g > b * 1.05)
+        if green.sum() >= 8:
+            pixels = pixels[green]
+    illumination = float(np.median(pixels.max(axis=1)))
+    if illumination < 20:
+        return color
+    return np.clip(color * np.clip(80.0 / illumination, .5, 3.0), 0, 255)
+
+
+def kit_color(
+    frame_rgb: np.ndarray, xyxy: tuple[float, float, float, float], *,
+    normalize_light: bool = True,
+) -> np.ndarray | None:
+    """Production shirt observation; raw mode keeps historical caches reproducible."""
+    color = torso_color(frame_rgb, xyxy)
+    if color is None or not normalize_light:
+        return color
+    return normalize_kit_light(frame_rgb, xyxy, color)
 
 
 def kmeans(features: np.ndarray, k: int, *, iters: int = 30, n_init: int = 8, seed: int = 0) -> tuple[np.ndarray, np.ndarray]:

@@ -1,0 +1,1295 @@
+{
+  "selection": "all cached person boxes nearest 5 and 20 seconds; earlier frame breaks ties",
+  "predictions_visible_during_labeling": false,
+  "independently_adjudicated": false,
+  "reviewer": "Codex image inspection of new blinded segment 2/8 crops",
+  "input_sha256": {
+    "data/tracking/bench/kit_v2_control_raw/seg_0002.json": "f54bfdfc117369859ad4d465ae3921a46105a2d62bf5fbe22a9d17fb5e841c15",
+    "data\\tracking\\live\\990401\\seg_0002.mp4": "5f37a6af709645bfc136ed3265d89b87683f60449e7c6aa5da564015389a3a35",
+    "data/tracking/bench/kit_v2_control_raw/seg_0008.json": "68b5ea689494c020b4102c90e25ff741a33190e5c8719502c5e3aed0b7de6870",
+    "data\\tracking\\live\\990401\\seg_0008.mp4": "840e2df0e19573fc58f69bd1364192cc50bdcd77161a96fc30d3a058e869070e"
+  },
+  "records": [
+    {
+      "id": "2-124-2",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 2,
+      "bbox": [
+        1903.0,
+        610.75,
+        1933.0,
+        675.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-3",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 3,
+      "bbox": [
+        1875.5,
+        586.75,
+        1902.5,
+        648.125
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-7",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 7,
+      "bbox": [
+        1901.0,
+        686.25,
+        1940.0,
+        776.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-13",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 13,
+      "bbox": [
+        1889.5,
+        557.625,
+        1917.0,
+        603.875
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-14",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 14,
+      "bbox": [
+        2436.75,
+        707.0,
+        2491.0,
+        796.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-5",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 5,
+      "bbox": [
+        2306.25,
+        641.375,
+        2343.75,
+        710.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-8",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 8,
+      "bbox": [
+        2227.0,
+        587.875,
+        2260.0,
+        647.125
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-4",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 4,
+      "bbox": [
+        2243.25,
+        614.75,
+        2275.0,
+        675.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-6",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 6,
+      "bbox": [
+        2207.75,
+        581.0,
+        2237.75,
+        633.875
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-11",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 11,
+      "bbox": [
+        2289.25,
+        564.625,
+        2314.75,
+        607.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-9",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 9,
+      "bbox": [
+        2471.5,
+        596.5,
+        2501.0,
+        645.125
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-27",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 27,
+      "bbox": [
+        2516.0,
+        622.0,
+        2552.5,
+        675.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-17",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 17,
+      "bbox": [
+        2506.0,
+        596.0,
+        2539.0,
+        653.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-18",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 18,
+      "bbox": [
+        2541.0,
+        619.625,
+        2576.0,
+        674.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-12",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 12,
+      "bbox": [
+        1990.875,
+        534.75,
+        2015.1875,
+        572.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-24",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 24,
+      "bbox": [
+        2894.75,
+        698.0,
+        2927.5,
+        753.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-19",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 19,
+      "bbox": [
+        2642.421875,
+        592.0,
+        2670.3125,
+        638.875
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-124-23",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 23,
+      "bbox": [
+        2924.75,
+        657.625,
+        2953.0,
+        703.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "other",
+      "label_note": "visible kit outside blue/white palette; no role or team identity asserted"
+    },
+    {
+      "id": "2-124-20",
+      "segment": 2,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 20,
+      "bbox": [
+        2625.6640625,
+        923.5,
+        2701.75,
+        1060.375
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-43",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 43,
+      "bbox": [
+        1291.0,
+        773.5,
+        1345.0,
+        851.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-8",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 8,
+      "bbox": [
+        1994.0,
+        669.25,
+        2043.5,
+        750.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-34",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 34,
+      "bbox": [
+        1337.65625,
+        739.75,
+        1380.4375,
+        807.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-13",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 13,
+      "bbox": [
+        1688.75,
+        586.0,
+        1715.0,
+        632.625
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-56",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 56,
+      "bbox": [
+        1395.125,
+        687.5,
+        1430.25,
+        749.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-7",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 7,
+      "bbox": [
+        1878.5,
+        778.25,
+        1935.0,
+        878.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-33",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 33,
+      "bbox": [
+        1818.0,
+        549.5,
+        1843.5,
+        586.375
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-4",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 4,
+      "bbox": [
+        2175.375,
+        758.0,
+        2228.0,
+        860.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-45",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 45,
+      "bbox": [
+        2355.0,
+        663.75,
+        2395.5,
+        733.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-18",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 18,
+      "bbox": [
+        2610.5,
+        763.25,
+        2660.5,
+        854.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-28",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 28,
+      "bbox": [
+        2518.5,
+        625.75,
+        2554.5,
+        688.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-32",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 32,
+      "bbox": [
+        1959.85546875,
+        621.75,
+        1994.25,
+        681.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-16",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 16,
+      "bbox": [
+        2450.25,
+        610.625,
+        2485.0,
+        676.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-36",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 36,
+      "bbox": [
+        2396.5,
+        577.375,
+        2427.5,
+        636.375
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-24",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 24,
+      "bbox": [
+        2647.0,
+        694.75,
+        2690.0,
+        764.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-9",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 9,
+      "bbox": [
+        2180.25,
+        560.125,
+        2205.375,
+        605.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-40",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 40,
+      "bbox": [
+        2070.5,
+        567.75,
+        2096.0,
+        614.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-23",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 23,
+      "bbox": [
+        2944.0,
+        676.5,
+        2974.0,
+        727.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "other",
+      "label_note": "visible kit outside blue/white palette; no role or team identity asserted"
+    },
+    {
+      "id": "2-500-48",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 48,
+      "bbox": [
+        1186.0,
+        876.25,
+        1249.0,
+        975.625
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-53",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 53,
+      "bbox": [
+        1734.5,
+        902.25,
+        1803.5,
+        1035.875
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "2-500-14",
+      "segment": 2,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 14,
+      "bbox": [
+        2178.25,
+        896.4375,
+        2230.75,
+        1040.125
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0002.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-2",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 2,
+      "bbox": [
+        1273.0,
+        670.5,
+        1303.5,
+        722.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-4",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 4,
+      "bbox": [
+        1871.5,
+        639.875,
+        1908.0,
+        709.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-5",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 5,
+      "bbox": [
+        1566.25,
+        668.0,
+        1599.0,
+        734.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-1",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 1,
+      "bbox": [
+        1421.6875,
+        699.0,
+        1459.375,
+        766.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-12",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 12,
+      "bbox": [
+        2028.5,
+        547.125,
+        2054.0,
+        593.125
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-9",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 9,
+      "bbox": [
+        1685.0,
+        586.0,
+        1711.75,
+        634.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-10",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 10,
+      "bbox": [
+        1932.0,
+        535.75,
+        1957.0,
+        576.875
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-23",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 23,
+      "bbox": [
+        1637.75,
+        624.5,
+        1664.0,
+        683.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "other",
+      "label_note": "visible kit outside blue/white palette; no role or team identity asserted"
+    },
+    {
+      "id": "8-124-8",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 8,
+      "bbox": [
+        1445.875,
+        597.5,
+        1470.25,
+        643.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-13",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 13,
+      "bbox": [
+        1762.0,
+        549.125,
+        1784.5,
+        587.875
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-11",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 11,
+      "bbox": [
+        1818.0,
+        555.625,
+        1842.0,
+        597.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-7",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 7,
+      "bbox": [
+        1503.625,
+        614.375,
+        1529.5,
+        657.125
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-19",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 19,
+      "bbox": [
+        1855.5,
+        555.0,
+        1878.5,
+        599.625
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-14",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 14,
+      "bbox": [
+        1639.5,
+        567.125,
+        1664.0,
+        608.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-6",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 6,
+      "bbox": [
+        1894.5,
+        580.875,
+        1920.0,
+        629.125
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-15",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 15,
+      "bbox": [
+        2157.375,
+        646.75,
+        2193.375,
+        696.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-16",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 16,
+      "bbox": [
+        2035.6875,
+        573.0,
+        2066.4375,
+        625.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-17",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 17,
+      "bbox": [
+        2708.1875,
+        617.75,
+        2738.9375,
+        670.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "other",
+      "label_note": "visible kit outside blue/white palette; no role or team identity asserted"
+    },
+    {
+      "id": "8-124-25",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 25,
+      "bbox": [
+        1964.8125,
+        1220.25,
+        2050.0,
+        1285.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-124-22",
+      "segment": 8,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 22,
+      "bbox": [
+        1970.5,
+        1220.63671875,
+        2054.0,
+        1430.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-2",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 2,
+      "bbox": [
+        1389.0,
+        636.75,
+        1420.0,
+        686.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-5",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 5,
+      "bbox": [
+        1810.75,
+        668.25,
+        1850.0,
+        747.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-8",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 8,
+      "bbox": [
+        1496.75,
+        592.625,
+        1524.75,
+        643.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-4",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 4,
+      "bbox": [
+        1887.0,
+        589.75,
+        1912.0,
+        650.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-6",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 6,
+      "bbox": [
+        1829.0,
+        582.5,
+        1855.0,
+        641.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-38",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 38,
+      "bbox": [
+        1695.0,
+        591.375,
+        1722.0,
+        639.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-19",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 19,
+      "bbox": [
+        2023.0,
+        552.375,
+        2048.0,
+        599.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-32",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 32,
+      "bbox": [
+        1464.375,
+        637.5,
+        1496.0,
+        695.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-1",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 1,
+      "bbox": [
+        1679.5,
+        657.0,
+        1720.75,
+        705.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-40",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 40,
+      "bbox": [
+        1785.5,
+        546.875,
+        1806.5,
+        583.875
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-43",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 43,
+      "bbox": [
+        1670.75,
+        572.875,
+        1695.25,
+        613.875
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-11",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 11,
+      "bbox": [
+        1895.0,
+        551.625,
+        1919.5,
+        594.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-31",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 31,
+      "bbox": [
+        1451.75,
+        606.25,
+        1475.25,
+        648.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-41",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 41,
+      "bbox": [
+        1976.0,
+        538.5,
+        1998.0,
+        575.25
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-33",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 33,
+      "bbox": [
+        1609.5,
+        576.625,
+        1632.75,
+        617.125
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-42",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 42,
+      "bbox": [
+        1903.0,
+        530.875,
+        1927.0,
+        573.125
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-15",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 15,
+      "bbox": [
+        2145.375,
+        613.25,
+        2178.75,
+        679.75
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-16",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 16,
+      "bbox": [
+        2082.0,
+        570.875,
+        2110.25,
+        624.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-12",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 12,
+      "bbox": [
+        2090.75,
+        549.625,
+        2114.0,
+        591.0
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; no player identity asserted"
+    },
+    {
+      "id": "8-500-17",
+      "segment": 8,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 17,
+      "bbox": [
+        2670.4375,
+        611.0,
+        2699.4375,
+        662.5
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0008.mp4",
+      "kit": "other",
+      "label_note": "visible kit outside blue/white palette; no role or team identity asserted"
+    }
+  ],
+  "protocol": "Rule frozen in kit-reassignment-decision.json before these images were opened; no predictions displayed during labeling."
+}

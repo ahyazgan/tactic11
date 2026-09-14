@@ -1,0 +1,19 @@
+{
+  "base_commit": "1e8e9f2",
+  "decision_before_new_control_images": true,
+  "development_segments": [0, 2, 3, 6, 8, 9],
+  "control_segments": [1, 7],
+  "review_times_seconds": [5, 20],
+  "selected_method": "local_grass",
+  "rule": "Keep the original torso colour extraction. Estimate illumination from pixels beside the person in the torso-height band (10-55% bbox height), extending from 10% to 100% bbox width on either side. Use green-dominant pixels (G > 1.05R and G > 1.05B) if at least 8 exist, otherwise use all surrounding pixels. Divide colour by median max-channel illumination and multiply by 80; clamp scale to [0.5, 3] and RGB to [0, 255]. Fewer than 8 surrounding pixels or illumination below 20 retains the raw colour. Feed normalized observations into the unchanged median TeamAssigner and preserve normal live anchor ordering.",
+  "development": {
+    "baseline": {"correct": 157, "wrong": 27, "unassigned_players": 14, "other_assigned": 5},
+    "raw_reextracted": {"correct": 157, "wrong": 27, "unassigned_players": 14, "other_assigned": 5},
+    "local_all": {"correct": 154, "wrong": 13, "unassigned_players": 31, "other_assigned": 4},
+    "local_grass": {"correct": 160, "wrong": 11, "unassigned_players": 27, "other_assigned": 4}
+  },
+  "raw_predictions_exactly_reproduced": true,
+  "selection_reason": "Grass filtering is the only local-illumination candidate with more correct player assignments and fewer wrong/other-colour assignments. It also increases unassigned players by 13, which must remain visible in reporting.",
+  "control_acceptance": "More correct player observations, no increase in wrong or other-colour assignments on identical samples. Unassigned losses are reported explicitly. No parameter or method changes after opening control images.",
+  "scope_limit": "New temporal clips of the same match; single Codex image reviewer, correlated frames. No cross-match generalization or player identity claim."
+}
