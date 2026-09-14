@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from app.audit import AuditRecord, EngineResult
 from app.domain import DefensiveAction, PassEvent
 from app.engine.live_sub_recommendation import compute_live_sub_recommendation
+from app.engine.sub_timing.elite_prior import DEFAULT_SUBS_ALLOWED
 
 ENGINE_NAME = "engine.sub_timing"
 ENGINE_VERSION = "1"
@@ -88,6 +89,7 @@ def compute_sub_timing(
     eligible_player_ids: Iterable[int] | None = None,
     off_prior: Mapping[int, float] | None = None,
     subs_used: int | None = None,
+    subs_allowed: int = DEFAULT_SUBS_ALLOWED,
 ) -> EngineResult[SubTimingReport]:
     """Optimal sub zamanlaması + etki + paket önerisi.
 
@@ -96,6 +98,11 @@ def compute_sub_timing(
     kadar yapılan değişiklik) verilirse elit ZAMANLAMA penceresi hesaplanır:
     yorgunluk projeksiyonu tek başına saat-kuralının çok altında uyuşuyordu
     (F1 0.49 vs 0.74); önsel motoru elit antrenörün takvimiyle eşitler.
+
+    `subs_allowed` maç başına hak sayısıdır (IFAB 2022'den beri 5). Hak bittiyse
+    pencere olasılığı 0'dır — öğrenilen bir tahmin değil, kuralın kendisi.
+    Önsel tablosu 3-hak ve 5-hak maçlarının karışımından fit edildiği için bu
+    kapı olmadan hak bitmiş takıma "şimdi değiştir" diyebiliyordu.
     """
     from app.engine.sub_timing.elite_prior import (
         SUB_WINDOW_THRESHOLD,
@@ -157,7 +164,8 @@ def compute_sub_timing(
     if subs_used is not None:
         state = ("leading" if my_score > opponent_score
                  else "trailing" if my_score < opponent_score else "drawing")
-        window_p = round(elite_sub_window_probability(current_minute, state, subs_used), 3)
+        window_p = round(elite_sub_window_probability(
+            current_minute, state, subs_used, subs_allowed=subs_allowed), 3)
     report = SubTimingReport(
         team_external_id=team_external_id,
         current_minute=current_minute,

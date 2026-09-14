@@ -36,6 +36,35 @@ Görülmemiş hücre payı bağımsız kümelerde %0.1-0.3 — tablo durum uzay�
 neredeyse tamamen kaplıyor. "Görülmemişte sus" varyantı ölçüldü, sonuç
 değişmedi; bu yüzden `UNKNOWN_CELL` 0.5 bırakıldı (şekil kapısında oran
 %10-12 olduğu için orada 0.0'a çekilmişti).
+
+## Değişiklik hakkı: doğal deney ve HAK-BİTTİ KAPISI (2026-09-14)
+
+Külliyat kural değişimini içeriyor: La Liga 2020-06-11'de 5 hakla yeniden
+başladı. Tarihe göre ayrılınca (54 maç 3-hak, 46 maç 5-hak; 3-hak döneminde
+takımların %0'ı 4+ değişiklik yaptı, 5-hak döneminde %80'i) "3 kullanılmış"
+hücresinin İKİ ZIT gerçeği harmanladığı görülüyor:
+
+  kullanılmış 3 → P(12 dk içinde değişiklik):  3-hak dönemi 0.000 (n=169)
+                                               5-hak dönemi 0.672 (n=125)
+
+Tablo bu karışımdan fit edildiği için ikisine de yanlış cevap veriyor ve 5-hak
+döneminde yakalama 0.898'den 0.753'e düşüyor.
+
+Çözüm ÖĞRENİLEN değil MANTIKSAL: hak bittiyse olasılık 0'dır. Kapı yalnız
+yanlış pozitif siler, yakalamaya dokunamaz (hak bitmişken değişiklik imkânsız
+olduğundan oradaki her bayrak zaten yanlıştı). Ölçüldü — dört kümede de F1
+artıyor, hiçbirinde düşmüyor, yakalama sabit:
+
+  küme              kapısız → kapılı F1   yakalama
+  3-hak Barça          0.749 → 0.761      0.898 (sabit)
+  5-hak Barça          0.697 → 0.701      0.753 (sabit)
+  La Liga 2015/16      0.741 → 0.751      0.900 (sabit)
+  Premier League 15/16 0.693 → 0.698      0.884 (sabit)
+
+Tablonun KENDİSİ hâlâ karışımdan geliyor. Kapı+yeniden fit ölçüldü ve 5-hak
+döneminde 0.746'ya çıkıyor (kapısız fit 0.719); yeniden fit EDİLMEDİ çünkü
+5-hak örneği yalnız 46 maç. Hangi veriyle fit edileceği ayrı bir karardır.
+docs/KARNE-DEGISIKLIK-HAKKI.md.
 """
 from __future__ import annotations
 
@@ -46,6 +75,9 @@ MAX_SUBS_CELL = 3
 # (F1 0.75, 0.4'te 0.71; saat-kuralı 0.74). Yeniden fit edilirse yeniden ölçülür.
 SUB_WINDOW_THRESHOLD = 0.35
 UNKNOWN_CELL = 0.5
+# Maç başına değişiklik hakkı. 2022'den beri IFAB kuralı 5; tablo 3-hak ve 5-hak
+# maçlarının karışımından geldiği için hak sayısı DIŞARIDAN verilmelidir.
+DEFAULT_SUBS_ALLOWED = 5
 
 ELITE_SUB_WINDOW_PRIOR: dict[tuple[int, str, int], float] = {
     (0, "drawing", 0): 0.046,
@@ -101,8 +133,18 @@ ELITE_SUB_WINDOW_PRIOR: dict[tuple[int, str, int], float] = {
 }
 
 
-def elite_sub_window_probability(minute: float, score_state: str, subs_used: int) -> float:
-    """P(elit antrenör bu durumda 12 dk içinde değiştirir). score_state: leading/drawing/trailing."""
+def elite_sub_window_probability(
+    minute: float, score_state: str, subs_used: int, *, subs_allowed: int = DEFAULT_SUBS_ALLOWED,
+) -> float:
+    """P(elit antrenör bu durumda 12 dk içinde değiştirir). score_state: leading/drawing/trailing.
+
+    Hak bittiyse olasılık ÖĞRENİLMEZ, 0'dır: değişiklik kural gereği imkânsız.
+    Tablo 3-hak ve 5-hak maçlarının KARIŞIMINDAN fit edildiği için "3 kullanılmış"
+    hücresi iki zıt durumu harmanlar (bkz. yukarıdaki ölçüm günlüğü); bu kapı o
+    harmanın yarısını mantıkla keser.
+    """
+    if subs_used >= subs_allowed:
+        return 0.0
     band = sum(1 for edge in MINUTE_BANDS if minute >= edge)
     return ELITE_SUB_WINDOW_PRIOR.get((band, score_state, min(max(0, subs_used), MAX_SUBS_CELL)),
                                       UNKNOWN_CELL)
