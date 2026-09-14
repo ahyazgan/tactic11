@@ -44,6 +44,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import models
+from app.db.match_load import MatchLoadSample
 from app.db.session import get_session
 from app.sports import football
 
@@ -169,6 +170,87 @@ def _agreement(
         "not": ("gözlem: çıkan oyuncu bu önerilerin listesindeydi. 'applied' "
                 "işareti KOÇUN beyanıdır ve buradan türetilmez — "
                 "POST /admin/decisions/{id}/applied"),
+    }
+
+
+class LoadSampleIn(BaseModel):
+    player_external_id: int
+    minute: float = Field(..., ge=0, le=130)
+    total_distance_m: float | None = Field(default=None, ge=0)
+    high_speed_m: float | None = Field(default=None, ge=0)
+    sprint_m: float | None = Field(default=None, ge=0)
+    accelerations: int | None = Field(default=None, ge=0)
+    decelerations: int | None = Field(default=None, ge=0)
+    device_load_au: float | None = Field(default=None, ge=0)
+    max_speed_ms: float | None = Field(default=None, ge=0, le=15)
+
+
+class LoadBatchIn(BaseModel):
+    team_external_id: int
+    source: str = Field(..., pattern="^(gps|tracking)$")
+    speed_thresholds: str | None = Field(default=None, max_length=64,
+                                         description="ör. 'hsr>5.5,sprint>7.0 m/s'")
+    samples: list[LoadSampleIn] = Field(..., min_length=1, max_length=5000)
+
+
+@router.post("/matches/{match_id}/load-samples", summary="Maç içi oyuncu yükü yaz (GPS/takip)")
+def post_load_samples(
+    match_id: int,
+    payload: LoadBatchIn,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Maç İÇİNDE, dakika çözünürlüklü yük örneklerini yazar (upsert).
+
+    Değerler **kümülatiftir**: maç başından o dakikaya kadarki toplam. Anlık
+    değil kümülatif tutulur çünkü kümülatiften herhangi iki dakika arasındaki
+    fark çıkarılabilir, tersi çıkarılamaz.
+
+    `source="gps"` cihazdan gelen ölçümdür; `source="tracking"` video takibinden
+    türetilmiştir ve oyuncu kimliği elle eşlendiği için aynı güvende sayılmaz —
+    ölçüm raporunda ayrı ayrı değerlendirilir.
+
+    Bu uç nokta veri TAŞIR. Yük sinyalinin öneriye bağlanması ayrı bir karardır
+    ve ancak ön-kayıtlı sınav geçilirse yapılır (docs/MAC-ICI-YUK-PLANI.md).
+    """
+    _match_or_404(session, match_id)
+    existing = {
+        (r.player_external_id, r.minute): r
+        for r in session.execute(select(MatchLoadSample).where(
+            MatchLoadSample.match_external_id == match_id,
+        )).scalars()
+    }
+    now = datetime.now(UTC)
+    written = 0
+    for smp in payload.samples:
+        row = existing.get((smp.player_external_id, smp.minute))
+        if row is None:
+            row = MatchLoadSample(
+                match_external_id=match_id, player_external_id=smp.player_external_id,
+                minute=smp.minute, source=payload.source, created_at=now,
+            )
+            session.add(row)
+        row.team_external_id = payload.team_external_id
+        row.source = payload.source
+        row.speed_thresholds = payload.speed_thresholds
+        row.total_distance_m = smp.total_distance_m
+        row.high_speed_m = smp.high_speed_m
+        row.sprint_m = smp.sprint_m
+        row.accelerations = smp.accelerations
+        row.decelerations = smp.decelerations
+        row.device_load_au = smp.device_load_au
+        row.max_speed_ms = smp.max_speed_ms
+        written += 1
+    session.commit()
+    total = session.execute(select(MatchLoadSample).where(
+        MatchLoadSample.match_external_id == match_id,
+    )).scalars().all()
+    return {
+        "match_external_id": match_id, "yazilan": written,
+        "maçtaki_toplam_ornek": len(total),
+        "oyuncu": len({r.player_external_id for r in total}),
+        "kaynak": payload.source,
+        "not": ("kümülatif değerler; yük sinyali ÖLÇÜLMEDEN öneriye bağlanmaz — "
+                "docs/MAC-ICI-YUK-PLANI.md"),
     }
 
 
