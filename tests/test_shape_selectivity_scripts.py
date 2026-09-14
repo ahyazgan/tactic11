@@ -14,6 +14,7 @@ from app.engine.live_sub_recommendation import ELITE_OFF_PRIOR
 from scripts import (
     coach_iq,
     measure_shape_selectivity,
+    measure_sub_ranking,
     validate_shape_prior,
     validate_who_prior,
 )
@@ -198,3 +199,52 @@ def test_production_prior_ranks_forward_over_midfield() -> None:
     # değişiklikle giren oyuncu her grupta ilk 11'den düşük
     for letter in ("F", "M", "D"):
         assert ELITE_OFF_PRIOR[(letter, False)] < ELITE_OFF_PRIOR[(letter, True)]
+
+
+# --- sıralama ölçümü: beraberlik tarafsızlığı -------------------------------- #
+
+def _cand(pid: int, prior: float, composite: float) -> tuple[int, float, float]:
+    return (pid, prior, composite)
+
+
+def test_expected_hits_is_exact_when_there_are_no_ties() -> None:
+    """Beraberlik yoksa tarafsız ölçüm kesin sonucu bozmaz: 0 ya da 1."""
+    cands = [_cand(1, 0.2, 0.9), _cand(2, 0.1, 0.8), _cand(3, 0.05, 0.7),
+             _cand(4, 0.01, 0.6)]
+    rank = measure_sub_ranking._lexicographic()
+    assert measure_sub_ranking._expected_hits(cands, 1, rank, k=3) == (1.0, 1.0)
+    assert measure_sub_ranking._expected_hits(cands, 3, rank, k=3) == (0.0, 1.0)
+    assert measure_sub_ranking._expected_hits(cands, 4, rank, k=3) == (0.0, 0.0)
+
+
+def test_expected_hits_splits_a_tie_instead_of_picking_an_order() -> None:
+    """Dört oyuncu eşitse ilk sıra 1/4, ilk üç 3/4 — kimlik sırası ödüllendirilmez."""
+    cands = [_cand(pid, 0.2, 0.5) for pid in (1, 2, 3, 4)]
+    rank = measure_sub_ranking._lexicographic()
+    for pid in (1, 2, 3, 4):
+        at1, at3 = measure_sub_ranking._expected_hits(cands, pid, rank, k=3)
+        assert at1 == pytest.approx(0.25)
+        assert at3 == pytest.approx(0.75)
+
+
+def test_expected_hits_tie_straddling_the_top_three_boundary() -> None:
+    """İlk sırada tek oyuncu, kalan iki yeri üç eşit aday paylaşıyor → 2/3."""
+    cands = [_cand(1, 0.3, 0.9)] + [_cand(pid, 0.2, 0.5) for pid in (2, 3, 4)]
+    rank = measure_sub_ranking._lexicographic()
+    assert measure_sub_ranking._expected_hits(cands, 1, rank, k=3) == (1.0, 1.0)
+    for pid in (2, 3, 4):
+        at1, at3 = measure_sub_ranking._expected_hits(cands, pid, rank, k=3)
+        assert at1 == 0.0
+        assert at3 == pytest.approx(2 / 3)
+
+
+def test_reverse_control_flips_only_the_within_group_order() -> None:
+    """Ters kontrol grubu değiştirmez, yalnız grup içindeki sırayı çevirir."""
+    cands = [_cand(1, 0.2, 0.9), _cand(2, 0.2, 0.1), _cand(3, 0.05, 0.99)]
+    fwd = measure_sub_ranking._lexicographic()
+    rev = measure_sub_ranking._lexicographic(reverse_secondary=True)
+    # düşük önselli oyuncu, bileşiği en yüksek olsa bile iki kuralda da ilk üçte sonda
+    assert measure_sub_ranking._expected_hits(cands, 1, fwd, k=1) == (1.0, 1.0)
+    assert measure_sub_ranking._expected_hits(cands, 2, rev, k=1) == (1.0, 1.0)
+    assert measure_sub_ranking._expected_hits(cands, 3, fwd, k=1)[0] == 0.0
+    assert measure_sub_ranking._expected_hits(cands, 3, rev, k=1)[0] == 0.0

@@ -1,0 +1,49 @@
+{
+  "olcum": "Değişiklik önerisi sıralaması: doğru grup mu, doğru kişi mi?",
+  "kaynak": {
+    "tenant": "t-default",
+    "takim_external_id": 217,
+    "taktik_degisiklik": 331,
+    "ortalama_aday": 10.78,
+    "aday_esigi": 5,
+    "girdi_sha256": "f5d89a994b9a92b4505d6217042bc451411ed7a286d197cb775fc21e0f4230bd"
+  },
+  "rastgele_taban": {
+    "n": 331,
+    "isabet_at_1": 0.093,
+    "isabet_at_3": 0.279
+  },
+  "siralama_kurallari": {
+    "motor harmanı (w=0.6)": {
+      "n": 331,
+      "isabet_at_1": 0.114,
+      "isabet_at_3": 0.466
+    },
+    "saf yorgunluk bileşiği (w=0)": {
+      "n": 331,
+      "isabet_at_1": 0.125,
+      "isabet_at_3": 0.357
+    },
+    "saf önsel (w=1)": {
+      "n": 331,
+      "isabet_at_1": 0.125,
+      "isabet_at_3": 0.442
+    },
+    "önsel, eşitlikte bileşik": {
+      "n": 331,
+      "isabet_at_1": 0.114,
+      "isabet_at_3": 0.466
+    },
+    "TERS KONTROL: önsel, eşitlikte ters bileşik": {
+      "n": 331,
+      "isabet_at_1": 0.126,
+      "isabet_at_3": 0.434
+    }
+  },
+  "hukum": {
+    "grup_bilgisi": "var",
+    "grup_kazanci_at_3": 0.187,
+    "grup_ici_bilgi": "YOK",
+    "not": "ters kontrol doğru yönü geçiyorsa grup içindeki sıralama bilgi taşımıyordur; harman ağırlığını ayarlamak o kararı düzeltmez"
+  }
+}
