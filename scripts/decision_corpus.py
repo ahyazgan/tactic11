@@ -13,6 +13,8 @@ Bu script döngüyü kapatır ve **tekrarlanabilir** kılar:
              öneriyi kararla birlikte **güven sürücüleriyle** kaydet
 2. `score` — `auto-outcome` mantığıyla her kararın gerçek etkisini ölç
 3. `report`— ölçülmüş kararlardan sürücü karnesi çıkar (hangi sürücü ayırıyor?)
+4. `enrich`— kararlara motorun değişiklik aday listesini ekle (`coach_iq` "kim")
+5. `lineups`— maç kadrolarını (ilk 11/değişiklik/mevki) `player_appearances`'a yaz
 
 ## Kararlar UYDURULMAZ
 
@@ -191,6 +193,11 @@ def seed(args: argparse.Namespace) -> int:
                     # ASIL YENİLİK: güvenin sayısal kırılımı kararla saklanır.
                     context_json=json.dumps({
                         "confidence_terms": primary.get("confidence_terms") or {},
+                        # Saklanan `confidence` kalibre OLASILIK mı, ham KANIT skoru mu?
+                        # Karne (coach_iq) ECE'yi yalnız kalibre olasılıkta ölçer.
+                        "calibrated": "kalibre edildi" in str(primary.get("calibration_note") or ""),
+                        "evidence": primary.get("evidence"),
+                        "calibration_note": primary.get("calibration_note"),
                         "signal_type": primary.get("signal_type"),
                         "theme": primary.get("theme"),
                         "urgency": primary.get("urgency"),
@@ -209,6 +216,124 @@ def seed(args: argparse.Namespace) -> int:
     print(f"karar yazıldı: {yazilan} · zaten vardı: {atlanan} · sinyal yok: {sinyalsiz}")
     if yazilan == 0 and atlanan:
         print("(hepsi mevcut — külliyat büyütmek için --limit artır)")
+    return 0
+
+
+def _events_json(match_id: int, events_dir):
+    """Ham StatsBomb olayları: `--events-dir` varsa dosyadan, yoksa adapter (önbellekli)."""
+    if events_dir is not None:
+        from pathlib import Path
+        p = Path(events_dir) / f"{match_id}.json"
+        if not p.is_file():
+            return None
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except ValueError:
+            return None
+        return data if isinstance(data, list) else None
+    from app.data.sources.statsbomb_open import StatsBombOpen
+    try:
+        return StatsBombOpen().get_events(match_id)
+    except Exception as e:      # noqa: BLE001
+        print(f"  maç {match_id}: olaylar alınamadı ({type(e).__name__})")
+        return None
+
+
+def lineups(args: argparse.Namespace) -> int:
+    """Külliyat maçları için ilk 11 + değişiklik + mevki → player_appearances.
+
+    Panel bununla kadro-farkında çalışır (sahadakilerle sınırlı aday, elit
+    "kim çıkar" önseli). Idempotent.
+    """
+    from app.data.ingest.statsbomb_appearance import ingest_statsbomb_appearances
+
+    with SessionLocal() as s:
+        s.info["tenant_id"] = args.tenant
+        mids = sorted({d.match_external_id for d in s.execute(select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.tenant_id == args.tenant,
+            models.Decision.team_external_id == args.team,
+        )).scalars()})
+        eklenen = guncellenen = atlanan = 0
+        for mid in mids:
+            ev = _events_json(mid, args.events_dir)
+            if not ev:
+                atlanan += 1
+                continue
+            try:
+                rep = ingest_statsbomb_appearances(
+                    s, match_external_id=mid, tenant_id=args.tenant, events_json=ev,
+                )
+            except ValueError as e:
+                print(f"  maç {mid}: {e}")
+                atlanan += 1
+                continue
+            eklenen += rep.rows_inserted
+            guncellenen += rep.rows_updated
+        s.commit()
+    print(f"kadro satırı eklendi: {eklenen} · güncellendi: {guncellenen} · maç atlandı: {atlanan}")
+    return 0
+
+
+def enrich(args: argparse.Namespace) -> int:
+    """Mevcut kararlara motorun DEĞİŞİKLİK SİNYALİNİ ve ADAY LİSTESİNİ ekle (yeniden üretmeden).
+
+    Koç zekâ karnesinin "kim" boyutu için: antrenörün çıkardığı oyuncu, motorun
+    hamleden önceki son tikteki aday listesinde miydi? `seed` bunu yazmıyordu;
+    paneli aynı (maç, dakika) için yeniden çalıştırıp `context_json`'a
+    `sub_candidates` (sıralı oyuncu id) ekler. Var olan alanlar korunur;
+    zaten dolu satırlar atlanır (idempotent).
+    """
+    from app.api.admin import live_decision_endpoint
+
+    with SessionLocal() as s:
+        s.info["tenant_id"] = args.tenant
+        rows = list(s.execute(select(models.Decision).where(
+            models.Decision.sport == football.SPORT_NAME,
+            models.Decision.tenant_id == args.tenant,
+            models.Decision.team_external_id == args.team,
+            models.Decision.notes.like(SOURCE_NOTE + "%"),
+        )).scalars())
+        yazilan = atlanan = hata = 0
+        for i, d in enumerate(rows):
+            ctx: dict = {}
+            if d.context_json:
+                try:
+                    ctx = json.loads(d.context_json) or {}
+                except (ValueError, TypeError):
+                    ctx = {}
+            if "sub_candidates" in ctx and not args.force:
+                atlanan += 1
+                continue
+            try:
+                payload = live_decision_endpoint(
+                    match_id=d.match_external_id, my_team_id=args.team,
+                    current_minute=d.minute, star_player_id=None,
+                    draw_is_enough=False, must_win=False, session=s,
+                )
+            except Exception as e:      # noqa: BLE001 — bir tik düşerse sürsün
+                print(f"  maç {d.match_external_id} dk {d.minute:.0f}: ({type(e).__name__}) — atlandı")
+                hata += 1
+                continue
+            st = payload.get("sub_timing") or {}
+            advices = st.get("advices") if isinstance(st, dict) else None
+            cands = [int(a["player_external_id"]) for a in (advices or [])
+                     if isinstance(a, dict) and a.get("player_external_id") is not None]
+            # Sinyal yandı mı: context_pipeline ile aynı kural (şimdi / paket / elit pencere).
+            now = any(isinstance(a, dict) and a.get("timing_verdict") == "now"
+                      for a in (advices or []))
+            fired = bool(now) or bool(st.get("package_recommendation")) or bool(st.get("elite_window"))
+            _ekle_baglam(d, {
+                "sub_candidates": cands,
+                "sub_signal_fired": fired,
+                "sub_window_probability": st.get("elite_window_probability"),
+            })
+            yazilan += 1
+            if (i + 1) % 100 == 0:
+                s.commit()
+                print(f"  {i + 1}/{len(rows)}")
+        s.commit()
+    print(f"aday listesi yazıldı: {yazilan} · zaten vardı: {atlanan} · hata: {hata}")
     return 0
 
 
@@ -451,11 +576,17 @@ def main() -> int:
         ("seed", seed, "Motor önerilerini sürücüleriyle karar olarak kaydet"),
         ("score", score, "Kararların gerçek etkisini ölç"),
         ("report", report, "Sürücü karnesi: hangi sürücü sonucu ayırıyor?"),
+        ("enrich", enrich, "Kararlara motorun değişiklik aday listesini ekle (kim boyutu)"),
+        ("lineups", lineups, "Külliyat maçlarının kadrolarını player_appearances'a yaz"),
     ):
         c = sub.add_parser(ad, help=yardim)
         c.add_argument("--tenant", default="t-default")
         c.add_argument("--team", type=int, default=217)
         c.add_argument("--limit", type=int, default=0, help="0 = tüm maçlar")
+        c.add_argument("--events-dir", default=None,
+                       help="ham StatsBomb events/<id>.json klasörü (yoksa adapter çeker)")
+        c.add_argument("--force", action="store_true",
+                       help="enrich: mevcut aday listelerini yeniden hesapla")
         c.set_defaults(func=fn)
 
     args = p.parse_args()

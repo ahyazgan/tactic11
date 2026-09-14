@@ -9,6 +9,18 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Karne incelemesi: yetersiz bayrakla başarı hükmünü ve aynı dakikadaki oyuncu sayımını düzelt; özgün veride yeniden ölç. (8c7b938)
+  Done when: regresyonlar ve birleşik testler temiz, 100 maçlık özgün girdi SHA-256 ile eşleşir, yeni ölçüm ve sınırlar raporlanır. Sonuç: docs/KARNE-DUZELTME-SONUCLARI.md.
+
+- [x] Top adaylarını, oyuncu çevresi ROI aramasını ve saha çizgisi kalibrasyonunu dondurulmuş kontrolle karşılaştır; farklı piksel boyutunda kalibrasyonu reddet. (4b8d149)
+  Done when: aynı tam kare tespitleriyle tekrar takip, çizgi/pas/takım ölçümleri ve başarısız deney raporu; test/lint/tip kontrolleri temiz. Sonuç: docs/TOP-SECIMI-SONUCLARI.md. Alternatifler doğruluk kapısını geçmedi; varsayılanlar değiştirilmedi.
+
+- [x] Video top/pas/top kazanımı kanıt zincirini düzelt; yoğun kare denemesini ve gerçek olay eşleşmesini ölç. (b1eb581)
+  Done when: kamera/zaman/top belirsizliği korunur; video/canlı JSON→DB→domain zinciri ve kısmi savunma koruması testli; birebir GT karşılaştırması ve başarısız deneyler raporlu. Sonuç: docs/VIDEO-OLAY-SONUCLARI.md. Pas duyarlılığı ve gerçek görüntüde savunma doğruluğu hedefleri geçilmedi; yoğun olay akışı varsayılan kapalı.
+
+- [x] Sabit kamera: takım renklerine sızan kısa takipleri/farklı renkleri ele ve GT ile ölç. (8ae76c3)
+  Done when: aynı gözlemlerle geliştirme/kontrol karşılaştırması, oyuncu kaybı ve pas/savunma başlangıç raporu; test/lint/tip kontrolleri temiz. Kapsam: docs/SABIT-KAMERA-SINYAL-PLANI.md.
+
 - [x] Mobile sidebar drawer  (ba07618)
   Done when: drawer opens/closes on mobile breakpoints, nav items reachable, tsc+build clean, committed.
 - [x] Decisions API load-perf cache  (b2c55d6)

@@ -142,12 +142,24 @@ def build_candidates(
         now = [a for a in advices if a.get("timing_verdict") == "now"]
         wait10 = [a for a in advices if a.get("timing_verdict") == "wait_10"]
         pkg = st.get("package_recommendation") or []
-        fired = bool(now) or bool(pkg)
+        # Elit zamanlama penceresi (sub_timing.elite_prior): yorgunluk projeksiyonu
+        # tek başına elit antrenörün takviminin çok gerisindeydi (F1 0.49 vs saat 0.74).
+        window_p = st.get("elite_window_probability")
+        window = bool(st.get("elite_window"))
+        fired = bool(now) or bool(pkg) or window
         urgency = 0.9 if now else (0.6 if wait10 else 0.3)
+        if window and isinstance(window_p, (int, float)):
+            urgency = max(urgency, float(window_p))
         mag = max((float(a.get("impact_estimate", 0.0)) for a in advices),
                   default=0.0)
+        if window and isinstance(window_p, (int, float)):
+            mag = max(mag, float(window_p))
         if now:
             head = f"Şimdi değiştir: {[a.get('player_external_id') for a in now]}"
+        elif window and isinstance(window_p, (int, float)):
+            top = [a.get("player_external_id") for a in advices[:3]]
+            head = (f"Değişiklik penceresi: elit antrenörler bu durumda %{window_p * 100:.0f} "
+                    f"değiştiriyor — adaylar {top}")
         else:
             head = st.get("package_rationale", "Değişiklik penceresini izle")
         cands.append(CandidateSignal(
@@ -368,6 +380,13 @@ def build_candidates(
     ts = out.get("tracking_signals")
     if _is_dict(ts):
         frames = int(ts.get("frames_used", 0) or 0)
+        # Kapsama (görünen oyuncu/22) → veri kalitesi; signal_quality skoru bununla
+        # çarpar. Kare sayısı bol olsa da eksik ölçüm güven 1.00 alamaz.
+        quality_meta = {
+            "coverage": float(ts.get("coverage", 1.0) or 0.0),
+            "data_quality": float(ts.get("data_quality", 1.0) or 0.0),
+            "players_seen": ts.get("players_seen"),
+        }
         for f in (ts.get("findings") or [])[:2]:   # en acil iki bulgu
             if not isinstance(f, dict):
                 continue
@@ -377,7 +396,7 @@ def build_candidates(
                 urgency=float(f.get("urgency", 0.5)), fired=True, minute=current_minute,
                 # kare sayısı = kanıt; sample_size event sayısıyla aynı ölçekte olsun
                 sample_size=frames, magnitude=float(f.get("magnitude", 0.0)),
-                detail={"source": "tracking", **(f.get("detail") or {})},
+                detail={"source": "tracking", **quality_meta, **(f.get("detail") or {})},
             ))
 
     # space_map (spatial) — "nerede boşluk var": bölgesel üstünlük, hat boşluğu,
@@ -386,6 +405,11 @@ def build_candidates(
     sm = out.get("space_map")
     if _is_dict(sm):
         frames = int(sm.get("frames_used", 0) or 0)
+        quality_meta = {
+            "coverage": float(sm.get("player_coverage", 1.0) or 0.0),
+            "data_quality": float(sm.get("data_quality", 1.0) or 0.0),
+            "players_seen": sm.get("players_seen"),
+        }
         for f in (sm.get("findings") or [])[:2]:
             if not isinstance(f, dict):
                 continue
@@ -394,7 +418,7 @@ def build_candidates(
                 headline=str(f.get("headline", "Bölge sinyali")),
                 urgency=float(f.get("urgency", 0.5)), fired=True, minute=current_minute,
                 sample_size=frames, magnitude=float(f.get("magnitude", 0.0)),
-                detail={"source": "space_map", **(f.get("detail") or {})},
+                detail={"source": "space_map", **quality_meta, **(f.get("detail") or {})},
             ))
 
     return cands

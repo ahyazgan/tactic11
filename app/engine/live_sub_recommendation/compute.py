@@ -16,7 +16,7 @@ Pure-compute. PassEvent + DefensiveAction + current_minute + score_state input.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import Literal
 
@@ -34,6 +34,27 @@ RECENT_WINDOW_MIN = 10.0
 # Sub urgency thresholds
 HIGH_URGENCY_SCORE = 0.55
 MEDIUM_URGENCY_SCORE = 0.30
+
+# ELİT "KİM ÇIKAR" ÖNSELİ — (mevki grubu, ilk 11 mi) → P(bu oyuncu çıkar | değişiklik).
+# Kaynak: StatsBomb açık verisi, Barcelona La Liga 2018-21, 331 taktik değişiklik
+# (`scripts/coach_iq.py`, 2026-09-12; Laplace düzeltmeli). Ayrık yarı testinde tek
+# başına isabet@3 %56 (rastgele %24, yorgunluk bileşiği %24). Yeniden fit
+# edilirse sayılar VE bu not güncellenir.
+ELITE_OFF_PRIOR: dict[tuple[str, bool], float] = {
+    ("M", True): 0.185, ("F", True): 0.133, ("D", True): 0.058, ("G", True): 0.003,
+    ("M", False): 0.003, ("F", False): 0.003, ("D", False): 0.010, ("G", False): 0.003,
+}
+# Bileşik aciliyet ile önselin harmanı. Önsel tek başına bileşikten çok daha
+# isabetli olduğu için ağır; bileşik grup içinde sırayı belirler.
+ROLE_PRIOR_WEIGHT = 0.6
+
+
+def elite_off_prior(position_code: str | None, starter: bool) -> float:
+    """Mevki kodunun ilk harfi (G/D/M/F) + ilk 11 → önsel; bilinmiyorsa orta saha/ilk 11."""
+    letter = (position_code or "M")[:1].upper()
+    if letter not in {"G", "D", "M", "F"}:
+        letter = "M"
+    return ELITE_OFF_PRIOR[(letter, starter)]
 
 
 @dataclass(frozen=True)
@@ -98,6 +119,7 @@ def compute_live_sub_recommendation(
     my_score: int = 0,
     opponent_score: int = 0,
     eligible_player_ids: Iterable[int] | None = None,
+    off_prior: Mapping[int, float] | None = None,
 ) -> EngineResult[LiveSubReport]:
     """Canlı maçta sub önerisi.
 
@@ -113,6 +135,10 @@ def compute_live_sub_recommendation(
     kümedeki (= şu an SAHADA olan) oyuncular değerlendirilir. Aksi halde çoktan
     çıkmış bir oyuncu, event'leri pencerede hâlâ görüldüğü için yanlışlıkla
     önerilebilir. None → eski davranış (tüm event-aktörleri).
+
+    `off_prior` verilirse (oyuncu → elit "kim çıkar" önseli, `elite_off_prior`),
+    aciliyet = (1−w)·bileşik + w·(önsel / adaylar arasındaki en yüksek önsel),
+    w = `ROLE_PRIOR_WEIGHT`. Ölçüm gerekçesi `ELITE_OFF_PRIOR` notunda.
     """
     passes_list = list(all_passes)
     defs_list = list(all_def_actions)
@@ -130,6 +156,8 @@ def compute_live_sub_recommendation(
     if eligible is not None:
         my_player_ids &= eligible
 
+    prior_max = max((off_prior.get(pid, 0.0) for pid in my_player_ids), default=0.0) \
+        if off_prior else 0.0
     minute_urgency = _minute_urgency(current_minute)
     score_pressure = 1.0 if score_state == "losing" else (
         0.5 if score_state == "drawing" else 0.2
@@ -161,6 +189,9 @@ def compute_live_sub_recommendation(
             + 0.15 * score_pressure
             + 0.15 * minute_urgency
         ) * ss_weight
+        if off_prior is not None and prior_max > 0:
+            prior_norm = off_prior.get(pid, 0.0) / prior_max
+            urgency = (1.0 - ROLE_PRIOR_WEIGHT) * urgency + ROLE_PRIOR_WEIGHT * prior_norm
         urgency = round(min(1.0, max(0.0, urgency)), 3)
         label = (
             "high" if urgency >= HIGH_URGENCY_SCORE
@@ -173,6 +204,9 @@ def compute_live_sub_recommendation(
             score_state=score_state,
             current_minute=current_minute,
         )
+        if off_prior is not None and prior_max > 0:
+            reasons = (*reasons, f"elit önsel: bu mevki/rol için çıkma olasılığı "
+                                 f"%{off_prior.get(pid, 0.0) * 100:.0f}")
         candidates.append(SubRecommendation(
             player_external_id=pid,
             urgency_score=urgency,

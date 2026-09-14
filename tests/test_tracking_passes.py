@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import pytest
+
 from app.domain.tracking import PlayerPosition, TrackingFrame
 from app.tracking.passes import (
     MAX_FLIGHT_SECONDS,
@@ -171,3 +173,48 @@ def test_empty_input_is_honest() -> None:
     r = extract_passes([])
     assert r.passes == () and r.frames_seen == 0
     assert r.note == "kare yok"
+
+
+@pytest.mark.parametrize("change", [{"period": 2}, {"match_external_id": 2},
+                                    {"continuity_id": 1}, {"minute": 9.0}])
+def test_pass_never_crosses_a_scope_or_clock_boundary(change) -> None:
+    a = _Akis().tut(901, x=30).ucus(2).tut(902, x=60)
+    a.frames[4:] = [f.model_copy(update=change) for f in a.frames[4:]]
+    assert not extract_passes(a.frames).passes
+
+
+def test_departure_uses_last_control_position_and_time() -> None:
+    a = _Akis().tut(901, x=20).tut(901, x=40).ucus(2).tut(902, x=60)
+    p = extract_passes(a.frames).passes[0]
+    assert p.minute == pytest.approx(a.frames[3].minute, abs=0.0001)
+    assert p.start_x == 40
+    assert p.flight_seconds == pytest.approx(0.6)
+
+
+def test_dense_two_frame_flicker_is_not_a_stable_touch() -> None:
+    a = _Akis().tut(901, 4, x=30).ucus(4).tut(902, 2, x=60)
+    a.frames = [f.model_copy(update={"minute": 10 + i * .04 / 60}) for i, f in enumerate(a.frames)]
+    assert not extract_passes(a.frames).passes
+
+
+def test_missing_video_ball_and_endpoint_interpolation_preserve_uncertainty() -> None:
+    a = _Akis().tut(901, x=30).ucus(2).tut(902, x=50)
+    a.frames = [f.model_copy(update={"source": "video_tracking"}) for f in a.frames]
+    p = extract_passes(a.frames).passes[0]
+    assert p.ball_estimated and not p.observed_flight
+    a.frames[-2] = a.frames[-2].model_copy(update={"ball_estimated": True})
+    assert extract_passes(a.frames).passes[0].ball_estimated
+
+
+def test_video_impossible_flight_is_rejected() -> None:
+    a = _Akis().tut(901, x=10).tut(902, x=90)
+    a.frames = [f.model_copy(update={"source": "video_tracking"}) for f in a.frames]
+    r = extract_passes(a.frames)
+    assert not r.passes
+    assert "fiziksel hız sınırı aşıldı" in r.rejected
+
+
+def test_team_relabelling_of_same_identity_is_not_turnover() -> None:
+    a = _Akis().tut(901, x=30).tut(901, x=40, takim=RAKIP)
+    r = extract_passes(a.frames)
+    assert not r.passes and r.turnovers == 0

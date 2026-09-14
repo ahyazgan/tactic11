@@ -165,3 +165,19 @@ def test_context_memory_threads_passed_through():
         memory_threads=("rakip 55'te değişti, sol kanat düştü",),
     ).value
     assert d.memory_threads
+
+
+def test_quality_multiplies_declared_data_quality():
+    """Kaynak motor detail.data_quality bildirirse skor çarpılır; 0.75 altı 'degraded'."""
+    full = assess_signal(_sig("t", "spatial", sample=12, minute=70))
+    partial = CandidateSignal(
+        key="t", signal_type="spatial", headline="x", urgency=0.7, fired=True,
+        minute=70.0, sample_size=12, magnitude=0.9, detail={"data_quality": 0.64},
+    )
+    v = assess_signal(partial)
+    assert full.score == 1.0 and v.score == 0.64 and v.verdict == "degraded"
+    assert "veri kalitesi 0.64" in v.reason
+    ok = CandidateSignal(**{**partial.__dict__, "detail": {"data_quality": 0.9}})
+    assert assess_signal(ok).verdict == "ok" and assess_signal(ok).score == 0.9
+    none = CandidateSignal(**{**partial.__dict__, "detail": {"data_quality": 0.0}})
+    assert assess_signal(none).verdict == "suppressed"

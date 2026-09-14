@@ -1,0 +1,644 @@
+{
+  "olcum_surumu": 2,
+  "olcum": "Karne şekil değişikliği seçiciliği",
+  "kaynak": {
+    "tenant": "t-default",
+    "takim_external_id": 217,
+    "mac": 100,
+    "tik": 514,
+    "pencere_dk": 12.0,
+    "hedef": "StatsBomb Tactical Shift, (dakika, dakika+pencere] aralığı",
+    "girdi_sha256": "4be72ff3bd6a1592f151cb218fd2a334a2d9629888ddfc1618a252fe1e3a4f56"
+  },
+  "eski_cetvel_F1": {
+    "motor_f1": 0.328,
+    "saat_f1": 0.412,
+    "hukum": "taban çizgisinin altında",
+    "hep_evet_f1": 0.35,
+    "not": "hep-evet F1'i motorunkinden yüksek olabilir: nadir hedefte F1 seçicilik cetveli değildir"
+  },
+  "yeni_cetvel_secicilik": {
+    "esik_secimi": "eğitim yarısında bayrak bütçesi ≥0.15 olan adaylar arasında en yüksek precision",
+    "kabul_esigi_lift": 1.25,
+    "once_ham_bayrak": {
+      "A": {
+        "n": 264,
+        "flagged": 189,
+        "flag_rate": 0.716,
+        "base_rate": 0.22,
+        "precision": 0.201,
+        "recall": 0.655,
+        "f1": 0.308,
+        "lift": 0.914
+      },
+      "B": {
+        "n": 250,
+        "flagged": 191,
+        "flag_rate": 0.764,
+        "base_rate": 0.204,
+        "precision": 0.22,
+        "recall": 0.824,
+        "f1": 0.347,
+        "lift": 1.078
+      }
+    },
+    "sonra_kapili_bayrak": {
+      "A": {
+        "n": 264,
+        "flagged": 51,
+        "flag_rate": 0.193,
+        "base_rate": 0.22,
+        "precision": 0.314,
+        "recall": 0.276,
+        "f1": 0.294,
+        "lift": 1.427
+      },
+      "B": {
+        "n": 250,
+        "flagged": 52,
+        "flag_rate": 0.208,
+        "base_rate": 0.204,
+        "precision": 0.327,
+        "recall": 0.333,
+        "f1": 0.33,
+        "lift": 1.603
+      }
+    },
+    "ogrenilen_esikler": {
+      "A": {
+        "onsel": 0.3,
+        "destek": 2,
+        "ogrenildigi_tik": 250
+      },
+      "B": {
+        "onsel": 0.3,
+        "destek": 1,
+        "ogrenildigi_tik": 264
+      }
+    },
+    "hukum": "seçici",
+    "not": "kapılı bayrak tabanın 1.43/1.60 katı isabetli; ham bayrak 0.914/1.078 katıydı"
+  },
+  "permutasyon_sinavi": {
+    "deneme": 400,
+    "seed": 17,
+    "gercek_precision": [
+      0.314,
+      0.327
+    ],
+    "karistirilmisin_yakalama_sayisi": [
+      16,
+      1
+    ],
+    "p": [
+      0.04239401496259352,
+      0.004987531172069825
+    ],
+    "not": "etiketler karıştırılıp kapı sıfırdan kuruldu; p = (yakalama + 1) / (deneme + 1); yetersiz karıştırılmış örneklerde isabet 0 sayılır; tik düzeyinde keşifsel sınavdır"
+  },
+  "sinyal_auc_sekil": {
+    "minute": 0.634,
+    "priority": 0.561,
+    "urgency": 0.543,
+    "confidence": 0.492,
+    "magnitude": 0.515,
+    "corroboration": 0.565,
+    "quality": 0.5,
+    "sample": 0.5,
+    "score": 0.552,
+    "n_support": 0.557,
+    "subs_used": 0.551
+  },
+  "tema_sekil_orani": {
+    "adjust_shape": {
+      "oran": 0.211,
+      "n": 380
+    },
+    "(tema yok)": {
+      "oran": 0.19,
+      "n": 79
+    },
+    "change_personnel": {
+      "oran": 0.255,
+      "n": 51
+    },
+    "manage_game": {
+      "oran": 0.25,
+      "n": 4
+    }
+  },
+  "yeniden_uretim": {
+    "baseline_commit": "e0237df",
+    "source_repository": "statsbomb/open-data",
+    "source_revision": "4b73468fc5b0f1950f9f66fada70ad3a4f9327cb",
+    "historical_input_sha256": "5cf345a22f5e74e00b58c70e81a83ea32e1ac0bdc46a8f1f8cd4cab7ea999e73",
+    "historical_input_matches": true,
+    "corrected_substitution_count_ticks": 65,
+    "source_files": [
+      {
+        "match": 15946,
+        "status": "downloaded",
+        "sha256": "29d453cfbd3413ce7016c04962df7914d33cd5699bf50f9e457b3f0132e73abb"
+      },
+      {
+        "match": 15956,
+        "status": "downloaded",
+        "sha256": "2da20c86c70a3c58c79c5be6488f6e3650dbd148ec1304bffa2c02b156e2cd25"
+      },
+      {
+        "match": 15973,
+        "status": "downloaded",
+        "sha256": "eaf75ae20f8a356fc9e49c13925e7885a5a210bd9aa694869ca647533344deda"
+      },
+      {
+        "match": 15978,
+        "status": "downloaded",
+        "sha256": "f32fdb1233b92b956338b59d813326b1764a2903f664584faaf219a0a32da349"
+      },
+      {
+        "match": 15986,
+        "status": "downloaded",
+        "sha256": "029a66ee9e1cbfee9bc229bb2aacb073df9f0c0c86531526f18e742c552854b7"
+      },
+      {
+        "match": 15998,
+        "status": "downloaded",
+        "sha256": "2b2b44eb9c7ba2b8b0cda59c5ba0ea9b78a4bb6f278d44480a3fcde29ac9bc02"
+      },
+      {
+        "match": 16010,
+        "status": "downloaded",
+        "sha256": "98c0da9816182bee07d774b1c7df24a6a0abe39b41c6a72dc2cdd38c305546ad"
+      },
+      {
+        "match": 16023,
+        "status": "downloaded",
+        "sha256": "bccebe56b00a5850a2a1e7a86764fdbbf32137f342f47d4d43adc64ccf12f48f"
+      },
+      {
+        "match": 16029,
+        "status": "downloaded",
+        "sha256": "42b55fdaa895f5289a139ef554a20a0268c22fd5de10fece36b453abeb6f681d"
+      },
+      {
+        "match": 16056,
+        "status": "downloaded",
+        "sha256": "550b1137b5759c1155edfdf443c092b7bfe404fe10e00c6c176a54ce6df62ae0"
+      },
+      {
+        "match": 16073,
+        "status": "downloaded",
+        "sha256": "1f21e22caee48eb76f210aba95fab255b23eeb520ea92197c74edfe39b05d970"
+      },
+      {
+        "match": 16079,
+        "status": "downloaded",
+        "sha256": "dd48aa98a504bfccb5ea26af7105cd44cdf3738bf7541fcaef6ef7dcde3c331f"
+      },
+      {
+        "match": 16109,
+        "status": "downloaded",
+        "sha256": "3532ed05db97b84aceaaf950c6ca177be8ace56ad320db07b5cab075fab0d566"
+      },
+      {
+        "match": 16120,
+        "status": "downloaded",
+        "sha256": "b452941428f45fc7335ccd00b99fb1689c9420537a07e0722fc8a44a4b85a55b"
+      },
+      {
+        "match": 16131,
+        "status": "downloaded",
+        "sha256": "bc4d0a6c817029b380fe8faa2f6fc6d9d3df0527d85071b7c7436073dc230615"
+      },
+      {
+        "match": 16136,
+        "status": "downloaded",
+        "sha256": "8702e9c6307ed82f05d3da844a053160634c5b65ec41c0fd214b489260a0b237"
+      },
+      {
+        "match": 16149,
+        "status": "downloaded",
+        "sha256": "497e313e181367a6f274d8f1703841a3eb3279f03a090c5f64f88e2ba77451af"
+      },
+      {
+        "match": 16157,
+        "status": "downloaded",
+        "sha256": "d2e2ff6e39c84715803601b81b6b160fd55787534b43f337ec124efd73d2627c"
+      },
+      {
+        "match": 16173,
+        "status": "downloaded",
+        "sha256": "c4b1e90f255cc0eb99a3f772d88d5013907a411d0798edf96ec7193831897736"
+      },
+      {
+        "match": 16182,
+        "status": "downloaded",
+        "sha256": "40a04971ef1c66f4a5929c68a1d4e056e3b4e27d80bad3ee4c3f724efb07e466"
+      },
+      {
+        "match": 16190,
+        "status": "downloaded",
+        "sha256": "a31bfec70b9370cd3c0d1e4055bc7fd5a224010931a3caa2c56e9c9696f605e7"
+      },
+      {
+        "match": 16196,
+        "status": "downloaded",
+        "sha256": "41b6bbe6eb0a2fc8b585cdf4332bff8a0b8971855e7bb850ec37deab55c7300b"
+      },
+      {
+        "match": 16205,
+        "status": "downloaded",
+        "sha256": "0f757634834fce75fc330769d2f84675c331c95ad93afa1dd3d8e62ba9585c49"
+      },
+      {
+        "match": 16215,
+        "status": "downloaded",
+        "sha256": "6c626a47e2a72603a521d69e7b4cebbde832cec29eeac68d55d51ee9553afb47"
+      },
+      {
+        "match": 16231,
+        "status": "downloaded",
+        "sha256": "423edc03504c4b5d39de21c35abfdb0d615defe1b48530ea8d8b8437c68371ae"
+      },
+      {
+        "match": 16240,
+        "status": "downloaded",
+        "sha256": "9dfbd7dc694ea799ed2c3b7d9cd39328f7b39abf7918b7261c45e296e8f33349"
+      },
+      {
+        "match": 16248,
+        "status": "downloaded",
+        "sha256": "c614cc73682de758d64c6952a9567979c0d5f3e3479bd3dffacc22e9fad652ca"
+      },
+      {
+        "match": 16265,
+        "status": "downloaded",
+        "sha256": "c57559a8a0269db099d2bffdb1821ce58fd739664df8c85cdfd6f607320650e2"
+      },
+      {
+        "match": 16275,
+        "status": "downloaded",
+        "sha256": "dd6b76bceafe9bb42735c2ebdeb415e9e469874e2b7c88da557c6748b392c2f5"
+      },
+      {
+        "match": 16289,
+        "status": "downloaded",
+        "sha256": "44220bfdd1be31abd6af0a4e808628e36864ea4b27789a26dd3d22bf7826b3bc"
+      },
+      {
+        "match": 16306,
+        "status": "downloaded",
+        "sha256": "6c7cdc80036553db2ddeeadbcdbb7893c8a708d9f42c2e137e6b4c97f4b7ebda"
+      },
+      {
+        "match": 16317,
+        "status": "downloaded",
+        "sha256": "157ab1d45c6a1c7734e8a80ef7ebf9298bf6aed4961696d3034f11c2ca7ef25f"
+      },
+      {
+        "match": 303377,
+        "status": "downloaded",
+        "sha256": "ebfe3beb913fe9c23ae2fac6a2faab022862851040da75e84367c0a52478678d"
+      },
+      {
+        "match": 303400,
+        "status": "downloaded",
+        "sha256": "b9b8e38ec49dcf4e3355e44e26adae6f8f14884f247fbe327d1e1eb4385f1b35"
+      },
+      {
+        "match": 303421,
+        "status": "downloaded",
+        "sha256": "32752c2e2f2b0736885cae18602bef01bd8b2afaf8f777ca12cb4a01e28c5e7a"
+      },
+      {
+        "match": 303430,
+        "status": "downloaded",
+        "sha256": "a614cb5b6ee3e4b936a3cd87142994c36e8c6f8a3acdb2b341a576bd9ebeb088"
+      },
+      {
+        "match": 303451,
+        "status": "downloaded",
+        "sha256": "4af4a66abf03956df881313b89509c84ab351e4c9eaf9d1349653e88519ea015"
+      },
+      {
+        "match": 303470,
+        "status": "downloaded",
+        "sha256": "a2be89a3f9cf554fe7b2438ae749afb6d4398dff87dd8f9a125158bc21b6a179"
+      },
+      {
+        "match": 303473,
+        "status": "downloaded",
+        "sha256": "441c0bd31e07d9714e8cd319c7f5fce0f0fa1b7c0f26334e09aba1a6d68b92be"
+      },
+      {
+        "match": 303479,
+        "status": "downloaded",
+        "sha256": "7e843507e85632d3d98b21222020ef6dce03a65eea092429f691a7ecae7ab693"
+      },
+      {
+        "match": 303487,
+        "status": "downloaded",
+        "sha256": "cc36bddd836bca8aa8a4947fbec96faae92a50371ffae07cff8696324f68340c"
+      },
+      {
+        "match": 303493,
+        "status": "downloaded",
+        "sha256": "ef763d692761ac64da7fc1b0806621ad43d9face22eb8c790339cc4d2f507905"
+      },
+      {
+        "match": 303504,
+        "status": "downloaded",
+        "sha256": "aed33c1ff7df995ec59380c1435bec1af00ff23649f4b9447e68271e18bd1892"
+      },
+      {
+        "match": 303516,
+        "status": "downloaded",
+        "sha256": "c7aa8ed5746e321ffc1ba7c5288e652c19e3c343962a2b3772aa44a4989a8a53"
+      },
+      {
+        "match": 303517,
+        "status": "downloaded",
+        "sha256": "4274e65fc7f1f724ca176a8edc8985e0d541baaa9915c9a87d19a028a651ccac"
+      },
+      {
+        "match": 303524,
+        "status": "downloaded",
+        "sha256": "0ecd96959668d904748a72f04077989bc208a8e4c2dd5939c1a53e45efc5e904"
+      },
+      {
+        "match": 303532,
+        "status": "downloaded",
+        "sha256": "6d76015ddcc67e89d5bf23c474362dbdaf4ab002727900738388b778e293ef9b"
+      },
+      {
+        "match": 303548,
+        "status": "downloaded",
+        "sha256": "36bca363ff5dcff4b5d32a9780116ae590df10a59e70706497ca7b71b5ad3a7d"
+      },
+      {
+        "match": 303596,
+        "status": "downloaded",
+        "sha256": "f4bfbedf9a675152fc4c543c5f6eefbb1b038a9b2620798d8d452df966a58315"
+      },
+      {
+        "match": 303600,
+        "status": "downloaded",
+        "sha256": "d41b37a52e5e38191b7e25e95bd76dfe73acf3bc97264f8a02f9f454fa50f8b0"
+      },
+      {
+        "match": 303610,
+        "status": "downloaded",
+        "sha256": "8b321139a5917476569cf8305700d8c2f68848f4dc9c2fdd72cd8415033a8e36"
+      },
+      {
+        "match": 303615,
+        "status": "downloaded",
+        "sha256": "0a1d56c2eb455da9da96a76befab1506258bee09fb2534cf0df84ed654f67d56"
+      },
+      {
+        "match": 303634,
+        "status": "downloaded",
+        "sha256": "7ce361af8631fd34722f41be871c7a80a6682f94a49a06d9358f31a047b0c9ad"
+      },
+      {
+        "match": 303652,
+        "status": "downloaded",
+        "sha256": "b30d142b946df5707b6ae7113f26e5f4f78ffde67f80ab95db2e43be14a1ab83"
+      },
+      {
+        "match": 303664,
+        "status": "downloaded",
+        "sha256": "10d1c21074301a154b8ddad36c813941574de9cea3b4542655a9f7b57bfff1fc"
+      },
+      {
+        "match": 303666,
+        "status": "downloaded",
+        "sha256": "f19208f06cc42ff1f32305f39cc74d9fcf2f40a0eb27994d681b3cfbee88dbbf"
+      },
+      {
+        "match": 303674,
+        "status": "downloaded",
+        "sha256": "a9156dd8280222a99475ef9af8c2e60b64db38fc1563bb0e088052734c854eb7"
+      },
+      {
+        "match": 303680,
+        "status": "downloaded",
+        "sha256": "10977539cbe54e217dd05d42e3ba30d665e8846c4f4fadd23cee238d6d3c6fc1"
+      },
+      {
+        "match": 303682,
+        "status": "downloaded",
+        "sha256": "a3bda55ffdc8d25f429bce9991408a089d1f62c2767027716649cca9a54396e3"
+      },
+      {
+        "match": 303696,
+        "status": "downloaded",
+        "sha256": "89f6f1c30f0fe64798ac428a6c2149a72c329f5b0dfe8f127de2a674d57c6a88"
+      },
+      {
+        "match": 303700,
+        "status": "downloaded",
+        "sha256": "4f89343f7d796681e4b08e78e7690cf89b2a70f555e86f656e647748a40fb28b"
+      },
+      {
+        "match": 303707,
+        "status": "downloaded",
+        "sha256": "a4fc96e9382bc622a7b3d98423f491bc2ed497a4b8a77a74fa4997c3ba7a18fd"
+      },
+      {
+        "match": 303715,
+        "status": "downloaded",
+        "sha256": "2e62556fb1ba1c31881902d5d9efb6b6321fbd0a4053bca8f2b3f251ee954d55"
+      },
+      {
+        "match": 303725,
+        "status": "downloaded",
+        "sha256": "ebc395eca927cf980f239135b5ebc24792f469460deb7b83cd2931afbdd44969"
+      },
+      {
+        "match": 303731,
+        "status": "downloaded",
+        "sha256": "5e17fed304c812f73e025dd974ee7b8b9286ac8184a0a3aaa88487a778fab589"
+      },
+      {
+        "match": 3764440,
+        "status": "downloaded",
+        "sha256": "9772a4e35b4f5c6ff07868321c7e80280bf3e03481d01d3ca56195c4a512746f"
+      },
+      {
+        "match": 3764661,
+        "status": "downloaded",
+        "sha256": "0cc573a6e964a92582a8bfd21ca9e7aabf4fbdf1c990b59af74b2c48c7d14533"
+      },
+      {
+        "match": 3773369,
+        "status": "downloaded",
+        "sha256": "4b57dcc6c421dc8e83c50ecfc93dcb814c1ce1f06326945d1fa1068894250e5f"
+      },
+      {
+        "match": 3773372,
+        "status": "downloaded",
+        "sha256": "e990083b2071ed6ab2ab7265001534574c4088442e303320423b19e39489a66d"
+      },
+      {
+        "match": 3773377,
+        "status": "downloaded",
+        "sha256": "d9164bf9dff83e7a4952c52658e4a21e442e7986af3dee9aa3ab5ed196e59ca2"
+      },
+      {
+        "match": 3773386,
+        "status": "downloaded",
+        "sha256": "9f1e8c8a29c77dbd02f041dc969dd83262f491e8b7a255be599785a84493a2be"
+      },
+      {
+        "match": 3773387,
+        "status": "downloaded",
+        "sha256": "9beb8b2f26ce9cd3e3c0e9f32c4808bc8594074a90ee905830c8a803cc3b17c8"
+      },
+      {
+        "match": 3773403,
+        "status": "downloaded",
+        "sha256": "c5643ce6df6058a56d52e94f0c4376d28db915f7724eb12db333fb56d5bb7ef7"
+      },
+      {
+        "match": 3773415,
+        "status": "downloaded",
+        "sha256": "ba8817d6581eabb614b205518b23490af9caa6230fdb2d035e1f81c1bd7fd290"
+      },
+      {
+        "match": 3773428,
+        "status": "downloaded",
+        "sha256": "485ec40e2b00f5b3286802dc5a1fe9bc6b30923ecbdd5821831f53fc5ae3e964"
+      },
+      {
+        "match": 3773457,
+        "status": "downloaded",
+        "sha256": "c70db3da1c345dd48c5b7e458d0cb50b7b4d694c0950ce5bc59e18ba6883e80c"
+      },
+      {
+        "match": 3773466,
+        "status": "downloaded",
+        "sha256": "2b99c1aa6703940cba9521bbf707dac6c20df116e54b8dcb17acc71dfa82cb30"
+      },
+      {
+        "match": 3773474,
+        "status": "downloaded",
+        "sha256": "7012997d6780b9ec1f7385dd94a5b2efd86a06f4c6e13b68aecaf502af1f2fd9"
+      },
+      {
+        "match": 3773477,
+        "status": "downloaded",
+        "sha256": "fe26be79cb8369403a92acc1b89c4a32376b478da1879a66a2d537989a79f4ea"
+      },
+      {
+        "match": 3773497,
+        "status": "downloaded",
+        "sha256": "1cd0ab7150317eea676ec16932fe0dbd7836222b7dfd3a86f002b43ca18f87b7"
+      },
+      {
+        "match": 3773523,
+        "status": "downloaded",
+        "sha256": "28d9d136e9fd821b7155b948e8bcbd59353977527cfe760ab2f1695d968aa288"
+      },
+      {
+        "match": 3773526,
+        "status": "downloaded",
+        "sha256": "1c0cbce607f318590598b6cad955f9516b5fe4275b67db0329fe034ada0fd844"
+      },
+      {
+        "match": 3773547,
+        "status": "downloaded",
+        "sha256": "a0ce44d24be0539e7b899e9168c0d71ca83a75ef74164bc38223a8cf8e6e18c3"
+      },
+      {
+        "match": 3773552,
+        "status": "downloaded",
+        "sha256": "96c22216abc189a856c8edcafcb693d120de92fbd94d48ce41f978ce05e4ce20"
+      },
+      {
+        "match": 3773565,
+        "status": "downloaded",
+        "sha256": "216ad3d31325658d67985882426ae0d0d638fd1a4edd5e08c9c1eac0f0e5c495"
+      },
+      {
+        "match": 3773571,
+        "status": "downloaded",
+        "sha256": "617c19cd1f1d9a68db581c6e1c6229b9593e1b3f1e008ee3477526e75086578b"
+      },
+      {
+        "match": 3773585,
+        "status": "downloaded",
+        "sha256": "c5454a57166c31e4ca4baf0ea756dfe1b0594e89e39a5fed971100568e1aed15"
+      },
+      {
+        "match": 3773586,
+        "status": "downloaded",
+        "sha256": "563c290642cb23796aaf8efc3d0e22923203487a4e75677ec7d7efbbc86b32b9"
+      },
+      {
+        "match": 3773587,
+        "status": "downloaded",
+        "sha256": "aa4fea037ad355a8076b66b7a9e3f218a47e291692c7026913de7c551f3163d0"
+      },
+      {
+        "match": 3773593,
+        "status": "downloaded",
+        "sha256": "5a51ca9fd98c4594e223dea513730773e0a160333a3e8e7c174fb0b116bbf6dc"
+      },
+      {
+        "match": 3773597,
+        "status": "downloaded",
+        "sha256": "8f7e522f6bceb44d998cce860a3dbfab7ca85f7373129155306a57f5d7323113"
+      },
+      {
+        "match": 3773625,
+        "status": "downloaded",
+        "sha256": "0008cb8c1c9347342a69c9170a7c192a901ab40124de6d0cbe6e23c8716a1bf6"
+      },
+      {
+        "match": 3773631,
+        "status": "downloaded",
+        "sha256": "54c5b3f90139a41638d2431bb36d5b3b4f1244e9accdd23f9a5c58a1797be4d1"
+      },
+      {
+        "match": 3773656,
+        "status": "downloaded",
+        "sha256": "f728e6a15f045363c56490570fb70be8c3178f426bbbb182db370ef45efc8791"
+      },
+      {
+        "match": 3773660,
+        "status": "downloaded",
+        "sha256": "c27681c7cc9995def60fadcab58d9367ca9446769399a1968a7313bdec545070"
+      },
+      {
+        "match": 3773661,
+        "status": "downloaded",
+        "sha256": "9cd9da2c3aa0a9c8b310122d9f118d7628c05bb373ab2c44f7029ccc8840185e"
+      },
+      {
+        "match": 3773665,
+        "status": "downloaded",
+        "sha256": "5df736789a5ecb0c61abe620f04fe7b8ed180c65852e444d7ab5219b5752c6ae"
+      },
+      {
+        "match": 3773672,
+        "status": "downloaded",
+        "sha256": "5ab8274c8c92ed99d29c35be85b04d80f2902c7b048771264537e835803d76a2"
+      },
+      {
+        "match": 3773689,
+        "status": "downloaded",
+        "sha256": "2b5d51351eb49f8851db9189cd106ad31c9ebedd37faa74de36be4af6eef675f"
+      },
+      {
+        "match": 3773695,
+        "status": "downloaded",
+        "sha256": "ded6e684bfc96444a41b5db2d2c5025163be7eddf2e5fc4aad8937952e49bf17"
+      },
+      {
+        "match": 20260914,
+        "status": "not_in_source"
+      }
+    ]
+  }
+}

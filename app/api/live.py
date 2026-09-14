@@ -532,12 +532,19 @@ async def matches_live(
     speed: float = Query(default=5.0,
         description="Her interval'da ilerleyen match-dakikası (replay hızı)"),
     tenant_id: str = Query(default="t-default"),
+    feed_mode: str | None = Query(default=None, alias="feed",
+        description="replay | camera — verilmezse LIVE_FEED_MODE"),
     session: Session = Depends(get_session),
 ) -> None:
     """WebSocket: her N saniyede tactical snapshot push.
 
     Replay modu: event-zaman güdümlü saat; replay gerçek son-event dakikasında
     biter (düz 90 değil). `speed` wall-time→match-time eşler.
+
+    Kamera modu (`feed=camera`): saat replay değil, işlenen SON KAREdir; her
+    turda feed yenilenir (event'ler akarken büyür) ve snapshot'a `source`
+    (son kare dakikası, gecikme sn, kare sayısı) eklenir. Maç "bitmez";
+    bağlantı kapanana dek sürer.
     """
     interval = max(MIN_INTERVAL_SECONDS, min(MAX_INTERVAL_SECONDS, interval_seconds))
     await websocket.accept()
@@ -564,25 +571,42 @@ async def matches_live(
         # Fabrika config'ten kaynağı seçer; bugün replay, gerçek sağlayıcı
         # bağlanınca aynı WS döngüsü değişmeden onu kullanır.
         try:
-            feed: ReplayFeed = build_live_feed(session, match_id)
+            feed: ReplayFeed = build_live_feed(session, match_id, mode=feed_mode)
         except ValueError as e:
             await websocket.send_text(json.dumps({"error": str(e)}))
             return
+        camera = getattr(feed, "clock", None) is not None
         last_event_minute = feed.last_event_minute()
         clock_cfg = ClockConfig(speed=speed, start_minute=SIMULATION_START_MINUTE)
         while True:
-            elapsed_wall = time.monotonic() - start_wall
-            current_minute, ended = advance_minute(
-                elapsed_wall=elapsed_wall, interval=interval,
-                last_event_minute=last_event_minute, config=clock_cfg,
-            )
-            # max_minute opsiyonel sert tavan (test geri-uyumu)
-            if current_minute >= max_minute:
-                current_minute = max_minute
-                ended = True
+            source: dict[str, Any] | None = None
+            if camera:
+                # Kamera hattı: saat = işlenen son kare; gecikme ölçülür, gizlenmez.
+                feed.refresh()  # type: ignore[attr-defined]
+                clk = feed.clock()  # type: ignore[attr-defined]
+                current_minute = clk.latest_frame_minute or 0.0
+                ended = False
+                source = {
+                    "kind": "camera", "latest_frame_minute": clk.latest_frame_minute,
+                    "latency_seconds": clk.latency_seconds(), "frames": clk.frames,
+                    "note": ("henüz kare yok — takip hattı bekleniyor" if not clk.frames
+                             else f"{clk.latest_frame_minute:.1f}. dakikanın resmi"),
+                }
+            else:
+                elapsed_wall = time.monotonic() - start_wall
+                current_minute, ended = advance_minute(
+                    elapsed_wall=elapsed_wall, interval=interval,
+                    last_event_minute=last_event_minute, config=clock_cfg,
+                )
+                # max_minute opsiyonel sert tavan (test geri-uyumu)
+                if current_minute >= max_minute:
+                    current_minute = max_minute
+                    ended = True
             snapshot = _compute_live_snapshot(
                 feed, match_id, my_team_id, current_minute,
             )
+            if source is not None:
+                snapshot["source"] = source
             # Zamansal trend: snapshot'tan küçük bir özet biriktir, yön türet.
             trend_history.append(_trend_frame(snapshot))
             del trend_history[:-TREND_HISTORY_LIMIT]

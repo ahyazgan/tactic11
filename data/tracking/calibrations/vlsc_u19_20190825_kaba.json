@@ -1,0 +1,71 @@
+{
+  "image_size": [
+    1920,
+    1080
+  ],
+  "pitch_length_m": 105,
+  "pitch_width_m": 68,
+  "points": [
+    {
+      "image": [
+        762.0,
+        606.0
+      ],
+      "pitch": [
+        52.5,
+        0.0
+      ],
+      "label": "halfway ∩ uzak taç"
+    },
+    {
+      "image": [
+        405.0,
+        752.0
+      ],
+      "pitch": [
+        43.35,
+        34.0
+      ],
+      "label": "orta daire sol uç"
+    },
+    {
+      "image": [
+        1093.0,
+        722.0
+      ],
+      "pitch": [
+        61.65,
+        34.0
+      ],
+      "label": "orta daire sağ uç"
+    },
+    {
+      "image": [
+        770.0,
+        688.0
+      ],
+      "pitch": [
+        52.5,
+        24.85
+      ],
+      "label": "orta daire uzak tepe"
+    },
+    {
+      "image": [
+        762.0,
+        737.0
+      ],
+      "pitch": [
+        52.5,
+        34.0
+      ],
+      "label": "orta nokta"
+    }
+  ],
+  "meta": {
+    "source": "VLSC U19 2019-08-25 (YouTube CC-BY 9J8nUZ0Dd3s)",
+    "frame_seconds": 600,
+    "camera": "operated_wide_pan",
+    "note": "elle okunan kaba çapa; kare başına kalibrasyon iyileştirir; saha 105x68 varsayıldı"
+  }
+}

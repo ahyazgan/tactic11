@@ -35,6 +35,7 @@ from typing import Any
 
 from app.audit import AuditRecord, EngineResult
 from app.domain import TrackingFrame
+from app.engine.tracking.coverage import coverage_note, coverage_quality
 
 ENGINE_NAME = "engine.space_map"
 ENGINE_VERSION = "1"
@@ -100,6 +101,8 @@ class SpaceMap:
     findings: tuple[SpaceFinding, ...]
     pitch_coverage: float = 0.0   # oyuncuların yayıldığı x aralığı (0-1)
     note: str | None = None
+    player_coverage: float = 1.0  # görünen oyuncu / 22 (engine.tracking.coverage)
+    data_quality: float = 1.0     # 0..1 — signal_quality bununla çarpar
 
 
 def _players(frame: TrackingFrame, team_external_id: int):
@@ -306,6 +309,7 @@ def compute_space_map(
     seen = [len(_players(f, our_team_external_id)) + len(_players(f, their_team_external_id))
             for f in frames]
     players_seen = round(sum(seen) / len(seen), 1) if seen else 0.0
+    player_coverage, data_quality = coverage_quality(players_seen)
 
     if not continuous:
         return _result(SpaceMap(
@@ -380,12 +384,18 @@ def compute_space_map(
     best = max(attacking, key=lambda z: z.delta, default=None)
     gap = _line_gap(frames, our_team_external_id, their_team_external_id, direction)
     findings = _findings(zones, gap, best)
+    # Görünmeyen oyuncu "yok" değildir: 11 görünen oyuncuyla "sağ kanat 0 oyuncu"
+    # bulgusu kameranın sınırıdır, rakibin hatası değil. Kapsama → veri kalitesi
+    # signal_quality'de güveni düşürür; %50 altı bastırır.
+    note = None if findings else "belirgin bölgesel üstünlük ya da hat boşluğu yok"
+    if findings and data_quality < 1.0:
+        note = coverage_note(player_coverage, data_quality)
     return _result(SpaceMap(
         minute=minute, frames_used=n, players_seen=players_seen,
         attack_direction=direction, direction_method=method,
         zones=zones, line_gap=gap, best_overload=best, findings=findings,
-        pitch_coverage=coverage,
-        note=None if findings else "belirgin bölgesel üstünlük ya da hat boşluğu yok",
+        pitch_coverage=coverage, note=note,
+        player_coverage=player_coverage, data_quality=data_quality,
     ), minute=minute)
 
 
@@ -404,6 +414,8 @@ def _result(value: SpaceMap, *, minute: float) -> EngineResult[SpaceMap]:
                 "attack_direction": value.attack_direction,
                 "direction_method": value.direction_method,
                 "pitch_coverage": value.pitch_coverage,
+                "player_coverage": value.player_coverage,
+                "data_quality": value.data_quality,
                 "zones": [asdict(z) for z in value.zones],
                 "line_gap": asdict(value.line_gap),
             },

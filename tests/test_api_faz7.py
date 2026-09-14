@@ -50,6 +50,18 @@ def _seed_match_events(session, match_id: int = 9400):
             possession_id=i, is_goal=None, key_pass=False,
             raw_json=None, created_at=now,
         ))
+    # Panel skoru maç sonucundan değil, o ana kadarki gollerden okur: 30' gol → 86'da 1-0.
+    session.add(models.EventRow(
+        sport=football.SPORT_NAME, tenant_id="t-default",
+        source="statsbomb_open", source_event_id="g1",
+        match_external_id=match_id, team_external_id=11,
+        player_external_id=1, event_type="shot",
+        minute=30.0, period=1,
+        start_x=90.0, start_y=50.0, end_x=100.0, end_y=50.0,
+        outcome="goal", body_part="right_foot", pattern="open_play",
+        possession_id=99, is_goal=True, key_pass=False,
+        raw_json=None, created_at=now,
+    ))
     session.commit()
 
 

@@ -25,7 +25,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from app.tracking.calibration import PitchCalibration
+from app.tracking.calibration import CalibrationError, PitchCalibration
 from app.tracking.homography_fit import (
     DEFAULT_TOLERANCE_PX,
     FitResult,
@@ -42,6 +42,7 @@ GRASS_HSV_HIGH = (90, 255, 255)
 LINE_THICKNESS_PX = 9
 WHITE_MIN_VALUE = 140          # çizgi pikseli en az bu parlaklıkta olmalı
 MIN_LINE_PIXELS = 400          # bu kadar çizgi pikseli yoksa kalibrasyon denenmez
+MIN_GRID_SPREAD_M = 8.0        # görüntü içi ızgaranın sahadaki yayılımı bundan azsa homografi çökmüş
 
 
 @dataclass(frozen=True)
@@ -85,25 +86,70 @@ def calibration_from_homography(
     h_img_to_pitch: np.ndarray, image_size: tuple[int, int],
     *, pitch_length_m: float = 105.0, pitch_width_m: float = 68.0,
 ) -> PitchCalibration:
-    """Homografiden `PitchCalibration` üret (dört köşe eşlemesi olarak).
+    """Homografiden `PitchCalibration` üret — GÖRÜNTÜ İÇİ noktalardan.
 
-    Dört tam eşleşmeden DLT aynı homografiyi geri verir, yani bu kayıpsızdır.
-    Böylece hattın geri kalanı (saha-içi kontrolü, görünür alan, hız hesabı)
-    hiç değişmeden kare başına homografiyle çalışabilir.
+    Eskiden sahanın dört köşesi kullanılıyordu. Yan taç kamerasında yakın
+    köşeler görüntünün çok dışına, hatta ufkun ÖTESİNE düşer (w ≤ 0); dört
+    köşeden kurulan DLT o zaman başka bir homografi verir ve tüm oyuncular
+    sahanın bir köşesine yapışır. Ölçüldü (VLSC U19, operatörlü kamera): kare
+    kalibrasyonu "%99 oturdu" derken konumların %90'ı (0, 68 m) köşesindeydi.
+
+    Şimdi görüntü içinde düzenli bir ızgara sahaya izdüşürülür; yalnız ufkun
+    doğru tarafındaki (w > 0) noktalar alınır ve en küçük kareler DLT'si aynı
+    homografiyi kayıpsız geri verir. Nokta seti her zaman görüntüde olduğu için
+    koşullama bozulmaz.
     """
-    from app.tracking.homography_fit import corners_from_homography
-    from app.tracking.pitch_model import pitch_corners
-
-    corners_px = corners_from_homography(h_img_to_pitch)
-    return PitchCalibration.from_dict({
-        "image_size": list(image_size),
+    w, h = int(image_size[0]), int(image_size[1])
+    # H ile −H aynı eşlemedir; ufuk kontrolü (w > 0) için işareti görüntü
+    # merkezine göre sabitle — aksi halde sahadaki noktalar "ufkun ötesi" sanılıp
+    # gökyüzü noktaları kalır (ölçüldü: gerçek çapada merkezde w = −0.4).
+    h_img_to_pitch = np.asarray(h_img_to_pitch, dtype=float)
+    q_c = h_img_to_pitch @ np.array([w / 2.0, h / 2.0, 1.0])
+    if q_c[2] < 0:
+        h_img_to_pitch = -h_img_to_pitch
+    grid = 5
+    src: list[tuple[float, float]] = []
+    dst: list[tuple[float, float]] = []
+    for i in range(grid):
+        for j in range(grid):
+            u = w * (0.1 + 0.8 * i / (grid - 1))
+            v = h * (0.1 + 0.8 * j / (grid - 1))
+            q = h_img_to_pitch @ np.array([u, v, 1.0])
+            if not np.isfinite(q).all() or q[2] <= 1e-9:
+                continue
+            x, y = float(q[0] / q[2]), float(q[1] / q[2])
+            # Ufka yakın noktalar sahadan yüzlerce metre öteye düşer ve DLT'yi
+            # koşulsuz bozar; saha çevresindeki makul bant dışındakiler alınmaz.
+            if not (-60.0 <= x <= pitch_length_m + 60.0 and -40.0 <= y <= pitch_width_m + 40.0):
+                continue
+            src.append((u, v))
+            dst.append((x, y))
+    if len(src) < 4:
+        raise ValueError("homografi görüntü içinde 4 geçerli nokta üretmiyor (ufkun ötesinde)")
+    # Çökme kapısı: görüntünün ortası sahada birkaç metreye sıkışıyorsa homografi
+    # dejeneredir — tüm sahayı tek çizgiye indirip yine %90+ inlier alabilir
+    # (ölçüldü: yeniden yakalama böyle bir çözümü kabul etti, bütün oyuncular
+    # (0, 68 m) köşesine düştü). Böyle bir kalibrasyon KURULMAZ.
+    xs = np.array([d[0] for d in dst])
+    ys = np.array([d[1] for d in dst])
+    if float(np.ptp(xs)) < MIN_GRID_SPREAD_M or float(np.ptp(ys)) < MIN_GRID_SPREAD_M:
+        raise ValueError(
+            f"homografi çökmüş: görüntü ızgarası sahada {np.ptp(xs):.1f}×{np.ptp(ys):.1f} m'ye "
+            f"sıkışıyor (< {MIN_GRID_SPREAD_M} m)"
+        )
+    calib = PitchCalibration.from_dict({
+        "image_size": [w, h],
         "pitch_length_m": pitch_length_m,
         "pitch_width_m": pitch_width_m,
         "points": [
             {"image": [float(u), float(v)], "pitch": [float(x), float(y)]}
-            for (u, v), (x, y) in zip(corners_px, pitch_corners(), strict=True)
+            for (u, v), (x, y) in zip(src, dst, strict=True)
         ],
     })
+    # Homografi tembel hesaplanır; dejenere nokta seti burada patlasın ki çağıran
+    # (`_accept`) kareyi REDDEDEBİLSİN — konum hesabında değil.
+    _ = calib.homography
+    return calib
 
 
 @dataclass
@@ -284,7 +330,11 @@ class PerFrameCalibrator:
         self._last_anchor_note = res.note
         if not res.accepted or res.homography is None or res.fit is None:
             return None
-        self._anchor = calibration_from_homography(res.homography, self._image_size)
+        try:
+            self._anchor = calibration_from_homography(res.homography, self._image_size)
+        except (ValueError, CalibrationError):
+            self._last_anchor_note = "bulunan çapa dejenere — reddedildi"
+            return None
         self.anchors_found += 1
         self._lost_streak = 0
         self._last_corners = self._prev_corners = self._pending = None
@@ -317,6 +367,14 @@ class PerFrameCalibrator:
         return FrameCalibration(None, fit, reason)
 
     def _accept(self, fit: FitResult, *, jump_m: float | None = None) -> FrameCalibration:
+        # Önce kalibrasyonu KUR: homografi görüntü içinde geçerli nokta üretmiyorsa
+        # (ufkun ötesi / dejenere) bu bir kabul değil rettir — durum güncellenmez,
+        # son iyi duruş korunur. Eskiden böyle bir homografi sessizce kabul edilip
+        # köşeye yapışık konumlar üretiyordu.
+        try:
+            calib = calibration_from_homography(fit.homography, self._image_size)
+        except (ValueError, CalibrationError) as e:
+            return self._miss(fit, f"homografi dejenere ({e}) — kare atlandı, son iyi duruş korunuyor")
         self._last_jump_m = jump_m if jump_m is not None else 0.0
         self._misses = 0
         self._lost_streak = 0
@@ -325,9 +383,7 @@ class PerFrameCalibrator:
         self._prev_corners = self._last_corners
         self._last_corners = corners_from_homography(fit.homography)
         self.frames_calibrated += 1
-        return FrameCalibration(
-            calibration_from_homography(fit.homography, self._image_size), fit,
-        )
+        return FrameCalibration(calib, fit)
 
     def process(self, bgr: np.ndarray) -> FrameCalibration:
         """Kareyi işle (cv2 ile çizgi çıkarımı + karar)."""

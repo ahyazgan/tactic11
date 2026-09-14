@@ -57,6 +57,7 @@ class TrackingFrame(BaseModel):
     minute: float  # maç başından dakika (0.0–120.0)
     ball: PlayerPosition | None = None  # top da bir "oyuncu" gibi pozisyona sahip
     ball_estimated: bool = False  # top görülmedi, komşu karelerden enterpole edildi
+    continuity_id: int | None = None  # kamera kesmesi/tekrar sonrasında değişir
     players: tuple[PlayerPosition, ...]
     source: str | None = None
     event_uuid: str | None = None

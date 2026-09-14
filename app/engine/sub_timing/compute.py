@@ -10,7 +10,7 @@ Saf hesap. live_sub_recommendation + substitution_chess üstüne kurulu.
 """
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 
 from app.audit import AuditRecord, EngineResult
@@ -47,6 +47,10 @@ class SubTimingReport:
     advices: tuple[SubTimingAdvice, ...]   # urgency sıralı
     package_recommendation: tuple[int, ...]  # birlikte değiştirilecek oyuncu id
     package_rationale: str
+    # Elit zamanlama önseli (`elite_prior`): bu durumda elit antrenörlerin 12 dk
+    # içinde değiştirme olasılığı; `subs_used` bilinmiyorsa None (pencere kapalı).
+    elite_window_probability: float | None = None
+    elite_window: bool = False
 
 
 def _minutes_until_critical(
@@ -81,8 +85,22 @@ def compute_sub_timing(
     match_total_minutes: float = 90.0,
     my_score: int = 0,
     opponent_score: int = 0,
+    eligible_player_ids: Iterable[int] | None = None,
+    off_prior: Mapping[int, float] | None = None,
+    subs_used: int | None = None,
 ) -> EngineResult[SubTimingReport]:
-    """Optimal sub zamanlaması + etki + paket önerisi."""
+    """Optimal sub zamanlaması + etki + paket önerisi.
+
+    `eligible_player_ids` / `off_prior` doğrudan `live_sub_recommendation`'a
+    geçer (sahadakilerle sınırla; elit "kim çıkar" önseli). `subs_used` (o ana
+    kadar yapılan değişiklik) verilirse elit ZAMANLAMA penceresi hesaplanır:
+    yorgunluk projeksiyonu tek başına saat-kuralının çok altında uyuşuyordu
+    (F1 0.49 vs 0.74); önsel motoru elit antrenörün takvimiyle eşitler.
+    """
+    from app.engine.sub_timing.elite_prior import (
+        SUB_WINDOW_THRESHOLD,
+        elite_sub_window_probability,
+    )
     passes = list(all_passes)
     defs = list(all_def_actions)
     minutes_remaining = max(0.0, match_total_minutes - current_minute)
@@ -91,6 +109,7 @@ def compute_sub_timing(
         team_external_id, passes, defs,
         current_minute=current_minute,
         my_score=my_score, opponent_score=opponent_score,
+        eligible_player_ids=eligible_player_ids, off_prior=off_prior,
     ).value
 
     advices: list[SubTimingAdvice] = []
@@ -134,6 +153,11 @@ def compute_sub_timing(
     else:
         pkg_rationale = f"{len(package)} oyuncu acil rotasyon (yorgunluk eşiği)"
 
+    window_p: float | None = None
+    if subs_used is not None:
+        state = ("leading" if my_score > opponent_score
+                 else "trailing" if my_score < opponent_score else "drawing")
+        window_p = round(elite_sub_window_probability(current_minute, state, subs_used), 3)
     report = SubTimingReport(
         team_external_id=team_external_id,
         current_minute=current_minute,
@@ -141,6 +165,8 @@ def compute_sub_timing(
         advices=tuple(advices),
         package_recommendation=package,
         package_rationale=pkg_rationale,
+        elite_window_probability=window_p,
+        elite_window=window_p is not None and window_p >= SUB_WINDOW_THRESHOLD,
     )
     audit = AuditRecord(
         engine=ENGINE_NAME, engine_version=ENGINE_VERSION,

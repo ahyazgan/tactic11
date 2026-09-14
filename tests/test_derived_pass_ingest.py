@@ -164,3 +164,57 @@ def test_no_passes_is_not_an_error(session) -> None:
     _tenant(session)
     assert ingest_derived_passes(session, {}, tenant_id="t-test",
                                  match_id=MATCH, replace=True) == 0
+
+
+def test_explicit_empty_replace_clears_stale_passes_but_absent_key_preserves(session):
+    _tenant(session)
+    ingest_derived_passes(session, {"derived_passes": [_pas(10, 1, 2)]},
+                          tenant_id="t-test", match_id=MATCH, replace=False)
+    session.commit()
+    ingest_derived_passes(session, {}, tenant_id="t-test", match_id=MATCH, replace=True)
+    assert len(_rows(session)) == 1
+    ingest_derived_passes(session, {"derived_passes": []}, tenant_id="t-test", match_id=MATCH, replace=True)
+    assert not _rows(session)
+
+
+def test_stoppage_time_period_and_estimated_provenance_survive_loader(session):
+    from app.data.loaders import load_match_events
+    _tenant(session)
+    ingest_derived_passes(session, {"derived_passes": [{**_pas(47, 1, 2), "period": 1}]},
+                          tenant_id="t-test", match_id=MATCH, replace=False)
+    session.commit()
+    p = load_match_events(session, MATCH).passes[0]
+    assert p.period == 1 and p.estimated
+
+
+def test_recovery_ingest_loader_and_engine_coverage_contract(session):
+    from dataclasses import asdict
+
+    from app.data.loaders import load_match_events
+    from app.engine.ppda.compute import compute_ppda
+    from app.engine.spatial_control.compute import compute_spatial_control
+    from app.tracking.recoveries import DerivedDefensiveAction
+    from scripts.ingest_tracking_json import DERIVED_DEFENSE_SOURCE, ingest_derived_defenses
+
+    _tenant(session)
+    event = DerivedDefensiveAction(minute=47, period=1, team_external_id=RAKIP,
+                                  player_external_id=2, previous_player_external_id=1,
+                                  previous_team_external_id=BIZ, x=50, y=50,
+                                  control_seconds=.3, flight_seconds=.2)
+    payload = {"derived_defensive_actions": [asdict(event), asdict(event)]}
+    args = {"tenant_id": "t-test", "match_id": MATCH, "replace": False}
+    assert ingest_derived_defenses(session, payload, **args) == 1
+    session.commit()
+    assert ingest_derived_defenses(session, payload, **args) == 0
+    loaded = load_match_events(session, MATCH).defensive_actions
+    assert len(loaded) == 1 and loaded[0].estimated and loaded[0].period == 1
+    assert _rows(session)[0].source == DERIVED_DEFENSE_SOURCE
+    assert compute_ppda(RAKIP, [], loaded).value.team_def_actions_in_press_zone == 0
+    spatial = compute_spatial_control(BIZ, RAKIP, [], loaded, current_minute=48).value
+    assert spatial.note and not spatial.gap_between_lines and spatial.superiority_flank is None
+    # Separate event sources: replacing recovery output preserves passes.
+    ingest_derived_passes(session, {"derived_passes": [_pas(10, 1, 2)]}, **args)
+    session.commit()
+    ingest_derived_defenses(session, {"derived_defensive_actions": []}, **{**args, "replace": True})
+    session.commit()
+    assert len(_rows(session)) == 1 and _rows(session)[0].source == DERIVED_PASS_SOURCE

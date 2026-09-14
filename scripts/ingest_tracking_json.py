@@ -30,6 +30,7 @@ VIDEO_LEAGUE_ID = 0
 #   - motorlar bunların TAHMİN olduğunu bilebilsin,
 #   - yeniden ingest idempotent olsun (source + source_event_id tekil).
 DERIVED_PASS_SOURCE = "video_passes"
+DERIVED_DEFENSE_SOURCE = "video_defensive_actions"
 
 
 def ensure_match(session, *, match_id: int, tenant_id: str, home: int, away: int) -> bool:
@@ -68,14 +69,13 @@ def ingest_derived_passes(
     karar etkisi motorları kulüp videosundan beslenemiyordu. Bu fonksiyon o
     zinciri kapatır.
 
-    Dürüstlük: hepsi TAHMİNDİR. Gerçek yayın verisiyle ölçüldü (SkillCorner,
-    `scripts/validate_passes.py`) — geçerli kesinlik %72, gözlemlenebilir
-    geçişlerin %80'i yakalanıyor. `outcome` alanı tamamlanma durumunu taşır;
+    Dürüstlük: hepsi TAHMİNDİR. Güncel ölçüm ve sınırları için
+    `docs/VIDEO-OLAY-SONUCLARI.md`. `outcome` tamamlanma durumunu taşır;
     `raw_json` ham ölçümleri (uçuş süresi, mesafe, topun enterpole olup olmadığı)
     saklar ki sonradan güvenilirlik süzülebilsin.
     """
     passes = payload.get("derived_passes") or []
-    if not passes:
+    if "derived_passes" not in payload:
         return 0
 
     if replace:
@@ -116,7 +116,7 @@ def ingest_derived_passes(
             player_external_id=p.get("from_player_external_id"),
             event_type="pass",
             minute=float(p["minute"]),
-            period=1 if float(p["minute"]) < 45 else 2,
+            period=int(p.get("period", 1 if float(p["minute"]) < 45 else 2)),
             start_x=p.get("start_x"), start_y=p.get("start_y"),
             end_x=p.get("end_x"), end_y=p.get("end_y"),
             # "completed" (d ile) — SAĞLAYICI ingest'iyle AYNI sözcük olmalı.
@@ -131,6 +131,7 @@ def ingest_derived_passes(
                 "distance_m": p.get("distance_m"),
                 "flight_seconds": p.get("flight_seconds"),
                 "ball_estimated": p.get("ball_estimated"),
+                "observed_flight": p.get("observed_flight", False),
                 "to_player_external_id": p.get("to_player_external_id"),
             }, ensure_ascii=False),
             created_at=now,
@@ -138,6 +139,50 @@ def ingest_derived_passes(
         mevcut.add(eid)
         yazilan += 1
     return yazilan
+
+
+def ingest_derived_defenses(
+    session, payload: dict, *, tenant_id: str, match_id: int, replace: bool,
+) -> int:
+    """Persist observed recoveries with distinct provenance and partial coverage.
+
+    An absent key means an older producer; an explicit empty list replaces
+    stale derived events when reprocessing a whole video.
+    """
+    if "derived_defensive_actions" not in payload:
+        return 0
+    scope = (
+        models.EventRow.sport == football.SPORT_NAME,
+        models.EventRow.tenant_id == tenant_id,
+        models.EventRow.match_external_id == match_id,
+        models.EventRow.source == DERIVED_DEFENSE_SOURCE,
+    )
+    if replace:
+        session.execute(delete(models.EventRow).where(*scope))
+    existing = set(session.execute(select(models.EventRow.source_event_id).where(*scope)).scalars())
+    written = 0
+    for event in payload["derived_defensive_actions"]:
+        if event["action_type"] != "ball_recovery":
+            raise ValueError("video defense supports observed ball_recovery only")
+        eid = (f"{event['period']}-{event['minute']:.4f}-{event['player_external_id']}"
+               f"-{event['previous_player_external_id']}")
+        if eid in existing:
+            continue
+        session.add(models.EventRow(
+            sport=football.SPORT_NAME, tenant_id=tenant_id,
+            source=DERIVED_DEFENSE_SOURCE, source_event_id=eid,
+            match_external_id=match_id, team_external_id=event["team_external_id"],
+            player_external_id=event["player_external_id"], event_type="defensive_action",
+            minute=event["minute"], period=event["period"],
+            start_x=event["x"], start_y=event["y"], pattern="ball_recovery",
+            outcome="successful", is_goal=False, key_pass=False,
+            raw_json=json.dumps({**event, "derived": True, "estimated": True,
+                                 "coverage": "observed_recoveries_only"}),
+            created_at=datetime.now(UTC),
+        ))
+        existing.add(eid)
+        written += 1
+    return written
 
 
 def ingest_json(
@@ -177,11 +222,15 @@ def ingest_json(
         passes_written = ingest_derived_passes(
             session, payload, tenant_id=tenant_id, match_id=mid, replace=not append,
         )
+        defenses_written = ingest_derived_defenses(
+            session, payload, tenant_id=tenant_id, match_id=mid, replace=not append,
+        )
         session.commit()
     return {
         "match_id": mid, "tenant_id": tenant_id, "match_created": created,
         "frames_removed": removed, "frames_written": report.frames_written,
         "passes_written": passes_written,
+        "defensive_actions_written": defenses_written,
         "source_video": payload.get("video"),
     }
 

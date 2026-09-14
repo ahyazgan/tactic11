@@ -18,7 +18,7 @@ from app.tracking.frames import (
     frames_from_json,
     frames_to_json,
 )
-from app.tracking.teams import TeamAssigner, kmeans, kmeans2, torso_color
+from app.tracking.teams import TeamAssigner, chromaticity, kmeans, kmeans2, torso_color
 
 # --------------------------------------------------------------------------- #
 # Kalibrasyon
@@ -145,6 +145,41 @@ def test_torso_color_ignores_grass() -> None:
     assert col[0] > 200 and col[1] < 60
 
 
+def test_discarded_tracks_cannot_change_team_palette() -> None:
+    """Numerous short referee/edge tracks must not replace one team's colour."""
+    a = TeamAssigner(min_observations=1)
+    for tid in range(1, 7):
+        color = np.array([220, 30, 30] if tid <= 3 else [30, 40, 220])
+        a.observe(tid, color)
+    clean = a.fit()
+    for tid in range(100, 150):
+        a.observe(tid, np.array([230, 220, 10]))
+    filtered = a.fit(eligible_tracks=set(range(1, 7)))
+    np.testing.assert_allclose(filtered.centers, clean.centers)
+    assert all(filtered.team_by_track[t] == clean.team_by_track[t] for t in range(1, 7))
+    assert all(filtered.team_by_track[t] is None for t in range(100, 150))
+    assert a.fit(eligible_tracks=set()).outlier_tracks == frozenset(a._obs)
+
+
+def test_dark_official_with_similar_brightness_is_not_a_team_player() -> None:
+    old = TeamAssigner(min_observations=1, reject_color_outliers=False)
+    new = TeamAssigner(min_observations=1)
+    for a in (old, new):
+        for tid in range(1, 7):
+            a.observe(tid, np.array([20, 20, 30] if tid <= 3 else [180, 180, 180]))
+        a.observe(9, np.array([30, 25, 10]))
+    assert old.fit().team_by_track[9] is not None
+    result = new.fit()
+    assert result.team_by_track[9] is None
+    assert all(result.team_by_track[t] is not None for t in range(1, 7))
+
+
+def test_chromaticity_preserves_shirt_colour_under_brightness_change() -> None:
+    rgb = np.array([[80, 100, 160], [160, 160, 160]], dtype=float)
+    np.testing.assert_allclose(chromaticity(rgb), chromaticity(rgb * 0.4))
+    assert np.isfinite(chromaticity(np.zeros((2, 3)))).all()
+
+
 # --------------------------------------------------------------------------- #
 # Kare inşası
 # --------------------------------------------------------------------------- #
@@ -266,6 +301,57 @@ def test_interpolate_ball_fills_short_gaps_only() -> None:
     assert s[2].ball == (300.0, 100.0, 0.0)
     # 5 örneklik boşluk > max_gap → dolmaz
     assert all(s[i].ball is None for i in range(4, 9))
+
+
+def test_interpolation_uses_elapsed_time_and_rejects_cuts_or_long_gaps():
+    from app.tracking.pipeline import interpolate_ball
+    s = [_sample(0, ball=(100, 100, .9)), _sample(1), _sample(2, ball=(200, 100, .9))]
+    s[1].seconds, s[2].seconds = .1, .4
+    assert interpolate_ball(s, 3, max_gap_seconds=.5) == 1
+    assert s[1].ball[0] == pytest.approx(125)
+    s[1].ball = None
+    s[2].seconds = 2
+    assert interpolate_ball(s, 3, max_gap_seconds=.5) == 0
+    s[2].seconds, s[2].continuity_id = .4, 1
+    assert interpolate_ball(s, 3) == 0
+
+
+def test_impossible_ball_jump_is_removed_only_with_two_supporting_neighbors():
+    from app.tracking.pipeline import reject_ball_spikes
+    c = _topdown_calib()
+    s = [_sample(i, ball=(x, 300, .9), src="det") for i, x in enumerate([300, 1000, 320])]
+    assert reject_ball_spikes(s, c) == 1
+    assert s[1].ball is None
+    assert s[0].ball and s[2].ball
+    # Sustained fast movement and camera cuts are not isolated false detections.
+    moving = [_sample(i, ball=(x, 300, .9), src="det") for i, x in enumerate([300, 320, 340])]
+    assert reject_ball_spikes(moving, c) == 0
+    s[1].ball, s[1].ball_source, s[1].continuity_id = (1000, 300, .9), "det", 1
+    assert reject_ball_spikes(s, c) == 0
+
+
+def test_pixel_interpolation_rejects_moving_calibration_and_impossible_speed():
+    from app.tracking.pipeline import interpolate_ball
+    c = _topdown_calib()
+    s = [_sample(0, ball=(200, 300, .9)), _sample(1), _sample(2, ball=(1000, 300, .9))]
+    assert interpolate_ball(s, 3, calib=c) == 0
+    s[2].ball = (210, 300, .9)
+    s[1].calibration = c
+    assert interpolate_ball(s, 3, calib=c) == 0
+
+
+def test_dense_event_stream_keeps_brief_touches_without_changing_export_cadence():
+    from app.tracking.pipeline import PipelineConfig, build_frames
+    s = [_sample(i, persons=[(1, 290, 260, 310, 300, .9)],
+                 ball=(300, 300, .9) if i in (1, 2) else None, src="det") for i in range(6)]
+    cfg = PipelineConfig(fps_out=5, track_fps=15)
+    dense = []
+    sparse = build_frames(s, {1: 0}, _topdown_calib(), match_id=1,
+                          home_team_id=10, away_team_id=20, cfg=cfg, event_frames=dense)
+    assert len(sparse) == 2 and len(dense) == 6
+    assert not any(p.is_actor for f in sparse for p in f.players)
+    assert sum(p.is_actor for f in dense for p in f.players) == 2
+    assert all(f.continuity_id == 0 for f in dense)
 
 
 def test_compute_velocities_central_difference_and_caps() -> None:
@@ -419,3 +505,14 @@ def test_anchor_with_swapped_colors_maps_teams_the_other_way() -> None:
     swapped = np.array([colors[1], colors[0]])
     red_team, _ = _assign(8, 4, anchor=swapped)
     assert red_team == 1
+
+
+def test_effective_track_fps_follows_integer_stride() -> None:
+    """25 fps kaynakta 15 de 10 da 2 adım → 12.5; 8 → 3 adım → 8.33; 60 fps'te 15 → 4 adım → 15."""
+    from app.tracking.pipeline import effective_track_fps, sample_stride
+
+    assert sample_stride(25.0, 15.0) == 2 and sample_stride(25.0, 10.0) == 2
+    assert effective_track_fps(25.0, 15.0) == 12.5 and effective_track_fps(25.0, 10.0) == 12.5
+    assert round(effective_track_fps(25.0, 8.0), 2) == 8.33
+    assert effective_track_fps(60.0, 15.0) == 15.0
+    assert effective_track_fps(25.0, 100.0) == 25.0     # adım 1'in altına inmez

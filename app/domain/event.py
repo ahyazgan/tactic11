@@ -42,6 +42,7 @@ class PassEvent(BaseModel):
     completed: bool = True
     key_pass: bool = False  # şuta direkt ön asist
     assist: bool = False    # gole direkt asist
+    estimated: bool = False  # görüntüden türetilmiş, sağlayıcı olayı değil
     possession_id: int | None = None  # StatsBomb possession sequence id
 
 
@@ -60,6 +61,7 @@ class DefensiveAction(BaseModel):
     y: float = Field(ge=0.0, le=100.0)
     action_type: DefensiveActionType
     successful: bool = True
+    estimated: bool = False  # kısmi video kapsaması; PPDA/alan kıyasına yetmez
     possession_id: int | None = None
 
 

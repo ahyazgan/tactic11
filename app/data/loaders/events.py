@@ -58,6 +58,7 @@ def _row_to_pass(row: models.EventRow) -> PassEvent | None:
             } else "regular",
             completed=(row.outcome == "completed"),
             key_pass=bool(row.key_pass),
+            estimated=row.source == "video_passes",
             possession_id=row.possession_id,
         )
     except (ValueError, TypeError):
@@ -93,6 +94,7 @@ def _row_to_def(row: models.EventRow) -> DefensiveAction | None:
             x=row.start_x or 0.0, y=row.start_y or 0.0,
             action_type=action_type,  # type: ignore[arg-type]
             successful=(row.outcome == "successful"),
+            estimated=row.source == "video_defensive_actions",
             possession_id=row.possession_id,
         )
     except (ValueError, TypeError):

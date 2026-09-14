@@ -20,6 +20,7 @@ from collections.abc import Callable
 
 from sqlalchemy.orm import Session
 
+from app.api.camera_feed import CameraLiveFeed
 from app.api.replay_feed import ReplayFeed, StatsBombReplayFeed
 from app.core.config import Settings, get_settings
 from app.core.logging import get_logger
@@ -30,18 +31,23 @@ log = get_logger(__name__)
 # buraya "live_api": <AdapterClass> eklenir; WS handler dokunulmaz.
 _REGISTRY: dict[str, Callable[[Session, int], ReplayFeed]] = {
     "replay": StatsBombReplayFeed,
+    # Kamera hattı (canli_mac → track_live → tracking_frames): saat son kare,
+    # gecikme ölçülür. Koordinatlı event'ler videodan türetilen paslardır.
+    "camera": CameraLiveFeed,
 }
 _DEFAULT_MODE = "replay"
 
 
-def resolve_feed_mode(settings: Settings | None = None) -> str:
+def resolve_feed_mode(settings: Settings | None = None, *, mode: str | None = None) -> str:
     """Etkin feed modunu çöz. Kayıtlı kurucusu olmayan mod → replay'e düşer.
 
-    Böylece config'te LIVE_FEED_MODE=live_api olsa bile (koordinatlı adapter
-    henüz yoksa) sistem demoyu/replay'i bozmadan çalışır.
+    `mode` verilirse (WS `?feed=camera`) config'in önüne geçer: aynı sunucuda
+    bir maç kameradan, öteki replay'den izlenebilir. Böylece config'te
+    LIVE_FEED_MODE=live_api olsa bile (koordinatlı adapter henüz yoksa) sistem
+    demoyu/replay'i bozmadan çalışır.
     """
     s = settings or get_settings()
-    requested = (s.live_feed_mode or _DEFAULT_MODE).strip().lower()
+    requested = (mode or s.live_feed_mode or _DEFAULT_MODE).strip().lower()
     if requested not in _REGISTRY:
         log.info(
             "live feed mode '%s' için kayıtlı adapter yok — replay'e düşülüyor "
@@ -54,9 +60,10 @@ def resolve_feed_mode(settings: Settings | None = None) -> str:
 
 def build_live_feed(
     session: Session, match_id: int, *, settings: Settings | None = None,
+    mode: str | None = None,
 ) -> ReplayFeed:
     """Etkin moda göre canlı feed kur. ValueError → maç DB'de yok (WS handler
     bunu istemciye 'error' olarak iletir; mevcut davranış korunur)."""
-    mode = resolve_feed_mode(settings)
-    factory = _REGISTRY[mode]
+    resolved = resolve_feed_mode(settings, mode=mode)
+    factory = _REGISTRY[resolved]
     return factory(session, match_id)

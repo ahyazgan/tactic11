@@ -15,9 +15,9 @@ Pas uçarken top iki oyuncunun arasındadır, yani **aktör YOKTUR**. Dolayısı
 
     A tutuyor → (aktör yok: uçuş) → B tutuyor
 
-Bu geçiş fiziksel olarak pasın kendisidir. Aynı takım → **pas**; farklı takım →
-**top kaybı** (pas değil, sayılır ama pas listesine girmez); aynı oyuncu →
-hiçbir şey (top sürme).
+Bu geçiş pas ADAYIDIR. Aynı takım → tamamlanan pas adayı; farklı takım →
+top kaybı ve mesafe yeterliyse tamamlanmayan pas adayı; aynı oyuncu → top sürme.
+Sekme, oyuncu kimliği veya top tespit hatası aynı geçişi taklit edebilir.
 
 ## Dürüstlük
 
@@ -31,25 +31,15 @@ olabilir, sekme pas sanılabilir. Bu yüzden:
 - top enterpole edilmişken (görülmemiş, komşu karelerden uydurulmuş) yapılan
   geçişler ayrı sayılır; bunlar en kırılgan olanlardır.
 
-## Gerçek yayında ne kadar tutuyor — ÖLÇÜLDÜ
+## Ölçüm sınırı
 
-SkillCorner açık verisi (MIT), A-League 2024/25 maçı 2017461, 40.404 kare,
-referans 824 sahiplik geçişi (`scripts/validate_passes.py` ile tekrarlanabilir):
-
-    geçerli kesinlik      %72   (birebir %56 + ara sahiplik gözlenmemiş %15)
-    duyarlılık            %33
-    duyarlılık TAVANI     %41   (geçişin iki ucu da gözlemli olanlar)
-    TAVANIN yakalanan     %80
-
-**Duyarlılığı tek başına okumak yanıltıcıdır.** Bir pasın iki ucu da
-gözlenmemişse onu bulmak imkânsızdır; sınırlayıcı şey algoritma değil,
-sahiplik kapsamasıdır — bu maçta karelerin yalnız **%19**'unda topu tutan
-belirlenebiliyor. Aynı veri setinde SkillCorner'ın kendi ölçümleri de topu
-karelerin %55'inde görüyor. Yayından pas çıkarımının doğal tavanı budur.
-
-Eşikler bu veriyle SÜPÜRÜLDÜ: `MAX_FLIGHT_SECONDS=6` + `MIN_HOLD_FRAMES=2`
-en iyi F1'i veriyor (35.4). Uçuş kapısını gevşetmek pas sayısını artırıyor
-ama duyarlılık sabit kalıp kesinlik düşüyor — yani eklenenler yanlış.
+SkillCorner 2017461: 40.404 kare, 824 referans sahiplik geçişi. İki ucun
+kimliğini ve zamanını denetleyen birebir eşleme 380 adayın 215'ini eşliyor
+(%56,6 kesinlik, %26,1 duyarlılık; önceki motorla aynı). Tekrar üretim:
+`scripts/audit_skillcorner_passes.py`. Aktör ve referans aynı sağlayıcıdan
+geldiği için bu, bağımsız video doğruluğu değil algoritma regresyonudur.
+Eski %72 ölçüsü ara sahiplik atlamalarını da sayıyordu; doğru pas kesinliği
+olarak kullanılmamalı. SoccerTrack olay bazlı kontrol: docs/VIDEO-OLAY-SONUCLARI.md.
 
 Saf mantık: cv2/DB gerektirmez, `TrackingFrame` dizisi alır.
 """
@@ -60,7 +50,7 @@ from dataclasses import dataclass, field
 from app.domain.tracking import TrackingFrame
 
 ENGINE_NAME = "tracking.passes"
-ENGINE_VERSION = "1"
+ENGINE_VERSION = "2"
 
 # Saha boyutları (normalize 0-100 → metre)
 PITCH_LENGTH_M = 105.0
@@ -73,6 +63,9 @@ MIN_PASS_DISTANCE_M = 3.0
 # Bir oyuncunun "tutuyor" sayılması için kaç ardışık karede aktör olması gerek.
 # 1 kare yetseydi tek karelik kimlik takası sahte pas üretirdi.
 MIN_HOLD_FRAMES = 2
+MIN_HOLD_SECONDS = 0.10
+MAX_SAMPLE_GAP_SECONDS = 0.5
+MAX_PASS_SPEED_MPS = 45.0
 
 
 @dataclass(frozen=True)
@@ -98,6 +91,8 @@ class DerivedPass:
     # kaybedildiyse kaptırmadır (o zaten `turnovers`ta).
     complete: bool = True
     estimated: bool = True
+    period: int = 1
+    observed_flight: bool = False
 
 
 @dataclass(frozen=True)
@@ -137,6 +132,7 @@ class _Holder:
     y: float
     minute: float
     frames: int
+    last_minute: float = 0.0
 
 
 def extract_passes(frames: list[TrackingFrame]) -> PassExtraction:
@@ -159,8 +155,25 @@ def extract_passes(frames: list[TrackingFrame]) -> PassExtraction:
     onaylı: _Holder | None = None      # kararlılık kapısını geçmiş tutucu
     aday: _Holder | None = None        # henüz yeterince kare tutmamış
     ucusta_enterpole = False
+    previous: TrackingFrame | None = None
 
     for fr in frames:
+        if previous is not None:
+            dt = (fr.minute - previous.minute) * 60
+            if (fr.match_external_id != previous.match_external_id
+                    or fr.period != previous.period
+                    or fr.continuity_id != previous.continuity_id or dt <= 0):
+                onaylı = aday = None
+                ucusta_enterpole = False
+                _reddet("maç/yarı/zaman sürekliliği koptu")
+            elif dt > MAX_SAMPLE_GAP_SECONDS:
+                aday = None
+                ucusta_enterpole = True
+        previous = fr
+        is_video = fr.source in {"video_tracking", "broadcast_tracking"}
+        uncertain_ball = fr.ball_estimated or (is_video and fr.ball is None)
+        if onaylı is not None and uncertain_ball:
+            ucusta_enterpole = True
         act = _actor(fr)
         if act is None or act.team_external_id is None:
             # Aktör yok → top uçuyor (ya da görülmüyor). Tutuş adaylığı düşer.
@@ -172,36 +185,47 @@ def extract_passes(frames: list[TrackingFrame]) -> PassExtraction:
         with_actor += 1
         pid, team = act.player_external_id, act.team_external_id
 
-        if aday is not None and aday.player == pid:
+        if aday is not None and aday.player == pid and aday.team == team:
             aday.frames += 1
+            aday.last_minute = fr.minute
         else:
-            aday = _Holder(pid, team, act.x, act.y, fr.minute, 1)
+            aday = _Holder(pid, team, act.x, act.y, fr.minute, 1, fr.minute)
 
-        if aday.frames < MIN_HOLD_FRAMES:
+        if (aday.frames < MIN_HOLD_FRAMES
+                or (aday.last_minute - aday.minute) * 60 + 0.001 < MIN_HOLD_SECONDS):
             continue                    # henüz kararlı değil
 
         if onaylı is None:
-            onaylı, ucusta_enterpole = aday, False
+            onaylı = _Holder(pid, team, act.x, act.y, fr.minute, aday.frames, fr.minute)
+            ucusta_enterpole = uncertain_ball
             continue
-        if onaylı.player == pid:
+        if onaylı.player == pid and onaylı.team == team:
             onaylı.x, onaylı.y, onaylı.minute = act.x, act.y, fr.minute
+            # A previous uncertain spell while dribbling must not taint a later pass.
+            ucusta_enterpole = uncertain_ball
             continue                    # aynı oyuncu sürüyor
 
         # Tutucu DEĞİŞTİ.
-        ucus = max(0.0, (aday.minute - onaylı.minute) * 60.0)
+        ucus = (aday.minute - onaylı.minute) * 60.0
         mesafe = _dist_m(onaylı.x, onaylı.y, aday.x, aday.y)
 
         ayni_takim = onaylı.team == team
-        if not ayni_takim:
+        if not ayni_takim and onaylı.player != pid and 0 < ucus <= MAX_FLIGHT_SECONDS:
             turnovers += 1
 
-        if ucus > MAX_FLIGHT_SECONDS:
+        if ucus <= 0:
+            _reddet("pozitif uçuş süresi yok")
+        elif onaylı.player == pid:
+            _reddet("aynı kimlikte takım değişti")
+        elif ucus > MAX_FLIGHT_SECONDS:
             # Aradaki boşluk çok uzun: top izlenemedi, ne olduğunu bilmiyoruz.
             _reddet("uçuş çok uzun (top izlenemedi)")
         elif mesafe < MIN_PASS_DISTANCE_M:
             # Kısa mesafe: aynı takımda kimlik takası, rakipte ayak altı kaptırma.
             _reddet("mesafe çok kısa (kimlik takası olabilir)" if ayni_takim
                     else "kısa mesafe kaptırma (pas denemesi değil)")
+        elif is_video and mesafe > MAX_PASS_SPEED_MPS * ucus + 2.5:
+            _reddet("fiziksel hız sınırı aşıldı")
         else:
             passes.append(DerivedPass(
                 # Takım DAİMA pası ATANIN takımıdır; kesilen pasta alıcı rakiptir.
@@ -211,8 +235,11 @@ def extract_passes(frames: list[TrackingFrame]) -> PassExtraction:
                 end_x=round(aday.x, 2), end_y=round(aday.y, 2),
                 distance_m=round(mesafe, 2), flight_seconds=round(ucus, 2),
                 ball_estimated=ucusta_enterpole, complete=ayni_takim,
+                period=fr.period,
+                observed_flight=is_video and not ucusta_enterpole,
             ))
-        onaylı, ucusta_enterpole = aday, False
+        onaylı = _Holder(pid, team, act.x, act.y, fr.minute, aday.frames, fr.minute)
+        ucusta_enterpole = uncertain_ball
 
     n = len(frames)
     oran = with_actor / n if n else 0.0

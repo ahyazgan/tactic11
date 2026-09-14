@@ -18,7 +18,7 @@ from app.audit import AuditRecord, EngineResult
 from app.domain import DefensiveAction, PassEvent
 
 ENGINE_NAME = "engine.ppda"
-ENGINE_VERSION = "1"
+ENGINE_VERSION = "2"
 
 # Pres bölgesi: takımın hücum tarafından geçen pasları + defansif aksiyonları.
 # Standart literatür: opp_half = x ≥ 40 (saha 100×100 normalize'da %60'lık
@@ -64,7 +64,11 @@ def compute_ppda(
         opp_passes += 1
 
     team_actions = 0
+    estimated_skipped = 0
     for d in all_def_actions:
+        if d.estimated:
+            estimated_skipped += 1
+            continue
         if d.team_external_id != team_external_id:
             continue
         if d.x < PRESS_ZONE_X_MIN:
@@ -96,6 +100,7 @@ def compute_ppda(
         },
         inputs={
             "press_zone_x_min": PRESS_ZONE_X_MIN,
+            "estimated_defensive_actions_excluded": estimated_skipped,
         },
         formula=(
             f"opp_passes (x ≥ {PRESS_ZONE_X_MIN}) / "

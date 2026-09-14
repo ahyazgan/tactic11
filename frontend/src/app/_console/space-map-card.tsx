@@ -34,6 +34,7 @@ export interface SpaceMapOut {
   attack_direction: number; direction_method: string;
   zones: ZoneCell[]; line_gap: LineGap; best_overload: ZoneCell | null;
   findings: SpaceFinding[]; pitch_coverage: number; note: string | null;
+  player_coverage?: number; data_quality?: number;
 }
 
 const LANES = ["sol", "merkez", "sağ"] as const;
@@ -73,6 +74,9 @@ export function SpaceMapCard({ data }: { data: SpaceMapOut | null | undefined })
         <span style={{ fontSize: 10, color: "var(--muted)" }}>
           {data.frames_used} kare · {data.players_seen} oyuncu görünür
           {data.pitch_coverage ? ` · saha %${Math.round(data.pitch_coverage * 100)}` : ""}
+          {typeof data.data_quality === "number" && data.data_quality < 1
+            ? ` · veri kalitesi ${data.data_quality.toFixed(2)}`
+            : ""}
         </span>
       </div>
 
@@ -155,6 +159,13 @@ export function SpaceMapCard({ data }: { data: SpaceMapOut | null | undefined })
                   <span style={{ fontSize: 12, color: "var(--ink)", lineHeight: 1.45 }}>{f.headline}</span>
                 </div>
               ))}
+              {/* Kapsama notu: görünmeyen oyuncu "yok" değildir; güven buna göre düşürülür. */}
+              {data.note && typeof data.data_quality === "number" && data.data_quality < 1 && (
+                <div data-testid="space-map-coverage-note"
+                  style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 6, lineHeight: 1.4 }}>
+                  {data.note}
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 10 }}>

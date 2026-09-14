@@ -1,0 +1,235 @@
+{
+  "baseline_commit": "6ca634e",
+  "date": "2026-09-14",
+  "match": "SoccerTrack v2 117092",
+  "results": {
+    "before_3m": {
+      "alignment": {
+        "delta_frames": 9,
+        "fps": 25,
+        "sample_start_seconds": 600,
+        "development_segments": [
+          0,
+          3
+        ],
+        "note": "fixed on development; no per-frame search on control"
+      },
+      "swap_teams_from_development": false,
+      "match_radius_m": 3.0,
+      "baseline": true,
+      "splits": {
+        "development": {
+          "segments": [
+            0,
+            3
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 425,
+          "assigned_matched": 418,
+          "correct_matched": 359,
+          "accuracy_when_assigned": 0.8588516746411483,
+          "correct_fraction_of_matched": 0.8447058823529412,
+          "unassigned_matched": 7,
+          "overfull_frame_ratio": 0.23866666666666667,
+          "assigned_per_frame": 14.762666666666666
+        },
+        "control": {
+          "segments": [
+            6,
+            9
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 646,
+          "assigned_matched": 628,
+          "correct_matched": 509,
+          "accuracy_when_assigned": 0.8105095541401274,
+          "correct_fraction_of_matched": 0.7879256965944272,
+          "unassigned_matched": 18,
+          "overfull_frame_ratio": 0.5186666666666667,
+          "assigned_per_frame": 19.105333333333334
+        }
+      }
+    },
+    "after_3m": {
+      "alignment": {
+        "delta_frames": 9,
+        "fps": 25,
+        "sample_start_seconds": 600,
+        "development_segments": [
+          0,
+          3
+        ],
+        "note": "fixed on development; no per-frame search on control"
+      },
+      "swap_teams_from_development": false,
+      "match_radius_m": 3.0,
+      "baseline": false,
+      "splits": {
+        "development": {
+          "segments": [
+            0,
+            3
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 425,
+          "assigned_matched": 408,
+          "correct_matched": 350,
+          "accuracy_when_assigned": 0.8578431372549019,
+          "correct_fraction_of_matched": 0.8235294117647058,
+          "unassigned_matched": 17,
+          "overfull_frame_ratio": 0.124,
+          "assigned_per_frame": 13.170666666666667
+        },
+        "control": {
+          "segments": [
+            6,
+            9
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 646,
+          "assigned_matched": 630,
+          "correct_matched": 511,
+          "accuracy_when_assigned": 0.8111111111111111,
+          "correct_fraction_of_matched": 0.7910216718266254,
+          "unassigned_matched": 16,
+          "overfull_frame_ratio": 0.364,
+          "assigned_per_frame": 18.233333333333334
+        }
+      }
+    },
+    "before_1_5m": {
+      "alignment": {
+        "delta_frames": 9,
+        "fps": 25,
+        "sample_start_seconds": 600,
+        "development_segments": [
+          0,
+          3
+        ],
+        "note": "fixed on development; no per-frame search on control"
+      },
+      "swap_teams_from_development": false,
+      "match_radius_m": 1.5,
+      "baseline": true,
+      "splits": {
+        "development": {
+          "segments": [
+            0,
+            3
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 81,
+          "assigned_matched": 78,
+          "correct_matched": 62,
+          "accuracy_when_assigned": 0.7948717948717948,
+          "correct_fraction_of_matched": 0.7654320987654321,
+          "unassigned_matched": 3,
+          "overfull_frame_ratio": 0.23866666666666667,
+          "assigned_per_frame": 14.762666666666666
+        },
+        "control": {
+          "segments": [
+            6,
+            9
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 229,
+          "assigned_matched": 225,
+          "correct_matched": 173,
+          "accuracy_when_assigned": 0.7688888888888888,
+          "correct_fraction_of_matched": 0.7554585152838428,
+          "unassigned_matched": 4,
+          "overfull_frame_ratio": 0.5186666666666667,
+          "assigned_per_frame": 19.105333333333334
+        }
+      }
+    },
+    "after_1_5m": {
+      "alignment": {
+        "delta_frames": 9,
+        "fps": 25,
+        "sample_start_seconds": 600,
+        "development_segments": [
+          0,
+          3
+        ],
+        "note": "fixed on development; no per-frame search on control"
+      },
+      "swap_teams_from_development": false,
+      "match_radius_m": 1.5,
+      "baseline": false,
+      "splits": {
+        "development": {
+          "segments": [
+            0,
+            3
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 81,
+          "assigned_matched": 76,
+          "correct_matched": 60,
+          "accuracy_when_assigned": 0.7894736842105263,
+          "correct_fraction_of_matched": 0.7407407407407407,
+          "unassigned_matched": 5,
+          "overfull_frame_ratio": 0.124,
+          "assigned_per_frame": 13.170666666666667
+        },
+        "control": {
+          "segments": [
+            6,
+            9
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 229,
+          "assigned_matched": 225,
+          "correct_matched": 172,
+          "accuracy_when_assigned": 0.7644444444444445,
+          "correct_fraction_of_matched": 0.7510917030567685,
+          "unassigned_matched": 4,
+          "overfull_frame_ratio": 0.364,
+          "assigned_per_frame": 18.233333333333334
+        }
+      }
+    },
+    "events_baseline": {
+      "period": 1,
+      "start_seconds": 600,
+      "end_seconds": 960,
+      "frames": 1500,
+      "video_pass_attempts": 38,
+      "video_completed_passes": 22,
+      "video_defensive_actions": 0,
+      "gt_pass_attempts": 70,
+      "gt_event_counts": {
+        "PASS": 60,
+        "OUT": 8,
+        "FREE KICK": 2,
+        "DRIVE": 49,
+        "CROSS": 1,
+        "BALL PLAYER BLOCK": 2,
+        "HIGH PASS": 9,
+        "THROW IN": 4,
+        "PLAYER SUCCESSFUL TACKLE": 2
+      },
+      "frames_with_ball_ratio": 0.6786666666666666,
+      "frames_with_observed_ball_ratio": 0.452,
+      "frames_with_actor_ratio": 0.2906666666666667,
+      "pass_rejections_full_segments": {
+        "kısa mesafe kaptırma (pas denemesi değil)": 4,
+        "uçuş çok uzun (top izlenemedi)": 8
+      },
+      "temporal_coincidences": {
+        "within_1s": 21,
+        "within_2s": 25,
+        "within_3s": 26
+      },
+      "limitation": "Temporal coincidences alone are not precision/recall; clock alignment, team and recipient correctness remain unverified."
+    }
+  },
+  "cache_sha256": {
+    "seg_0000.json": "9abeefb799a852f03f78efe50a716bd4f7eb6e55c51e3ff474b1614d6f68511c",
+    "seg_0003.json": "60ff4136c7f2ea8419cc4b35806532258b5b80d666bb3b84078877071fb39fff",
+    "seg_0006.json": "ba7375fc786ff5fdcbae547e43c50cfc87ddd9da8f59b4298e1eeb6cdc1b2051",
+    "seg_0009.json": "618abc5fccf7bd0fecb0e5fb51a80b6ad26f0798cbc75e08cfbccd6cee2e9396"
+  }
+}

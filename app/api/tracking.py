@@ -126,6 +126,7 @@ def _row_to_frame(row: models.TrackingFrameRow, ids: dict[int, models.TrackingId
         "event_type": meta.get("event_type"),
         "possession_team_external_id": meta.get("possession_team_external_id"),
         "ball_estimated": bool(meta.get("ball_estimated", False)),
+        "continuity_id": meta.get("continuity_id"),
         "visible_area": meta.get("visible_area"),
     }
 
@@ -173,6 +174,8 @@ def frames_in_window(
                 for p in d["players"]
             ),
             source=d["source"], event_type=d["event_type"],
+            ball_estimated=d["ball_estimated"], continuity_id=d["continuity_id"],
+            event_uuid=d["event_uuid"], visible_area=d["visible_area"],
             possession_team_external_id=d["possession_team_external_id"],
         ))
     return out
