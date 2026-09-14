@@ -621,6 +621,9 @@ def main() -> int:
     print(f"      önsel   F1 {sh_prior.engine_f1} · precision {pa.precision}/{pb.precision} · "
           f"recall {pa.recall}/{pb.recall} · bayrak oranı {pa.flag_rate}/{pb.flag_rate}")
     print(f"      saat    F1 {sh_prior.baseline_f1} · hüküm: {sh_prior.verdict}")
+    print("    (isabet@1 UYARISI: motor doğru GRUBU biliyor, doğru KİŞİYİ değil. Ters "
+          "kontrolde yorgunluk sırasını çevirmek sonucu kötüleştirmiyor — grup içindeki "
+          "sıra bilgi taşımıyor; bkz. docs/KARNE-SIRALAMA.md)")
     print("    ADAY — elit 'kim çıkar' önseli (mevki grubu × ilk 11, ayrık yarıda öğrenildi):")
     print(f"      önsel   isabet@3 {who_prior.hit_at_k} · isabet@1 {who_prior.hit_at_1} · "
           f"rastgele {who_prior.baseline_at_k}/{who_prior.baseline_at_1} · n={who_prior.n}")

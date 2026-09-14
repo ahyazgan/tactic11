@@ -243,7 +243,15 @@ def compute_live_sub_recommendation(
             recent_pass_completion=round(recent_comp, 3),
         ))
 
-    candidates.sort(key=lambda c: -c.urgency_score)
+    # Aciliyet 3 haneye yuvarlandığı için beraberlik SIK: aynı mevki grubundaki
+    # oyuncular eşitlenir. Eşitlik daha önce `my_player_ids` kümesinin yineleme
+    # sırasıyla çözülüyordu, yani koça gösterilen 1. öneri oyuncu kimliğinin
+    # hash'ine bağlıydı — tekrar üretilemez ve savunulamaz. Artık açık:
+    # aciliyet, sonra yorgunluk, sonra kimlik. Ölçüm (docs/KARNE-SIRALAMA.md)
+    # grup İÇİNDEKİ sıranın bilgi taşımadığını gösteriyor; bu düzeltme isabeti
+    # değiştirmez, çıktıyı belirlenimli ve açıklanabilir yapar.
+    candidates.sort(key=lambda c: (-c.urgency_score, -c.fatigue_score,
+                                   c.player_external_id))
     top_3 = tuple(candidates[:3])
 
     report = LiveSubReport(

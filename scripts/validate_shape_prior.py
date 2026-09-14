@@ -79,7 +79,11 @@ PRIOR_ONLY_SUPPORT: tuple[int, ...] = (0,)
 def _grid_ticks(
     events_dir: Path, match_ids: list[int], window: float,
 ) -> list[dict[str, Any]]:
-    """Her maçın İKİ takımı için ızgara anları + o anki durum + gerçek diziliş değişimi."""
+    """Her maçın İKİ takımı için ızgara anları + durum + gerçek hamleler.
+
+    `coach_shift` diziliş değişimi (şekil kapısının hedefi), `coach_sub` taktik
+    oyuncu değişikliği (zamanlama önselinin hedefi) — ikisi aynı ızgaradan çıkar.
+    """
     rows: list[dict[str, Any]] = []
     for mid in match_ids:
         p = events_dir / f"{mid}.json"
@@ -101,6 +105,10 @@ def _grid_ticks(
             # Aynı dakikadaki iki oyuncu değişikliği iki hak kullanır (tekilleştirme yok).
             subs = sorted(m.minute for m in moves
                           if m.team_external_id == team and m.kind == "substitution")
+            # Zamanlama önselinin hedefi TAKTİK değişikliktir; sakatlık hamlesi
+            # antrenörün kararı sayılmaz. Kullanılan hak sayımı ise hepsini içerir.
+            tactical = sorted({m.minute for m in moves if m.team_external_id == team
+                               and m.kind == "substitution" and m.tactical})
             for t in GRID_MINUTES:
                 mine = sum(1 for g, tm in goals if g < t and tm == team)
                 theirs = sum(1 for g, tm in goals if g < t and tm != team)
@@ -109,6 +117,7 @@ def _grid_ticks(
                     score_state=score_state(mine, theirs),
                     subs_used=sum(1 for c in subs if c <= t),
                     coach_shift=any(t < c <= t + window for c in shifts),
+                    coach_sub=any(t < c <= t + window for c in tactical),
                 ))
     return rows
 
