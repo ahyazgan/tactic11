@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
 import { DEMO_MODE } from "@/lib/demo-mode";
+import { SquadEntry } from "../../_console/squad-entry";
 import type { TrackingFrame } from "@/lib/tracking-geometry";
 import { DEMO_TRACKING_HOME_TEAM_ID, demoTrackingWindow } from "@/lib/tracking-demo";
 import { ConsoleShell } from "../../_console/shell";
@@ -1660,6 +1661,16 @@ export default function LiveDecisionPage() {
             </div>
           ))}
         </>
+      )}
+      {/*
+        Kadro girişi: takip sistemi 22 ANONİM iz görür; kadro girilmezse
+        "ne zaman değiştir" ve "kimi çıkar" tabloları sessizce devre dışı kalır
+        (docs/CANLI-KADRO-GIRISI.md). DEMO_MODE'da backend yok, gösterilmez.
+      */}
+      {!DEMO_MODE && (
+        <div className="rc" style={{ marginTop: 24 }}>
+          <SquadEntry matchId={matchId} teamId={teamId} minute={minute} />
+        </div>
       )}
     </ConsoleShell>
   );

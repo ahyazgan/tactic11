@@ -172,6 +172,52 @@ def _agreement(
     }
 
 
+@router.get("/teams/{team_id}/squad", summary="Takımın oyuncu havuzu (kadro girişi için)")
+def get_team_squad(
+    team_id: int,
+    limit: int = Query(default=40, ge=1, le=200),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Bu takım için geçmişte oynamış oyuncular — kadro giriş ekranının listesi.
+
+    `players` tablosunda takım bağı YOKTUR; bağ yalnız maç kayıtlarında bulunur.
+    Bu yüzden havuz `player_appearances`'tan türetilir ve en son oynayan başa
+    gelir. Listede olmayan bir oyuncu (yeni transfer, altyapıdan çıkan) ekranda
+    kimlikle elle girilebilir; uç nokta kapı değil kolaylıktır.
+    """
+    rows = session.execute(select(
+        models.PlayerAppearance.player_external_id,
+        models.PlayerAppearance.position_played,
+        models.PlayerAppearance.kickoff,
+    ).where(
+        models.PlayerAppearance.sport == football.SPORT_NAME,
+        models.PlayerAppearance.team_external_id == team_id,
+    ).order_by(models.PlayerAppearance.kickoff.desc())).all()
+
+    seen: dict[int, dict[str, Any]] = {}
+    for pid, position, kickoff in rows:
+        if pid in seen:
+            continue
+        seen[pid] = {"player_external_id": int(pid), "position": position,
+                     "son_mac": kickoff.date().isoformat() if kickoff else None}
+        if len(seen) >= limit:
+            break
+    if seen:
+        names: dict[int, str] = {
+            int(pid): str(name) for pid, name in session.execute(select(
+                models.Player.external_id, models.Player.name,
+            ).where(
+                models.Player.sport == football.SPORT_NAME,
+                models.Player.external_id.in_(list(seen)),
+            ))
+        }
+        for pid, entry in seen.items():
+            entry["name"] = names.get(pid)
+    return {"team_external_id": team_id, "oyuncu": list(seen.values()),
+            "not": ("havuz maç kayıtlarından türetildi; listede olmayan oyuncu "
+                    "kimliğiyle elle girilebilir")}
+
+
 @router.put("/matches/{match_id}/lineup", summary="İlk 11'i gir (canlı maç girdisi)")
 def put_lineup(
     match_id: int,

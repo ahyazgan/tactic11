@@ -107,11 +107,34 @@ kullanılamaz.
   yok.
 - **Oyuncu kimliği hâlâ elle.** Bu modül kadroyu çözüyor, takip izlerini gerçek
   oyunculara bağlamayı değil (`PUT /tracking/matches/{id}/identities`).
+- **Ekran tek takım.** Rakip kadrosu için ayrı giriş gerekir.
+- **Dakika panelden gelir.** Ekran kendi saatini tutmaz; canlı sayfadaki dakika
+  neyse o yazılır. Yanlış dakika yanlış hücreye düşer.
+
+## Ekran
+
+`frontend/src/app/_console/squad-entry.tsx`, canlı karar sayfasına bağlı
+(`/decisions/live`, DEMO_MODE dışında). Koçun yanındaki kişi için tasarlandı:
+
+- Oyuncu pulları 44 px yüksekliğinde — tablette parmakla basılır.
+- Kadro girilmemişse önce **ilk 11 seçimi** çıkar (11/11 olmadan kaydet düğmesi
+  açılmaz), girildikten sonra ekran **çıkan / giren** seçimine döner.
+- Uyarı metni panelden gelir; ekran kendi cümlesini uydurmaz.
+- Havuz `GET /admin/teams/{id}/squad` ile maç kayıtlarından türetilir
+  (`players` tablosunda takım bağı yok); listede olmayan oyuncu kimliğiyle
+  girilebilir.
+
+**Değişiklikten sonra tek soru:** çıkan oyuncu son 15 dakikadaki bir önerinin
+listesindeyse ekran *"değişikliği bu öneri yüzünden mi yaptın?"* diye sorar ve
+Evet/Hayır `POST /admin/decisions/{id}/applied` çağrısına gider. Soru
+sorulmazsa Karşı-olgu boyutu ölçülemez kalır; otomatik doldurulursa sahte
+ölçülebilir olur. Ekran soruyu sorar, cevabı uydurmaz.
 
 ## Sonraki adım
 
-Bu uç noktalar API düzeyinde; arayüzde tek dokunuşluk bir kadro/değişiklik
-girişi yok. Bir pilotta koçun yanındaki kişinin kullanacağı şey o ekran olacak.
+Ekran tek takım için çalışıyor; rakip kadrosu ayrı giriş ister. Bir pilotta
+ilk sınanacak şey, 90 dakika boyunca bu ekranın gerçekten kullanılıp
+kullanılmadığıdır — kullanılmıyorsa toplanan veri de olmaz.
 
 Kontroller: **2604 test geçti, 1 atlandı** (7'si bu modülün yeni testleri);
 ruff temiz; mypy 505 kaynak dosyasında temiz.
