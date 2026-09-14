@@ -1,0 +1,115 @@
+{
+  "olcum": "Şekil önselinin bağımsız maçlarda doğrulaması",
+  "kulliyat": {
+    "tenant": "t-default",
+    "takim_external_id": 217,
+    "mac": 100,
+    "motor_tiki": 514,
+    "onsel_esigi": 0.3,
+    "destek_esigi": 2,
+    "not": "destek eşiği motor tikine bağlıdır; bu sınava girmez"
+  },
+  "bagimsiz_kume": {
+    "ad": "Premier League 2015/16",
+    "mac": 100,
+    "tik": 3200,
+    "izgara_dk": [
+      10.0,
+      15.0,
+      20.0,
+      25.0,
+      30.0,
+      35.0,
+      40.0,
+      45.0,
+      50.0,
+      55.0,
+      60.0,
+      65.0,
+      70.0,
+      75.0,
+      80.0,
+      85.0
+    ],
+    "pencere_dk": 12.0,
+    "taban_orani": 0.107,
+    "kulliyatla_kesisim": 0,
+    "girdi_sha256": "151d607ddb1a9fbb424c244152904f303aff5c3eecf2c09408f677e36b7d78f8"
+  },
+  "tasima": {
+    "karne_onseli_dondurulmus": {
+      "n": 3200,
+      "flagged": 811,
+      "flag_rate": 0.253,
+      "base_rate": 0.107,
+      "precision": 0.236,
+      "recall": 0.56,
+      "f1": 0.332,
+      "lift": 2.206
+    },
+    "izgara_onseli_dondurulmus": {
+      "n": 3200,
+      "flagged": 571,
+      "flag_rate": 0.178,
+      "base_rate": 0.107,
+      "precision": 0.231,
+      "recall": 0.387,
+      "f1": 0.289,
+      "lift": 2.159
+    },
+    "kume_ici_tavan_A": {
+      "n": 1600,
+      "flagged": 318,
+      "flag_rate": 0.199,
+      "base_rate": 0.113,
+      "precision": 0.248,
+      "recall": 0.436,
+      "f1": 0.317,
+      "lift": 2.195
+    },
+    "kume_ici_tavan_B": {
+      "n": 1600,
+      "flagged": 273,
+      "flag_rate": 0.171,
+      "base_rate": 0.1,
+      "precision": 0.216,
+      "recall": 0.369,
+      "f1": 0.273,
+      "lift": 2.16
+    },
+    "hep_evet": {
+      "n": 3200,
+      "flagged": 3200,
+      "flag_rate": 1.0,
+      "base_rate": 0.107,
+      "precision": 0.107,
+      "recall": 1.0,
+      "f1": 0.193,
+      "lift": 1.0
+    },
+    "hukum": "taşınıyor",
+    "not": "dondurulmuş önsel bağımsız maçlarda tabanın 2.21 katı isabetli (kabul eşiği 1.25); küme içi tavan 2.19/2.16"
+  },
+  "permutasyon_sinavi": {
+    "deneme": 400,
+    "seed": 17,
+    "gercek_precision": 0.236,
+    "karistirilmisin_yakalama_sayisi": 0,
+    "p": 0.0024937655860349127,
+    "not": "dondurulmuş önsel, karıştırılmış etiketler; p = (yakalama + 1) / (deneme + 1); tik düzeyinde keşifsel sınav"
+  },
+  "skor_durumuna_gore_taban": {
+    "drawing": {
+      "oran": 0.066,
+      "n": 1598
+    },
+    "leading": {
+      "oran": 0.099,
+      "n": 801
+    },
+    "trailing": {
+      "oran": 0.196,
+      "n": 801
+    }
+  }
+}

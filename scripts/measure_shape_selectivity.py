@@ -62,8 +62,14 @@ AUC_FIELDS = ("minute", "priority", "urgency", "confidence", "magnitude",
               "corroboration", "quality", "sample", "score", "n_support", "subs_used")
 
 
-def _collect(events_dir: Path, tenant: str, team: int, window: float) -> list[dict[str, Any]]:
-    """Her motor tiki için durum + o anki motor sayıları + gerçek diziliş değişimi."""
+def collect_corpus_ticks(
+    events_dir: Path, tenant: str, team: int, window: float,
+) -> list[dict[str, Any]]:
+    """Her motor tiki için durum + o anki motor sayıları + gerçek diziliş değişimi.
+
+    Bağımsız doğrulama scripti de bunu çağırır: karnenin önseli TAM OLARAK bu
+    tiklerden öğrenilir, dışarıda başka bir toplayıcıyla yeniden kurulmaz.
+    """
     with SessionLocal() as s:
         s.info["tenant_id"] = tenant
         decisions = [d for d in s.execute(select(models.Decision).where(
@@ -128,7 +134,8 @@ def _collect(events_dir: Path, tenant: str, team: int, window: float) -> list[di
     return rows
 
 
-def _states(rows: list[dict[str, Any]]) -> list[ShapeState]:
+def shape_states(rows: list[dict[str, Any]]) -> list[ShapeState]:
+    """Toplanan tik satırlarını motorun bayrağı ve destek sayısıyla ShapeState'e çevirir."""
     return [ShapeState(
         r["match"], r["minute"], score_state=r["score_state"], subs_used=r["subs_used"],
         engine_flag=r["theme"] == "adjust_shape", support_count=r["n_support"],
@@ -211,11 +218,11 @@ def main() -> int:
     if args.permutations <= 0:
         p.error("--permutations pozitif olmalı")
 
-    rows = _collect(args.events_dir, args.tenant, args.team, args.window)
+    rows = collect_corpus_ticks(args.events_dir, args.tenant, args.team, args.window)
     if not rows:
         print("tik yok — `decision_corpus seed`/`score` ve --events-dir gerekli")
         return 1
-    st = _states(rows)
+    st = shape_states(rows)
     gate = split_half_shape_gate(st)
     raw_obs = [TickObservation(s.match_external_id, s.minute, s.engine_flag, s.coach_acted)
                for s in st]

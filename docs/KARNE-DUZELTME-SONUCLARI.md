@@ -1,5 +1,10 @@
 # Karne inceleme düzeltmeleri — 14 Eylül 2026
 
+> **Bu rapordaki sayılar `71f3512` koduna aittir.** Sonraki adımda kapı, önselin
+> görmediği hücrede susacak şekilde değiştirildi; aynı külliyatta kaldırma
+> **1,550/1,667** oldu. Bağımsız maç doğrulaması ve yeni sayılar:
+> [KARNE-SEKIL-BAGIMSIZ.md](KARNE-SEKIL-BAGIMSIZ.md).
+
 İki hata giderildi ve özgün 100 maç / 514 tik üzerinde yeniden ölçüldü.
 Canlı öneri motorunda filtre etkinleştirilmedi.
 

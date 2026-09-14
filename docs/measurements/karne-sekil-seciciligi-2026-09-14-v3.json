@@ -1,0 +1,130 @@
+{
+  "olcum_surumu": 2,
+  "olcum": "Karne şekil değişikliği seçiciliği",
+  "kaynak": {
+    "tenant": "t-default",
+    "takim_external_id": 217,
+    "mac": 100,
+    "tik": 514,
+    "pencere_dk": 12.0,
+    "hedef": "StatsBomb Tactical Shift, (dakika, dakika+pencere] aralığı",
+    "girdi_sha256": "4be72ff3bd6a1592f151cb218fd2a334a2d9629888ddfc1618a252fe1e3a4f56"
+  },
+  "eski_cetvel_F1": {
+    "motor_f1": 0.328,
+    "saat_f1": 0.412,
+    "hukum": "taban çizgisinin altında",
+    "hep_evet_f1": 0.35,
+    "not": "hep-evet F1'i motorunkinden yüksek olabilir: nadir hedefte F1 seçicilik cetveli değildir"
+  },
+  "yeni_cetvel_secicilik": {
+    "esik_secimi": "eğitim yarısında bayrak bütçesi ≥0.15 olan adaylar arasında en yüksek precision",
+    "kabul_esigi_lift": 1.25,
+    "once_ham_bayrak": {
+      "A": {
+        "n": 264,
+        "flagged": 189,
+        "flag_rate": 0.716,
+        "base_rate": 0.22,
+        "precision": 0.201,
+        "recall": 0.655,
+        "f1": 0.308,
+        "lift": 0.914
+      },
+      "B": {
+        "n": 250,
+        "flagged": 191,
+        "flag_rate": 0.764,
+        "base_rate": 0.204,
+        "precision": 0.22,
+        "recall": 0.824,
+        "f1": 0.347,
+        "lift": 1.078
+      }
+    },
+    "sonra_kapili_bayrak": {
+      "A": {
+        "n": 264,
+        "flagged": 41,
+        "flag_rate": 0.155,
+        "base_rate": 0.22,
+        "precision": 0.341,
+        "recall": 0.241,
+        "f1": 0.283,
+        "lift": 1.55
+      },
+      "B": {
+        "n": 250,
+        "flagged": 50,
+        "flag_rate": 0.2,
+        "base_rate": 0.204,
+        "precision": 0.34,
+        "recall": 0.333,
+        "f1": 0.337,
+        "lift": 1.667
+      }
+    },
+    "ogrenilen_esikler": {
+      "A": {
+        "onsel": 0.3,
+        "destek": 2,
+        "ogrenildigi_tik": 250
+      },
+      "B": {
+        "onsel": 0.3,
+        "destek": 1,
+        "ogrenildigi_tik": 264
+      }
+    },
+    "hukum": "seçici",
+    "not": "kapılı bayrak tabanın 1.55/1.67 katı isabetli; ham bayrak 0.914/1.078 katıydı"
+  },
+  "permutasyon_sinavi": {
+    "deneme": 400,
+    "seed": 17,
+    "gercek_precision": [
+      0.341,
+      0.34
+    ],
+    "karistirilmisin_yakalama_sayisi": [
+      1,
+      1
+    ],
+    "p": [
+      0.004987531172069825,
+      0.004987531172069825
+    ],
+    "not": "etiketler karıştırılıp kapı sıfırdan kuruldu; p = (yakalama + 1) / (deneme + 1); yetersiz karıştırılmış örneklerde isabet 0 sayılır; tik düzeyinde keşifsel sınavdır"
+  },
+  "sinyal_auc_sekil": {
+    "minute": 0.634,
+    "priority": 0.561,
+    "urgency": 0.543,
+    "confidence": 0.492,
+    "magnitude": 0.515,
+    "corroboration": 0.565,
+    "quality": 0.5,
+    "sample": 0.5,
+    "score": 0.552,
+    "n_support": 0.557,
+    "subs_used": 0.551
+  },
+  "tema_sekil_orani": {
+    "adjust_shape": {
+      "oran": 0.211,
+      "n": 380
+    },
+    "(tema yok)": {
+      "oran": 0.19,
+      "n": 79
+    },
+    "change_personnel": {
+      "oran": 0.255,
+      "n": 51
+    },
+    "manage_game": {
+      "oran": 0.25,
+      "n": 4
+    }
+  }
+}

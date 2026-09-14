@@ -17,6 +17,7 @@ from app.engine.coach_benchmark import (
     MIN_TICKS_PER_HALF,
     SHAPE_MIN_FLAG_RATE,
     SHAPE_MIN_LIFT,
+    SHAPE_PRIOR_THRESHOLDS,
     Dimension,
     ShapePrior,
     ShapeState,
@@ -33,6 +34,7 @@ from app.engine.coach_benchmark import (
     split_half_agreement,
     split_half_shape_gate,
 )
+from app.engine.coach_benchmark.compute import _shape_cell
 
 TICKS = (28.0, 40.0, 55.0, 66.0, 78.0)
 
@@ -372,13 +374,20 @@ def test_shape_gate_support_threshold_filters() -> None:
     assert [o.engine_flag for o in apply_shape_gate(prior, states)] == [False, True]
 
 
-def test_shape_prior_unseen_cell_is_unknown_not_zero() -> None:
-    """Görülmemiş hücre 0.5 sayılır; eşik altındaysa susar, üstündeyse konuşur."""
-    prior = ShapePrior({}, threshold=0.4, support_threshold=0, fitted_on=0)
+def test_shape_gate_stays_silent_on_unseen_cell() -> None:
+    """Görülmemiş hücre kanıt değildir: kapı en gevşek eşikte bile susar.
+
+    Zamanlama/kim önsellerinde "bilinmiyor" 0.5'tir; orada soru sıralama, burada
+    seçiciliktir. Bağımsız maçlarda görülmemiş hücre bayraklarının kaldırması
+    tam 1.0 ölçüldü — bilgi yok, bütçe var.
+    """
     st = ShapeState(9, 55.0, "drawing", 0, engine_flag=True, support_count=5, coach_acted=False)
-    assert apply_shape_gate(prior, [st])[0].engine_flag is True
-    strict = ShapePrior({}, threshold=0.6, support_threshold=0, fitted_on=0)
-    assert apply_shape_gate(strict, [st])[0].engine_flag is False
+    for threshold in (min(SHAPE_PRIOR_THRESHOLDS), 0.4, max(SHAPE_PRIOR_THRESHOLDS)):
+        prior = ShapePrior({}, threshold=threshold, support_threshold=0, fitted_on=0)
+        assert apply_shape_gate(prior, [st])[0].engine_flag is False
+    # görülmüş ve eşiği geçen hücre normal şekilde bayrak alır
+    seen = ShapePrior({_shape_cell(st): 0.9}, threshold=0.4, support_threshold=0, fitted_on=1)
+    assert apply_shape_gate(seen, [st])[0].engine_flag is True
 
 
 def test_shape_prior_threshold_chosen_by_precision_not_f1() -> None:
