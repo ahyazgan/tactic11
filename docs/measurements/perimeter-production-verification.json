@@ -1,0 +1,134 @@
+{
+  "source_cache": "data\\tracking\\bench\\perimeter_production_day\\seg_0003.json",
+  "cache_sha256": "ecb7190a667096d665a05fb18bc25ae70fa21341af30d417e619542963fe6e26",
+  "full_detector_and_tracker_rerun": true,
+  "all_375_samples_match_filtered_frozen_cache": true,
+  "all_team_assignments_match_benchmark": true,
+  "person_filter": {
+    "method": "annotated_perimeter_track_v1",
+    "applied": true,
+    "skip_reason": null,
+    "observations_before": 11269,
+    "observations_removed": 2441,
+    "tracks_removed": 28,
+    "min_field_observations": 2,
+    "tolerance_px": 2.16,
+    "rejected_tracks": [
+      {
+        "continuity_id": 0,
+        "track_id": 1
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 2
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 3
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 4
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 28
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 29
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 30
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 31
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 32
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 41
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 42
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 53
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 60
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 61
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 81
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 82
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 89
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 91
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 97
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 104
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 113
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 115
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 123
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 138
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 141
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 150
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 155
+      },
+      {
+        "continuity_id": 0,
+        "track_id": 156
+      }
+    ],
+    "enablement": "camera_profile"
+  },
+  "frames_written": 125,
+  "event_accuracy_not_validated": true
+}

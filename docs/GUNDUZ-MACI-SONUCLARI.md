@@ -1,5 +1,8 @@
 # Gündüz maçı: dış doğrulama ve varsayılan düzeltmesi
 
+Sonraki geliştirme: [saha dışı takip filtresi ve önizleme düzeltmesi](OYUNCU-SUZGECI-SONUCLARI.md).
+Aşağıdaki ilk gündüz ölçümü değişmeden korunur.
+
 14 Eylül 2026. SoccerTrack v2 **117093**, birinci yarı, üç adet 30 saniyelik
 gündüz klibi işlendi. Daha aydınlık görüntü, önceki gece düzeltmesinin başka
 maça taşınamadığını ortaya çıkardı. **Yerel çim normalizasyonu artık varsayılan

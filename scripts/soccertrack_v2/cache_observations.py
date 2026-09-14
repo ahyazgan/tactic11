@@ -25,13 +25,19 @@ def main() -> int:
     color = p.add_mutually_exclusive_group()
     color.add_argument("--raw-kit-colors", action="store_true", help="raw kit colours (default; retained for old commands)")
     color.add_argument("--normalize-kit-light", action="store_true", help="experimental local field-light normalization")
+    perimeter = p.add_mutually_exclusive_group()
+    perimeter.add_argument("--filter-off-pitch-tracks", dest="filter_off_pitch_tracks", action="store_true", default=None,
+                           help="explicitly enable the experimental perimeter filter (default: camera profile)")
+    perimeter.add_argument("--keep-off-pitch-tracks", dest="filter_off_pitch_tracks", action="store_false",
+                           help="unfiltered baseline, including on validated camera profiles")
     args = p.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     for seg in args.segments:
         if (args.out / f"seg_{seg:04d}.json").exists():
             p.error(f"cache exists: segment {seg}")
     cfg = PipelineConfig(detector=DetectorConfig(model="small", weights=args.weights, tiles=4),
-                         normalize_kit_light=args.normalize_kit_light)
+                         normalize_kit_light=args.normalize_kit_light,
+                         filter_off_pitch_tracks=args.filter_off_pitch_tracks)
     detector = make_detector(cfg.detector)
     calib = PitchCalibration.load(args.calibration)
     for seg in args.segments:

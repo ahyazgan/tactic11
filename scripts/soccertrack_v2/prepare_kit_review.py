@@ -32,6 +32,7 @@ def main() -> int:
     parser.add_argument("--cache", type=Path, required=True)
     parser.add_argument("--segments", type=int, nargs="+", required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--times", type=float, nargs="+", default=[5.0, 20.0])
     args = parser.parse_args()
     if args.out.exists():
         parser.error("choose a new output directory")
@@ -43,7 +44,7 @@ def main() -> int:
     for segment in args.segments:
         path = args.cache / f"seg_{segment:04d}.json"
         payload = json.loads(path.read_text(encoding="utf-8"))
-        rows = select_samples(payload, [5.0, 20.0])
+        rows = select_samples(payload, args.times)
         if not rows:
             continue
         hashes[path.as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -73,7 +74,7 @@ def main() -> int:
             draw.text((x + 3, y + 18), f"t={row['seconds']:.2f}", fill="white")
         sheet.save(args.out / f"segment_{segment}.jpg", quality=95)
         records.extend(rows)
-    manifest = {"selection": "all cached person boxes nearest 5 and 20 seconds; earlier frame breaks ties",
+    manifest = {"selection": f"all cached person boxes nearest {args.times} seconds; earlier frame breaks ties",
                 "predictions_visible_during_labeling": False, "independently_adjudicated": False,
                 "reviewer": None, "input_sha256": hashes, "records": records}
     (args.out / "labels.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
