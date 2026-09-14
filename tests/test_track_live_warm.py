@@ -104,3 +104,39 @@ def test_live_payload_preserves_events_computed_from_dense_frames(warm, monkeypa
     assert payload["derived_passes"] == events["derived_passes"]
     assert payload["derived_defensive_actions"] == events["derived_defensive_actions"]
     assert "derived_events" not in payload["summary"]
+
+
+@pytest.mark.parametrize("uncertain", [
+    [[220, 30, 30], [220, 30, 30]],
+    [[220, 30, 30], [225, 35, 35]],
+    [[0, 0, 0], [0, 0, 0]],
+])
+def test_live_anchor_waits_for_distinct_teams_and_survives_uncertainty(
+    warm, monkeypatch, tmp_path, uncertain,
+):
+    import numpy as np
+
+    from app.tracking import pipeline
+
+    warm._mode = {"per_frame": False, "moving": False, "reacquire": False,
+                  "source": "video_tracking"}
+    monkeypatch.setattr(pipeline, "video_info", lambda _: {"width": 3840, "height": 2160})
+    valid = [[220, 30, 30], [30, 40, 220]]
+    palettes = iter([uncertain, valid, uncertain])
+    received_anchors = []
+
+    def process(*args, **kwargs):
+        received_anchors.append(kwargs["team_anchor"])
+        return [], {"derived_events": {"derived_passes": [], "derived_defensive_actions": []},
+                    "team_colors": next(palettes), "calibration_stats": {}}
+
+    monkeypatch.setattr(pipeline, "process_video", process)
+    for segment in range(3):
+        warm.run(tmp_path / f"segment{segment}.mp4", out_json=tmp_path / f"segment{segment}.json",
+                 offset_minutes=segment / 2, match_id=1, home_team=10, away_team=20, period=1)
+        if segment == 0:
+            assert warm.team_anchor is None
+        else:
+            np.testing.assert_array_equal(warm.team_anchor, valid)
+    assert received_anchors[:2] == [None, None]
+    np.testing.assert_array_equal(received_anchors[2], valid)

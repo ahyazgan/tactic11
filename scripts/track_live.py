@@ -236,10 +236,12 @@ class WarmTracker:
             print(f"  ! {downgrade}", flush=True)
         # İlk geçerli atamayı çapa olarak sabitle (sonraki segmentler buna uyar).
         if self.team_anchor is None:
-            colors = summary.get("team_colors") or []
-            if len(colors) == 2 and any(any(c) for c in colors):
-                import numpy as np
+            import numpy as np
 
+            from app.tracking.teams import distinct_team_colors
+
+            colors = summary.get("team_colors") or []
+            if distinct_team_colors(np.asarray(colors, dtype=float)):
                 self.team_anchor = np.asarray(colors, dtype=float)
                 print(f"  takım renkleri sabitlendi: {colors}", flush=True)
         # Üst düzey "source" karelerdekiyle AYNI olmalı: ingest bunu okuyup
