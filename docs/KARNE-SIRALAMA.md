@@ -92,6 +92,11 @@ GPS yükü, sakatlık riski, kart durumu, antrenörün maç planı. Daha önce
 denenenler (sarı kart, son 15 dk düşük katılım, skor durumu) ölçüldü ve kazanç
 vermedi (bkz. `coach_benchmark` ölçüm günlüğü).
 
+**Sonradan daha sert sınandı:** altı olay-türevi sinyal, iki yönde, yalnız grup
+İÇİNDE, seçim maç bazında ayrık yarıda — kazanç +0,001, permütasyon p = 0,62,
+iki yarı farklı sinyal seçti. Bu yön kapalıdır:
+[grup içi sinyal ölçümü](KARNE-GRUP-ICI-SINYAL.md).
+
 ## Ölçüm sınırları
 
 - **Tek külliyat, tek takım.** 331 değişiklik, Barcelona 2018–21. Önselin
