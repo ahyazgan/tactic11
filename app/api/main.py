@@ -36,6 +36,7 @@ from app.api.errors import register_exception_handlers
 from app.api.html_views import router as html_views_router
 from app.api.live import router as live_router
 from app.api.live_vaep import router as live_vaep_router
+from app.api.match_squad import router as match_squad_router
 from app.api.notes import router as notes_router
 from app.api.notifications import router as notifications_router
 from app.api.observability import (
@@ -1673,6 +1674,7 @@ def simulate_match(
 app.include_router(auth_router)
 
 protected.include_router(admin_router)
+protected.include_router(match_squad_router)
 protected.include_router(plan_router)
 protected.include_router(sprint3_router)
 protected.include_router(sprint4_router)
