@@ -48,6 +48,8 @@ from app.db import models
 from app.db.session import SessionLocal
 from app.engine.coach_benchmark import (
     Dimension,
+    SelectivityStat,
+    ShapeState,
     TickObservation,
     TickState,
     WhoCandidate,
@@ -58,6 +60,7 @@ from app.engine.coach_benchmark import (
     lead_times,
     skill_from_auc,
     split_half_agreement,
+    split_half_shape_gate,
     split_half_timing_prior,
     split_half_who_prior,
     who_agreement,
@@ -230,6 +233,15 @@ def _mh_gap(rows: list[tuple[tuple[int, str], str, str]], grp: str) -> tuple[flo
     return (None if not den else round(num / den, 3)), used
 
 
+def _shape_line(label: str, a: SelectivityStat, b: SelectivityStat) -> None:
+    """Seçicilik satırı: bayrak oranı · precision · kaldırma · recall (iki yarı)."""
+    def _n(x: float | None) -> str:
+        return "—" if x is None else f"{x:.2f}"
+    print(f"      {label:<32} bayrak {a.flag_rate:.2f}/{b.flag_rate:.2f} "
+          f"({a.flagged}/{b.flagged} tik) · isabet {_n(a.precision)}/{_n(b.precision)} · "
+          f"kaldırma {_n(a.lift)}/{_n(b.lift)} · yakalama {_n(a.recall)}/{_n(b.recall)}")
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Koç zekâ karnesi: motor vs taban çizgileri")
     p.add_argument("--tenant", default="t-default")
@@ -335,6 +347,7 @@ def main() -> int:
     strict: list[TickObservation] = []
     loose: list[TickObservation] = []
     shape: list[TickObservation] = []
+    shape_states: list[ShapeState] = []
     states: list[TickState] = []
     eng_sub_minutes: dict[int, list[float]] = defaultdict(list)
     fc_samples: list[tuple[float, bool, float]] = []
@@ -355,14 +368,20 @@ def main() -> int:
                           else is_sub or SUB_SIGNAL_KEY in (ctx.get("supporting_keys") or []))
         acted_sub = _acted(d.minute, coach_subs[mid], args.window)
         acted_shift = _acted(d.minute, coach_shifts.get(mid, []), args.window)
+        as_of = _asof(goals.get(mid, []), d.minute, args.team)
+        subs_used = sum(1 for c in coach_all_subs.get(mid, []) if c <= d.minute)
         strict.append(TickObservation(mid, d.minute, is_sub, acted_sub))
         loose.append(TickObservation(mid, d.minute, has_sub_signal, acted_sub))
-        shape.append(TickObservation(mid, d.minute, ctx.get("theme") == "adjust_shape", acted_shift))
+        shape_flag = ctx.get("theme") == "adjust_shape"
+        shape.append(TickObservation(mid, d.minute, shape_flag, acted_shift))
+        shape_states.append(ShapeState(
+            mid, d.minute, score_state=as_of, subs_used=subs_used,
+            engine_flag=shape_flag,
+            support_count=len(ctx.get("supporting_keys") or []),
+            coach_acted=acted_shift,
+        ))
         states.append(TickState(
-            mid, d.minute,
-            score_state=_asof(goals.get(mid, []), d.minute, args.team),
-            subs_used=sum(1 for c in coach_all_subs.get(mid, []) if c <= d.minute),
-            coach_acted=acted_sub,
+            mid, d.minute, score_state=as_of, subs_used=subs_used, coach_acted=acted_sub,
         ))
         if has_sub_signal:
             eng_sub_minutes[mid].append(d.minute)
@@ -478,6 +497,7 @@ def main() -> int:
     sh_strict = split_half_agreement(strict)
     sh_loose = split_half_agreement(loose)
     sh_shape = split_half_agreement(shape)
+    sh_gate = split_half_shape_gate(shape_states)
     sh_prior = split_half_timing_prior(states)
     lt = lead_times(coach_subs, eng_sub_minutes, lookback_min=args.lookback)
     best = sh_loose if (sh_loose.engine_f1 or 0) >= (sh_strict.engine_f1 or 0) else sh_strict
@@ -573,6 +593,18 @@ def main() -> int:
           f"{sh_shape.engine_a.flag_rate}/{sh_shape.engine_b.flag_rate} "
           f"(antrenör taban oranı {sh_shape.engine_a.act_rate}/{sh_shape.engine_b.act_rate}) "
           f"— {sh_shape.verdict}")
+    print("    (F1 bu satırda YANILTIR: hedef nadir olduğundan hep-evet demek F1'i "
+          "yükseltir; seçicilik kaldırmayla ölçülür — aşağı bkz.)")
+
+    print()
+    print("  ŞEKİL ÖNERİSİ SEÇİCİLİĞİ (kapı ayrık yarıda öğrenildi)")
+    _shape_line("ham bayrak (tema)", sh_gate.raw_a, sh_gate.raw_b)
+    _shape_line("kapılı bayrak (önsel ∧ destek)", sh_gate.gated_a, sh_gate.gated_b)
+    pa, pb = sh_gate.prior_for_a, sh_gate.prior_for_b
+    print(f"      eşikler  önsel {pa.threshold}/{pb.threshold} · destekleyici sinyal "
+          f"≥{pa.support_threshold}/{pb.support_threshold} "
+          f"(öteki yarıda {pa.fitted_on}/{pb.fitted_on} tikten)")
+    print(f"      hüküm: {sh_gate.verdict} — {sh_gate.note}")
     pa, pb = sh_prior.engine_a, sh_prior.engine_b
     print("    ADAY — elit zamanlama önseli (dakika bandı × skor durumu × yapılan değişiklik, "
           "ayrık yarıda öğrenildi):")
