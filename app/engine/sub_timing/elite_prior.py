@@ -16,6 +16,26 @@ F1 0.49 idi (elit antrenörle uyum boyutu, `scripts/coach_iq.py`).
 Bantlar: [0,45) [45,60) [60,70) [70,80) [80,∞) → 0..4. Değişiklik sayısı 3+
 tek hücrede (2018-21'de hak 3'tü; 5-hak kuralıyla yeniden fit gerekir).
 Görülmemiş hücre → 0.5 (bilinmiyor). Yeniden fit edilirse tablo VE bu not güncellenir.
+
+## Bağımsız doğrulama (2026-09-14)
+
+Tablo ve eşik DONDURULMUŞ hâliyle, külliyatla kesişmeyen 100'er maça uygulandı
+(`scripts/validate_timing_prior.py`). Saat kuralına kasten avantaj verildi:
+eşiği ölçülen kümede en iyi olacak şekilde seçildi.
+
+  küme                    önsel F1   saat F1   fark     hüküm
+  La Liga 2015/16            0.741     0.686  +0.055   saati geçiyor
+  Premier League 2015/16     0.693     0.681  +0.012   saatle aynı
+
+İkisinde de küme içi tavana oturuyor (0.744/0.740 ve 0.699/0.747). Karnedeki
+"saatle aynı" hükmü MOTOR TİKLERİNDE (28/40/55/66/78) ölçülür; o dağılım saati
+kayırıyor. Bu ölçüm önselin fit edildiği 5 dk ızgarada. İkisi farklı soruları
+ölçüyor, ikisi de raporlanır. docs/KARNE-ZAMANLAMA-BAGIMSIZ.md.
+
+Görülmemiş hücre payı bağımsız kümelerde %0.1-0.3 — tablo durum uzayını
+neredeyse tamamen kaplıyor. "Görülmemişte sus" varyantı ölçüldü, sonuç
+değişmedi; bu yüzden `UNKNOWN_CELL` 0.5 bırakıldı (şekil kapısında oran
+%10-12 olduğu için orada 0.0'a çekilmişti).
 """
 from __future__ import annotations
 
