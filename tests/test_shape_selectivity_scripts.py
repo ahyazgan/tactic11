@@ -1,4 +1,4 @@
-"""Karne ölçüm girişleri: oyuncu sayısı ile hamle anını ayır, bağımsız kümeyi koru."""
+"""Karne ölçüm girişleri: sayımları ayır, bağımsız kümeyi koru, önsel sırasını kilitle."""
 from __future__ import annotations
 
 import json
@@ -10,7 +10,13 @@ from sqlalchemy.orm import sessionmaker
 from app.data.sources.statsbomb_open import coach_moves_from_events_json
 from app.db import models
 from app.engine.coach_benchmark import ShapePrior, ShapeState
-from scripts import coach_iq, measure_shape_selectivity, validate_shape_prior
+from app.engine.live_sub_recommendation import ELITE_OFF_PRIOR
+from scripts import (
+    coach_iq,
+    measure_shape_selectivity,
+    validate_shape_prior,
+    validate_who_prior,
+)
 
 
 def _events() -> list[dict]:
@@ -133,3 +139,62 @@ def test_independent_overlap_is_refused(tmp_path, monkeypatch, capsys) -> None:
     assert validate_shape_prior.main() == 1
     assert "BAĞIMSIZ DEĞİL" in capsys.readouterr().out
     assert not (tmp_path / "o.json").exists()
+
+
+# --- "kim çıkar" bağımsız doğrulaması ---------------------------------------- #
+
+def _sub_match_events(team: int, other: int) -> list[dict]:
+    """İlk 11 + tek taktik değişiklik: 9 numara çıkıyor, 12 giriyor."""
+    def xi(t: int, base: int, positions: list[int]) -> dict:
+        return {"type": {"id": 35}, "team": {"id": t}, "minute": 0,
+                "tactics": {"lineup": [{"player": {"id": base + i},
+                                        "position": {"id": p}}
+                                       for i, p in enumerate(positions, 1)]}}
+    return [
+        xi(team, 0, [1, 3, 5, 9, 11, 13, 15, 17, 19, 21, 23]),
+        xi(other, 100, [1, 3, 5, 9, 11, 13, 15, 17, 19, 21, 23]),
+        {"type": {"id": 19}, "team": {"id": team}, "minute": 65, "player": {"id": 4},
+         "substitution": {"replacement": {"id": 12}, "outcome": {"name": "Tactical"}}},
+    ]
+
+
+def test_who_states_use_on_pitch_players_and_starter_flag() -> None:
+    states = validate_who_prior.who_states_from_events(_sub_match_events(11, 22), 7)
+    assert len(states) == 1
+    st = states[0]
+    assert st.player_off == 4
+    assert len(st.candidates) == 11            # yalnız kendi takımı, o an sahadakiler
+    assert all(c.starter for c in st.candidates)
+    assert {c.group for c in st.candidates} >= {"GK", "DEF", "MID", "FWD"}
+    # takım süzgeci: öteki takım istenirse bu maçta hamlesi yok
+    assert validate_who_prior.who_states_from_events(_sub_match_events(11, 22), 7, team=22) == []
+
+
+def test_who_state_skipped_when_player_off_not_on_pitch() -> None:
+    """Kadro kaydı eksikse uydurma aday listesi kurulmaz."""
+    ev = [e for e in _sub_match_events(11, 22) if e["type"]["id"] != 35]
+    assert validate_who_prior.who_states_from_events(ev, 7) == []
+
+
+def test_frozen_prior_mirrors_production_table() -> None:
+    """Sınanan nesne canlı motorun tablosudur; yalnız anahtar biçimi değişir."""
+    table = validate_who_prior._frozen_prior().table
+    for group, letter in validate_who_prior.GROUP_TO_LETTER.items():
+        for starter in (True, False):
+            assert table[(group, starter)] == ELITE_OFF_PRIOR[(letter, starter)]
+    # bilinmeyen grup canlı motordaki gibi orta sahaya düşer
+    assert table[("UNK", True)] == ELITE_OFF_PRIOR[("M", True)]
+
+
+def test_production_prior_ranks_forward_over_midfield() -> None:
+    """Barcelona-dışı havuzda en çok forvet çıkar; tablo bunu yansıtmalı.
+
+    Eski tablo tek kulüpten geldiği için orta sahayı öne alıyordu
+    (docs/KARNE-KIM-BAGIMSIZ.md). Bu test o gerilemeyi kilitler.
+    """
+    assert ELITE_OFF_PRIOR[("F", True)] > ELITE_OFF_PRIOR[("M", True)]
+    assert ELITE_OFF_PRIOR[("M", True)] > ELITE_OFF_PRIOR[("D", True)]
+    assert ELITE_OFF_PRIOR[("D", True)] > ELITE_OFF_PRIOR[("G", True)]
+    # değişiklikle giren oyuncu her grupta ilk 11'den düşük
+    for letter in ("F", "M", "D"):
+        assert ELITE_OFF_PRIOR[(letter, False)] < ELITE_OFF_PRIOR[(letter, True)]

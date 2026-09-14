@@ -430,9 +430,13 @@ def main() -> int:
             )
             if not prior_ticks:
                 continue
+            # Bu dakikada sahaya GİREN oyuncu aday değildir — aynı anda çıkamaz.
+            # Aynı dakikada çıkan başka bir oyuncu adaydır (o an hâlâ sahadaydı).
+            # Dahil etmek aday havuzunu her hamlede en az 1 şişiriyor ve rastgele
+            # tabanı (k/n) düşürüyordu; bkz. docs/KARNE-KIM-BAGIMSIZ.md.
             on_pitch = tuple(
                 int(a["player_external_id"]) for a in appearances.get(mid, [])
-                if a["start_minute"] <= mv.minute
+                if a["start_minute"] < mv.minute
                 and (a["end_minute"] is None or a["end_minute"] >= mv.minute)
             )
             who_samples.append(WhoSample(

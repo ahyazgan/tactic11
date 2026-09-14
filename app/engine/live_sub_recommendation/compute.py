@@ -36,13 +36,36 @@ HIGH_URGENCY_SCORE = 0.55
 MEDIUM_URGENCY_SCORE = 0.30
 
 # ELİT "KİM ÇIKAR" ÖNSELİ — (mevki grubu, ilk 11 mi) → P(bu oyuncu çıkar | değişiklik).
-# Kaynak: StatsBomb açık verisi, Barcelona La Liga 2018-21, 331 taktik değişiklik
-# (`scripts/coach_iq.py`, 2026-09-12; Laplace düzeltmeli). Ayrık yarı testinde tek
-# başına isabet@3 %56 (rastgele %24, yorgunluk bileşiği %24). Yeniden fit
-# edilirse sayılar VE bu not güncellenir.
+# Kaynak: StatsBomb açık verisi, BARCELONA DIŞI 1409 taktik değişiklik / 300 maç —
+# Barcelona'nın 2018-21'deki rakipleri (aynı maçlar), La Liga 2015/16 ve Premier
+# League 2015/16 (`scripts/validate_who_prior.py`, 2026-09-14; Laplace düzeltmeli).
+#
+# ÖNCEKİ TABLO TEK KULÜPTEN GELİYORDU (Barcelona 2018-21, 331 değişiklik) ve o
+# kulüp veri kümesindeki en atipik takım: Barcelona'da en çok ORTA SAHA çıkıyor
+# (0.185), başka her yerde en çok FORVET (0.215). Ayrımı yapan deney: Barcelona'nın
+# AYNI maçlardaki rakipleri de forvet-önde davranıyor → kulüp farkı, dönem farkı
+# değil. Leave-one-out isabet@3 (rastgele taban %24):
+#
+#   uygulanan küme        eski (Barça)   bu tablo
+#   Barcelona 18-21             0.562      0.417   ← tek gerileme
+#   Barça'nın rakipleri 18-21   0.526      0.647
+#   La Liga 2015/16             0.452      0.575
+#   Premier League 2015/16      0.438      0.623
+#
+# Yani Barcelona benzeri bir kulüp için bu tablo ESKİSİNDEN KÖTÜ. Doğru çözüm
+# kiracının kendi geçmişinden fit etmektir ve kanca zaten var:
+# `compute_live_sub_recommendation(off_prior=...)` oyuncu→önsel eşlemesini dışarıdan
+# alır (`app/api/admin.py` bunu `elite_off_prior` ile kuruyor). Yeterli kendi
+# geçmişi olan kiracı `fit_who_prior` ile kendi tablosunu geçirmelidir; aşağıdaki
+# tablo o veri YOKKEN kullanılacak genel varsayılandır. ("G", False) hiç gözlenmedi (yedek kaleci girip sonra
+# çıkmıyor); gözlenen en küçük hücrenin değeri taban olarak konuldu.
+# Aday havuzu = hamle anında sahada olanlar; O DAKİKA GİREN oyuncu aday sayılmaz
+# (aynı anda çıkamaz). Önceki ölçümlerde sayılıyordu ve her hamlede havuzu en az
+# 1 şişiriyordu: rastgele isabet@3 tabanı 0.243 görünüyordu, doğrusu 0.273.
+# Yeniden fit edilirse sayılar VE bu not güncellenir.
 ELITE_OFF_PRIOR: dict[tuple[str, bool], float] = {
-    ("M", True): 0.185, ("F", True): 0.133, ("D", True): 0.058, ("G", True): 0.003,
-    ("M", False): 0.003, ("F", False): 0.003, ("D", False): 0.010, ("G", False): 0.003,
+    ("F", True): 0.2151, ("M", True): 0.1400, ("D", True): 0.0292, ("G", True): 0.0007,
+    ("M", False): 0.0074, ("D", False): 0.0046, ("F", False): 0.0045, ("G", False): 0.0007,
 }
 # Bileşik aciliyet ile önselin harmanı. Önsel tek başına bileşikten çok daha
 # isabetli olduğu için ağır; bileşik grup içinde sırayı belirler.
@@ -50,7 +73,11 @@ ROLE_PRIOR_WEIGHT = 0.6
 
 
 def elite_off_prior(position_code: str | None, starter: bool) -> float:
-    """Mevki kodunun ilk harfi (G/D/M/F) + ilk 11 → önsel; bilinmiyorsa orta saha/ilk 11."""
+    """Mevki kodunun ilk harfi (G/D/M/F) + ilk 11 → önsel; bilinmiyorsa orta saha.
+
+    Bilinmeyen mevki en KALABALIK gruba (orta saha, 3762 aday gözlemi) düşer —
+    en yüksek önsele değil; forvet önseli daha yüksektir.
+    """
     letter = (position_code or "M")[:1].upper()
     if letter not in {"G", "D", "M", "F"}:
         letter = "M"
