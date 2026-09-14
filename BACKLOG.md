@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Codex kamera: kesme/tekrar/kalibrasyon boşluğunda kimlik ve forma geçmişini ayır, çekimler arası hız hesabını kes; takip süresini aynı tespitlerde ölç. (76797ec)
+  Done when: 13 gerçek CV/çekirdek testi, 87 ilgili uygulama testi, 2.635 tam yerel test; üretim yolunda 1.125 sabit kamera karesinin oyuncu/renk geçmişi eşit. Sonuç: docs/TAKIP-SUREKLILIGI-SONUCLARI.md. Daha uzun bekleme gündüz doğruyu 195→194 düşürüp karışık ID'yi 7→8 artırdığı için reddedildi; gerçek süre raporlanıyor. Sabit kamerada oyuncular arası ID değişimi ve genel forma/olay doğruluğu tamamlanmış sayılmaz.
+
 - [x] Codex kamera: saha çevresindeki sahte takipleri ayır, kamera bazında doğrula ve önizleme zaman/boyut/geometri hatalarını düzelt. (a9079c1)
   Done when: dondurulmuş filtre, 248 yeni kör kontrol kutusu, iki yeni gece klibi, gerçek dedektör tekrarında 375 karenin birebir eşleşmesi ve okunabilir önizleme. Sonuç: docs/OYUNCU-SUZGECI-SONUCLARI.md. Gündüz 25 sahte kutu→0, forma kaybı 0, doğru 83→95; gece ek başka-renk ataması nedeniyle yalnız 117093 profili etkin. 89 ilgili test geçti; genel doğruluk/oyuncu kimliği/olay doğruluğu tamamlanmış sayılmaz.
 
