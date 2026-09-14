@@ -216,13 +216,24 @@ class DefinitionChoice:
 
 @dataclass(frozen=True)
 class LeadTimeStat:
-    """Antrenör hamlesinden ÖNCE motor kaç dakika erken dedi?"""
+    """Antrenör hamlesinden ÖNCE motor kaç dakika erken dedi?
+
+    **Bu sayı tek başına okunamaz.** Ölçüt penceredeki EN ERKEN bayrak olduğu
+    için, her tikte bayrak yakan bir kural azami öncü süreyi alır — sayı
+    öngörüden çok TİK IZGARASININ GEOMETRİSİNDEN gelir. Bu yüzden doygun
+    tabanı (her tikte bayrak) da hesaplanır: motorun öncü süresi tabana eşitse
+    erken davrandığı için değil, sık bayrak yaktığı için erkendir.
+    """
 
     moves: int
     covered: int                  # öncesinde (lookback içinde) motor bayrağı olan hamle
     coverage: float | None
     mean_lead_min: float | None   # yalnız kapsananlarda
     median_lead_min: float | None
+    # Her tikte bayrak yakan kuralın aynı ölçüsü — tavan. None: ızgara verilmedi.
+    saturated_coverage: float | None = None
+    saturated_mean_lead_min: float | None = None
+    note: str = ""
 
 
 @dataclass(frozen=True)
@@ -461,28 +472,55 @@ def lead_times(
     coach_minutes: dict[int, Sequence[float]],
     engine_flag_minutes: dict[int, Sequence[float]],
     *, lookback_min: float = 15.0,
+    all_tick_minutes: Mapping[int, Sequence[float]] | None = None,
 ) -> LeadTimeStat:
-    """Her gerçek hamle için önceki `lookback` dakikadaki EN ERKEN motor bayrağı."""
-    leads: list[float] = []
-    moves = 0
-    for match_id, minutes in coach_minutes.items():
-        flags = sorted(engine_flag_minutes.get(match_id, ()))
-        for m in minutes:
-            moves += 1
-            prior = [f for f in flags if m - lookback_min <= f < m]
-            if prior:
-                leads.append(m - prior[0])
+    """Her gerçek hamle için önceki `lookback` dakikadaki EN ERKEN motor bayrağı.
+
+    `all_tick_minutes` verilirse aynı ölçü HER TİKTE bayrak yakan kural için de
+    hesaplanır. O taban olmadan sayı yorumlanamaz: en erken bayrak arandığı
+    için sık bayrak yakmak, erken haber vermekle aynı görünür.
+    """
+    def _measure(flags_by_match: Mapping[int, Sequence[float]]) -> tuple[int, list[float]]:
+        out: list[float] = []
+        n = 0
+        for match_id, minutes in coach_minutes.items():
+            flags = sorted(flags_by_match.get(match_id, ()))
+            for m in minutes:
+                n += 1
+                prior = [f for f in flags if m - lookback_min <= f < m]
+                if prior:
+                    out.append(m - prior[0])
+        return n, out
+
+    moves, leads = _measure(engine_flag_minutes)
     covered = len(leads)
     srt = sorted(leads)
     median = None
     if srt:
         mid = len(srt) // 2
         median = srt[mid] if len(srt) % 2 else (srt[mid - 1] + srt[mid]) / 2
+
+    sat_cov = sat_mean = None
+    note = "doygun taban verilmedi — öncü süre tek başına yorumlanamaz"
+    if all_tick_minutes is not None:
+        _, sat_leads = _measure(all_tick_minutes)
+        sat_cov = None if not moves else round(len(sat_leads) / moves, 3)
+        sat_mean = (None if not sat_leads
+                    else round(sum(sat_leads) / len(sat_leads), 1))
+        if sat_mean is not None and leads:
+            pay = round(sum(leads) / covered, 1)
+            note = (f"her tikte bayrak yakan kural {sat_mean} dk önce haber verirdi "
+                    f"(kapsama {sat_cov}); motor {pay} dk (kapsama "
+                    f"{round(covered / moves, 3)})"
+                    + (" — fark yok, öncü süre ızgaranın geometrisi"
+                       if abs(pay - sat_mean) < 0.5 else ""))
+
     return LeadTimeStat(
         moves=moves, covered=covered,
         coverage=None if not moves else round(covered / moves, 3),
         mean_lead_min=None if not leads else round(sum(leads) / covered, 1),
         median_lead_min=None if median is None else round(median, 1),
+        saturated_coverage=sat_cov, saturated_mean_lead_min=sat_mean, note=note,
     )
 
 
@@ -994,6 +1032,23 @@ def skill_from_auc(auc: float | None) -> float | None:
     if auc is None:
         return None
     return round(max(0.0, min(1.0, 2.0 * (auc - 0.5))) * 100.0, 1)
+
+
+def skill_from_error(value: float | None, baseline: float | None) -> float | None:
+    """HATA ölçen bir boyut için 0..100 beceri; taban = 0, hatasız = 100.
+
+    `Dimension.skill` sözleşmesi "taban = 0" der. AUC tarafında bu
+    `skill_from_auc` ile sağlanıyor (0.5 → 0). Hata ölçen boyutlarda da aynısı
+    gerekir: tabanla AYNI hatayı yapan sistemin becerisi 0 olmalıdır.
+
+    Kalibrasyon satırı bunun yerine sabit bir ölçek kullanıyordu
+    (`1 − ECE/0.25`), yani saf tabanla eşit bir sistem bile pozitif beceri
+    alıyordu. Taban 0 ya da tanımsızsa oran kurulamaz — None döner, uydurma
+    ölçek konmaz.
+    """
+    if value is None or baseline is None or baseline <= 0:
+        return None
+    return round(max(0.0, min(1.0, (baseline - value) / baseline)) * 100.0, 1)
 
 
 def expected_calibration_error(

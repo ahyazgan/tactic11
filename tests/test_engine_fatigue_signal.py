@@ -89,3 +89,43 @@ def test_window_for_second_half():
     assert r.early_actions == 8
     assert r.late_actions == 8
     assert r.fatigue_score >= 0.30  # complete drop'tan
+
+
+def test_constant_tempo_is_not_fatigue_even_with_unequal_windows():
+    """Tempo sabitse yorgunluk yok — pencereler eşit olmasa bile.
+
+    Eylem düşüşü ham SAYIMDAN hesaplandığında ölçülen şey yorgunluk değil
+    pencere geometrisiydi. Varsayılan pencereler zaten eşit değil: erken
+    (0,30) 30 dakika, geç (30,45) 15 dakika. Tempo hiç düşmese bile sayım
+    yarıya iner, raw_drop = 1 − 15/30 = 0,5 ve /0,5 normalizasyonuyla
+    action_drop TAM 1.0 çıkardı — yani yorgunluk skorunun yarısı her oyuncu
+    için sabitti ve hiçbir şey ayırt etmiyordu.
+    """
+    # Dakikada 1 aksiyon, 0'dan 44'e kadar sabit: erken 30, geç 15.
+    passes = [_p(100, minute=float(m)) for m in range(0, 45)]
+    r = compute_fatigue_signal(100, passes, []).value
+    assert r.early_actions == 30
+    assert r.late_actions == 15
+    assert r.action_count_drop_ratio == 0.0, "sabit tempo yorgunluk sayılmamalı"
+
+    # Tempo gerçekten yarıya inerse bileşen doyuma gider.
+    yavaslayan = ([_p(101, minute=float(m)) for m in range(0, 30)]
+                  + [_p(101, minute=float(m)) for m in range(30, 45, 2)])
+    y = compute_fatigue_signal(101, yavaslayan, []).value
+    assert y.early_actions == 30 and y.late_actions == 8
+    assert y.action_count_drop_ratio > 0.9
+
+
+def test_late_window_much_shorter_does_not_pin_the_component():
+    """Canlı yol 75. dakikada erken 60 / geç 15 pencere kullanıyor.
+
+    Ham sayımla, doyuma girmemek için oyuncunun son 15 dakikada temposunu
+    İKİYE KATLAMASI gerekiyordu; 45. dakikadan sonraki her canlı öneride
+    bileşen pratikte 1.0'a kilitliydi.
+    """
+    passes = [_p(100, minute=float(m)) for m in range(0, 75)]
+    r = compute_fatigue_signal(
+        100, passes, [], early_end=60.0, late_start=60.0, minutes_window=(0.0, 75.0),
+    ).value
+    assert r.early_actions == 60 and r.late_actions == 15
+    assert r.action_count_drop_ratio == 0.0

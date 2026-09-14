@@ -488,3 +488,35 @@ def test_within_group_baseline_uses_the_same_cases_as_the_hit_average() -> None:
 
     # Hiç tanımlı vaka yoksa üçü de None döner — uydurma taban üretilmez.
     assert m._mean_hit([tanimsiz], "x", 1) == (None, 0, None)
+
+
+def test_blend_normalises_by_the_pool_top_not_the_surviving_candidates() -> None:
+    """Önsel normalizasyonu motordaki gibi EŞİK ÖNCESİ havuzun tepesine göre.
+
+    Motor `prior_max`'ı sahadaki tüm oyunculardan alır; script eylem eşiğinden
+    SONRAKİ aday listesinden alıyordu. En yüksek önselli oyuncu eşikte elenirse
+    (az olayı olan bir ilk-11 forveti — tam da en yüksek önselli hücre) tepe
+    çöker ve hayatta kalanların normalize önseli şişer. Şişince önsel, bileşiği
+    bastırır ve modellenen sıralayıcı motorunki olmaktan çıkar.
+    """
+    m = measure_sub_ranking
+    # Eşikten geçen iki aday, ikisi de düşük önselli (yedek orta saha/forvet).
+    a = (1, 0.0074, 0.50)
+    b = (2, 0.0045, 0.60)
+    cands = [a, b]
+
+    # Eski davranış: tepe = 0.0074, yani a'nın normalize önseli tam 1.0.
+    eski = m._blend(0.5)(cands, 0.0)
+    assert eski(a) < eski(b), "eski kuralda önsel bileşiği bastırıyor"
+
+    # Doğrusu: elenen ilk-11 forvetinin önseli (0.2151) tepeyi belirler.
+    yeni = m._blend(0.5)(cands, 0.2151)
+    assert yeni(b) < yeni(a), "havuz tepesiyle bileşik öne geçer"
+
+
+def test_lexicographic_ranker_ignores_the_pool_top() -> None:
+    """Sözlük sıralaması önseli ham kullanır; tepe değeri onu ilgilendirmez."""
+    m = measure_sub_ranking
+    cands = [(1, 0.14, 0.1), (2, 0.03, 0.9)]
+    rank = m._lexicographic()
+    assert rank(cands, 0.2151)((1, 0.14, 0.1)) == rank(cands, 0.0)((1, 0.14, 0.1))

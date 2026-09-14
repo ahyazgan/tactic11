@@ -44,15 +44,16 @@ MEDIUM_URGENCY_SCORE = 0.30
 # kulüp veri kümesindeki en atipik takım: Barcelona'da en çok ORTA SAHA çıkıyor
 # (0.185), başka her yerde en çok FORVET (0.215). Ayrımı yapan deney: Barcelona'nın
 # AYNI maçlardaki rakipleri de forvet-önde davranıyor → kulüp farkı, dönem farkı
-# değil. Leave-one-out isabet@3 (rastgele taban %24):
+# değil.
 #
-#   uygulanan küme        eski (Barça)   bu tablo
-#   Barcelona 18-21             0.562      0.417   ← tek gerileme
-#   Barça'nın rakipleri 18-21   0.526      0.647
-#   La Liga 2015/16             0.452      0.575
-#   Premier League 2015/16      0.438      0.623
+# Leave-one-out tablosu BURADA TUTULMUYOR, tek kaynağı docs/KARNE-KIM-BAGIMSIZ.md.
+# Sebebi somut: kopya buraya da yazılmıştı ve iki kez bayatladı — önce rastgele
+# taban 0.243'ten 0.273'e düzeltildiğinde (bu yorum "%24" demeye devam etti),
+# sonra puanlama beraberlik-tarafsız hâle getirildiğinde (sayılar değişti,
+# kopya değişmedi). İki kaynak varsa biri er geç yalan söyler.
 #
-# Yani Barcelona benzeri bir kulüp için bu tablo ESKİSİNDEN KÖTÜ. Doğru çözüm
+# Tek cümlelik özet: Barcelona benzeri bir kulüp için bu tablo ESKİSİNDEN KÖTÜ
+# (tek gerileyen küme odur), öteki üç kümede belirgin iyileşiyor. Doğru çözüm
 # kiracının kendi geçmişinden fit etmektir ve kanca zaten var:
 # `compute_live_sub_recommendation(off_prior=...)` oyuncu→önsel eşlemesini dışarıdan
 # alır (`app/api/admin.py` bunu `elite_off_prior` ile kuruyor). Yeterli kendi

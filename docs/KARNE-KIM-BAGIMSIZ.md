@@ -133,7 +133,7 @@ Aynı kusur `coach_iq.py` içinde de vardı ve orada da düzeltildi.
 
 ## Bunun bedeli ve kime yarıyor
 
-- **Barcelona benzeri bir kulüp için yeni tablo eskisinden KÖTÜ** (0,562 → 0,417).
+- **Barcelona benzeri bir kulüp için yeni tablo eskisinden KÖTÜ** (0,533 → 0,442; beraberlik-tarafsız ölçüm).
   Gizlenmiyor: motor notunda ve burada yazılı.
 - Ürünün kendi demo/pilot takımı Beşiktaş'tır, Barcelona değil. Gerçek
   kiracıların hepsi "Barcelona-dışı" popülasyondadır.
@@ -141,7 +141,7 @@ Aynı kusur `coach_iq.py` içinde de vardı ve orada da düzeltildi.
   külliyatta SAKLI `sub_candidates` listelerinden okunur ve o listeler eski
   tabloyla üretildi. `decision_corpus enrich --force` çalıştırılırsa satır
   yeniden hesaplanır ve külliyat Barcelona olduğu için **düşmesi beklenir**
-  (önsel tek başına 0,562 → 0,417). Demo sayısının düşmesi ile gerçek kulüpte
+  (önsel tek başına 0,533 → 0,442; beraberlik-tarafsız ölçüm). Demo sayısının düşmesi ile gerçek kulüpte
   isabetin artması aynı değişikliğin iki yüzüdür.
 - Kalıcı çözüm tek tablo değil: yeterli kendi geçmişi olan kiracı
   `fit_who_prior` ile kendi tablosunu kurup `off_prior` ile geçirmelidir.
