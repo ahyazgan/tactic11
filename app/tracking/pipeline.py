@@ -28,6 +28,7 @@ from app.domain.tracking import TrackingFrame
 from app.tracking.calibration import CalibrationError, PitchCalibration
 from app.tracking.detect import DetectorConfig, OnnxDetector, RFDetrDetector, make_detector
 from app.tracking.frames import BallObservation, TrackObservation, build_frame
+from app.tracking.person_filter import annotated_boundary, filter_person_tracks
 from app.tracking.teams import TeamAssigner, kit_color
 
 # İki arka uç aynı arayüzü verir (detect / split / predict_single / device)
@@ -80,6 +81,7 @@ class PipelineConfig:
     preview_path: str | None = None
     preview_width: int = 1600
     normalize_kit_light: bool = False  # deneysel; gündüz dış kontrolde regresyon
+    filter_off_pitch_tracks: bool | None = None  # None: yalnız doğrulanmış kamera profili
 
 
 @dataclass
@@ -94,6 +96,13 @@ class SampledObservation:
     # hattın sabit kalibrasyonu kullanılır (sabit kamera).
     calibration: PitchCalibration | None = None
     continuity_id: int = 0
+
+
+def person_filter_enabled(cfg: PipelineConfig, calib: PitchCalibration | None) -> bool:
+    if cfg.filter_off_pitch_tracks is not None:
+        return cfg.filter_off_pitch_tracks
+    return bool(calib is not None and getattr(calib, "meta", {}).get("person_filter_profile")
+                == "annotated_perimeter_track_v1")
 
 
 def video_info(path: str | Path) -> dict[str, Any]:
@@ -427,6 +436,11 @@ def collect_observations(
     weak = {t for t, n in hits.items() if n < min_hits}
     for s in samples:
         s.persons = [r for r in s.persons if r[0] not in weak]
+    person_filter = filter_person_tracks(samples, calib, enabled=person_filter_enabled(cfg, calib))
+    person_filter["enablement"] = "camera_profile" if cfg.filter_off_pitch_tracks is None else "explicit"
+    if progress and person_filter["observations_removed"]:
+        print(f"  saha sınırı: {person_filter['tracks_removed']} takip / "
+              f"{person_filter['observations_removed']} kutu elendi (saha içi kanıt yok)", flush=True)
     ball_spikes_rejected = reject_ball_spikes(samples, calib)
     interpolate_ball(samples, roi_max_age, max_gap_seconds=cfg.ball_gap_seconds, calib=calib)
     if per_frame is not None and progress:
@@ -447,6 +461,7 @@ def collect_observations(
                 "hiçbir kare atılmadı)")
             print(f"  tekrar: {replays_seen} kare atıldı{uyari}", flush=True)
     stats: dict[str, Any] = {"per_frame_calibration": per_frame is not None,
+                             "person_filter": person_filter,
                              "kit_color_method": "local_grass_v1" if cfg.normalize_kit_light else "raw_rgb_v1",
                              "ball_spikes_rejected": ball_spikes_rejected,
                              "effective_track_fps": round(fps_eff, 2)}
@@ -588,6 +603,17 @@ def build_frames(
     return out
 
 
+def preview_fps(src_fps: float, cfg: PipelineConfig) -> float:
+    """Use the exported observation grid; report its actual playback rate."""
+    return effective_track_fps(src_fps, cfg.track_fps) / output_stride(cfg)
+
+
+def preview_size(width: int, height: int, max_width: int) -> tuple[int, int]:
+    """Codec-compatible even dimensions, shared by resize and video writer."""
+    scale = min(1., max_width / max(width, 1))
+    return max(2, int(width * scale) // 2 * 2), max(2, round(height * scale / 2) * 2)
+
+
 def write_preview(
     video_path: str | Path,
     samples: list[SampledObservation],
@@ -607,15 +633,18 @@ def write_preview(
     # BGR: ev sahibi yeşil, deplasman kırmızı, atanmamış sarı
     colors = {0: (90, 200, 40), 1: (60, 80, 230), None: (60, 200, 200)}
     writer = None
-    scale = 1.0
-    for _order, frame_idx, _seconds, rgb in iter_video_frames(video_path, cfg.fps_out, cfg.max_seconds):
+    size = (0, 0)
+    fps = preview_fps(float(video_info(video_path)["fps"]), cfg)
+    for _order, frame_idx, _seconds, rgb in iter_video_frames(video_path, fps, cfg.max_seconds):
         s = by_frame_idx.get(frame_idx)
         bgr = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
         if writer is None:
             h, w = bgr.shape[:2]
-            scale = min(1.0, cfg.preview_width / w)
-            size = (int(w * scale), int(h * scale))
-            writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), cfg.fps_out, size)
+            size = preview_size(w, h, cfg.preview_width)
+            writer = cv2.VideoWriter(str(out_path), cv2.VideoWriter_fourcc(*"mp4v"), fps, size)
+            if not writer.isOpened():
+                writer.release()
+                raise RuntimeError(f"önizleme video yazıcısı açılamadı: {out_path}")
         frame_calib = (s.calibration if s is not None and s.calibration is not None
                        else calib)
         if frame_calib is not None:
@@ -628,8 +657,8 @@ def write_preview(
             if s.ball:
                 col = (255, 255, 255) if s.ball_source != "interp" else (200, 200, 200)
                 cv2.circle(bgr, (int(s.ball[0]), int(s.ball[1])), 8, col, 2 if s.ball_source != "interp" else 1)
-        if scale < 1.0:
-            bgr = cv2.resize(bgr, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+        if (bgr.shape[1], bgr.shape[0]) != size:
+            bgr = cv2.resize(bgr, size, interpolation=cv2.INTER_AREA)
         writer.write(bgr)
     if writer is not None:
         writer.release()
@@ -638,6 +667,21 @@ def write_preview(
 def _draw_pitch_lines(bgr: np.ndarray, calib: PitchCalibration) -> None:
     """Saha dış hattı + orta çizgi + ceza sahalarını görüntüye geri-izdüşür (kalibrasyon kontrolü)."""
     import cv2
+
+    if calib.method == "tps":
+        # Inverting only the homography omits the panoramic TPS correction.
+        # Draw the actual annotated boundary/centre line; do not invent an
+        # inverse spline or inaccurate straight penalty-area projections.
+        boundary = annotated_boundary(calib)
+        if boundary is not None:
+            cv2.polylines(bgr, [np.rint(boundary).astype(np.int32)], isClosed=True,
+                          color=(255, 255, 255), thickness=2)
+        centre = sorted((p for p in calib.points if abs(p.pitch[0] - calib.pitch_length_m / 2) < 1e-6),
+                        key=lambda p: p.pitch[1])
+        if len(centre) >= 2:
+            cv2.polylines(bgr, [np.rint([p.image for p in centre]).astype(np.int32)], isClosed=False,
+                          color=(255, 255, 255), thickness=2)
+        return
 
     Hinv = np.linalg.inv(calib.homography)
     L, W = calib.pitch_length_m, calib.pitch_width_m
