@@ -1,0 +1,213 @@
+{
+  "results": {
+    "day": {
+      "labelled_kit_observations": 218,
+      "labelled_tracks": 96,
+      "mixed_kit_tracks": [
+        {
+          "segment": 0,
+          "track": 68,
+          "observations": [
+            {
+              "id": "0-124-68",
+              "frame_idx": 124,
+              "kit": "blue"
+            },
+            {
+              "id": "0-250-68",
+              "frame_idx": 250,
+              "kit": "blue"
+            },
+            {
+              "id": "0-500-68",
+              "frame_idx": 500,
+              "kit": "white"
+            },
+            {
+              "id": "0-624-68",
+              "frame_idx": 624,
+              "kit": "white"
+            }
+          ]
+        },
+        {
+          "segment": 3,
+          "track": 45,
+          "observations": [
+            {
+              "id": "3-124-45",
+              "frame_idx": 124,
+              "kit": "white"
+            },
+            {
+              "id": "3-250-45",
+              "frame_idx": 250,
+              "kit": "white"
+            },
+            {
+              "id": "3-500-45",
+              "frame_idx": 500,
+              "kit": "blue"
+            },
+            {
+              "id": "3-624-45",
+              "frame_idx": 624,
+              "kit": "white"
+            }
+          ]
+        },
+        {
+          "segment": 3,
+          "track": 34,
+          "observations": [
+            {
+              "id": "3-124-34",
+              "frame_idx": 124,
+              "kit": "blue"
+            },
+            {
+              "id": "3-250-34",
+              "frame_idx": 250,
+              "kit": "blue"
+            },
+            {
+              "id": "3-500-34",
+              "frame_idx": 500,
+              "kit": "white"
+            },
+            {
+              "id": "3-624-34",
+              "frame_idx": 624,
+              "kit": "white"
+            }
+          ]
+        },
+        {
+          "segment": 3,
+          "track": 14,
+          "observations": [
+            {
+              "id": "3-124-14",
+              "frame_idx": 124,
+              "kit": "white"
+            },
+            {
+              "id": "3-250-14",
+              "frame_idx": 250,
+              "kit": "blue"
+            }
+          ]
+        },
+        {
+          "segment": 3,
+          "track": 74,
+          "observations": [
+            {
+              "id": "3-500-74",
+              "frame_idx": 500,
+              "kit": "blue"
+            },
+            {
+              "id": "3-624-74",
+              "frame_idx": 624,
+              "kit": "white"
+            }
+          ]
+        },
+        {
+          "segment": 6,
+          "track": 21,
+          "observations": [
+            {
+              "id": "6-124-21",
+              "frame_idx": 124,
+              "kit": "blue"
+            },
+            {
+              "id": "6-250-21",
+              "frame_idx": 250,
+              "kit": "blue"
+            },
+            {
+              "id": "6-500-21",
+              "frame_idx": 500,
+              "kit": "white"
+            },
+            {
+              "id": "6-624-21",
+              "frame_idx": 624,
+              "kit": "blue"
+            }
+          ]
+        },
+        {
+          "segment": 6,
+          "track": 75,
+          "observations": [
+            {
+              "id": "6-250-75",
+              "frame_idx": 250,
+              "kit": "white"
+            },
+            {
+              "id": "6-500-75",
+              "frame_idx": 500,
+              "kit": "blue"
+            },
+            {
+              "id": "6-624-75",
+              "frame_idx": 624,
+              "kit": "white"
+            }
+          ]
+        }
+      ],
+      "minimum_wrong_if_every_track_gets_one_team": 9
+    },
+    "night": {
+      "labelled_kit_observations": 67,
+      "labelled_tracks": 49,
+      "mixed_kit_tracks": [
+        {
+          "segment": 20,
+          "track": 8,
+          "observations": [
+            {
+              "id": "20-124-8",
+              "frame_idx": 124,
+              "kit": "blue"
+            },
+            {
+              "id": "20-500-8",
+              "frame_idx": 500,
+              "kit": "white"
+            }
+          ]
+        },
+        {
+          "segment": 30,
+          "track": 10,
+          "observations": [
+            {
+              "id": "30-124-10",
+              "frame_idx": 124,
+              "kit": "blue"
+            },
+            {
+              "id": "30-500-10",
+              "frame_idx": 500,
+              "kit": "white"
+            }
+          ]
+        }
+      ],
+      "minimum_wrong_if_every_track_gets_one_team": 2
+    }
+  },
+  "input_sha256": {
+    "docs/measurements/daylight-117093-labels.json": "3ee2db96a0836730320d05b5e3edf120ae96871bf1776164ec7a6d7788e5f872",
+    "docs/measurements/perimeter-control-day-labels.json": "02aecfd791292dadf1a0cbe3ce1e62df47c6d7dbfb405910dac0231217c91fe8",
+    "docs/measurements/perimeter-control-night-labels.json": "8b2d85f9718f2a4c0035f96340a349ee66a9eb379e4dc4f2cba95716e355bb0d"
+  },
+  "scope": "Previously reviewed development labels. Mixed kits prove some identity contamination, but do not identify all switches or same-team switches."
+}
