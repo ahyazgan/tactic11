@@ -1496,26 +1496,43 @@ def create_decision(
     # `applied=null` ile yazılır, koç dokununca AYNI satır işaretlenir.
     window = float(payload.get("dedupe_window_min", DECISION_DEDUPE_WINDOW_MIN))
     minute = float(payload["minute"])
+    # KONU OYUNCU anahtarın parçasıdır. Olmadığında 62. dakikada "Ali'yi çıkar"
+    # ile 64. dakikada "Veli'yi çıkar" tek satıra çöker; karşı-olgu PAYDASI
+    # eksik sayılır ve kapsama olduğundan yüksek görünür — tam da
+    # docs/PILOT-KARSI-OLGU-PLANI.md'nin görmek için kurduğu sayı.
+    subject = payload.get("subject_player_external_id")
+    subject_match = (
+        models.Decision.subject_player_external_id.is_(None) if subject is None
+        else models.Decision.subject_player_external_id == int(subject)
+    )
     existing = session.execute(select(models.Decision).where(
         models.Decision.sport == football.SPORT_NAME,
         models.Decision.match_external_id == match_id,
         models.Decision.team_external_id == int(payload["team_external_id"]),
         models.Decision.decision_type == payload["decision_type"],
         models.Decision.recommended.is_(recommended),
+        subject_match,
         models.Decision.minute >= minute - window,
         models.Decision.minute <= minute + window,
     ).order_by(models.Decision.minute.desc())).scalars().first()
     if existing is not None:
         # İşaret yalnız İLERİ gider: null → true/false. Var olan bir beyanı
         # sonraki bir gösterim null'a çevirmemeli.
+        answered = existing.applied is not None
         if applied is not None:
             existing.applied = applied
             existing.applied_at = now
         if payload.get("notes"):
             existing.notes = payload["notes"]
-        if payload.get("confidence") is not None:
+        # Koç CEVAPLADIKTAN sonra güven ve bağlam DONAR. Kalibrasyon "bu güvenle
+        # söylendiğinde ne oldu" sorusunu cevaplar; sonraki bir gösterimin
+        # değerini yazmak, koçun görmediği bir sayıyı onun cevabına iliştirmek
+        # olur. Cevaptan önce boşsa doldurulur.
+        if payload.get("confidence") is not None and (
+                existing.confidence is None or not answered):
             existing.confidence = float(payload["confidence"])
-        if payload.get("context_json"):
+        if payload.get("context_json") and (
+                existing.context_json is None or not answered):
             existing.context_json = _json.dumps(payload["context_json"])
         session.commit()
         return {
