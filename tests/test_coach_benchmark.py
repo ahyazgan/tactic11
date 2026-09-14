@@ -417,3 +417,45 @@ def test_shape_gate_too_few_ticks_gives_no_verdict() -> None:
     gate = split_half_shape_gate(states)
     assert gate.verdict == "yetersiz veri"
     assert gate.prior_for_a.fitted_on == 0
+
+
+def _sparse_shape_half(mid: int, n: int, flagged: int) -> list[ShapeState]:
+    return [ShapeState(mid, 66.0 if i < flagged else 28.0,
+                       "trailing" if i < flagged else "leading", 0,
+                       i < flagged, 2, i < flagged) for i in range(n)]
+
+
+def test_shape_gate_rejects_one_hit_per_half() -> None:
+    states = _sparse_shape_half(1, 40, 1) + _sparse_shape_half(2, 40, 1)
+    gate = split_half_shape_gate(states)
+    assert gate.verdict == "yetersiz veri"
+    assert gate.prior_for_a.threshold is None
+    assert gate.prior_for_b.threshold is None
+    assert gate.gated_a.flagged == gate.gated_b.flagged == 0
+
+
+def test_shape_prior_empty_training_cannot_flag_unseen_state() -> None:
+    prior = fit_shape_prior([])
+    assert prior.threshold is None
+    assert not apply_shape_gate(prior, _sparse_shape_half(1, 1, 1))[0].engine_flag
+
+
+@pytest.mark.parametrize(("n", "flagged", "eligible"), [(1003, 150, False), (1000, 150, True)])
+def test_shape_budget_uses_exact_counts(n: int, flagged: int, eligible: bool) -> None:
+    # 150/1003 rounds to .150, but is below the .15 minimum.
+    prior = fit_shape_prior(_sparse_shape_half(1, n, flagged))
+    assert (prior.threshold is not None) is eligible
+
+
+def test_shape_gate_needs_enough_flags_in_control_half() -> None:
+    # Both training halves have >=15% candidates. B learns support >=2,
+    # but that leaves only one flag when evaluated on A.
+    a = [ShapeState(1, 66.0, "trailing", 0, True, 2 if i == 0 else 1, i < 20)
+         for i in range(40)]
+    b = [ShapeState(2, 66.0, "trailing", 0, True, 2 if i < 10 else 1, i < 10)
+         for i in range(40)]
+    gate = split_half_shape_gate(a + b)
+    assert gate.prior_for_a.threshold is not None
+    assert gate.prior_for_b.threshold is not None
+    assert gate.gated_a.flagged == 1
+    assert gate.verdict == "yetersiz veri"

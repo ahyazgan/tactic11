@@ -1,5 +1,15 @@
 # Karne: şekil değişikliği seçiciliği — ölçüm ve değişiklikler — 14 Eylül 2026
 
+> **Tarihsel ölçüm — güncel sonuçlar ayrı raporda.** Aşağıdaki sonuçlar
+> `e0237df` koduna aittir. İncelemede uygun aday yokken ilk eşiğin seçildiği ve
+> aynı dakikadaki iki oyuncu değişikliğinin tek sayıldığı bulundu. Düzeltme
+> eğitim/kontrol bütçelerini gerçek sayılarla kontrol eder, uygun aday yoksa
+> hüküm vermez ve oyuncuları ayrı sayar. Sonlu permütasyonda p=0 raporlanmaz;
+> yetersiz veride p değeri yoktur. Aşağıdaki sayılar düzeltilmiş kodun başarısı
+> olarak kullanılamaz. Aynı 100 maç ve 514 tik, eski girdi SHA-256'sı birebir
+> eşleştirilerek yeniden ölçüldü: güncel kaldırma **1,427/1,603**, isabet
+> **0,314/0,327**. [Düzeltme sonuçları](KARNE-DUZELTME-SONUCLARI.md).
+
 Motor 514 tikin **%74'ünde** "şekil ayarla" diyordu; gerçek antrenör aynı
 pencerede dizilişi tiklerin yalnız **%21'inde** değiştiriyordu. Bu çalışma
 önce cetvelin kendisini, sonra bayrağın seçiciliğini ölçtü.

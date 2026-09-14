@@ -55,6 +55,10 @@ dakikada "değişiklik yap" diyen bir sayaç da elit antrenörle sık sık uyuş
 
 ## Ölçüm günlüğü (2026-09-14) — şekil seçiciliği
 
+Bu bölüm e0237df ölçümünün tarihsel kaydıdır. Bütçe/oyuncu sayımı düzeltmeleri
+sonrası aynı girdide kaldırma 1.427/1.603 oldu; aşağıdaki eski sayılar güncel
+algoritmanın başarısı olarak kullanılmamalı. docs/KARNE-DUZELTME-SONUCLARI.md.
+
 - **F1 bu soruda cetvel değil**: diziliş hedefi nadir (taban %21), hep-evet
   F1 0.35 çıkıyor — motorun 0.33'ünden yüksek. "Daha seçici ol" ile "F1'i
   yükselt" zıt yönler. Seçicilik cetveli kaldırma (precision / taban oranı)
@@ -247,11 +251,11 @@ class ShapeState:
 
 @dataclass(frozen=True)
 class ShapePrior:
-    """Hücre → P(antrenör bu pencerede dizilişi değiştirir) + iki karar eşiği."""
+    """Hücre oranı + eşikler; uygun aday yoksa iki eşik de None olur."""
 
     table: dict[tuple[int, str, int], float]
-    threshold: float
-    support_threshold: int
+    threshold: float | None
+    support_threshold: int | None
     fitted_on: int
 
 
@@ -631,6 +635,11 @@ def _gated(
                       and s.support_count >= support_t)
 
 
+def _shape_budget_met(stat: SelectivityStat) -> bool:
+    """Gösterim için yuvarlanan flag_rate yerine gerçek örnek sayısını kullan."""
+    return stat.n > 0 and stat.flagged >= SHAPE_MIN_FLAG_RATE * stat.n
+
+
 def fit_shape_prior(
     states: Sequence[ShapeState], *,
     prior_thresholds: Sequence[float] = SHAPE_PRIOR_THRESHOLDS,
@@ -641,7 +650,8 @@ def fit_shape_prior(
     Ölçüt F1 DEĞİL: en az `SHAPE_MIN_FLAG_RATE` bayrak bütçesi harcayan adaylar
     arasında en yüksek precision. F1'e göre seçmek bütçeyi sonuna kadar harcayıp
     seçiciliği ortadan kaldırırdı (bkz. `selectivity`). Alt bütçe sınırı, bir
-    avuç bayrakla şişmiş precision'ın kazanmasını engeller.
+    avuç bayrakla şişmiş precision'ın kazanmasını engeller. Uygun aday yoksa
+    eşikler None olur; bu model bayrak üretemez.
     """
     hits: dict[tuple[int, str, int], list[int]] = {}
     for st in states:
@@ -651,12 +661,12 @@ def fit_shape_prior(
         hits[cell][1] += 1
     table = {c: (a + PRIOR_LAPLACE) / (n + 2 * PRIOR_LAPLACE) for c, (a, n) in hits.items()}
 
-    best = (prior_thresholds[0], support_thresholds[0])
+    best: tuple[float | None, int | None] = (None, None)
     best_score = -1.0
     for t in prior_thresholds:
         for q in support_thresholds:
             s = selectivity(_shape_obs(states, _gated(table, t, q)))
-            score = (s.precision or 0.0) if s.flag_rate >= SHAPE_MIN_FLAG_RATE else -1.0
+            score = (s.precision or 0.0) if _shape_budget_met(s) else -1.0
             if score > best_score:
                 best, best_score = (t, q), score
     return ShapePrior(table=table, threshold=best[0], support_threshold=best[1],
@@ -667,6 +677,8 @@ def apply_shape_gate(
     prior: ShapePrior, states: Iterable[ShapeState],
 ) -> list[TickObservation]:
     """Motorun ham bayrağını önsel ve destek eşiğiyle KISAR; görülmemiş hücre 0.5."""
+    if prior.threshold is None or prior.support_threshold is None:
+        return _shape_obs(states, lambda s: False)
     return _shape_obs(states, _gated(prior.table, prior.threshold, prior.support_threshold))
 
 
@@ -676,7 +688,8 @@ def split_half_shape_gate(states: Sequence[ShapeState]) -> ShapeGate:
     Hüküm ölçütü kaldırma: ham bayrak tabanla aynı orandaysa hiçbir şey
     bilmiyordur. Kapılı bayrak İKİ yarıda da `SHAPE_MIN_LIFT` kadar kaldırırsa
     "seçici"; yalnız birinde tutuyorsa "kararsız" — tek yarıda tutan fark
-    ölçüm sayılmaz.
+    ölçüm sayılmaz. Eğitimde uygun aday ve kontrol yarılarında yeterli bayrak
+    bütçesi yoksa kaldırma yüksek olsa bile hüküm verilmez.
     """
     ids = sorted({s.match_external_id for s in states})
     a_ids = {m for i, m in enumerate(ids) if i % 2 == 0}
@@ -685,7 +698,7 @@ def split_half_shape_gate(states: Sequence[ShapeState]) -> ShapeGate:
     raw_a = selectivity(_shape_obs(a, lambda s: s.engine_flag))
     raw_b = selectivity(_shape_obs(b, lambda s: s.engine_flag))
     if len(a) < MIN_TICKS_PER_HALF or len(b) < MIN_TICKS_PER_HALF:
-        empty = ShapePrior({}, SHAPE_PRIOR_THRESHOLDS[0], SHAPE_SUPPORT_THRESHOLDS[0], 0)
+        empty = ShapePrior({}, None, None, 0)
         return ShapeGate(
             raw_a=raw_a, raw_b=raw_b, gated_a=selectivity([]), gated_b=selectivity([]),
             prior_for_a=empty, prior_for_b=empty, verdict="yetersiz veri",
@@ -697,9 +710,18 @@ def split_half_shape_gate(states: Sequence[ShapeState]) -> ShapeGate:
     gated_b = selectivity(apply_shape_gate(prior_for_b, b))
 
     ga, gb = gated_a.lift, gated_b.lift
-    if ga is None or gb is None:
+    if prior_for_a.threshold is None or prior_for_b.threshold is None:
         verdict = "yetersiz veri"
-        note = "bir yarıda kapıdan hiç bayrak geçmedi — precision tanımsız"
+        note = ("bir eğitim yarısında bayrak bütçesini karşılayan aday yok "
+                f"— en az %{SHAPE_MIN_FLAG_RATE * 100:g} gerekir")
+    elif not _shape_budget_met(gated_a) or not _shape_budget_met(gated_b):
+        verdict = "yetersiz veri"
+        note = (f"kontrol yarılarında bayrak {gated_a.flagged}/{gated_a.n} ve "
+                f"{gated_b.flagged}/{gated_b.n} — her yarıda en az "
+                f"%{SHAPE_MIN_FLAG_RATE * 100:g} gerekir")
+    elif ga is None or gb is None:
+        verdict = "yetersiz veri"
+        note = "bir yarıda precision veya pozitif hedef taban oranı tanımsız"
     else:
         raw = f"ham bayrak {raw_a.lift}/{raw_b.lift} katıydı"
         if ga >= SHAPE_MIN_LIFT and gb >= SHAPE_MIN_LIFT:

@@ -113,11 +113,14 @@ def _ctx(d: models.Decision) -> dict[str, Any]:
     return x if isinstance(x, dict) else {}
 
 
-def _sub_minutes(moves: list[CoachMove], team: int, *, tactical_only: bool) -> list[float]:
-    """Takımın değişiklik anları; çifte değişiklik tek an sayılır."""
-    return sorted({m.minute for m in moves
-                   if m.team_external_id == team and m.kind == "substitution"
-                   and (m.tactical or not tactical_only)})
+def _sub_minutes(
+    moves: list[CoachMove], team: int, *, tactical_only: bool, unique: bool = True,
+) -> list[float]:
+    """Hamle anları tekilleşir; unique=False ile değişen her oyuncu korunur."""
+    minutes = [m.minute for m in moves
+               if m.team_external_id == team and m.kind == "substitution"
+               and (m.tactical or not tactical_only)]
+    return sorted(set(minutes) if unique else minutes)
 
 
 def _shift_minutes(moves: list[CoachMove], team: int) -> list[float]:
@@ -297,7 +300,8 @@ def main() -> int:
             positions[mid] = lineup_positions_from_events_json(ev)
             coach_subs[mid] = _sub_minutes(moves, args.team, tactical_only=True)
             coach_shifts[mid] = _shift_minutes(moves, args.team)
-            coach_all_subs[mid] = _sub_minutes(moves, args.team, tactical_only=False)
+            coach_all_subs[mid] = _sub_minutes(moves, args.team, tactical_only=False,
+                                               unique=False)
             injury_subs += sum(1 for m in moves if m.team_external_id == args.team
                                and m.kind == "substitution" and not m.tactical)
         if not coach_subs:
@@ -601,8 +605,10 @@ def main() -> int:
     _shape_line("ham bayrak (tema)", sh_gate.raw_a, sh_gate.raw_b)
     _shape_line("kapılı bayrak (önsel ∧ destek)", sh_gate.gated_a, sh_gate.gated_b)
     pa, pb = sh_gate.prior_for_a, sh_gate.prior_for_b
-    print(f"      eşikler  önsel {pa.threshold}/{pb.threshold} · destekleyici sinyal "
-          f"≥{pa.support_threshold}/{pb.support_threshold} "
+    print(f"      eşikler  önsel {pa.threshold if pa.threshold is not None else '—'}/"
+          f"{pb.threshold if pb.threshold is not None else '—'} · destekleyici sinyal "
+          f"≥{pa.support_threshold if pa.support_threshold is not None else '—'}/"
+          f"{pb.support_threshold if pb.support_threshold is not None else '—'} "
           f"(öteki yarıda {pa.fitted_on}/{pb.fitted_on} tikten)")
     print(f"      hüküm: {sh_gate.verdict} — {sh_gate.note}")
     pa, pb = sh_prior.engine_a, sh_prior.engine_b

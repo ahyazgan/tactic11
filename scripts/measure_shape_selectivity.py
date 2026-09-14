@@ -48,8 +48,6 @@ from app.engine.coach_benchmark import (
     SelectivityStat,
     ShapeState,
     TickObservation,
-    apply_shape_gate,
-    fit_shape_prior,
     selectivity,
     split_half_agreement,
     split_half_shape_gate,
@@ -98,8 +96,9 @@ def _collect(events_dir: Path, tenant: str, team: int, window: float) -> list[di
         moves = coach_moves_from_events_json(ev)
         shifts[mid] = sorted({m.minute for m in moves if m.team_external_id == team
                               and m.kind == "tactical_shift"})
-        subs[mid] = sorted({m.minute for m in moves if m.team_external_id == team
-                            and m.kind == "substitution"})
+        # Aynı dakikadaki iki oyuncu değişikliği iki hak kullanır.
+        subs[mid] = sorted(m.minute for m in moves if m.team_external_id == team
+                           and m.kind == "substitution")
 
     rows: list[dict[str, Any]] = []
     for d in decisions:
@@ -137,23 +136,23 @@ def _states(rows: list[dict[str, Any]]) -> list[ShapeState]:
     ) for r in rows]
 
 
-def _halves(rows: list[ShapeState]) -> tuple[list[ShapeState], list[ShapeState]]:
-    ids = sorted({s.match_external_id for s in rows})
-    a_ids = {m for i, m in enumerate(ids) if i % 2 == 0}
-    return ([s for s in rows if s.match_external_id in a_ids],
-            [s for s in rows if s.match_external_id not in a_ids])
-
-
 def _gated_precision(rows: list[ShapeState]) -> list[float | None]:
     """Kapı ÖTEKİ yarıda kurulur; iki yarının precision'ı."""
-    a, b = _halves(rows)
-    return [selectivity(apply_shape_gate(fit_shape_prior(tr), te)).precision
-            for tr, te in ((b, a), (a, b))]
+    gate = split_half_shape_gate(rows)
+    if gate.verdict == "yetersiz veri":
+        return [None, None]
+    return [gate.gated_a.precision, gate.gated_b.precision]
 
 
 def _permutation(rows: list[ShapeState], trials: int, seed: int) -> dict[str, Any]:
     """Etiketleri karıştırıp bütün kapıyı yeniden kur — gerçek ayrılıyor mu?"""
+    if trials <= 0:
+        raise ValueError("permütasyon deneme sayısı pozitif olmalı")
     real = _gated_precision(rows)
+    if any(p is None for p in real):
+        return {"deneme": 0, "istenen_deneme": trials, "seed": seed,
+                "gercek_precision": real, "karistirilmisin_yakalama_sayisi": [0, 0],
+                "p": [None, None], "not": "yetersiz veri — permütasyon hükmü verilmedi"}
     rng = random.Random(seed)
     hits = [0, 0]
     for _ in range(trials):
@@ -168,9 +167,10 @@ def _permutation(rows: list[ShapeState], trials: int, seed: int) -> dict[str, An
                 hits[i] += 1
     return {"deneme": trials, "seed": seed, "gercek_precision": real,
             "karistirilmisin_yakalama_sayisi": hits,
-            "p": [round(h / trials, 4) for h in hits],
-            "not": "etiketler karıştırılıp kapı sıfırdan kuruldu; p = karıştırılmış "
-                   "verinin gerçeği yakalama payı"}
+            "p": [(h + 1) / (trials + 1) for h in hits],
+            "not": "etiketler karıştırılıp kapı sıfırdan kuruldu; "
+                   "p = (yakalama + 1) / (deneme + 1); yetersiz karıştırılmış "
+                   "örneklerde isabet 0 sayılır; tik düzeyinde keşifsel sınavdır"}
 
 
 def _auc(pairs: list[tuple[float, bool]]) -> float | None:
@@ -208,6 +208,8 @@ def main() -> int:
     p.add_argument("--seed", type=int, default=17)
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
+    if args.permutations <= 0:
+        p.error("--permutations pozitif olmalı")
 
     rows = _collect(args.events_dir, args.tenant, args.team, args.window)
     if not rows:
@@ -228,6 +230,7 @@ def main() -> int:
         theme[key][1] += 1
 
     doc = {
+        "olcum_surumu": 2,
         "olcum": "Karne şekil değişikliği seçiciliği",
         "kaynak": {
             "tenant": args.tenant, "takim_external_id": args.team,

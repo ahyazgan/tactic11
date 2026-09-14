@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [ ] Karne incelemesi: yetersiz bayrakla başarı hükmünü ve aynı dakikadaki oyuncu sayımını düzelt; özgün veride yeniden ölç.
+  Done when: regresyonlar ve birleşik testler temiz, 100 maçlık özgün girdi SHA-256 ile eşleşir, yeni ölçüm ve sınırlar raporlanır. Sonuç: docs/KARNE-DUZELTME-SONUCLARI.md.
+
 - [x] Top adaylarını, oyuncu çevresi ROI aramasını ve saha çizgisi kalibrasyonunu dondurulmuş kontrolle karşılaştır; farklı piksel boyutunda kalibrasyonu reddet. (4b8d149)
   Done when: aynı tam kare tespitleriyle tekrar takip, çizgi/pas/takım ölçümleri ve başarısız deney raporu; test/lint/tip kontrolleri temiz. Sonuç: docs/TOP-SECIMI-SONUCLARI.md. Alternatifler doğruluk kapısını geçmedi; varsayılanlar değiştirilmedi.
 

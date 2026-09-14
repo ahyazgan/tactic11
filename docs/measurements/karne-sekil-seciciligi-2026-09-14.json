@@ -1,4 +1,6 @@
 {
+  "olcum_surumu": 1,
+  "gecerlilik": "tarihsel; aynı girdide düzeltme sonrası güncel ölçüm karne-sekil-seciciligi-2026-09-14-v2.json dosyasındadır",
   "olcum": "Karne şekil değişikliği seçiciliği",
   "kaynak": {
     "tenant": "t-default",
