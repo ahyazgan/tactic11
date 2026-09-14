@@ -32,6 +32,7 @@ def main() -> int:
     source.add_argument("--frames", type=Path, help="event-only regression on existing exported frames")
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--keep-cached-ball", action="store_true", help="ablation: skip new ball cleanup")
+    p.add_argument("--calibration", type=Path, help="compare a calibration on identical cached detections")
     args = p.parse_args()
     if args.out.exists():
         p.error("choose a new output directory to preserve previous evidence")
@@ -52,7 +53,8 @@ def main() -> int:
     anchor = None
     for path in sorted(args.cache.glob("seg_*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
-        cal = PitchCalibration.from_dict(data["calibration"])
+        cal = (PitchCalibration.load(args.calibration) if args.calibration
+               else PitchCalibration.from_dict(data["calibration"]))
         samples = [SampledObservation(**s) for s in data["samples"]]
         spikes = 0
         if not args.keep_cached_ball:

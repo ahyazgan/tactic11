@@ -155,6 +155,10 @@ def main() -> int:
                            "min_ball_contact_distance_m": round(min(ball_distances), 3) if ball_distances else None,
                            "observed_ball_frames": len(observed), "actor_observations": len(actors)})
         report["splits"][name] = {
+            "evaluated": bool(fs),
+            "overfull_team_fraction": sum(max(Counter(p["team_external_id"] for p in f["players"]
+                                                       if p.get("team_external_id") is not None).values(), default=0) > 11
+                                           for f in fs) / max(1, len(fs)),
             "frames": len(fs), "reference_passes": len(rs), "predicted_passes": len(ps),
             "time_only_matches": len(pair_events(ps, rs, mapping, spatial=False)),
             "time_start_matches": len(spatial), "time_start_team_outcome_end_matches": len(full),

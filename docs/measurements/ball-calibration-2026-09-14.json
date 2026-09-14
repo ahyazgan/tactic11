@@ -1,0 +1,1630 @@
+{
+  "date": "2026-09-14",
+  "baseline_commit": "4eb685b",
+  "development_segments": [
+    0,
+    3
+  ],
+  "control_segments": [
+    6,
+    9
+  ],
+  "landmark_validation": {
+    "points": 65,
+    "leave_one_landmark_out_mean_m": 1.7591172423468717,
+    "out": "data\\tracking\\bench\\landmarks_checked.json",
+    "previous_at_landmarks": {
+      "mean_m": 10.710257747578753,
+      "median_m": 6.274290355803892,
+      "p90_m": 27.4609325315217,
+      "max_m": 30.857970815474264
+    }
+  },
+  "event_audits": {
+    "new": {
+      "alignment": {
+        "team_mapping": {
+          "30798": 30799,
+          "30799": 30798
+        },
+        "development_votes": [
+          0,
+          1
+        ],
+        "time_offset_seconds": 0,
+        "note": "team permutation only; no control-time alignment search"
+      },
+      "source": "data\\tracking\\bench\\landmark_final_events\\sparse",
+      "splits": {
+        "development": {
+          "overfull_team_fraction": 0.34,
+          "frames": 250,
+          "reference_passes": 11,
+          "predicted_passes": 7,
+          "time_only_matches": 5,
+          "time_start_matches": 3,
+          "time_start_team_outcome_end_matches": 0,
+          "unmatched_predictions_by_time_and_start": 4,
+          "observed_ball_fraction": 0.344,
+          "actor_fraction": 0.264,
+          "reference_recovery_candidates": 2,
+          "predicted_recoveries": 0,
+          "pass_windows_with_ball_near_annotated_contact": 4,
+          "passes_with_observed_flight": 2,
+          "recovery_time_start_team_matches": 0,
+          "diagnoses": {
+            "observed_ball_far_from_annotated_contact": 3,
+            "time_and_start_matched": 3,
+            "no_observed_ball_near_event": 3,
+            "actor_present_transition_or_position_failed": 1,
+            "ball_observed_no_actor": 1
+          },
+          "events": [
+            {
+              "id": "113089918",
+              "seconds": 611.2,
+              "player": 467250,
+              "team": 30798,
+              "start": [
+                40.986999999999995,
+                53.96190000000001
+              ],
+              "end": [
+                32.7366,
+                95.60971
+              ],
+              "complete": true,
+              "types": [
+                "freeKick",
+                "mediumPassSucceeded",
+                "passSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 33.883,
+              "observed_ball_frames": 3,
+              "actor_observations": 0
+            },
+            {
+              "id": "113089980",
+              "seconds": 616.251,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                27.821300000000004,
+                96.32709
+              ],
+              "end": [
+                19.467100000000002,
+                62.8359
+              ],
+              "complete": true,
+              "types": [
+                "mediumPassSucceeded",
+                "passSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "time_and_start_matched",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 3.358,
+              "observed_ball_frames": 3,
+              "actor_observations": 2
+            },
+            {
+              "id": "113090035",
+              "seconds": 623.601,
+              "player": 467238,
+              "team": 30798,
+              "start": [
+                15.5555,
+                75.5084
+              ],
+              "end": [
+                27.481199999999994,
+                57.113400000000006
+              ],
+              "complete": true,
+              "types": [
+                "backwardPassSucceeded",
+                "mediumPassSucceeded",
+                "passSucceeded"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090036",
+              "seconds": 625.04,
+              "player": 467249,
+              "team": 30798,
+              "start": [
+                27.481199999999994,
+                57.113400000000006
+              ],
+              "end": [
+                22.2746,
+                76.62729999999999
+              ],
+              "complete": true,
+              "types": [
+                "passReceived",
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "time_and_start_matched",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 6.555,
+              "observed_ball_frames": 2,
+              "actor_observations": 2
+            },
+            {
+              "id": "113090052",
+              "seconds": 627.12,
+              "player": 467258,
+              "team": 30798,
+              "start": [
+                21.541299999999996,
+                78.18939999999999
+              ],
+              "end": [
+                10.182599999999997,
+                94.34075
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "mediumPassSucceeded",
+                "passSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 39.999,
+              "observed_ball_frames": 1,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090067",
+              "seconds": 629.68,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                7.660500000000003,
+                92.58900999999999
+              ],
+              "end": [
+                6.579299999999999,
+                73.6462
+              ],
+              "complete": false,
+              "types": [
+                "crossFailed"
+              ],
+              "diagnosis": "actor_present_transition_or_position_failed",
+              "nearby_frames": 3,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 0.915,
+              "observed_ball_frames": 2,
+              "actor_observations": 2
+            },
+            {
+              "id": "113090405",
+              "seconds": 702.2,
+              "player": 467258,
+              "team": 30798,
+              "start": [
+                5.560200000000004,
+                100.0
+              ],
+              "end": [
+                4.201600000000005,
+                77.2728
+              ],
+              "complete": true,
+              "types": [
+                "mediumPassSucceeded",
+                "passSucceeded",
+                "sidewaysPassSucceeded",
+                "throwIn"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090406",
+              "seconds": 704.0,
+              "player": 467238,
+              "team": 30798,
+              "start": [
+                4.201600000000005,
+                77.2728
+              ],
+              "end": [
+                8.2167,
+                69.7381
+              ],
+              "complete": false,
+              "types": [
+                "backwardPassFailed",
+                "passFailed",
+                "passReceived",
+                "shortPassFailed"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090444",
+              "seconds": 711.04,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                22.801899999999996,
+                100.0
+              ],
+              "end": [
+                2.0328000000000013,
+                88.9289
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "mediumPassSucceeded",
+                "passSucceeded",
+                "throwIn"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 14.668,
+              "observed_ball_frames": 4,
+              "actor_observations": 3
+            },
+            {
+              "id": "113090467",
+              "seconds": 715.36,
+              "player": 467238,
+              "team": 30798,
+              "start": [
+                1.5660000000000007,
+                90.51926999999999
+              ],
+              "end": [
+                9.229,
+                98.54645
+              ],
+              "complete": true,
+              "types": [
+                "backwardPassSucceeded",
+                "passSucceeded",
+                "shortPassSucceeded"
+              ],
+              "diagnosis": "ball_observed_no_actor",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 4.581,
+              "observed_ball_frames": 2,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090468",
+              "seconds": 716.84,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                9.229,
+                98.54645
+              ],
+              "end": [
+                6.764400000000004,
+                92.41007
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "passReceived",
+                "passSucceeded",
+                "shortPassSucceeded"
+              ],
+              "diagnosis": "time_and_start_matched",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 2.814,
+              "observed_ball_frames": 1,
+              "actor_observations": 0
+            }
+          ],
+          "evaluated": true
+        },
+        "control": {
+          "overfull_team_fraction": 0.06,
+          "frames": 250,
+          "reference_passes": 12,
+          "predicted_passes": 8,
+          "time_only_matches": 6,
+          "time_start_matches": 2,
+          "time_start_team_outcome_end_matches": 0,
+          "unmatched_predictions_by_time_and_start": 6,
+          "observed_ball_fraction": 0.468,
+          "actor_fraction": 0.332,
+          "reference_recovery_candidates": 5,
+          "predicted_recoveries": 1,
+          "pass_windows_with_ball_near_annotated_contact": 5,
+          "passes_with_observed_flight": 1,
+          "recovery_time_start_team_matches": 0,
+          "diagnoses": {
+            "time_and_start_matched": 2,
+            "actor_present_transition_or_position_failed": 2,
+            "observed_ball_far_from_annotated_contact": 6,
+            "ball_observed_no_actor": 1,
+            "no_observed_ball_near_event": 1
+          },
+          "events": [
+            {
+              "id": "113090735",
+              "seconds": 781.76,
+              "player": 467248,
+              "team": 30798,
+              "start": [
+                68.7655,
+                70.5925
+              ],
+              "end": [
+                42.91199999999999,
+                91.50832
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "longPassSucceeded",
+                "passSucceeded"
+              ],
+              "diagnosis": "time_and_start_matched",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 3.425,
+              "observed_ball_frames": 4,
+              "actor_observations": 1
+            },
+            {
+              "id": "113090761",
+              "seconds": 786.44,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                36.4539,
+                84.36099999999999
+              ],
+              "end": [
+                38.248099999999994,
+                91.69121
+              ],
+              "complete": true,
+              "types": [
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "actor_present_transition_or_position_failed",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 4.575,
+              "observed_ball_frames": 5,
+              "actor_observations": 4
+            },
+            {
+              "id": "113090775",
+              "seconds": 789.92,
+              "player": 467250,
+              "team": 30798,
+              "start": [
+                28.687399999999997,
+                96.54813
+              ],
+              "end": [
+                29.210100000000004,
+                86.005
+              ],
+              "complete": true,
+              "types": [
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "actor_present_transition_or_position_failed",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 4.025,
+              "observed_ball_frames": 2,
+              "actor_observations": 2
+            },
+            {
+              "id": "113090868",
+              "seconds": 798.821,
+              "player": 467249,
+              "team": 30798,
+              "start": [
+                30.963799999999996,
+                77.8491
+              ],
+              "end": [
+                46.3153,
+                81.0346
+              ],
+              "complete": true,
+              "types": [
+                "backwardPassSucceeded",
+                "mediumPassSucceeded",
+                "passSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 6.747,
+              "observed_ball_frames": 4,
+              "actor_observations": 3
+            },
+            {
+              "id": "113090879",
+              "seconds": 802.766,
+              "player": 467248,
+              "team": 30798,
+              "start": [
+                38.4683,
+                80.98490000000001
+              ],
+              "end": [
+                39.6184,
+                91.09743
+              ],
+              "complete": true,
+              "types": [
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 7.066,
+              "observed_ball_frames": 5,
+              "actor_observations": 5
+            },
+            {
+              "id": "113091211",
+              "seconds": 805.32,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                38.2541,
+                95.22291
+              ],
+              "end": [
+                32.003800000000005,
+                88.2398
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "passSucceeded",
+                "shortPassSucceeded"
+              ],
+              "diagnosis": "time_and_start_matched",
+              "nearby_frames": 4,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 3.483,
+              "observed_ball_frames": 2,
+              "actor_observations": 1
+            },
+            {
+              "id": "113091212",
+              "seconds": 805.96,
+              "player": 467259,
+              "team": 30798,
+              "start": [
+                32.003800000000005,
+                88.2398
+              ],
+              "end": [
+                31.205099999999998,
+                91.14668999999999
+              ],
+              "complete": false,
+              "types": [
+                "passFailed",
+                "passReceived",
+                "shortPassFailed",
+                "sidewaysPassFailed"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 6.307,
+              "observed_ball_frames": 2,
+              "actor_observations": 1
+            },
+            {
+              "id": "113110151",
+              "seconds": 875.68,
+              "player": 467372,
+              "team": 9834,
+              "start": [
+                61.2676,
+                100.0
+              ],
+              "end": [
+                47.0809,
+                97.45620000000001
+              ],
+              "complete": false,
+              "types": [
+                "forwardPassFailed",
+                "passFailed",
+                "shortPassFailed",
+                "throwIn"
+              ],
+              "diagnosis": "ball_observed_no_actor",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 4.428,
+              "observed_ball_frames": 1,
+              "actor_observations": 0
+            },
+            {
+              "id": "113091497",
+              "seconds": 877.28,
+              "player": 467251,
+              "team": 30798,
+              "start": [
+                52.947900000000004,
+                4.3726999999999965
+              ],
+              "end": [
+                43.897600000000004,
+                11.202699999999998
+              ],
+              "complete": false,
+              "types": [
+                "forwardPassFailed",
+                "intercept",
+                "passFailed",
+                "shortPassFailed"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113091516",
+              "seconds": 890.64,
+              "player": 467247,
+              "team": 30798,
+              "start": [
+                95.41309,
+                58.1666
+              ],
+              "end": [
+                91.40472,
+                72.43379999999999
+              ],
+              "complete": true,
+              "types": [
+                "goalKickSucceeded",
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 47.415,
+              "observed_ball_frames": 4,
+              "actor_observations": 0
+            },
+            {
+              "id": "113091536",
+              "seconds": 896.633,
+              "player": 467248,
+              "team": 30798,
+              "start": [
+                89.833,
+                75.1761
+              ],
+              "end": [
+                57.9372,
+                82.2697
+              ],
+              "complete": false,
+              "types": [
+                "forwardPassFailed",
+                "longPassFailed",
+                "passFailed"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 36.724,
+              "observed_ball_frames": 2,
+              "actor_observations": 0
+            },
+            {
+              "id": "113110181",
+              "seconds": 898.96,
+              "player": 467319,
+              "team": 9834,
+              "start": [
+                42.34290000000001,
+                15.891500000000002
+              ],
+              "end": [
+                31.533599999999996,
+                23.3174
+              ],
+              "complete": true,
+              "types": [
+                "aerialDuelSucceeded",
+                "duelSucceeded",
+                "forwardPassSucceeded",
+                "intercept",
+                "passSucceeded",
+                "shortPassSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 47.081,
+              "observed_ball_frames": 5,
+              "actor_observations": 1
+            }
+          ],
+          "evaluated": true
+        }
+      },
+      "tolerances": {
+        "time_seconds": 2.0,
+        "start_m": 5.0,
+        "end_m": 8.0
+      },
+      "limitations": "Event-consistency matches, not verified passer/recipient identities. Recovery reference vocabulary is incomplete. Existing TPS shares this match; full-match generalisation is unproven."
+    },
+    "paired_old": {
+      "alignment": {
+        "team_mapping": {
+          "30798": 30799,
+          "30799": 30798
+        },
+        "development_votes": [
+          0,
+          1
+        ],
+        "time_offset_seconds": 0,
+        "note": "team permutation only; no control-time alignment search"
+      },
+      "source": "data\\tracking\\bench\\landmark_raw_old_all_events\\sparse",
+      "splits": {
+        "development": {
+          "overfull_team_fraction": 0.136,
+          "frames": 250,
+          "reference_passes": 11,
+          "predicted_passes": 7,
+          "time_only_matches": 2,
+          "time_start_matches": 1,
+          "time_start_team_outcome_end_matches": 0,
+          "unmatched_predictions_by_time_and_start": 6,
+          "observed_ball_fraction": 0.228,
+          "actor_fraction": 0.22,
+          "reference_recovery_candidates": 2,
+          "predicted_recoveries": 0,
+          "pass_windows_with_ball_near_annotated_contact": 0,
+          "passes_with_observed_flight": 1,
+          "recovery_time_start_team_matches": 0,
+          "diagnoses": {
+            "time_and_start_matched": 1,
+            "observed_ball_far_from_annotated_contact": 3,
+            "no_observed_ball_near_event": 7
+          },
+          "events": [
+            {
+              "id": "113089918",
+              "seconds": 611.2,
+              "player": 467250,
+              "team": 30798,
+              "start": [
+                40.986999999999995,
+                53.96190000000001
+              ],
+              "end": [
+                32.7366,
+                95.60971
+              ],
+              "complete": true,
+              "types": [
+                "freeKick",
+                "mediumPassSucceeded",
+                "passSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "time_and_start_matched",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113089980",
+              "seconds": 616.251,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                27.821300000000004,
+                96.32709
+              ],
+              "end": [
+                19.467100000000002,
+                62.8359
+              ],
+              "complete": true,
+              "types": [
+                "mediumPassSucceeded",
+                "passSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 15.726,
+              "observed_ball_frames": 2,
+              "actor_observations": 2
+            },
+            {
+              "id": "113090035",
+              "seconds": 623.601,
+              "player": 467238,
+              "team": 30798,
+              "start": [
+                15.5555,
+                75.5084
+              ],
+              "end": [
+                27.481199999999994,
+                57.113400000000006
+              ],
+              "complete": true,
+              "types": [
+                "backwardPassSucceeded",
+                "mediumPassSucceeded",
+                "passSucceeded"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090036",
+              "seconds": 625.04,
+              "player": 467249,
+              "team": 30798,
+              "start": [
+                27.481199999999994,
+                57.113400000000006
+              ],
+              "end": [
+                22.2746,
+                76.62729999999999
+              ],
+              "complete": true,
+              "types": [
+                "passReceived",
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 8.94,
+              "observed_ball_frames": 2,
+              "actor_observations": 1
+            },
+            {
+              "id": "113090052",
+              "seconds": 627.12,
+              "player": 467258,
+              "team": 30798,
+              "start": [
+                21.541299999999996,
+                78.18939999999999
+              ],
+              "end": [
+                10.182599999999997,
+                94.34075
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "mediumPassSucceeded",
+                "passSucceeded"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090067",
+              "seconds": 629.68,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                7.660500000000003,
+                92.58900999999999
+              ],
+              "end": [
+                6.579299999999999,
+                73.6462
+              ],
+              "complete": false,
+              "types": [
+                "crossFailed"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 3,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090405",
+              "seconds": 702.2,
+              "player": 467258,
+              "team": 30798,
+              "start": [
+                5.560200000000004,
+                100.0
+              ],
+              "end": [
+                4.201600000000005,
+                77.2728
+              ],
+              "complete": true,
+              "types": [
+                "mediumPassSucceeded",
+                "passSucceeded",
+                "sidewaysPassSucceeded",
+                "throwIn"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090406",
+              "seconds": 704.0,
+              "player": 467238,
+              "team": 30798,
+              "start": [
+                4.201600000000005,
+                77.2728
+              ],
+              "end": [
+                8.2167,
+                69.7381
+              ],
+              "complete": false,
+              "types": [
+                "backwardPassFailed",
+                "passFailed",
+                "passReceived",
+                "shortPassFailed"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090444",
+              "seconds": 711.04,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                22.801899999999996,
+                100.0
+              ],
+              "end": [
+                2.0328000000000013,
+                88.9289
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "mediumPassSucceeded",
+                "passSucceeded",
+                "throwIn"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 34.238,
+              "observed_ball_frames": 3,
+              "actor_observations": 3
+            },
+            {
+              "id": "113090467",
+              "seconds": 715.36,
+              "player": 467238,
+              "team": 30798,
+              "start": [
+                1.5660000000000007,
+                90.51926999999999
+              ],
+              "end": [
+                9.229,
+                98.54645
+              ],
+              "complete": true,
+              "types": [
+                "backwardPassSucceeded",
+                "passSucceeded",
+                "shortPassSucceeded"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113090468",
+              "seconds": 716.84,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                9.229,
+                98.54645
+              ],
+              "end": [
+                6.764400000000004,
+                92.41007
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "passReceived",
+                "passSucceeded",
+                "shortPassSucceeded"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            }
+          ],
+          "evaluated": true
+        },
+        "control": {
+          "overfull_team_fraction": 0.368,
+          "frames": 250,
+          "reference_passes": 12,
+          "predicted_passes": 9,
+          "time_only_matches": 7,
+          "time_start_matches": 3,
+          "time_start_team_outcome_end_matches": 0,
+          "unmatched_predictions_by_time_and_start": 6,
+          "observed_ball_fraction": 0.32,
+          "actor_fraction": 0.272,
+          "reference_recovery_candidates": 5,
+          "predicted_recoveries": 0,
+          "pass_windows_with_ball_near_annotated_contact": 4,
+          "passes_with_observed_flight": 0,
+          "recovery_time_start_team_matches": 0,
+          "diagnoses": {
+            "actor_present_transition_or_position_failed": 2,
+            "time_and_start_matched": 3,
+            "observed_ball_far_from_annotated_contact": 3,
+            "no_observed_ball_near_event": 4
+          },
+          "events": [
+            {
+              "id": "113090735",
+              "seconds": 781.76,
+              "player": 467248,
+              "team": 30798,
+              "start": [
+                68.7655,
+                70.5925
+              ],
+              "end": [
+                42.91199999999999,
+                91.50832
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "longPassSucceeded",
+                "passSucceeded"
+              ],
+              "diagnosis": "actor_present_transition_or_position_failed",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 4.214,
+              "observed_ball_frames": 4,
+              "actor_observations": 2
+            },
+            {
+              "id": "113090761",
+              "seconds": 786.44,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                36.4539,
+                84.36099999999999
+              ],
+              "end": [
+                38.248099999999994,
+                91.69121
+              ],
+              "complete": true,
+              "types": [
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "time_and_start_matched",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 3.901,
+              "observed_ball_frames": 5,
+              "actor_observations": 3
+            },
+            {
+              "id": "113090775",
+              "seconds": 789.92,
+              "player": 467250,
+              "team": 30798,
+              "start": [
+                28.687399999999997,
+                96.54813
+              ],
+              "end": [
+                29.210100000000004,
+                86.005
+              ],
+              "complete": true,
+              "types": [
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 16.201,
+              "observed_ball_frames": 2,
+              "actor_observations": 2
+            },
+            {
+              "id": "113090868",
+              "seconds": 798.821,
+              "player": 467249,
+              "team": 30798,
+              "start": [
+                30.963799999999996,
+                77.8491
+              ],
+              "end": [
+                46.3153,
+                81.0346
+              ],
+              "complete": true,
+              "types": [
+                "backwardPassSucceeded",
+                "mediumPassSucceeded",
+                "passSucceeded"
+              ],
+              "diagnosis": "actor_present_transition_or_position_failed",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 0.843,
+              "observed_ball_frames": 4,
+              "actor_observations": 3
+            },
+            {
+              "id": "113090879",
+              "seconds": 802.766,
+              "player": 467248,
+              "team": 30798,
+              "start": [
+                38.4683,
+                80.98490000000001
+              ],
+              "end": [
+                39.6184,
+                91.09743
+              ],
+              "complete": true,
+              "types": [
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "time_and_start_matched",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": true,
+              "min_ball_contact_distance_m": 2.059,
+              "observed_ball_frames": 5,
+              "actor_observations": 4
+            },
+            {
+              "id": "113091211",
+              "seconds": 805.32,
+              "player": 467241,
+              "team": 30798,
+              "start": [
+                38.2541,
+                95.22291
+              ],
+              "end": [
+                32.003800000000005,
+                88.2398
+              ],
+              "complete": true,
+              "types": [
+                "forwardPassSucceeded",
+                "passSucceeded",
+                "shortPassSucceeded"
+              ],
+              "diagnosis": "time_and_start_matched",
+              "nearby_frames": 4,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 5.296,
+              "observed_ball_frames": 2,
+              "actor_observations": 2
+            },
+            {
+              "id": "113091212",
+              "seconds": 805.96,
+              "player": 467259,
+              "team": 30798,
+              "start": [
+                32.003800000000005,
+                88.2398
+              ],
+              "end": [
+                31.205099999999998,
+                91.14668999999999
+              ],
+              "complete": false,
+              "types": [
+                "passFailed",
+                "passReceived",
+                "shortPassFailed",
+                "sidewaysPassFailed"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 6.8,
+              "observed_ball_frames": 2,
+              "actor_observations": 2
+            },
+            {
+              "id": "113110151",
+              "seconds": 875.68,
+              "player": 467372,
+              "team": 9834,
+              "start": [
+                61.2676,
+                100.0
+              ],
+              "end": [
+                47.0809,
+                97.45620000000001
+              ],
+              "complete": false,
+              "types": [
+                "forwardPassFailed",
+                "passFailed",
+                "shortPassFailed",
+                "throwIn"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113091497",
+              "seconds": 877.28,
+              "player": 467251,
+              "team": 30798,
+              "start": [
+                52.947900000000004,
+                4.3726999999999965
+              ],
+              "end": [
+                43.897600000000004,
+                11.202699999999998
+              ],
+              "complete": false,
+              "types": [
+                "forwardPassFailed",
+                "intercept",
+                "passFailed",
+                "shortPassFailed"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113091516",
+              "seconds": 890.64,
+              "player": 467247,
+              "team": 30798,
+              "start": [
+                95.41309,
+                58.1666
+              ],
+              "end": [
+                91.40472,
+                72.43379999999999
+              ],
+              "complete": true,
+              "types": [
+                "goalKickSucceeded",
+                "passSucceeded",
+                "shortPassSucceeded",
+                "sidewaysPassSucceeded"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113091536",
+              "seconds": 896.633,
+              "player": 467248,
+              "team": 30798,
+              "start": [
+                89.833,
+                75.1761
+              ],
+              "end": [
+                57.9372,
+                82.2697
+              ],
+              "complete": false,
+              "types": [
+                "forwardPassFailed",
+                "longPassFailed",
+                "passFailed"
+              ],
+              "diagnosis": "no_observed_ball_near_event",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": null,
+              "observed_ball_frames": 0,
+              "actor_observations": 0
+            },
+            {
+              "id": "113110181",
+              "seconds": 898.96,
+              "player": 467319,
+              "team": 9834,
+              "start": [
+                42.34290000000001,
+                15.891500000000002
+              ],
+              "end": [
+                31.533599999999996,
+                23.3174
+              ],
+              "complete": true,
+              "types": [
+                "aerialDuelSucceeded",
+                "duelSucceeded",
+                "forwardPassSucceeded",
+                "intercept",
+                "passSucceeded",
+                "shortPassSucceeded"
+              ],
+              "diagnosis": "observed_ball_far_from_annotated_contact",
+              "nearby_frames": 5,
+              "ball_near_annotated_contact": false,
+              "min_ball_contact_distance_m": 40.738,
+              "observed_ball_frames": 5,
+              "actor_observations": 0
+            }
+          ],
+          "evaluated": true
+        }
+      },
+      "tolerances": {
+        "time_seconds": 2.0,
+        "start_m": 5.0,
+        "end_m": 8.0
+      },
+      "limitations": "Event-consistency matches, not verified passer/recipient identities. Recovery reference vocabulary is incomplete. Existing TPS shares this match; full-match generalisation is unproven."
+    }
+  },
+  "team_audits": {
+    "new": {
+      "alignment": {
+        "delta_frames": 9,
+        "fps": 25,
+        "sample_start_seconds": 600,
+        "development_segments": [
+          0,
+          3
+        ],
+        "note": "fixed on development; no per-frame search on control"
+      },
+      "swap_teams_from_development": false,
+      "match_radius_m": 3.0,
+      "baseline": false,
+      "splits": {
+        "development": {
+          "segments": [
+            0,
+            3
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 547,
+          "assigned_matched": 517,
+          "correct_matched": 336,
+          "accuracy_when_assigned": 0.6499032882011605,
+          "correct_fraction_of_matched": 0.6142595978062158,
+          "unassigned_matched": 30,
+          "overfull_frame_ratio": 0.33466666666666667,
+          "assigned_per_frame": 15.384
+        },
+        "control": {
+          "segments": [
+            6,
+            9
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 672,
+          "assigned_matched": 587,
+          "correct_matched": 468,
+          "accuracy_when_assigned": 0.797274275979557,
+          "correct_fraction_of_matched": 0.6964285714285714,
+          "unassigned_matched": 85,
+          "overfull_frame_ratio": 0.05466666666666667,
+          "assigned_per_frame": 16.721333333333334
+        }
+      }
+    },
+    "paired_old": {
+      "alignment": {
+        "delta_frames": 9,
+        "fps": 25,
+        "sample_start_seconds": 600,
+        "development_segments": [
+          0,
+          3
+        ],
+        "note": "fixed on development; no per-frame search on control"
+      },
+      "swap_teams_from_development": false,
+      "match_radius_m": 3.0,
+      "baseline": false,
+      "splits": {
+        "development": {
+          "segments": [
+            0,
+            3
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 425,
+          "assigned_matched": 408,
+          "correct_matched": 350,
+          "accuracy_when_assigned": 0.8578431372549019,
+          "correct_fraction_of_matched": 0.8235294117647058,
+          "unassigned_matched": 17,
+          "overfull_frame_ratio": 0.124,
+          "assigned_per_frame": 13.170666666666667
+        },
+        "control": {
+          "segments": [
+            6,
+            9
+          ],
+          "frames": 750,
+          "matched_outfield_observations": 646,
+          "assigned_matched": 630,
+          "correct_matched": 511,
+          "accuracy_when_assigned": 0.8111111111111111,
+          "correct_fraction_of_matched": 0.7910216718266254,
+          "unassigned_matched": 16,
+          "overfull_frame_ratio": 0.364,
+          "assigned_per_frame": 18.233333333333334
+        }
+      }
+    }
+  },
+  "yellow_preference": {
+    "development_frames": 750,
+    "changed_selections": 0,
+    "segment_0_eligible_frames": 134,
+    "segment_0_multiple_candidates": 5,
+    "segment_3_eligible_frames": 28
+  },
+  "player_roi_probe": {
+    "split": "development",
+    "roi_size": [
+      320,
+      180
+    ],
+    "threshold": 0.4,
+    "events": [
+      {
+        "id": "113089918",
+        "seconds": 611.2,
+        "global_near_contact": false,
+        "roi_near_contact": false,
+        "selected_near_contact": false,
+        "global_selected_near_contact": false,
+        "roi_search_seconds": 0.5868209000000206,
+        "full_detection_seconds": 12.135049500000605,
+        "frame_count": 3
+      },
+      {
+        "id": "113090067",
+        "seconds": 629.68,
+        "global_near_contact": true,
+        "roi_near_contact": true,
+        "selected_near_contact": true,
+        "global_selected_near_contact": true,
+        "roi_search_seconds": 0.4917238999987603,
+        "full_detection_seconds": 0.6799065999985032,
+        "frame_count": 3
+      },
+      {
+        "id": "113090200",
+        "seconds": 657.76,
+        "global_near_contact": false,
+        "roi_near_contact": true,
+        "selected_near_contact": false,
+        "global_selected_near_contact": false,
+        "roi_search_seconds": 0.5778215999980603,
+        "full_detection_seconds": 0.6765268999988621,
+        "frame_count": 3
+      },
+      {
+        "id": "113090278",
+        "seconds": 675.0,
+        "global_near_contact": false,
+        "roi_near_contact": false,
+        "selected_near_contact": false,
+        "global_selected_near_contact": false,
+        "roi_search_seconds": 0.5030621999994764,
+        "full_detection_seconds": 0.559761400001662,
+        "frame_count": 3
+      },
+      {
+        "id": "113090405",
+        "seconds": 702.2,
+        "global_near_contact": false,
+        "roi_near_contact": false,
+        "selected_near_contact": false,
+        "global_selected_near_contact": false,
+        "roi_search_seconds": 0.5541188999995939,
+        "full_detection_seconds": 0.5813205999984348,
+        "frame_count": 3
+      },
+      {
+        "id": "113110107",
+        "seconds": 727.6,
+        "global_near_contact": false,
+        "roi_near_contact": false,
+        "selected_near_contact": false,
+        "global_selected_near_contact": false,
+        "roi_search_seconds": 0.5800472000009904,
+        "full_detection_seconds": 0.5681701000012254,
+        "frame_count": 3
+      },
+      {
+        "id": "113110130",
+        "seconds": 757.4,
+        "global_near_contact": false,
+        "roi_near_contact": false,
+        "selected_near_contact": false,
+        "global_selected_near_contact": false,
+        "roi_search_seconds": 0.5834573000011005,
+        "full_detection_seconds": 0.5764254000005167,
+        "frame_count": 3
+      },
+      {
+        "id": "113090716",
+        "seconds": 778.28,
+        "global_near_contact": false,
+        "roi_near_contact": false,
+        "selected_near_contact": false,
+        "global_selected_near_contact": false,
+        "roi_search_seconds": 0.5716540000012174,
+        "full_detection_seconds": 0.5805315999969025,
+        "frame_count": 3
+      }
+    ],
+    "summary": {
+      "global_near_contact": 1,
+      "roi_near_contact": 2,
+      "selected_near_contact": 1,
+      "global_selected_near_contact": 1
+    }
+  },
+  "diagnostic_segment_seconds": {
+    "seg_0000": 123.93940269999985,
+    "seg_0003": 126.59855979999884,
+    "seg_0006": 144.45628820000093,
+    "seg_0009": 143.9660494000018
+  },
+  "input_sha256": {
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0000.json": "d96e0195e861b6bb837dcedc11d839633b5e96e3ad568b24b75f768978f074e8",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0003.json": "fd180b240df279d1a04b5721315e94d8796fa0d22101a3c75fa2f976f781a86e",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0006.json": "3d7b85eb129dfbfb29e65143082f7a1851defcc775904727e5e369e6a17fc882",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0009.json": "518ca89f534436ff5f2a0d14aae56ea49adf7dba0448261de004b935d37b3a95",
+    "data\\tracking\\datasets\\soccertrack_v2\\117092\\117092_keypoints.json": "910c20d8883e689e740557e96037b4681ce75b60d94e1a800c09cab0da305aa7",
+    "data\\tracking\\calibrations\\soccertrack_v2_117092.json": "9ec8dd612f7399838dbc519e43b66a72687addf68dc7ee51b937187303eadf5c",
+    "data\\tracking\\calibrations\\soccertrack_v2_117092_landmarks.json": "ceeb386a7e4923f1264fd7e7db6674251e15bb3e29c63eacff8f0523d4164d07"
+  },
+  "validation": {
+    "full_pytest": "2499 passed, 1 skipped, 15 existing deprecation warnings",
+    "final_targeted_pytest": "50 passed",
+    "ruff": "passed",
+    "mypy": "488 source files, passed"
+  },
+  "release_decision": "Video/calibration pixel-size mismatch is rejected. Alternative landmark profile, yellow preference and player ROI are NOT promoted; pass and team correctness gates failed.",
+  "limitations": [
+    "Team labels conditional on spatial matches; matched sets differ.",
+    "Ball proximity to event contacts is not independent ball-box recall.",
+    "Raw paired replay retains source ROI anchors.",
+    "Known single-match control was not retuned, but is not a new unseen match.",
+    "GSR pixels are 3840x1504; panorama is 3840x1906, so direct pixel comparisons are invalid."
+  ]
+}

@@ -17,7 +17,7 @@ Akış:
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -25,7 +25,7 @@ from typing import Any
 import numpy as np
 
 from app.domain.tracking import TrackingFrame
-from app.tracking.calibration import PitchCalibration
+from app.tracking.calibration import CalibrationError, PitchCalibration
 from app.tracking.detect import DetectorConfig, OnnxDetector, RFDetrDetector, make_detector
 from app.tracking.frames import BallObservation, TrackObservation, build_frame
 from app.tracking.teams import TeamAssigner, torso_color
@@ -124,6 +124,16 @@ def effective_track_fps(src_fps: float, requested_fps: float) -> float:
     30 sn segment): --track-fps 15 ve 10 aynı 375 kareyi işledi.
     """
     return float(src_fps) / sample_stride(src_fps, requested_fps)
+
+
+def validate_video_calibration(info: dict[str, Any], calib: PitchCalibration | None) -> None:
+    """Pixel calibration is tied to the original image dimensions; never silently reuse it."""
+    size = (int(info["width"]), int(info["height"]))
+    if calib is not None and size != calib.image_size:
+        raise CalibrationError(
+            f"kalibrasyon görüntüsü {calib.image_size[0]}x{calib.image_size[1]}, "
+            f"video {size[0]}x{size[1]} — bu video için kalibrasyonu yeniden oluşturun"
+        )
 
 
 def iter_video_frames(path: str | Path, fps: float, max_seconds: float | None = None) -> Iterator[tuple[int, int, float, np.ndarray]]:
@@ -260,6 +270,7 @@ def collect_observations(
     calib: PitchCalibration | None = None,
     progress: bool = True,
     calibrator: Any = None,
+    observation_hook: Callable[[np.ndarray, Any, SampledObservation], None] | None = None,
 ) -> tuple[list[SampledObservation], TeamAssigner, dict[str, Any]]:
     """Kalibrasyon verilirse saha dışı tespitler (yedek kulübesi, seyirci) takipten
     ÖNCE elenir: takım kümelemesi ve takip kimlikleri yalnız sahadakilerle kurulur.
@@ -275,12 +286,14 @@ def collect_observations(
     segmentin FARKI olarak yazılır (sayaçlar kümülatif)."""
     import supervision as sv
 
+    info = video_info(video_path)
+    validate_video_calibration(info, calib)
     det = detector or make_detector(cfg.detector)
     # Takipçi GERÇEK örnekleme hızıyla kurulur (kaynak fps / tam adım), istenenle değil.
-    fps_eff = effective_track_fps(float(video_info(video_path)["fps"]), cfg.track_fps)
+    fps_eff = effective_track_fps(float(info["fps"]), cfg.track_fps)
     if progress and abs(fps_eff - cfg.track_fps) > 0.05 * cfg.track_fps:
         print(f"  track-fps: istenen {cfg.track_fps:g} → etkin {fps_eff:.2f} "
-              f"(kaynak adımı {sample_stride(float(video_info(video_path)['fps']), cfg.track_fps)})",
+              f"(kaynak adımı {sample_stride(float(info['fps']), cfg.track_fps)})",
               flush=True)
     tracker = sv.ByteTrack(
         track_activation_threshold=cfg.track_activation_threshold,
@@ -300,7 +313,6 @@ def collect_observations(
             # ÇAPASIZ başlangıç: elle kalibrasyon yok; kalibratör çapayı saha
             # çizgilerinden kendisi bulur (TV kuralı: yakın taç y=68). Bulunana
             # kadar kare üretilmez.
-            info = video_info(video_path)
             size = (int(info["width"]), int(info["height"]))
         per_frame = calibrator if calibrator is not None else PerFrameCalibrator(
             calib, image_size=size, allow_reacquire=cfg.allow_reacquire,
@@ -403,6 +415,8 @@ def collect_observations(
         samples.append(SampledObservation(order, frame_idx, seconds, rows, ball, ball_source,
                                           calibration=frame_calib if per_frame else None,
                                           continuity_id=continuity_id))
+        if observation_hook is not None:
+            observation_hook(rgb, all_det, samples[-1])
         if progress and order % 50 == 0:
             print(f"  kare {order} · t={seconds:6.1f}s · oyuncu={len(rows)} · top={ball_source or '-'}", flush=True)
 
