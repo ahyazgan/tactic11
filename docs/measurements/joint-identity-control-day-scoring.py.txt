@@ -1,0 +1,131 @@
+"""Score immutable day labels against the already frozen production replays."""
+import hashlib
+import json
+from collections import Counter
+from datetime import datetime, timezone
+from pathlib import Path
+
+from scripts.soccertrack_v2.benchmark_joint_identity import predictions, score_kits, score_pairs, source_boxes
+from scripts.soccertrack_v2.benchmark_track_buffer import box_key
+
+D = Path('docs/measurements')
+R = Path('.cache/kit_joint_agent/production_joint_day_v1')
+OUT = D/'joint-identity-control-day-results.json'
+assert not OUT.exists()
+def read(p):
+    return json.loads(p.read_text(encoding='utf-8'))
+def sha(p):
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+def ref_subset(pairs, predicate=lambda p:True):
+    selected = [p for p in pairs['pairs'] if predicate(p)]
+    used = {p[k] for p in selected for k in ('left','right')}
+    return {'pairs':selected,'observations':[r for r in pairs['observations'] if r['id'] in used]}
+def compact_score(score):
+    return {**{k:v for k,v in score.items() if k!='outcomes'},
+            'outcomes':[{k:p[k] for k in ('left','right','relation','linked','passed')} for p in score['outcomes']]}
+
+lp=D/'joint-identity-control-day-labels.json';pp=D/'joint-identity-control-day-pairs.json'
+vp=D/'joint-identity-control-day-review.json';dp=D/'joint-identity-frozen-decision.json'
+labels,pairs,review,decision = map(read,(lp,pp,vp,dp))
+assert sha(lp)==review['label_sha256']=='cf508f07022f5fc8389d21dc4042319a73ca4fa6a9a4f757120d513d7343dc0f'
+assert sha(pp)==review['pair_sha256']=='976423bba72ee358e3dbfe23e469b3944f106b27a70670927d618869b5ea558b'
+replay_report=read(R/'report.json')
+raw_paths={s:Path('data/tracking/bench/identity_day_detections')/f'seg_{s:04d}.json' for s in (0,3,6)}
+raw={s:read(p) for s,p in raw_paths.items()}
+available=source_boxes(raw)
+allobs={r['id']:r for r in pairs['observations']}
+parts={r['id'] for r in pairs['observations'] if r.get('duplicate_part_of')}
+part_keys={(r['segment'],box_key(r['frame_idx'],r['bbox'])) for r in pairs['observations'] if r['id'] in parts}
+raw_pair_labels=ref_subset(pairs)
+unique_pair_labels=ref_subset(pairs,lambda p:p['left'] not in parts and p['right'] not in parts)
+variants={};payloads={};input_sha={str(p).replace('\\','/'):sha(p) for p in (lp,pp,vp,dp,*raw_paths.values())}
+output_sha={str(R/'report.json').replace('\\','/'):sha(R/'report.json')}
+
+for variant in ('before','after'):
+    paths={s:R/variant/f'seg_{s:04d}.json' for s in (0,3,6)}
+    payloads[variant]={s:read(p) for s,p in paths.items()}
+    output_sha.update({p.as_posix():sha(p) for p in paths.values()})
+    anchor=decision['frozen_anchors']['day'][variant]
+    assert anchor['blue_slot']==0 and replay_report['anchors'][variant]==anchor['centers']
+    assert sha(Path(anchor['source']))==anchor['sha256']
+    pred=predictions(payloads[variant])
+    kits=score_kits(labels['records'],payloads[variant],available,mapping_segment=0,duplicates=part_keys,blue_override=0)
+    assert not kits['source_unmatched_ids']
+    rawscore=score_pairs(raw_pair_labels,payloads[variant],available)
+    uniquescore=score_pairs(unique_pair_labels,payloads[variant],available)
+    assert not rawscore['source_unmatched_observations'] and not uniquescore['source_unmatched_observations']
+    outcome=[]
+    for r in labels['records']:
+        key=(r['segment'],box_key(r['frame_idx'],r['bbox']))
+        identity,team=pred.get(key,(None,None));present=key in pred
+        expected=0 if r['kit']=='blue' else 1 if r['kit']=='white' else None
+        status=('missing' if not present else 'unassigned' if team is None else 'correct' if team==expected else 'wrong') if r['kit'] in ('blue','white') else ('team_assigned' if team is not None else 'unassigned' if present else 'missing')
+        outcome.append({'id':r['id'],'segment':r['segment'],'kit':r['kit'],'source_presence':r['source_presence'],
+                        'duplicate_part_of':r.get('duplicate_part_of'),'present':present,'identity':identity,'team':team,'status':status})
+    groups={
+        'unique_real_person_start_boxes':[r for r in outcome if r['source_presence']=='person' and not r['duplicate_part_of']],
+        'unique_blue_white_other_start_boxes':[r for r in outcome if r['kit'] in ('blue','white','other') and not r['duplicate_part_of']],
+        'raw_blue_white_other_start_boxes':[r for r in outcome if r['kit'] in ('blue','white','other')],
+        'supported_body_parts':[r for r in outcome if r['duplicate_part_of']],
+        'uncertain_start_boxes':[r for r in outcome if r['kit']=='uncertain'],
+        'not_person_start_boxes':[r for r in outcome if r['kit']=='not_person'],
+    }
+    def cov(rows):
+        return {'total':len(rows),'present':sum(r['present'] for r in rows),'missing_ids':[r['id'] for r in rows if not r['present']]}
+    pool_present=[r['id'] for r in pairs['observations'] if (r['segment'],box_key(r['frame_idx'],r['bbox'])) in pred]
+    per_segment={}
+    for s in (0,3,6):
+        pscore=score_pairs(ref_subset(unique_pair_labels,lambda p:allobs[p['left']]['segment']==s),payloads[variant],available)
+        per_segment[str(s)]={'kits':score_kits([r for r in labels['records'] if r['segment']==s],payloads[variant],available,mapping_segment=0,duplicates=part_keys,blue_override=0),
+                            'unique_pair_counts':pscore['counts'],
+                            'unique_real_person_coverage':cov([r for r in groups['unique_real_person_start_boxes'] if r['segment']==s])}
+    variants[variant]={'kits':kits,'raw_part_pair_score':compact_score(rawscore),'unique_person_pair_score':compact_score(uniquescore),
+                       'observed_source_box_coverage':{k:cov(v) for k,v in groups.items()},
+                       'all_raw_start_endpoint_pool':{'total':len(pairs['observations']),'present':len(pool_present),'scope':'Includes non-person, ambiguous and unused boxes; not the association denominator.'},
+                       'per_segment':per_segment,'kit_outcomes':outcome,
+                       'baseline_exact_flags':{str(s):d['baseline_exact'] for s,d in payloads[variant].items()}}
+
+b,a=variants['before'],variants['after']
+bk,ak=b['kits']['unique_person_score'],a['kits']['unique_person_score']
+bp,ap=b['unique_person_pair_score']['counts'],a['unique_person_pair_score']['counts']
+gates={}
+for name,x,y,sign in [
+ ('unique_person_correct_not_decreased',bk['correct'],ak['correct'],'ge'),
+ ('wrong_kit_not_increased',bk['wrong'],ak['wrong'],'le'),
+ ('other_assigned_not_increased',bk['other_assigned'],ak['other_assigned'],'le'),
+ ('true_person_coverage_not_decreased',b['observed_source_box_coverage']['unique_real_person_start_boxes']['present'],a['observed_source_box_coverage']['unique_real_person_start_boxes']['present'],'ge'),
+ ('same_person_pairs_not_decreased',bp.get('same_correct',0),ap.get('same_correct',0),'ge'),
+ ('different_person_pairs_not_decreased',bp.get('different_correct',0),ap.get('different_correct',0),'ge')]:
+    gates[name]={'before':x,'after':y,'passed':y>=x if sign=='ge' else y<=x}
+failed=[k for k,v in gates.items() if not v['passed']]
+current_lf={p:hashlib.sha256(Path(p).read_text(encoding='utf-8').encode()).hexdigest() for p in decision['code_sha256_lf']}
+frozen_checks={p:current_lf[p]==expected for p,expected in decision['code_sha256_lf'].items()}
+replay_checks={}
+for p,h in replay_report['production_sha256'].items():
+    path=Path(p);rel=path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+    replay_checks[rel]={'replay_sha256':h,'frozen_sha256':decision['code_sha256_lf'].get(rel),'matches_freeze':h==decision['code_sha256_lf'].get(rel)}
+
+result={'candidate':'fixed_camera_identity_v1','control':'day117093 temporal controls in development clips0/3/6, frames374/686 and404/716',
+        'reported_at_utc':datetime.now(timezone.utc).isoformat(),'candidate_frozen_at_utc':decision['frozen_at_utc'],
+        'labels_frozen_at_utc':labels['frozen_at_utc'],'first_control_source_box_prediction_read_after_label_freeze':True,
+        'blinding_disclosure':labels['blinding_disclosure'],'anchors':replay_report['anchors'],'blue_slot':0,
+        'source_sha256':{**replay_report['source_sha256'],**input_sha},'replay_output_sha256':output_sha,
+        'replay_production_code_vs_freeze':replay_checks,'current_frozen_code_matches':frozen_checks,
+        'label_counts':review['counts'],'raw_pair_observations':len(raw_pair_labels['observations']),
+        'unique_pair_observations':len(unique_pair_labels['observations']),
+        'unique_pair_rule':'Exclude any pair with an endpoint explicitly annotated duplicate_part_of, then retain exactly referenced observations. Missing true-person boxes remain in the denominator.',
+        'coverage_gate_rule':'Frozen source_presence=person, excluding supported duplicate parts. Includes an isolated physical person with uncertain clothing (6-686-d7).',
+        'scores':variants,'acceptance_gates':gates,'failed_gates':failed,
+        'decision':'Failed day control; do not enable the profile automatically. No retuning or relabeling on these control frames.' if failed else 'All six predefined day nonregression gates pass. Source-specific night acceptance remains separate.',
+        'limitations':['Temporal control within already used development clips; no unseen-match claim.',
+                       'Sparse manually reviewed exact-box pairs, not full-video IDF1/HOTA or roster identity.',
+                       'Raw pair scores include redundant supported body-part boxes; unique pair scores exclude only explicitly frozen duplicate-part annotations.',
+                       'Merged boxes and visible persons without a unique raw endpoint are preserved as uncertain source/endpoint coverage cases.',
+                       'Kit unassigned in the legacy scorer includes missing boxes; kit_outcomes distinguishes missing from present-but-unassigned.',
+                       'No production parameters or labels changed after control predictions were opened.'],
+        'scoring_script_sha256':sha(Path(__file__)),
+        'evaluator_sha256_lf':{p:hashlib.sha256(Path(p).read_text(encoding='utf-8').encode()).hexdigest() for p in ['scripts/soccertrack_v2/benchmark_joint_identity.py','scripts/soccertrack_v2/benchmark_track_buffer.py']}}
+OUT.write_bytes((json.dumps(result,indent=2)+'\n').encode())
+assert sha(lp)==review['label_sha256'] and sha(pp)==review['pair_sha256']
+print(json.dumps({'path':OUT.as_posix(),'sha256':sha(OUT),'acceptance_gates':gates,'failed_gates':failed,
+                  'scores':{v:{'kits':d['kits'],'raw_pairs':d['raw_part_pair_score']['counts'],'unique_pairs':d['unique_person_pair_score']['counts'],'coverage':d['observed_source_box_coverage']['unique_real_person_start_boxes']} for v,d in variants.items()}},indent=2))

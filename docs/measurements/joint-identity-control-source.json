@@ -1,0 +1,21 @@
+{
+  "source": "data/tracking/datasets/soccertrack_v2/117092/117092_panorama_1st_half.mp4",
+  "attribution": "SoccerTrack v2, Atom Scott et al., CC BY 4.0",
+  "selection": "1800-1830 and2100-2130 reserved beforedevelopmentfinished; noframesorlabelsreviewed",
+  "clips": [
+    {
+      "segment": 40,
+      "source_start_seconds": 1800,
+      "duration_seconds": 30,
+      "path": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "sha256": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a"
+    },
+    {
+      "segment": 50,
+      "source_start_seconds": 2100,
+      "duration_seconds": 30,
+      "path": "data/tracking/bench/joint_identity_control/source/seg_0050.mp4",
+      "sha256": "fef8c382ebad00fdfaefd0e214192decc91980e312b8f6e2d871b2eb5dc10604"
+    }
+  ]
+}
