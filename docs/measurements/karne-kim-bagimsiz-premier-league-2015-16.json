@@ -1,0 +1,119 @@
+{
+  "olcum": "Elit 'kim çıkar' önselinin bağımsız maçlarda doğrulaması",
+  "sinanan_nesne": {
+    "ad": "ELITE_OFF_PRIOR (app/engine/live_sub_recommendation)",
+    "canli_motorda_kullaniliyor": true,
+    "tablo": {
+      "DEF/giren": 0.0046,
+      "DEF/ilk11": 0.0292,
+      "FWD/giren": 0.0045,
+      "FWD/ilk11": 0.2151,
+      "GK/giren": 0.0007,
+      "GK/ilk11": 0.0007,
+      "MID/giren": 0.0074,
+      "MID/ilk11": 0.14,
+      "UNK/giren": 0.0074,
+      "UNK/ilk11": 0.14
+    },
+    "not": "position_group çıktısı tek harfe eşlenir; UNK→M, canlı motordaki elite_off_prior ile aynı"
+  },
+  "kulliyat": {
+    "takim_external_id": 217,
+    "mac": 100,
+    "taktik_degisiklik": 331,
+    "donmus_tablo_isabet_at_k": 0.417,
+    "yeniden_fit_tablo": {
+      "DEF/giren": 0.0227,
+      "DEF/ilk11": 0.0584,
+      "FWD/giren": 0.0077,
+      "FWD/ilk11": 0.1331,
+      "GK/ilk11": 0.003,
+      "MID/giren": 0.0054,
+      "MID/ilk11": 0.1852
+    }
+  },
+  "bagimsiz_kume": {
+    "ad": "Premier League 2015/16",
+    "mac": 100,
+    "taktik_degisiklik": 525,
+    "k": 3,
+    "kulliyatla_kesisim": 0,
+    "girdi_sha256": "66986499046bdd2b8c586257c1dda7392a5821136788e95dec76b28488f54d89"
+  },
+  "tasima": {
+    "donmus_uretim_tablosu": {
+      "n": 525,
+      "hit_at_1": 0.215,
+      "hit_at_k": 0.623,
+      "baseline_at_1": 0.091,
+      "baseline_at_k": 0.273,
+      "verdict": "taban çizgisini geçiyor",
+      "note": "isabet@3 62% vs rastgele 27% — motor çıkacak oyuncuyu tesadüften iyi biliyor"
+    },
+    "kulliyattan_yeniden_fit": {
+      "n": 525,
+      "hit_at_1": 0.131,
+      "hit_at_k": 0.438,
+      "baseline_at_1": 0.091,
+      "baseline_at_k": 0.273,
+      "verdict": "taban çizgisini geçiyor",
+      "note": "isabet@3 44% vs rastgele 27% — motor çıkacak oyuncuyu tesadüften iyi biliyor"
+    },
+    "kume_ici_tavan_A": {
+      "n": 254,
+      "hit_at_1": 0.189,
+      "hit_at_k": 0.598,
+      "baseline_at_1": 0.091,
+      "baseline_at_k": 0.273,
+      "verdict": "taban çizgisini geçiyor",
+      "note": "isabet@3 60% vs rastgele 27% — motor çıkacak oyuncuyu tesadüften iyi biliyor"
+    },
+    "kume_ici_tavan_B": {
+      "n": 271,
+      "hit_at_1": 0.24,
+      "hit_at_k": 0.646,
+      "baseline_at_1": 0.091,
+      "baseline_at_k": 0.273,
+      "verdict": "taban çizgisini geçiyor",
+      "note": "isabet@3 65% vs rastgele 27% — motor çıkacak oyuncuyu tesadüften iyi biliyor"
+    }
+  },
+  "permutasyon_sinavi": {
+    "deneme": 400,
+    "seed": 17,
+    "gercek_isabet_at_k": 0.623,
+    "karistirilmisin_yakalama_sayisi": 0,
+    "p": 0.0024937655860349127,
+    "not": "çıkan oyuncu sahadakilerden rastgele seçildi, tablo dondurulmuş; p = (yakalama + 1) / (deneme + 1)"
+  },
+  "bagimsiz_kumede_grup_oranlari": {
+    "DEF/giren": {
+      "cikma_orani": 0.0,
+      "aday_gozlemi": 58
+    },
+    "DEF/ilk11": {
+      "cikma_orani": 0.0255,
+      "aday_gozlemi": 2077
+    },
+    "FWD/giren": {
+      "cikma_orani": 0.0,
+      "aday_gozlemi": 250
+    },
+    "FWD/ilk11": {
+      "cikma_orani": 0.2145,
+      "aday_gozlemi": 1324
+    },
+    "GK/ilk11": {
+      "cikma_orani": 0.0,
+      "aday_gozlemi": 525
+    },
+    "MID/giren": {
+      "cikma_orani": 0.0187,
+      "aday_gozlemi": 160
+    },
+    "MID/ilk11": {
+      "cikma_orani": 0.134,
+      "aday_gozlemi": 1381
+    }
+  }
+}
