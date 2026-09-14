@@ -26,6 +26,7 @@ from app.data.cache.store import cache_get, cache_set
 from app.db import models
 from app.db.session import get_session
 from app.engine.calibration import compute_calibration
+from app.engine.sub_timing import DEFAULT_SUBS_ALLOWED
 from app.snapshot import diff_snapshots, get_latest_snapshot, get_snapshot_at_or_before
 from app.sports import football
 
@@ -3154,11 +3155,18 @@ def live_decision_endpoint(
     star_player_id: int | None = Query(default=None),
     draw_is_enough: bool = Query(default=False),
     must_win: bool = Query(default=False),
+    subs_allowed: int = Query(default=DEFAULT_SUBS_ALLOWED, ge=1, le=6),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     """Bir maç dakikasında tam karar paneli: momentum + sub timing +
     tactical trigger + risk monitor (Faz 6) + spatial control + live matchup +
-    score-time matrix (Faz 7) — 8 engine birleşik."""
+    score-time matrix (Faz 7) — 8 engine birleşik.
+
+    `subs_allowed` maç başına değişiklik hakkı; IFAB kuralı 2022'den beri 5.
+    ESKİ maçları yeniden oynatırken o dönemin hakkı verilmelidir (La Liga
+    2020-06-11 öncesi 3), yoksa hak bitmiş takıma "şimdi değiştir" denebilir.
+    Varsayılan 5 güvenli yöndedir: 3-hak maçında kapı hiç ateşlenmez, yani
+    yanlışlıkla öneri bastırmaz — yalnız düzeltmeyi kaçırır."""
     from app.data.loaders import load_match_events
     from app.engine.live_risk_monitor import compute_live_risk_monitor
     from app.engine.live_tactical_trigger import compute_live_tactical_trigger
@@ -3255,6 +3263,7 @@ def live_decision_endpoint(
         my_team_id, p, d, current_minute=current_minute,
         my_score=my_score or 0, opponent_score=opp_score or 0,
         eligible_player_ids=eligible_ids, off_prior=off_prior, subs_used=subs_used,
+        subs_allowed=subs_allowed,
     ))
     _safe("tactical_triggers", lambda: compute_live_tactical_trigger(
         my_team_id, current_minute=current_minute,

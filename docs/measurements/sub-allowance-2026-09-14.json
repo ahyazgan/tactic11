@@ -1,0 +1,279 @@
+{
+  "olcum": "Değişiklik hakkı kuralının zamanlama önseline etkisi",
+  "dogal_deney": {
+    "kesim_tarihi": "2020-06-11",
+    "mac": {
+      "3-hak": 54,
+      "5-hak": 46
+    },
+    "takim_basina_degisiklik": {
+      "3-hak (<2020-06-11)": {
+        "dagilim": {
+          "2": 8,
+          "3": 100
+        },
+        "ortalama": 2.93,
+        "dort_arti_orani": 0.0
+      },
+      "5-hak (≥2020-06-11)": {
+        "dagilim": {
+          "2": 2,
+          "3": 16,
+          "4": 25,
+          "5": 49
+        },
+        "ortalama": 4.32,
+        "dort_arti_orani": 0.804
+      },
+      "La Liga 2015/16": {
+        "dagilim": {
+          "1": 2,
+          "2": 17,
+          "3": 181
+        },
+        "ortalama": 2.9,
+        "dort_arti_orani": 0.0
+      },
+      "Premier League 2015/16": {
+        "dagilim": {
+          "1": 6,
+          "2": 29,
+          "3": 165
+        },
+        "ortalama": 2.79,
+        "dort_arti_orani": 0.0
+      }
+    }
+  },
+  "kullanilmis_hakka_gore_gercek_oran": {
+    "3-hak (<2020-06-11)": {
+      "0": {
+        "oran": 0.218,
+        "n": 1038
+      },
+      "1": {
+        "oran": 0.607,
+        "n": 295
+      },
+      "2": {
+        "oran": 0.717,
+        "n": 226
+      },
+      "3": {
+        "oran": 0.0,
+        "n": 169
+      }
+    },
+    "5-hak (≥2020-06-11)": {
+      "0": {
+        "oran": 0.214,
+        "n": 814
+      },
+      "1": {
+        "oran": 0.562,
+        "n": 192
+      },
+      "2": {
+        "oran": 0.764,
+        "n": 157
+      },
+      "3": {
+        "oran": 0.672,
+        "n": 125
+      },
+      "4": {
+        "oran": 0.479,
+        "n": 94
+      },
+      "5": {
+        "oran": 0.0,
+        "n": 90
+      }
+    },
+    "La Liga 2015/16": {
+      "0": {
+        "oran": 0.214,
+        "n": 1969
+      },
+      "1": {
+        "oran": 0.667,
+        "n": 471
+      },
+      "2": {
+        "oran": 0.701,
+        "n": 425
+      },
+      "3": {
+        "oran": 0.0,
+        "n": 335
+      }
+    },
+    "Premier League 2015/16": {
+      "0": {
+        "oran": 0.206,
+        "n": 1968
+      },
+      "1": {
+        "oran": 0.54,
+        "n": 574
+      },
+      "2": {
+        "oran": 0.619,
+        "n": 430
+      },
+      "3": {
+        "oran": 0.0,
+        "n": 228
+      }
+    }
+  },
+  "hak_bitti_kapisi": {
+    "uretim_tablosu": {
+      "3-hak (<2020-06-11)": {
+        "kapisiz": {
+          "n": 1728,
+          "flagged": 792,
+          "flag_rate": 0.458,
+          "base_rate": 0.328,
+          "precision": 0.643,
+          "recall": 0.898,
+          "f1": 0.749,
+          "lift": 1.96
+        },
+        "kapili": {
+          "n": 1728,
+          "flagged": 771,
+          "flag_rate": 0.446,
+          "base_rate": 0.328,
+          "precision": 0.66,
+          "recall": 0.898,
+          "f1": 0.761,
+          "lift": 2.012
+        }
+      },
+      "5-hak (≥2020-06-11)": {
+        "kapisiz": {
+          "n": 1472,
+          "flagged": 617,
+          "flag_rate": 0.419,
+          "base_rate": 0.361,
+          "precision": 0.648,
+          "recall": 0.753,
+          "f1": 0.697,
+          "lift": 1.795
+        },
+        "kapili": {
+          "n": 1472,
+          "flagged": 610,
+          "flag_rate": 0.414,
+          "base_rate": 0.361,
+          "precision": 0.656,
+          "recall": 0.753,
+          "f1": 0.701,
+          "lift": 1.817
+        }
+      },
+      "La Liga 2015/16": {
+        "kapisiz": {
+          "n": 3200,
+          "flagged": 1479,
+          "flag_rate": 0.462,
+          "base_rate": 0.323,
+          "precision": 0.629,
+          "recall": 0.9,
+          "f1": 0.741,
+          "lift": 1.947
+        },
+        "kapili": {
+          "n": 3200,
+          "flagged": 1445,
+          "flag_rate": 0.452,
+          "base_rate": 0.323,
+          "precision": 0.644,
+          "recall": 0.9,
+          "f1": 0.751,
+          "lift": 1.994
+        }
+      },
+      "Premier League 2015/16": {
+        "kapisiz": {
+          "n": 3200,
+          "flagged": 1522,
+          "flag_rate": 0.476,
+          "base_rate": 0.307,
+          "precision": 0.57,
+          "recall": 0.884,
+          "f1": 0.693,
+          "lift": 1.857
+        },
+        "kapili": {
+          "n": 3200,
+          "flagged": 1504,
+          "flag_rate": 0.47,
+          "base_rate": 0.307,
+          "precision": 0.576,
+          "recall": 0.884,
+          "f1": 0.698,
+          "lift": 1.876
+        }
+      }
+    },
+    "not": "kapı yalnız yanlış pozitif siler: hak bitmişken değişiklik imkânsız olduğundan yakalama değişemez"
+  },
+  "capraz_donem_matrisi": {
+    "aciklama": "satır: fit edilen küme, sütun: uygulanan küme, değer: F1",
+    "kapisiz": {
+      "3-hak (<2020-06-11)": {
+        "3-hak (<2020-06-11)": 0.766,
+        "5-hak (≥2020-06-11)": 0.635,
+        "La Liga 2015/16": 0.754,
+        "Premier League 2015/16": 0.705
+      },
+      "5-hak (≥2020-06-11)": {
+        "3-hak (<2020-06-11)": 0.731,
+        "5-hak (≥2020-06-11)": 0.719,
+        "La Liga 2015/16": 0.727,
+        "Premier League 2015/16": 0.699
+      },
+      "La Liga 2015/16": {
+        "3-hak (<2020-06-11)": 0.761,
+        "5-hak (≥2020-06-11)": 0.632,
+        "La Liga 2015/16": 0.763,
+        "Premier League 2015/16": 0.728
+      },
+      "Premier League 2015/16": {
+        "3-hak (<2020-06-11)": 0.749,
+        "5-hak (≥2020-06-11)": 0.6,
+        "La Liga 2015/16": 0.76,
+        "Premier League 2015/16": 0.742
+      }
+    },
+    "kapili": {
+      "3-hak (<2020-06-11)": {
+        "3-hak (<2020-06-11)": 0.766,
+        "5-hak (≥2020-06-11)": 0.726,
+        "La Liga 2015/16": 0.754,
+        "Premier League 2015/16": 0.705
+      },
+      "5-hak (≥2020-06-11)": {
+        "3-hak (<2020-06-11)": 0.757,
+        "5-hak (≥2020-06-11)": 0.746,
+        "La Liga 2015/16": 0.755,
+        "Premier League 2015/16": 0.715
+      },
+      "La Liga 2015/16": {
+        "3-hak (<2020-06-11)": 0.762,
+        "5-hak (≥2020-06-11)": 0.724,
+        "La Liga 2015/16": 0.763,
+        "Premier League 2015/16": 0.728
+      },
+      "Premier League 2015/16": {
+        "3-hak (<2020-06-11)": 0.749,
+        "5-hak (≥2020-06-11)": 0.704,
+        "La Liga 2015/16": 0.76,
+        "Premier League 2015/16": 0.742
+      }
+    }
+  },
+  "girdi_sha256": "09bc9b19e3280930188bcce25160c72c1b73fc44efeedd7e1e5b032b844fdd85"
+}

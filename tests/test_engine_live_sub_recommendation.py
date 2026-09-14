@@ -190,3 +190,39 @@ def test_recommendation_order_is_deterministic_not_set_iteration_order():
     keys = [(-r.urgency_score, -r.fatigue_score, r.player_external_id)
             for r in first.recommendations]
     assert keys == sorted(keys)
+
+
+def test_sub_window_probability_is_zero_when_substitutions_are_exhausted():
+    """Hak bittiyse olasılık ÖĞRENİLMEZ, 0'dır — değişiklik kural gereği imkânsız.
+
+    Tablo 3-hak ve 5-hak maçlarının karışımından fit edildi, bu yüzden
+    "3 kullanılmış" hücresi iki zıt gerçeği harmanlıyor (3-hak döneminde gerçek
+    oran 0.000, 5-hak döneminde 0.672 — docs/KARNE-DEGISIKLIK-HAKKI.md).
+    """
+    from app.engine.sub_timing import DEFAULT_SUBS_ALLOWED, elite_sub_window_probability
+
+    # 3 haklı bir maçta 3 değişiklik yapıldıysa pencere KAPALI
+    assert elite_sub_window_probability(70.0, "trailing", 3, subs_allowed=3) == 0.0
+    # aynı durum 5 haklı maçta öğrenilen değeri verir ve pozitiftir
+    assert elite_sub_window_probability(70.0, "trailing", 3, subs_allowed=5) > 0.0
+    # varsayılan bugünün kuralıdır ve GÜVENLİ yöndedir: 3-hak maçında hiç
+    # ateşlenmez, yani yanlışlıkla öneri bastırmaz
+    assert DEFAULT_SUBS_ALLOWED == 5
+    assert elite_sub_window_probability(70.0, "trailing", 3) > 0.0
+    assert elite_sub_window_probability(70.0, "trailing", 5) == 0.0
+
+
+def test_sub_timing_passes_allowance_to_the_window():
+    """compute_sub_timing hak sayısını önsele geçirir; hak bitince pencere kapanır."""
+    from app.engine.sub_timing import compute_sub_timing
+
+    passes = [_p(pid, minute) for pid in (11, 12, 13)
+              for minute in (5.0, 10.0, 15.0, 20.0, 25.0, 60.0)]
+    kwargs = dict(all_passes=passes, all_def_actions=[], current_minute=70.0,
+                  my_score=0, opponent_score=1)
+    open_window = compute_sub_timing(11, subs_used=2, subs_allowed=5, **kwargs).value
+    shut = compute_sub_timing(11, subs_used=3, subs_allowed=3, **kwargs).value
+    assert open_window.elite_window_probability is not None
+    assert open_window.elite_window_probability > 0.0
+    assert shut.elite_window_probability == 0.0
+    assert shut.elite_window is False
