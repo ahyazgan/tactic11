@@ -22,10 +22,15 @@ from app.engine.coach_benchmark import (
     ShapePrior,
     ShapeState,
     TickObservation,
+    WhoCandidate,
+    WhoPrior,
+    WhoState,
     agreement,
     apply_shape_gate,
+    apply_who_prior,
     build_scorecard,
     expected_calibration_error,
+    expected_who_hits,
     fit_shape_prior,
     lead_times,
     minute_rule,
@@ -33,6 +38,8 @@ from app.engine.coach_benchmark import (
     skill_from_auc,
     split_half_agreement,
     split_half_shape_gate,
+    who_prior_agreement,
+    who_prior_tiers,
 )
 from app.engine.coach_benchmark.compute import _shape_cell
 
@@ -468,3 +475,49 @@ def test_shape_gate_needs_enough_flags_in_control_half() -> None:
     assert gate.prior_for_b.threshold is not None
     assert gate.gated_a.flagged == 1
     assert gate.verdict == "yetersiz veri"
+
+
+def test_who_prior_tiers_group_equal_candidates_together() -> None:
+    """Önsel tablosu kaba: aynı hücredeki adaylar TEK kademede toplanmalı."""
+    state = WhoState(1, 7, tuple(
+        WhoCandidate(pid, group, True)
+        for pid, group in ((7, "FWD"), (8, "FWD"), (9, "MID"), (10, "DEF"))))
+    prior = WhoPrior({("FWD", True): 0.21, ("MID", True): 0.14, ("DEF", True): 0.03}, 1)
+    assert who_prior_tiers(prior, state) == ((7, 8), (9,), (10,))
+
+
+def test_expected_who_hits_never_rewards_a_fixed_order_inside_a_tier() -> None:
+    """Kademe içinde rastgele seçim varsayılır: iki eşit adayın her biri 1/2."""
+    tiers = ((7, 8), (9,), (10,))
+    for pid in (7, 8):
+        assert expected_who_hits(tiers, pid, k=3) == (pytest.approx(0.5), 1.0)
+    assert expected_who_hits(tiers, 9, k=3) == (0.0, 1.0)
+    # ilk iki kademe üç yeri doldurdu: 10 numara ilk üçe giremez
+    assert expected_who_hits(tiers, 10, k=3) == (0.0, 0.0)
+    # ilk üç sınırı kademeyi ortadan bölerse beklenen pay kalan yer / kademe boyu
+    straddle = ((7,), (8, 9, 10))
+    assert expected_who_hits(straddle, 9, k=3) == (0.0, pytest.approx(2 / 3))
+
+
+def test_who_prior_agreement_ignores_player_id_order() -> None:
+    """Kimlikleri ters çevirmek sonucu DEĞİŞTİRMEMELİ — düzeltilen kusur buydu."""
+    def states(flip):
+        out = []
+        for mid in range(1, 25):
+            ids = [40, 30, 20, 10] if flip else [10, 20, 30, 40]
+            out.append(WhoState(mid, ids[0], tuple(
+                WhoCandidate(pid, "FWD" if i < 2 else "MID", True)
+                for i, pid in enumerate(ids))))
+        return out
+
+    prior = WhoPrior({("FWD", True): 0.21, ("MID", True): 0.14}, 1)
+    duz = who_prior_agreement(prior, states(False))
+    ters = who_prior_agreement(prior, states(True))
+    assert duz.hit_at_1 == ters.hit_at_1 == pytest.approx(0.5)
+
+    def ranked(flip):
+        rows = states(flip)
+        return sum(1 for s in rows if apply_who_prior(prior, s)[0] == s.player_off) / len(rows)
+
+    # aynı veride eski yol kimlik sırasına BAĞLI: 1.0 vs 0.0
+    assert ranked(False) != ranked(True)

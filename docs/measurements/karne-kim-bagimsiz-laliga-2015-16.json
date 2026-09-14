@@ -21,7 +21,7 @@
     "takim_external_id": 217,
     "mac": 100,
     "taktik_degisiklik": 331,
-    "donmus_tablo_isabet_at_k": 0.417,
+    "donmus_tablo_isabet_at_k": 0.442,
     "yeniden_fit_tablo": {
       "DEF/giren": 0.0227,
       "DEF/ilk11": 0.0584,
@@ -43,45 +43,45 @@
   "tasima": {
     "donmus_uretim_tablosu": {
       "n": 544,
-      "hit_at_1": 0.21,
-      "hit_at_k": 0.575,
+      "hit_at_1": 0.208,
+      "hit_at_k": 0.594,
       "baseline_at_1": 0.091,
       "baseline_at_k": 0.273,
       "verdict": "taban çizgisini geçiyor",
-      "note": "isabet@3 58% vs rastgele 27% — motor çıkacak oyuncuyu tesadüften iyi biliyor"
+      "note": "isabet@3 59% vs rastgele 27% (beraberlik tarafsız)"
     },
     "kulliyattan_yeniden_fit": {
       "n": 544,
-      "hit_at_1": 0.105,
-      "hit_at_k": 0.452,
+      "hit_at_1": 0.125,
+      "hit_at_k": 0.462,
       "baseline_at_1": 0.091,
       "baseline_at_k": 0.273,
       "verdict": "taban çizgisini geçiyor",
-      "note": "isabet@3 45% vs rastgele 27% — motor çıkacak oyuncuyu tesadüften iyi biliyor"
+      "note": "isabet@3 46% vs rastgele 27% (beraberlik tarafsız)"
     },
     "kume_ici_tavan_A": {
       "n": 271,
-      "hit_at_1": 0.203,
+      "hit_at_1": 0.22,
+      "hit_at_k": 0.597,
+      "baseline_at_1": 0.091,
+      "baseline_at_k": 0.273,
+      "verdict": "taban çizgisini geçiyor",
+      "note": "isabet@3 60% vs rastgele 27% (beraberlik tarafsız)"
+    },
+    "kume_ici_tavan_B": {
+      "n": 273,
+      "hit_at_1": 0.196,
       "hit_at_k": 0.59,
       "baseline_at_1": 0.091,
       "baseline_at_k": 0.273,
       "verdict": "taban çizgisini geçiyor",
-      "note": "isabet@3 59% vs rastgele 27% — motor çıkacak oyuncuyu tesadüften iyi biliyor"
-    },
-    "kume_ici_tavan_B": {
-      "n": 273,
-      "hit_at_1": 0.216,
-      "hit_at_k": 0.56,
-      "baseline_at_1": 0.091,
-      "baseline_at_k": 0.273,
-      "verdict": "taban çizgisini geçiyor",
-      "note": "isabet@3 56% vs rastgele 27% — motor çıkacak oyuncuyu tesadüften iyi biliyor"
+      "note": "isabet@3 59% vs rastgele 27% (beraberlik tarafsız)"
     }
   },
   "permutasyon_sinavi": {
     "deneme": 400,
     "seed": 17,
-    "gercek_isabet_at_k": 0.575,
+    "gercek_isabet_at_k": 0.594,
     "karistirilmisin_yakalama_sayisi": 0,
     "p": 0.0024937655860349127,
     "not": "çıkan oyuncu sahadakilerden rastgele seçildi, tablo dondurulmuş; p = (yakalama + 1) / (deneme + 1)"

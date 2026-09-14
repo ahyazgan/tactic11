@@ -109,6 +109,8 @@ PRIOR_THRESHOLDS: tuple[float, ...] = (0.3, 0.4, 0.5, 0.6)
 # "Kim" boyutu: motorun aday listesi bu uzunlukta değerlendirilir; kazanç eşiği.
 WHO_TOP_K = 3
 WHO_MIN_GAIN = 0.10
+# Önselin hiç görmediği hücre: "bilinmiyor". Sıralamada ortada durur.
+WHO_UNKNOWN_CELL = 0.5
 # Şekil seçiciliği: önsel eşik adayları, destekleyici sinyal sayısı eşikleri,
 # eğitimde harcanabilecek en küçük bayrak bütçesi ve kabul için gereken kaldırma.
 SHAPE_PRIOR_THRESHOLDS: tuple[float, ...] = (0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6)
@@ -583,12 +585,101 @@ def fit_who_prior(states: Sequence[WhoState]) -> WhoPrior:
 
 
 def apply_who_prior(prior: WhoPrior, state: WhoState) -> tuple[int, ...]:
-    """Adayları P(çıkar)'a göre sırala; görülmemiş hücre 0.5 (bilinmiyor)."""
+    """Adayları P(çıkar)'a göre sırala; görülmemiş hücre 0.5 (bilinmiyor).
+
+    UYARI — bu sıralama PUANLANMAMALIDIR. Önsel tablosunun yalnız birkaç
+    hücresi var (mevki grubu × ilk 11), bu yüzden aynı gruptaki adaylar BİREBİR
+    eşit değer alır ve sıra tamamen `player_id`'ye düşer. Kimlik sırası bu veri
+    kümesinde bilgi taşıyor (küçük kimlik = daha eski oyuncu = daha çok çıkıyor)
+    ve ölçüldü: külliyatta isabet@1'i 0.125'ten 0.181'e çıkarıyor — beceri değil,
+    veri kümesi tesadüfü (docs/KARNE-SIRALAMA.md).
+
+    Bu fonksiyon yalnız GÖSTERİM için bir sıra üretir. Ölçüm
+    `who_prior_agreement` ile yapılır; o beraberlikleri kademe sayar ve beklenen
+    isabeti hesaplar.
+    """
     ranked = sorted(
         state.candidates,
-        key=lambda c: (-prior.table.get((c.group, c.starter), 0.5), c.player_id),
+        key=lambda c: (-prior.table.get((c.group, c.starter), WHO_UNKNOWN_CELL), c.player_id),
     )
     return tuple(c.player_id for c in ranked)
+
+
+def who_prior_tiers(prior: WhoPrior, state: WhoState) -> tuple[tuple[int, ...], ...]:
+    """Adaylar önsel değerine göre KADEMELERE ayrılır; kademe İÇİNDE sıra yoktur.
+
+    Önsel tablosu kaba olduğu için (grup × ilk 11) kademeler kalabalıktır:
+    tipik bir vakada 11 aday 3-4 kademeye düşer. Kademe içinde bir sıra
+    uydurmak, o sıranın veriyle korelasyonunu beceri diye saymaktır.
+    """
+    vals = {c.player_id: prior.table.get((c.group, c.starter), WHO_UNKNOWN_CELL)
+            for c in state.candidates}
+    return tuple(
+        tuple(sorted(pid for pid, v in vals.items() if v == value))
+        for value in sorted(set(vals.values()), reverse=True)
+    )
+
+
+def expected_who_hits(
+    tiers: Sequence[Sequence[int]], player_off: int, *, k: int,
+) -> tuple[float, float]:
+    """Kademe içinde rastgele seçim varsayarak BEKLENEN isabet@1 ve isabet@k.
+
+    Beraberlik yoksa sonuç 0/1'dir — tarafsız ölçüm kesin durumları bozmaz.
+    İlk k sınırı bir kademeyi ortadan bölerse beklenen pay kalan yer / kademe boyu.
+    """
+    before = 0
+    for tier in tiers:
+        if player_off in tier:
+            size = len(tier)
+            at1 = (1.0 / size) if before == 0 else 0.0
+            slots = k - before
+            atk = 0.0 if slots <= 0 else (1.0 if slots >= size else slots / size)
+            return at1, atk
+        before += len(tier)
+    return 0.0, 0.0
+
+
+def who_prior_agreement(
+    prior: WhoPrior, states: Sequence[WhoState], *, k: int = WHO_TOP_K,
+) -> WhoStat:
+    """Önselin isabeti — BERABERLİK TARAFSIZ. `who_agreement` ile aynı cetvel,
+    ama kademe içi sıra uydurmadan.
+
+    `who_agreement` motorun ürettiği GERÇEK sıralı listeyi puanlar; orada sıra
+    bir karardır. Önselde sıra yoktur, kademe vardır — bu yüzden ayrı fonksiyon.
+    """
+    rows = [s for s in states if s.candidates]
+    n = len(rows)
+    if n == 0:
+        return WhoStat(0, None, None, None, None, None, "yetersiz veri",
+                       "gerçek değişiklik yok")
+    hit1 = hitk = 0.0
+    for st in rows:
+        a1, ak = expected_who_hits(who_prior_tiers(prior, st), st.player_off, k=k)
+        hit1 += a1
+        hitk += ak
+    hit1 /= n
+    hitk /= n
+    base1 = sum(1.0 / len(s.candidates) for s in rows) / n
+    basek = sum(min(1.0, k / len(s.candidates)) for s in rows) / n
+
+    if n < MIN_SAMPLES:
+        verdict, note = "yetersiz veri", f"n={n} < {MIN_SAMPLES}"
+    elif hitk - basek >= WHO_MIN_GAIN:
+        verdict = "taban çizgisini geçiyor"
+        note = (f"isabet@{k} {hitk:.0%} vs rastgele {basek:.0%} (beraberlik tarafsız)")
+    elif basek - hitk >= WHO_MIN_GAIN:
+        verdict = "taban çizgisinin altında"
+        note = f"isabet@{k} {hitk:.0%} vs rastgele {basek:.0%} — rastgeleden KÖTÜ"
+    else:
+        verdict = "taban çizgisiyle aynı"
+        note = f"isabet@{k} {hitk:.0%} vs rastgele {basek:.0%} — fark ±{WHO_MIN_GAIN:.2f} bandında"
+    return WhoStat(
+        n=n, hit_at_1=round(hit1, 3), hit_at_k=round(hitk, 3),
+        baseline_at_1=round(base1, 3), baseline_at_k=round(basek, 3),
+        off_pitch_candidate_rate=None, verdict=verdict, note=note,
+    )
 
 
 def split_half_who_prior(states: Sequence[WhoState], *, k: int = WHO_TOP_K) -> WhoStat:
@@ -598,11 +689,29 @@ def split_half_who_prior(states: Sequence[WhoState], *, k: int = WHO_TOP_K) -> W
     a = [s for s in states if s.match_external_id in a_ids]
     b = [s for s in states if s.match_external_id not in a_ids]
     prior_for_a, prior_for_b = fit_who_prior(b), fit_who_prior(a)
-    samples = [
-        WhoSample(s.player_off, apply_who_prior(pr, s), tuple(c.player_id for c in s.candidates))
-        for half, pr in ((a, prior_for_a), (b, prior_for_b)) for s in half
+    # Beraberlik TARAFSIZ: önselde kademe vardır, sıra yoktur. Kademe içini
+    # kimliğe göre sıralamak külliyatta isabet@1'i 0.125'ten 0.181'e çıkarıyordu.
+    merged = [
+        (pr, s) for half, pr in ((a, prior_for_a), (b, prior_for_b)) for s in half
     ]
-    return who_agreement(samples, k=k)
+    hit1 = hitk = 0.0
+    for pr, s in merged:
+        a1, ak = expected_who_hits(who_prior_tiers(pr, s), s.player_off, k=k)
+        hit1 += a1
+        hitk += ak
+    n = len(merged)
+    if n == 0:
+        return WhoStat(0, None, None, None, None, None, "yetersiz veri",
+                       "gerçek değişiklik yok")
+    base = who_prior_agreement(prior_for_a, [s for _pr, s in merged], k=k)
+    return WhoStat(
+        n=n, hit_at_1=round(hit1 / n, 3), hit_at_k=round(hitk / n, 3),
+        baseline_at_1=base.baseline_at_1, baseline_at_k=base.baseline_at_k,
+        off_pitch_candidate_rate=None,
+        verdict=base.verdict if n >= MIN_SAMPLES else "yetersiz veri",
+        note=(f"isabet@{k} {hitk / n:.0%} vs rastgele {base.baseline_at_k:.0%} "
+              f"(beraberlik tarafsız, ayrık yarı)"),
+    )
 
 
 # --------------------------------------------------------------------------- #
