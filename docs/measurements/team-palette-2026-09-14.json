@@ -1,0 +1,109 @@
+{
+  "date": "2026-09-14",
+  "base_commit": "937c31b",
+  "rgb_min_distance": 30.0,
+  "input_sha256": {
+    "data/tracking/bench/signal_quality_v1/seg_0000.json": "9abeefb799a852f03f78efe50a716bd4f7eb6e55c51e3ff474b1614d6f68511c",
+    "data/tracking/bench/signal_quality_v1/seg_0003.json": "60ff4136c7f2ea8419cc4b35806532258b5b80d666bb3b84078877071fb39fff",
+    "data/tracking/bench/signal_quality_v1/seg_0006.json": "ba7375fc786ff5fdcbae547e43c50cfc87ddd9da8f59b4298e1eeb6cdc1b2051",
+    "data/tracking/bench/signal_quality_v1/seg_0009.json": "618abc5fccf7bd0fecb0e5fb51a80b6ad26f0798cbc75e08cfbccd6cee2e9396",
+    "data/tracking/bench/signal_quality_gt.npy": "d15d68a047c12f2694babe1b476090170a8cbd0d556f669b36fce0057a6ae219",
+    "data/tracking/bench/signal_quality_alignment.json": "1f03c776580312753f87b577ddb2abdc3c7c51416189aaad30cdccfd8bd1a3b8"
+  },
+  "before": {
+    "alignment": {
+      "delta_frames": 9,
+      "fps": 25,
+      "sample_start_seconds": 600,
+      "development_segments": [
+        0,
+        3
+      ],
+      "note": "fixed on development; no per-frame search on control"
+    },
+    "swap_teams_from_development": false,
+    "match_radius_m": 3.0,
+    "baseline": false,
+    "splits": {
+      "development": {
+        "segments": [
+          0,
+          3
+        ],
+        "frames": 750,
+        "matched_outfield_observations": 425,
+        "assigned_matched": 408,
+        "correct_matched": 350,
+        "accuracy_when_assigned": 0.8578431372549019,
+        "correct_fraction_of_matched": 0.8235294117647058,
+        "unassigned_matched": 17,
+        "overfull_frame_ratio": 0.124,
+        "assigned_per_frame": 13.170666666666667
+      },
+      "control": {
+        "segments": [
+          6,
+          9
+        ],
+        "frames": 750,
+        "matched_outfield_observations": 646,
+        "assigned_matched": 630,
+        "correct_matched": 511,
+        "accuracy_when_assigned": 0.8111111111111111,
+        "correct_fraction_of_matched": 0.7910216718266254,
+        "unassigned_matched": 16,
+        "overfull_frame_ratio": 0.364,
+        "assigned_per_frame": 18.233333333333334
+      }
+    }
+  },
+  "after": {
+    "alignment": {
+      "delta_frames": 9,
+      "fps": 25,
+      "sample_start_seconds": 600,
+      "development_segments": [
+        0,
+        3
+      ],
+      "note": "fixed on development; no per-frame search on control"
+    },
+    "swap_teams_from_development": false,
+    "match_radius_m": 3.0,
+    "baseline": false,
+    "splits": {
+      "development": {
+        "segments": [
+          0,
+          3
+        ],
+        "frames": 750,
+        "matched_outfield_observations": 425,
+        "assigned_matched": 408,
+        "correct_matched": 350,
+        "accuracy_when_assigned": 0.8578431372549019,
+        "correct_fraction_of_matched": 0.8235294117647058,
+        "unassigned_matched": 17,
+        "overfull_frame_ratio": 0.124,
+        "assigned_per_frame": 13.170666666666667
+      },
+      "control": {
+        "segments": [
+          6,
+          9
+        ],
+        "frames": 750,
+        "matched_outfield_observations": 646,
+        "assigned_matched": 630,
+        "correct_matched": 511,
+        "accuracy_when_assigned": 0.8111111111111111,
+        "correct_fraction_of_matched": 0.7910216718266254,
+        "unassigned_matched": 16,
+        "overfull_frame_ratio": 0.364,
+        "assigned_per_frame": 18.233333333333334
+      }
+    }
+  },
+  "split_metrics_unchanged": true,
+  "limitation": "Single-match conditional positional matching; no overall identity or accuracy improvement claimed. Degenerate palettes are covered by synthetic regressions."
+}

@@ -16,7 +16,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 
 from app.tracking.calibration import PitchCalibration
-from app.tracking.teams import TeamAssigner
+from app.tracking.teams import TeamAssigner, distinct_team_colors
 
 
 def matched(pts, gt, radius):
@@ -50,10 +50,13 @@ def main() -> int:
     p.add_argument("--alignment", type=Path, required=True)
     p.add_argument("--match-radius", type=float, default=3.0)
     p.add_argument("--baseline", action="store_true", help="include discarded short tracks in clustering (old behaviour)")
+    p.add_argument("--development-only", action="store_true", help="evaluate only the two development segments")
     args = p.parse_args()
     data = load_samples(args.cache)
     if len(data) < 4:
         p.error("at least four segments required (two development, two control)")
+    if args.development_only:
+        data = data[:2]
     rows = np.load(args.gt)
     ids, starts = np.unique(rows[:, 0].astype(int), return_index=True)
     gt = {int(f): a for f, a in zip(ids, np.split(rows, starts[1:]), strict=True)}
@@ -85,7 +88,7 @@ def main() -> int:
                 assigner.observe(int(track), np.array(color))
         eligible = {r[0] for s in payload["samples"] for r in s["persons"]}
         assignment = assigner.fit(anchor, eligible_tracks=None if args.baseline else eligible)
-        if anchor is None:
+        if anchor is None and distinct_team_colors(assignment.centers):
             anchor = assignment.centers
         labels = []
         counts = []
@@ -105,6 +108,8 @@ def main() -> int:
     report = {"alignment": alignment, "swap_teams_from_development": swap,
               "match_radius_m": args.match_radius, "baseline": args.baseline, "splits": {}}
     for name, group in (("development", records[:2]), ("control", records[2:])):
+        if not group:
+            continue
         labels = [x for r in group for x in r["labels"]]
         assigned = sum(a is not None for a, _ in labels)
         correct = sum(a is not None and (1 - a if swap else a) == b for a, b in labels)

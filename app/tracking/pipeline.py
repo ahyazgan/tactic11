@@ -728,8 +728,9 @@ def process_video(
             "overfull_frame_ratio": round(overfull_frames / len(frames), 3) if frames else 0.0,
             "assigned_players_per_frame": (round(float(np.mean([sum(c) for c in assigned_counts])), 2)
                                            if assigned_counts else 0.0),
-            "note": ("bir takıma 12+ oyuncu atanmış kareler var; takım ataması belirsiz"
-                     if overfull_frames else None),
+            "note": (assignment.note or
+                     ("bir takıma 12+ oyuncu atanmış kareler var; takım ataması belirsiz"
+                      if overfull_frames else None)),
         },
         "ball_frames": sum(1 for s in samples if s.ball),
         "ball_sources": {
