@@ -254,6 +254,55 @@ def post_load_samples(
     }
 
 
+@router.get("/matches/{match_id}/decision-coverage",
+            summary="Kaç öneri gösterildi, kaçına cevap verildi? (uplift geçerlilik kapısı)")
+def get_decision_coverage(
+    match_id: int,
+    team_external_id: int | None = Query(default=None),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Karşı-olgu ölçümünün ÖN KOŞULU: paydayı göster.
+
+    `decision_uplift` uygulanan kolu uygulanmayanla kıyaslar. İki kol da dolu
+    olsa bile, koç önerilerin yalnız bir kısmına dokunduysa örnek kendi kendini
+    seçmiştir: beğendiğini işaretleyip ötekini görmezden gelen bir koçta uplift
+    haksız yere iyi çıkar ve bunu kolların içine bakarak GÖREMEZSİNİZ.
+
+    Görünür kılan tek sayı kapsamadır: gösterilen öneri kaç, cevaplanan kaç.
+    Gösterim `applied=null` ile yazılır (canlı panel her öneriyi bir kez yazar,
+    uç nokta mükerrerini birleştirir), koç dokununca aynı satır işaretlenir.
+
+    Kapsama eşiği ve ne zaman hüküm verilebileceği ön-kayıtlı plandadır:
+    `docs/PILOT-KARSI-OLGU-PLANI.md`.
+    """
+    _match_or_404(session, match_id)
+    q = select(models.Decision).where(
+        models.Decision.sport == football.SPORT_NAME,
+        models.Decision.match_external_id == match_id,
+        models.Decision.recommended.is_(True),
+    )
+    if team_external_id is not None:
+        q = q.where(models.Decision.team_external_id == team_external_id)
+    rows = list(session.execute(q).scalars())
+    answered = [r for r in rows if r.applied is not None]
+    applied_true = [r for r in answered if r.applied]
+    shown = len(rows)
+    coverage = round(len(answered) / shown, 3) if shown else None
+    return {
+        "match_external_id": match_id, "team_external_id": team_external_id,
+        "gosterilen_oneri": shown,
+        "cevaplanan": len(answered),
+        "uygulandi": len(applied_true),
+        "uygulanmadi": len(answered) - len(applied_true),
+        "cevapsiz": shown - len(answered),
+        "kapsama": coverage,
+        "uyari": (None if shown == 0 or (coverage or 0) >= 0.5 else
+                  "kapsama düşük: önerilerin yarısından azı cevaplandı. Uplift bu "
+                  "veriyle hesaplanırsa örnek kendi kendini seçmiş olur — "
+                  "docs/PILOT-KARSI-OLGU-PLANI.md"),
+    }
+
+
 @router.get("/teams/{team_id}/squad", summary="Takımın oyuncu havuzu (kadro girişi için)")
 def get_team_squad(
     team_id: int,
