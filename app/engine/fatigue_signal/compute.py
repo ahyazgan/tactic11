@@ -103,11 +103,25 @@ def compute_fatigue_signal(
     )
 
     pass_drop = max(0.0, early_comp - late_comp)
-    # Action drop normalize: %50+ azalma → 1.0
-    if early_actions == 0:
+    # Eylem düşüşü DAKİKA BAŞINA temposundan hesaplanır, ham sayımdan değil.
+    #
+    # Ham sayım kullanıldığında ölçülen şey yorgunluk değil PENCERE GEOMETRİSİ
+    # oluyordu. Varsayılan pencereler bile eşit değil — erken (0,30) 30 dakika,
+    # geç (30,45) 15 dakika — yani tempo hiç düşmese bile sayım yarıya iner:
+    # raw_drop = 1 − 15/30 = 0.5 ve /0.5 normalizasyonuyla action_drop TAM 1.0.
+    # Canlı yolda daha da beter: 75. dakikada erken 60 dk, geç 15 dk; bir
+    # oyuncunun doyuma girmemesi için son 15 dakikada temposunu İKİYE
+    # KATLAMASI gerekiyordu. 45. dakikadan sonra bileşen pratikte herkes için
+    # 1.0'a kilitleniyordu ve yorgunluk skorunun yarısı bilgi taşımıyordu.
+    early_span = max(0.0, early_end - window_start)
+    late_span = max(0.0, window_end - late_start)
+    if early_actions == 0 or early_span <= 0 or late_span <= 0:
         action_drop = 0.0
     else:
-        raw_drop = (early_actions - late_actions) / early_actions
+        early_rate = early_actions / early_span
+        late_rate = late_actions / late_span
+        # %50+ tempo düşüşü → 1.0 (eşiğin anlamı değişmedi, girdisi düzeldi).
+        raw_drop = (early_rate - late_rate) / early_rate
         action_drop = max(0.0, min(1.0, raw_drop / 0.5))
 
     fatigue_score = round(0.5 * pass_drop + 0.5 * action_drop, 3)

@@ -59,6 +59,7 @@ from app.engine.coach_benchmark import (
     expected_calibration_error,
     lead_times,
     skill_from_auc,
+    skill_from_error,
     split_half_agreement,
     split_half_definition,
     split_half_shape_gate,
@@ -355,6 +356,9 @@ def main() -> int:
     shape_states: list[ShapeState] = []
     states: list[TickState] = []
     eng_sub_minutes: dict[int, list[float]] = defaultdict(list)
+    # Her tikin dakikası: öncü sürenin DOYGUN tabanı için (her tikte bayrak
+    # yakan kural). O taban olmadan öncü süre ızgara geometrisini ölçer.
+    all_tick_minutes: dict[int, list[float]] = defaultdict(list)
     fc_samples: list[tuple[float, bool, float]] = []
     cal_samples: list[tuple[float, bool]] = []
     raw_conf_samples: list[tuple[float, bool]] = []   # kalibre edilmemiş ham kanıt skoru
@@ -388,6 +392,7 @@ def main() -> int:
         states.append(TickState(
             mid, d.minute, score_state=as_of, subs_used=subs_used, coach_acted=acted_sub,
         ))
+        all_tick_minutes[mid].append(d.minute)
         if has_sub_signal:
             eng_sub_minutes[mid].append(d.minute)
 
@@ -481,7 +486,7 @@ def main() -> int:
             verdict = "taban çizgisiyle aynı"
         dims.append(Dimension(
             name="Kalibrasyon", metric="ECE (düşük iyi)", value=ece, baseline=naive,
-            skill=round(max(0.0, 1.0 - ece / 0.25) * 100, 1), measurable=True, verdict=verdict,
+            skill=skill_from_error(ece, naive), measurable=True, verdict=verdict,
             note=(f"ortalama güven {mean_conf:.0%}, gerçek isabet {hit:.0%} → sistem "
                   f"{'fazla' if gap > 0 else 'az'} güvenli ({gap:+.0%}); taban = hep "
                   f"{mean_conf:.0%} demenin hatası"),
@@ -508,7 +513,8 @@ def main() -> int:
     sh_shape = split_half_agreement(shape)
     sh_gate = split_half_shape_gate(shape_states)
     sh_prior = split_half_timing_prior(states)
-    lt = lead_times(coach_subs, eng_sub_minutes, lookback_min=args.lookback)
+    lt = lead_times(coach_subs, eng_sub_minutes, lookback_min=args.lookback,
+                    all_tick_minutes=all_tick_minutes)
     # İki motor TANIMI arasındaki seçimin bedeli ödenir: tanım öteki yarıda
     # seçilir, bu yarıda ölçülür. Önceden ikisinin ölçülmüş F1'inden büyüğü
     # SABİT bir tabana karşı raporlanıyordu — hiçbir bilgi olmasa bile iki
@@ -641,6 +647,7 @@ def main() -> int:
     print(f"    öncü süre: {lt.moves} gerçek değişikliğin {lt.covered}'inde motor önceki "
           f"{args.lookback:.0f} dk içinde sinyal vermiş (kapsama {lt.coverage}); "
           f"ort. {lt.mean_lead_min} dk, medyan {lt.median_lead_min} dk önce")
+    print(f"      taban: {lt.note}")
     print()
     return 0
 

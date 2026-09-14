@@ -57,6 +57,12 @@ from scripts.validate_who_prior import who_states_from_events
 
 DEFAULT_PERMUTATIONS = 400
 # "Son dönem" ve "erken dönem" pencereleri: düşüş sinyalleri bu ikisini kıyaslar.
+# Son dönem = [t−10, t], erken dönem = [0, t−20). Arada 10 dakikalık bir ÖLÜ
+# BÖLGE var ve bu kasıtlı: geçiş dakikaları "erken"i kirletmesin diye tampon
+# bırakıldı. Ama tampon genişliği DENENMEDİ — 0, 5, 15 dakikayla ölçülmedi.
+# Sonucu değiştirip değiştirmediği bilinmiyor; ölçüm zaten boş sonuç verdiği
+# için (fark +0,001) burada bırakıldı. Sinyal aranırsa tampon da taranmalı ve
+# taranan her genişlik seçim bedeline dahil edilmelidir.
 RECENT_MIN, EARLY_EDGE_MIN = 10.0, 20.0
 MIN_GROUP = 2          # grup içi soru ancak iki kişiyle anlamlı
 SIGNALS = ("pas_isabeti_son10", "pas_isabeti_dususu", "dokunus_son10",

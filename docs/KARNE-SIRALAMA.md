@@ -18,6 +18,24 @@ hash'ine bağlıydı.
 Ölçüm: [sub-ranking-2026-09-14.json](measurements/sub-ranking-2026-09-14.json).
 Sabit kamera / takip dosyalarına dokunulmadı.
 
+> **Bu sayfadaki sayılar YENİDEN ÇALIŞTIRILMALI (14 Eylül, denetim sonrası).**
+> Ölçümden sonra iki motor kusuru düzeltildi ve ikisi de buradaki sıralamayı
+> besliyor:
+>
+> 1. **Yorgunluk skorunun yarısı bilgi taşımıyordu.** Eylem düşüşü ham
+>    sayımdan hesaplanıyordu, oysa erken ve geç pencereler eşit uzunlukta
+>    değil. 45. dakikadan sonra bileşen pratikte her oyuncu için 1.0'a
+>    kilitleniyordu. Artık dakika başına tempodan hesaplanıyor.
+> 2. **Önsel normalizasyonu motorunkinden farklıydı.** Tepe değer eylem
+>    eşiğinden sonraki aday listesinden alınıyordu; motor onu eşikten önceki
+>    havuzdan alır.
+>
+> Aşağıdaki tablo düzeltmelerden ÖNCEki koşuma aittir. **Ana bulgu ("grubu
+> buluyor, kişiyi bulmuyor") büyük olasılıkla ayakta kalır** — ters kontrol
+> zaten yorgunluk sıralamasının bilgi taşımadığını gösteriyordu ve birinci
+> kusur tam da bunun bir sebebini açıklıyor. Ama **sayılar bu hâliyle
+> alıntılanmamalı**; külliyat ve maç dosyalarıyla yeniden üretilmeli.
+
 ## Sonuçlar
 
 Külliyat: 331 gerçek taktik değişiklik, ortalama 10,8 aday.
