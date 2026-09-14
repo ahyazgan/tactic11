@@ -221,3 +221,46 @@ def test_snapshot_feeds_the_timing_gate_with_used_substitutions(session, monkeyp
     # Ve kapı bu sayıyla gerçekten kapanıyor: 5 hak, 5 hak sınırı.
     from app.engine.sub_timing import elite_sub_window_probability
     assert elite_sub_window_probability(75.0, "trailing", 5, subs_allowed=5) == 0.0
+
+
+def test_snapshot_uses_the_tenant_table_when_the_session_is_given(session, monkeypatch):
+    """WebSocket yolu da kiracının KENDİ tablosunu kullanmalı — admin ucu gibi.
+
+    İki yol farklı önsel tablosu çalıştırırsa, panelde ölçülen motor karnede
+    ölçülenle aynı olmaz. Bu ayrışma bir kez düzeltildi (subs_used/off_prior);
+    kiracı tablosu eklenirken yeniden açılmasın.
+    """
+    import app.data.loaders.tenant_prior as tp
+    from app.api.live import _compute_live_snapshot
+    from app.api.replay_feed import StatsBombReplayFeed
+    from app.engine.coach_benchmark import WhoPrior
+
+    session.info["tenant_id"] = "t-default"
+    _seed_match_with_events(session)
+    for pid in range(100, 111):
+        _seed_appearance(session, player_id=pid, minutes=90)
+    session.commit()
+
+    # Kiracı tablosu: her hücre 0.99 — genel tablodan AÇIKÇA ayrılsın.
+    sahte = WhoPrior(table={(g, s): 0.99 for g in ("GK", "DEF", "MID", "FWD")
+                            for s in (True, False)}, fitted_on=99)
+    cagrilar: list[dict] = []
+
+    def sahte_fit(session, **kw):
+        cagrilar.append(kw)
+        return sahte
+
+    monkeypatch.setattr(tp, "fit_tenant_off_prior", sahte_fit)
+
+    feed = StatsBombReplayFeed(session, 7001)
+    _compute_live_snapshot(feed, 7001, 11, current_minute=75.0, session=session)
+
+    assert cagrilar, "kiracı tablosu hiç sorulmadı"
+    # Sızıntı koruması: bu maç kendi fit'ine girmemeli.
+    assert cagrilar[0]["exclude_match_id"] == 7001
+    assert cagrilar[0]["team_external_id"] == 11
+
+    # session verilmezse genel tabloya düşer ve kiracı tablosu SORULMAZ.
+    cagrilar.clear()
+    _compute_live_snapshot(feed, 7001, 11, current_minute=75.0)
+    assert cagrilar == []
