@@ -27,7 +27,7 @@ from app.audit import AuditRecord, EngineResult
 from app.domain import DefensiveAction, PassEvent
 
 ENGINE_NAME = "engine.spatial_control"
-ENGINE_VERSION = "1"
+ENGINE_VERSION = "2"
 
 WINDOW_MIN = 10.0
 # Zone-14 / half-space kutusu (x ileri üçte bir, y merkez bandı)
@@ -94,7 +94,7 @@ def compute_spatial_control(
     our_p = [p for p in passes if p.team_external_id == team_external_id
              and in_win(p.minute)]
     opp_d = [d for d in defs if d.team_external_id == opponent_external_id
-             and in_win(d.minute)]
+             and in_win(d.minute) and not d.estimated]
 
     # #1 boşluk haritası — zone-14
     our_z14 = sum(

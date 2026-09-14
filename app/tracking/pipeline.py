@@ -18,7 +18,7 @@ Akış:
 from __future__ import annotations
 
 from collections.abc import Iterator
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +40,7 @@ MAX_BALL_SPEED_MPS = 45.0
 @dataclass
 class PipelineConfig:
     fps_out: float = 5.0
+    dense_events: bool = False  # deneysel: doğruluk kontrolünü henüz geçmedi
     track_fps: float = 15.0
     max_seconds: float | None = None
     detector: DetectorConfig = field(default_factory=DetectorConfig)
@@ -91,6 +92,7 @@ class SampledObservation:
     # Kare başına kalibrasyon açıkken bu karenin kendi homografisi; None ise
     # hattın sabit kalibrasyonu kullanılır (sabit kamera).
     calibration: PitchCalibration | None = None
+    continuity_id: int = 0
 
 
 def video_info(path: str | Path) -> dict[str, Any]:
@@ -182,7 +184,9 @@ def _search_ball_roi(det: Detector, rgb: np.ndarray, center: tuple[float, float]
     return (x0 + (bx1 + bx2) / 2, y0 + (by1 + by2) / 2, float(balls.confidence[i]))
 
 
-def interpolate_ball(samples: list[SampledObservation], max_gap: int) -> int:
+def interpolate_ball(samples: list[SampledObservation], max_gap: int, *,
+                     max_gap_seconds: float | None = None,
+                     calib: PitchCalibration | None = None) -> int:
     """Ardışık iki top gözlemi arasındaki ≤ max_gap örneklik boşlukları doğrusal doldur."""
     filled = 0
     known = [i for i, s in enumerate(samples) if s.ball is not None]
@@ -190,13 +194,62 @@ def interpolate_ball(samples: list[SampledObservation], max_gap: int) -> int:
         gap = b - a - 1
         if gap <= 0 or gap > max_gap:
             continue
+        dt = samples[b].seconds - samples[a].seconds
+        if dt <= 0 or (max_gap_seconds is not None and dt > max_gap_seconds):
+            continue
+        if any(s.continuity_id != samples[a].continuity_id for s in samples[a:b + 1]):
+            continue
+        # Pixel interpolation is only valid for a fixed camera. Two changing
+        # homographies cannot safely interpolate an unseen image point.
+        if any(s.calibration is not None for s in samples[a:b + 1]):
+            continue
         (ax, ay, _), (bx, by, _) = samples[a].ball, samples[b].ball  # type: ignore[misc]
+        if calib is not None:
+            pa, pb = calib.image_to_pitch_m(ax, ay), calib.image_to_pitch_m(bx, by)
+            if np.hypot(pb[0] - pa[0], pb[1] - pa[1]) > MAX_BALL_SPEED_MPS * dt + 2.5:
+                continue
         for k in range(1, gap + 1):
-            t = k / (gap + 1)
+            t = (samples[a + k].seconds - samples[a].seconds) / dt
+            if not 0 < t < 1:
+                continue
             samples[a + k].ball = (ax + (bx - ax) * t, ay + (by - ay) * t, 0.0)
             samples[a + k].ball_source = "interp"
             filled += 1
     return filled
+
+
+def reject_ball_spikes(samples: list[SampledObservation], calib: PitchCalibration | None) -> int:
+    """Reject isolated impossible jumps, supported on BOTH sides by observed balls.
+
+    Do not extrapolate a missing ball, and do not reject sustained movement or
+    the first/last observation on the strength of a single uncertain neighbour.
+    """
+    known = [i for i, s in enumerate(samples) if s.ball is not None and s.ball_source != "interp"]
+    rejected = []
+    for a, b, c in zip(known, known[1:], known[2:], strict=False):
+        triple = [samples[i] for i in (a, b, c)]
+        if len({s.continuity_id for s in triple}) != 1:
+            continue
+        times = [s.seconds for s in triple]
+        if not 0 < times[1] - times[0] <= 0.5 or not 0 < times[2] - times[1] <= 0.5:
+            continue
+        points = []
+        for s in triple:
+            calibration = s.calibration or calib
+            if calibration is None:
+                break
+            assert s.ball is not None
+            points.append(np.asarray(calibration.image_to_pitch_m(s.ball[0], s.ball[1])))
+        if len(points) != 3:
+            continue
+        def possible(i: int, j: int, points=points, times=times) -> bool:
+            return bool(np.linalg.norm(points[j] - points[i]) <= MAX_BALL_SPEED_MPS * (times[j] - times[i]) + 2.5)
+        if not possible(0, 1) and not possible(1, 2) and possible(0, 2):
+            rejected.append(b)
+    for i in rejected:
+        samples[i].ball = None
+        samples[i].ball_source = None
+    return len(rejected)
 
 
 def collect_observations(
@@ -278,6 +331,7 @@ def collect_observations(
     hits: dict[int, int] = {}
     last_ball: tuple[float, float, int] | None = None   # cx, cy, order
     roi_max_age = max(1, int(cfg.ball_gap_seconds * fps_eff))
+    continuity_id = 0
 
     for order, frame_idx, seconds, rgb in iter_video_frames(video_path, cfg.track_fps, cfg.max_seconds):
         frame_calib = calib
@@ -290,6 +344,8 @@ def collect_observations(
                     # Süreklilik koptu. Kalibratöre söylemezsek kaymış homografiyle
                     # devam etmeyi dener ve yanlış çizgiye kilitlenebilir.
                     per_frame.mark_cut()
+                    continuity_id += 1
+                    last_ball = None
                     cuts_seen += 1
                 if replay_filter is not None:
                     v = replay_filter.update(cut_detector.last_gray,
@@ -298,6 +354,8 @@ def collect_observations(
                         # Tekrar karesi: canlı dakikayla kaydedilirse zaman
                         # çizgisi kayar ve olay iki kez sayılır. Konum ÜRETİLMEZ.
                         replays_seen += 1
+                        continuity_id += 1
+                        last_ball = None
                         if progress and replays_seen % 25 == 1:
                             print(f"  kare {order} tekrar sayıldı — {v.reason}",
                                   flush=True)
@@ -343,7 +401,8 @@ def collect_observations(
         if ball is not None:
             last_ball = (ball[0], ball[1], order)
         samples.append(SampledObservation(order, frame_idx, seconds, rows, ball, ball_source,
-                                          calibration=frame_calib if per_frame else None))
+                                          calibration=frame_calib if per_frame else None,
+                                          continuity_id=continuity_id))
         if progress and order % 50 == 0:
             print(f"  kare {order} · t={seconds:6.1f}s · oyuncu={len(rows)} · top={ball_source or '-'}", flush=True)
 
@@ -352,7 +411,8 @@ def collect_observations(
     weak = {t for t, n in hits.items() if n < min_hits}
     for s in samples:
         s.persons = [r for r in s.persons if r[0] not in weak]
-    interpolate_ball(samples, roi_max_age)
+    ball_spikes_rejected = reject_ball_spikes(samples, calib)
+    interpolate_ball(samples, roi_max_age, max_gap_seconds=cfg.ball_gap_seconds, calib=calib)
     if per_frame is not None and progress:
         print(f"  kare başına kalibrasyon: {per_frame.frames_calibrated} kare kalibre, "
               f"{per_frame.frames_rejected} atlandı (oran {per_frame.calibrated_ratio})",
@@ -371,6 +431,7 @@ def collect_observations(
                 "hiçbir kare atılmadı)")
             print(f"  tekrar: {replays_seen} kare atıldı{uyari}", flush=True)
     stats: dict[str, Any] = {"per_frame_calibration": per_frame is not None,
+                             "ball_spikes_rejected": ball_spikes_rejected,
                              "effective_track_fps": round(fps_eff, 2)}
     if per_frame is not None:
         d_cal = per_frame.frames_calibrated - base[0]
@@ -471,12 +532,13 @@ def build_frames(
     home_team_id: int,
     away_team_id: int,
     cfg: PipelineConfig,
+    event_frames: list[TrackingFrame] | None = None,
 ) -> list[TrackingFrame]:
     stride = output_stride(cfg)
     player_v, ball_v = compute_velocities(samples, calib, cfg.track_fps)
     out: list[TrackingFrame] = []
     for s in samples:
-        if s.order % stride != 0:
+        if event_frames is None and s.order % stride != 0:
             continue
         vmap = player_v.get(s.order, {})
         players = [
@@ -501,7 +563,11 @@ def build_frames(
             source_name=cfg.source_name,
         )
         if fr is not None:
-            out.append(fr)
+            fr = fr.model_copy(update={"continuity_id": s.continuity_id})
+            if event_frames is not None:
+                event_frames.append(fr)
+            if s.order % stride == 0:
+                out.append(fr)
     return out
 
 
@@ -597,15 +663,21 @@ def process_video(
         video_path, cfg, detector=detector, calib=calib, calibrator=calibrator)
     tracks = {tid for s in samples for tid, *_ in s.persons}
     assignment = assigner.fit(team_anchor, eligible_tracks=tracks)
+    event_frames: list[TrackingFrame] = []
     frames = build_frames(
         samples, assignment.team_by_track, calib,
         match_id=match_id, home_team_id=home_team_id, away_team_id=away_team_id, cfg=cfg,
+        event_frames=event_frames if cfg.dense_events else None,
     )
     # Pasları KARELERDEN çıkar: aktör (topa en yakın oyuncu) zaten kare başına
     # işaretli, tutucu değişimi pasın kendisidir. Ayrı bir tespit modeli gerekmez.
     from app.tracking.passes import extract_passes
+    from app.tracking.recoveries import extract_recoveries
 
-    pass_out = extract_passes(frames)
+    if not cfg.dense_events:
+        event_frames = frames
+    pass_out = extract_passes(event_frames)
+    recovery_out = extract_recoveries(event_frames)
     if cfg.preview_path:
         write_preview(video_path, samples, assignment.team_by_track, calib, cfg, cfg.preview_path)
     per_frame = [len(s.persons) for s in samples]
@@ -621,6 +693,14 @@ def process_video(
         "effective_track_fps": calib_stats.get("effective_track_fps"),
         "frames_written": len(frames),
         "fps_out": cfg.fps_out,
+        "event_frames_used": len(event_frames),
+        "dense_events": cfg.dense_events,
+        "derived_events": {
+            "derived_passes": [asdict(p) for p in pass_out.passes],
+            "derived_defensive_actions": [asdict(d) for d in recovery_out.actions],
+        },
+        "defensive_actions": {"count": len(recovery_out.actions),
+                              "rejected": recovery_out.rejected, "note": recovery_out.note},
         "tracks": len(tracks),
         "players_per_frame_mean": round(float(np.mean(per_frame)), 1) if per_frame else 0.0,
         "team_counts": {

@@ -247,12 +247,8 @@ class WarmTracker:
         # başka bir sınıfta yorumlanır.
         # Takipten çıkarılan paslar CANLI yolda da JSON'a girmeli; yoksa
         # ingest onları göremez ve kulüp videosundan xT üretilemez.
-        from dataclasses import asdict as _asdict
-
-        from app.tracking.passes import extract_passes as _extract_passes
-
         payload = frames_to_json(frames, match_id=match_id, source_name=frame_source, extra={
-            "derived_passes": [_asdict(p) for p in _extract_passes(frames).passes],
+            **summary.pop("derived_events"),
             "video": video.name, "video_info": info,
             "home_team_external_id": home_team, "away_team_external_id": away_team,
             "summary": summary,
@@ -319,6 +315,7 @@ def main() -> int:
     p.add_argument("--period", type=int, default=1)
     p.add_argument("--fps", type=float, default=5.0)
     p.add_argument("--track-fps", type=float, default=15.0)
+    p.add_argument("--dense-events", action="store_true", help="Deneysel: olay çıkarımında tüm takip karelerini kullan")
     p.add_argument("--tiles", type=int, default=6)
     p.add_argument("--threshold", type=float, default=0.3)
     p.add_argument("--weights", default=None)
@@ -376,6 +373,7 @@ def main() -> int:
                 backend=args.backend, onnx_model=args.onnx_model,
             ),
             pipeline_kwargs={
+                "dense_events": args.dense_events,
                 "fps_out": args.fps, "track_fps": args.track_fps,
                 "ball_threshold": args.threshold,
             },
@@ -393,6 +391,7 @@ def main() -> int:
         """Eski yol: her segment ayrı süreçte (model her seferinde yeniden yüklenir)."""
         cmd = [
             sys.executable, "-m", "scripts.track_video",
+            *(["--dense-events"] if args.dense_events else []),
             "--video", str(seg),
             *(["--calibration", args.calibration] if args.calibration else []),
             "--out", str(frames_json), "--match-id", str(args.match_id),

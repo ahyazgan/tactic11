@@ -103,6 +103,20 @@ def test_ingest_handles_missing_ball(session):
     assert row.ball_y is None
 
 
+def test_engine_window_preserves_interpolated_ball_and_camera_continuity(session):
+    from app.api.tracking import frames_in_window
+
+    frame = _make_frame(7, 0).model_copy(update={
+        "source": "video_tracking", "ball_estimated": True, "continuity_id": 4,
+        "event_uuid": "sample-1", "visible_area": ((0, 0), (100, 0), (100, 100)),
+    })
+    ingest_tracking_match(session, _InMemorySource([frame]), match_external_id=7)
+    session.commit()
+    loaded = frames_in_window(session, 7, from_minute=0, to_minute=1)[0]
+    assert loaded.ball_estimated and loaded.continuity_id == 4
+    assert loaded.event_uuid == frame.event_uuid and loaded.visible_area == frame.visible_area
+
+
 def test_ingest_tracking_match_job_registered():
     spec = get("ingest_tracking_match")
     assert spec.name == "ingest_tracking_match"

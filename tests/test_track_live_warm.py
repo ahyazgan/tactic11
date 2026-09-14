@@ -83,3 +83,24 @@ def test_resolution_change_rebuilds_the_detector(warm, capsys):
 def test_calibration_is_loaded_once_at_construction(warm):
     assert warm.calib is not None
     assert warm.calib.reprojection_error_m == pytest.approx(0.0, abs=1.0)
+
+
+def test_live_payload_preserves_events_computed_from_dense_frames(warm, monkeypatch, tmp_path):
+    from app.tracking import pipeline
+
+    # No exported frame can reconstruct these events: they came from the
+    # denser event stream inside process_video. The wrapper must forward them.
+    warm._mode = {"per_frame": False, "moving": False, "reacquire": False,
+                  "source": "video_tracking"}
+    monkeypatch.setattr(pipeline, "video_info", lambda _: {"width": 3840, "height": 2160})
+    events = {"derived_passes": [{"minute": 1, "estimated": True}],
+              "derived_defensive_actions": [{"minute": 2, "action_type": "ball_recovery"}]}
+    monkeypatch.setattr(pipeline, "process_video", lambda *a, **kw: ([], {
+        "derived_events": events, "team_colors": [], "calibration_stats": {}}))
+    target = tmp_path / "segment.json"
+    warm.run(tmp_path / "segment.mp4", out_json=target, offset_minutes=0,
+             match_id=1, home_team=10, away_team=20, period=1)
+    payload = json.loads(target.read_text(encoding="utf-8"))
+    assert payload["derived_passes"] == events["derived_passes"]
+    assert payload["derived_defensive_actions"] == events["derived_defensive_actions"]
+    assert "derived_events" not in payload["summary"]
