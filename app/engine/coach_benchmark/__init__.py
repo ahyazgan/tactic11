@@ -7,6 +7,7 @@ from app.engine.coach_benchmark.compute import (
     SHAPE_SUPPORT_THRESHOLDS,
     SHAPE_UNKNOWN_CELL,
     WHO_TOP_K,
+    WHO_UNKNOWN_CELL,
     AgreementStat,
     Dimension,
     LeadTimeStat,
@@ -30,6 +31,7 @@ from app.engine.coach_benchmark.compute import (
     apply_who_prior,
     build_scorecard,
     expected_calibration_error,
+    expected_who_hits,
     fit_shape_prior,
     fit_timing_prior,
     fit_who_prior,
@@ -42,6 +44,8 @@ from app.engine.coach_benchmark.compute import (
     split_half_timing_prior,
     split_half_who_prior,
     who_agreement,
+    who_prior_agreement,
+    who_prior_tiers,
 )
 
 __all__ = [
@@ -53,6 +57,7 @@ __all__ = [
     "SHAPE_SUPPORT_THRESHOLDS",
     "SHAPE_UNKNOWN_CELL",
     "WHO_TOP_K",
+    "WHO_UNKNOWN_CELL",
     "AgreementStat",
     "Dimension",
     "LeadTimeStat",
@@ -73,6 +78,7 @@ __all__ = [
     "agreement",
     "apply_shape_gate",
     "apply_who_prior",
+    "expected_who_hits",
     "apply_timing_prior",
     "build_scorecard",
     "expected_calibration_error",
@@ -88,4 +94,6 @@ __all__ = [
     "split_half_timing_prior",
     "split_half_who_prior",
     "who_agreement",
+    "who_prior_agreement",
+    "who_prior_tiers",
 ]

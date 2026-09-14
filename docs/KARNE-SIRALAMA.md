@@ -60,6 +60,13 @@ bozuyor:
   tesadüfü.** İlk okumada bunu "saf önsel iki kat daha iyi" diye yorumladım;
   yanlıştı.
 
+**Bu düzeltme önce YALNIZ bu scripte uygulandı.** Karnenin kendi cetveli
+(`apply_who_prior` + `who_agreement`) aynı kimlik sırasını kullanmaya devam
+ediyordu ve bir denetimde yakalandı: orada da külliyat isabet@1'ini 0,125'ten
+0,181'e çıkarıyordu. Ölçüm artık kademe sayıyor (`who_prior_agreement`).
+Ders: bir ölçüm tuzağı bulunduğunda aynı tuzağın ÖTEKİ kullanım yerleri de
+taranmalı — bir yerde düzeltmek yetmiyor.
+
 Script artık beraberlikleri rastgele sayıyor ve **beklenen** isabeti
 hesaplıyor: aynı anahtarı paylaşan t aday ilk sırayı paylaşıyorsa isabet@1 =
 1/t; ilk üç sınırı bir kademeyi ortadan bölüyorsa beklenen pay
