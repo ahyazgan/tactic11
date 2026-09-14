@@ -79,7 +79,8 @@ def test_lineup_then_substitution_drives_subs_used(client, match) -> None:
         "team_external_id": 11, "minute": 62, "player_off": 9, "player_on": 20,
     }).json()
     assert sub["kullanilmis_hak"] == 1
-    assert 9 not in sub["sahada"] or True   # çıkış dakikasının kendisi sınırdadır
+    assert 9 not in sub["sahada"]           # yarı açık aralık: çıkış dakikasında dışarıda
+    assert 20 in sub["sahada"]              # giriş dakikasında içeride
     state = client.get("/admin/matches/7001/squad-state",
                        params={"team_external_id": 11, "minute": 70}).json()
     assert state["kadro_girildi"] is True
@@ -234,3 +235,155 @@ def test_load_samples_need_an_existing_match(client) -> None:
         "samples": [{"player_external_id": 5, "minute": 30, "total_distance_m": 100.0}],
     })
     assert missing.status_code == 404
+
+
+# --- karşı-olgu paydası ve kapsama -------------------------------------------- #
+
+def _rec(client, minute: float, applied=None, dtype="substitution") -> dict:
+    return client.post("/admin/matches/7001/decisions", json={
+        "team_external_id": 11, "minute": minute, "period": 2,
+        "decision_type": dtype, "recommended": True, "applied": applied,
+        "notes": "öneri",
+    }).json()
+
+
+def test_repeated_display_of_one_recommendation_does_not_inflate_the_denominator(
+    client, match,
+) -> None:
+    """Canlı panel aynı öneriyi dakika ilerledikçe tekrar yazar; payda şişmemeli."""
+    first = _rec(client, 60.0)
+    assert first["guncellendi"] is False
+    for minute in (61.0, 62.5, 64.0):
+        again = _rec(client, minute)
+        assert again["guncellendi"] is True
+        assert again["id"] == first["id"]
+    cov = client.get("/admin/matches/7001/decision-coverage",
+                     params={"team_external_id": 11}).json()
+    assert cov["gosterilen_oneri"] == 1
+    # pencere dışına çıkınca yeni öneri sayılır
+    later = _rec(client, 80.0)
+    assert later["guncellendi"] is False
+    assert later["id"] != first["id"]
+
+
+def test_a_mark_is_never_erased_by_a_later_display(client, match) -> None:
+    """Koç işaretledikten sonra gelen gösterim kaydı işareti null'a çevirmemeli."""
+    shown = _rec(client, 60.0, applied=None)
+    marked = _rec(client, 61.0, applied=True)
+    assert marked["id"] == shown["id"] and marked["applied"] is True
+    again = _rec(client, 62.0, applied=None)
+    assert again["id"] == shown["id"]
+    assert again["applied"] is True          # beyan korunur
+
+
+def test_coverage_warns_when_most_recommendations_went_unanswered(client, match) -> None:
+    """Kapsama düşükse uç nokta susmaz: örnek kendi kendini seçmiş olur."""
+    _rec(client, 20.0, applied=True)
+    for minute in (40.0, 60.0, 80.0):
+        _rec(client, minute, applied=None)
+    cov = client.get("/admin/matches/7001/decision-coverage",
+                     params={"team_external_id": 11}).json()
+    assert cov["gosterilen_oneri"] == 4
+    assert cov["cevaplanan"] == 1
+    assert cov["cevapsiz"] == 3
+    assert cov["kapsama"] == 0.25
+    assert cov["uyari"] is not None and "kapsama düşük" in cov["uyari"]
+
+
+def test_coverage_is_quiet_when_both_arms_are_answered(client, match) -> None:
+    _rec(client, 20.0, applied=True)
+    _rec(client, 40.0, applied=False)
+    cov = client.get("/admin/matches/7001/decision-coverage",
+                     params={"team_external_id": 11}).json()
+    assert cov["kapsama"] == 1.0
+    assert cov["uygulandi"] == 1 and cov["uygulanmadi"] == 1
+    assert cov["uyari"] is None
+
+
+# --- kırmızı kart ------------------------------------------------------------- #
+
+def test_dismissal_removes_the_player_without_spending_a_slot(client, match) -> None:
+    """Kırmızı kart sahadan düşürür ama DEĞİŞİKLİK HAKKI harcamaz."""
+    _lineup(client)
+    client.post("/admin/matches/7001/substitution", json={
+        "team_external_id": 11, "minute": 55, "player_off": 9, "player_on": 20,
+    })
+    out = client.post("/admin/matches/7001/dismissal", json={
+        "team_external_id": 11, "minute": 70, "player_external_id": 4,
+    }).json()
+    assert out["kullanilmis_hak"] == 1          # değişiklik sayısı değişmedi
+    assert out["hak_degisti_mi"] is False
+    assert out["sahadaki_sayi"] == 10           # atılan oyuncu O ANDA düşer
+    assert 4 not in out["sahada"]
+
+    state = client.get("/admin/matches/7001/squad-state",
+                       params={"team_external_id": 11, "minute": 80}).json()
+    assert state["sahadaki_sayi"] == 10
+    assert state["atilan"] == [4]
+    assert state["kullanilmis_hak"] == 1
+
+
+def test_dismissed_player_cannot_be_substituted_afterwards(client, match) -> None:
+    """Atılan oyuncu sahada görünmemeli; motor onu 'çıkar' diye öneremez."""
+    _lineup(client)
+    client.post("/admin/matches/7001/dismissal", json={
+        "team_external_id": 11, "minute": 60, "player_external_id": 7,
+    })
+    again = client.post("/admin/matches/7001/substitution", json={
+        "team_external_id": 11, "minute": 70, "player_off": 7, "player_on": 20,
+    })
+    assert again.status_code == 409
+
+
+def test_dismissal_refuses_unknown_or_repeated_players(client, match) -> None:
+    _lineup(client)
+    unknown = client.post("/admin/matches/7001/dismissal", json={
+        "team_external_id": 11, "minute": 60, "player_external_id": 99,
+    })
+    assert unknown.status_code == 400
+    client.post("/admin/matches/7001/dismissal", json={
+        "team_external_id": 11, "minute": 60, "player_external_id": 6,
+    })
+    twice = client.post("/admin/matches/7001/dismissal", json={
+        "team_external_id": 11, "minute": 75, "player_external_id": 6,
+    })
+    assert twice.status_code == 409
+
+
+def test_dismissal_is_visible_to_the_live_decision_squad_awareness(client, match, session) -> None:
+    """Kadro farkındalığı 10 kişiyi görmeli — yoksa panel 11'e bakıyormuş gibi davranır."""
+    from app.data.loaders.appearances import load_match_appearances
+    from app.engine.live_lineup import resolve_on_pitch
+
+    _lineup(client)
+    client.post("/admin/matches/7001/dismissal", json={
+        "team_external_id": 11, "minute": 60, "player_external_id": 3,
+    })
+    apps = load_match_appearances(session, 7001)
+    on_pitch = resolve_on_pitch(apps, 75.0, team_external_id=11)
+    assert len(on_pitch.player_ids) == 10
+    assert 3 not in on_pitch.player_ids
+
+
+def test_squad_state_matches_the_engine_on_pitch_rule(client, match, session) -> None:
+    """Uç nokta ile motor AYNI kadroyu döndürmeli — özellikle sınır dakikalarda.
+
+    İki ayrı sözleşme tutmak (kapalı vs yarı açık aralık) aynı dakikada farklı
+    kadro demekti. Bu test ikisini birbirine kilitler.
+    """
+    from app.data.loaders.appearances import load_match_appearances
+    from app.engine.live_lineup import resolve_on_pitch
+
+    _lineup(client)
+    client.post("/admin/matches/7001/substitution", json={
+        "team_external_id": 11, "minute": 62, "player_off": 9, "player_on": 20,
+    })
+    client.post("/admin/matches/7001/dismissal", json={
+        "team_external_id": 11, "minute": 70, "player_external_id": 3,
+    })
+    apps = load_match_appearances(session, 7001)
+    for minute in (0.0, 30.0, 61.0, 62.0, 63.0, 69.0, 70.0, 71.0, 90.0):
+        api = client.get("/admin/matches/7001/squad-state",
+                         params={"team_external_id": 11, "minute": minute}).json()
+        engine = resolve_on_pitch(apps, minute, team_external_id=11)
+        assert set(api["sahada"]) == set(engine.player_ids), f"{minute}. dakikada ayrışma"

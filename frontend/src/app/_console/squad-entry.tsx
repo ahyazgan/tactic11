@@ -12,6 +12,7 @@
  * GET  /admin/matches/{id}/squad-state     → sahadakiler + kullanılmış hak
  * PUT  /admin/matches/{id}/lineup          → ilk 11
  * POST /admin/matches/{id}/substitution    → değişiklik (+ öneriyle uyuşma)
+ * POST /admin/matches/{id}/dismissal       → kırmızı kart (hak HARCAMAZ)
  * POST /admin/decisions/{id}/applied       → koçun beyanı (uyuşmadan TÜRETİLMEZ)
  */
 
@@ -22,7 +23,8 @@ import { apiFetch } from "@/lib/api";
 interface SquadPlayer { player_external_id: number; name: string | null; position: string | null; son_mac: string | null }
 interface SquadResponse { team_external_id: number; oyuncu: SquadPlayer[] }
 interface StateResponse {
-  kadro_girildi: boolean; sahada: number[]; kullanilmis_hak: number;
+  kadro_girildi: boolean; sahada: number[]; sahadaki_sayi: number;
+  atilan: number[]; kullanilmis_hak: number;
   mevkiler: Record<string, string>; uyari: string | null;
 }
 interface Agreement { decision_id: number; minute: number; sira: number; applied: boolean | null }
@@ -71,6 +73,7 @@ export function SquadEntry({ matchId, teamId, minute }: {
   const [off, setOff] = useState<number | null>(null);
   const [on, setOn] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [redMode, setRedMode] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, setPending] = useState<Agreement[]>([]);
 
@@ -120,6 +123,16 @@ export function SquadEntry({ matchId, teamId, minute }: {
     setMsg(`değişiklik kaydedildi · kullanılan hak ${r.kullanilmis_hak}`);
   };
 
+  const saveRed = async () => {
+    if (off == null) return;
+    const r = await call(`/admin/matches/${matchId}/dismissal`, {
+      team_external_id: teamId, minute, player_external_id: off,
+    }, "POST");
+    if (!r) return;
+    setOff(null); setRedMode(false);
+    setMsg(`kırmızı kart kaydedildi · sahada 10 · kullanılan hak değişmedi`);
+  };
+
   const mark = async (decisionId: number, applied: boolean) => {
     await apiFetch(`/admin/decisions/${decisionId}/applied`, {
       method: "POST", body: JSON.stringify({ applied }),
@@ -134,6 +147,7 @@ export function SquadEntry({ matchId, teamId, minute }: {
         <span style={{ fontSize: 12, color: "var(--dim)" }}>
           {minute.toFixed(0)}. dakika · sahada {onPitch.length} · kullanılan hak{" "}
           {state?.kullanilmis_hak ?? 0}
+          {state?.atilan?.length ? ` · ${state.atilan.length} kırmızı kart` : ""}
         </span>
       </header>
 
@@ -181,20 +195,46 @@ export function SquadEntry({ matchId, teamId, minute }: {
               return <Chip key={id} p={p} selected={off === id} onClick={() => setOff(off === id ? null : id)} />;
             })}
           </div>
-          <p style={{ margin: 0, fontSize: 12.5, color: "var(--dim)" }}>Giren</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {!redMode && (
+            <p style={{ margin: 0, fontSize: 12.5, color: "var(--dim)" }}>Giren</p>
+          )}
+          <div style={{ display: redMode ? "none" : "flex", flexWrap: "wrap", gap: 8 }}>
             {bench.map((p) => (
               <Chip key={p.player_external_id} p={p} selected={on === p.player_external_id}
                     onClick={() => setOn(on === p.player_external_id ? null : p.player_external_id)} />
             ))}
           </div>
-          <button
-            onClick={saveSub}
-            disabled={off == null || on == null || busy}
-            style={{ ...btn("primary"), opacity: off != null && on != null && !busy ? 1 : 0.5 }}
-          >
-            Değişikliği kaydet
-          </button>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button
+              onClick={saveSub}
+              disabled={off == null || on == null || busy || redMode}
+              style={{ ...btn("primary"),
+                opacity: off != null && on != null && !busy && !redMode ? 1 : 0.5 }}
+            >
+              Değişikliği kaydet
+            </button>
+            {/*
+              Kırmızı kart DEĞİŞİKLİK HAKKI HARCAMAZ — ayrı bir yol olmasının
+              sebebi bu. Kaydedilmezse atılan oyuncu sahada görünmeye devam eder
+              ve motor onu "çıkar" diye önerebilir.
+            */}
+            {!redMode ? (
+              <button onClick={() => { setRedMode(true); setOn(null); }} style={btn("warn")}>
+                Kırmızı kart
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={saveRed}
+                  disabled={off == null || busy}
+                  style={{ ...btn("warn"), opacity: off != null && !busy ? 1 : 0.5 }}
+                >
+                  {off != null ? `${off} numaralı oyuncuyu at` : "Çıkan oyuncuyu seç"}
+                </button>
+                <button onClick={() => setRedMode(false)} style={btn()}>Vazgeç</button>
+              </>
+            )}
+          </div>
         </div>
       )}
 

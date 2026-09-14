@@ -82,6 +82,12 @@ class LineupIn(BaseModel):
                           description="True → bu takımın önceki kayıtları silinir")
 
 
+class DismissalIn(BaseModel):
+    team_external_id: int
+    minute: float = Field(..., ge=0, le=130)
+    player_external_id: int
+
+
 class SubstitutionIn(BaseModel):
     team_external_id: int
     minute: float = Field(..., ge=0, le=130)
@@ -110,12 +116,18 @@ def _rows_for(session: Session, match_id: int, team_id: int) -> list[models.Play
 
 
 def _on_pitch(rows: list[models.PlayerAppearance], minute: float) -> list[models.PlayerAppearance]:
-    """O an sahada olanlar. O DAKİKA GİREN sahadadır; o dakika çıkan da hâlâ sayılır
-    (çıkış anının kendisi henüz geçmemiştir)."""
+    """O an sahada olanlar — YARI AÇIK aralık: [giriş, çıkış).
+
+    Kural motorun `live_lineup.is_on_pitch` kuralıyla BİREBİR aynıdır: giriş
+    dakikasında sahadadır, çıkış dakikasında artık değildir. İki ayrı sözleşme
+    tutmak, aynı dakikada bu uç noktanın ve panelin FARKLI kadro döndürmesi
+    demekti; `test_squad_state_matches_the_engine_on_pitch_rule` ikisini
+    birbirine kilitler.
+    """
     return [r for r in rows
             if float(r.substituted_in_minute or 0) <= minute
             and (r.substituted_out_minute is None
-                 or float(r.substituted_out_minute) >= minute)]
+                 or minute < float(r.substituted_out_minute))]
 
 
 def _touch_minutes(rows: list[models.PlayerAppearance], minute: float) -> None:
@@ -251,6 +263,55 @@ def post_load_samples(
         "kaynak": payload.source,
         "not": ("kümülatif değerler; yük sinyali ÖLÇÜLMEDEN öneriye bağlanmaz — "
                 "docs/MAC-ICI-YUK-PLANI.md"),
+    }
+
+
+@router.get("/matches/{match_id}/decision-coverage",
+            summary="Kaç öneri gösterildi, kaçına cevap verildi? (uplift geçerlilik kapısı)")
+def get_decision_coverage(
+    match_id: int,
+    team_external_id: int | None = Query(default=None),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Karşı-olgu ölçümünün ÖN KOŞULU: paydayı göster.
+
+    `decision_uplift` uygulanan kolu uygulanmayanla kıyaslar. İki kol da dolu
+    olsa bile, koç önerilerin yalnız bir kısmına dokunduysa örnek kendi kendini
+    seçmiştir: beğendiğini işaretleyip ötekini görmezden gelen bir koçta uplift
+    haksız yere iyi çıkar ve bunu kolların içine bakarak GÖREMEZSİNİZ.
+
+    Görünür kılan tek sayı kapsamadır: gösterilen öneri kaç, cevaplanan kaç.
+    Gösterim `applied=null` ile yazılır (canlı panel her öneriyi bir kez yazar,
+    uç nokta mükerrerini birleştirir), koç dokununca aynı satır işaretlenir.
+
+    Kapsama eşiği ve ne zaman hüküm verilebileceği ön-kayıtlı plandadır:
+    `docs/PILOT-KARSI-OLGU-PLANI.md`.
+    """
+    _match_or_404(session, match_id)
+    q = select(models.Decision).where(
+        models.Decision.sport == football.SPORT_NAME,
+        models.Decision.match_external_id == match_id,
+        models.Decision.recommended.is_(True),
+    )
+    if team_external_id is not None:
+        q = q.where(models.Decision.team_external_id == team_external_id)
+    rows = list(session.execute(q).scalars())
+    answered = [r for r in rows if r.applied is not None]
+    applied_true = [r for r in answered if r.applied]
+    shown = len(rows)
+    coverage = round(len(answered) / shown, 3) if shown else None
+    return {
+        "match_external_id": match_id, "team_external_id": team_external_id,
+        "gosterilen_oneri": shown,
+        "cevaplanan": len(answered),
+        "uygulandi": len(applied_true),
+        "uygulanmadi": len(answered) - len(applied_true),
+        "cevapsiz": shown - len(answered),
+        "kapsama": coverage,
+        "uyari": (None if shown == 0 or (coverage or 0) >= 0.5 else
+                  "kapsama düşük: önerilerin yarısından azı cevaplandı. Uplift bu "
+                  "veriyle hesaplanırsa örnek kendi kendini seçmiş olur — "
+                  "docs/PILOT-KARSI-OLGU-PLANI.md"),
     }
 
 
@@ -401,6 +462,56 @@ def post_substitution(
     }
 
 
+@router.post("/matches/{match_id}/dismissal", summary="Kırmızı kart kaydet (canlı maç girdisi)")
+def post_dismissal(
+    match_id: int,
+    payload: DismissalIn,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Atılan oyuncuyu sahadan düşürür — ama DEĞİŞİKLİK HAKKI HARCAMAZ.
+
+    Ayrım önemli: kayıt, çıkan oyuncunun penceresini kapatır ve `red_cards`
+    işaretini koyar; yerine giren oyuncu AÇILMAZ. Kullanılmış hak sayımı
+    sahaya GİREN oyuncuları saydığı için kendiliğinden doğru kalır
+    (`_subs_used`). Kaydedilmezse atılan oyuncu sonsuza dek sahada görünür ve
+    motor onu "çıkar" diye önerebilir.
+
+    Takım 10 kişi kalınca öneri bağlamı da değişir; bu kayıt olmadan panel
+    11 kişilik bir takıma bakıyormuş gibi davranır.
+    """
+    _match_or_404(session, match_id)
+    rows = _rows_for(session, match_id, payload.team_external_id)
+    row = next((r for r in rows if r.player_external_id == payload.player_external_id), None)
+    if row is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"oyuncu {payload.player_external_id} bu maçın kadrosunda yok "
+                   f"— önce PUT /admin/matches/{match_id}/lineup")
+    if row.substituted_out_minute is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"oyuncu {payload.player_external_id} zaten "
+                   f"{row.substituted_out_minute:g}. dakikada sahadan ayrılmış")
+
+    before = _subs_used(rows, payload.minute)
+    row.substituted_out_minute = _whole_minute(payload.minute)
+    row.red_cards = 1
+    row.minutes = max(MIN_PLAYED_MINUTES,
+                      int(payload.minute - float(row.substituted_in_minute or 0)))
+    session.commit()
+
+    rows = _rows_for(session, match_id, payload.team_external_id)
+    return {
+        "match_external_id": match_id, "team_external_id": payload.team_external_id,
+        "dakika": payload.minute, "atilan": payload.player_external_id,
+        "sahada": sorted(r.player_external_id for r in _on_pitch(rows, payload.minute)),
+        "sahadaki_sayi": len(_on_pitch(rows, payload.minute)),
+        "kullanilmis_hak": _subs_used(rows, payload.minute),
+        "hak_degisti_mi": _subs_used(rows, payload.minute) != before,
+        "not": "kırmızı kart değişiklik hakkı harcamaz; kullanılmış hak aynı kalır",
+    }
+
+
 @router.get("/matches/{match_id}/squad-state", summary="O dakikadaki kadro durumu")
 def get_squad_state(
     match_id: int,
@@ -416,11 +527,16 @@ def get_squad_state(
     _match_or_404(session, match_id)
     rows = _rows_for(session, match_id, team_external_id)
     on_pitch = _on_pitch(rows, minute)
+    dismissed = [r.player_external_id for r in rows
+                 if r.red_cards and r.substituted_out_minute is not None
+                 and float(r.substituted_out_minute) <= minute]
     return {
         "match_external_id": match_id, "team_external_id": team_external_id,
         "dakika": minute,
         "kadro_girildi": bool(rows),
         "sahada": sorted(r.player_external_id for r in on_pitch),
+        "sahadaki_sayi": len(on_pitch),
+        "atilan": sorted(dismissed),
         "kullanilmis_hak": _subs_used(rows, minute),
         "mevkiler": {r.player_external_id: r.position_played
                      for r in on_pitch if r.position_played},

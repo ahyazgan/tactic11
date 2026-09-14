@@ -32,6 +32,11 @@ from app.sports import football
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+# Canlı panel aynı öneriyi dakika ilerledikçe tekrar gösterir. Bu pencere
+# içindeki aynı (takım, tip, öneri-mi) kaydı YENİDEN AÇILMAZ, güncellenir —
+# yoksa payda şişer ve uplift kıyası bozulur (bkz. create_decision).
+DECISION_DEDUPE_WINDOW_MIN = 5.0
+
 # Otomatik ölçülen karar sonuçlarının notu bu önekle başlar; elle girilen
 # sonuçlar (önek yok) auto-outcome tarafından ezilmez.
 AUTO_OUTCOME_PREFIX = "[oto]"
@@ -1455,6 +1460,14 @@ def create_decision(
     yapılmıştır → true. Motor önerisinde varsayılan yok → null (bilinmiyor);
     koç işaretlemediyse uydurulmaz. Uygulanmayan öneri de KAYDEDİLMELİ — o
     kayıt karşı-olgudur, öneri etkisi ancak onunla ölçülür (`decisions/uplift`).
+
+    **Mükerrer koruması.** Canlı panel dakika ilerledikçe aynı öneriyi tekrar
+    tekrar gösterir. Her gösterimde yeni satır açmak paydayı şişirir ve uplift
+    kıyasını bozar. Aynı (takım, tip, öneri-mi) için `dedupe_window_min`
+    (varsayılan 5 dk) içindeki kayıt GÜNCELLENİR, yenisi açılmaz — böylece
+    gösterilen öneri `applied=null` ile bir kez yazılabilir ve koç dokununca
+    aynı satır işaretlenir. Kapsama ölçümü buna dayanır:
+    `GET /admin/matches/{{id}}/decision-coverage`.
     """
     import json as _json
     from datetime import UTC
@@ -1478,6 +1491,41 @@ def create_decision(
     if applied is None and not recommended:
         applied = True
     now = _datetime.now(UTC)
+
+    # Aynı öneri penceresinde zaten bir satır varsa onu güncelle: gösterim
+    # `applied=null` ile yazılır, koç dokununca AYNI satır işaretlenir.
+    window = float(payload.get("dedupe_window_min", DECISION_DEDUPE_WINDOW_MIN))
+    minute = float(payload["minute"])
+    existing = session.execute(select(models.Decision).where(
+        models.Decision.sport == football.SPORT_NAME,
+        models.Decision.match_external_id == match_id,
+        models.Decision.team_external_id == int(payload["team_external_id"]),
+        models.Decision.decision_type == payload["decision_type"],
+        models.Decision.recommended.is_(recommended),
+        models.Decision.minute >= minute - window,
+        models.Decision.minute <= minute + window,
+    ).order_by(models.Decision.minute.desc())).scalars().first()
+    if existing is not None:
+        # İşaret yalnız İLERİ gider: null → true/false. Var olan bir beyanı
+        # sonraki bir gösterim null'a çevirmemeli.
+        if applied is not None:
+            existing.applied = applied
+            existing.applied_at = now
+        if payload.get("notes"):
+            existing.notes = payload["notes"]
+        if payload.get("confidence") is not None:
+            existing.confidence = float(payload["confidence"])
+        if payload.get("context_json"):
+            existing.context_json = _json.dumps(payload["context_json"])
+        session.commit()
+        return {
+            "id": existing.id, "match_id": match_id,
+            "decision_type": existing.decision_type, "minute": existing.minute,
+            "recommended": existing.recommended, "applied": existing.applied,
+            "outcome": existing.outcome,
+            "created_at": existing.created_at.isoformat(),
+            "guncellendi": True,
+        }
 
     row = models.Decision(
         sport=football.SPORT_NAME,
@@ -1511,6 +1559,7 @@ def create_decision(
         "recommended": row.recommended, "applied": row.applied,
         "outcome": row.outcome,
         "created_at": row.created_at.isoformat(),
+        "guncellendi": False,
     }
 
 
