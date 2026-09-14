@@ -5,7 +5,9 @@
     "canli_motorda_kullaniliyor": true,
     "esik": 0.35,
     "gorulmemis_hucre": 0.5,
-    "hucre_sayisi": 50,
+    "degisiklik_hakki": 3,
+    "not_kapi": "tablo hak-bitmiş tikler elenerek fit edildi; ölçüm motorun kendi fonksiyonunu çağırır, kapı dahil",
+    "hucre_sayisi": 57,
     "kaynak": "Barcelona'nın 100 maçı, iki takımın antrenörleri, 3200 tik"
   },
   "bagimsiz_kume": {
@@ -33,28 +35,28 @@
     "pencere_dk": 12.0,
     "taban_orani": 0.307,
     "kulliyatla_kesisim": 0,
-    "girdi_sha256": "8c624a8235216e1236d5ccb65a3f71d378a08054891005f089706db62e8c4305"
+    "girdi_sha256": "a4ceb3edd2fc4ec2fb5204d4ca44106b64cd4c59682ffc91cc14bd02cca5047c"
   },
   "tasima": {
     "donmus_tablo_ve_esik": {
       "n": 3200,
-      "flagged": 1522,
-      "flag_rate": 0.476,
+      "flagged": 1362,
+      "flag_rate": 0.426,
       "base_rate": 0.307,
-      "precision": 0.57,
-      "recall": 0.884,
-      "f1": 0.693,
-      "lift": 1.857
+      "precision": 0.623,
+      "recall": 0.865,
+      "f1": 0.725,
+      "lift": 2.029
     },
     "donmus_tablo_gorulmemiste_susarak": {
       "n": 3200,
-      "flagged": 1512,
-      "flag_rate": 0.472,
+      "flagged": 1362,
+      "flag_rate": 0.426,
       "base_rate": 0.307,
-      "precision": 0.569,
-      "recall": 0.878,
-      "f1": 0.691,
-      "lift": 1.853
+      "precision": 0.623,
+      "recall": 0.865,
+      "f1": 0.725,
+      "lift": 2.029
     },
     "saat_kurali_en_iyi_esik": {
       "esik_dk": 55.0,
@@ -69,13 +71,13 @@
     },
     "kume_ici_tavan_A": {
       "n": 1600,
-      "flagged": 640,
-      "flag_rate": 0.4,
+      "flagged": 639,
+      "flag_rate": 0.399,
       "base_rate": 0.297,
-      "precision": 0.609,
+      "precision": 0.61,
       "recall": 0.819,
-      "f1": 0.699,
-      "lift": 2.051
+      "f1": 0.7,
+      "lift": 2.054
     },
     "kume_ici_tavan_B": {
       "n": 1600,
@@ -97,36 +99,27 @@
       "f1": 0.469,
       "lift": 1.0
     },
-    "f1_farki": 0.012,
+    "f1_farki": 0.044,
     "hukum_bandi": 0.05,
     "hukum": "saatle aynı",
-    "not": "önsel F1 0.693 vs saat 0.681 (+0.012) — fark ±0.05 bandında; saat eşiği 55 dk, AYNI kümede en iyi olacak şekilde seçildi — tabana kasten avantaj"
+    "not": "önsel F1 0.725 vs saat 0.681 (+0.044) — fark ±0.05 bandında; saat eşiği 55 dk, AYNI kümede en iyi olacak şekilde seçildi — tabana kasten avantaj"
   },
   "gorulmemis_hucre_analizi": {
     "gorulmus": {
-      "n": 3190,
-      "flagged": 1512,
-      "flag_rate": 0.474,
-      "base_rate": 0.306,
-      "precision": 0.569,
-      "recall": 0.883,
-      "f1": 0.692,
-      "lift": 1.859
+      "n": 3200,
+      "flagged": 1362,
+      "flag_rate": 0.426,
+      "base_rate": 0.307,
+      "precision": 0.623,
+      "recall": 0.865,
+      "f1": 0.725,
+      "lift": 2.029
     },
-    "gorulmemis": {
-      "n": 10,
-      "flagged": 10,
-      "flag_rate": 1.0,
-      "base_rate": 0.6,
-      "precision": 0.6,
-      "recall": 1.0,
-      "f1": 0.75,
-      "lift": 1.0
-    },
-    "gorulmemis_tik_payi": 0.003
+    "gorulmemis": null,
+    "gorulmemis_tik_payi": 0.0
   },
   "kume_ici_tavan_kaldirma": [
-    2.051,
+    2.054,
     2.297
   ]
 }

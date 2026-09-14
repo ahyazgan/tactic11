@@ -1,0 +1,398 @@
+{
+  "olcum": "Zamanlama önselinin çok kümeli yeniden fit'i",
+  "kumeler": {
+    "Barcelona 3-hak": {
+      "mac": 54,
+      "tik": 1728,
+      "hak": 3,
+      "taban_orani": 0.328
+    },
+    "Barcelona 5-hak": {
+      "mac": 46,
+      "tik": 1472,
+      "hak": 5,
+      "taban_orani": 0.361
+    },
+    "La Liga 2015/16": {
+      "mac": 100,
+      "tik": 3200,
+      "hak": 3,
+      "taban_orani": 0.323
+    },
+    "Premier League 2015/16": {
+      "mac": 100,
+      "tik": 3200,
+      "hak": 3,
+      "taban_orani": 0.307
+    },
+    "Indian Super League 2021/22": {
+      "mac": 100,
+      "tik": 3200,
+      "hak": 5,
+      "taban_orani": 0.355
+    },
+    "FA WSL 2023/24": {
+      "mac": 100,
+      "tik": 3200,
+      "hak": 5,
+      "taban_orani": 0.336
+    },
+    "Euro 2024": {
+      "mac": 51,
+      "tik": 1632,
+      "hak": 5,
+      "taban_orani": 0.373
+    }
+  },
+  "fit_kurali": {
+    "hak_bitmis_tik_elenir": true,
+    "elenen_tik": 1073,
+    "kullanilan_tik": 16559,
+    "hucre": 57,
+    "not": "hak bitmişlik tabloda değil kapıda durur; elenince '3 kullanılmış' hücresi her rejimde aynı şeyi anlatır"
+  },
+  "esik_taramasi": {
+    "loo_ortalama": {
+      "0.25": 0.725,
+      "0.30": 0.725,
+      "0.35": 0.724,
+      "0.40": 0.727,
+      "0.45": 0.721,
+      "0.50": 0.712
+    },
+    "plato": [
+      "0.25",
+      "0.30",
+      "0.35",
+      "0.40"
+    ],
+    "plato_bandi": 0.005,
+    "secilen": 0.35,
+    "not": "düz bölgede argmax seçmek gürültüye uymaktır; seçim --threshold ile sabitlenir"
+  },
+  "leave_one_out": {
+    "yeni_tablo": {
+      "Barcelona 3-hak": 0.758,
+      "Barcelona 5-hak": 0.718,
+      "La Liga 2015/16": 0.759,
+      "Premier League 2015/16": 0.699,
+      "Indian Super League 2021/22": 0.703,
+      "FA WSL 2023/24": 0.696,
+      "Euro 2024": 0.735
+    },
+    "eski_tablo": {
+      "Barcelona 3-hak": 0.761,
+      "Barcelona 5-hak": 0.701,
+      "La Liga 2015/16": 0.751,
+      "Premier League 2015/16": 0.698,
+      "Indian Super League 2021/22": 0.653,
+      "FA WSL 2023/24": 0.656,
+      "Euro 2024": 0.659
+    },
+    "ortalama": {
+      "yeni": 0.724,
+      "eski": 0.697
+    },
+    "en_kotu": {
+      "yeni": 0.696,
+      "eski": 0.653
+    }
+  },
+  "seyrek_hucreler": {
+    "(4, 'drawing', 0)": 6,
+    "(0, 'trailing', 2)": 7,
+    "(4, 'trailing', 0)": 2,
+    "(1, 'drawing', 3)": 4,
+    "(1, 'leading', 3)": 5,
+    "(0, 'drawing', 2)": 1,
+    "(0, 'leading', 2)": 1
+  },
+  "tablo": {
+    "0|drawing|0": {
+      "onsel": 0.047,
+      "olay": 200,
+      "tik": 4317
+    },
+    "0|drawing|1": {
+      "onsel": 0.128,
+      "olay": 23,
+      "tik": 186
+    },
+    "0|drawing|2": {
+      "onsel": 0.333,
+      "olay": 0,
+      "tik": 1
+    },
+    "0|leading|0": {
+      "onsel": 0.071,
+      "olay": 109,
+      "tik": 1542
+    },
+    "0|leading|1": {
+      "onsel": 0.094,
+      "olay": 5,
+      "tik": 62
+    },
+    "0|leading|2": {
+      "onsel": 0.333,
+      "olay": 0,
+      "tik": 1
+    },
+    "0|trailing|0": {
+      "onsel": 0.164,
+      "olay": 251,
+      "tik": 1539
+    },
+    "0|trailing|1": {
+      "onsel": 0.311,
+      "olay": 18,
+      "tik": 59
+    },
+    "0|trailing|2": {
+      "onsel": 0.111,
+      "olay": 0,
+      "tik": 7
+    },
+    "1|drawing|0": {
+      "onsel": 0.369,
+      "olay": 340,
+      "tik": 921
+    },
+    "1|drawing|1": {
+      "onsel": 0.325,
+      "olay": 85,
+      "tik": 263
+    },
+    "1|drawing|2": {
+      "onsel": 0.3,
+      "olay": 20,
+      "tik": 68
+    },
+    "1|drawing|3": {
+      "onsel": 0.333,
+      "olay": 1,
+      "tik": 4
+    },
+    "1|leading|0": {
+      "onsel": 0.336,
+      "olay": 245,
+      "tik": 730
+    },
+    "1|leading|1": {
+      "onsel": 0.364,
+      "olay": 95,
+      "tik": 262
+    },
+    "1|leading|2": {
+      "onsel": 0.267,
+      "olay": 7,
+      "tik": 28
+    },
+    "1|leading|3": {
+      "onsel": 0.143,
+      "olay": 0,
+      "tik": 5
+    },
+    "1|trailing|0": {
+      "onsel": 0.543,
+      "olay": 272,
+      "tik": 501
+    },
+    "1|trailing|1": {
+      "onsel": 0.457,
+      "olay": 146,
+      "tik": 320
+    },
+    "1|trailing|2": {
+      "onsel": 0.291,
+      "olay": 43,
+      "tik": 149
+    },
+    "1|trailing|3": {
+      "onsel": 0.386,
+      "olay": 21,
+      "tik": 55
+    },
+    "2|drawing|0": {
+      "onsel": 0.755,
+      "olay": 196,
+      "tik": 259
+    },
+    "2|drawing|1": {
+      "onsel": 0.693,
+      "olay": 166,
+      "tik": 239
+    },
+    "2|drawing|2": {
+      "onsel": 0.512,
+      "olay": 62,
+      "tik": 121
+    },
+    "2|drawing|3": {
+      "onsel": 0.487,
+      "olay": 18,
+      "tik": 37
+    },
+    "2|leading|0": {
+      "onsel": 0.808,
+      "olay": 285,
+      "tik": 352
+    },
+    "2|leading|1": {
+      "onsel": 0.743,
+      "olay": 184,
+      "tik": 247
+    },
+    "2|leading|2": {
+      "onsel": 0.57,
+      "olay": 76,
+      "tik": 133
+    },
+    "2|leading|3": {
+      "onsel": 0.4,
+      "olay": 15,
+      "tik": 38
+    },
+    "2|trailing|0": {
+      "onsel": 0.881,
+      "olay": 155,
+      "tik": 175
+    },
+    "2|trailing|1": {
+      "onsel": 0.803,
+      "olay": 186,
+      "tik": 231
+    },
+    "2|trailing|2": {
+      "onsel": 0.612,
+      "olay": 136,
+      "tik": 222
+    },
+    "2|trailing|3": {
+      "onsel": 0.5,
+      "olay": 61,
+      "tik": 122
+    },
+    "3|drawing|0": {
+      "onsel": 0.908,
+      "olay": 58,
+      "tik": 63
+    },
+    "3|drawing|1": {
+      "onsel": 0.811,
+      "olay": 141,
+      "tik": 173
+    },
+    "3|drawing|2": {
+      "onsel": 0.701,
+      "olay": 149,
+      "tik": 212
+    },
+    "3|drawing|3": {
+      "onsel": 0.642,
+      "olay": 78,
+      "tik": 121
+    },
+    "3|leading|0": {
+      "onsel": 0.941,
+      "olay": 94,
+      "tik": 99
+    },
+    "3|leading|1": {
+      "onsel": 0.855,
+      "olay": 206,
+      "tik": 240
+    },
+    "3|leading|2": {
+      "onsel": 0.768,
+      "olay": 228,
+      "tik": 296
+    },
+    "3|leading|3": {
+      "onsel": 0.652,
+      "olay": 87,
+      "tik": 133
+    },
+    "3|trailing|0": {
+      "onsel": 0.921,
+      "olay": 34,
+      "tik": 36
+    },
+    "3|trailing|1": {
+      "onsel": 0.891,
+      "olay": 113,
+      "tik": 126
+    },
+    "3|trailing|2": {
+      "onsel": 0.814,
+      "olay": 227,
+      "tik": 278
+    },
+    "3|trailing|3": {
+      "onsel": 0.692,
+      "olay": 145,
+      "tik": 209
+    },
+    "4|drawing|0": {
+      "onsel": 0.875,
+      "olay": 6,
+      "tik": 6
+    },
+    "4|drawing|1": {
+      "onsel": 0.851,
+      "olay": 56,
+      "tik": 65
+    },
+    "4|drawing|2": {
+      "onsel": 0.736,
+      "olay": 144,
+      "tik": 195
+    },
+    "4|drawing|3": {
+      "onsel": 0.525,
+      "olay": 83,
+      "tik": 158
+    },
+    "4|leading|0": {
+      "onsel": 0.833,
+      "olay": 9,
+      "tik": 10
+    },
+    "4|leading|1": {
+      "onsel": 0.906,
+      "olay": 76,
+      "tik": 83
+    },
+    "4|leading|2": {
+      "onsel": 0.824,
+      "olay": 196,
+      "tik": 237
+    },
+    "4|leading|3": {
+      "onsel": 0.568,
+      "olay": 132,
+      "tik": 232
+    },
+    "4|trailing|0": {
+      "onsel": 0.75,
+      "olay": 2,
+      "tik": 2
+    },
+    "4|trailing|1": {
+      "onsel": 0.7,
+      "olay": 20,
+      "tik": 28
+    },
+    "4|trailing|2": {
+      "onsel": 0.732,
+      "olay": 103,
+      "tik": 140
+    },
+    "4|trailing|3": {
+      "onsel": 0.547,
+      "olay": 121,
+      "tik": 221
+    }
+  },
+  "girdi_sha256": "d3cd8b5ca19f4ff5fc504380c071c0a9a358ebdd2a8a75f756a2680a262cce9f"
+}
