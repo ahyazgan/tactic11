@@ -1,0 +1,99 @@
+{
+  "olcum": "Grup içi 'kim çıkar' sinyali",
+  "kaynak": {
+    "tenant": "t-default",
+    "takim_external_id": 217,
+    "vaka": 329,
+    "mac": 100,
+    "ortalama_grup": 3.56,
+    "grup_dagilimi": {
+      "DEF": 76,
+      "FWD": 107,
+      "MID": 146
+    },
+    "girdi_sha256": "8632b28f6f0763bb74363a1bce3668ed2d07d36f0676c75695349ae2ca8222db"
+  },
+  "ayrik_yari": {
+    "kollar": [
+      {
+        "kol": "A'da seç → B'de ölç",
+        "secilen_sinyal": "mudahale_son10",
+        "yon": 1,
+        "isabet_at_1": 0.327,
+        "rastgele": 0.301,
+        "n": 168
+      },
+      {
+        "kol": "B'de seç → A'da ölç",
+        "secilen_sinyal": "dokunus_son10",
+        "yon": -1,
+        "isabet_at_1": 0.273,
+        "rastgele": 0.298,
+        "n": 161
+      }
+    ],
+    "ortalama": 0.3,
+    "rastgele_ortalama": 0.299,
+    "fark": 0.001,
+    "ayni_sinyal_mi": false
+  },
+  "permutasyon": {
+    "deneme": 400,
+    "seed": 23,
+    "yakalama": 249,
+    "p": 0.6234,
+    "not": "p = (yakalama + 1) / (deneme + 1); sıfır olasılık iddia edilmez"
+  },
+  "ayni_veride_tum_adaylar": {
+    "pas_isabeti_son10 (+1)": {
+      "isabet_at_1": 0.295,
+      "n": 321
+    },
+    "pas_isabeti_son10 (-1)": {
+      "isabet_at_1": 0.34,
+      "n": 321
+    },
+    "pas_isabeti_dususu (+1)": {
+      "isabet_at_1": 0.349,
+      "n": 318
+    },
+    "pas_isabeti_dususu (-1)": {
+      "isabet_at_1": 0.305,
+      "n": 318
+    },
+    "dokunus_son10 (+1)": {
+      "isabet_at_1": 0.261,
+      "n": 329
+    },
+    "dokunus_son10 (-1)": {
+      "isabet_at_1": 0.319,
+      "n": 329
+    },
+    "dokunus_dususu (+1)": {
+      "isabet_at_1": 0.336,
+      "n": 329
+    },
+    "dokunus_dususu (-1)": {
+      "isabet_at_1": 0.208,
+      "n": 329
+    },
+    "toplam_pas (+1)": {
+      "isabet_at_1": 0.273,
+      "n": 329
+    },
+    "toplam_pas (-1)": {
+      "isabet_at_1": 0.275,
+      "n": 329
+    },
+    "mudahale_son10 (+1)": {
+      "isabet_at_1": 0.355,
+      "n": 329
+    },
+    "mudahale_son10 (-1)": {
+      "isabet_at_1": 0.255,
+      "n": 329
+    }
+  },
+  "uyari_in_sample": "bu sütun SEÇİM İÇERİR: on iki adayın en iyisi aynı veride bakıldığında yüksek çıkar. Hüküm ayrık yarı sütunundan verilir",
+  "hukum": "grup içi bilgi YOK"
+}

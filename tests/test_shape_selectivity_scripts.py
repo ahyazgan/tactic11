@@ -24,6 +24,7 @@ from scripts import (
     fit_timing_prior,
     measure_shape_selectivity,
     measure_sub_ranking,
+    measure_within_group_signal,
     validate_shape_prior,
     validate_timing_prior,
     validate_who_prior,
@@ -378,3 +379,40 @@ def test_production_timing_table_covers_the_second_half_completely() -> None:
     # ilk yarıda yalnız düşük hak sayıları görülmüş
     first_half = {c for c in ELITE_SUB_WINDOW_PRIOR if c[0] == 0}
     assert {c[2] for c in first_half} <= {0, 1, 2}
+
+
+# --- grup içi sinyal ölçümü --------------------------------------------------- #
+
+def _wg_case(mid: int, off: int, peers: dict[int, float | None]) -> object:
+    return measure_within_group_signal.Case(
+        match_external_id=mid, player_off=off, group="MID", peers=tuple(peers),
+        feats={p: {"toplam_pas": v} for p, v in peers.items()},
+    )
+
+
+def test_within_group_hit_splits_ties_instead_of_picking_an_order() -> None:
+    """Eşit değerli üç aday ilk sırayı paylaşır → 1/3. Sabit sıra beceri sayılmaz."""
+    case = _wg_case(1, off=7, peers={7: 5.0, 8: 5.0, 9: 5.0})
+    assert measure_within_group_signal.expected_hit(case, "toplam_pas", +1) == pytest.approx(1 / 3)
+    # açık ara önde olan aday tek başına ilk sırada
+    clear = _wg_case(1, off=7, peers={7: 9.0, 8: 5.0, 9: 5.0})
+    assert measure_within_group_signal.expected_hit(clear, "toplam_pas", +1) == 1.0
+    assert measure_within_group_signal.expected_hit(clear, "toplam_pas", -1) == 0.0
+
+
+def test_within_group_hit_skips_cases_without_a_usable_value() -> None:
+    """Sinyali olmayan aday elenir; çıkan oyuncunun değeri yoksa vaka sayılmaz."""
+    missing_off = _wg_case(1, off=7, peers={7: None, 8: 5.0, 9: 4.0})
+    assert measure_within_group_signal.expected_hit(missing_off, "toplam_pas", +1) is None
+    too_few = _wg_case(1, off=7, peers={7: 5.0, 8: None})
+    assert measure_within_group_signal.expected_hit(too_few, "toplam_pas", +1) is None
+
+
+def test_within_group_halves_never_split_one_match() -> None:
+    """Aynı maçın değişiklikleri aynı yarıda kalmalı — yoksa seçim sızar."""
+    cases = [_wg_case(mid, off=7, peers={7: 1.0, 8: 2.0}) for mid in (10, 10, 11, 11, 12)]
+    a, b = measure_within_group_signal._halves(cases)
+    a_ids = {c.match_external_id for c in a}
+    b_ids = {c.match_external_id for c in b}
+    assert a_ids & b_ids == set()
+    assert len(a) + len(b) == len(cases)
