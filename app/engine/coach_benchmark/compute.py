@@ -59,6 +59,12 @@ Bu bölüm e0237df ölçümünün tarihsel kaydıdır. Bütçe/oyuncu sayımı d
 sonrası aynı girdide kaldırma 1.427/1.603 oldu; aşağıdaki eski sayılar güncel
 algoritmanın başarısı olarak kullanılmamalı. docs/KARNE-DUZELTME-SONUCLARI.md.
 
+Sonraki adım: görülmemiş hücrede kapı SUSAR (`SHAPE_UNKNOWN_CELL`) — külliyatta
+kaldırma 1.55/1.67. Önsel 200 bağımsız maçta (La Liga 2015/16 ve Premier League
+2015/16, külliyatla kesişim yok) dondurulmuş hâliyle 2.01 ve 2.21 kaldırma
+verdi, p 0.0025; Premier League'de küme içi tavana eşit. Yani kapının sinyali
+Barcelona'nın üç sezonuna özgü değil. docs/KARNE-SEKIL-BAGIMSIZ.md.
+
 - **F1 bu soruda cetvel değil**: diziliş hedefi nadir (taban %21), hep-evet
   F1 0.35 çıkıyor — motorun 0.33'ünden yüksek. "Daha seçici ol" ile "F1'i
   yükselt" zıt yönler. Seçicilik cetveli kaldırma (precision / taban oranı)
@@ -109,6 +115,11 @@ SHAPE_PRIOR_THRESHOLDS: tuple[float, ...] = (0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.
 SHAPE_SUPPORT_THRESHOLDS: tuple[int, ...] = (1, 2, 3, 4, 5)
 SHAPE_MIN_FLAG_RATE = 0.15
 SHAPE_MIN_LIFT = 1.25
+# Önselin hiç görmediği hücrede kapı SUSAR. Zamanlama/kim önsellerinde
+# "bilinmiyor" 0.5'tir çünkü orada soru sıralamadır; burada soru seçiciliktir ve
+# ölçüldü: görülmemiş hücreye kaldırılan bayrakların kaldırması TAM 1.0 —
+# bilgi taşımadan bütçe harcıyorlar (bkz. docs/KARNE-SEKIL-BAGIMSIZ.md).
+SHAPE_UNKNOWN_CELL = 0.0
 
 
 @dataclass(frozen=True)
@@ -631,7 +642,7 @@ def _gated(
     table: dict[tuple[int, str, int], float], prior_t: float, support_t: int,
 ) -> Callable[[ShapeState], bool]:
     return lambda s: (s.engine_flag
-                      and table.get(_shape_cell(s), 0.5) >= prior_t
+                      and table.get(_shape_cell(s), SHAPE_UNKNOWN_CELL) >= prior_t
                       and s.support_count >= support_t)
 
 
@@ -676,7 +687,11 @@ def fit_shape_prior(
 def apply_shape_gate(
     prior: ShapePrior, states: Iterable[ShapeState],
 ) -> list[TickObservation]:
-    """Motorun ham bayrağını önsel ve destek eşiğiyle KISAR; görülmemiş hücre 0.5."""
+    """Motorun ham bayrağını önsel ve destek eşiğiyle KISAR.
+
+    Görülmemiş hücrede susar (`SHAPE_UNKNOWN_CELL`): "bu durumu hiç görmedim"
+    şekil değiştirmek için kanıt değildir.
+    """
     if prior.threshold is None or prior.support_threshold is None:
         return _shape_obs(states, lambda s: False)
     return _shape_obs(states, _gated(prior.table, prior.threshold, prior.support_threshold))

@@ -9,6 +9,9 @@
 > olarak kullanılamaz. Aynı 100 maç ve 514 tik, eski girdi SHA-256'sı birebir
 > eşleştirilerek yeniden ölçüldü: güncel kaldırma **1,427/1,603**, isabet
 > **0,314/0,327**. [Düzeltme sonuçları](KARNE-DUZELTME-SONUCLARI.md).
+> Sonrasında görülmemiş hücrede susma değişikliğiyle **1,550/1,667**; ayrıca
+> önsel 200 bağımsız maçta doğrulandı (kaldırma 2,01/2,21):
+> [bağımsız doğrulama](KARNE-SEKIL-BAGIMSIZ.md).
 
 Motor 514 tikin **%74'ünde** "şekil ayarla" diyordu; gerçek antrenör aynı
 pencerede dizilişi tiklerin yalnız **%21'inde** değiştiriyordu. Bu çalışma
