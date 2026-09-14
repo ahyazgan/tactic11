@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [ ] Codex kamera: kişi kimliği/forma zincirini ortak üretim akışında düzelt; mükerrer parçaları, kimlik devrini, güvenli bağlantıyı ve canlı segment kimliklerini birlikte doğrula.
+  Done when: değişmez kutularla üretim tekrarı, bağımsız kişi bağlantısı denetimi, dondurulmuş yeni kontrol, video/canlı/önizleme testleri ve bütün PR kontrolleri tamamlanır. Plan: docs/SABIT-KAMERA-KIMLIK-PLANI.md.
+
 - [x] Codex kamera: kesme/tekrar/kalibrasyon boşluğunda kimlik ve forma geçmişini ayır, çekimler arası hız hesabını kes; takip süresini aynı tespitlerde ölç. (76797ec)
   Done when: 13 gerçek CV/çekirdek testi, 87 ilgili uygulama testi, 2.635 tam yerel test; üretim yolunda 1.125 sabit kamera karesinin oyuncu/renk geçmişi eşit. Sonuç: docs/TAKIP-SUREKLILIGI-SONUCLARI.md. Daha uzun bekleme gündüz doğruyu 195→194 düşürüp karışık ID'yi 7→8 artırdığı için reddedildi; gerçek süre raporlanıyor. Sabit kamerada oyuncular arası ID değişimi ve genel forma/olay doğruluğu tamamlanmış sayılmaz.
 
