@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Codex kamera: gölge düzeltmesini yeni kontrol klipleriyle yeniden dene ve geçen yerel çim normalizasyonunu takip hattına bağla. (93d2413)
+  Done when: iki ayrı dondurulmuş deney, yeni 149 kör kutu etiketi, üretim fonksiyonuyla 54.103 gözlemin aynı sonucu vermesi, video/canlı entegrasyonu ve regresyonlar. Sonuç: docs/YEREL-CIM-ISIGI-SONUCLARI.md; yeni kontrol 54→56 doğru, 7→4 yanlış, 5→6 atanamayan. 80 ilgili ve 2.569 tam yerel test geçti; 1 atlandı. Genel maçlar arası doğruluk hedefi tamamlanmış sayılmaz.
+
 - [x] Codex kamera: gölgeli forma için doğrudan görüntü etiketleriyle medyan/parlak dörtte birlik deneyini dondurulmuş kontrolde ölç. (943d411)
   Done when: tahminden bağımsız 142 kutu, kör görüntü incelemesi, geliştirme/kontrol ayrımı ve kabul regresyonları. Sonuç: docs/GOLGE-FORMA-SONUCLARI.md; 58 ilgili test geçti. Geliştirme 36→41 doğru, kontrol 66→65 doğru; aday üretime alınmadı. Otomatik PR tamamlama yetkisi AGENTS.md'de kayıtlı (f7baf5b).
 
