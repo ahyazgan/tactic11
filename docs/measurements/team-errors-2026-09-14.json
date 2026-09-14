@@ -1,0 +1,990 @@
+{
+  "base_commit": "14ec056",
+  "alignment": {
+    "delta_frames": 9,
+    "fps": 25,
+    "sample_start_seconds": 600,
+    "development_segments": [
+      0,
+      3
+    ],
+    "note": "fixed on development; no per-frame search on control"
+  },
+  "input_sha256": {
+    "data/tracking/bench/signal_quality_gt.npy": "d15d68a047c12f2694babe1b476090170a8cbd0d556f669b36fce0057a6ae219",
+    "data/tracking/bench/signal_quality_alignment.json": "1f03c776580312753f87b577ddb2abdc3c7c51416189aaad30cdccfd8bd1a3b8",
+    "data/tracking/bench/signal_quality_v1/seg_0000.json": "9abeefb799a852f03f78efe50a716bd4f7eb6e55c51e3ff474b1614d6f68511c",
+    "data/tracking/bench/signal_quality_v1/seg_0003.json": "60ff4136c7f2ea8419cc4b35806532258b5b80d666bb3b84078877071fb39fff",
+    "data/tracking/bench/signal_quality_v1/seg_0006.json": "ba7375fc786ff5fdcbae547e43c50cfc87ddd9da8f59b4298e1eeb6cdc1b2051",
+    "data/tracking/bench/signal_quality_v1/seg_0009.json": "618abc5fccf7bd0fecb0e5fb51a80b6ad26f0798cbc75e08cfbccd6cee2e9396"
+  },
+  "source_video_sha256": {
+    "data\\tracking\\live\\990401\\seg_0000.mp4": "4e8321ea9da98664437a9700cb5a5318fb9641b8957a3ebfab54485a74ade2e1",
+    "data\\tracking\\live\\990401\\seg_0003.mp4": "3e3bd50e00e8ca797fc53cce807eef60a92cb0aaf37f069553d567971243c066"
+  },
+  "spatial_comparison": {
+    "development": {
+      "matched": 425,
+      "assigned": 408,
+      "correct": 350,
+      "wrong": 58,
+      "unassigned": 17,
+      "wrong_with_opposite_gt_in_radius": 14,
+      "wrong_on_track_with_multiple_gt_teams": 54,
+      "wrong_on_track_with_multiple_gt_ids": 56,
+      "wrong_not_nearest_gt": 5,
+      "wrong_within_1_5m": 12,
+      "warning": "Flags overlap and are not causal labels or confirmed tracker switches."
+    },
+    "control": {
+      "matched": 646,
+      "assigned": 630,
+      "correct": 511,
+      "wrong": 119,
+      "unassigned": 16,
+      "wrong_with_opposite_gt_in_radius": 29,
+      "wrong_on_track_with_multiple_gt_teams": 117,
+      "wrong_on_track_with_multiple_gt_ids": 117,
+      "wrong_not_nearest_gt": 9,
+      "wrong_within_1_5m": 39,
+      "warning": "Flags overlap and are not causal labels or confirmed tracker switches."
+    }
+  },
+  "visual_review": {
+    "reviewer": "Codex image inspection",
+    "split": "development",
+    "selection": "first/middle/last mismatch and middle agreement; deduplicated",
+    "warning": "Biased diagnostic sample, not an independent accuracy benchmark.",
+    "independently_adjudicated": false,
+    "kit_to_team_palette": {
+      "blue": 0,
+      "white": 1
+    },
+    "sample_count": 23,
+    "usable": 22,
+    "spatial_gt_disagrees_with_visible_kit": 14,
+    "prediction_disagrees_with_visible_kit": 4,
+    "samples": [
+      {
+        "segment": 3,
+        "seconds": 690.0,
+        "video_seconds": 0.0,
+        "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+        "track": 9,
+        "bbox": [
+          1482.875,
+          664.75,
+          1518.0,
+          725.75
+        ],
+        "predicted_team": 0,
+        "gt_frame": 17260,
+        "gt_track": 5,
+        "gt_team": 1,
+        "distance_m": 1.2617957621356508,
+        "opposite_gt_distance_m": 11.699769988184428,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          126.93479131218096,
+          131.8792444287942,
+          122.63027878398826
+        ],
+        "team_centers_rgb": [
+          [
+            86.53899174306483,
+            93.35686684361866,
+            84.35025122341682
+          ],
+          [
+            199.93175032175031,
+            201.6196266968326,
+            190.28498931623932
+          ]
+        ],
+        "visually_observed_kit": "white",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 3,
+        "seconds": 700.4,
+        "video_seconds": 10.399999999999977,
+        "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+        "track": 9,
+        "bbox": [
+          1024.25,
+          810.0,
+          1058.75,
+          846.25
+        ],
+        "predicted_team": 0,
+        "gt_frame": 17520,
+        "gt_track": 10,
+        "gt_team": 1,
+        "distance_m": 2.9726269397890204,
+        "opposite_gt_distance_m": 4.267825160763157,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          126.93479131218096,
+          131.8792444287942,
+          122.63027878398826
+        ],
+        "team_centers_rgb": [
+          [
+            86.53899174306483,
+            93.35686684361866,
+            84.35025122341682
+          ],
+          [
+            199.93175032175031,
+            201.6196266968326,
+            190.28498931623932
+          ]
+        ],
+        "visually_observed_kit": "white",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 3,
+        "seconds": 709.2,
+        "video_seconds": 19.200000000000045,
+        "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+        "track": 9,
+        "bbox": [
+          947.5,
+          829.53125,
+          980.5,
+          890.25
+        ],
+        "predicted_team": 0,
+        "gt_frame": 17740,
+        "gt_track": 6,
+        "gt_team": 1,
+        "distance_m": 2.848766684155738,
+        "opposite_gt_distance_m": 3.277287078979273,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          126.93479131218096,
+          131.8792444287942,
+          122.63027878398826
+        ],
+        "team_centers_rgb": [
+          [
+            86.53899174306483,
+            93.35686684361866,
+            84.35025122341682
+          ],
+          [
+            199.93175032175031,
+            201.6196266968326,
+            190.28498931623932
+          ]
+        ],
+        "visually_observed_kit": "white",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 3,
+        "seconds": 710.8,
+        "video_seconds": 20.799999999999955,
+        "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+        "track": 9,
+        "bbox": [
+          982.5,
+          830.828125,
+          1021.75,
+          892.5
+        ],
+        "predicted_team": 0,
+        "gt_frame": 17780,
+        "gt_track": 21,
+        "gt_team": 0,
+        "distance_m": 1.502950721657091,
+        "opposite_gt_distance_m": 6.404722075546878,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          126.93479131218096,
+          131.8792444287942,
+          122.63027878398826
+        ],
+        "team_centers_rgb": [
+          [
+            86.53899174306483,
+            93.35686684361866,
+            84.35025122341682
+          ],
+          [
+            199.93175032175031,
+            201.6196266968326,
+            190.28498931623932
+          ]
+        ],
+        "visually_observed_kit": "white",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 610.4,
+        "video_seconds": 10.399999999999977,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 28,
+        "bbox": [
+          2525.0,
+          611.0,
+          2558.5,
+          670.25
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15270,
+        "gt_track": 8,
+        "gt_team": 1,
+        "distance_m": 2.5628818530628563,
+        "opposite_gt_distance_m": 7.72499922105005,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          115.22027972027972,
+          126.03237410071942,
+          120.04368932038835
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 612.0,
+        "video_seconds": 12.0,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 28,
+        "bbox": [
+          2369.5,
+          600.25,
+          2405.5,
+          660.375
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15310,
+        "gt_track": 8,
+        "gt_team": 1,
+        "distance_m": 1.8588240881937452,
+        "opposite_gt_distance_m": 5.820273827581626,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          115.22027972027972,
+          126.03237410071942,
+          120.04368932038835
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 613.6,
+        "video_seconds": 13.600000000000023,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 28,
+        "bbox": [
+          2218.25,
+          597.5,
+          2246.75,
+          657.375
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15350,
+        "gt_track": 8,
+        "gt_team": 1,
+        "distance_m": 2.6356017379030074,
+        "opposite_gt_distance_m": 5.440318199696742,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          115.22027972027972,
+          126.03237410071942,
+          120.04368932038835
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 622.4,
+        "video_seconds": 22.399999999999977,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 28,
+        "bbox": [
+          1694.5,
+          638.375,
+          1729.0,
+          705.25
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15570,
+        "gt_track": 18,
+        "gt_team": 0,
+        "distance_m": 2.7269649859154272,
+        "opposite_gt_distance_m": 3.109191996405915,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          115.22027972027972,
+          126.03237410071942,
+          120.04368932038835
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 604.8,
+        "video_seconds": 4.7999999999999545,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 10,
+        "bbox": [
+          2684.125,
+          624.125,
+          2708.9375,
+          672.0
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15130,
+        "gt_track": 7,
+        "gt_team": 1,
+        "distance_m": 1.131269739169072,
+        "opposite_gt_distance_m": 3.5643552843720854,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          110.2784090909091,
+          118.38513513513513,
+          113.1907894736842
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 607.2,
+        "video_seconds": 7.2000000000000455,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 10,
+        "bbox": [
+          2573.0,
+          614.125,
+          2601.5,
+          669.0
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15190,
+        "gt_track": 8,
+        "gt_team": 1,
+        "distance_m": 2.281455570181301,
+        "opposite_gt_distance_m": 4.1366898260973,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          110.2784090909091,
+          118.38513513513513,
+          113.1907894736842
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 608.0,
+        "video_seconds": 8.0,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 10,
+        "bbox": [
+          2519.0,
+          611.25,
+          2551.0,
+          665.5
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15210,
+        "gt_track": 8,
+        "gt_team": 1,
+        "distance_m": 1.888480558420278,
+        "opposite_gt_distance_m": 4.487126535971761,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          110.2784090909091,
+          118.38513513513513,
+          113.1907894736842
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 606.4,
+        "video_seconds": 6.399999999999977,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 10,
+        "bbox": [
+          2617.05078125,
+          618.625,
+          2642.5625,
+          669.25
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15170,
+        "gt_track": 14,
+        "gt_team": 0,
+        "distance_m": 1.8857552455899627,
+        "opposite_gt_distance_m": 1.4698447892565207,
+        "opposite_gt_in_radius": true,
+        "nearest_gt": false,
+        "median_rgb": [
+          110.2784090909091,
+          118.38513513513513,
+          113.1907894736842
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 624.0,
+        "video_seconds": 24.0,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 16,
+        "bbox": [
+          1198.0,
+          717.5,
+          1234.5,
+          777.0
+        ],
+        "predicted_team": 1,
+        "gt_frame": 15610,
+        "gt_track": 14,
+        "gt_team": 0,
+        "distance_m": 2.7034660225940383,
+        "opposite_gt_distance_m": 5.865144957462187,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          171.38141723210856,
+          175.83394801545487,
+          165.11503499487878
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "white",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 625.6,
+        "video_seconds": 25.600000000000023,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 16,
+        "bbox": [
+          1221.0,
+          723.5,
+          1258.0,
+          779.75
+        ],
+        "predicted_team": 1,
+        "gt_frame": 15650,
+        "gt_track": 19,
+        "gt_team": 0,
+        "distance_m": 2.893787008994914,
+        "opposite_gt_distance_m": 5.67776753721762,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": false,
+        "median_rgb": [
+          171.38141723210856,
+          175.83394801545487,
+          165.11503499487878
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "white",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 626.4,
+        "video_seconds": 26.399999999999977,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 16,
+        "bbox": [
+          1216.5,
+          735.75,
+          1255.5,
+          791.0
+        ],
+        "predicted_team": 1,
+        "gt_frame": 15670,
+        "gt_track": 19,
+        "gt_team": 0,
+        "distance_m": 1.651003234069856,
+        "opposite_gt_distance_m": 4.616651949675613,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          171.38141723210856,
+          175.83394801545487,
+          165.11503499487878
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "white",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 615.2,
+        "video_seconds": 15.200000000000045,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 16,
+        "bbox": [
+          1780.75,
+          621.0,
+          1816.0,
+          678.75
+        ],
+        "predicted_team": 1,
+        "gt_frame": 15390,
+        "gt_track": 5,
+        "gt_team": 1,
+        "distance_m": 2.6574391692438963,
+        "opposite_gt_distance_m": 8.305450186660423,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          171.38141723210856,
+          175.83394801545487,
+          165.11503499487878
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "white",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 3,
+        "seconds": 698.0,
+        "video_seconds": 8.0,
+        "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+        "track": 8,
+        "bbox": [
+          1163.75,
+          768.0,
+          1209.5,
+          827.5
+        ],
+        "predicted_team": 0,
+        "gt_frame": 17460,
+        "gt_track": 5,
+        "gt_team": 1,
+        "distance_m": 1.7747624918202476,
+        "opposite_gt_distance_m": 4.228983474826763,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          74.67855691056911,
+          83.33033268589074,
+          78.7723721590909
+        ],
+        "team_centers_rgb": [
+          [
+            86.53899174306483,
+            93.35686684361866,
+            84.35025122341682
+          ],
+          [
+            199.93175032175031,
+            201.6196266968326,
+            190.28498931623932
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 3,
+        "seconds": 708.4,
+        "video_seconds": 18.399999999999977,
+        "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+        "track": 8,
+        "bbox": [
+          869.375,
+          861.90625,
+          905.0,
+          925.25
+        ],
+        "predicted_team": 0,
+        "gt_frame": 17720,
+        "gt_track": 6,
+        "gt_team": 1,
+        "distance_m": 0.9616997932597605,
+        "opposite_gt_distance_m": 1.5459112328777835,
+        "opposite_gt_in_radius": true,
+        "nearest_gt": true,
+        "median_rgb": [
+          74.67855691056911,
+          83.33033268589074,
+          78.7723721590909
+        ],
+        "team_centers_rgb": [
+          [
+            86.53899174306483,
+            93.35686684361866,
+            84.35025122341682
+          ],
+          [
+            199.93175032175031,
+            201.6196266968326,
+            190.28498931623932
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 3,
+        "seconds": 710.0,
+        "video_seconds": 20.0,
+        "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+        "track": 8,
+        "bbox": [
+          899.75,
+          859.8125,
+          941.75,
+          926.5625
+        ],
+        "predicted_team": 0,
+        "gt_frame": 17760,
+        "gt_track": 6,
+        "gt_team": 1,
+        "distance_m": 0.5158128243077178,
+        "opposite_gt_distance_m": 1.8597154673698428,
+        "opposite_gt_in_radius": true,
+        "nearest_gt": true,
+        "median_rgb": [
+          74.67855691056911,
+          83.33033268589074,
+          78.7723721590909
+        ],
+        "team_centers_rgb": [
+          [
+            86.53899174306483,
+            93.35686684361866,
+            84.35025122341682
+          ],
+          [
+            199.93175032175031,
+            201.6196266968326,
+            190.28498931623932
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 3,
+        "seconds": 702.8,
+        "video_seconds": 12.799999999999955,
+        "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+        "track": 8,
+        "bbox": [
+          885.0,
+          839.484375,
+          921.75,
+          899.375
+        ],
+        "predicted_team": 0,
+        "gt_frame": 17580,
+        "gt_track": 21,
+        "gt_team": 0,
+        "distance_m": 2.0255285045310623,
+        "opposite_gt_distance_m": 5.538023010565986,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          74.67855691056911,
+          83.33033268589074,
+          78.7723721590909
+        ],
+        "team_centers_rgb": [
+          [
+            86.53899174306483,
+            93.35686684361866,
+            84.35025122341682
+          ],
+          [
+            199.93175032175031,
+            201.6196266968326,
+            190.28498931623932
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 610.4,
+        "video_seconds": 10.399999999999977,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 4,
+        "bbox": [
+          1638.0,
+          648.375,
+          1679.25,
+          713.0
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15270,
+        "gt_track": 6,
+        "gt_team": 1,
+        "distance_m": 1.3204285704918055,
+        "opposite_gt_distance_m": 1.583205336722487,
+        "opposite_gt_in_radius": true,
+        "nearest_gt": true,
+        "median_rgb": [
+          105.48226950354609,
+          114.98611111111111,
+          109.18181818181819
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": null,
+        "review_note": "overlapping players; excluded"
+      },
+      {
+        "segment": 0,
+        "seconds": 616.8,
+        "video_seconds": 16.799999999999955,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 4,
+        "bbox": [
+          1064.75,
+          789.5,
+          1107.5,
+          847.0
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15430,
+        "gt_track": 1,
+        "gt_team": 1,
+        "distance_m": 2.6824307567439756,
+        "opposite_gt_distance_m": 2.9100448595396493,
+        "opposite_gt_in_radius": true,
+        "nearest_gt": true,
+        "median_rgb": [
+          105.48226950354609,
+          114.98611111111111,
+          109.18181818181819
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      },
+      {
+        "segment": 0,
+        "seconds": 612.8,
+        "video_seconds": 12.799999999999955,
+        "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+        "track": 4,
+        "bbox": [
+          1378.0,
+          707.0,
+          1417.0,
+          765.0
+        ],
+        "predicted_team": 0,
+        "gt_frame": 15330,
+        "gt_track": 21,
+        "gt_team": 0,
+        "distance_m": 0.8392590381682016,
+        "opposite_gt_distance_m": 8.498033185631998,
+        "opposite_gt_in_radius": false,
+        "nearest_gt": true,
+        "median_rgb": [
+          105.48226950354609,
+          114.98611111111111,
+          109.18181818181819
+        ],
+        "team_centers_rgb": [
+          [
+            100.58406990635285,
+            104.2735615079365,
+            93.30355665839537
+          ],
+          [
+            176.10074723846654,
+            180.3602041806101,
+            173.9747413776637
+          ]
+        ],
+        "visually_observed_kit": "blue",
+        "review_note": "visible shirt colour; no player identity assertion"
+      }
+    ]
+  }
+}
