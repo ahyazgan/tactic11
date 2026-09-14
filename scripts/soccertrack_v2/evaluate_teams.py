@@ -106,7 +106,9 @@ def main() -> int:
     reverse = sum(a is not None and 1 - a == b for a, b in dev_labels)
     swap = reverse > direct
     report = {"alignment": alignment, "swap_teams_from_development": swap,
-              "match_radius_m": args.match_radius, "baseline": args.baseline, "splits": {}}
+              "match_radius_m": args.match_radius, "baseline": args.baseline,
+              "metric_scope": "agreement with spatially matched GT teams; not verified shirt or player identity accuracy",
+              "splits": {}}
     for name, group in (("development", records[:2]), ("control", records[2:])):
         if not group:
             continue

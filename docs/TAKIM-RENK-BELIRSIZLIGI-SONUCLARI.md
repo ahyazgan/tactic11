@@ -2,6 +2,11 @@
 
 14 Eylül 2026, başlangıç `937c31b`, dal `codex-work`.
 
+Sonraki [görsel hata incelemesi](TAKIM-HATA-TANISI-SONUCLARI.md), konumsal GT
+eşlemelerinde forma rengiyle çelişen örnekler buldu. Aşağıdaki %81,11 ve
+119 hata sayısı **konumla eşleşmiş takım etiketi uyumudur**, doğrulanmış
+gerçek forma/oyuncu doğruluğu veya kesin sınıflandırıcı hata sayısı değildir.
+
 Kamera takım atamasındaki tek renk uç durumu düzeltildi. Mevcut SoccerTrack
 kontrolünde doğruluk **%81,11 olarak kaldı**; bu çalışma genel oyuncu kimliği
 veya takım doğruluğunda artış göstermiyor.
