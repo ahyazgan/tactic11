@@ -22,12 +22,16 @@ def main() -> int:
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--calibration", type=Path, default=Path("data/tracking/calibrations/soccertrack_v2_117092.json"))
     p.add_argument("--weights", default="data/tracking/models/rfdetr_mixed_small")
+    color = p.add_mutually_exclusive_group()
+    color.add_argument("--raw-kit-colors", action="store_true", help="raw kit colours (default; retained for old commands)")
+    color.add_argument("--normalize-kit-light", action="store_true", help="experimental local field-light normalization")
     args = p.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     for seg in args.segments:
         if (args.out / f"seg_{seg:04d}.json").exists():
             p.error(f"cache exists: segment {seg}")
-    cfg = PipelineConfig(detector=DetectorConfig(model="small", weights=args.weights, tiles=4))
+    cfg = PipelineConfig(detector=DetectorConfig(model="small", weights=args.weights, tiles=4),
+                         normalize_kit_light=args.normalize_kit_light)
     detector = make_detector(cfg.detector)
     calib = PitchCalibration.load(args.calibration)
     for seg in args.segments:

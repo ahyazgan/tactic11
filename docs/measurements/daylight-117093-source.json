@@ -1,0 +1,41 @@
+{
+  "match": "117093",
+  "half": 1,
+  "source": "https://drive.google.com/file/d/1gPoN2h2SxEjWORK6FwKTEsCuKPylar53/view",
+  "dataset": "https://atomscott.github.io/SoccerTrack-v2/",
+  "attribution": "SoccerTrack v2 \u2014 Atom Scott et al.",
+  "license": "CC BY 4.0",
+  "extraction": "frame-accurate seek; H.264 CRF 16 fast; no brightness edits",
+  "planned_segments": [
+    0,
+    3,
+    6,
+    9
+  ],
+  "unavailable_segments": {
+    "9": "Google Drive public source returned Quota exceeded before the fourth clip could be downloaded; no predictions or labels used in this decision"
+  },
+  "clips": [
+    {
+      "segment": 0,
+      "source_start_seconds": 600,
+      "duration_seconds": 30,
+      "path": "data/tracking/bench/daylight_117093/source/seg_0000.mp4",
+      "sha256": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2"
+    },
+    {
+      "segment": 3,
+      "source_start_seconds": 690,
+      "duration_seconds": 30,
+      "path": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "sha256": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d"
+    },
+    {
+      "segment": 6,
+      "source_start_seconds": 780,
+      "duration_seconds": 30,
+      "path": "data/tracking/bench/daylight_117093/source/seg_0006.mp4",
+      "sha256": "d3810e6d7d940bcd854d594a6c4a76998db9200874bf19e2b1b828611a6b6372"
+    }
+  ]
+}

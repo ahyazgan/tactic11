@@ -28,7 +28,7 @@ from app.domain.tracking import TrackingFrame
 from app.tracking.calibration import CalibrationError, PitchCalibration
 from app.tracking.detect import DetectorConfig, OnnxDetector, RFDetrDetector, make_detector
 from app.tracking.frames import BallObservation, TrackObservation, build_frame
-from app.tracking.teams import TeamAssigner, torso_color
+from app.tracking.teams import TeamAssigner, kit_color
 
 # İki arka uç aynı arayüzü verir (detect / split / predict_single / device)
 Detector = RFDetrDetector | OnnxDetector
@@ -79,6 +79,7 @@ class PipelineConfig:
     detect_replays: bool = False
     preview_path: str | None = None
     preview_width: int = 1600
+    normalize_kit_light: bool = False  # deneysel; gündüz dış kontrolde regresyon
 
 
 @dataclass
@@ -396,7 +397,8 @@ def collect_observations(
             hits[tid] = hits.get(tid, 0) + 1
             x1, y1, x2, y2 = (float(v) for v in xyxy)
             rows.append((tid, x1, y1, x2, y2, float(conf)))
-            teams.observe(tid, torso_color(rgb, (x1, y1, x2, y2)))
+            teams.observe(tid, kit_color(rgb, (x1, y1, x2, y2),
+                                         normalize_light=cfg.normalize_kit_light))
 
         ball = None
         ball_source = None
@@ -445,6 +447,7 @@ def collect_observations(
                 "hiçbir kare atılmadı)")
             print(f"  tekrar: {replays_seen} kare atıldı{uyari}", flush=True)
     stats: dict[str, Any] = {"per_frame_calibration": per_frame is not None,
+                             "kit_color_method": "local_grass_v1" if cfg.normalize_kit_light else "raw_rgb_v1",
                              "ball_spikes_rejected": ball_spikes_rejected,
                              "effective_track_fps": round(fps_eff, 2)}
     if per_frame is not None:
@@ -723,6 +726,7 @@ def process_video(
             "unassigned": sum(1 for t in tracks if assignment.team_by_track.get(t) is None),
         },
         "team_assignment_quality": {
+            "color_method": "local_grass_v1" if cfg.normalize_kit_light else "raw_rgb_v1",
             "frames_evaluated": len(frames),
             "overfull_frames": overfull_frames,
             "overfull_frame_ratio": round(overfull_frames / len(frames), 3) if frames else 0.0,

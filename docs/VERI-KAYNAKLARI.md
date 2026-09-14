@@ -10,6 +10,7 @@ kayıtlıdır; atıf gerektirenler ürünle birlikte gösterilmelidir.
 | **StatsBomb Open Data** | [kendi şartları](https://github.com/statsbomb/open-data) | La Liga event verisi (101 maç külliyatı) | StatsBomb |
 | **SkillCorner Open Data** | MIT | Yayından çıkarılmış takip verisi (A-League) | SkillCorner |
 | **Orange County SC vs Oakland Roots** | **CC BY 3.0** | 4K yayın maç özeti (kamera/kesme doğrulaması) | **BZFilms** |
+| **SoccerTrack v2** | [CC BY 4.0](https://atomscott.github.io/SoccerTrack-v2/#license) | Sabit panoramik 117092 gece ve 117093 gündüz maçları; saha işaretleri | Atom Scott ve diğerleri, SoccerTrack v2 (2025) |
 | RF-DETR | Apache-2.0 | Nesne tespiti | — |
 | supervision (ByteTrack) | MIT | Takip | — |
 
@@ -28,11 +29,15 @@ kayıtlıdır; atıf gerektirenler ürünle birlikte gösterilmelidir.
 | Kaggle DFL, Roboflow `sports` | DFL yarışma lisansı |
 | ultralytics (YOLOv8/11) | **AGPL-3.0** — ticari üründe kaynak açma zorunluluğu doğurur |
 
-## Token gerektirenler (kullanıcı sağlamalı)
+## Erişim yolları
 
 - **SoccerTrack v2** — CC BY 4.0, sabit panoramik 4K + bbox etiketleri.
   `huggingface.co/datasets/atomscott/soccertrack-v2`, gated: HF hesabı +
   `HF_TOKEN` gerekli. Listeleme anonim çalışır, indirme 401 verir.
+  Projenin [resmî Google Drive aynası](https://drive.google.com/drive/folders/1N2Qx2qkFgRtpbHitl2Vh6sLVYGgqkWwn)
+  ayrıca herkese açık indirme sunar. 117093 gündüz klipleri ve saha işaretleri
+  buradan alındı; dördüncü klipte indirme kotası doldu. Kaynak/klip hash'leri
+  [gündüz ölçüm raporunda](GUNDUZ-MACI-SONUCLARI.md) tutulur. Aynanın dosya sürümü HF'den farklı olabilir.
   **Not:** sabit kamera — TV yayını değil.
 
 ## İndirme
