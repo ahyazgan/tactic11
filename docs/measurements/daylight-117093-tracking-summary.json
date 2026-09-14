@@ -1,0 +1,37 @@
+{
+  "match": "117093",
+  "team_slot_ids_are_anonymous": true,
+  "color_method": "raw_rgb_v1",
+  "clips": [
+    {
+      "segment": 0,
+      "sampled_frames": 375,
+      "exported_frames": 125,
+      "source_start_seconds": 600,
+      "observed_export_fps": 4.166666666666667,
+      "estimated_passes": 3,
+      "estimated_recoveries": 0,
+      "ball_frames": 84
+    },
+    {
+      "segment": 3,
+      "sampled_frames": 375,
+      "exported_frames": 125,
+      "source_start_seconds": 690,
+      "observed_export_fps": 4.166666666666667,
+      "estimated_passes": 8,
+      "estimated_recoveries": 0,
+      "ball_frames": 122
+    },
+    {
+      "segment": 6,
+      "sampled_frames": 375,
+      "exported_frames": 125,
+      "source_start_seconds": 780,
+      "observed_export_fps": 4.166666666666667,
+      "estimated_passes": 0,
+      "estimated_recoveries": 0,
+      "ball_frames": 21
+    }
+  ]
+}
