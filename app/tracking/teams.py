@@ -44,6 +44,16 @@ BRIGHT_FRACTION = 0.4
 # brightness-independent check rejects differently coloured officials/edge people.
 # A 15/255 floor tolerates sensor noise in small night-time shirt crops.
 CHROMATICITY_MIN_DISTANCE = 15.0
+# Existing RGB noise tolerance, also used for rejecting distant tracks.
+# Two centres within this tolerance are not evidence of two distinct kits.
+RGB_MIN_DISTANCE = 30.0
+
+
+def distinct_team_colors(colors: np.ndarray) -> bool:
+    """Whether a palette can distinguish two teams; not a kit-identity proof."""
+    colors = np.asarray(colors, dtype=float)
+    return bool(colors.shape == (2, 3) and np.isfinite(colors).all()
+                and np.linalg.norm(colors[0] - colors[1]) > RGB_MIN_DISTANCE)
 
 
 def chromaticity(colors: np.ndarray) -> np.ndarray:
@@ -159,6 +169,7 @@ class TeamAssignment:
     team_by_track: dict[int, int | None]
     centers: np.ndarray
     outlier_tracks: frozenset[int]
+    note: str | None = None
 
 
 def _order_by_anchor(
@@ -209,13 +220,20 @@ class TeamAssigner:
         tracks = [t for t, obs in self._obs.items() if len(obs) >= self._min_obs
                   and (eligible_tracks is None or t in eligible_tracks)]
         if len(tracks) < 2:
-            return TeamAssignment({t: None for t in self._obs}, np.zeros((2, 3)), frozenset(self._obs))
+            return TeamAssignment({t: None for t in self._obs}, np.zeros((2, 3)), frozenset(self._obs),
+                                  "takım renklerini öğrenmek için yeterli takip yok")
         feats = np.array([np.median(np.vstack(self._obs[t]), axis=0) for t in tracks])
         # k=2: iki takım; hakem/kaleci uzaklık eşiğiyle None'a düşer. k=3 beyaz
         # formayı gölge/ışık diye bölüp maviyle karıştırıyordu (ölçüm: modül doküstringi).
         k = 2
         labels, centers = kmeans(feats, k)
         labels, centers = median_recenter(feats, labels, centers)
+        # k=2 always returns two centres, even for one visible kit. Without
+        # this guard, identical/shaded shirts become different teams and a
+        # live worker can retain this invalid palette for the entire match.
+        if len(np.unique(labels)) < 2 or not distinct_team_colors(centers):
+            return TeamAssignment({t: None for t in self._obs}, np.zeros((2, 3)), frozenset(self._obs),
+                                  "iki ayrı takım rengi ayırt edilemiyor; takım ataması belirsiz")
         sizes = [(int(np.sum(labels == j)), j) for j in range(k)]
         sizes.sort(reverse=True)
         team_clusters = [j for _, j in sizes[:2]]
@@ -225,7 +243,7 @@ class TeamAssigner:
 
         dist_own = np.array([np.linalg.norm(feats[i] - centers[labels[i]]) for i in range(len(tracks))])
         spread = float(np.median(dist_own)) if len(dist_own) else 0.0
-        threshold = max(spread * self._outlier_factor, 30.0)
+        threshold = max(spread * self._outlier_factor, RGB_MIN_DISTANCE)
         tint_dist = np.linalg.norm(chromaticity(feats) - chromaticity(centers)[labels], axis=1)
         tint_thresholds = {
             j: max(float(np.median(tint_dist[labels == j])) * self._outlier_factor,

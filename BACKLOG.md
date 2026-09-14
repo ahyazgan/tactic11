@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Codex kamera: ayırt edilemeyen forma renklerinden takım üretmeyi ve geçersiz canlı renk çapasını önle. (b52767e)
+  Done when: tek renk/canlı geçiş regresyonları, aynı geliştirme-kontrol kayıtlarında ölçüm ve tam test/lint/tip kontrolü. Sonuç: docs/TAKIM-RENK-BELIRSIZLIGI-SONUCLARI.md; 2529 test geçti. Kontrol doğruluğu %81,11 kaldı; genel doğruluk hedefi henüz geçilmedi.
+
 - [x] Karne incelemesi: yetersiz bayrakla başarı hükmünü ve aynı dakikadaki oyuncu sayımını düzelt; özgün veride yeniden ölç. (8c7b938)
   Done when: regresyonlar ve birleşik testler temiz, 100 maçlık özgün girdi SHA-256 ile eşleşir, yeni ölçüm ve sınırlar raporlanır. Sonuç: docs/KARNE-DUZELTME-SONUCLARI.md.
 

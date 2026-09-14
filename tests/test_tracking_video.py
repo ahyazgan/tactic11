@@ -472,6 +472,27 @@ def test_kmeans_survives_identical_colors_without_crashing() -> None:
     assert len(res.team_by_track) == 8
 
 
+@pytest.mark.parametrize("count,jitter", [(2, 0.0), (8, 0.0), (8, 0.7)])
+def test_one_shirt_colour_cannot_create_two_teams(count, jitter) -> None:
+    assigner = TeamAssigner(min_observations=1)
+    for tid in range(count):
+        assigner.observe(tid, RED + tid * jitter)
+    result = assigner.fit()
+    assert set(result.team_by_track.values()) == {None}
+    assert result.outlier_tracks == frozenset(range(count))
+    assert not result.centers.any(), "an uncertain segment must not seed a live anchor"
+
+
+def test_ambiguous_segment_does_not_mutate_supplied_anchor() -> None:
+    anchor = np.array([RED, BLUE])
+    original = anchor.copy()
+    assigner = TeamAssigner(min_observations=1)
+    for tid in range(8):
+        assigner.observe(tid, RED + tid * 0.7)
+    assert all(team is None for team in assigner.fit(anchor).team_by_track.values())
+    np.testing.assert_array_equal(anchor, original)
+
+
 def test_largest_cluster_rule_flips_teams_between_segments() -> None:
     """Çapasız davranış: kalabalık küme takım 0 olur → segmentler arası takas.
 
