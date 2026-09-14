@@ -1198,6 +1198,10 @@ export default function LiveDecisionPage() {
   const [clipOpen, setClipOpen] = useState(false);
   const lastMinuteRef = useRef<number | null>(null);
   const lastAppliedRef = useRef<{ minute: number; headline: string } | null>(null);
+  // Gösterilen önerinin PAYDA kaydı: koç dokunmasa bile bir kez yazılır.
+  // Olmazsa "kaç öneri gösterildi" bilinmez ve uplift'in örneği kendi kendini
+  // seçmiş olur (bkz. docs/PILOT-KARSI-OLGU-PLANI.md).
+  const shownRef = useRef<Set<string>>(new Set());
   const lastNotifyRef = useRef<{ minute: number; at: number }>(
     { minute: -1, at: 0 },
   );
@@ -1367,6 +1371,35 @@ export default function LiveDecisionPage() {
 
   // applied=false da KAYDEDİLİR: uygulanmayan öneri, aynı durumda "hiçbir şey
   // yapılmasaydı"nın gözlemi — öneri etkisi ancak onunla ölçülür.
+  // Öneri ekranda belirdiği anda applied=null ile kaydedilir. Uç nokta 5 dk
+  // penceresinde mükerrerini birleştirdiği için her sorguda satır açılmaz;
+  // koç dokununca AYNI satır işaretlenir.
+  useEffect(() => {
+    const p = data?.context?.primary;
+    if (DEMO_MODE || !p) return;
+    const key = `${matchId}|${teamId}|${p.theme_label ?? ""}|${Math.floor(minute / 5)}`;
+    if (shownRef.current.has(key)) return;
+    shownRef.current.add(key);
+    const themeToType: Record<string, string> = {
+      "oyuncu değişikliği": "substitution",
+      "taktiksel ayar": "tactical_instruction",
+      "duran top": "tactical_instruction",
+      "oyun yönetimi": "tactical_instruction",
+    };
+    void apiFetch(`/admin/matches/${matchId}/decisions`, {
+      method: "POST",
+      body: JSON.stringify({
+        team_external_id: teamId, minute, period: minute < 45 ? 1 : 2,
+        decision_type: themeToType[p.theme_label ?? ""] ?? "other",
+        notes: p.headline, recommended: true, applied: null,
+        confidence: p.confidence,
+      }),
+    }).catch(() => {
+      // Payda kaydı başarısız olursa öneriyi tekrar denemeye bırak
+      shownRef.current.delete(key);
+    });
+  }, [data?.context?.primary, matchId, teamId, minute]);
+
   async function handleApply(applied: boolean) {
     const p = data?.context?.primary;
     if (!p) return;

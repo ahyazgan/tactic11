@@ -232,3 +232,66 @@ def test_load_samples_need_an_existing_match(client) -> None:
         "samples": [{"player_external_id": 5, "minute": 30, "total_distance_m": 100.0}],
     })
     assert missing.status_code == 404
+
+
+# --- karşı-olgu paydası ve kapsama -------------------------------------------- #
+
+def _rec(client, minute: float, applied=None, dtype="substitution") -> dict:
+    return client.post("/admin/matches/7001/decisions", json={
+        "team_external_id": 11, "minute": minute, "period": 2,
+        "decision_type": dtype, "recommended": True, "applied": applied,
+        "notes": "öneri",
+    }).json()
+
+
+def test_repeated_display_of_one_recommendation_does_not_inflate_the_denominator(
+    client, match,
+) -> None:
+    """Canlı panel aynı öneriyi dakika ilerledikçe tekrar yazar; payda şişmemeli."""
+    first = _rec(client, 60.0)
+    assert first["guncellendi"] is False
+    for minute in (61.0, 62.5, 64.0):
+        again = _rec(client, minute)
+        assert again["guncellendi"] is True
+        assert again["id"] == first["id"]
+    cov = client.get("/admin/matches/7001/decision-coverage",
+                     params={"team_external_id": 11}).json()
+    assert cov["gosterilen_oneri"] == 1
+    # pencere dışına çıkınca yeni öneri sayılır
+    later = _rec(client, 80.0)
+    assert later["guncellendi"] is False
+    assert later["id"] != first["id"]
+
+
+def test_a_mark_is_never_erased_by_a_later_display(client, match) -> None:
+    """Koç işaretledikten sonra gelen gösterim kaydı işareti null'a çevirmemeli."""
+    shown = _rec(client, 60.0, applied=None)
+    marked = _rec(client, 61.0, applied=True)
+    assert marked["id"] == shown["id"] and marked["applied"] is True
+    again = _rec(client, 62.0, applied=None)
+    assert again["id"] == shown["id"]
+    assert again["applied"] is True          # beyan korunur
+
+
+def test_coverage_warns_when_most_recommendations_went_unanswered(client, match) -> None:
+    """Kapsama düşükse uç nokta susmaz: örnek kendi kendini seçmiş olur."""
+    _rec(client, 20.0, applied=True)
+    for minute in (40.0, 60.0, 80.0):
+        _rec(client, minute, applied=None)
+    cov = client.get("/admin/matches/7001/decision-coverage",
+                     params={"team_external_id": 11}).json()
+    assert cov["gosterilen_oneri"] == 4
+    assert cov["cevaplanan"] == 1
+    assert cov["cevapsiz"] == 3
+    assert cov["kapsama"] == 0.25
+    assert cov["uyari"] is not None and "kapsama düşük" in cov["uyari"]
+
+
+def test_coverage_is_quiet_when_both_arms_are_answered(client, match) -> None:
+    _rec(client, 20.0, applied=True)
+    _rec(client, 40.0, applied=False)
+    cov = client.get("/admin/matches/7001/decision-coverage",
+                     params={"team_external_id": 11}).json()
+    assert cov["kapsama"] == 1.0
+    assert cov["uygulandi"] == 1 and cov["uygulanmadi"] == 1
+    assert cov["uyari"] is None
