@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from sqlalchemy.orm import sessionmaker
@@ -11,11 +12,13 @@ from app.data.sources.statsbomb_open import coach_moves_from_events_json
 from app.db import models
 from app.engine.coach_benchmark import ShapePrior, ShapeState
 from app.engine.live_sub_recommendation import ELITE_OFF_PRIOR
+from app.engine.sub_timing.elite_prior import ELITE_SUB_WINDOW_PRIOR, MAX_SUBS_CELL
 from scripts import (
     coach_iq,
     measure_shape_selectivity,
     measure_sub_ranking,
     validate_shape_prior,
+    validate_timing_prior,
     validate_who_prior,
 )
 
@@ -248,3 +251,65 @@ def test_reverse_control_flips_only_the_within_group_order() -> None:
     assert measure_sub_ranking._expected_hits(cands, 2, rev, k=1) == (1.0, 1.0)
     assert measure_sub_ranking._expected_hits(cands, 3, fwd, k=1)[0] == 0.0
     assert measure_sub_ranking._expected_hits(cands, 3, rev, k=1)[0] == 0.0
+
+
+# --- zamanlama önseli doğrulaması -------------------------------------------- #
+
+def test_timing_cell_matches_the_engine_prior_keys() -> None:
+    """Doğrulama scripti tabloyu motorun anahtar biçimiyle sorgulamalı.
+
+    Bant/skor/hak üçlüsü motordakiyle birebir aynı olmazsa her tik 'görülmemiş'
+    hücreye düşer ve ölçüm sessizce anlamsızlaşır.
+    """
+    row = {"minute": 72.0, "score_state": "trailing", "subs_used": 5}
+    band, state, subs = validate_timing_prior._cell(row)
+    assert (band, state, subs) == (3, "trailing", MAX_SUBS_CELL)
+    assert validate_timing_prior._band(44.9) == 0
+    assert validate_timing_prior._band(45.0) == 1
+    assert validate_timing_prior._band(89.0) == 4
+    # üretim tablosunun anahtarları bu biçimde sorgulanabiliyor
+    assert any(validate_timing_prior._cell(
+        {"minute": m, "score_state": s, "subs_used": u}) in ELITE_SUB_WINDOW_PRIOR
+        for m in (20.0, 50.0, 65.0, 75.0, 85.0)
+        for s in ("drawing", "leading", "trailing") for u in (0, 1, 2))
+
+
+def test_timing_validation_refuses_overlapping_sets(tmp_path, monkeypatch, capsys) -> None:
+    """Külliyat maçı bağımsız kümede de varsa ölçüm yapılmaz."""
+    corpus, ind = tmp_path / "c", tmp_path / "i"
+    corpus.mkdir()
+    ind.mkdir()
+    for d in (corpus, ind):
+        (d / "555.json").write_text("[]", encoding="utf-8")
+    monkeypatch.setattr("sys.argv", [
+        "validate_timing_prior", "--corpus-dir", str(corpus), "--independent-dir", str(ind),
+        "--out", str(tmp_path / "o.json"),
+    ])
+    assert validate_timing_prior.main() == 1
+    assert "BAĞIMSIZ DEĞİL" in capsys.readouterr().out
+    assert not (tmp_path / "o.json").exists()
+
+
+def test_grid_ticks_separate_tactical_subs_from_injury_ones() -> None:
+    """Zamanlama hedefi TAKTİK değişikliktir; kullanılan hak sayımı hepsini içerir."""
+    events = [
+        {"type": {"id": 35}, "team": {"id": 11}, "minute": 0,
+         "tactics": {"lineup": [{"player": {"id": i}, "position": {"id": i}}
+                                for i in range(1, 12)]}},
+        {"type": {"id": 19}, "team": {"id": 11}, "minute": 62, "player": {"id": 5},
+         "substitution": {"replacement": {"id": 20}, "outcome": {"name": "Injury"}}},
+        {"type": {"id": 19}, "team": {"id": 22}, "minute": 62, "player": {"id": 90},
+         "substitution": {"replacement": {"id": 91}, "outcome": {"name": "Tactical"}}},
+    ]
+    import json as _json
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        p = Path(tmp)
+        (p / "9.json").write_text(_json.dumps(events), encoding="utf-8")
+        rows = validate_shape_prior._grid_ticks(p, [9], 12.0)
+    ours = {r["minute"]: r for r in rows if r["team"] == 11}
+    # sakatlık değişikliği hedefi tetiklemez ama hakkı kullanır
+    assert ours[55.0]["coach_sub"] is False
+    assert ours[65.0]["subs_used"] == 1
+    theirs = {r["minute"]: r for r in rows if r["team"] == 22}
+    assert theirs[55.0]["coach_sub"] is True
