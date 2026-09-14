@@ -1,5 +1,10 @@
 # Zamanlama önseli: bağımsız doğrulama — 14 Eylül 2026
 
+> **Bu rapordaki sayılar ESKİ tabloya aittir.** Tablo sonradan yedi kümeden
+> yeniden fit edildi ve buradaki iki küme artık fit havuzunun İÇİNDE — yani
+> onlara uygulanan ölçüm bağımsız sayılmaz. Güncel sayılar ve hiç kullanılmamış
+> bir kümedeki dışarıda-kalan sınav: [yeniden fit](KARNE-ZAMANLAMA-YENIDEN-FIT.md).
+
 Canlı motorda veriden türetilmiş **üç** donmuş tablo vardı. Bu çalışmayla
 üçünün de bağımsız maçlarda sınanması tamamlandı:
 

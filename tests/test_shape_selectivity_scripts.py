@@ -12,9 +12,16 @@ from app.data.sources.statsbomb_open import coach_moves_from_events_json
 from app.db import models
 from app.engine.coach_benchmark import ShapePrior, ShapeState
 from app.engine.live_sub_recommendation import ELITE_OFF_PRIOR
-from app.engine.sub_timing.elite_prior import ELITE_SUB_WINDOW_PRIOR, MAX_SUBS_CELL
+from app.engine.sub_timing.elite_prior import (
+    ELITE_SUB_WINDOW_PRIOR,
+    MAX_SUBS_CELL,
+    MINUTE_BANDS,
+    SUB_WINDOW_THRESHOLD,
+    UNKNOWN_CELL,
+)
 from scripts import (
     coach_iq,
+    fit_timing_prior,
     measure_shape_selectivity,
     measure_sub_ranking,
     validate_shape_prior,
@@ -313,3 +320,61 @@ def test_grid_ticks_separate_tactical_subs_from_injury_ones() -> None:
     assert ours[65.0]["subs_used"] == 1
     theirs = {r["minute"]: r for r in rows if r["team"] == 22}
     assert theirs[55.0]["coach_sub"] is True
+
+
+# --- zamanlama önselinin yeniden fit'i --------------------------------------- #
+
+def _timing_row(minute: float, state: str, used: int, allowed: int, acted: bool) -> dict:
+    return {"match": 1, "team": 11, "minute": minute, "score_state": state,
+            "subs_used": used, "allowed": allowed, "remaining": max(0, allowed - used),
+            "coach_shift": False, "coach_sub": acted}
+
+
+def test_fit_table_drops_exhausted_ticks_so_regimes_can_be_pooled() -> None:
+    """Hak bitmiş tik tabloya GİRMEZ — o bilgi kapıda durur.
+
+    Girmezse "3 kullanılmış" hücresi her rejimde aynı şeyi anlatır (3 yaptı ve
+    hakkı var) ve 3-hak ile 5-hak verisi aynı havuza konabilir.
+    """
+    rows = [
+        # 3 haklı maçta 3 kullanılmış → hak bitti, elenmeli
+        _timing_row(70.0, "trailing", 3, 3, acted=False),
+        _timing_row(75.0, "trailing", 3, 3, acted=False),
+        # 5 haklı maçta 3 kullanılmış → hakkı var, tabloya girer
+        _timing_row(70.0, "trailing", 3, 5, acted=True),
+        _timing_row(75.0, "trailing", 3, 5, acted=True),
+    ]
+    table, counts = fit_timing_prior.fit_table(rows)
+    cell = fit_timing_prior._cell(rows[0])
+    assert counts[cell] == (2, 2)              # yalnız 5-hak tikleri sayıldı
+    assert table[cell] > 0.5                   # ve oranı yüksek, sıfıra çekilmedi
+    # elenen tikler hiçbir hücreye sızmadı
+    assert sum(n for _a, n in counts.values()) == 2
+
+
+def test_evaluate_never_flags_when_substitutions_are_exhausted() -> None:
+    """Kapı her zaman açık: tablo ne derse desin, hak bittiyse bayrak yok."""
+    cell = (3, "trailing", 3)
+    generous = {cell: 0.99}
+    exhausted = [_timing_row(75.0, "trailing", 3, 3, acted=True)]
+    available = [_timing_row(75.0, "trailing", 3, 5, acted=True)]
+    assert fit_timing_prior.evaluate(generous, exhausted, 0.35).flagged == 0
+    assert fit_timing_prior.evaluate(generous, available, 0.35).flagged == 1
+
+
+def test_production_timing_table_covers_the_second_half_completely() -> None:
+    """Kararların alındığı her durum tabloda olmalı.
+
+    Görülmemiş hücre `UNKNOWN_CELL = 0.5` sayılır ve bu eşiğin (0.35) ÜSTÜNDEDİR,
+    yani eksik bir hücre sessizce bayrak üretir. 45. dakikadan sonra (bant ≥ 1)
+    üç skor durumu × dört hak sayısı tam kapsanıyor. İlk yarıda (bant 0) yüksek
+    hak sayıları gerçekte oluşmadığı için tabloda da yok.
+    """
+    assert UNKNOWN_CELL > SUB_WINDOW_THRESHOLD   # eksik hücre konuşur — kapsama şart
+    for band in range(1, len(MINUTE_BANDS) + 1):
+        for state in ("leading", "drawing", "trailing"):
+            for used in range(MAX_SUBS_CELL + 1):
+                assert (band, state, used) in ELITE_SUB_WINDOW_PRIOR, (band, state, used)
+    # ilk yarıda yalnız düşük hak sayıları görülmüş
+    first_half = {c for c in ELITE_SUB_WINDOW_PRIOR if c[0] == 0}
+    assert {c[2] for c in first_half} <= {0, 1, 2}

@@ -84,8 +84,12 @@ Kapı, harmanın yarısını mantıkla kesiyor ama **tablonun kendisi hâlâ kar
 geliyor**. Kapıyla birlikte yeniden fit ölçüldü: 5-hak döneminde F1 0,719'dan
 **0,746**'ya çıkıyor.
 
-Yeniden fit **edilmedi**, çünkü elimizdeki 5-hak örneği yalnız 46 maç / 1472 tik
-ve hepsi tek kulübün maçları. Hangi veriyle fit edileceği ayrı bir karardır:
+> **Sonradan YAPILDI.** Yeniden fit yedi kümeden (16559 tik) gerçekleştirildi;
+> hiç kullanılmamış Dünya Kupası 2022 kümesinde F1 0,669 → 0,733.
+> [Yeniden fit raporu](KARNE-ZAMANLAMA-YENIDEN-FIT.md).
+
+Bu rapor yazıldığında yeniden fit **edilmemişti**, çünkü elimizdeki 5-hak örneği
+yalnız 46 maç / 1472 tik ve hepsi tek kulübün maçlarıydı. Hangi veriyle fit edileceği ayrı bir karardır:
 StatsBomb'da 5-hak döneminden başka lig verisi var (Euro 2024, Dünya Kupası
 2022, kadın ligleri 2023/24), ama rekabet düzeyi ve turnuva formatı farklı.
 Bu, bir sonraki adımın konusu.

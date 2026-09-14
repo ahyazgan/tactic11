@@ -1,12 +1,37 @@
 """Elit değişiklik ZAMANLAMA önseli — "bu durumda antrenör 12 dk içinde değiştirir mi?"
 
-## Kaynak ve ölçüm (2026-09-12)
+## Kaynak ve ölçüm (2026-09-14 yeniden fit)
 
-StatsBomb açık verisi, La Liga 2018-21, Barcelona'nın 100 maçı, İKİ takımın
-antrenörleri (elit lig; n=3200 tik). Tik ızgarası her 5 dk (10..85);
-hedef: takım sonraki 12 dk içinde TAKTİK değişiklik yaptı mı. Hücre =
-(dakika bandı, o anki skor durumu, o ana kadar yapılan değişiklik ≤ 3);
-Laplace düzeltmeli oran (`engine.coach_benchmark.fit_timing_prior`).
+StatsBomb açık verisi, YEDİ küme / 16559 tik (`scripts/fit_timing_prior.py`):
+Barcelona 3-hak (54 maç) ve 5-hak (46), La Liga 2015/16 (100), Premier League
+2015/16 (100), Indian Super League 2021/22 (100), FA WSL 2023/24 (100),
+Euro 2024 (51). Erkek/kadın, kulüp/milli, 3-hak/5-hak karışık — kasten.
+Tik ızgarası her 5 dk (10..85); hedef: takım sonraki 12 dk içinde TAKTİK
+değişiklik yaptı mı. Hücre = (dakika bandı, skor durumu, yapılan değişiklik ≤ 3);
+Laplace düzeltmeli oran.
+
+**HAK-BİTMİŞ TİKLER FİT'E GİRMEZ** (1073 tik elendi). Hak bittiğinde değişiklik
+imkânsızdır ve bu bilgi tabloda değil KAPIDA durur (`subs_allowed`). Elenince
+"3 kullanılmış" hücresi her rejimde aynı şeyi anlatır — *3 yaptı ve hakkı var* —
+ve ancak bu sayede 3-hak ile 5-hak verisi aynı havuza konabilir.
+
+Önceki tablo tek kulübün 100 maçındandı (3200 tik) ve rejim karışımını hücreye
+gömüyordu. Leave-one-out F1 (her küme KENDİSİ hariç ötekilerden fit edilen
+tabloyla ölçüldü):
+
+  küme                          eski    yeni
+  Barcelona 3-hak              0.761   0.758
+  Barcelona 5-hak              0.701   0.718
+  La Liga 2015/16              0.751   0.759
+  Premier League 2015/16       0.698   0.699
+  Indian Super League 21/22    0.653   0.703
+  FA WSL 2023/24               0.656   0.696
+  Euro 2024                    0.659   0.735
+  ORTALAMA                     0.697   0.724
+  EN KÖTÜ                      0.653   0.696
+
+Yedi küme de 5-hak dünyasında ya da dışında; yeni tablo hiçbirinde belirgin
+kötüleşmiyor, üç yeni kümede 0.04-0.08 kazanıyor.
 
 Ayrık yarı testi: önsel F1 0.711 vs saat-kuralı (dk ≥ 55) F1 0.682 — saatle
 aynı bantta. Yani ZAMANLAMA büyük ölçüde saatin ve kalan hakkın işidir; önsel
@@ -70,9 +95,12 @@ from __future__ import annotations
 
 MINUTE_BANDS: tuple[float, ...] = (45.0, 60.0, 70.0, 80.0)
 MAX_SUBS_CELL = 3
-# Karar eşiği. 5 dk ızgarada eğitim-optimal 0.4 idi; panelin konuştuğu külliyat
-# tiklerinde (28/40/55/66/78) ayrık yarı seçimi 0.25-0.35 platosunu verdi
-# (F1 0.75, 0.4'te 0.71; saat-kuralı 0.74). Yeniden fit edilirse yeniden ölçülür.
+# Karar eşiği. 2026-09-14 taraması (7 küme, leave-one-out ortalama F1):
+# 0.25→0.725  0.30→0.725  0.35→0.724  0.40→0.727  0.45→0.721  0.50→0.712.
+# 0.25-0.40 arası DÜZ PLATO (fark 0.003 = gürültü). Argmax (0.40) SEÇİLMEDİ:
+# düz bölgede en yüksek ortalamayı seçmek gürültüye uymaktır ve 0.40'ın en kötü
+# kümesi daha kötü (0.689 vs 0.696). 0.35 korundu; böylece önce/sonra farkı
+# yalnız TABLOYA atfedilebiliyor.
 SUB_WINDOW_THRESHOLD = 0.35
 UNKNOWN_CELL = 0.5
 # Maç başına değişiklik hakkı. 2022'den beri IFAB kuralı 5; tablo 3-hak ve 5-hak
@@ -80,56 +108,63 @@ UNKNOWN_CELL = 0.5
 DEFAULT_SUBS_ALLOWED = 5
 
 ELITE_SUB_WINDOW_PRIOR: dict[tuple[int, str, int], float] = {
-    (0, "drawing", 0): 0.046,
-    (0, "drawing", 1): 0.129,
-    (0, "leading", 0): 0.093,
-    (0, "leading", 1): 0.150,
-    (0, "trailing", 0): 0.163,
-    (0, "trailing", 1): 0.529,
-    (1, "drawing", 0): 0.450,
-    (1, "drawing", 1): 0.278,
-    (1, "drawing", 2): 0.167,
-    (1, "leading", 0): 0.359,
-    (1, "leading", 1): 0.411,
-    (1, "leading", 2): 0.375,
-    (1, "trailing", 0): 0.609,
-    (1, "trailing", 1): 0.477,
-    (1, "trailing", 2): 0.441,
-    (1, "trailing", 3): 0.522,
-    (2, "drawing", 0): 0.735,
-    (2, "drawing", 1): 0.667,
-    (2, "drawing", 2): 0.531,
-    (2, "drawing", 3): 0.636,
-    (2, "leading", 0): 0.857,
-    (2, "leading", 1): 0.800,
-    (2, "leading", 2): 0.769,
-    (2, "leading", 3): 0.700,
-    (2, "trailing", 0): 0.923,
-    (2, "trailing", 1): 0.721,
-    (2, "trailing", 2): 0.609,
-    (2, "trailing", 3): 0.433,
-    (3, "drawing", 0): 0.833,
-    (3, "drawing", 1): 0.811,
-    (3, "drawing", 2): 0.684,
-    (3, "drawing", 3): 0.486,
-    (3, "leading", 0): 0.909,
-    (3, "leading", 1): 0.850,
-    (3, "leading", 2): 0.894,
-    (3, "leading", 3): 0.500,
-    (3, "trailing", 0): 0.833,
-    (3, "trailing", 1): 0.885,
-    (3, "trailing", 2): 0.865,
-    (3, "trailing", 3): 0.343,
-    (4, "drawing", 0): 0.667,
-    (4, "drawing", 1): 0.778,
-    (4, "drawing", 2): 0.808,
-    (4, "drawing", 3): 0.212,
-    (4, "leading", 1): 0.929,
-    (4, "leading", 2): 0.776,
-    (4, "leading", 3): 0.167,
-    (4, "trailing", 1): 0.857,
-    (4, "trailing", 2): 0.875,
-    (4, "trailing", 3): 0.112,
+    (0, "drawing", 0): 0.047,   # 200/4317
+    (0, "drawing", 1): 0.128,   # 23/186
+    (0, "drawing", 2): 0.333,   # 0/1
+    (0, "leading", 0): 0.071,   # 109/1542
+    (0, "leading", 1): 0.094,   # 5/62
+    (0, "leading", 2): 0.333,   # 0/1
+    (0, "trailing", 0): 0.164,   # 251/1539
+    (0, "trailing", 1): 0.311,   # 18/59
+    (0, "trailing", 2): 0.111,   # 0/7
+    (1, "drawing", 0): 0.369,   # 340/921
+    (1, "drawing", 1): 0.325,   # 85/263
+    (1, "drawing", 2): 0.300,   # 20/68
+    (1, "drawing", 3): 0.333,   # 1/4
+    (1, "leading", 0): 0.336,   # 245/730
+    (1, "leading", 1): 0.364,   # 95/262
+    (1, "leading", 2): 0.267,   # 7/28
+    (1, "leading", 3): 0.143,   # 0/5
+    (1, "trailing", 0): 0.543,   # 272/501
+    (1, "trailing", 1): 0.457,   # 146/320
+    (1, "trailing", 2): 0.291,   # 43/149
+    (1, "trailing", 3): 0.386,   # 21/55
+    (2, "drawing", 0): 0.755,   # 196/259
+    (2, "drawing", 1): 0.693,   # 166/239
+    (2, "drawing", 2): 0.512,   # 62/121
+    (2, "drawing", 3): 0.487,   # 18/37
+    (2, "leading", 0): 0.808,   # 285/352
+    (2, "leading", 1): 0.743,   # 184/247
+    (2, "leading", 2): 0.570,   # 76/133
+    (2, "leading", 3): 0.400,   # 15/38
+    (2, "trailing", 0): 0.881,   # 155/175
+    (2, "trailing", 1): 0.803,   # 186/231
+    (2, "trailing", 2): 0.612,   # 136/222
+    (2, "trailing", 3): 0.500,   # 61/122
+    (3, "drawing", 0): 0.908,   # 58/63
+    (3, "drawing", 1): 0.811,   # 141/173
+    (3, "drawing", 2): 0.701,   # 149/212
+    (3, "drawing", 3): 0.642,   # 78/121
+    (3, "leading", 0): 0.941,   # 94/99
+    (3, "leading", 1): 0.855,   # 206/240
+    (3, "leading", 2): 0.768,   # 228/296
+    (3, "leading", 3): 0.652,   # 87/133
+    (3, "trailing", 0): 0.921,   # 34/36
+    (3, "trailing", 1): 0.891,   # 113/126
+    (3, "trailing", 2): 0.814,   # 227/278
+    (3, "trailing", 3): 0.692,   # 145/209
+    (4, "drawing", 0): 0.875,   # 6/6
+    (4, "drawing", 1): 0.851,   # 56/65
+    (4, "drawing", 2): 0.736,   # 144/195
+    (4, "drawing", 3): 0.525,   # 83/158
+    (4, "leading", 0): 0.833,   # 9/10
+    (4, "leading", 1): 0.906,   # 76/83
+    (4, "leading", 2): 0.824,   # 196/237
+    (4, "leading", 3): 0.568,   # 132/232
+    (4, "trailing", 0): 0.750,   # 2/2
+    (4, "trailing", 1): 0.700,   # 20/28
+    (4, "trailing", 2): 0.732,   # 103/140
+    (4, "trailing", 3): 0.547,   # 121/221
 }
 
 
