@@ -5,21 +5,33 @@ Testler üç şeyi kilitler:
    Aynı yarıda seçip ölçmek saat-kuralını haksız parlatırdı.
 2. Bir kol boşsa F1 tanımsızdır ve hüküm "yetersiz veri"dir — sayı uydurulmaz.
 3. Beceri ölçekleri sabit: AUC 0.5 → 0, TERS ilişki 0'a kırpılır; ECE tanımı.
+4. Seçicilik F1'le ölçülmez: nadir hedefte hep-evet F1'i yükseltir, kaldırmayı
+   yükseltmez. Kapı motorun sustuğu tikte bayrak üretemez — yalnız kısar.
 """
 from __future__ import annotations
+
+import pytest
 
 from app.engine.coach_benchmark import (
     MIN_F1_GAIN,
     MIN_TICKS_PER_HALF,
+    SHAPE_MIN_FLAG_RATE,
+    SHAPE_MIN_LIFT,
     Dimension,
+    ShapePrior,
+    ShapeState,
     TickObservation,
     agreement,
+    apply_shape_gate,
     build_scorecard,
     expected_calibration_error,
+    fit_shape_prior,
     lead_times,
     minute_rule,
+    selectivity,
     skill_from_auc,
     split_half_agreement,
+    split_half_shape_gate,
 )
 
 TICKS = (28.0, 40.0, 55.0, 66.0, 78.0)
@@ -297,3 +309,111 @@ def test_who_prior_unseen_cell_is_unknown_not_zero() -> None:
     st = WhoState(1, 5, (WhoCandidate(1, "DEF", True), WhoCandidate(2, "MID", False)))
     # MID/sub görülmemiş → 0.5 > 0.2 → önce 2
     assert apply_who_prior(prior, st) == (2, 1)
+
+
+# --- şekil seçiciliği -------------------------------------------------------- #
+
+def _shape_match(
+    mid: int, *, informative: bool, flag_all: bool = True, support: int = 2,
+) -> list[ShapeState]:
+    """Antrenör yalnız 66+ ve geride kalınca diziliş değiştirir (öğrenilebilir durum).
+
+    `informative=False` ise hamle durumdan bağımsız (aynı tikte sabit) — hiçbir
+    önsel öğrenemez.
+    """
+    out: list[ShapeState] = []
+    for i, t in enumerate(TICKS):
+        state = "trailing" if t >= 66.0 else "leading"
+        acted = (t >= 66.0) if informative else (mid % 5 == 0 and i == 0)
+        out.append(ShapeState(
+            mid, t, score_state=state, subs_used=0,
+            engine_flag=flag_all or t >= 66.0, support_count=support, coach_acted=acted,
+        ))
+    return out
+
+
+def test_selectivity_lift_is_one_when_flag_knows_nothing() -> None:
+    """Hep-evet: F1 yüksek çıkar ama kaldırma tam 1.0 — cetvel tuzağa düşmüyor."""
+    obs = [TickObservation(1, float(i), True, i % 5 == 0) for i in range(50)]
+    st = selectivity(obs)
+    assert st.flag_rate == 1.0
+    assert st.base_rate == pytest.approx(0.2)
+    assert st.precision == pytest.approx(0.2)
+    assert st.lift == pytest.approx(1.0)
+    # aynı veride F1, taban oranından ötürü kaldırmadan yüksek görünür
+    assert st.f1 is not None and st.f1 > 0.3
+
+
+def test_selectivity_lift_rewards_fewer_correct_flags() -> None:
+    """Yarısı kadar bayrakla iki kat isabet → kaldırma 2.0, F1 düşse bile."""
+    obs = [TickObservation(1, float(i), i % 5 == 0, i % 5 == 0) for i in range(50)]
+    st = selectivity(obs)
+    assert st.flag_rate == pytest.approx(0.2)
+    assert st.precision == pytest.approx(1.0)
+    assert st.lift == pytest.approx(5.0)
+
+
+def test_shape_gate_only_narrows_engine_flag() -> None:
+    """Kapı motorun SUSTUĞU tikte bayrak ÜRETEMEZ — yalnız kısar."""
+    states = [
+        ShapeState(1, 66.0, "trailing", 0, engine_flag=False, support_count=9, coach_acted=True),
+        ShapeState(1, 78.0, "trailing", 0, engine_flag=True, support_count=9, coach_acted=True),
+    ]
+    prior = ShapePrior({}, threshold=0.0, support_threshold=0, fitted_on=0)
+    assert [o.engine_flag for o in apply_shape_gate(prior, states)] == [False, True]
+
+
+def test_shape_gate_support_threshold_filters() -> None:
+    states = [
+        ShapeState(1, 66.0, "trailing", 0, engine_flag=True, support_count=1, coach_acted=True),
+        ShapeState(1, 78.0, "trailing", 0, engine_flag=True, support_count=3, coach_acted=True),
+    ]
+    prior = ShapePrior({}, threshold=0.0, support_threshold=2, fitted_on=0)
+    assert [o.engine_flag for o in apply_shape_gate(prior, states)] == [False, True]
+
+
+def test_shape_prior_unseen_cell_is_unknown_not_zero() -> None:
+    """Görülmemiş hücre 0.5 sayılır; eşik altındaysa susar, üstündeyse konuşur."""
+    prior = ShapePrior({}, threshold=0.4, support_threshold=0, fitted_on=0)
+    st = ShapeState(9, 55.0, "drawing", 0, engine_flag=True, support_count=5, coach_acted=False)
+    assert apply_shape_gate(prior, [st])[0].engine_flag is True
+    strict = ShapePrior({}, threshold=0.6, support_threshold=0, fitted_on=0)
+    assert apply_shape_gate(strict, [st])[0].engine_flag is False
+
+
+def test_shape_prior_threshold_chosen_by_precision_not_f1() -> None:
+    """Bayrak bütçesi eşiğin altına düşen aday seçilemez; kalanların en isabetlisi seçilir."""
+    states = [s for mid in range(1, 21) for s in _shape_match(mid, informative=True)]
+    prior = fit_shape_prior(states)
+    gated = selectivity(apply_shape_gate(prior, states))
+    raw = selectivity([TickObservation(s.match_external_id, s.minute, s.engine_flag,
+                                       s.coach_acted) for s in states])
+    assert gated.flag_rate >= SHAPE_MIN_FLAG_RATE
+    assert gated.precision is not None and raw.precision is not None
+    assert gated.precision > raw.precision
+
+
+def test_shape_gate_split_half_learns_from_other_half() -> None:
+    """Durum öğrenilebilirse kapı seçici; kapı ÖTEKİ yarıdan gelir."""
+    states = [s for mid in range(1, 41) for s in _shape_match(mid, informative=True)]
+    gate = split_half_shape_gate(states)
+    assert gate.verdict == "seçici"
+    assert gate.gated_a.lift is not None and gate.gated_a.lift >= SHAPE_MIN_LIFT
+    assert gate.gated_b.lift is not None and gate.gated_b.lift >= SHAPE_MIN_LIFT
+    # ham bayrak her tikte yanıyordu: hiçbir şey bilmiyor
+    assert gate.raw_a.lift == pytest.approx(1.0)
+    assert gate.gated_a.flag_rate < gate.raw_a.flag_rate
+
+
+def test_shape_gate_noise_is_not_selective() -> None:
+    """Hamle durumdan bağımsızsa kapı da kurtaramaz — 'seçici' denmez."""
+    states = [s for mid in range(1, 41) for s in _shape_match(mid, informative=False)]
+    gate = split_half_shape_gate(states)
+    assert gate.verdict in {"seçici değil", "kararsız", "yetersiz veri"}
+
+
+def test_shape_gate_too_few_ticks_gives_no_verdict() -> None:
+    states = _shape_match(1, informative=True)
+    gate = split_half_shape_gate(states)
+    assert gate.verdict == "yetersiz veri"
+    assert gate.prior_for_a.fitted_on == 0

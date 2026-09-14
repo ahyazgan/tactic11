@@ -53,12 +53,30 @@ dakikada "değişiklik yap" diyen bir sayaç da elit antrenörle sık sık uyuş
 - **Zamanlama**: elit pencere önseli motoru saatle eşitledi (F1 0.69 / 0.74);
   saat, iki takımdan 3200 tikte önselin de tavanıydı.
 
+## Ölçüm günlüğü (2026-09-14) — şekil seçiciliği
+
+- **F1 bu soruda cetvel değil**: diziliş hedefi nadir (taban %21), hep-evet
+  F1 0.35 çıkıyor — motorun 0.33'ünden yüksek. "Daha seçici ol" ile "F1'i
+  yükselt" zıt yönler. Seçicilik cetveli kaldırma (precision / taban oranı)
+  ve yanında bayrak oranı: `selectivity`.
+- **Ham bayrak bilgi taşımıyor**: `adjust_shape` tiklerinde diziliş oranı
+  0.211, genel taban 0.212 → kaldırma 0.91/1.08. Motorun sakladığı hiçbir
+  sürekli sayı ayırmıyor (AUC 0.49–0.57); ayıran tek şey zaman (0.63).
+- **Kapı işe yarıyor**: elit diziliş önseli (dakika × skor × değişiklik) ∧
+  ≥2 destekleyici sinyal → bayrak %74'ten %19'a, kaldırma 1.65/1.85, iki
+  yarıda da. Permütasyon (400 deneme, kapı sıfırdan kurularak) p 0.005/0.000.
+  Bedeli: yakalama 0.74 → 0.35. Yalnız önselle 1.45/1.63; destek eşiğinin
+  payı bağımsız kanıtlanmadı.
+- Hedef ZAYIF VEKİL kalmaya devam ediyor (diziliş olaylarının %89'u aynı
+  pencerede bir değişiklikle). Kapı ölçüm katmanındadır; motorun canlı
+  çıktısı bu ölçümle kısılmadı — bkz. docs/KARNE-SEKIL-SECICILIGI.md.
+
 Saf fonksiyonlar; DB/IO yok. Sayısal eşikler sabit ve dokümante — bir sonraki
 ölçüm aynı cetvelle yapılsın diye.
 """
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 
 from app.engine.confidence.attribution import MIN_SAMPLES
@@ -81,6 +99,12 @@ PRIOR_THRESHOLDS: tuple[float, ...] = (0.3, 0.4, 0.5, 0.6)
 # "Kim" boyutu: motorun aday listesi bu uzunlukta değerlendirilir; kazanç eşiği.
 WHO_TOP_K = 3
 WHO_MIN_GAIN = 0.10
+# Şekil seçiciliği: önsel eşik adayları, destekleyici sinyal sayısı eşikleri,
+# eğitimde harcanabilecek en küçük bayrak bütçesi ve kabul için gereken kaldırma.
+SHAPE_PRIOR_THRESHOLDS: tuple[float, ...] = (0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6)
+SHAPE_SUPPORT_THRESHOLDS: tuple[int, ...] = (1, 2, 3, 4, 5)
+SHAPE_MIN_FLAG_RATE = 0.15
+SHAPE_MIN_LIFT = 1.25
 
 
 @dataclass(frozen=True)
@@ -200,6 +224,65 @@ class WhoStat:
     baseline_at_k: float | None   # k/n_saha ortalaması
     off_pitch_candidate_rate: float | None   # aday listesinde sahada olmayan oyuncu payı
     verdict: str
+    note: str
+
+
+@dataclass(frozen=True)
+class ShapeState:
+    """Motorun "şekil ayarla" dediği bir an ve o anın DURUMU.
+
+    `engine_flag` motorun ham bayrağı (tema), `support_count` o tikte kaç
+    destekleyici sinyalin yandığı; ikisi de kapının girdisidir. Hedef, gerçek
+    antrenörün penceredeki diziliş değişimi.
+    """
+
+    match_external_id: int
+    minute: float
+    score_state: str        # "leading" | "drawing" | "trailing" (o an itibarıyla)
+    subs_used: int          # takımın o ana kadar yaptığı değişiklik
+    engine_flag: bool       # motorun ham "şekil ayarla" bayrağı
+    support_count: int      # o tikteki destekleyici sinyal sayısı
+    coach_acted: bool       # antrenör (minute, minute+window] içinde dizilişi değiştirdi
+
+
+@dataclass(frozen=True)
+class ShapePrior:
+    """Hücre → P(antrenör bu pencerede dizilişi değiştirir) + iki karar eşiği."""
+
+    table: dict[tuple[int, str, int], float]
+    threshold: float
+    support_threshold: int
+    fitted_on: int
+
+
+@dataclass(frozen=True)
+class SelectivityStat:
+    """Seçicilik cetveli: kaç bayrak, ne kadar isabet, tabanın kaç katı.
+
+    `lift` = precision / taban oranı. 1.0 = bayrak hiçbir şey bilmiyor.
+    """
+
+    n: int
+    flagged: int
+    flag_rate: float
+    base_rate: float
+    precision: float | None
+    recall: float | None
+    f1: float | None
+    lift: float | None
+
+
+@dataclass(frozen=True)
+class ShapeGate:
+    """Ham bayrak vs kapılı bayrak — kapı ÖTEKİ yarıda öğrenilmiş."""
+
+    raw_a: SelectivityStat
+    raw_b: SelectivityStat
+    gated_a: SelectivityStat
+    gated_b: SelectivityStat
+    prior_for_a: ShapePrior
+    prior_for_b: ShapePrior
+    verdict: str            # "seçici" | "kararsız" | "seçici değil" | "yetersiz veri"
     note: str
 
 
@@ -505,6 +588,135 @@ def split_half_who_prior(states: Sequence[WhoState], *, k: int = WHO_TOP_K) -> W
         for half, pr in ((a, prior_for_a), (b, prior_for_b)) for s in half
     ]
     return who_agreement(samples, k=k)
+
+
+# --------------------------------------------------------------------------- #
+# Şekil seçiciliği — "şekil ayarla" önerisi gerçekten seçici mi?
+# --------------------------------------------------------------------------- #
+
+def selectivity(obs: Iterable[TickObservation]) -> SelectivityStat:
+    """Bayrak KAÇ tikte yandı ve yandığında haklı çıkma oranı tabanın kaç katı?
+
+    F1 seçicilik sorusunda yanıltır: hedef nadirse (taban ~%20) her tike bayrak
+    kaldırmak F1'i yükseltir — hep-evet F1 0.35, seçici bir kural 0.33 çıkabilir.
+    Kaldırma (lift = precision / taban oranı) bu tuzağa düşmez: 1.0 demek
+    "bayrak hiçbir şey bilmiyor" demektir. Bayrak oranı da bunu kaç öneriyle
+    yaptığını gösterir; ikisi birlikte okunur.
+    """
+    st = agreement(obs)
+    base = st.act_rate
+    lift = None if st.precision is None or not base else round(st.precision / base, 3)
+    return SelectivityStat(
+        n=st.n, flagged=st.tp + st.fp, flag_rate=st.flag_rate, base_rate=base,
+        precision=st.precision, recall=st.recall, f1=st.f1, lift=lift,
+    )
+
+
+def _shape_cell(st: ShapeState) -> tuple[int, str, int]:
+    return _band(st.minute), st.score_state, min(st.subs_used, PRIOR_MAX_SUBS)
+
+
+def _shape_obs(
+    states: Iterable[ShapeState], flag: Callable[[ShapeState], bool],
+) -> list[TickObservation]:
+    return [TickObservation(s.match_external_id, s.minute, flag(s), s.coach_acted)
+            for s in states]
+
+
+def _gated(
+    table: dict[tuple[int, str, int], float], prior_t: float, support_t: int,
+) -> Callable[[ShapeState], bool]:
+    return lambda s: (s.engine_flag
+                      and table.get(_shape_cell(s), 0.5) >= prior_t
+                      and s.support_count >= support_t)
+
+
+def fit_shape_prior(
+    states: Sequence[ShapeState], *,
+    prior_thresholds: Sequence[float] = SHAPE_PRIOR_THRESHOLDS,
+    support_thresholds: Sequence[int] = SHAPE_SUPPORT_THRESHOLDS,
+) -> ShapePrior:
+    """Hücre oranı (Laplace) + iki eşik; eşikler eğitimde SEÇİCİLİĞE göre seçilir.
+
+    Ölçüt F1 DEĞİL: en az `SHAPE_MIN_FLAG_RATE` bayrak bütçesi harcayan adaylar
+    arasında en yüksek precision. F1'e göre seçmek bütçeyi sonuna kadar harcayıp
+    seçiciliği ortadan kaldırırdı (bkz. `selectivity`). Alt bütçe sınırı, bir
+    avuç bayrakla şişmiş precision'ın kazanmasını engeller.
+    """
+    hits: dict[tuple[int, str, int], list[int]] = {}
+    for st in states:
+        cell = _shape_cell(st)
+        hits.setdefault(cell, [0, 0])
+        hits[cell][0] += int(st.coach_acted)
+        hits[cell][1] += 1
+    table = {c: (a + PRIOR_LAPLACE) / (n + 2 * PRIOR_LAPLACE) for c, (a, n) in hits.items()}
+
+    best = (prior_thresholds[0], support_thresholds[0])
+    best_score = -1.0
+    for t in prior_thresholds:
+        for q in support_thresholds:
+            s = selectivity(_shape_obs(states, _gated(table, t, q)))
+            score = (s.precision or 0.0) if s.flag_rate >= SHAPE_MIN_FLAG_RATE else -1.0
+            if score > best_score:
+                best, best_score = (t, q), score
+    return ShapePrior(table=table, threshold=best[0], support_threshold=best[1],
+                      fitted_on=len(states))
+
+
+def apply_shape_gate(
+    prior: ShapePrior, states: Iterable[ShapeState],
+) -> list[TickObservation]:
+    """Motorun ham bayrağını önsel ve destek eşiğiyle KISAR; görülmemiş hücre 0.5."""
+    return _shape_obs(states, _gated(prior.table, prior.threshold, prior.support_threshold))
+
+
+def split_half_shape_gate(states: Sequence[ShapeState]) -> ShapeGate:
+    """Kapı ÖTEKİ yarıda öğrenilir, bu yarıda ölçülür — önce/sonra yan yana.
+
+    Hüküm ölçütü kaldırma: ham bayrak tabanla aynı orandaysa hiçbir şey
+    bilmiyordur. Kapılı bayrak İKİ yarıda da `SHAPE_MIN_LIFT` kadar kaldırırsa
+    "seçici"; yalnız birinde tutuyorsa "kararsız" — tek yarıda tutan fark
+    ölçüm sayılmaz.
+    """
+    ids = sorted({s.match_external_id for s in states})
+    a_ids = {m for i, m in enumerate(ids) if i % 2 == 0}
+    a = [s for s in states if s.match_external_id in a_ids]
+    b = [s for s in states if s.match_external_id not in a_ids]
+    raw_a = selectivity(_shape_obs(a, lambda s: s.engine_flag))
+    raw_b = selectivity(_shape_obs(b, lambda s: s.engine_flag))
+    if len(a) < MIN_TICKS_PER_HALF or len(b) < MIN_TICKS_PER_HALF:
+        empty = ShapePrior({}, SHAPE_PRIOR_THRESHOLDS[0], SHAPE_SUPPORT_THRESHOLDS[0], 0)
+        return ShapeGate(
+            raw_a=raw_a, raw_b=raw_b, gated_a=selectivity([]), gated_b=selectivity([]),
+            prior_for_a=empty, prior_for_b=empty, verdict="yetersiz veri",
+            note=(f"yarılar {len(a)}/{len(b)} tik — hüküm için her yarıda en az "
+                  f"{MIN_TICKS_PER_HALF} gerekir"),
+        )
+    prior_for_a, prior_for_b = fit_shape_prior(b), fit_shape_prior(a)
+    gated_a = selectivity(apply_shape_gate(prior_for_a, a))
+    gated_b = selectivity(apply_shape_gate(prior_for_b, b))
+
+    ga, gb = gated_a.lift, gated_b.lift
+    if ga is None or gb is None:
+        verdict = "yetersiz veri"
+        note = "bir yarıda kapıdan hiç bayrak geçmedi — precision tanımsız"
+    else:
+        raw = f"ham bayrak {raw_a.lift}/{raw_b.lift} katıydı"
+        if ga >= SHAPE_MIN_LIFT and gb >= SHAPE_MIN_LIFT:
+            verdict = "seçici"
+            note = f"kapılı bayrak tabanın {ga:.2f}/{gb:.2f} katı isabetli; {raw}"
+        elif ga >= SHAPE_MIN_LIFT or gb >= SHAPE_MIN_LIFT:
+            verdict = "kararsız"
+            note = (f"kaldırma yalnız bir yarıda eşiği geçti ({ga:.2f}/{gb:.2f}); "
+                    f"tek yarıda tutan fark ölçüm sayılmaz — {raw}")
+        else:
+            verdict = "seçici değil"
+            note = (f"kapıdan sonra bile kaldırma {ga:.2f}/{gb:.2f} — bayrak taban "
+                    f"oranından fazlasını bilmiyor; {raw}")
+    return ShapeGate(
+        raw_a=raw_a, raw_b=raw_b, gated_a=gated_a, gated_b=gated_b,
+        prior_for_a=prior_for_a, prior_for_b=prior_for_b, verdict=verdict, note=note,
+    )
 
 
 # --------------------------------------------------------------------------- #
