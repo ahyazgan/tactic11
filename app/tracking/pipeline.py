@@ -595,7 +595,8 @@ def process_video(
     cfg = cfg or PipelineConfig()
     samples, assigner, calib_stats = collect_observations(
         video_path, cfg, detector=detector, calib=calib, calibrator=calibrator)
-    assignment = assigner.fit(team_anchor)
+    tracks = {tid for s in samples for tid, *_ in s.persons}
+    assignment = assigner.fit(team_anchor, eligible_tracks=tracks)
     frames = build_frames(
         samples, assignment.team_by_track, calib,
         match_id=match_id, home_team_id=home_team_id, away_team_id=away_team_id, cfg=cfg,
@@ -607,8 +608,13 @@ def process_video(
     pass_out = extract_passes(frames)
     if cfg.preview_path:
         write_preview(video_path, samples, assignment.team_by_track, calib, cfg, cfg.preview_path)
-    tracks = {tid for s in samples for tid, *_ in s.persons}
     per_frame = [len(s.persons) for s in samples]
+    assigned_counts = [
+        [sum(p.team_external_id == team for p in f.players)
+         for team in (home_team_id, away_team_id)]
+        for f in frames
+    ]
+    overfull_frames = sum(max(counts) > 11 for counts in assigned_counts)
     summary = {
         "sampled_frames": len(samples),
         "track_fps": cfg.track_fps,
@@ -621,6 +627,15 @@ def process_video(
             "home": sum(1 for t in tracks if assignment.team_by_track.get(t) == 0),
             "away": sum(1 for t in tracks if assignment.team_by_track.get(t) == 1),
             "unassigned": sum(1 for t in tracks if assignment.team_by_track.get(t) is None),
+        },
+        "team_assignment_quality": {
+            "frames_evaluated": len(frames),
+            "overfull_frames": overfull_frames,
+            "overfull_frame_ratio": round(overfull_frames / len(frames), 3) if frames else 0.0,
+            "assigned_players_per_frame": (round(float(np.mean([sum(c) for c in assigned_counts])), 2)
+                                           if assigned_counts else 0.0),
+            "note": ("bir takıma 12+ oyuncu atanmış kareler var; takım ataması belirsiz"
+                     if overfull_frames else None),
         },
         "ball_frames": sum(1 for s in samples if s.ball),
         "ball_sources": {

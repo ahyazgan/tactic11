@@ -119,6 +119,17 @@ def test_event_anchored_source_only_uses_ball_relative_signals() -> None:
 def test_no_tracking_data_is_safe() -> None:
     v = compute_tracking_signals(minute=10.0, our_shape=None, their_shape=None).value
     assert v.findings == () and v.note == "pozisyon verisi yok"
+    assert v.coverage == 0.0 and v.data_quality == 0.0
+
+
+def test_insufficient_tracking_report_agrees_with_audit_quality() -> None:
+    result = compute_tracking_signals(
+        minute=10.0, our_shape=_shape(players_mean=3), their_shape=_shape(players_mean=2),
+    )
+    assert result.value.findings == ()
+    assert result.value.coverage == 0.227
+    assert result.value.data_quality == 0.0
+    assert result.audit.inputs["coverage"] == result.value.coverage
 
 
 def test_coverage_lowers_data_quality_and_is_noted() -> None:

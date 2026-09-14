@@ -22,6 +22,12 @@ Forma, bölgedeki EN PARLAK piksellerdir; onların ortalaması beyaz–mavi ayr�
 korur. k=3'te beyaz formalar gölge/ışık diye ikiye bölünüp maviyle karışıyordu;
 üçüncü grup (hakem/kaleci) zaten uzaklık eşiğiyle None'a düşer.
 
+2026-09-14: yalnız RGB uzaklığı gece karanlığında farklı renkleri ayıramıyor.
+RGB kümeleri korunur; RGB oranı (parlaklıktan bağımsız renk) küme renginden
+uzaksa atama da reddedilir. Kısa ömürlü olduğu için takip hattından çıkarılmış
+kimlikler merkezlerin öğrenilmesine katılmaz. Ölçüm ve sınırlar:
+docs/SABIT-KAMERA-SINYAL-KALITESI.md.
+
 Kimlik yine "tahmini": takım bilinir, oyuncu bilinmez.
 """
 
@@ -34,6 +40,16 @@ import numpy as np
 
 # Forma rengi = gövde bölgesindeki (çim hariç) en parlak piksellerin ortalaması.
 BRIGHT_FRACTION = 0.4
+# RGB clustering retains brightness to distinguish white/dark kits. A second,
+# brightness-independent check rejects differently coloured officials/edge people.
+# A 15/255 floor tolerates sensor noise in small night-time shirt crops.
+CHROMATICITY_MIN_DISTANCE = 15.0
+
+
+def chromaticity(colors: np.ndarray) -> np.ndarray:
+    """RGB proportions, invariant to a common brightness multiplier."""
+    colors = np.asarray(colors, dtype=float)
+    return 255.0 * colors / np.maximum(colors.sum(axis=-1, keepdims=True), 1.0)
 
 
 def torso_color(frame_rgb: np.ndarray, xyxy: tuple[float, float, float, float]) -> np.ndarray | None:
@@ -164,16 +180,21 @@ def _order_by_anchor(
 class TeamAssigner:
     """Takip başına renk gözlemi biriktirir; `fit()` ile 0/1/None atar."""
 
-    def __init__(self, *, outlier_factor: float = 2.5, min_observations: int = 2) -> None:
+    def __init__(self, *, outlier_factor: float = 2.5, min_observations: int = 2,
+                 reject_color_outliers: bool = True) -> None:
         self._obs: dict[int, list[np.ndarray]] = defaultdict(list)
         self._outlier_factor = outlier_factor
         self._min_obs = min_observations
+        self._reject_color_outliers = reject_color_outliers
 
     def observe(self, track_id: int, color: np.ndarray | None) -> None:
         if color is not None:
             self._obs[track_id].append(np.asarray(color, dtype=float))
 
-    def fit(self, anchor_colors: np.ndarray | None = None) -> TeamAssignment:
+    def fit(
+        self, anchor_colors: np.ndarray | None = None, *,
+        eligible_tracks: set[int] | None = None,
+    ) -> TeamAssignment:
         """Renk kümelerini 0 (ev) / 1 (deplasman) takımına ata.
 
         `anchor_colors` (2×3) verilirse takım kimliği küme BÜYÜKLÜĞÜNE değil bu
@@ -182,7 +203,11 @@ class TeamAssigner:
         takımların yer değiştirmesine yol açar (kadraja giren oyuncu sayısı
         değişir) — o zaman "rakip daraldı" sinyali yanlış takımı gösterir.
         """
-        tracks = [t for t, obs in self._obs.items() if len(obs) >= self._min_obs]
+        # Takip hattının kısa ömürlü/gürültü sayıp attığı kimlikler renk
+        # merkezlerini de etkilememeli. Aksi halde görüntüden silinen sahte
+        # takipler iki forma renginden birini hâlâ ele geçirebilir.
+        tracks = [t for t, obs in self._obs.items() if len(obs) >= self._min_obs
+                  and (eligible_tracks is None or t in eligible_tracks)]
         if len(tracks) < 2:
             return TeamAssignment({t: None for t in self._obs}, np.zeros((2, 3)), frozenset(self._obs))
         feats = np.array([np.median(np.vstack(self._obs[t]), axis=0) for t in tracks])
@@ -201,12 +226,20 @@ class TeamAssigner:
         dist_own = np.array([np.linalg.norm(feats[i] - centers[labels[i]]) for i in range(len(tracks))])
         spread = float(np.median(dist_own)) if len(dist_own) else 0.0
         threshold = max(spread * self._outlier_factor, 30.0)
+        tint_dist = np.linalg.norm(chromaticity(feats) - chromaticity(centers)[labels], axis=1)
+        tint_thresholds = {
+            j: max(float(np.median(tint_dist[labels == j])) * self._outlier_factor,
+                   CHROMATICITY_MIN_DISTANCE)
+            for j in range(k) if np.any(labels == j)
+        }
 
         team_by_track: dict[int, int | None] = {}
         outliers: set[int] = set()
         for i, t in enumerate(tracks):
             team = cluster_to_team.get(int(labels[i]))
-            if team is None or dist_own[i] > threshold:
+            wrong_color = (self._reject_color_outliers
+                           and tint_dist[i] > tint_thresholds[int(labels[i])])
+            if team is None or dist_own[i] > threshold or wrong_color:
                 team_by_track[t] = None
                 outliers.add(t)
             else:

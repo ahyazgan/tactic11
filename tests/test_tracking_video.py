@@ -18,7 +18,7 @@ from app.tracking.frames import (
     frames_from_json,
     frames_to_json,
 )
-from app.tracking.teams import TeamAssigner, kmeans, kmeans2, torso_color
+from app.tracking.teams import TeamAssigner, chromaticity, kmeans, kmeans2, torso_color
 
 # --------------------------------------------------------------------------- #
 # Kalibrasyon
@@ -143,6 +143,41 @@ def test_torso_color_ignores_grass() -> None:
     col = torso_color(img, (0, 0, 60, 100))
     assert col is not None
     assert col[0] > 200 and col[1] < 60
+
+
+def test_discarded_tracks_cannot_change_team_palette() -> None:
+    """Numerous short referee/edge tracks must not replace one team's colour."""
+    a = TeamAssigner(min_observations=1)
+    for tid in range(1, 7):
+        color = np.array([220, 30, 30] if tid <= 3 else [30, 40, 220])
+        a.observe(tid, color)
+    clean = a.fit()
+    for tid in range(100, 150):
+        a.observe(tid, np.array([230, 220, 10]))
+    filtered = a.fit(eligible_tracks=set(range(1, 7)))
+    np.testing.assert_allclose(filtered.centers, clean.centers)
+    assert all(filtered.team_by_track[t] == clean.team_by_track[t] for t in range(1, 7))
+    assert all(filtered.team_by_track[t] is None for t in range(100, 150))
+    assert a.fit(eligible_tracks=set()).outlier_tracks == frozenset(a._obs)
+
+
+def test_dark_official_with_similar_brightness_is_not_a_team_player() -> None:
+    old = TeamAssigner(min_observations=1, reject_color_outliers=False)
+    new = TeamAssigner(min_observations=1)
+    for a in (old, new):
+        for tid in range(1, 7):
+            a.observe(tid, np.array([20, 20, 30] if tid <= 3 else [180, 180, 180]))
+        a.observe(9, np.array([30, 25, 10]))
+    assert old.fit().team_by_track[9] is not None
+    result = new.fit()
+    assert result.team_by_track[9] is None
+    assert all(result.team_by_track[t] is not None for t in range(1, 7))
+
+
+def test_chromaticity_preserves_shirt_colour_under_brightness_change() -> None:
+    rgb = np.array([[80, 100, 160], [160, 160, 160]], dtype=float)
+    np.testing.assert_allclose(chromaticity(rgb), chromaticity(rgb * 0.4))
+    assert np.isfinite(chromaticity(np.zeros((2, 3)))).all()
 
 
 # --------------------------------------------------------------------------- #

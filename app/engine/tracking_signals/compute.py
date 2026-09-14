@@ -121,7 +121,8 @@ def compute_tracking_signals(
             if (our_shape or their_shape) else "pozisyon verisi yok"
         )
         report = TrackingSignalReport(minute=minute, frames_used=frames_used,
-                                      players_seen=round(seen, 1), findings=(), note=note)
+                                      players_seen=round(seen, 1), findings=(), note=note,
+                                      coverage=coverage, data_quality=data_quality)
     else:
         # Şekil farkı ancak iki pencerede benzer sayıda oyuncu görünüyorsa
         # anlamlı: 8 oyuncuyla 12 oyuncunun "hattı" kıyaslanamaz.

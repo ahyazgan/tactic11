@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [ ] Sabit kamera: takım renklerine sızan kısa takipleri/farklı renkleri ele ve GT ile ölç.
+  Done when: aynı gözlemlerle geliştirme/kontrol karşılaştırması, oyuncu kaybı ve pas/savunma başlangıç raporu; test/lint/tip kontrolleri temiz. Kapsam: docs/SABIT-KAMERA-SINYAL-PLANI.md.
+
 - [x] Mobile sidebar drawer  (ba07618)
   Done when: drawer opens/closes on mobile breakpoints, nav items reachable, tsc+build clean, committed.
 - [x] Decisions API load-perf cache  (b2c55d6)
