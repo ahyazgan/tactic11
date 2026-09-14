@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Video top/pas/top kazanımı kanıt zincirini düzelt; yoğun kare denemesini ve gerçek olay eşleşmesini ölç. (b1eb581)
+  Done when: kamera/zaman/top belirsizliği korunur; video/canlı JSON→DB→domain zinciri ve kısmi savunma koruması testli; birebir GT karşılaştırması ve başarısız deneyler raporlu. Sonuç: docs/VIDEO-OLAY-SONUCLARI.md. Pas duyarlılığı ve gerçek görüntüde savunma doğruluğu hedefleri geçilmedi; yoğun olay akışı varsayılan kapalı.
+
 - [x] Sabit kamera: takım renklerine sızan kısa takipleri/farklı renkleri ele ve GT ile ölç. (8ae76c3)
   Done when: aynı gözlemlerle geliştirme/kontrol karşılaştırması, oyuncu kaybı ve pas/savunma başlangıç raporu; test/lint/tip kontrolleri temiz. Kapsam: docs/SABIT-KAMERA-SINYAL-PLANI.md.
 

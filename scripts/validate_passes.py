@@ -1,5 +1,9 @@
 """Pas çıkarımını GERÇEK yayın takip verisiyle doğrula (SkillCorner open data).
 
+LEGACY: aşağıdaki "geçerli" ölçüsü ara sahiplikleri de kabul eder, alıcı
+zamanını ve birebir eşlemeyi garanti etmez. Doğru pas kesinliği değildir.
+Güncel regresyon için scripts/audit_skillcorner_passes.py kullanın.
+
 ## Neden
 
 `app/tracking/passes.py` pasları aktör değişiminden çıkarıyor. Sentetik
