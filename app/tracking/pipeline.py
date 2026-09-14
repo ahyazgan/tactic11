@@ -305,6 +305,10 @@ def collect_observations(
         print(f"  track-fps: istenen {cfg.track_fps:g} → etkin {fps_eff:.2f} "
               f"(kaynak adımı {sample_stride(float(info['fps']), cfg.track_fps)})",
               flush=True)
+    # Keep the validated legacy lifetime until a replacement passes image
+    # checks. ByteTrack scales this buffer again by frame_rate / 30: the
+    # seconds-correct experiment increased kit/identity errors in daylight.
+    # Report the actual lifetime below (docs/TAKIP-SUREKLILIGI-SONUCLARI.md).
     tracker = sv.ByteTrack(
         track_activation_threshold=cfg.track_activation_threshold,
         lost_track_buffer=max(1, int(cfg.lost_track_seconds * fps_eff)),
@@ -354,6 +358,12 @@ def collect_observations(
     last_ball: tuple[float, float, int] | None = None   # cx, cy, order
     roi_max_age = max(1, int(cfg.ball_gap_seconds * fps_eff))
     continuity_id = 0
+    tracker_continuity_id = 0
+    previous_tracked_order: int | None = None
+    track_id_offset = 0
+    highest_track_id = 0
+    tracker_resets = 0
+    calibration_gap_resets = 0
 
     for order, frame_idx, seconds, rgb in iter_video_frames(video_path, cfg.track_fps, cfg.max_seconds):
         frame_calib = calib
@@ -391,6 +401,21 @@ def collect_observations(
                     print(f"  kare {order} atlandı — {fc.reason}", flush=True)
                 continue
             frame_calib = fc.calibration
+        if previous_tracked_order is not None:
+            gap = order != previous_tracked_order + 1
+            if continuity_id != tracker_continuity_id or gap:
+                # ByteTrack cannot match image positions across camera cuts or
+                # skipped calibration/replay frames. reset() also restarts its
+                # IDs: reserve all earlier IDs so kit history stays isolated.
+                tracker.reset()
+                track_id_offset = highest_track_id
+                tracker_resets += 1
+                if continuity_id == tracker_continuity_id:
+                    continuity_id += 1
+                    calibration_gap_resets += 1
+                last_ball = None
+        tracker_continuity_id = continuity_id
+        previous_tracked_order = order
         all_det = det.detect(rgb)
         persons, balls = det.split(all_det)
         persons = persons[_on_pitch_mask(persons, frame_calib, cfg.pitch_margin_m)]
@@ -402,7 +427,8 @@ def collect_observations(
         for xyxy, conf, tid in zip(tracked.xyxy, tracked.confidence, tracked.tracker_id, strict=True):
             if tid is None:
                 continue
-            tid = int(tid)
+            tid = int(tid) + track_id_offset
+            highest_track_id = max(highest_track_id, tid)
             hits[tid] = hits.get(tid, 0) + 1
             x1, y1, x2, y2 = (float(v) for v in xyxy)
             rows.append((tid, x1, y1, x2, y2, float(conf)))
@@ -461,6 +487,11 @@ def collect_observations(
                 "hiçbir kare atılmadı)")
             print(f"  tekrar: {replays_seen} kare atıldı{uyari}", flush=True)
     stats: dict[str, Any] = {"per_frame_calibration": per_frame is not None,
+                             "tracker_resets": tracker_resets,
+                             "calibration_gap_resets": calibration_gap_resets,
+                             "requested_lost_track_seconds": cfg.lost_track_seconds,
+                             "effective_lost_track_seconds": (tracker.max_time_lost / fps_eff
+                                 if hasattr(tracker, "max_time_lost") else None),
                              "person_filter": person_filter,
                              "kit_color_method": "local_grass_v1" if cfg.normalize_kit_light else "raw_rgb_v1",
                              "ball_spikes_rejected": ball_spikes_rejected,
@@ -526,8 +557,10 @@ def compute_velocities(
         dt_prev = samples[i].seconds - samples[i - 1].seconds if i > 0 else 1.0 / track_fps
         dt_next = samples[i + 1].seconds - samples[i].seconds if i + 1 < n else 1.0 / track_fps
         for tid, p in pos[i].items():
-            prev = pos[i - 1].get(tid) if i > 0 else None
-            nxt = pos[i + 1].get(tid) if i + 1 < n else None
+            prev = (pos[i - 1].get(tid) if i > 0 and
+                    samples[i - 1].continuity_id == samples[i].continuity_id else None)
+            nxt = (pos[i + 1].get(tid) if i + 1 < n and
+                   samples[i + 1].continuity_id == samples[i].continuity_id else None)
             if prev is not None and nxt is not None:
                 v = speed(prev, nxt, dt_prev + dt_next)
             elif prev is not None:
@@ -540,8 +573,10 @@ def compute_velocities(
         player_v[samples[i].order] = out
         b = ball_pos[i]
         if b is not None:
-            prev_b = ball_pos[i - 1] if i > 0 else None
-            next_b = ball_pos[i + 1] if i + 1 < n else None
+            prev_b = (ball_pos[i - 1] if i > 0 and
+                      samples[i - 1].continuity_id == samples[i].continuity_id else None)
+            next_b = (ball_pos[i + 1] if i + 1 < n and
+                      samples[i + 1].continuity_id == samples[i].continuity_id else None)
             if prev_b is not None and next_b is not None:
                 bv = speed(prev_b, next_b, dt_prev + dt_next)
             elif prev_b is not None:

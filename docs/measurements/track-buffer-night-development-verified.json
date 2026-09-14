@@ -1,0 +1,336 @@
+{
+  "results": {
+    "baseline": {
+      "score": {
+        "correct": 95,
+        "wrong": 13,
+        "unassigned": 15,
+        "kit_boxes_missing": 0,
+        "other_assigned": 4,
+        "not_person_remaining": 0,
+        "conflicting_track_labels": 3
+      },
+      "blue_slot": 0,
+      "per_segment_scores": {
+        "0": {
+          "correct": 20,
+          "wrong": 5,
+          "unassigned": 2,
+          "kit_boxes_missing": 0,
+          "other_assigned": 0,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "3": {
+          "correct": 14,
+          "wrong": 4,
+          "unassigned": 4,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 0
+        },
+        "6": {
+          "correct": 26,
+          "wrong": 4,
+          "unassigned": 9,
+          "kit_boxes_missing": 0,
+          "other_assigned": 2,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "9": {
+          "correct": 35,
+          "wrong": 0,
+          "unassigned": 0,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 0
+        }
+      },
+      "segments": {
+        "0": {
+          "lost_frames": 7,
+          "lost_seconds": 0.56,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": false,
+            "skip_reason": "disabled",
+            "observations_before": 7066,
+            "observations_removed": 0,
+            "tracks_removed": 0,
+            "min_field_observations": 2
+          },
+          "tracks": 58,
+          "observations": 7066,
+          "palette": [
+            [
+              94.32887226303657,
+              101.03210998470126,
+              91.56165564817476
+            ],
+            [
+              176.10074723846654,
+              180.3602041806101,
+              173.9747413776637
+            ]
+          ]
+        },
+        "3": {
+          "lost_frames": 7,
+          "lost_seconds": 0.56,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": false,
+            "skip_reason": "disabled",
+            "observations_before": 6397,
+            "observations_removed": 0,
+            "tracks_removed": 0,
+            "min_field_observations": 2
+          },
+          "tracks": 68,
+          "observations": 6397,
+          "palette": [
+            [
+              85.6159420289855,
+              88.47058823529412,
+              79.00980392156862
+            ],
+            [
+              199.93175032175031,
+              201.6196266968326,
+              190.28498931623932
+            ]
+          ]
+        },
+        "6": {
+          "lost_frames": 7,
+          "lost_seconds": 0.56,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": false,
+            "skip_reason": "disabled",
+            "observations_before": 7866,
+            "observations_removed": 0,
+            "tracks_removed": 0,
+            "min_field_observations": 2
+          },
+          "tracks": 51,
+          "observations": 7866,
+          "palette": [
+            [
+              86.42723004694835,
+              91.81456953642385,
+              79.71848060344828
+            ],
+            [
+              191.81469942586963,
+              195.98767931762376,
+              186.4250503559512
+            ]
+          ]
+        },
+        "9": {
+          "lost_frames": 7,
+          "lost_seconds": 0.56,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": false,
+            "skip_reason": "disabled",
+            "observations_before": 7258,
+            "observations_removed": 0,
+            "tracks_removed": 0,
+            "min_field_observations": 2
+          },
+          "tracks": 52,
+          "observations": 7258,
+          "palette": [
+            [
+              94.99742353723404,
+              106.30558450113786,
+              106.12055205949656
+            ],
+            [
+              164.48006622516556,
+              169.9241573033708,
+              161.0892509363296
+            ]
+          ]
+        }
+      }
+    },
+    "seconds_once": {
+      "score": {
+        "correct": 98,
+        "wrong": 13,
+        "unassigned": 12,
+        "kit_boxes_missing": 0,
+        "other_assigned": 4,
+        "not_person_remaining": 0,
+        "conflicting_track_labels": 3
+      },
+      "blue_slot": 0,
+      "per_segment_scores": {
+        "0": {
+          "correct": 20,
+          "wrong": 5,
+          "unassigned": 2,
+          "kit_boxes_missing": 0,
+          "other_assigned": 0,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "3": {
+          "correct": 16,
+          "wrong": 4,
+          "unassigned": 2,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 0
+        },
+        "6": {
+          "correct": 27,
+          "wrong": 4,
+          "unassigned": 8,
+          "kit_boxes_missing": 0,
+          "other_assigned": 2,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "9": {
+          "correct": 35,
+          "wrong": 0,
+          "unassigned": 0,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 0
+        }
+      },
+      "segments": {
+        "0": {
+          "lost_frames": 19,
+          "lost_seconds": 1.52,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": false,
+            "skip_reason": "disabled",
+            "observations_before": 7082,
+            "observations_removed": 0,
+            "tracks_removed": 0,
+            "min_field_observations": 2
+          },
+          "tracks": 58,
+          "observations": 7082,
+          "palette": [
+            [
+              93.00909090909092,
+              99.0701754385965,
+              90.39795918367346
+            ],
+            [
+              175.47112966954023,
+              180.03713132022472,
+              176.96078543731971
+            ]
+          ]
+        },
+        "3": {
+          "lost_frames": 19,
+          "lost_seconds": 1.52,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": false,
+            "skip_reason": "disabled",
+            "observations_before": 6437,
+            "observations_removed": 0,
+            "tracks_removed": 0,
+            "min_field_observations": 2
+          },
+          "tracks": 59,
+          "observations": 6437,
+          "palette": [
+            [
+              85.72101449275362,
+              90.51711229946524,
+              80.80491237387147
+            ],
+            [
+              199.93175032175031,
+              201.6196266968326,
+              190.28498931623932
+            ]
+          ]
+        },
+        "6": {
+          "lost_frames": 19,
+          "lost_seconds": 1.52,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": false,
+            "skip_reason": "disabled",
+            "observations_before": 7890,
+            "observations_removed": 0,
+            "tracks_removed": 0,
+            "min_field_observations": 2
+          },
+          "tracks": 44,
+          "observations": 7890,
+          "palette": [
+            [
+              86.34099229017033,
+              89.9673489874259,
+              79.64604437440462
+            ],
+            [
+              191.81469942586963,
+              195.98767931762376,
+              186.4250503559512
+            ]
+          ]
+        },
+        "9": {
+          "lost_frames": 19,
+          "lost_seconds": 1.52,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": false,
+            "skip_reason": "disabled",
+            "observations_before": 7274,
+            "observations_removed": 0,
+            "tracks_removed": 0,
+            "min_field_observations": 2
+          },
+          "tracks": 46,
+          "observations": 7274,
+          "palette": [
+            [
+              94.99742353723404,
+              106.30558450113786,
+              106.12055205949656
+            ],
+            [
+              166.07172405000966,
+              169.95564550399456,
+              160.77943394096846
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "input_sha256": {
+    "data/tracking/bench/landmark_candidates_v1/seg_0000.json": "d96e0195e861b6bb837dcedc11d839633b5e96e3ad568b24b75f768978f074e8",
+    "data/tracking/bench/landmark_candidates_v1/seg_0003.json": "fd180b240df279d1a04b5721315e94d8796fa0d22101a3c75fa2f976f781a86e",
+    "data/tracking/bench/landmark_candidates_v1/seg_0006.json": "3d7b85eb129dfbfb29e65143082f7a1851defcc775904727e5e369e6a17fc882",
+    "data/tracking/bench/landmark_candidates_v1/seg_0009.json": "518ca89f534436ff5f2a0d14aae56ea49adf7dba0448261de004b935d37b3a95",
+    "docs/measurements/kit-fixed-development-labels.json": "16f56ff5134169ff033c207eca89723856d5b57759c5e20a15c015ab3fd469a3",
+    "docs/measurements/kit-fixed-control-labels.json": "96802fbde9e75e063172dccfdbde37594566f5677d2282e6b1253fcc08091d5f"
+  },
+  "experiment_sha256": "db6897bcde785b705abf63583fb751b9c18639f889618ff90a9aa17399f5c135",
+  "regressions": [],
+  "no_regression": true,
+  "scope": "Development only. Same detector boxes; kit conflicts are not complete ID-switch ground truth."
+}
