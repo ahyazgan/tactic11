@@ -1,0 +1,23 @@
+{
+  "base_commit": "1e8e9f2",
+  "decision_before_new_control_images": true,
+  "development_segments": [0, 3, 6, 9],
+  "control_segments": [2, 8],
+  "review_times_seconds": [5, 20],
+  "selected_method": "bright_reassignment",
+  "rule": "Fit the existing median assignment first. Fit a second assignment from each track's brightest max(min_observations, ceil(N/4)) observations. Align its palette to the current median palette. Change a team only when BOTH assignments are non-null. Keep all original unassigned tracks and preserve original palette/anchor and outlier decisions.",
+  "development": {
+    "baseline": {"correct": 102, "wrong": 17, "unassigned_players": 4, "other_assigned": 4},
+    "selected": {"correct": 106, "wrong": 13, "unassigned_players": 4, "other_assigned": 4}
+  },
+  "alternatives": {
+    "chroma_nearest": {"correct": 84, "wrong": 35},
+    "chroma_half_distance": {"correct": 104, "wrong": 15, "known_shadow_fixed": false},
+    "chroma_votes_75pct": {"correct": 90, "wrong": 29},
+    "chroma_votes_90pct": {"correct": 92, "wrong": 27},
+    "bright_fallback_including_unassigned": {"correct": 110, "wrong": 13, "unassigned_players": 0}
+  },
+  "selection_reason": "Fixes known shadow example while preserving original unassigned coverage; avoids promoting observations already rejected by the production model.",
+  "control_acceptance": "More correct player observations, no increase in wrong or other-colour assignments, and identical unassigned coverage on the same labelled samples.",
+  "scope_limit": "New temporal clips of the same match, single Codex image reviewer; no cross-match generalization or player identity claim."
+}

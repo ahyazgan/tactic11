@@ -14,7 +14,7 @@ from pathlib import Path
 from app.tracking.calibration import PitchCalibration
 from app.tracking.detect import DetectorConfig, make_detector
 from app.tracking.pipeline import PipelineConfig, collect_observations
-from app.tracking.teams import torso_color
+from app.tracking.teams import kit_color
 from scripts.soccertrack_v2.ball_selection_experiment import yellow_fraction
 
 
@@ -37,7 +37,7 @@ def main():
         persons, balls = detector.split(detections)
         people = []
         for box, confidence in zip(persons.xyxy, persons.confidence, strict=True):
-            color = torso_color(rgb, tuple(map(float, box)))
+            color = kit_color(rgb, tuple(map(float, box)), normalize_light=cfg.normalize_kit_light)
             people.append({"box": list(map(float, box)), "confidence": float(confidence),
                            "color": color.tolist() if color is not None else None})
         detected_persons[sample.order] = people

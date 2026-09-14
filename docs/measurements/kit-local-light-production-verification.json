@@ -1,0 +1,28 @@
+{
+  "base_commit": "1e8e9f2",
+  "frozen_report_sha256": "2efaaa4c4f653d16197a5d3a64eafcd7457422685b3b0ff1f5247c4b9b167481",
+  "production_repeat_report_sha256": "1fd7e982b74ac584f505578407245831d42e52ebaf694a3158beb6eb4fa7513a",
+  "all_variant_observations_exactly_reproduced": true,
+  "raw_observations_exactly_reproduced": true,
+  "production_local_grass_observations": 54103,
+  "predictions_and_scores_equal_to_frozen_experiment": true,
+  "live_palette_rounding_preserves_frozen_results": true,
+  "rejected_shadow_experiment_reproduced_outside_production": true,
+  "production_repeat_cache_sha256": {
+    "data/tracking/bench/kit_local_light_production_repeat/seg_0000.json": "b364509f177d8258533c51dd969378c4d2d5543849289a51cb3ca3de2796d959",
+    "data/tracking/bench/kit_local_light_production_repeat/seg_0001.json": "1d8ceefee2818f7b82148099188fd28d63a3592cb5f5edb5c264119a13e19046",
+    "data/tracking/bench/kit_local_light_production_repeat/seg_0002.json": "b8f8762820e07d550fd1e944b5893487ab9194d62c7c631da61cdf37d9ebe6e6",
+    "data/tracking/bench/kit_local_light_production_repeat/seg_0003.json": "7dccfeb10cd61ff81b2015a94b7a4b40d555972d912022e04ab30061f71aecb4",
+    "data/tracking/bench/kit_local_light_production_repeat/seg_0006.json": "0d86c0a2011815e5c90e4632975e2d672595f456119cf19ff522d7a8772341a3",
+    "data/tracking/bench/kit_local_light_production_repeat/seg_0007.json": "55b9291c6ad0eb4cf68bd9382cef35f250b380ae274b4ebb382f629faf7f5c92",
+    "data/tracking/bench/kit_local_light_production_repeat/seg_0008.json": "cdd645573c5303d6573dc2da40fc721aea0515d86939223b55c1dfb37986ed71",
+    "data/tracking/bench/kit_local_light_production_repeat/seg_0009.json": "7377b1f82ff74ce75afae4140a594acb8aa1e7cbd097aba80abf7fc9ca054920"
+  },
+  "source_sha256": {
+    "app/tracking/teams.py": "6347eee18d4a83566b3f592e6a4b25354ea61b02ddc1d013589147deb7450a4c",
+    "app/tracking/pipeline.py": "f23ba3f1f656341ffc6255105775e48d6b2faf109f7d5992bbdff818a30788c1",
+    "scripts/soccertrack_v2/cache_local_kit_light.py": "6198a4700134c6c16a90af1b8c5616d5f42e467833211411c934adfc6fe158e6",
+    "scripts/soccertrack_v2/benchmark_local_kit_light.py": "a594d8cca82d7718a41502ffad75de669fc630d9bd94c63d749b252ee410714e"
+  },
+  "source_hash_normalization": "UTF-8 with LF line endings"
+}
