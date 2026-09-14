@@ -726,6 +726,8 @@
   "meta": {
     "camera": "fixed_panoramic",
     "experimental": true,
+    "person_filter_profile": "annotated_perimeter_track_v1",
+    "person_filter_validation": "docs/OYUNCU-SUZGECI-SONUCLARI.md",
     "source": "annotated pitch landmarks; no player/event GT fitting",
     "keypoint_sha256": "bcc874620cfa1bcbd49b33a6132abf51f35525f25cafb677084e8ce3e803a94f"
   }

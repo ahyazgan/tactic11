@@ -1,0 +1,48 @@
+{
+  "candidate": "annotated_perimeter_track_v1",
+  "filter_sha256": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+  "parameters": {
+    "min_field_observations": 2,
+    "tolerance_height_ratio": 0.002,
+    "minimum_tolerance_px": 1,
+    "tps_min_points_per_edge": 3
+  },
+  "development": {
+    "docs\\measurements\\perimeter-development-day.json": "92ec8da6f79091687e174917ff60c2162c07eb709508a5afa363f4662181cd7b",
+    "docs\\measurements\\perimeter-development-night.json": "685fe37d5f3aa43126df15b78de35de097f3541a1fd2bc854b3f22d417990046"
+  },
+  "acceptance": "No removed blue/white boxes; correct count cannot decrease; wrong, other-assigned and non-person-assigned cannot increase; fewer non-person boxes on daylight temporal control. Report night independently.",
+  "control": {
+    "daylight": {
+      "match": "117093",
+      "segments": [
+        0,
+        3,
+        6
+      ],
+      "times": [
+        10,
+        25
+      ],
+      "limitation": "Same videos and correlated tracks, new frame labels only; not an independent match"
+    },
+    "night": {
+      "match": "117092",
+      "segments": [
+        20,
+        30
+      ],
+      "source_starts_seconds": [
+        1200,
+        1500
+      ],
+      "times": [
+        5,
+        20
+      ],
+      "calibration": "soccertrack_v2_117092_landmarks.json"
+    }
+  },
+  "frozen_before_control_images_or_labels": true,
+  "night_development_note": "Old night caches have an incomplete annotated perimeter: filter skipped; unchanged score verifies fallback only."
+}

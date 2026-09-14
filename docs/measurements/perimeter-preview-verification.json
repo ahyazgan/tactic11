@@ -1,0 +1,20 @@
+[
+  {
+    "file": "data\\tracking\\bench\\perimeter_final_day\\preview-default-fixed.mp4",
+    "decoded_frames": 125,
+    "fps": 4.166666666666667,
+    "width": 1600,
+    "height": 422,
+    "duration_seconds": 29.999999999999996,
+    "sha256": "79b8f1d0f1df60e77821ff0bc5f4937c859fdd32edde4cc0e3dc41466b47b796"
+  },
+  {
+    "file": "data\\tracking\\bench\\perimeter_final_day\\daylight-improved.mp4",
+    "decoded_frames": 375,
+    "fps": 12.5,
+    "width": 2048,
+    "height": 540,
+    "duration_seconds": 30.0,
+    "sha256": "bdb9d8629d344b66a896217f05b154ef853c215e805202f0c45c19c22a3ae3ef"
+  }
+]

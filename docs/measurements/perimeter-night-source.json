@@ -1,0 +1,20 @@
+{
+  "match": "117092",
+  "clips": [
+    {
+      "segment": 20,
+      "source_start_seconds": 1200,
+      "path": "data/tracking/bench/perimeter_control_night/source/seg_0020.mp4",
+      "sha256": "fece86e7a119a50640eaed7ce485e833733446377f12c7f61af18e56b4905368",
+      "duration_seconds": 30
+    },
+    {
+      "segment": 30,
+      "source_start_seconds": 1500,
+      "path": "data/tracking/bench/perimeter_control_night/source/seg_0030.mp4",
+      "sha256": "c23aa824839bd371b5aecbda10159662e62129c094ef0834380c9ca9a6493499",
+      "duration_seconds": 30
+    }
+  ],
+  "attribution": "SoccerTrack v2, Atom Scott et al., CC BY 4.0"
+}
