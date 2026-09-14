@@ -1,0 +1,89 @@
+{
+  "status": "unverified_for_person_identity_metrics",
+  "examined_development_video_seconds": 604,
+  "gsr_schema": {
+    "image_id_base": 3000000,
+    "first_image_id": 3000001,
+    "declared_image_size": [
+      3840,
+      1504
+    ],
+    "declared_fps": 25,
+    "sequence_length": 67375,
+    "person_identity_fields": [
+      "track_id",
+      "attributes.player_id",
+      "attributes.jersey",
+      "attributes.team"
+    ],
+    "box_fields": [
+      "bbox_image",
+      "bbox_pitch",
+      "bbox_pitch_raw"
+    ]
+  },
+  "local_video_size": [
+    3840,
+    1906
+  ],
+  "pixel_alignment_audit": {
+    "existing_gsr_export": "data/tracking/bench/signal_quality_gt.npy",
+    "export_shape": [
+      210122,
+      10
+    ],
+    "tracks": 23,
+    "categories": [
+      1,
+      2
+    ],
+    "development_window_offset_search": {
+      "segment": 0,
+      "delta_frames_examined": [
+        -100,
+        100
+      ],
+      "samples_every": 25,
+      "cost": "per-frame one-to-one Euclidean foot distance, capped at100 px; inspect only, not frozen scoring alignment",
+      "best_median_distance_px": 31.15485515934876,
+      "best_delta_frames": -3,
+      "alignment_validated": false
+    },
+    "visual_evidence": "gt-box-seen604.jpg",
+    "note": "Direct GSR boxes at a development-selected constant offset remain small/partial and visibly displaced for several people. Declared image dimensions alone do not establish or disprove a transform. The supplied 65 pitch landmarks visually follow field lines, but that does not validate player-box timing/geometry."
+  },
+  "auxiliary_data_audit": {
+    "packed_remap_shape": [
+      1906,
+      3840
+    ],
+    "remap_result": "Inverse remapping collapses source points toward image center; no evidence this is the GSR-to-current-video transform. Not used for scoring.",
+    "padding_info_csv": "Local file contains Google 404 HTML, not CSV; not usable geometry metadata.",
+    "mot_readme": "Describes different four-minute 4096x1080 challenge clips; no paired MOT file was found under current dataset/cache paths."
+  },
+  "decision": "Do not present full-video identity metrics from the official GT until the spatial and temporal transform is independently validated. Use sparse visually inspected person associations for current development instead.",
+  "files": {
+    "data\\tracking\\datasets\\soccertrack_v2\\117092\\117092_gsr_1st.json": {
+      "bytes": 2695285313,
+      "sha256": "af3baad872ffd73f41853929a6dba035d68ebda9830f9b9c8071dc51aba4aa29"
+    },
+    "data\\tracking\\datasets\\soccertrack_v2\\117092\\117092_padding_info.csv": {
+      "bytes": 1652,
+      "sha256": "2d12ea4b31c4c62a8242d3b4435d3681c1a166b34f64f863ccb38379253221c1"
+    },
+    "data\\tracking\\datasets\\soccertrack_v2\\117092\\117092_keypoints.json": {
+      "bytes": 3624,
+      "sha256": "910c20d8883e689e740557e96037b4681ce75b60d94e1a800c09cab0da305aa7"
+    },
+    "data\\tracking\\datasets\\soccertrack_v2\\117092\\117092_mapx.npy": {
+      "bytes": 29276288,
+      "sha256": "e4e56cec2038d9cfc289241ac998b6a048eb8b92cb199c71390ae2852df49932"
+    },
+    "data\\tracking\\datasets\\soccertrack_v2\\117092\\117092_mapy.npy": {
+      "bytes": 14638208,
+      "sha256": "6cd53a5edef1aefe71921858ae45e0c7559e0c8cdef0cc21064508912711bfe4"
+    }
+  },
+  "manual_identity_dataset_sha256": "877b0f723cf94fa169759b39950bce374a1e8f5a5e90016e5db36ebb3ea0414e",
+  "gt_preview_sha256": "0f663811bb819b20b519223184aad8ec954a593eab977c72b604c993e79c859d"
+}

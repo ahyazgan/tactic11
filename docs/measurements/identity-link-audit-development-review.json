@@ -1,0 +1,510 @@
+{
+  "selection": "Top10 accepted edges by cost across all3 segments, before visual review",
+  "same": 5,
+  "different": 2,
+  "uncertain": 3,
+  "label_sha256": "d4134cac9d33c7d2d75e7eda65d8423627a462d9701b7dfaa5a17fadc104b7e0",
+  "records": [
+    {
+      "from": 181,
+      "to": 185,
+      "cost": 1.1825923831408525,
+      "gap_seconds": 0.240000000000002,
+      "segment": 0,
+      "last_frame": 726,
+      "first_frame": 732,
+      "last_box": [
+        2136.125,
+        233.5,
+        2158.0,
+        269.5
+      ],
+      "first_box": [
+        2106.125,
+        240.0,
+        2128.375,
+        270.0
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-01-s0-181-185.jpg",
+      "requested_frames": [
+        718,
+        726,
+        734,
+        724,
+        732,
+        740
+      ],
+      "viewed_frames": [
+        718,
+        726,
+        734,
+        724,
+        732,
+        740
+      ],
+      "forbidden_frames_omitted": [],
+      "sha256": "25e4efa367c35a34df44c1f2c28c7c96e4cdc4a661f8602cb22e058735cd4a7c",
+      "judgment": "different",
+      "visual_basis": "Blue number38 torso before gap; white opponent torso after gap. Both physical people remain separately visible in adjacent frames.",
+      "label_pair": {
+        "left": "0-726-d12",
+        "right": "0-732-d16",
+        "relation": "different",
+        "visual_basis": "Blue number38 torso before gap; white opponent torso after gap. Both physical people remain separately visible in adjacent frames.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-01-s0-181-185.jpg"
+      }
+    },
+    {
+      "from": 154,
+      "to": 174,
+      "cost": 1.0200820418511114,
+      "gap_seconds": 1.120000000000001,
+      "segment": 0,
+      "last_frame": 658,
+      "first_frame": 686,
+      "last_box": [
+        2547.375,
+        482.21875,
+        2589.0,
+        611.125
+      ],
+      "first_box": [
+        2325.888671875,
+        475.2265625,
+        2383.21875,
+        596.0
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+      "requested_frames": [
+        650,
+        658,
+        666,
+        678,
+        686,
+        694
+      ],
+      "viewed_frames": [
+        650,
+        658,
+        666,
+        678,
+        688,
+        694
+      ],
+      "forbidden_frames_omitted": [
+        686
+      ],
+      "sha256": "53797e7695884d3b5ae806f26425edac5a26044854b9723f6da7b6b42f713a72",
+      "label_frame_substitution": {
+        "original_frame": 686,
+        "label_frame": 688,
+        "reason": "Reserved control frame was not viewed."
+      },
+      "judgment": "same",
+      "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+      "label_pair": {
+        "left": "0-658-d32",
+        "right": "0-688-d35",
+        "relation": "same",
+        "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg"
+      }
+    },
+    {
+      "from": 30,
+      "to": 60,
+      "cost": 0.9975877546467242,
+      "gap_seconds": 1.04,
+      "segment": 0,
+      "last_frame": 26,
+      "first_frame": 52,
+      "last_box": [
+        1415.125,
+        169.125,
+        1439.5,
+        200.25
+      ],
+      "first_box": [
+        1440.25,
+        153.0,
+        1457.5,
+        184.75
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-03-s0-30-60.jpg",
+      "requested_frames": [
+        18,
+        26,
+        34,
+        44,
+        52,
+        60
+      ],
+      "viewed_frames": [
+        18,
+        26,
+        34,
+        44,
+        52,
+        60
+      ],
+      "forbidden_frames_omitted": [],
+      "sha256": "2d54a8f30afdb14757c16408a7e09a7654adfb18365551d614b090194982ba9b",
+      "judgment": "different",
+      "visual_basis": "Running white outfield player before gap; stationary dark-clothed sideline person afterward. White player remains separately visible to the left.",
+      "label_pair": {
+        "left": "0-26-d5",
+        "right": "0-52-d9",
+        "relation": "different",
+        "visual_basis": "Running white outfield player before gap; stationary dark-clothed sideline person afterward. White player remains separately visible to the left.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-03-s0-30-60.jpg"
+      }
+    },
+    {
+      "from": 93,
+      "to": 223,
+      "cost": 0.8571710048028258,
+      "gap_seconds": 0.7999999999999989,
+      "segment": 0,
+      "last_frame": 274,
+      "first_frame": 294,
+      "last_box": [
+        2022.625,
+        193.75,
+        2044.0,
+        237.25
+      ],
+      "first_box": [
+        1987.25,
+        178.75,
+        2014.375,
+        228.625
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-04-s0-93-223.jpg",
+      "requested_frames": [
+        266,
+        274,
+        282,
+        286,
+        294,
+        302
+      ],
+      "viewed_frames": [
+        266,
+        274,
+        282,
+        286,
+        294,
+        302
+      ],
+      "forbidden_frames_omitted": [],
+      "sha256": "c506a29cbf328734db7730dcaff5af9b1396c44047f49b937b28291b18398271",
+      "judgment": "same",
+      "visual_basis": "Same white player who approaches blue number9 at the tackle, independently visible before contact.",
+      "label_pair": {
+        "left": "0-274-d19",
+        "right": "0-294-d16",
+        "relation": "same",
+        "visual_basis": "Same white player who approaches blue number9 at the tackle, independently visible before contact.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-04-s0-93-223.jpg"
+      }
+    },
+    {
+      "from": 158,
+      "to": 154,
+      "cost": 0.8516103822346303,
+      "gap_seconds": 0.8800000000000008,
+      "segment": 3,
+      "last_frame": 378,
+      "first_frame": 400,
+      "last_box": [
+        2542.0,
+        183.875,
+        2565.0,
+        225.25
+      ],
+      "first_box": [
+        2577.0,
+        189.0,
+        2604.5,
+        236.25
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-05-s3-158-154.jpg",
+      "requested_frames": [
+        370,
+        378,
+        386,
+        392,
+        400,
+        408
+      ],
+      "viewed_frames": [
+        370,
+        378,
+        386,
+        392,
+        400,
+        408
+      ],
+      "forbidden_frames_omitted": [],
+      "sha256": "69589f909004d9861571f417efffdc44bbb5c0553a34878b26a8fc6cee89298d",
+      "judgment": "uncertain",
+      "visual_basis": "White runner before gap; entry box at400 covers both white and blue opponents. White continuation is plausible, but the unique person represented by the entry box is ambiguous.",
+      "label_pair": {
+        "left": "3-378-d13",
+        "right": "3-400-d6",
+        "relation": "uncertain",
+        "visual_basis": "White runner before gap; entry box at400 covers both white and blue opponents. White continuation is plausible, but the unique person represented by the entry box is ambiguous.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-05-s3-158-154.jpg"
+      }
+    },
+    {
+      "from": 166,
+      "to": 115,
+      "cost": 0.8230587814712873,
+      "gap_seconds": 0.6400000000000006,
+      "segment": 3,
+      "last_frame": 602,
+      "first_frame": 618,
+      "last_box": [
+        2652.5,
+        230.0,
+        2672.5,
+        260.765625
+      ],
+      "first_box": [
+        2667.5,
+        230.0,
+        2687.0,
+        267.0
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-06-s3-166-115.jpg",
+      "requested_frames": [
+        594,
+        602,
+        610,
+        610,
+        618,
+        626
+      ],
+      "viewed_frames": [
+        594,
+        602,
+        610,
+        610,
+        618,
+        626
+      ],
+      "forbidden_frames_omitted": [],
+      "sha256": "9f5f3e017b368ada9fa21ff7906f405880e874adb17d82a57038061f1dedae85",
+      "judgment": "uncertain",
+      "visual_basis": "Three blue players cross during gap; the before box becomes a lower-body fragment and the after box is a blue number11 body. This strip alone does not establish a unique same-person association.",
+      "label_pair": {
+        "left": "3-602-d22",
+        "right": "3-618-d27",
+        "relation": "uncertain",
+        "visual_basis": "Three blue players cross during gap; the before box becomes a lower-body fragment and the after box is a blue number11 body. This strip alone does not establish a unique same-person association.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-06-s3-166-115.jpg"
+      }
+    },
+    {
+      "from": 123,
+      "to": 140,
+      "cost": 0.7797426681235603,
+      "gap_seconds": 0.16000000000000014,
+      "segment": 6,
+      "last_frame": 594,
+      "first_frame": 598,
+      "last_box": [
+        1028.875,
+        255.125,
+        1049.75,
+        270.0
+      ],
+      "first_box": [
+        1022.0,
+        255.5,
+        1042.5,
+        270.0
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-07-s6-123-140.jpg",
+      "requested_frames": [
+        586,
+        594,
+        602,
+        590,
+        598,
+        606
+      ],
+      "viewed_frames": [
+        586,
+        594,
+        602,
+        590,
+        598,
+        606
+      ],
+      "forbidden_frames_omitted": [],
+      "sha256": "a9875aae77bd38b9990ef367058bfab0ac8c0b509fb23448e2a512cb6d375806",
+      "judgment": "uncertain",
+      "visual_basis": "Very small head/shoulder boxes among adjacent blue players; individual identity cannot be resolved confidently.",
+      "label_pair": {
+        "left": "6-594-d4",
+        "right": "6-598-d4",
+        "relation": "uncertain",
+        "visual_basis": "Very small head/shoulder boxes among adjacent blue players; individual identity cannot be resolved confidently.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-07-s6-123-140.jpg"
+      }
+    },
+    {
+      "from": 192,
+      "to": 178,
+      "cost": 0.7508250597511056,
+      "gap_seconds": 0.879999999999999,
+      "segment": 6,
+      "last_frame": 550,
+      "first_frame": 572,
+      "last_box": [
+        1045.0,
+        265.21875,
+        1062.75,
+        302.25
+      ],
+      "first_box": [
+        1054.5,
+        257.1875,
+        1072.5,
+        298.3125
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-08-s6-192-178.jpg",
+      "requested_frames": [
+        542,
+        550,
+        558,
+        564,
+        572,
+        580
+      ],
+      "viewed_frames": [
+        542,
+        550,
+        558,
+        564,
+        572,
+        580
+      ],
+      "forbidden_frames_omitted": [],
+      "sha256": "01a6decd37b0c33bc1fda2f55224803aa44837978d30ece3a8589cbc1b7b0653",
+      "judgment": "same",
+      "visual_basis": "White player bends then turns to join the nearby group; same path remains visible across gap and after entry.",
+      "label_pair": {
+        "left": "6-550-d21",
+        "right": "6-572-d17",
+        "relation": "same",
+        "visual_basis": "White player bends then turns to join the nearby group; same path remains visible across gap and after entry.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-08-s6-192-178.jpg"
+      }
+    },
+    {
+      "from": 96,
+      "to": 227,
+      "cost": 0.7401404585138361,
+      "gap_seconds": 0.8800000000000008,
+      "segment": 0,
+      "last_frame": 242,
+      "first_frame": 264,
+      "last_box": [
+        1640.0,
+        189.75,
+        1663.3125,
+        231.625
+      ],
+      "first_box": [
+        1693.125,
+        185.875,
+        1715.5,
+        227.0
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-09-s0-96-227.jpg",
+      "requested_frames": [
+        234,
+        242,
+        250,
+        256,
+        264,
+        272
+      ],
+      "viewed_frames": [
+        234,
+        242,
+        250,
+        256,
+        264,
+        272
+      ],
+      "forbidden_frames_omitted": [],
+      "sha256": "440075568035c52b6f7968806bfaa1fc41163180629d79ae9c79497685285f54",
+      "judgment": "same",
+      "visual_basis": "White player remains independently visible beside referee, turns and crosses to the right; no same-kit substitution along this short path.",
+      "label_pair": {
+        "left": "0-242-d14",
+        "right": "0-264-d6",
+        "relation": "same",
+        "visual_basis": "White player remains independently visible beside referee, turns and crosses to the right; no same-kit substitution along this short path.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-09-s0-96-227.jpg"
+      }
+    },
+    {
+      "from": 27,
+      "to": 164,
+      "cost": 0.7295594174710324,
+      "gap_seconds": 0.2400000000000002,
+      "segment": 3,
+      "last_frame": 118,
+      "first_frame": 124,
+      "last_box": [
+        3117.0,
+        475.2109375,
+        3147.5,
+        524.4375
+      ],
+      "first_box": [
+        3132.5,
+        452.75,
+        3158.25,
+        499.5
+      ],
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-10-s3-27-164.jpg",
+      "requested_frames": [
+        110,
+        118,
+        126,
+        116,
+        124,
+        132
+      ],
+      "viewed_frames": [
+        110,
+        118,
+        126,
+        116,
+        124,
+        132
+      ],
+      "forbidden_frames_omitted": [],
+      "sha256": "96908ad1d0a91a631e375781ba253c840a4efce261b1e360ac4095ca16c6597f",
+      "judgment": "same",
+      "visual_basis": "Isolated blue player, jersey38 visible after turn; before and after boxes cover different body extents of the same person.",
+      "label_pair": {
+        "left": "3-118-d33",
+        "right": "3-124-d28",
+        "relation": "same",
+        "visual_basis": "Isolated blue player, jersey38 visible after turn; before and after boxes cover different body extents of the same person.",
+        "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-10-s3-27-164.jpg"
+      }
+    }
+  ],
+  "missing_reviewed_reserved_frames": [
+    374,
+    686
+  ]
+}

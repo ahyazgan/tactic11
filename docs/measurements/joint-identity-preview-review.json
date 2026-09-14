@@ -1,0 +1,39 @@
+{
+  "reviewer": "Codex identity_tracker",
+  "reviewed_at_utc": "2026-09-14T12:36:08.986387+00:00",
+  "manifest_sha256": "3ac8a1baca8efce3227f5fb9b39f2f8874c0316e81281708b4fedae8db980b77",
+  "visually_reviewed_source_frames": [
+    124,
+    500
+  ],
+  "visually_reviewed_images": [
+    "qa/before-source-124.jpg",
+    "qa/before-source-500.jpg",
+    "qa/after-source-124.jpg",
+    "qa/after-source-500.jpg",
+    "qa/comparison-source-124.jpg"
+  ],
+  "visual_result": "Complete panorama retained; titles and legend are visible; before/after stacked panels align in time; production rectangles and local labels are present. These checks verify artifact rendering, not tracking accuracy.",
+  "control_frame_predictions_opened": false,
+  "ball_and_ball_estimated_fields_equal_between_exports": true,
+  "details": {
+    "before": {
+      "frames": 375,
+      "exported_player_observations": 8828,
+      "unknown_team_observations_preserved": 816,
+      "local_per_observation_teams_equal": true,
+      "scoped_player_and_continuity_ids_verified": true,
+      "match_and_time_offset_verified": true,
+      "unique_ids_per_frame_verified": true
+    },
+    "after": {
+      "frames": 375,
+      "exported_player_observations": 8638,
+      "unknown_team_observations_preserved": 1481,
+      "local_per_observation_teams_equal": true,
+      "scoped_player_and_continuity_ids_verified": true,
+      "match_and_time_offset_verified": true,
+      "unique_ids_per_frame_verified": true
+    }
+  }
+}

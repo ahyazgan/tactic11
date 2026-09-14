@@ -1,0 +1,118 @@
+"""Summarize the frozen replay without tuning or changing any observations."""
+from collections import Counter
+import datetime
+import hashlib
+import json
+from pathlib import Path
+
+from scripts.soccertrack_v2.benchmark_joint_identity import predictions
+from scripts.soccertrack_v2.benchmark_track_buffer import box_key, score_rows
+
+replay_dir = Path('.cache/kit_joint_agent/production_joint_night_control_v1')
+report_path = replay_dir/'report.json'
+report = json.loads(report_path.read_text())
+decision_path = Path('docs/measurements/joint-identity-frozen-decision.json')
+decision = json.loads(decision_path.read_text())
+code = {p: hashlib.sha256(Path(p).read_text(encoding='utf-8').encode()).hexdigest()
+        for p in decision['code_sha256_lf']}
+assert code == decision['code_sha256_lf']
+label_path = Path('docs/measurements/joint-identity-control-night-labels.json')
+pair_path = Path('docs/measurements/joint-identity-control-night-pairs.json')
+freeze_path = Path('docs/measurements/joint-identity-control-night-label-freeze.json')
+labels = json.loads(label_path.read_text())
+pairs = json.loads(pair_path.read_text())
+freeze = json.loads(freeze_path.read_text())
+for p, sha in freeze['output_sha256'].items():
+    assert hashlib.sha256(Path(p).read_bytes()).hexdigest() == sha
+
+payloads, pred, outcomes, coverage, stats, equality = {}, {}, {}, {}, {}, {}
+for variant in ('before', 'after'):
+    payloads[variant] = {seg: json.loads((replay_dir/variant/f'seg_{seg:04d}.json').read_text()) for seg in (40, 50)}
+    pred[variant] = predictions(payloads[variant])
+    stats[variant] = {str(s): d['stats'] for s, d in payloads[variant].items()}
+    equality[variant] = {str(s): d['baseline_exact'] for s, d in payloads[variant].items()}
+    blue = report['scores'][variant]['kit_labels']['blue_slot']
+    assert blue == decision['frozen_anchors']['night'][variant]['blue_slot']
+    assert report['anchors'][variant] == decision['frozen_anchors']['night'][variant]['centers']
+    rows = []
+    for row in labels['records']:
+        key = (row['segment'], box_key(row['frame_idx'], row['bbox']))
+        present = key in pred[variant]
+        identity, team = pred[variant].get(key, (None, None))
+        expected = blue if row['kit']=='blue' else 1-blue if row['kit']=='white' else None
+        status = ('missing' if not present else 'unassigned' if team is None else
+                  'correct' if team==expected else 'wrong') if row['kit'] in ('blue','white') else (
+                      'team_assigned' if team is not None else 'unassigned' if present else 'missing')
+        rows.append(dict(id=row['id'], kit=row['kit'], present=present, identity=identity, team=team, status=status))
+    outcomes[variant] = rows
+    coverage[variant] = {name: dict(total=len(group), present=sum(r['present'] for r in group),
+                                    missing=[r['id'] for r in group if not r['present']])
+                         for name, group in {
+                             'unambiguous_real_person_start_boxes': [r for r in rows if r['kit'] in ('blue','white','other')],
+                             'uncertain_start_boxes': [r for r in rows if r['kit']=='uncertain'],
+                             'not_person_start_boxes': [r for r in rows if r['kit']=='not_person'],
+                         }.items()}
+
+compact_scores = {}
+for variant, scores in report['scores'].items():
+    pair_score = scores['pair_labels'][0]
+    compact_pairs = [{k: p[k] for k in ('left','right','relation','linked','passed')} for p in pair_score['outcomes']]
+    compact_scores[variant] = dict(kits=scores['kit_labels'],
+                                  pair_score={k:v for k,v in pair_score.items() if k!='outcomes'},
+                                  pair_outcomes=compact_pairs,
+                                  per_segment={str(seg): dict(
+                                      kits=score_rows([r for r in labels['records'] if r['segment']==seg], pred[variant], scores['kit_labels']['blue_slot']),
+                                      pairs=dict(Counter(
+                                          f"{p['relation']}_{'correct' if p['passed'] else 'uncovered' if p['linked'] is None else 'wrong'}"
+                                          for p in compact_pairs if p['left'].startswith(f'{seg}-')))) for seg in (40,50)})
+
+b = compact_scores['before']['kits']['unique_person_score']
+a = compact_scores['after']['kits']['unique_person_score']
+bp = compact_scores['before']['pair_score']['counts']
+ap = compact_scores['after']['pair_score']['counts']
+checks = {
+    'unique_person_correct_not_decreased': (b['correct'], a['correct'], a['correct']>=b['correct']),
+    'wrong_kit_not_increased': (b['wrong'], a['wrong'], a['wrong']<=b['wrong']),
+    'other_assigned_not_increased': (b['other_assigned'], a['other_assigned'], a['other_assigned']<=b['other_assigned']),
+    'true_person_coverage_not_decreased': (coverage['before']['unambiguous_real_person_start_boxes']['present'],
+                                          coverage['after']['unambiguous_real_person_start_boxes']['present'],
+                                          coverage['after']['unambiguous_real_person_start_boxes']['present']>=coverage['before']['unambiguous_real_person_start_boxes']['present']),
+    'same_person_pairs_not_decreased': (bp['same_correct'], ap['same_correct'], ap['same_correct']>=bp['same_correct']),
+    'different_person_pairs_not_decreased': (bp['different_correct'], ap['different_correct'], ap['different_correct']>=bp['different_correct']),
+}
+gates = {k:dict(before=v[0], after=v[1], passed=v[2]) for k,v in checks.items()}
+inputs = dict(report['source_sha256'])
+for p in (decision_path, label_path, pair_path, freeze_path):
+    inputs[p.as_posix()] = hashlib.sha256(p.read_bytes()).hexdigest()
+outputs = {p.as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+           for p in [report_path, *(replay_dir/v/f'seg_{s:04d}.json' for v in ('before','after') for s in (40,50))]}
+summary = dict(
+    candidate='fixed_camera_identity_v1', control='night segments40/50, fixed frames374/686 and endpoints404/716',
+    reported_at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    candidate_frozen_at_utc=decision['frozen_at_utc'], labels_frozen_at_utc=freeze['frozen_at_utc'],
+    first_prediction_read_after_label_freeze=True,
+    frozen_code_sha256_lf=code, frozen_code_verified_before_and_after=True,
+    source_sha256=inputs, replay_output_sha256=outputs,
+    anchors=report['anchors'], anchor_report=report['anchor_report'],
+    baseline_source_equality=equality['before'],
+    label_counts=labels['counts'], association_source_counts=pairs['counts'],
+    source_coverage_notes=pairs['source_coverage_notes'], observed_source_box_coverage=coverage,
+    scores=compact_scores, kit_outcomes=outcomes, full_clip_statistics=stats,
+    acceptance_gates=gates, failed_gates=[k for k,v in gates.items() if not v['passed']],
+    decision='All predefined night nonregression gates pass with unchanged labeled scores. No improvement demonstrated on these control labels; night alone does not authorize enabling the profile.',
+    remaining_errors=dict(kit_wrong=9, kit_unassigned=4, other_assigned=1, false_split=2,
+                          same_uncovered=2, different_uncovered=2,
+                          description='The same six failing scored relations remain in both variants; two false splits and two missing pair observations. Missing observations are not counted as successful different-person separation.'),
+    limitations=['Sparse visual identity pairs, not full-video IDF1/HOTA or roster identity.',
+                 'Same match/source as development, held-out clips; no independent-match claim.',
+                 'Seven explicit endpoint-missing start boxes and merged/ambiguous source boxes are separate detector-coverage categories, not removed tracking predictions.',
+                 'Full-clip split/link/part-removal counts describe algorithm actions, not visually established correctness outside the frozen labels.',
+                 'No retuning or relabeling after control prediction results were opened.'],
+)
+target = Path('docs/measurements/joint-identity-control-night-results.json')
+assert not target.exists()
+target.write_text(json.dumps(summary, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
+assert code == {p:hashlib.sha256(Path(p).read_text(encoding='utf-8').encode()).hexdigest() for p in code}
+print(json.dumps(dict(path=str(target), sha256=hashlib.sha256(target.read_bytes()).hexdigest(),
+                     gates=gates, coverage=coverage, baseline_exact=equality['before'],
+                     per_segment={v:s['per_segment'] for v,s in compact_scores.items()}), indent=2))

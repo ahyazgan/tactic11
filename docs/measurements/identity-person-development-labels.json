@@ -1,0 +1,723 @@
+{
+  "protocol": "Sparse visual associations on development windows selected from known tracking errors; original GT alignment was not verified, so no full-video IDF1 is claimed. Same means same visible person; different means visibly distinct people. Occluded or merged boxes are uncertain and excluded. No prediction variant results were used to revise these labels.",
+  "split": "development_only",
+  "independently_adjudicated": false,
+  "reviewer": "Codex visual inspection with local temporal context",
+  "predicted_ids_shown_on_close_review": false,
+  "selection_bias": "Known error tracks plus stable blue number 36; not representative prevalence estimate.",
+  "observations": [
+    {
+      "id": "0-280-d15",
+      "segment": 0,
+      "frame_idx": 280,
+      "bbox": [
+        1932.25,
+        187.5,
+        1955.5,
+        232.25
+      ],
+      "detector_index": 15
+    },
+    {
+      "id": "0-290-d16",
+      "segment": 0,
+      "frame_idx": 290,
+      "bbox": [
+        1958.25,
+        185.0,
+        1982.75,
+        231.875
+      ],
+      "detector_index": 16
+    },
+    {
+      "id": "0-280-d19",
+      "segment": 0,
+      "frame_idx": 280,
+      "bbox": [
+        2015.125,
+        183.875,
+        2038.8125,
+        234.25
+      ],
+      "detector_index": 19
+    },
+    {
+      "id": "0-290-d19",
+      "segment": 0,
+      "frame_idx": 290,
+      "bbox": [
+        1996.65625,
+        180.875,
+        2022.0625,
+        229.625
+      ],
+      "detector_index": 19
+    },
+    {
+      "id": "0-280-d20",
+      "segment": 0,
+      "frame_idx": 280,
+      "bbox": [
+        2039.0,
+        175.375,
+        2059.0,
+        218.0
+      ],
+      "detector_index": 20
+    },
+    {
+      "id": "0-310-d18",
+      "segment": 0,
+      "frame_idx": 310,
+      "bbox": [
+        2120.0,
+        179.25,
+        2146.0,
+        225.5
+      ],
+      "detector_index": 18
+    },
+    {
+      "id": "0-310-d19",
+      "segment": 0,
+      "frame_idx": 310,
+      "bbox": [
+        1954.25,
+        199.375,
+        1982.34375,
+        231.25
+      ],
+      "detector_index": 19
+    },
+    {
+      "id": "0-310-d13",
+      "segment": 0,
+      "frame_idx": 310,
+      "bbox": [
+        1974.75,
+        181.0,
+        2000.0,
+        228.0
+      ],
+      "detector_index": 13
+    },
+    {
+      "id": "0-340-d21",
+      "segment": 0,
+      "frame_idx": 340,
+      "bbox": [
+        1937.845703125,
+        206.375,
+        1957.703125,
+        229.0
+      ],
+      "detector_index": 21
+    },
+    {
+      "id": "0-320-d19",
+      "segment": 0,
+      "frame_idx": 320,
+      "bbox": [
+        1978.8125,
+        176.25,
+        2008.5625,
+        227.375
+      ],
+      "detector_index": 19
+    },
+    {
+      "id": "0-300-d13",
+      "segment": 0,
+      "frame_idx": 300,
+      "bbox": [
+        1970.0,
+        184.75,
+        1993.25,
+        230.875
+      ],
+      "detector_index": 13
+    },
+    {
+      "id": "3-350-d14",
+      "segment": 3,
+      "frame_idx": 350,
+      "bbox": [
+        2733.984375,
+        168.75,
+        2750.875,
+        203.875
+      ],
+      "detector_index": 14
+    },
+    {
+      "id": "3-360-d14",
+      "segment": 3,
+      "frame_idx": 360,
+      "bbox": [
+        2729.609375,
+        174.375,
+        2749.4375,
+        205.25
+      ],
+      "detector_index": 14
+    },
+    {
+      "id": "3-350-d15",
+      "segment": 3,
+      "frame_idx": 350,
+      "bbox": [
+        2754.53125,
+        181.5,
+        2773.75,
+        212.375
+      ],
+      "detector_index": 15
+    },
+    {
+      "id": "3-360-d13",
+      "segment": 3,
+      "frame_idx": 360,
+      "bbox": [
+        2751.15625,
+        179.375,
+        2768.65625,
+        210.75
+      ],
+      "detector_index": 13
+    },
+    {
+      "id": "3-380-d16",
+      "segment": 3,
+      "frame_idx": 380,
+      "bbox": [
+        2765.9375,
+        179.875,
+        2784.125,
+        214.375
+      ],
+      "detector_index": 16
+    },
+    {
+      "id": "3-380-d13",
+      "segment": 3,
+      "frame_idx": 380,
+      "bbox": [
+        2738.6875,
+        178.875,
+        2756.84375,
+        212.125
+      ],
+      "detector_index": 13
+    },
+    {
+      "id": "3-370-d7",
+      "segment": 3,
+      "frame_idx": 370,
+      "bbox": [
+        2743.25,
+        174.875,
+        2763.25,
+        210.125
+      ],
+      "detector_index": 7
+    },
+    {
+      "id": "3-360-d6",
+      "segment": 3,
+      "frame_idx": 360,
+      "bbox": [
+        2533.25,
+        187.875,
+        2559.0,
+        233.75
+      ],
+      "detector_index": 6
+    },
+    {
+      "id": "3-440-d10",
+      "segment": 3,
+      "frame_idx": 440,
+      "bbox": [
+        2602.75,
+        195.625,
+        2625.5,
+        238.625
+      ],
+      "detector_index": 10
+    },
+    {
+      "id": "3-360-d7",
+      "segment": 3,
+      "frame_idx": 360,
+      "bbox": [
+        2493.25,
+        181.75,
+        2517.25,
+        224.25
+      ],
+      "detector_index": 7
+    },
+    {
+      "id": "3-440-d9",
+      "segment": 3,
+      "frame_idx": 440,
+      "bbox": [
+        2576.875,
+        189.5,
+        2600.0,
+        230.0
+      ],
+      "detector_index": 9
+    },
+    {
+      "id": "3-460-d10",
+      "segment": 3,
+      "frame_idx": 460,
+      "bbox": [
+        2609.5,
+        207.5,
+        2636.25,
+        244.75
+      ],
+      "detector_index": 10
+    },
+    {
+      "id": "3-460-d9",
+      "segment": 3,
+      "frame_idx": 460,
+      "bbox": [
+        2561.0,
+        187.75,
+        2583.75,
+        228.875
+      ],
+      "detector_index": 9
+    },
+    {
+      "id": "3-400-d6",
+      "segment": 3,
+      "frame_idx": 400,
+      "bbox": [
+        2577.0,
+        189.0,
+        2604.5,
+        236.25
+      ],
+      "detector_index": 6
+    },
+    {
+      "id": "6-0-d22",
+      "segment": 6,
+      "frame_idx": 0,
+      "bbox": [
+        1251.5625,
+        335.125,
+        1279.0625,
+        398.125
+      ],
+      "detector_index": 22
+    },
+    {
+      "id": "6-40-d24",
+      "segment": 6,
+      "frame_idx": 40,
+      "bbox": [
+        1103.0,
+        334.5625,
+        1130.25,
+        390.0
+      ],
+      "detector_index": 24
+    },
+    {
+      "id": "6-80-d24",
+      "segment": 6,
+      "frame_idx": 80,
+      "bbox": [
+        996.75,
+        324.9375,
+        1022.125,
+        377.75
+      ],
+      "detector_index": 24
+    },
+    {
+      "id": "6-280-d13",
+      "segment": 6,
+      "frame_idx": 280,
+      "bbox": [
+        815.0,
+        342.9375,
+        837.5,
+        389.75
+      ],
+      "detector_index": 13
+    },
+    {
+      "id": "6-320-d16",
+      "segment": 6,
+      "frame_idx": 320,
+      "bbox": [
+        811.5,
+        342.125,
+        837.25,
+        389.0
+      ],
+      "detector_index": 16
+    },
+    {
+      "id": "6-440-d16",
+      "segment": 6,
+      "frame_idx": 440,
+      "bbox": [
+        944.125,
+        306.4375,
+        964.75,
+        349.3125
+      ],
+      "detector_index": 16
+    },
+    {
+      "id": "6-460-d14",
+      "segment": 6,
+      "frame_idx": 460,
+      "bbox": [
+        963.375,
+        301.75,
+        985.375,
+        343.625
+      ],
+      "detector_index": 14
+    },
+    {
+      "id": "6-500-d18",
+      "segment": 6,
+      "frame_idx": 500,
+      "bbox": [
+        999.0,
+        289.59375,
+        1020.0,
+        332.3125
+      ],
+      "detector_index": 18
+    },
+    {
+      "id": "6-540-d19",
+      "segment": 6,
+      "frame_idx": 540,
+      "bbox": [
+        1027.5,
+        283.28125,
+        1047.5,
+        322.4375
+      ],
+      "detector_index": 19
+    },
+    {
+      "id": "6-620-d19",
+      "segment": 6,
+      "frame_idx": 620,
+      "bbox": [
+        1036.5,
+        279.3125,
+        1054.5,
+        319.0
+      ],
+      "detector_index": 19
+    },
+    {
+      "id": "6-660-d20",
+      "segment": 6,
+      "frame_idx": 660,
+      "bbox": [
+        1029.5,
+        277.375,
+        1049.0,
+        319.0
+      ],
+      "detector_index": 20
+    },
+    {
+      "id": "6-280-d15",
+      "segment": 6,
+      "frame_idx": 280,
+      "bbox": [
+        1023.25,
+        266.3125,
+        1042.75,
+        304.6875
+      ],
+      "detector_index": 15
+    },
+    {
+      "id": "6-320-d23",
+      "segment": 6,
+      "frame_idx": 320,
+      "bbox": [
+        1015.75,
+        268.8125,
+        1032.25,
+        308.6875
+      ],
+      "detector_index": 23
+    },
+    {
+      "id": "6-300-d20",
+      "segment": 6,
+      "frame_idx": 300,
+      "bbox": [
+        1014.875,
+        266.375,
+        1033.0,
+        307.375
+      ],
+      "detector_index": 20
+    }
+  ],
+  "pairs": [
+    {
+      "left": "0-280-d15",
+      "right": "0-290-d16",
+      "relation": "same",
+      "case": "tackle",
+      "visual_basis": "Blue number 9, uninterrupted visible run."
+    },
+    {
+      "left": "0-280-d19",
+      "right": "0-290-d19",
+      "relation": "same",
+      "case": "tackle",
+      "visual_basis": "White opponent approaches blue 9 without overlap."
+    },
+    {
+      "left": "0-280-d20",
+      "right": "0-310-d18",
+      "relation": "same",
+      "case": "tackle",
+      "visual_basis": "Separate white player runs right throughout the sequence."
+    },
+    {
+      "left": "0-280-d15",
+      "right": "0-310-d19",
+      "relation": "same",
+      "case": "tackle",
+      "visual_basis": "Blue 9 bends/falls during contact; white opponent remains standing separately."
+    },
+    {
+      "left": "0-280-d19",
+      "right": "0-310-d13",
+      "relation": "same",
+      "case": "tackle",
+      "visual_basis": "White opponent stays upright after contact; blue 9 bends separately."
+    },
+    {
+      "left": "0-280-d15",
+      "right": "0-310-d13",
+      "relation": "different",
+      "case": "tackle",
+      "visual_basis": "Blue 9 and upright white opponent are separate people."
+    },
+    {
+      "left": "0-280-d19",
+      "right": "0-310-d19",
+      "relation": "different",
+      "case": "tackle",
+      "visual_basis": "White opponent and falling blue 9 are separate people."
+    },
+    {
+      "left": "0-310-d19",
+      "right": "0-340-d21",
+      "relation": "same",
+      "case": "tackle",
+      "visual_basis": "Falling blue 9 becomes the seated blue player at the same location."
+    },
+    {
+      "left": "0-310-d13",
+      "right": "0-320-d19",
+      "relation": "same",
+      "case": "tackle",
+      "visual_basis": "Upright white opponent moves right while blue 9 lies behind."
+    },
+    {
+      "left": "0-290-d16",
+      "right": "0-300-d13",
+      "relation": "uncertain",
+      "case": "tackle",
+      "visual_basis": "Single merged detection covers two opponents at contact; no unique person box."
+    },
+    {
+      "left": "3-350-d14",
+      "right": "3-360-d14",
+      "relation": "same",
+      "case": "white45",
+      "visual_basis": "Blue runner remains on left of white opponent before crossing."
+    },
+    {
+      "left": "3-350-d15",
+      "right": "3-360-d13",
+      "relation": "same",
+      "case": "white45",
+      "visual_basis": "White opponent remains separately visible before crossing."
+    },
+    {
+      "left": "3-360-d14",
+      "right": "3-380-d16",
+      "relation": "same",
+      "case": "white45",
+      "visual_basis": "Blue runner passes behind white opponent and emerges to the right."
+    },
+    {
+      "left": "3-360-d13",
+      "right": "3-380-d13",
+      "relation": "same",
+      "case": "white45",
+      "visual_basis": "White opponent turns left as blue runner emerges on right."
+    },
+    {
+      "left": "3-360-d14",
+      "right": "3-380-d13",
+      "relation": "different",
+      "case": "white45",
+      "visual_basis": "Blue runner and white opponent are different people."
+    },
+    {
+      "left": "3-360-d13",
+      "right": "3-380-d16",
+      "relation": "different",
+      "case": "white45",
+      "visual_basis": "White opponent and blue runner are different people."
+    },
+    {
+      "left": "3-360-d13",
+      "right": "3-370-d7",
+      "relation": "uncertain",
+      "case": "white45",
+      "visual_basis": "One merged box at crossing covers white and blue; excluded."
+    },
+    {
+      "left": "3-360-d6",
+      "right": "3-440-d10",
+      "relation": "same",
+      "case": "blue34",
+      "visual_basis": "Blue number 8 remains beside referee through crossing, then moves right."
+    },
+    {
+      "left": "3-360-d7",
+      "right": "3-440-d9",
+      "relation": "same",
+      "case": "blue34",
+      "visual_basis": "White runner approaches from left behind blue 8 and emerges separately on left."
+    },
+    {
+      "left": "3-360-d6",
+      "right": "3-440-d9",
+      "relation": "different",
+      "case": "blue34",
+      "visual_basis": "Blue number 8 and white runner are distinct people."
+    },
+    {
+      "left": "3-360-d7",
+      "right": "3-440-d10",
+      "relation": "different",
+      "case": "blue34",
+      "visual_basis": "White runner and blue number 8 are distinct people."
+    },
+    {
+      "left": "3-440-d10",
+      "right": "3-460-d10",
+      "relation": "same",
+      "case": "blue34",
+      "visual_basis": "Blue runner continues right away from white runner and referee."
+    },
+    {
+      "left": "3-440-d9",
+      "right": "3-460-d9",
+      "relation": "same",
+      "case": "blue34",
+      "visual_basis": "White runner remains left of referee and blue runner."
+    },
+    {
+      "left": "3-360-d6",
+      "right": "3-400-d6",
+      "relation": "uncertain",
+      "case": "blue34",
+      "visual_basis": "Middle box covers overlapping white and blue players."
+    },
+    {
+      "left": "6-0-d22",
+      "right": "6-40-d24",
+      "relation": "same",
+      "case": "stable-blue36",
+      "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow."
+    },
+    {
+      "left": "6-40-d24",
+      "right": "6-80-d24",
+      "relation": "same",
+      "case": "stable-blue36",
+      "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow."
+    },
+    {
+      "left": "6-280-d13",
+      "right": "6-320-d16",
+      "relation": "same",
+      "case": "stable-blue36",
+      "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow."
+    },
+    {
+      "left": "6-440-d16",
+      "right": "6-460-d14",
+      "relation": "same",
+      "case": "stable-blue36",
+      "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow."
+    },
+    {
+      "left": "6-460-d14",
+      "right": "6-500-d18",
+      "relation": "same",
+      "case": "stable-blue36",
+      "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow."
+    },
+    {
+      "left": "6-500-d18",
+      "right": "6-540-d19",
+      "relation": "same",
+      "case": "stable-blue36",
+      "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow."
+    },
+    {
+      "left": "6-620-d19",
+      "right": "6-660-d20",
+      "relation": "same",
+      "case": "stable-blue36",
+      "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow."
+    },
+    {
+      "left": "6-280-d15",
+      "right": "6-320-d23",
+      "relation": "different",
+      "case": "white75",
+      "visual_basis": "White number 40 before crowd overlap and fully blue foreground player afterward; same-person relation rejected."
+    },
+    {
+      "left": "6-280-d15",
+      "right": "6-300-d20",
+      "relation": "uncertain",
+      "case": "white75",
+      "visual_basis": "White player is occluded by blue foreground players; unique continuation box unclear."
+    }
+  ],
+  "source_cache_sha256": {
+    "data\\tracking\\bench\\identity_day_detections\\seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0006.json": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9"
+  },
+  "review_sha256": {
+    ".cache\\identity_eval_agent\\close-blue34.jpg": "a2250ecf7f1af6ab2867a7b97764f8f7fe2e415d121661812a0a1b10baf076e5",
+    ".cache\\identity_eval_agent\\close-tackle.jpg": "ce357000d51bebb6788418ba95accaa29e66c5da223c70cda78c4f972c1d5ad6",
+    ".cache\\identity_eval_agent\\close-white45.jpg": "4e82aea2fc0a7bfefe8027da0d07dfc4026afbdfc5a6239d07212192ce35a7b2",
+    ".cache\\identity_eval_agent\\close-white75.jpg": "6ee7e076fc524d5e4542b201bb725cf714bc1dc23b80f358c9537577ef9ca255"
+  },
+  "stable_review_sha256": "54a7789c300642b7d7d19c868007cccb20923cb1fc33349e2f7cc2a30d17d785"
+}

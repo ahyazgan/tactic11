@@ -110,8 +110,22 @@ def _match_or_404(session: Session, match_id: int) -> models.Match:
     return match
 
 
+def _track_display_label(player_id: int) -> str:
+    """Stable, lossless base36 label; this is a track token, not a jersey."""
+    digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    value = abs(player_id)
+    encoded = ""
+    while value:
+        value, remainder = divmod(value, 36)
+        encoded = digits[remainder] + encoded
+    return "T" + ("-" if player_id < 0 else "") + (encoded or "0")
+
+
 def _row_to_frame(row: models.TrackingFrameRow, ids: dict[int, models.TrackingIdentity] | None = None) -> dict[str, Any]:
     players = _apply_identities(json.loads(row.players_json), ids or {})
+    players = [{**p, "display_label": _track_display_label(
+        int(p.get("track_player_external_id", p["player_external_id"])))
+    } for p in players]
     meta = json.loads(row.meta_json) if row.meta_json else {}
     return {
         "minute": row.minute,
@@ -344,7 +358,16 @@ def tracking_tracks(
     match = _match_or_404(session, match_id)
     rows = session.execute(_base_query(match_id).order_by(models.TrackingFrameRow.timestamp)).scalars().all()
     agg: dict[int, dict[str, Any]] = {}
+    scope_frames: dict[tuple[str, int, int], int] = {}
+    scope_ordinals: dict[tuple[str, int, int], int] = {}
     for r in rows:
+        meta = json.loads(r.meta_json) if r.meta_json else {}
+        continuity = meta.get("continuity_id")
+        scope = None
+        if isinstance(continuity, int) and not isinstance(continuity, bool) and continuity >= 0:
+            scope = (str(meta.get("source") or ""), r.period, continuity)
+            scope_frames[scope] = scope_frames.get(scope, 0) + 1
+            scope_ordinals.setdefault(scope, len(scope_ordinals) + 1)
         for p in json.loads(r.players_json):
             pid = int(p["player_external_id"])
             a = agg.setdefault(pid, {
@@ -352,7 +375,9 @@ def tracking_tracks(
                 "frames": 0, "first_minute": r.minute, "last_minute": r.minute,
                 "actor_frames": 0, "speed_sum": 0.0, "speed_n": 0, "x_sum": 0.0, "y_sum": 0.0,
                 "identity_estimated": bool(p.get("identity_estimated", False)),
+                "scopes": set(),
             })
+            a["scopes"].add(scope)
             a["frames"] += 1
             a["last_minute"] = r.minute
             a["actor_frames"] += 1 if p.get("is_actor") else 0
@@ -366,10 +391,17 @@ def tracking_tracks(
     tracks = []
     for pid, a in sorted(agg.items(), key=lambda kv: -kv[1]["frames"]):
         ident = ids.get(pid)
+        # Explicit frame provenance supplies the denominator, including empty
+        # frames in the same camera epoch. Never decode a synthetic player ID.
+        scoped = None not in a["scopes"]
+        ordinals = sorted(scope_ordinals[s] for s in a["scopes"]) if scoped else []
         tracks.append({
             "player_external_id": pid,
             "team_external_id": a["team_external_id"],
             "frames": a["frames"],
+            "scope_frame_count": sum(scope_frames[s] for s in a["scopes"]) if scoped else len(rows),
+            "scope_ordinals": ordinals,
+            "display_label": _track_display_label(pid),
             "first_minute": round(a["first_minute"], 2),
             "last_minute": round(a["last_minute"], 2),
             "actor_frames": a["actor_frames"],

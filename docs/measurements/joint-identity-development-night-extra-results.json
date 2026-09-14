@@ -1,0 +1,125 @@
+{
+  "scores": {
+    "before": {
+      "kit_labels": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "development_anchor_report",
+        "source_matched_labels": 78,
+        "source_total_labels": 78,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 50,
+          "wrong": 12,
+          "unassigned": 5,
+          "kit_boxes_missing": 0,
+          "other_assigned": 3,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "unique_person_score": {
+          "correct": 50,
+          "wrong": 12,
+          "unassigned": 5,
+          "kit_boxes_missing": 0,
+          "other_assigned": 3,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "annotated_duplicate_labels_excluded": 0
+      },
+      "pair_labels": [],
+      "duplicate_parts": {
+        "annotated_parts": 0,
+        "source_matched_parts": 0,
+        "removed_with_support_preserved": 0
+      }
+    },
+    "after": {
+      "kit_labels": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "development_anchor_report",
+        "source_matched_labels": 78,
+        "source_total_labels": 78,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 52,
+          "wrong": 10,
+          "unassigned": 5,
+          "kit_boxes_missing": 0,
+          "other_assigned": 5,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "unique_person_score": {
+          "correct": 52,
+          "wrong": 10,
+          "unassigned": 5,
+          "kit_boxes_missing": 0,
+          "other_assigned": 5,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "annotated_duplicate_labels_excluded": 0
+      },
+      "pair_labels": [],
+      "duplicate_parts": {
+        "annotated_parts": 0,
+        "source_matched_parts": 0,
+        "removed_with_support_preserved": 0
+      }
+    }
+  },
+  "source_sha256": {
+    ".cache/kit_joint_agent/production_joint_night_v1/report.json": "c18412dd8667bff0603da4ce568311e80011fba31d8ed0f43fb5b5b53cbe7b85",
+    ".cache/kit_joint_agent/night_new_raw_v1/seg_0020.json": "3b0b35d5888ff2722f2ca1e0b6691324202e198225a3acb89742b0cd3dd30795",
+    ".cache/kit_joint_agent/full_features_night_new_0020.json": "bb451d55bb69a3e2505e3889b71dff680ef4104a1c1bdb22c6aed028f28119bd",
+    "data/tracking/bench/perimeter_control_night/source/seg_0020.mp4": "fece86e7a119a50640eaed7ce485e833733446377f12c7f61af18e56b4905368",
+    ".cache/kit_joint_agent/night_new_raw_v1/seg_0030.json": "ecf11ca0769441ec7afcd1048523def07bd9b6590f9ec5778b24fdfc9360270d",
+    ".cache/kit_joint_agent/full_features_night_new_0030.json": "0357f1c708cc9a0d64304bebfc300a0534723ac533d41083393d79fb65db7f09",
+    "data/tracking/bench/perimeter_control_night/source/seg_0030.mp4": "c23aa824839bd371b5aecbda10159662e62129c094ef0834380c9ca9a6493499",
+    "docs/measurements/perimeter-control-night-labels.json": "8b2d85f9718f2a4c0035f96340a349ee66a9eb379e4dc4f2cba95716e355bb0d"
+  },
+  "production_sha256": {
+    "C:/Users/Yazgan/Desktop/manager 2/football-intelligence/scripts/soccertrack_v2/benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+    "C:/Users/Yazgan/Desktop/manager 2/football-intelligence/app/tracking/pipeline.py": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+    "app/tracking/kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app/tracking/person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app/tracking/identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app/tracking/identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app/tracking/player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app/tracking/teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app/tracking/person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app/tracking/identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app/tracking/frames.py": "c619ce2aec58df9bb08c056046f80c54be4007854e5cca562533b3cfab6a7713"
+  },
+  "anchors": {
+    "before": [
+      [
+        94.3,
+        101.0,
+        91.6
+      ],
+      [
+        176.1,
+        180.4,
+        174.0
+      ]
+    ],
+    "after": [
+      [
+        112.1,
+        119.9,
+        105.8
+      ],
+      [
+        211.6,
+        216.2,
+        207.4
+      ]
+    ]
+  },
+  "anchor_report": ".cache/kit_joint_agent/production_joint_night_v1/report.json",
+  "scope": "Production replay of fixed detections and pixels. No label-driven fitting. Ball fields restored."
+}

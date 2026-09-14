@@ -20,10 +20,12 @@ import {
   possessionShare,
   screenedLaneCount,
   sourceTR,
+  trackingDisplayLabel,
   spaceControl,
   visibleTracks,
   type PassOption,
   type TrackingFrame,
+  type TrackingPlayer,
 } from "@/lib/tracking-geometry";
 import { PH, PW, PitchLines, ppx, ppy } from "./pitch-analysis";
 
@@ -32,9 +34,9 @@ const THEM = "var(--high)";
 const OPEN = "#d9b44a";
 const SCREENED = "#d45f5f";
 
-function shortId(p: { player_external_id: number; identity_estimated: boolean; name?: string | null; jersey_number?: number | null }): string {
+function shortId(p: TrackingPlayer): string {
   if (p.name) return p.jersey_number != null ? `${p.jersey_number} ${p.name}` : p.name;
-  return (p.identity_estimated ? "~" : "#") + String(p.player_external_id).slice(-3);
+  return trackingDisplayLabel(p);
 }
 
 function fmtM(v: number | null | undefined): string {
@@ -155,6 +157,7 @@ export function TrackingOverlayCard({ frame, recent = [], ourTeamId, minute }: T
             const r = p.is_actor ? 7 : 5.5;
             return (
               <g key={`${p.player_external_id}-${p.x}-${p.y}`}>
+                <title>{`${trackingDisplayLabel(p)} · Kimlik ${p.track_player_external_id ?? p.player_external_id}`}</title>
                 {p.is_actor && <circle cx={ppx(p.x)} cy={ppy(p.y)} r={r + 4} fill="none" stroke={color} strokeWidth={1.2} opacity={0.6} />}
                 {p.is_keeper
                   ? <rect x={ppx(p.x) - r} y={ppy(p.y) - r} width={2 * r} height={2 * r} rx={2} fill="var(--panel)" stroke={color} strokeWidth={2} />

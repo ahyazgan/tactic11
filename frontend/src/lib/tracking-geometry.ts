@@ -22,6 +22,12 @@ export interface TrackingPlayer {
   name?: string | null;
   jersey_number?: number | null;
   track_player_external_id?: number | null;
+  display_label?: string;
+}
+
+/** Opaque track token shared by the pitch and identity mapping table. */
+export function trackingDisplayLabel(p: Pick<TrackingPlayer, "player_external_id" | "track_player_external_id" | "display_label">): string {
+  return p.display_label ?? `T${(p.track_player_external_id ?? p.player_external_id).toString(36).toUpperCase()}`;
 }
 
 export interface TrackingFrame {

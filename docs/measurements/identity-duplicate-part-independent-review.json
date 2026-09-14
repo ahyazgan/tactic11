@@ -1,0 +1,65 @@
+{
+  "reviewer": "identity_validation agent, independent visual inspection",
+  "label_sha256": "acfc77f17e10f927b8cc96b9199e5762de6b4df457cbad05caa4536f9dc33467",
+  "review_image": "docs/measurements/duplicate-part-development-review.jpg",
+  "agreement": 11,
+  "disagreements": [],
+  "records": [
+    {
+      "id": "0-500-148",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "0-250-113",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "0-624-173",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "3-124-50",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "3-500-107",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "3-624-132",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "6-124-60",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "6-500-72",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "6-250-84",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "6-250-72",
+      "review": "same_person_body_part",
+      "supported": true
+    },
+    {
+      "id": "6-624-72",
+      "review": "same_person_body_part",
+      "supported": true
+    }
+  ],
+  "scope": "11 selected development crops only; not exhaustive person recall or independent-match validation."
+}

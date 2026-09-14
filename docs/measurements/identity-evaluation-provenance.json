@@ -1,0 +1,189 @@
+{
+  "protocol": "Frozen development labels copied byte-for-byte; their original source references and source hashes remain unchanged. This index resolves ignored cache evidence references to compact versioned review copies. Published JPEG files are review derivatives; original image hashes embedded in frozen labels refer to their untouched cache originals.",
+  "entries": [
+    {
+      "source": ".cache\\identity_eval_agent\\manual-identity-development-labels.json",
+      "published": "docs\\measurements\\identity-person-development-labels.json",
+      "source_sha256": "877b0f723cf94fa169759b39950bce374a1e8f5a5e90016e5db36ebb3ea0414e",
+      "published_sha256": "877b0f723cf94fa169759b39950bce374a1e8f5a5e90016e5db36ebb3ea0414e",
+      "transform": "none; byte-for-byte copy"
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\labels.json",
+      "published": "docs\\measurements\\identity-link-audit-development-labels.json",
+      "source_sha256": "d4134cac9d33c7d2d75e7eda65d8423627a462d9701b7dfaa5a17fadc104b7e0",
+      "published_sha256": "d4134cac9d33c7d2d75e7eda65d8423627a462d9701b7dfaa5a17fadc104b7e0",
+      "transform": "none; byte-for-byte copy"
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\review.json",
+      "published": "docs\\measurements\\identity-link-audit-development-review.json",
+      "source_sha256": "45f98dfb7fec0eef4392a6826865ca468c9a9c81b799fed66be5fb8b9c7793f1",
+      "published_sha256": "45f98dfb7fec0eef4392a6826865ca468c9a9c81b799fed66be5fb8b9c7793f1",
+      "transform": "none; byte-for-byte copy"
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\official-gt-audit.json",
+      "published": "docs\\measurements\\identity-official-gt-audit.json",
+      "source_sha256": "b5640bfc38bbe3c4d330f634ea3932a646cc15e0961f2ed8f7790e7c0323c898",
+      "published_sha256": "b5640bfc38bbe3c4d330f634ea3932a646cc15e0961f2ed8f7790e7c0323c898",
+      "transform": "none; byte-for-byte copy"
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\duplicate-part-independent-review.json",
+      "published": "docs\\measurements\\identity-duplicate-part-independent-review.json",
+      "source_sha256": "e150522ccea555414c21903d6af9c41a079602b03181e16c1a15fe4a53268239",
+      "published_sha256": "e150522ccea555414c21903d6af9c41a079602b03181e16c1a15fe4a53268239",
+      "transform": "none; byte-for-byte copy"
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\close-tackle.jpg",
+      "published": "docs\\measurements\\identity-person-tackle.jpg",
+      "source_sha256": "ce357000d51bebb6788418ba95accaa29e66c5da223c70cda78c4f972c1d5ad6",
+      "published_sha256": "004ddc3ef197fd2cfe51cf65c220d22bcd1a1ca61e6b9ac4f64bf4171def10f9",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1920,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\close-white45.jpg",
+      "published": "docs\\measurements\\identity-person-white45.jpg",
+      "source_sha256": "4e82aea2fc0a7bfefe8027da0d07dfc4026afbdfc5a6239d07212192ce35a7b2",
+      "published_sha256": "06ff47f808b4946d55eff166ffe2cc40504689612e22abbe7d74b20f09fa9bac",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1680,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\close-blue34.jpg",
+      "published": "docs\\measurements\\identity-person-blue34.jpg",
+      "source_sha256": "a2250ecf7f1af6ab2867a7b97764f8f7fe2e415d121661812a0a1b10baf076e5",
+      "published_sha256": "0bb3c3737ff273719a9afbeae51f5018adfe61838078700058bb6d390b58e75a",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1680,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\close-white75.jpg",
+      "published": "docs\\measurements\\identity-person-white75.jpg",
+      "source_sha256": "6ee7e076fc524d5e4542b201bb725cf714bc1dc23b80f358c9537577ef9ca255",
+      "published_sha256": "83627c433d6bf2a96ed1b03463fe014876fb90b61daed152360241056947d46c",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1680,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\target-6-21.jpg",
+      "published": "docs\\measurements\\identity-person-stable-blue36.jpg",
+      "source_sha256": "54a7789c300642b7d7d19c868007cccb20923cb1fc33349e2f7cc2a30d17d785",
+      "published_sha256": "b20271f734530f24bedebc906990ca9d4ed6a88b94e3876e2ff1f0eac56c8c14",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1800,
+      "height": 1470
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-01-s0-181-185.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-01-s0-181-185.jpg",
+      "source_sha256": "25e4efa367c35a34df44c1f2c28c7c96e4cdc4a661f8602cb22e058735cd4a7c",
+      "published_sha256": "54195b742145b2c4eaa8d410c536fc2ba720734938fd5eb1fbc4ea5f2db5c409",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-02-s0-154-174.jpg",
+      "source_sha256": "53797e7695884d3b5ae806f26425edac5a26044854b9723f6da7b6b42f713a72",
+      "published_sha256": "69762e88a7dd88867f05a5b8da9e1319494a98ba2823df95d4b29934c36981c7",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-03-s0-30-60.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-03-s0-30-60.jpg",
+      "source_sha256": "2d54a8f30afdb14757c16408a7e09a7654adfb18365551d614b090194982ba9b",
+      "published_sha256": "031bc9ee4f1a2892549ae3497dcb8a1dd1d5fd4585fe7850f544159b0a4be0c3",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-04-s0-93-223.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-04-s0-93-223.jpg",
+      "source_sha256": "c506a29cbf328734db7730dcaff5af9b1396c44047f49b937b28291b18398271",
+      "published_sha256": "f497c7b5cbded45529827a37cd14737f404f147480f5c3b10c5e7974fff4470b",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-05-s3-158-154.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-05-s3-158-154.jpg",
+      "source_sha256": "69589f909004d9861571f417efffdc44bbb5c0553a34878b26a8fc6cee89298d",
+      "published_sha256": "574c470cfc54b54d81ede073da14b3c92b6288b8cc4be60d1a8cc8d6652b3d95",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-06-s3-166-115.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-06-s3-166-115.jpg",
+      "source_sha256": "9f5f3e017b368ada9fa21ff7906f405880e874adb17d82a57038061f1dedae85",
+      "published_sha256": "f1d4279a287a0a5a14402fbc6ae411142c14571fe4c023a945a2c59d2814983b",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-07-s6-123-140.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-07-s6-123-140.jpg",
+      "source_sha256": "a9875aae77bd38b9990ef367058bfab0ac8c0b509fb23448e2a512cb6d375806",
+      "published_sha256": "a6a99730da2c6bd91a01673707fb2b49b1c1c51228d692a88cb6aed4f11b6fac",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-08-s6-192-178.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-08-s6-192-178.jpg",
+      "source_sha256": "01a6decd37b0c33bc1fda2f55224803aa44837978d30ece3a8589cbc1b7b0653",
+      "published_sha256": "26022c0ac03bd8a07e6cc522176d1de4bb63281606bba6769b2abdc1209bdb0d",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-09-s0-96-227.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-09-s0-96-227.jpg",
+      "source_sha256": "440075568035c52b6f7968806bfaa1fc41163180629d79ae9c79497685285f54",
+      "published_sha256": "8438ceea9466c5eb58f7175d4cf7ca3c26ecf1f473bb695be2a592ec59d467d9",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\link-audit-v1\\edge-10-s3-27-164.jpg",
+      "published": "docs\\measurements\\identity-link-audit-edge-10-s3-27-164.jpg",
+      "source_sha256": "96908ad1d0a91a631e375781ba253c840a4efce261b1e360ac4095ca16c6597f",
+      "published_sha256": "3aaf0ff83ae92509a25806ef012c3b3d3acf3e92108f6889feed096b0cda7085",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1536,
+      "height": 700
+    },
+    {
+      "source": ".cache\\identity_eval_agent\\kit-adjudication-exact-context.jpg",
+      "published": "docs\\measurements\\identity-kit-adjudication-review.jpg",
+      "source_sha256": "c4a972d7ff14276173af56723ef768e85438a0fa11f32a55bf9ddc53d46ad194",
+      "published_sha256": "f51e6b196746b5096960a90c3f18ef64fa07d8717b0529dfe65f2c6b9ea020cc",
+      "transform": "JPEG quality76 recompression; dimensions and pixels positions retained; no crop/color/brightness edits",
+      "width": 1350,
+      "height": 600
+    }
+  ],
+  "scope": "All labels here are development diagnostics. Known-error pair selection and highest-cost link selection are not independent-match or full-video identity accuracy. Official GT pixel/time alignment remains unverified.",
+  "test_file": "tests/test_identity_eval_pairs.py",
+  "evaluator": "scripts/soccertrack_v2/identity_eval_pairs.py",
+  "adjudication": "docs/measurements/identity-kit-label-adjudication.json",
+  "published_image_bytes": 3096985
+}

@@ -1,0 +1,131 @@
+{
+  "scores": {
+    "before": {
+      "kit_labels": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "mapping_segment_labels",
+        "source_matched_labels": 142,
+        "source_total_labels": 142,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 95,
+          "wrong": 13,
+          "unassigned": 15,
+          "kit_boxes_missing": 0,
+          "other_assigned": 4,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 3
+        },
+        "unique_person_score": {
+          "correct": 95,
+          "wrong": 13,
+          "unassigned": 15,
+          "kit_boxes_missing": 0,
+          "other_assigned": 4,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 3
+        },
+        "annotated_duplicate_labels_excluded": 0
+      },
+      "pair_labels": [],
+      "duplicate_parts": {
+        "annotated_parts": 0,
+        "source_matched_parts": 0,
+        "removed_with_support_preserved": 0
+      }
+    },
+    "after": {
+      "kit_labels": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "mapping_segment_labels",
+        "source_matched_labels": 142,
+        "source_total_labels": 142,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 96,
+          "wrong": 12,
+          "unassigned": 15,
+          "kit_boxes_missing": 0,
+          "other_assigned": 4,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 3
+        },
+        "unique_person_score": {
+          "correct": 96,
+          "wrong": 12,
+          "unassigned": 15,
+          "kit_boxes_missing": 0,
+          "other_assigned": 4,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 3
+        },
+        "annotated_duplicate_labels_excluded": 0
+      },
+      "pair_labels": [],
+      "duplicate_parts": {
+        "annotated_parts": 0,
+        "source_matched_parts": 0,
+        "removed_with_support_preserved": 0
+      }
+    }
+  },
+  "source_sha256": {
+    "data/tracking/bench/landmark_candidates_v1/seg_0000.json": "d96e0195e861b6bb837dcedc11d839633b5e96e3ad568b24b75f768978f074e8",
+    ".cache/kit_joint_agent/raw_features_night_0000.json": "e37eb095ea4183c04c12b948359a723e3014994dd046c4e8d1c83d730b726b47",
+    "data/tracking/live/990401/seg_0000.mp4": "4e8321ea9da98664437a9700cb5a5318fb9641b8957a3ebfab54485a74ade2e1",
+    "data/tracking/bench/landmark_candidates_v1/seg_0003.json": "fd180b240df279d1a04b5721315e94d8796fa0d22101a3c75fa2f976f781a86e",
+    ".cache/kit_joint_agent/raw_features_night_0003.json": "97e65e8c740a8c078d730b9fc8d2a4f8f1d70c98e48757a9bd4b10bbc2c90c99",
+    "data/tracking/live/990401/seg_0003.mp4": "3e3bd50e00e8ca797fc53cce807eef60a92cb0aaf37f069553d567971243c066",
+    "data/tracking/bench/landmark_candidates_v1/seg_0006.json": "3d7b85eb129dfbfb29e65143082f7a1851defcc775904727e5e369e6a17fc882",
+    ".cache/kit_joint_agent/raw_features_night_0006.json": "50391e493fe96822ca8c9fa7abdef05020aeb8ff15e4ce2a81a3a346d3d059c1",
+    "data/tracking/live/990401/seg_0006.mp4": "8dc05ebcd6bb42fade86c402eae24b394c7ff47251d60d9adc35efe5d2cbec9f",
+    "data/tracking/bench/landmark_candidates_v1/seg_0009.json": "518ca89f534436ff5f2a0d14aae56ea49adf7dba0448261de004b935d37b3a95",
+    ".cache/kit_joint_agent/raw_features_night_0009.json": "44ccbe4240eebd79f96ef40a43acf623cede626fa7010ebc1b3c5487a623bcb9",
+    "data/tracking/live/990401/seg_0009.mp4": "5e0498e0cdc1b4cc113a3a7127916ba3d11d4bbab042f5f8515294c4c5950bc7",
+    "docs/measurements/kit-fixed-development-labels.json": "16f56ff5134169ff033c207eca89723856d5b57759c5e20a15c015ab3fd469a3",
+    "docs/measurements/kit-fixed-control-labels.json": "96802fbde9e75e063172dccfdbde37594566f5677d2282e6b1253fcc08091d5f"
+  },
+  "production_sha256": {
+    "C:/Users/Yazgan/Desktop/manager 2/football-intelligence/scripts/soccertrack_v2/benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+    "C:/Users/Yazgan/Desktop/manager 2/football-intelligence/app/tracking/pipeline.py": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+    "app/tracking/kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app/tracking/person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app/tracking/identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app/tracking/identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app/tracking/player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app/tracking/teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app/tracking/person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app/tracking/identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app/tracking/frames.py": "c619ce2aec58df9bb08c056046f80c54be4007854e5cca562533b3cfab6a7713"
+  },
+  "anchors": {
+    "before": [
+      [
+        94.3,
+        101.0,
+        91.6
+      ],
+      [
+        176.1,
+        180.4,
+        174.0
+      ]
+    ],
+    "after": [
+      [
+        112.1,
+        119.9,
+        105.8
+      ],
+      [
+        211.6,
+        216.2,
+        207.4
+      ]
+    ]
+  },
+  "anchor_report": null,
+  "scope": "Production replay of fixed detections and pixels. No label-driven fitting. Ball fields restored."
+}

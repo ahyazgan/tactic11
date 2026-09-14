@@ -9,10 +9,12 @@
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { apiFetch } from "@/lib/api";
+import { trackingDisplayLabel } from "@/lib/tracking-geometry";
 
 interface Identity { track_player_external_id: number; player_name: string; player_external_id: number | null; jersey_number: number | null; team_external_id: number | null; is_keeper: boolean }
 interface Track {
   player_external_id: number; team_external_id: number | null; frames: number; first_minute: number; last_minute: number;
+  scope_frame_count: number; scope_ordinals: number[]; display_label: string;
   actor_frames: number; mean_speed_mps: number | null; mean_x: number; mean_y: number; identity: Identity | null;
 }
 interface TracksResponse { home_team_external_id: number | null; away_team_external_id: number | null; frames: number; tracks: Track[]; total: number }
@@ -46,8 +48,7 @@ export function TrackIdentityPanel({ matchId, ourTeamId, onSaved }: { matchId: n
 
   const tracks = useMemo(() => {
     const all = data?.tracks ?? [];
-    const minFrames = Math.max(3, Math.round((data?.frames ?? 0) * 0.2));
-    return showAll ? all : all.filter((t) => t.frames >= minFrames || t.identity);
+    return showAll ? all : all.filter((t) => t.frames >= Math.max(3, Math.round(t.scope_frame_count * 0.2)) || t.identity);
   }, [data, showAll]);
 
   const dirty = useMemo(() => tracks.filter((t) => {
@@ -110,7 +111,7 @@ export function TrackIdentityPanel({ matchId, ourTeamId, onSaved }: { matchId: n
               const isDirty = dirty.includes(t);
               return (
                 <tr key={t.player_external_id} style={{ borderTop: "1px solid var(--line)", background: isDirty ? "color-mix(in srgb, var(--accent) 6%, transparent)" : undefined }}>
-                  <td style={{ padding: "4px 6px", fontFamily: "JetBrains Mono, monospace" }}>~{String(t.player_external_id).slice(-3)}</td>
+                  <td title={`Kimlik ${t.player_external_id}${t.scope_ordinals.length ? ` · Kesit ${t.scope_ordinals.join(", ")}` : ""}`} style={{ padding: "4px 6px", fontFamily: "JetBrains Mono, monospace" }}>{trackingDisplayLabel(t)}</td>
                   <td style={{ color: t.team_external_id === ourTeamId ? "var(--accent)" : "var(--high)", fontWeight: 700 }}>{sideOf(t.team_external_id)}</td>
                   <td>{t.frames}</td>
                   <td style={{ color: "var(--muted)" }}>{t.first_minute.toFixed(1)}–{t.last_minute.toFixed(1)}&apos;</td>
