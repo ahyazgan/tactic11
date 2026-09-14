@@ -70,3 +70,5 @@ $env:DATABASE_URL = 'sqlite:///./data/tracking/bench/karne-review-20260914/snaps
 - Yeni regresyonlarla hedefli testler: 43 geçti.
 - Birleşik tam pytest: 2519 geçti, 1 atlandı; 15 uyarı.
 - Ruff temiz; mypy 489 kaynak dosyasında temiz.
+- `coach_iq` komutu aynı veride tamamlandı: bayrak 51/52, kaldırma 1,43/1,60,
+  destek eşiği 2/1; bağımsız ölçüm komutunun çıktısıyla eşleşiyor.
