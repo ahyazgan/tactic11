@@ -318,6 +318,8 @@ def main() -> int:
     p.add_argument("--fps", type=float, default=5.0)
     p.add_argument("--track-fps", type=float, default=15.0)
     p.add_argument("--dense-events", action="store_true", help="Deneysel: olay çıkarımında tüm takip karelerini kullan")
+    p.add_argument("--refine-identities", choices=["auto", "on", "off"], default="auto",
+                   help="Sabit kamera kimlik/forma iyileştirme; auto=doğrulanmış kamera profili")
     p.add_argument("--tiles", type=int, default=6)
     p.add_argument("--threshold", type=float, default=0.3)
     p.add_argument("--weights", default=None)
@@ -375,6 +377,7 @@ def main() -> int:
                 backend=args.backend, onnx_model=args.onnx_model,
             ),
             pipeline_kwargs={
+                "refine_player_identities": {"auto": None, "on": True, "off": False}[args.refine_identities],
                 "dense_events": args.dense_events,
                 "fps_out": args.fps, "track_fps": args.track_fps,
                 "ball_threshold": args.threshold,
@@ -399,9 +402,10 @@ def main() -> int:
             "--out", str(frames_json), "--match-id", str(args.match_id),
             "--home-team", str(args.home_team), "--away-team", str(args.away_team),
             "--fps", str(args.fps), "--track-fps", str(args.track_fps),
+            "--refine-identities", args.refine_identities,
             "--tiles", str(args.tiles), "--threshold", str(args.threshold),
             "--ball-threshold", str(args.threshold),
-            "--clip-offset-minutes", f"{offset:.4f}", "--period", str(args.period),
+            "--clip-offset-minutes", repr(offset), "--period", str(args.period),
             # Yayın ayarları alt sürece de geçmeli; yoksa --isolate sessizce
             # farklı (sabit kamera) davranır ve iki mod aynı maçta karışır.
             "--camera", args.camera,

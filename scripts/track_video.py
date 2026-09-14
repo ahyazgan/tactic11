@@ -45,6 +45,8 @@ def main() -> int:
     p.add_argument("--fps", type=float, default=5.0, help="Çıktı kare hızı (TrackingFrame/sn)")
     p.add_argument("--track-fps", type=float, default=15.0, help="Tespit+takip kare hızı (küçük/hızlı oyuncular için yüksek)")
     p.add_argument("--dense-events", action="store_true", help="Deneysel: olay çıkarımında tüm takip karelerini kullan")
+    p.add_argument("--refine-identities", choices=["auto", "on", "off"], default="auto",
+                   help="Sabit kamera kimlik/forma iyileştirme; auto=doğrulanmış kamera profili")
     p.add_argument("--max-seconds", type=float, default=None)
     p.add_argument("--model", default="medium", choices=["nano", "small", "medium", "base", "large"])
     p.add_argument("--threshold", type=float, default=0.35)
@@ -138,6 +140,7 @@ def main() -> int:
         print("kesmeden sonra yeniden yakalama: AÇIK (çapadan, %85 inlier şartı)")
 
     cfg = PipelineConfig(
+        refine_player_identities={"auto": None, "on": True, "off": False}[args.refine_identities],
         dense_events=args.dense_events,
         per_frame_calibration=per_frame,
         allow_reacquire=per_frame and reacquire,
