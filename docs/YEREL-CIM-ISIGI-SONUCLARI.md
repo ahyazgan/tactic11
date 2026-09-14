@@ -1,5 +1,10 @@
 # Çevredeki çim ışığıyla forma rengi düzeltmesi
 
+**Sonraki dış doğrulama:** [117093 gündüz maçı](GUNDUZ-MACI-SONUCLARI.md)
+regresyon gösterdi; normalizasyonun genel varsayılanı kapatıldı. Aşağıdaki
+gece ölçümleri ve ilk uygulama kararı tarihsel olarak korunur. Güncel kullanım
+açık seçimle `normalize_kit_light=True` / `--normalize-kit-light` gerektirir.
+
 14 Eylül 2026; başlangıç `1e8e9f2`. **Yerel çim normalizasyonu yeni kontrol
 kliplerinde kabul koşullarını geçti ve ortak video/canlı takip hattına bağlandı.**
 Doğru atamalar artarken yanlışlar azaldı; atama yapılamayan gözlemler de arttı.

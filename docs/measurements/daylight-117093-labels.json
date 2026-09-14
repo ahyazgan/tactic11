@@ -1,0 +1,2773 @@
+{
+  "selection": "all cached person boxes nearest 5 and 20 seconds; earlier frame breaks ties",
+  "predictions_visible_during_labeling": false,
+  "independently_adjudicated": false,
+  "reviewer": "Codex image inspection, predictions hidden",
+  "input_sha256": {
+    "data/tracking/bench/daylight_117093/raw/seg_0000.json": "540bc305832113681cfe6680960225b0645f47e86ed503255eaf11a1f4a94663",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2",
+    "data/tracking/bench/daylight_117093/raw/seg_0003.json": "fe9f645d014df2bcf3a135d19bf651d0705f638b5d01f113e54035b1fbc240e0",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+    "data/tracking/bench/daylight_117093/raw/seg_0006.json": "8781aefa398bbc2f03335598c5cba31e13290793d159c4f4e34677cd967d535c",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4": "d3810e6d7d940bcd854d594a6c4a76998db9200874bf19e2b1b828611a6b6372"
+  },
+  "records": [
+    {
+      "id": "0-124-5",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 5,
+      "bbox": [
+        1176.0,
+        237.625,
+        1195.25,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-72",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 72,
+      "bbox": [
+        1119.75,
+        242.125,
+        1137.0,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-34",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 34,
+      "bbox": [
+        1058.5,
+        242.0,
+        1076.75,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-7",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 7,
+      "bbox": [
+        1392.75,
+        193.625,
+        1411.375,
+        233.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-56",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 56,
+      "bbox": [
+        1305.25,
+        189.75,
+        1324.125,
+        226.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-67",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 67,
+      "bbox": [
+        1197.125,
+        234.125,
+        1215.5,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-80",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 80,
+      "bbox": [
+        1420.25,
+        236.625,
+        1440.25,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-3",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 3,
+      "bbox": [
+        1219.4375,
+        211.875,
+        1239.1875,
+        249.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-58",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 58,
+      "bbox": [
+        1289.25,
+        169.625,
+        1304.875,
+        200.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "0-124-9",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 9,
+      "bbox": [
+        1922.5,
+        170.5,
+        1943.0,
+        217.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-68",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 68,
+      "bbox": [
+        1765.75,
+        197.0,
+        1792.0,
+        252.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-81",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 81,
+      "bbox": [
+        1569.765625,
+        200.125,
+        1594.59375,
+        248.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-75",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 75,
+      "bbox": [
+        2746.0,
+        209.25,
+        2766.25,
+        255.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "0-124-23",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 23,
+      "bbox": [
+        2778.25,
+        217.25,
+        2800.125,
+        261.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-14",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 14,
+      "bbox": [
+        895.1875,
+        312.5,
+        919.0,
+        357.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-15",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 15,
+      "bbox": [
+        867.3125,
+        282.40625,
+        889.875,
+        318.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "0-124-16",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 16,
+      "bbox": [
+        1009.75,
+        290.40625,
+        1030.25,
+        321.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-13",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 13,
+      "bbox": [
+        832.71875,
+        347.125,
+        852.25,
+        398.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-59",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 59,
+      "bbox": [
+        1103.75,
+        295.1875,
+        1123.25,
+        345.9375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-64",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 64,
+      "bbox": [
+        1020.625,
+        266.28125,
+        1041.5,
+        309.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-4",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 4,
+      "bbox": [
+        1240.875,
+        241.5,
+        1261.3125,
+        285.40625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-83",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 83,
+      "bbox": [
+        1177.078125,
+        293.75,
+        1197.0625,
+        349.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-124-82",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 82,
+      "bbox": [
+        1886.0,
+        230.0,
+        1904.25,
+        253.0625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "uncertain",
+      "label_note": "partial body without identifiable shirt or overlapping different kits"
+    },
+    {
+      "id": "0-124-24",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 24,
+      "bbox": [
+        774.0763549804688,
+        713.5,
+        784.6484375,
+        729.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "0-124-79",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 79,
+      "bbox": [
+        2977.0,
+        719.0,
+        2998.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "0-124-27",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 27,
+      "bbox": [
+        1162.9716796875,
+        766.375,
+        1276.625,
+        827.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "0-124-28",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 28,
+      "bbox": [
+        1795.25,
+        793.625,
+        1824.25,
+        818.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "0-124-29",
+      "segment": 0,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 29,
+      "bbox": [
+        2105.75,
+        808.375,
+        2122.625,
+        828.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "0-500-94",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 94,
+      "bbox": [
+        1440.5,
+        150.875,
+        1457.25,
+        184.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "0-500-97",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 97,
+      "bbox": [
+        1521.25,
+        151.875,
+        1538.5,
+        177.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "0-500-67",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 67,
+      "bbox": [
+        1739.625,
+        207.25,
+        1764.5,
+        261.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-34",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 34,
+      "bbox": [
+        1655.0,
+        178.25,
+        1676.75,
+        222.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-3",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 3,
+      "bbox": [
+        1850.0,
+        147.0,
+        1870.0,
+        183.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-4",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 4,
+      "bbox": [
+        1908.5,
+        171.75,
+        1932.5,
+        217.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-104",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 104,
+      "bbox": [
+        2228.0,
+        178.0,
+        2247.5,
+        224.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-127",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 127,
+      "bbox": [
+        2153.25,
+        175.875,
+        2172.25,
+        225.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-133",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 133,
+      "bbox": [
+        2308.75,
+        200.625,
+        2333.0,
+        253.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-7",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 7,
+      "bbox": [
+        1946.6953125,
+        141.5,
+        1968.375,
+        182.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "uncertain",
+      "label_note": "partial body without identifiable shirt or overlapping different kits"
+    },
+    {
+      "id": "0-500-106",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 106,
+      "bbox": [
+        1935.0,
+        178.0,
+        1950.8046875,
+        227.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-154",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 154,
+      "bbox": [
+        2246.25,
+        131.125,
+        2262.75,
+        154.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "0-500-129",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 129,
+      "bbox": [
+        2522.5,
+        183.125,
+        2543.625,
+        229.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-23",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 23,
+      "bbox": [
+        2337.0234375,
+        171.0,
+        2360.0625,
+        214.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-68",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 68,
+      "bbox": [
+        2471.125,
+        192.0,
+        2492.875,
+        243.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-56",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 56,
+      "bbox": [
+        2373.59375,
+        153.75,
+        2393.8125,
+        192.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-128",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 128,
+      "bbox": [
+        949.125,
+        278.59375,
+        971.75,
+        322.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "0-500-136",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 136,
+      "bbox": [
+        1511.0,
+        231.994140625,
+        1538.5,
+        287.6875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-139",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 139,
+      "bbox": [
+        1638.875,
+        230.0,
+        1660.625,
+        266.78125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-13",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 13,
+      "bbox": [
+        2006.25,
+        267.96875,
+        2042.25,
+        329.6875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-59",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 59,
+      "bbox": [
+        1952.28125,
+        300.25,
+        1989.9375,
+        362.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-83",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 83,
+      "bbox": [
+        2542.0,
+        254.953125,
+        2578.25,
+        315.4375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "0-500-148",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 148,
+      "bbox": [
+        2468.875,
+        230.0,
+        2488.625,
+        244.9140625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "uncertain",
+      "label_note": "partial body without identifiable shirt or overlapping different kits"
+    },
+    {
+      "id": "0-500-75",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 75,
+      "bbox": [
+        3077.5,
+        250.3125,
+        3095.75,
+        291.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "0-500-24",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 24,
+      "bbox": [
+        774.0728759765625,
+        713.75,
+        784.8046875,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "0-500-152",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 152,
+      "bbox": [
+        1705.5,
+        460.0,
+        1739.125,
+        503.3125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "uncertain",
+      "label_note": "partial body without identifiable shirt or overlapping different kits"
+    },
+    {
+      "id": "0-500-153",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 153,
+      "bbox": [
+        3003.75,
+        554.5,
+        3064.75,
+        662.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "0-500-156",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 156,
+      "bbox": [
+        1163.08203125,
+        766.4375,
+        1276.4375,
+        827.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "0-500-28",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 28,
+      "bbox": [
+        1795.25,
+        793.125,
+        1823.75,
+        818.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "0-500-29",
+      "segment": 0,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 29,
+      "bbox": [
+        2105.75,
+        808.375,
+        2122.625,
+        828.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "3-124-2",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 2,
+      "bbox": [
+        1527.0,
+        146.0,
+        1542.5,
+        176.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-124-53",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 53,
+      "bbox": [
+        1502.25,
+        147.5,
+        1518.25,
+        178.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-124-1",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 1,
+      "bbox": [
+        1512.25,
+        148.75,
+        1527.0,
+        177.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-124-52",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 52,
+      "bbox": [
+        1480.75,
+        150.125,
+        1497.25,
+        181.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-124-9",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 9,
+      "bbox": [
+        1966.0,
+        145.625,
+        1984.0,
+        185.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-6",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 6,
+      "bbox": [
+        1946.5,
+        175.875,
+        1971.0,
+        219.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-50",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 50,
+      "bbox": [
+        1880.25,
+        243.5,
+        1905.5,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-45",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 45,
+      "bbox": [
+        2195.25,
+        143.125,
+        2213.75,
+        181.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-34",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 34,
+      "bbox": [
+        2171.0,
+        145.625,
+        2189.625,
+        187.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-43",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 43,
+      "bbox": [
+        2124.125,
+        164.875,
+        2144.0,
+        208.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-36",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 36,
+      "bbox": [
+        2298.75,
+        132.125,
+        2316.5,
+        168.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-8",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 8,
+      "bbox": [
+        2141.75,
+        202.625,
+        2164.75,
+        254.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-18",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 18,
+      "bbox": [
+        2248.25,
+        178.5,
+        2266.5,
+        226.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-19",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 19,
+      "bbox": [
+        2535.0,
+        176.5,
+        2558.375,
+        218.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-14",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 14,
+      "bbox": [
+        2492.625,
+        161.5,
+        2514.875,
+        202.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-15",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 15,
+      "bbox": [
+        2586.5,
+        187.5,
+        2610.25,
+        230.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-20",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 20,
+      "bbox": [
+        2410.4375,
+        141.5,
+        2426.4375,
+        174.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-17",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 17,
+      "bbox": [
+        2443.625,
+        145.5,
+        2461.375,
+        181.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-16",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 16,
+      "bbox": [
+        2350.5,
+        168.75,
+        2370.09375,
+        205.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-13",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 13,
+      "bbox": [
+        2354.28125,
+        192.125,
+        2377.09375,
+        238.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-22",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 22,
+      "bbox": [
+        3119.890625,
+        253.5,
+        3137.4375,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-124-44",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 44,
+      "bbox": [
+        1296.75,
+        230.6923828125,
+        1316.75,
+        279.0625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-124-7",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 7,
+      "bbox": [
+        1876.25,
+        246.609375,
+        1905.0,
+        311.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-23",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 23,
+      "bbox": [
+        2430.4375,
+        270.1875,
+        2468.0,
+        319.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-24",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 24,
+      "bbox": [
+        2709.208251953125,
+        281.03125,
+        2735.171875,
+        334.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-35",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 35,
+      "bbox": [
+        2828.5,
+        277.59375,
+        2853.125,
+        331.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-54",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 54,
+      "bbox": [
+        3132.5,
+        452.75,
+        3158.25,
+        499.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-124-25",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 25,
+      "bbox": [
+        3117.21875,
+        256.4375,
+        3135.875,
+        296.3125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-124-28",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 28,
+      "bbox": [
+        774.0520629882812,
+        713.75,
+        784.9296875,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "3-124-31",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 31,
+      "bbox": [
+        1795.5,
+        793.4375,
+        1824.0,
+        818.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "3-124-32",
+      "segment": 3,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 32,
+      "bbox": [
+        2105.625,
+        808.3125,
+        2122.75,
+        828.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "3-500-1",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 1,
+      "bbox": [
+        1504.25,
+        145.375,
+        1522.0,
+        178.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-500-2",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 2,
+      "bbox": [
+        1526.25,
+        144.125,
+        1542.25,
+        175.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-500-105",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 105,
+      "bbox": [
+        1483.5,
+        148.875,
+        1499.5,
+        180.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-500-6",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 6,
+      "bbox": [
+        2154.875,
+        178.0,
+        2174.0,
+        226.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-87",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 87,
+      "bbox": [
+        2012.625,
+        137.5,
+        2027.0625,
+        155.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "uncertain",
+      "label_note": "partial body without identifiable shirt or overlapping different kits"
+    },
+    {
+      "id": "3-500-99",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 99,
+      "bbox": [
+        1996.3125,
+        141.125,
+        2010.3125,
+        154.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "3-500-34",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 34,
+      "bbox": [
+        2535.0,
+        189.875,
+        2558.375,
+        231.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-72",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 72,
+      "bbox": [
+        2695.5,
+        188.125,
+        2715.0,
+        226.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-9",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 9,
+      "bbox": [
+        2481.75,
+        155.625,
+        2499.75,
+        192.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-100",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 100,
+      "bbox": [
+        2591.5,
+        227.375,
+        2620.75,
+        266.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-20",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 20,
+      "bbox": [
+        2717.4375,
+        168.375,
+        2734.46875,
+        203.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-85",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 85,
+      "bbox": [
+        2964.5,
+        226.25,
+        2983.25,
+        265.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-94",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 94,
+      "bbox": [
+        2765.0625,
+        204.875,
+        2784.8125,
+        245.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-45",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 45,
+      "bbox": [
+        2895.5,
+        223.625,
+        2916.875,
+        266.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-74",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 74,
+      "bbox": [
+        2822.0,
+        231.25,
+        2845.375,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-101",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 101,
+      "bbox": [
+        2987.25,
+        230.625,
+        3005.75,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-88",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 88,
+      "bbox": [
+        2879.0,
+        206.0,
+        2896.75,
+        245.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-69",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 69,
+      "bbox": [
+        2933.375,
+        242.625,
+        2954.25,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-90",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 90,
+      "bbox": [
+        2768.0,
+        185.125,
+        2786.625,
+        215.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-107",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 107,
+      "bbox": [
+        2764.25,
+        230.0,
+        2777.0,
+        247.265625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "uncertain",
+      "label_note": "partial body without identifiable shirt or overlapping different kits"
+    },
+    {
+      "id": "3-500-93",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 93,
+      "bbox": [
+        3053.75,
+        248.25,
+        3073.0,
+        291.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-23",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 23,
+      "bbox": [
+        2939.625,
+        267.84375,
+        2962.25,
+        319.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-8",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 8,
+      "bbox": [
+        2767.15625,
+        252.0,
+        2796.25,
+        294.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-106",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 106,
+      "bbox": [
+        2796.25,
+        257.859375,
+        2823.5,
+        303.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-35",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 35,
+      "bbox": [
+        3189.6875,
+        287.21875,
+        3208.8125,
+        332.5625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-78",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 78,
+      "bbox": [
+        3096.7568359375,
+        304.1875,
+        3116.890625,
+        354.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "3-500-96",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 96,
+      "bbox": [
+        3221.4375,
+        271.96875,
+        3239.375,
+        310.5625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "3-500-28",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 28,
+      "bbox": [
+        774.125,
+        713.75,
+        784.796875,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "3-500-82",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 82,
+      "bbox": [
+        2977.0,
+        719.25,
+        2998.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "3-500-31",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 31,
+      "bbox": [
+        1795.25,
+        793.6875,
+        1823.75,
+        818.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "3-500-32",
+      "segment": 3,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 32,
+      "bbox": [
+        2105.75,
+        808.1875,
+        2122.625,
+        828.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "6-124-5",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 5,
+      "bbox": [
+        1309.375,
+        219.375,
+        1333.625,
+        261.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-59",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 59,
+      "bbox": [
+        1466.75,
+        150.25,
+        1483.5,
+        180.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "6-124-3",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 3,
+      "bbox": [
+        1528.25,
+        143.125,
+        1544.75,
+        175.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "6-124-60",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 60,
+      "bbox": [
+        1420.25,
+        256.0,
+        1442.5,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "uncertain",
+      "label_note": "partial head or legs without identifiable shirt"
+    },
+    {
+      "id": "6-124-4",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 4,
+      "bbox": [
+        1796.125,
+        183.25,
+        1827.75,
+        235.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-23",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 23,
+      "bbox": [
+        1674.625,
+        217.0,
+        1706.125,
+        269.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-8",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 8,
+      "bbox": [
+        1663.5,
+        201.5,
+        1684.375,
+        251.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-9",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 9,
+      "bbox": [
+        2616.0,
+        203.0,
+        2640.0,
+        252.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "6-124-24",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 24,
+      "bbox": [
+        437.5,
+        423.625,
+        465.0625,
+        465.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-11",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 11,
+      "bbox": [
+        767.75,
+        320.8125,
+        790.0,
+        364.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-10",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 10,
+      "bbox": [
+        779.25,
+        316.375,
+        800.75,
+        355.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-15",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 15,
+      "bbox": [
+        1023.5,
+        271.03125,
+        1041.75,
+        308.6875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-14",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 14,
+      "bbox": [
+        1008.875,
+        284.0625,
+        1028.0,
+        324.8125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-21",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 21,
+      "bbox": [
+        929.75,
+        321.875,
+        949.5,
+        373.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-18",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 18,
+      "bbox": [
+        941.375,
+        282.15625,
+        961.375,
+        320.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-13",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 13,
+      "bbox": [
+        1126.0,
+        253.46875,
+        1142.75,
+        294.9375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-43",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 43,
+      "bbox": [
+        1043.25,
+        327.9375,
+        1069.0,
+        375.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-16",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 16,
+      "bbox": [
+        936.25,
+        296.125,
+        956.25,
+        340.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-34",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 34,
+      "bbox": [
+        871.75,
+        291.09375,
+        889.625,
+        331.4375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-20",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 20,
+      "bbox": [
+        1223.0,
+        248.328125,
+        1243.75,
+        295.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-22",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 22,
+      "bbox": [
+        1420.25,
+        258.09375,
+        1443.75,
+        319.3125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-6",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 6,
+      "bbox": [
+        1382.625,
+        245.1484375,
+        1403.0,
+        294.9375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-124-26",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 26,
+      "bbox": [
+        774.0381774902344,
+        713.875,
+        785.125,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "6-124-28",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 28,
+      "bbox": [
+        2977.25,
+        719.25,
+        2998.0,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "6-124-29",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 29,
+      "bbox": [
+        1794.875,
+        793.5625,
+        1824.5,
+        819.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "6-124-30",
+      "segment": 6,
+      "frame_idx": 124,
+      "seconds": 4.96,
+      "track": 30,
+      "bbox": [
+        2106.0,
+        808.625,
+        2122.625,
+        828.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "6-500-23",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 23,
+      "bbox": [
+        1124.25,
+        245.25,
+        1144.25,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-97",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 97,
+      "bbox": [
+        1100.25,
+        245.125,
+        1119.0,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-122",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 122,
+      "bbox": [
+        1145.75,
+        192.0,
+        1161.75,
+        219.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "6-500-123",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 123,
+      "bbox": [
+        1041.5,
+        255.75,
+        1058.75,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "uncertain",
+      "label_note": "partial head or legs without identifiable shirt"
+    },
+    {
+      "id": "6-500-57",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 57,
+      "bbox": [
+        1262.3125,
+        227.5,
+        1281.875,
+        268.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-108",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 108,
+      "bbox": [
+        1232.3125,
+        175.0,
+        1247.4375,
+        204.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "6-500-3",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 3,
+      "bbox": [
+        1528.75,
+        144.25,
+        1545.5,
+        176.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "6-500-4",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 4,
+      "bbox": [
+        1598.5,
+        207.25,
+        1628.9375,
+        257.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-65",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 65,
+      "bbox": [
+        2317.25,
+        192.875,
+        2337.75,
+        245.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "other",
+      "label_note": "visible clothing outside blue/white kits; role not asserted"
+    },
+    {
+      "id": "6-500-11",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 11,
+      "bbox": [
+        782.0,
+        312.3125,
+        803.25,
+        354.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-78",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 78,
+      "bbox": [
+        724.5,
+        325.0625,
+        746.25,
+        363.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-121",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 121,
+      "bbox": [
+        865.4375,
+        292.09375,
+        885.4375,
+        329.5625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-109",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 109,
+      "bbox": [
+        894.75,
+        280.625,
+        915.25,
+        317.5625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-114",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 114,
+      "bbox": [
+        1017.5,
+        260.34375,
+        1037.5,
+        302.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-21",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 21,
+      "bbox": [
+        999.0,
+        289.59375,
+        1020.0,
+        332.3125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-6",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 6,
+      "bbox": [
+        843.75,
+        298.1875,
+        863.1875,
+        333.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-75",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 75,
+      "bbox": [
+        1042.25,
+        257.921875,
+        1058.5,
+        298.4375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-14",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 14,
+      "bbox": [
+        1125.5,
+        270.375,
+        1145.5,
+        314.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-113",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 113,
+      "bbox": [
+        1003.75,
+        264.09375,
+        1021.5,
+        302.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "blue",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-72",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 72,
+      "bbox": [
+        2318.0,
+        230.0164794921875,
+        2331.0,
+        245.6796875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "uncertain",
+      "label_note": "partial head or legs without identifiable shirt"
+    },
+    {
+      "id": "6-500-43",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 43,
+      "bbox": [
+        113.6875,
+        547.25,
+        143.25,
+        592.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "white",
+      "label_note": "visible shirt colour; identity not asserted"
+    },
+    {
+      "id": "6-500-117",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 117,
+      "bbox": [
+        747.5,
+        713.875,
+        783.5,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "6-500-26",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 26,
+      "bbox": [
+        774.0902709960938,
+        713.75,
+        784.9296875,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "6-500-28",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 28,
+      "bbox": [
+        2977.0,
+        719.25,
+        2998.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "6-500-29",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 29,
+      "bbox": [
+        1795.25,
+        793.75,
+        1824.25,
+        818.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    },
+    {
+      "id": "6-500-30",
+      "segment": 6,
+      "frame_idx": 500,
+      "seconds": 20.0,
+      "track": 30,
+      "bbox": [
+        2105.5,
+        808.4375,
+        2123.125,
+        828.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "kit": "not_person",
+      "label_note": "visible field lettering, ball or equipment; no person in target box"
+    }
+  ],
+  "protocol": "Frozen PR 244 method, 117093 daylight external validation. Segment 0 maps shirt names; controls 3/6. Planned 9 unavailable due to source quota, recorded before labels/predictions. No prediction display during labeling.",
+  "match": "117093",
+  "unavailable_control_segments": [
+    9
+  ]
+}

@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Codex kamera: aydınlık 117093 maçını ayrı kalibrasyonla işle, kör dış kontrolü ölç ve başarısız ışık varsayılanını geri al. (417b25e)
+  Done when: üç kaynak klip/hash, 172 kutu etiketi, 65 saha işareti, aynı kutularda ham/çim karşılaştırması, üretim yolu eşitliği ve takip önizlemesi hazır. Sonuç: docs/GUNDUZ-MACI-SONUCLARI.md; kontrol ham 53/13/8, çim 16/54/4 (doğru/yanlış/atanamayan). Ham varsayılan, normalizasyon açık seçimle korunur. 29 ilgili ve 2.594 tam yerel test geçti, 1 atlandı. Kişi olmayan tespit ve olay doğruluğu çözülmüş sayılmaz.
+
 - [x] Codex kamera: gölge düzeltmesini yeni kontrol klipleriyle yeniden dene ve geçen yerel çim normalizasyonunu takip hattına bağla. (93d2413)
   Done when: iki ayrı dondurulmuş deney, yeni 149 kör kutu etiketi, üretim fonksiyonuyla 54.103 gözlemin aynı sonucu vermesi, video/canlı entegrasyonu ve regresyonlar. Sonuç: docs/YEREL-CIM-ISIGI-SONUCLARI.md; yeni kontrol 54→56 doğru, 7→4 yanlış, 5→6 atanamayan. 80 ilgili ve 2.569 tam yerel test geçti; 1 atlandı. Genel maçlar arası doğruluk hedefi tamamlanmış sayılmaz.
 

@@ -1,0 +1,53 @@
+{
+  "verification": "Unchanged cached observations replayed through production process_video; team assignments and live rounded palette agree with external benchmark. Detector not rerun.",
+  "checks": [
+    {
+      "method": "raw_rgb_v1",
+      "segment": 0,
+      "team_assignments_equal": true,
+      "track_ids": 207,
+      "exported_frames": 125,
+      "color_method": "raw_rgb_v1"
+    },
+    {
+      "method": "raw_rgb_v1",
+      "segment": 3,
+      "team_assignments_equal": true,
+      "track_ids": 163,
+      "exported_frames": 125,
+      "color_method": "raw_rgb_v1"
+    },
+    {
+      "method": "raw_rgb_v1",
+      "segment": 6,
+      "team_assignments_equal": true,
+      "track_ids": 177,
+      "exported_frames": 125,
+      "color_method": "raw_rgb_v1"
+    },
+    {
+      "method": "local_grass_v1",
+      "segment": 0,
+      "team_assignments_equal": true,
+      "track_ids": 121,
+      "exported_frames": 125,
+      "color_method": "local_grass_v1"
+    },
+    {
+      "method": "local_grass_v1",
+      "segment": 3,
+      "team_assignments_equal": true,
+      "track_ids": 113,
+      "exported_frames": 125,
+      "color_method": "local_grass_v1"
+    },
+    {
+      "method": "local_grass_v1",
+      "segment": 6,
+      "team_assignments_equal": true,
+      "track_ids": 115,
+      "exported_frames": 125,
+      "color_method": "local_grass_v1"
+    }
+  ]
+}

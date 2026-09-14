@@ -30,9 +30,9 @@ docs/SABIT-KAMERA-SINYAL-KALITESI.md.
 
 Kimlik yine "tahmini": takım bilinir, oyuncu bilinmez.
 
-Üretim renk gözlemi artık `kit_color` ile çevredeki çim aydınlığına göre
-ölçeklenir. Yukarıdaki RGB sayıları tarihsel ham yöntem içindir. Yeni doğrudan
-görüntü ölçümü ve kapsam kaybı: docs/YEREL-CIM-ISIGI-SONUCLARI.md.
+`kit_color` varsayılan olarak ham gövde rengini korur. Yerel çim ışığıyla
+ölçekleme gece deneyinde yarar sağlasa da farklı gündüz maçında bozuldu;
+yalnız açık seçimle kullanılabilir. Dış doğrulama: docs/GUNDUZ-MACI-SONUCLARI.md.
 """
 
 from __future__ import annotations
@@ -136,9 +136,9 @@ def normalize_kit_light(
 
 def kit_color(
     frame_rgb: np.ndarray, xyxy: tuple[float, float, float, float], *,
-    normalize_light: bool = True,
+    normalize_light: bool = False,
 ) -> np.ndarray | None:
-    """Production shirt observation; raw mode keeps historical caches reproducible."""
+    """Raw shirt observation; local illumination correction is experimental opt-in."""
     color = torso_color(frame_rgb, xyxy)
     if color is None or not normalize_light:
         return color

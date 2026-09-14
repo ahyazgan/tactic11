@@ -23,12 +23,12 @@ def test_local_light_keeps_both_kits_stable_when_field_and_shirt_enter_shadow():
     for track, shirt in enumerate(([40, 60, 120], [200, 200, 180])):
         bright, shadow = shirt_frame(shirt), shirt_frame(shirt, .5)
         before = shadow.copy()
-        np.testing.assert_allclose(kit_color(bright, BOX), kit_color(shadow, BOX))
+        np.testing.assert_allclose(kit_color(bright, BOX, normalize_light=True), kit_color(shadow, BOX, normalize_light=True))
         np.testing.assert_allclose(torso_color(shadow, BOX), np.array(shirt) * .5)
         np.testing.assert_allclose(kit_color(shadow, BOX, normalize_light=False), torso_color(shadow, BOX))
         np.testing.assert_array_equal(shadow, before)
-        assigner.observe(track, kit_color(bright, BOX))
-        assigner.observe(track + 2, kit_color(shadow, BOX))
+        assigner.observe(track, kit_color(bright, BOX, normalize_light=True))
+        assigner.observe(track + 2, kit_color(shadow, BOX, normalize_light=True))
     result = assigner.fit()
     assert result.team_by_track[0] == result.team_by_track[2]
     assert result.team_by_track[1] == result.team_by_track[3]
@@ -69,6 +69,7 @@ def test_gain_and_rgb_are_bounded_even_without_green_pixels(background, expected
 
 
 @pytest.mark.parametrize("normalize,expected,method", [(True, [200, 200, 180], "local_grass_v1"),
+                                                      (None, [100, 100, 90], "raw_rgb_v1"),
                                                       (False, [100, 100, 90], "raw_rgb_v1")])
 def test_collection_uses_configured_colour_on_the_actual_tracked_box(monkeypatch, normalize, expected, method):
     from app.tracking import pipeline
@@ -92,12 +93,39 @@ def test_collection_uses_configured_colour_on_the_actual_tracked_box(monkeypatch
     monkeypatch.setattr(pipeline, "iter_video_frames", lambda *a: iter([(0, 0, 0., frame), (1, 2, .08, frame)]))
     detector = SimpleNamespace(detect=lambda _: None, split=lambda _: (Detections([BOX]), Detections([])))
     calib = SimpleNamespace(image_size=(80, 100), is_on_pitch=lambda *a, **kw: True)
-    cfg = pipeline.PipelineConfig(normalize_kit_light=normalize, min_track_seconds=0)
+    cfg = pipeline.PipelineConfig(min_track_seconds=0)
+    if normalize is not None:
+        cfg.normalize_kit_light = normalize
     samples, teams, stats = pipeline.collect_observations("unused.mp4", cfg, detector=detector, calib=calib, progress=False)
     assert len(samples) == 2
     assert samples[0].persons[0][1:5] == BOX
     np.testing.assert_allclose(teams._obs[1], [expected, expected])
     assert stats["kit_color_method"] == method
+
+
+def test_default_colour_keeps_raw_illumination_until_explicitly_enabled():
+    shadow = shirt_frame([200, 200, 180], .5)
+    np.testing.assert_allclose(kit_color(shadow, BOX), [100, 100, 90])
+    np.testing.assert_allclose(kit_color(shadow, BOX, normalize_light=True), [200, 200, 180])
+
+
+@pytest.mark.parametrize("flags,normalize", [([], False), (["--raw-kit-colors"], False),
+                                            (["--normalize-kit-light"], True)])
+def test_cache_cli_matches_production_default_and_explicit_experiment(monkeypatch, tmp_path, flags, normalize):
+    from scripts.soccertrack_v2 import cache_observations as cli
+
+    captured = []
+    monkeypatch.setattr(sys, "argv", ["cache", "--out", str(tmp_path / "out"), "--segments", "0", *flags])
+    monkeypatch.setattr(cli, "make_detector", lambda _: None)
+    monkeypatch.setattr(cli.PitchCalibration, "load", lambda _: SimpleNamespace(to_dict=lambda: {}))
+
+    def collect(video, cfg, **kwargs):
+        captured.append(cfg.normalize_kit_light)
+        return [], TeamAssigner(), {}
+
+    monkeypatch.setattr(cli, "collect_observations", collect)
+    cli.main()
+    assert captured == [normalize]
 
 
 def test_reextraction_rejects_changed_or_missing_raw_observations():

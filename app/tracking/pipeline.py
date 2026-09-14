@@ -79,7 +79,7 @@ class PipelineConfig:
     detect_replays: bool = False
     preview_path: str | None = None
     preview_width: int = 1600
-    normalize_kit_light: bool = True  # yerel çim ışığı; ham karşılaştırmada False
+    normalize_kit_light: bool = False  # deneysel; gündüz dış kontrolde regresyon
 
 
 @dataclass

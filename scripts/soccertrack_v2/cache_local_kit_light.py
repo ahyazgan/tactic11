@@ -66,7 +66,7 @@ def main() -> int:
                         continue
                     values = {"raw_reextracted": color,
                               "local_all": normalize_kit_light(rgb, box, color, grass_only=False),
-                              "local_grass": kit_color(rgb, box)}
+                              "local_grass": kit_color(rgb, box, normalize_light=True)}
                     for name, value in values.items():
                         methods[name].setdefault(track, []).append(value.tolist())
         finally:
@@ -77,7 +77,7 @@ def main() -> int:
                                          "seconds": time.perf_counter() - started,
                                          "source": str(source), "geometry_unchanged": True,
                                          "raw_observations_exactly_reproduced": True,
-                                         "production_color_method": "local_grass_v1"}
+                                         "color_method": "local_grass_v1"}
         (args.out / source.name).write_text(json.dumps(payload), encoding="utf-8")
         print(json.dumps({"segment": segment, "seconds": payload["colour_experiment"]["seconds"]}), flush=True)
     return 0
