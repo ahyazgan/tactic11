@@ -192,8 +192,15 @@ def _compute_live_vaep(
 
 def _compute_live_snapshot(
     feed: ReplayFeed, match_id: int, my_team_id: int, current_minute: float,
+    *, session: Session | None = None,
 ) -> dict[str, Any]:
-    """Tek-snapshot: events şu ana kadar olanlar + canlı engine'ler."""
+    """Tek-snapshot: events şu ana kadar olanlar + canlı engine'ler.
+
+    `session` verilirse "kim çıkar" önseli kiracının KENDİ geçmişinden fit
+    edilir (yeterli maç varsa); verilmezse genel elit tablo kullanılır. Admin
+    ucu da aynısını yapar — iki yol farklı tablo çalıştırırsa panelde ölçülen
+    motor karnede ölçülenle aynı olmaz.
+    """
     home_id = feed.home_team_id
     away_id = feed.away_team_id
     opp_id = away_id if my_team_id == home_id else home_id
@@ -232,6 +239,7 @@ def _compute_live_snapshot(
     off_prior: dict[int, float] | None = None
     subs_used: int | None = None
     if appearances is not None:
+        from app.data.loaders.tenant_prior import fit_tenant_off_prior, off_prior_for
         from app.engine.live_lineup import resolve_on_pitch
         from app.engine.live_sub_recommendation import elite_off_prior
         eligible_ids = set(
@@ -239,16 +247,23 @@ def _compute_live_snapshot(
                 appearances, current_minute, team_external_id=my_team_id,
             ).player_ids
         )
+        # Bu maç fit'e GİRMEZ: tablo tahmin ettiği hamleden öğrenmemeli.
+        tenant_prior = (None if session is None else fit_tenant_off_prior(
+            session, team_external_id=my_team_id, exclude_match_id=match_id))
         # start_minute > 0 olan her görünüm bir değişikliktir; aynı dakikadaki
         # iki değişiklik AYRI sayılır (tekilleştirmek hakkı eksik gösterirdi).
         subs_used = sum(
             1 for a in appearances
             if a.team_external_id == my_team_id and 0.0 < a.start_minute <= current_minute
         )
-        off_prior = {
-            a.player_external_id: elite_off_prior(a.position, a.start_minute == 0.0)
-            for a in appearances if a.team_external_id == my_team_id
-        }
+        off_prior = {}
+        for a in appearances:
+            if a.team_external_id != my_team_id:
+                continue
+            starter = a.start_minute == 0.0
+            own = off_prior_for(tenant_prior, a.position, starter)
+            off_prior[a.player_external_id] = (
+                own if own is not None else elite_off_prior(a.position, starter))
 
     snapshot: dict[str, Any] = {
         "match_id": match_id,
@@ -622,7 +637,7 @@ async def matches_live(
                     current_minute = max_minute
                     ended = True
             snapshot = _compute_live_snapshot(
-                feed, match_id, my_team_id, current_minute,
+                feed, match_id, my_team_id, current_minute, session=session,
             )
             if source is not None:
                 snapshot["source"] = source

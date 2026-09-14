@@ -3286,12 +3286,18 @@ def live_decision_endpoint(
 
     # Kadro farkındalığı: kim sahada, kimin çıkma önseli ne (player_appearances).
     from app.data.loaders.appearances import load_match_appearances
+    from app.data.loaders.tenant_prior import (
+        TENANT_PRIOR_MIN_MATCHES,
+        fit_tenant_off_prior,
+        off_prior_for,
+    )
     from app.engine.live_lineup import resolve_on_pitch
     from app.engine.live_sub_recommendation import elite_off_prior
     appearances = load_match_appearances(session, match_id)
     eligible_ids: set[int] | None = None
     off_prior: dict[int, float] | None = None
     subs_used: int | None = None
+    tenant_prior = None
     if appearances:
         subs_used = sum(
             1 for a in appearances
@@ -3300,10 +3306,21 @@ def live_decision_endpoint(
         eligible_ids = set(resolve_on_pitch(
             appearances, current_minute, team_external_id=my_team_id,
         ).player_ids)
-        off_prior = {
-            a.player_external_id: elite_off_prior(a.position, a.start_minute == 0.0)
-            for a in appearances if a.team_external_id == my_team_id
-        }
+        # Kiracının KENDİ tablosu varsa o kullanılır, yoksa genel tabloya
+        # düşülür. Genel tablo kendi verisine benzemeyen kulüpte ölçülebilir
+        # şekilde kötü (docs/KARNE-KIM-BAGIMSIZ.md); kendi tablosu 20 maçtan
+        # sonra onu iki ayrık yarıda da geçiyor (docs/KARNE-KIRACI-ONSELI.md).
+        # Bu maç fit'e GİRMEZ: tablo tahmin ettiği hamleden öğrenmemeli.
+        tenant_prior = fit_tenant_off_prior(
+            session, team_external_id=my_team_id, exclude_match_id=match_id)
+        off_prior = {}
+        for a in appearances:
+            if a.team_external_id != my_team_id:
+                continue
+            starter = a.start_minute == 0.0
+            own = off_prior_for(tenant_prior, a.position, starter)
+            off_prior[a.player_external_id] = (
+                own if own is not None else elite_off_prior(a.position, starter))
 
     out: dict[str, Any] = {
         "match_id": match_id, "my_team_id": my_team_id,
@@ -3472,6 +3489,13 @@ def live_decision_endpoint(
                   "kadro girilmedi: zamanlama penceresi ve 'kim çıkar' önerisi bu "
                   "maçta devre dışı. PUT /admin/matches/{id}/lineup ile ilk 11'i, "
                   "POST /admin/matches/{id}/substitution ile değişiklikleri girin."),
+        # Hangi tablonun konuştuğu GÖRÜNÜR olsun: genel tablo kendi verisine
+        # benzemeyen kulüpte ölçülebilir şekilde kötü, ve panelin hangisini
+        # kullandığını söylememesi o sınırı gizler.
+        "onsel_kaynagi": ("kiracının kendi geçmişi" if tenant_prior is not None
+                          else "genel elit tablo"),
+        "onsel_fit_hamle": (tenant_prior.fitted_on if tenant_prior is not None else None),
+        "onsel_kapi_mac": TENANT_PRIOR_MIN_MATCHES,
     }
 
     # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
