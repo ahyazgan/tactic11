@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Top adaylarını, oyuncu çevresi ROI aramasını ve saha çizgisi kalibrasyonunu dondurulmuş kontrolle karşılaştır; farklı piksel boyutunda kalibrasyonu reddet. (4b8d149)
+  Done when: aynı tam kare tespitleriyle tekrar takip, çizgi/pas/takım ölçümleri ve başarısız deney raporu; test/lint/tip kontrolleri temiz. Sonuç: docs/TOP-SECIMI-SONUCLARI.md. Alternatifler doğruluk kapısını geçmedi; varsayılanlar değiştirilmedi.
+
 - [x] Video top/pas/top kazanımı kanıt zincirini düzelt; yoğun kare denemesini ve gerçek olay eşleşmesini ölç. (b1eb581)
   Done when: kamera/zaman/top belirsizliği korunur; video/canlı JSON→DB→domain zinciri ve kısmi savunma koruması testli; birebir GT karşılaştırması ve başarısız deneyler raporlu. Sonuç: docs/VIDEO-OLAY-SONUCLARI.md. Pas duyarlılığı ve gerçek görüntüde savunma doğruluğu hedefleri geçilmedi; yoğun olay akışı varsayılan kapalı.
 
