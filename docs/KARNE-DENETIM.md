@@ -65,10 +65,28 @@ oyuncuda 1,0'a kilitliydi.** Artık dakika başına tempodan hesaplanıyor.
 alıyordu; motor onu eşikten ÖNCEKİ havuzdan alır. En yüksek önselli oyuncu
 eşikte elenirse tepe çöker ve modellenen sıralayıcı motorunki olmaktan çıkar.
 
-→ `docs/KARNE-SIRALAMA.md` sayıları **yeniden koşulmalı** ve o sayfa böyle
-işaretlendi. Ana bulgunun ("grubu buluyor, kişiyi bulmuyor") ayakta kalması
-bekleniyor — ters kontrol zaten yorgunluk sıralamasının bilgi taşımadığını
-söylüyordu ve birinci kusur bunun bir sebebini açıklıyor.
+→ `docs/KARNE-SIRALAMA.md` **yeniden koşuldu** (aynı 101 maç, StatsBomb açık
+verisinden yeniden indirildi). İki sağlama tuttu: yorgunluğa hiç dokunmayan
+*saf önsel* kuralı kılı kıpırdamadı (0,125 / 0,442) ve rastgele taban aynı
+kaldı — yani aynı 331 vaka, aynı 10,78 ortalama aday. Değişen yalnız
+yorgunluğun karıştığı satırlar oldu.
+
+**Ana bulgu ayakta:** grup bilgisi var (isabet@3'te rastgelenin +0,195 üstü),
+grup içi bilgi yok (ters kontrol hâlâ doğru yönü geçiyor, 0,131 vs 0,125).
+
+Düzeltilmiş yorgunluk tek başına biraz daha KÖTÜ (0,125 → 0,103). Fark 1,2
+standart hata, yani gürültü; mekanizması da anlaşılır — bozuk bileşen herkeste
+doymuş olduğu için bileşiğe hiçbir şey katmıyordu, düzeltilince katkı verdi ve
+kattığı şey bilgi değildi. Bu ana bulguyu zayıflatmıyor, güçlendiriyor.
+
+**Yan ürün: bir ipucu bulundu ve ürüne ALINMADI.** Yeniden koşum eski bir
+cümleyi çürüttü ("harman ağırlığının etkisi yok"). Ağırlık ayrık yarıda
+seçilince iki yarı da aynı değeri seçti (isabet@1 için 0,2; isabet@3 için 0,4),
+seçim bedeli sıfıra yakın, örneklem dışı isabet@1 0,153 — bugünkü 0,6'nın
+0,125'ine karşı. Ama ters kontrol tutmadı: bileşiğin yönünü çevirmek yalnız
+0,014 kaybettiriyor ve ters sürüm hâlâ saf önseli geçiyor. Yönden bağımsız bir
+kazanç o sinyalin bilgisi değildir; kaba önselin beraberliklerini açmanın
+yapısal etkisidir. `ROLE_PRIOR_WEIGHT` 0,6'da bırakıldı.
 
 ### Ölçüm CETVELİNİ düzeltenler
 
