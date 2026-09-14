@@ -80,6 +80,11 @@ Bu ayrım korunursa, bir pilotta koç işaretlemeye başladığı anda karnenin 
 
 - **Aynı dakikadaki iki değişiklik iki hak kullanır** (tekilleştirme yok) —
   `measure_shape_selectivity` ve `validate_timing_prior` da öyle sayıyor.
+- **Sahada olma aralığı YARI AÇIK**: `[giriş, çıkış)`. Giriş dakikasında
+  sahadadır, çıkış dakikasında değildir — motorun `live_lineup.is_on_pitch`
+  kuralıyla birebir. İlk yazımda uç nokta kapalı aralık kullanıyordu ve aynı
+  dakikada panelden FARKLI kadro döndürüyordu; artık bir test ikisini
+  birbirine kilitliyor (`test_squad_state_matches_the_engine_on_pitch_rule`).
 - **Giren oyuncu çıkanın mevkisini devralır** (açıkça verilmedikçe) —
   `coach_iq` ve `validate_who_prior` aynı kuralı kullanıyor.
 - **Giriş/çıkış dakikaları tam sayı** — sağlayıcı verisi de öyle, önsel zaten
@@ -103,8 +108,11 @@ kullanılamaz.
   sorgu parametresi (varsayılan 5); maç kaydında tutulmuyor.
 - **"Üç oturum" kısıtı yok.** 5 hak en fazla 3 oyun durmasında kullanılabilir;
   ne kayıt ne öneri bunu biliyor.
-- **Kırmızı kart yok.** 10 kişi kalmak hem kadroyu hem öneriyi etkiler, kaydı
-  yok.
+- ~~Kırmızı kart yok~~ → **eklendi.** `POST /admin/matches/{id}/dismissal`
+  oyuncuyu sahadan düşürür ve `red_cards` işaretini koyar ama **değişiklik hakkı
+  harcamaz** — kullanılmış hak sahaya GİREN oyuncuları saydığı için kendiliğinden
+  doğru kalır. Kaydedilmezse atılan oyuncu sonsuza dek sahada görünür ve motor
+  onu "çıkar" diye önerebilir. Ekranda ayrı bir "Kırmızı kart" yolu var.
 - **Oyuncu kimliği hâlâ elle.** Bu modül kadroyu çözüyor, takip izlerini gerçek
   oyunculara bağlamayı değil (`PUT /tracking/matches/{id}/identities`).
 - **Ekran tek takım.** Rakip kadrosu için ayrı giriş gerekir.
@@ -136,5 +144,5 @@ Ekran tek takım için çalışıyor; rakip kadrosu ayrı giriş ister. Bir pilo
 ilk sınanacak şey, 90 dakika boyunca bu ekranın gerçekten kullanılıp
 kullanılmadığıdır — kullanılmıyorsa toplanan veri de olmaz.
 
-Kontroller: **2604 test geçti, 1 atlandı** (7'si bu modülün yeni testleri);
-ruff temiz; mypy 505 kaynak dosyasında temiz.
+Kontroller: **2650 test geçti, 6 atlandı**; ruff temiz; mypy 510 kaynak
+dosyasında temiz; frontend typecheck ve build temiz.
