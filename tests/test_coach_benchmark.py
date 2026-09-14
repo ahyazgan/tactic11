@@ -37,6 +37,7 @@ from app.engine.coach_benchmark import (
     selectivity,
     skill_from_auc,
     split_half_agreement,
+    split_half_definition,
     split_half_shape_gate,
     who_prior_agreement,
     who_prior_tiers,
@@ -521,3 +522,70 @@ def test_who_prior_agreement_ignores_player_id_order() -> None:
 
     # aynı veride eski yol kimlik sırasına BAĞLI: 1.0 vs 0.0
     assert ranked(False) != ranked(True)
+
+
+# --- tanım seçiminin bedeli ---------------------------------------------- #
+
+def _defn_obs(flags: list[bool], acted: list[bool]) -> list[TickObservation]:
+    """Her tik ayrı maçta — _halves maç bazında böldüğü için tikler dağılsın."""
+    return [TickObservation(i, 10.0 + i, f, a)
+            for i, (f, a) in enumerate(zip(flags, acted, strict=True))]
+
+
+def test_definition_choice_picks_in_the_other_half() -> None:
+    """Tanım ÖTEKİ yarıda seçilir; iki yarı da aynı tanımı seçerse kararlı."""
+    n = 40
+    acted = [i % 2 == 0 for i in range(n)]
+    iyi = list(acted)                      # hedefi birebir izler
+    kotu = [not a for a in acted]          # tam tersi
+    pick = split_half_definition({"iyi": _defn_obs(iyi, acted),
+                                  "kotu": _defn_obs(kotu, acted)})
+    assert pick.chosen_for_a == "iyi"
+    assert pick.chosen_for_b == "iyi"
+    assert pick.stable is True
+    assert pick.engine_f1 == 1.0
+
+
+def test_definition_choice_charges_the_selection_cost() -> None:
+    """Bilgi yokken örneklem-içi en iyi, örneklem-dışıdan YÜKSEK çıkar.
+
+    Eski kod iki tanımın ÖLÇÜLMÜŞ F1'inden büyüğünü sabit bir tabana karşı
+    raporluyordu. İki aday arasından en iyisini seçmek, ortada hiçbir sinyal
+    olmasa bile tabanın üstüne çıkar — bu depoda altı sinyalle ölçülmüştü
+    (taban + 0,056, docs/KARNE-GRUP-ICI-SINYAL.md). Fark seçim bedelidir ve
+    örneklem dışı ölçüm onu geri alır.
+    """
+    acted = [i % 3 == 0 for i in range(60)]
+    # İki gürültü tanımı: biri A yarısında şanslı, öteki B yarısında.
+    a_sansli = [(i % 3 == 0) if i % 2 == 0 else (i % 5 == 0) for i in range(60)]
+    b_sansli = [(i % 5 == 0) if i % 2 == 0 else (i % 3 == 0) for i in range(60)]
+    pick = split_half_definition({"a_sansli": _defn_obs(a_sansli, acted),
+                                  "b_sansli": _defn_obs(b_sansli, acted)})
+
+    # İki yarı farklı tanım seçti: sonucun gürültü olduğunun işareti.
+    assert pick.stable is False
+    assert "İKİ YARI FARKLI TANIM SEÇTİ" in pick.note
+
+    en_iyi_ic = max(v for v in pick.in_sample.values() if v is not None)
+    assert pick.engine_f1 is not None
+    assert en_iyi_ic > pick.engine_f1, "seçim bedeli ödenmemiş"
+
+
+def test_definition_choice_refuses_mismatched_tick_sets() -> None:
+    """Tanımlar farklı tikleri kapsıyorsa taban kayar — kıyas reddedilir."""
+    acted = [i % 2 == 0 for i in range(40)]
+    tam = _defn_obs(list(acted), acted)
+    eksik = _defn_obs(list(acted[:30]), acted[:30])
+    pick = split_half_definition({"tam": tam, "eksik": eksik})
+    assert pick.verdict == "yetersiz veri"
+    assert "aynı tik/hedef kümesini paylaşmıyor" in pick.note
+    assert pick.engine_f1 is None
+
+
+def test_definition_choice_with_one_definition_has_no_cost() -> None:
+    """Tek tanım varsa seçim yoktur; sonuç split_half_agreement ile aynı."""
+    acted = [i % 2 == 0 for i in range(40)]
+    obs = _defn_obs(list(acted), acted)
+    pick = split_half_definition({"tek": obs})
+    assert pick.stable is True
+    assert pick.engine_f1 == split_half_agreement(obs).engine_f1

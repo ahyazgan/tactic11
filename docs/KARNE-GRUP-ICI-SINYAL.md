@@ -90,6 +90,25 @@ olmayan veri gerekiyor:
 - **Olumsuz sonuç "imkânsız" demek değildir.** Bu veriyle, bu sinyallerle,
   bu n'de bulunamadı demektir.
 
+## Düzeltme: taban ile isabet farklı paydalardan geliyordu (denetim, 14 Eylül)
+
+Ölçüm kodunda gerçek bir hata vardı: isabet ortalaması yalnız **sinyali tanımlı**
+vakalardan, rastgele taban ise **tüm** vakalardan hesaplanıyordu. Sinyalin
+tanımsız olduğu vakaların grup boyutu ötekilerden farklıysa — ki az oynamış
+oyuncuda sinyal sık sık tanımsız kalır — fark sistematik olarak kayar.
+
+**Bu ölçümün sonucu etkilenmedi.** Seçilen iki sinyal (`mudahale_son10`,
+`dokunus_son10`) 329 vakanın hepsinde tanımlıydı; iki kolun n'i 168 ve 161,
+toplamı tam 329. Yani iki payda tesadüfen çakışmış.
+
+Ama hata canlıydı: pas isabeti sinyalleri 321 ve 318 vakada tanımlıydı. O
+ikisinden biri seçilmiş olsaydı 8-11 vaka isabet ortalamasından düşer, tabanda
+kalırdı. Taban artık isabetin ölçüldüğü aynı vakalardan geliyor ve bir test
+bunu sabitliyor.
+
+Not düşülüyor çünkü bu, sonucu değiştirmeyen ama değiştirebilecek bir hataydı:
+"sonuç aynı kaldı" onu görmezden gelmenin gerekçesi değil.
+
 ## Tekrar üretim
 
 ```powershell
