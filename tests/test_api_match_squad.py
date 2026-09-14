@@ -185,3 +185,50 @@ def test_lineup_feeds_the_live_decision_panel(client, match, session) -> None:
                 if a.start_minute <= 70 and (a.end_minute is None or a.end_minute >= 70)]
     assert len(on_at_70) == 11
     assert 20 in {a.player_external_id for a in on_at_70}
+
+
+# --- maç içi yük girişi ------------------------------------------------------- #
+
+def test_load_samples_are_cumulative_and_upserted(client, match, session) -> None:
+    """Aynı oyuncu+dakika ikinci kez yazılınca yeni satır açılmaz, güncellenir."""
+    from app.db.match_load import MatchLoadSample
+
+    body = {
+        "team_external_id": 11, "source": "gps",
+        "speed_thresholds": "hsr>5.5,sprint>7.0 m/s",
+        "samples": [
+            {"player_external_id": 5, "minute": 30, "total_distance_m": 3100.0,
+             "high_speed_m": 240.0},
+            {"player_external_id": 5, "minute": 60, "total_distance_m": 6200.0,
+             "high_speed_m": 480.0},
+        ],
+    }
+    first = client.post("/admin/matches/7001/load-samples", json=body).json()
+    assert first["yazilan"] == 2
+    assert first["oyuncu"] == 1
+    assert first["kaynak"] == "gps"
+
+    body["samples"][1]["total_distance_m"] = 6400.0
+    again = client.post("/admin/matches/7001/load-samples", json=body).json()
+    assert again["maçtaki_toplam_ornek"] == 2      # yeni satır açılmadı
+    rows = session.query(MatchLoadSample).order_by(MatchLoadSample.minute).all()
+    assert [r.minute for r in rows] == [30.0, 60.0]
+    assert rows[1].total_distance_m == 6400.0
+    assert rows[0].speed_thresholds == "hsr>5.5,sprint>7.0 m/s"
+
+
+def test_load_samples_reject_an_unknown_source(client, match) -> None:
+    """Kaynak yalnız 'gps' ya da 'tracking' olabilir — ikisi ayrı güvende."""
+    bad = client.post("/admin/matches/7001/load-samples", json={
+        "team_external_id": 11, "source": "tahmin",
+        "samples": [{"player_external_id": 5, "minute": 30, "total_distance_m": 100.0}],
+    })
+    assert bad.status_code == 422
+
+
+def test_load_samples_need_an_existing_match(client) -> None:
+    missing = client.post("/admin/matches/999999/load-samples", json={
+        "team_external_id": 11, "source": "gps",
+        "samples": [{"player_external_id": 5, "minute": 30, "total_distance_m": 100.0}],
+    })
+    assert missing.status_code == 404
