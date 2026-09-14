@@ -39,10 +39,23 @@ motoru saatle eşitler, saati geçmez. Motorun yorgunluk projeksiyonu tek başı
 F1 0.49 idi (elit antrenörle uyum boyutu, `scripts/coach_iq.py`).
 
 Bantlar: [0,45) [45,60) [60,70) [70,80) [80,∞) → 0..4. Değişiklik sayısı 3+
-tek hücrede (2018-21'de hak 3'tü; 5-hak kuralıyla yeniden fit gerekir).
-Görülmemiş hücre → 0.5 (bilinmiyor). Yeniden fit edilirse tablo VE bu not güncellenir.
+tek hücrede toplanır (`MAX_SUBS_CELL`); hak-bitmişlik bilgisi tabloda değil
+kapıda durur, bu yüzden 3-hak ve 5-hak verisi aynı havuza konabiliyor.
 
-## Bağımsız doğrulama (2026-09-14)
+**Tablo 57 hücre, durum uzayı 60.** Eksik üçü: (45 dk öncesi, herhangi bir
+skor, 3 hak kullanılmış). Yedi kümede hiç görülmedi ama 5-hak dünyasında
+mümkündür. `UNKNOWN_CELL` 0.5 > eşik 0.35 olduğu için böyle bir tik
+**bayrak yakar** — yani "bilmiyorum" sessizlik değil "evet" demektir. Bu
+bilerek böyle: alternatifi (0.0) hiç görülmemiş bir durumda kesin "hayır"
+demek olurdu. Üç hücre de dolana kadar bu bir AÇIK UÇtur.
+
+## Bağımsız doğrulama — ÖNCEKİ tabloya ait (2026-09-14, refit'ten önce)
+
+**Bu bölüm aşağıdaki tabloyu DEĞERLENDİRMEZ.** Ölçüm yapıldığında tablo tek
+kulüpten fit edilmişti ve La Liga 2015/16 ile Premier League 2015/16 gerçekten
+dışarıdaydı. Aynı gün yapılan yeniden fit o iki kümeyi HAVUZA ALDI; bugünün
+tablosu için onlar İÇ-ÖRNEKLEMdir. Kayıt, refit'in neyin üzerine kurulduğunu
+göstermek için duruyor. Yeni tablonun hükmü yukarıdaki leave-one-out'tur.
 
 Tablo ve eşik DONDURULMUŞ hâliyle, külliyatla kesişmeyen 100'er maça uygulandı
 (`scripts/validate_timing_prior.py`). Saat kuralına kasten avantaj verildi:
@@ -57,8 +70,7 @@ eşiği ölçülen kümede en iyi olacak şekilde seçildi.
 kayırıyor. Bu ölçüm önselin fit edildiği 5 dk ızgarada. İkisi farklı soruları
 ölçüyor, ikisi de raporlanır. docs/KARNE-ZAMANLAMA-BAGIMSIZ.md.
 
-Görülmemiş hücre payı bağımsız kümelerde %0.1-0.3 — tablo durum uzayını
-neredeyse tamamen kaplıyor. "Görülmemişte sus" varyantı ölçüldü, sonuç
+Görülmemiş hücre payı o kümelerde %0.1-0.3 — yani seyrek ama sıfır değil. "Görülmemişte sus" varyantı ölçüldü, sonuç
 değişmedi; bu yüzden `UNKNOWN_CELL` 0.5 bırakıldı (şekil kapısında oran
 %10-12 olduğu için orada 0.0'a çekilmişti).
 
@@ -106,6 +118,14 @@ UNKNOWN_CELL = 0.5
 # Maç başına değişiklik hakkı. 2022'den beri IFAB kuralı 5; tablo 3-hak ve 5-hak
 # maçlarının karışımından geldiği için hak sayısı DIŞARIDAN verilmelidir.
 DEFAULT_SUBS_ALLOWED = 5
+
+# Tablonun künyesi TEK yerde durur; ölçüm scriptleri buradan okur (kendi
+# kopyalarını tutan script, tablo değişince sessizce yalan söyler — nitekim
+# `validate_timing_prior` refit'ten sonra bir tur eski kaynağı yazdı).
+PRIOR_SOURCE = ("StatsBomb açık verisi, yedi küme / 16559 tik "
+                "(Barcelona 3-hak+5-hak, La Liga 2015/16, Premier League 2015/16, "
+                "Indian Super League 2021/22, FA WSL 2023/24, Euro 2024); "
+                "hak-bitmiş tikler elendi — 2026-09-14 yeniden fit")
 
 ELITE_SUB_WINDOW_PRIOR: dict[tuple[int, str, int], float] = {
     (0, "drawing", 0): 0.047,   # 200/4317

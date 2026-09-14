@@ -70,6 +70,7 @@ from app.engine.sub_timing.elite_prior import (
     ELITE_SUB_WINDOW_PRIOR,
     MAX_SUBS_CELL,
     MINUTE_BANDS,
+    PRIOR_SOURCE,
     SUB_WINDOW_THRESHOLD,
     UNKNOWN_CELL,
     elite_sub_window_probability,
@@ -235,7 +236,7 @@ def main() -> int:
             "not_kapi": ("tablo hak-bitmiş tikler elenerek fit edildi; ölçüm motorun "
                          "kendi fonksiyonunu çağırır, kapı dahil"),
             "hucre_sayisi": len(ELITE_SUB_WINDOW_PRIOR),
-            "kaynak": "Barcelona'nın 100 maçı, iki takımın antrenörleri, 3200 tik",
+            "kaynak": PRIOR_SOURCE,
         },
         "bagimsiz_kume": {
             "ad": args.label, "mac": len({r["match"] for r in rows}), "tik": len(rows),

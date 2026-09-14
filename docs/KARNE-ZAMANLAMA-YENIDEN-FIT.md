@@ -82,8 +82,12 @@ Yeni tablo **tavana oturuyor**. Saat kuralı yine kasten avantajlı (eşiği öl
 kümede en iyi seçildi) ve yeni tablo onu geçiyor, ama fark (+0,010) gürültü
 bandında — yani bu turnuvada zamanlama hâlâ büyük ölçüde saatin işi.
 
-Görülmemiş hücre payı **sıfır**: 57 hücrelik tablo durum uzayını tamamen
-kaplıyor.
+Görülmemiş hücre payı bu kümede **sıfır çıktı**, ama tablo durum uzayını
+tamamen kaplamıyor: **57 hücre / 60**. Eksik üçü (45 dk öncesi, herhangi bir
+skor, 3 hak kullanılmış) yedi kümenin hiçbirinde görülmedi — 5-hak dünyasında
+mümkün olduğu hâlde. Böyle bir tik gelirse `UNKNOWN_CELL` 0.5 devreye girer ve
+eşik 0.35 olduğu için **bayrak yanar**. Bu, ölçülmüş bir davranış değil, açık
+uçtur; düzeltmesi hücreleri doldurmak, varsayım yazmak değil.
 
 ## Eşik: plato bulundu, argmax seçilmedi
 

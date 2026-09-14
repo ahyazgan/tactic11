@@ -46,7 +46,6 @@ from typing import Any
 from app.engine.coach_benchmark import SelectivityStat, TickObservation, selectivity
 from app.engine.coach_benchmark.compute import PRIOR_LAPLACE
 from app.engine.sub_timing.elite_prior import (
-    ELITE_SUB_WINDOW_PRIOR,
     MAX_SUBS_CELL,
     MINUTE_BANDS,
     SUB_WINDOW_THRESHOLD,
@@ -58,6 +57,10 @@ DEFAULT_WINDOW_MIN = 12.0
 THRESHOLD_SWEEP: tuple[float, ...] = (0.25, 0.30, 0.35, 0.40, 0.45, 0.50)
 # Plato genişliği: en iyi ortalamaya bu kadar yakın eşikler "ayırt edilemez".
 PLATEAU_BAND = 0.005
+# Kıyas tabanı DOSYADAN okunur, canlı sabitten DEĞİL. Sebep: bu script canlı
+# sabiti değiştirmek için var; oradan okunursa refit'ten sonra "eski tablo"
+# sütunu yeni tablonun kendisi olur ve kıyas kendini ölçer.
+BASELINE_TABLE = Path("docs/measurements/timing-prior-baseline.json")
 
 Cell = tuple[int, str, int]
 Row = dict[str, Any]
@@ -101,12 +104,50 @@ def evaluate(table: dict[Cell, float], rows: Sequence[Row], threshold: float) ->
         r["coach_sub"]) for r in rows])
 
 
+def _load_baseline(path: Path) -> dict[str, Any]:
+    """Refit ÖNCESİ tabloyu dosyadan oku — kıyasın tekrarlanabilir olması için.
+
+    Canlı sabit (`ELITE_SUB_WINDOW_PRIOR`) bilerek İTHAL EDİLMEZ: bu script onu
+    değiştirmek için var, oradan okunursa "eski tablo" sütunu refit sonrası yeni
+    tablonun kendisi olur — üstelik örnek-içi ölçüldüğü için refit'i gerileme
+    gibi gösterir.
+    """
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    table: dict[Cell, float] = {}
+    for key, value in doc["tablo"].items():
+        band, state, used = key.split("|")
+        table[(int(band), state, int(used))] = float(value)
+    return {"tablo": table, "esik": float(doc["esik"]), "ad": doc["ad"],
+            "commit": doc.get("commit"), "kaynak": doc.get("kaynak")}
+
+
 def _loo(sets: dict[str, list[Row]], threshold: float) -> dict[str, float]:
     out: dict[str, float] = {}
     for name in sets:
         train = [r for k, v in sets.items() if k != name for r in v]
         table, _ = fit_table(train)
         out[name] = evaluate(table, sets[name], threshold).f1 or 0.0
+    return out
+
+
+def _loo_groups(sets: dict[str, list[Row]], groups: dict[str, str],
+                threshold: float) -> dict[str, float]:
+    """Grup bazlı leave-one-out: aynı kulübün iki rejimi BİRLİKTE dışarı çıkar.
+
+    Küme bazlı LOO "Barcelona 3-hak"ı dışarı çıkarırken "Barcelona 5-hak"ı
+    eğitimde bırakır — aynı kulüp, büyük ölçüde aynı kadro ve aynı antrenör.
+    Bu, kümeler arası genellemeyi olduğundan iyi gösterir. Grup bazlı ölçüm
+    daha zor ve daha dürüst olanıdır; ikisi de raporlanır.
+    """
+    out: dict[str, float] = {}
+    for group in sorted(set(groups.values())):
+        held = [n for n in sets if groups[n] == group]
+        train = [r for n, v in sets.items() if groups[n] != group for r in v]
+        if not train:
+            continue
+        table, _ = fit_table(train)
+        rows = [r for n in held for r in sets[n]]
+        out[group] = evaluate(table, rows, threshold).f1 or 0.0
     return out
 
 
@@ -117,18 +158,22 @@ def main() -> int:
     p.add_argument("--window", type=float, default=DEFAULT_WINDOW_MIN)
     p.add_argument("--threshold", type=float, default=SUB_WINDOW_THRESHOLD,
                    help="karar eşiği; tarama basılır ama seçim buradan gelir")
+    p.add_argument("--baseline", type=Path, default=BASELINE_TABLE,
+                   help="refit öncesi tablo (kıyas tabanı); canlı sabitten okunmaz")
     p.add_argument("--print-table", action="store_true")
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
 
     sets: dict[str, list[Row]] = {}
     allowances: dict[str, int] = {}
+    groups: dict[str, str] = {}
     for spec in args.sets:
         parts = spec.split("|")
-        if len(parts) != 3:
-            print(f"--set biçimi 'AD|KLASÖR|HAK' olmalı: {spec}")
+        if len(parts) not in (3, 4):
+            print(f"--set biçimi 'AD|KLASÖR|HAK[|GRUP]' olmalı: {spec}")
             return 1
-        name, folder, allowed = parts
+        name, folder, allowed = parts[:3]
+        groups[name] = parts[3] if len(parts) == 4 else name
         rows = _load(Path(folder), int(allowed), args.window)
         if not rows:
             print(f"'{name}' kümesinden tik çıkmadı: {folder}")
@@ -145,7 +190,9 @@ def main() -> int:
 
     table, counts = fit_table([r for v in sets.values() for r in v])
     loo = _loo(sets, args.threshold)
-    old = {name: evaluate(ELITE_SUB_WINDOW_PRIOR, rows, SUB_WINDOW_THRESHOLD).f1 or 0.0
+    loo_group = _loo_groups(sets, groups, args.threshold)
+    base = _load_baseline(args.baseline)
+    old = {name: evaluate(base["tablo"], rows, base["esik"]).f1 or 0.0
            for name, rows in sets.items()}
     thin = {f"{c}": n for c, (_a, n) in counts.items() if n < 10}
 
@@ -168,6 +215,20 @@ def main() -> int:
                           "secilen": args.threshold,
                           "not": ("düz bölgede argmax seçmek gürültüye uymaktır; "
                                   "seçim --threshold ile sabitlenir")},
+        "kiyas_tabani": {"ad": base["ad"], "commit": base["commit"],
+                         "kaynak": base["kaynak"], "esik": base["esik"],
+                         "hucre": len(base["tablo"]), "dosya": str(args.baseline),
+                         "not": ("canlı sabitten okunmaz; refit onu değiştirdiği için "
+                                 "canlı okuma kıyası kendi kendine yaptırırdı")},
+        "leave_one_group_out": {
+            "gruplar": {g: sorted(n for n in sets if groups[n] == g)
+                        for g in sorted(set(groups.values()))},
+            "f1": {k: round(v, 3) for k, v in loo_group.items()},
+            "ortalama": round(statistics.mean(loo_group.values()), 3) if loo_group else None,
+            "en_kotu": round(min(loo_group.values()), 3) if loo_group else None,
+            "not": ("küme bazlı LOO aynı kulübün öteki rejimini eğitimde bırakır; "
+                    "grup bazlı olan daha zor ve daha dürüst kıyastır"),
+        },
         "leave_one_out": {"yeni_tablo": {k: round(v, 3) for k, v in loo.items()},
                           "eski_tablo": {k: round(v, 3) for k, v in old.items()},
                           "ortalama": {"yeni": round(statistics.mean(loo.values()), 3),

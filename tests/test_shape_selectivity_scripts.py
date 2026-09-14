@@ -416,3 +416,41 @@ def test_within_group_halves_never_split_one_match() -> None:
     b_ids = {c.match_external_id for c in b}
     assert a_ids & b_ids == set()
     assert len(a) + len(b) == len(cases)
+
+
+def test_refit_baseline_is_frozen_not_read_from_the_live_constant():
+    """Refit'in "eski tablo" sütunu CANLI sabitten okunmamalı.
+
+    `fit_timing_prior` `ELITE_SUB_WINDOW_PRIOR`'ı değiştirmek için var. Kıyas
+    tabanını oradan okursa, refit'ten sonra "eski" tablo yeni tablonun kendisi
+    olur — üstelik örnek-içi ölçüldüğü için refit'i gerileme gibi gösterir.
+    Bir tur bu şekilde yayımlandı; test tekrarını engelliyor.
+    """
+    from pathlib import Path
+
+    from scripts import fit_timing_prior as fit
+
+    assert not hasattr(fit, "ELITE_SUB_WINDOW_PRIOR"), (
+        "canlı tablo ithal edilmiş — kıyas kendini ölçer"
+    )
+
+    base = fit._load_baseline(Path("docs/measurements/timing-prior-baseline.json"))
+    assert len(base["tablo"]) == 50, "dondurulmuş taban refit öncesi 50 hücreydi"
+    assert base["commit"] == "c0527cd"
+
+    from app.engine.sub_timing.elite_prior import ELITE_SUB_WINDOW_PRIOR
+
+    assert base["tablo"] != ELITE_SUB_WINDOW_PRIOR, "taban ile canlı tablo aynı olamaz"
+
+
+def test_prior_source_has_one_home():
+    """Künye tek yerde; ölçüm scripti kendi kopyasını tutmaz.
+
+    `validate_timing_prior` refit'ten sonra bir tur "Barcelona'nın 100 maçı"
+    yazmaya devam etti — tablo yedi kümeden yeniden fit edilmişken.
+    """
+    from app.engine.sub_timing.elite_prior import PRIOR_SOURCE
+    from scripts.validate_timing_prior import PRIOR_SOURCE as imported
+
+    assert imported is PRIOR_SOURCE
+    assert "yedi küme" in PRIOR_SOURCE

@@ -230,3 +230,37 @@ def test_sub_timing_passes_allowance_to_the_window():
     assert open_window.elite_window_probability > 0.0
     assert shut.elite_window_probability == 0.0
     assert shut.elite_window is False
+
+
+def test_unseen_prior_cells_flag_rather_than_stay_silent():
+    """Tablo 57 hücre, durum uzayı 60 — eksik üç hücre "evet" der, sessiz kalmaz.
+
+    Yedi kümede hiç görülmeyen üçlü: (45 dk öncesi, herhangi bir skor, 3 hak
+    kullanılmış). 5-hak dünyasında mümkün. `UNKNOWN_CELL` 0.5 ve eşik 0.35
+    olduğu için böyle bir tik BAYRAK YAKAR. Bu ölçülmüş bir davranış değil,
+    belgelenmiş bir açık uç (docs/KARNE-ZAMANLAMA-YENIDEN-FIT.md); test onu
+    sessizce değişmesin diye sabitliyor, doğru olduğunu iddia etmiyor.
+    """
+    from app.engine.sub_timing.elite_prior import (
+        ELITE_SUB_WINDOW_PRIOR,
+        SUB_WINDOW_THRESHOLD,
+        UNKNOWN_CELL,
+        elite_sub_window_probability,
+    )
+
+    bands = sorted({k[0] for k in ELITE_SUB_WINDOW_PRIOR})
+    states = sorted({k[1] for k in ELITE_SUB_WINDOW_PRIOR})
+    used = sorted({k[2] for k in ELITE_SUB_WINDOW_PRIOR})
+    missing = [(b, s, u) for b in bands for s in states for u in used
+               if (b, s, u) not in ELITE_SUB_WINDOW_PRIOR]
+
+    assert len(ELITE_SUB_WINDOW_PRIOR) == 57
+    assert missing == [(0, "drawing", 3), (0, "leading", 3), (0, "trailing", 3)]
+
+    # "Bilinmiyor" sessizlik değil, evet: 0.5 > 0.35.
+    assert UNKNOWN_CELL > SUB_WINDOW_THRESHOLD
+    for _band, state, subs_used in missing:
+        p = elite_sub_window_probability(30.0, state, subs_used, subs_allowed=5)
+        assert p == UNKNOWN_CELL
+    # Hak bittiyse kapı yine de susturur — tablo ne derse desin.
+    assert elite_sub_window_probability(30.0, "trailing", 3, subs_allowed=3) == 0.0
