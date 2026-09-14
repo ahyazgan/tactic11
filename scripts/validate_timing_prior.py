@@ -11,7 +11,17 @@ antrenörleri, 3200 ızgara tiki. Hiç dışarıda sınanmadı.
 
 Bu tablo panelde `sub_timing` sinyalini yakıyor, yani koça "şimdi değişiklik
 penceresi" diyen şey bu. Sınanan nesne tablonun ve eşiğin **kendisidir**;
-yeniden fit edilmez.
+yeniden fit edilmez. Ölçüm motorun `elite_sub_window_probability` fonksiyonunu
+DOĞRUDAN çağırır — tablo, hak-bitti kapısı ve eşik tek nesnedir; kapıyı atlayan
+bir ölçüm olmayan bir şeyi ölçer.
+
+**DİKKAT — kesişim denetimi yalnız `--corpus-dir` için çalışır.** Tablo
+2026-09-14'te yedi kümeden yeniden fit edildi (bkz. `elite_prior` doküstringi):
+Barcelona 3/5-hak, La Liga 2015/16, Premier League 2015/16, Indian Super League
+2021/22, FA WSL 2023/24, Euro 2024. Bunlardan biri `--independent-dir` olarak
+verilirse sonuç bağımsız DEĞİLDİR, kendini sınamadır. Fit havuzundaki kümelerin
+dürüst dışarıda-kalan sayısı `scripts/fit_timing_prior.py` çıktısındaki
+leave-one-out sütunudur.
 
 ## Ölçü: seçicilik, F1 değil
 
@@ -56,11 +66,13 @@ from app.engine.coach_benchmark import (
 )
 from app.engine.coach_benchmark.compute import PRIOR_LAPLACE
 from app.engine.sub_timing.elite_prior import (
+    DEFAULT_SUBS_ALLOWED,
     ELITE_SUB_WINDOW_PRIOR,
     MAX_SUBS_CELL,
     MINUTE_BANDS,
     SUB_WINDOW_THRESHOLD,
     UNKNOWN_CELL,
+    elite_sub_window_probability,
 )
 from scripts.validate_shape_prior import GRID_MINUTES, _grid_ticks
 
@@ -84,10 +96,24 @@ def _obs(rows: Sequence[Row], flag: Callable[[Row], bool]) -> list[TickObservati
     return [TickObservation(r["match"], r["minute"], flag(r), r["coach_sub"]) for r in rows]
 
 
-def _fit(rows: Sequence[Row]) -> dict[Cell, float]:
-    """`fit_timing_prior` ile aynı kural: hücre oranı, Laplace düzeltmeli."""
+def _production(subs_allowed: int) -> Callable[[Row], bool]:
+    """Üretimdeki nesnenin TAMAMI: tablo + hak-bitti kapısı + eşik.
+
+    Motor fonksiyonu doğrudan çağrılır; burada yeniden uygulamak, ölçümün
+    üretimden sessizce ayrılmasına yol açardı. Tablo hak-bitmiş tikler ELENEREK
+    fit edildiği için kapısız ölçüm olmayan bir nesneyi ölçer.
+    """
+    return lambda r: elite_sub_window_probability(
+        r["minute"], r["score_state"], r["subs_used"],
+        subs_allowed=subs_allowed) >= SUB_WINDOW_THRESHOLD
+
+
+def _fit(rows: Sequence[Row], subs_allowed: int) -> dict[Cell, float]:
+    """`scripts.fit_timing_prior` ile aynı kural: hak-bitmiş tik ELENİR, sonra oran."""
     hits: dict[Cell, list[int]] = {}
     for r in rows:
+        if subs_allowed - r["subs_used"] <= 0:
+            continue
         cell = _cell(r)
         hits.setdefault(cell, [0, 0])
         hits[cell][0] += int(r["coach_sub"])
@@ -95,8 +121,12 @@ def _fit(rows: Sequence[Row]) -> dict[Cell, float]:
     return {c: (a + PRIOR_LAPLACE) / (n + 2 * PRIOR_LAPLACE) for c, (a, n) in hits.items()}
 
 
-def _apply(table: dict[Cell, float], threshold: float, unknown: float) -> Callable[[Row], bool]:
-    return lambda r: table.get(_cell(r), unknown) >= threshold
+def _apply(
+    table: dict[Cell, float], threshold: float, unknown: float, subs_allowed: int,
+) -> Callable[[Row], bool]:
+    """Küme içi tavan için: öğrenilen tablo + aynı kapı."""
+    return lambda r: (subs_allowed - r["subs_used"] > 0
+                      and table.get(_cell(r), unknown) >= threshold)
 
 
 def _best_clock(rows: Sequence[Row]) -> tuple[float, SelectivityStat]:
@@ -110,13 +140,15 @@ def _best_clock(rows: Sequence[Row]) -> tuple[float, SelectivityStat]:
     return best
 
 
-def _ceiling(rows: Sequence[Row], threshold: float, unknown: float) -> list[SelectivityStat]:
+def _ceiling(
+    rows: Sequence[Row], threshold: float, unknown: float, subs_allowed: int,
+) -> list[SelectivityStat]:
     ids = sorted({r["match"] for r in rows})
     a_ids = {m for i, m in enumerate(ids) if i % 2 == 0}
     a = [r for r in rows if r["match"] in a_ids]
     b = [r for r in rows if r["match"] not in a_ids]
-    return [selectivity(_obs(a, _apply(_fit(b), threshold, unknown))),
-            selectivity(_obs(b, _apply(_fit(a), threshold, unknown)))]
+    return [selectivity(_obs(a, _apply(_fit(b, subs_allowed), threshold, unknown, subs_allowed))),
+            selectivity(_obs(b, _apply(_fit(a, subs_allowed), threshold, unknown, subs_allowed)))]
 
 
 def _sel(x: SelectivityStat) -> dict[str, Any]:
@@ -124,11 +156,11 @@ def _sel(x: SelectivityStat) -> dict[str, Any]:
                 precision=x.precision, recall=x.recall, f1=x.f1, lift=x.lift)
 
 
-def _unknown_split(rows: Sequence[Row]) -> dict[str, Any]:
+def _unknown_split(rows: Sequence[Row], subs_allowed: int) -> dict[str, Any]:
     """Tablonun hiç görmediği hücreler ne kadar yer kaplıyor ve ne kadar isabetli?"""
     seen = [r for r in rows if _cell(r) in ELITE_SUB_WINDOW_PRIOR]
     unseen = [r for r in rows if _cell(r) not in ELITE_SUB_WINDOW_PRIOR]
-    flag = _apply(ELITE_SUB_WINDOW_PRIOR, SUB_WINDOW_THRESHOLD, UNKNOWN_CELL)
+    flag = _production(subs_allowed)
     out: dict[str, Any] = {
         "gorulmus": _sel(selectivity(_obs(seen, flag))) if seen else None,
         "gorulmemis": _sel(selectivity(_obs(unseen, flag))) if unseen else None,
@@ -144,6 +176,8 @@ def main() -> int:
     p.add_argument("--independent-dir", type=Path, required=True)
     p.add_argument("--label", default="bağımsız küme")
     p.add_argument("--window", type=float, default=DEFAULT_WINDOW_MIN)
+    p.add_argument("--subs-allowed", type=int, default=DEFAULT_SUBS_ALLOWED,
+                   help="bağımsız kümenin dönemindeki değişiklik hakkı (2015/16 → 3)")
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
 
@@ -163,11 +197,14 @@ def main() -> int:
         print("bağımsız maçlardan tik çıkmadı")
         return 1
 
-    frozen = selectivity(_obs(rows, _apply(
-        ELITE_SUB_WINDOW_PRIOR, SUB_WINDOW_THRESHOLD, UNKNOWN_CELL)))
-    silent = selectivity(_obs(rows, _apply(ELITE_SUB_WINDOW_PRIOR, SUB_WINDOW_THRESHOLD, 0.0)))
+    allowed = args.subs_allowed
+    for r in rows:
+        r["remaining"] = max(0, allowed - r["subs_used"])
+    frozen = selectivity(_obs(rows, _production(allowed)))
+    silent = selectivity(_obs(rows, _apply(
+        ELITE_SUB_WINDOW_PRIOR, SUB_WINDOW_THRESHOLD, 0.0, allowed)))
     clock_t, clock = _best_clock(rows)
-    ceil_a, ceil_b = _ceiling(rows, SUB_WINDOW_THRESHOLD, UNKNOWN_CELL)
+    ceil_a, ceil_b = _ceiling(rows, SUB_WINDOW_THRESHOLD, UNKNOWN_CELL, allowed)
     always = selectivity(_obs(rows, lambda r: True))
 
     lifts = [ceil_a.lift, ceil_b.lift]
@@ -194,6 +231,9 @@ def main() -> int:
             "ad": "ELITE_SUB_WINDOW_PRIOR (app/engine/sub_timing)",
             "canli_motorda_kullaniliyor": True,
             "esik": SUB_WINDOW_THRESHOLD, "gorulmemis_hucre": UNKNOWN_CELL,
+            "degisiklik_hakki": allowed,
+            "not_kapi": ("tablo hak-bitmiş tikler elenerek fit edildi; ölçüm motorun "
+                         "kendi fonksiyonunu çağırır, kapı dahil"),
             "hucre_sayisi": len(ELITE_SUB_WINDOW_PRIOR),
             "kaynak": "Barcelona'nın 100 maçı, iki takımın antrenörleri, 3200 tik",
         },
@@ -213,7 +253,7 @@ def main() -> int:
             "f1_farki": gap, "hukum_bandi": MIN_F1_GAIN,
             "hukum": verdict, "not": note,
         },
-        "gorulmemis_hucre_analizi": _unknown_split(rows),
+        "gorulmemis_hucre_analizi": _unknown_split(rows, allowed),
         "kume_ici_tavan_kaldirma": lifts,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)

@@ -160,11 +160,15 @@ def test_sub_timing_elite_window_needs_subs_used():
                             subs_used=0).value
     assert on.elite_window_probability == round(elite_sub_window_probability(66.0, "leading", 0), 3)
     assert on.elite_window is (on.elite_window_probability >= SUB_WINDOW_THRESHOLD)
-    # 20. dakika berabere, hak kullanılmamış → pencere kapalı; 3 hak bitmişse geç dakikada da düşük
+    # 20. dakika berabere, hak kullanılmamış → pencere kapalı
     early = compute_sub_timing(11, passes, [], current_minute=20.0, subs_used=0).value
     assert early.elite_window is False
-    assert elite_sub_window_probability(85.0, "trailing", 3) < SUB_WINDOW_THRESHOLD
     assert elite_sub_window_probability(66.0, "trailing", 0) > elite_sub_window_probability(20.0, "trailing", 0)
+    # 85. dakika, geride, 3 değişiklik yapılmış: HAKKI VARSA pencere açık, hakkı
+    # bittiyse kapalı. Eski tablo ikisini ayıramıyordu çünkü hak-bitmiş tikler
+    # hücreye karışıyordu (docs/KARNE-DEGISIKLIK-HAKKI.md).
+    assert elite_sub_window_probability(85.0, "trailing", 3, subs_allowed=5) > SUB_WINDOW_THRESHOLD
+    assert elite_sub_window_probability(85.0, "trailing", 3, subs_allowed=3) == 0.0
 
 
 def test_recommendation_order_is_deterministic_not_set_iteration_order():
