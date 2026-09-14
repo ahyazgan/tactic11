@@ -165,3 +165,28 @@ def test_sub_timing_elite_window_needs_subs_used():
     assert early.elite_window is False
     assert elite_sub_window_probability(85.0, "trailing", 3) < SUB_WINDOW_THRESHOLD
     assert elite_sub_window_probability(66.0, "trailing", 0) > elite_sub_window_probability(20.0, "trailing", 0)
+
+
+def test_recommendation_order_is_deterministic_not_set_iteration_order():
+    """Eşit aciliyette sıra AÇIK kurala göre: aciliyet → yorgunluk → oyuncu kimliği.
+
+    Önceden eşitlik `my_player_ids` kümesinin yineleme sırasıyla çözülüyordu,
+    yani koça gösterilen 1. öneri oyuncu kimliğinin hash'ine bağlıydı — tekrar
+    üretilemez. Ölçüm grup içi sıranın bilgi taşımadığını gösteriyor
+    (docs/KARNE-SIRALAMA.md); bu test isabeti değil, çıktının açıklanabilir
+    olmasını kilitler.
+    """
+    passes = [_p(pid, minute) for pid in (901, 902, 903)
+              for minute in (5.0, 10.0, 15.0, 20.0, 25.0, 60.0)]
+    first = compute_live_sub_recommendation(
+        team_external_id=11, all_passes=passes, all_def_actions=[], current_minute=70.0,
+    ).value
+    # Girdi sırası değişse de çıktı sırası aynı kalmalı
+    second = compute_live_sub_recommendation(
+        team_external_id=11, all_passes=list(reversed(passes)), all_def_actions=[],
+        current_minute=70.0,
+    ).value
+    assert [r.player_external_id for r in first.recommendations] ==            [r.player_external_id for r in second.recommendations]
+    keys = [(-r.urgency_score, -r.fatigue_score, r.player_external_id)
+            for r in first.recommendations]
+    assert keys == sorted(keys)
