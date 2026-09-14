@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Codex kamera: konumsal takım uyuşmazlıklarını görüntü kanıtıyla ayır ve tekrar üretilebilir hata tanısı ekle. (407a565)
+  Done when: geliştirme/kontrol tanısı, kaynak kutu görüntüleri ve görsel inceleme notları, anlamlı regresyonlar ve lint/tip kontrolü. Sonuç: docs/TAKIM-HATA-TANISI-SONUCLARI.md; 49 ilgili test geçti. %81,11 ve 119 uyuşmazlık gerçek forma doğruluğu/hata sayısı olarak kullanılamaz; model değişmedi.
+
 - [x] Codex kamera: ayırt edilemeyen forma renklerinden takım üretmeyi ve geçersiz canlı renk çapasını önle. (b52767e)
   Done when: tek renk/canlı geçiş regresyonları, aynı geliştirme-kontrol kayıtlarında ölçüm ve tam test/lint/tip kontrolü. Sonuç: docs/TAKIM-RENK-BELIRSIZLIGI-SONUCLARI.md; 2529 test geçti. Kontrol doğruluğu %81,11 kaldı; genel doğruluk hedefi henüz geçilmedi.
 
