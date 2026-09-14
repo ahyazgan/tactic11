@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Codex kamera: saha çevresindeki sahte takipleri ayır, kamera bazında doğrula ve önizleme zaman/boyut/geometri hatalarını düzelt. (a9079c1)
+  Done when: dondurulmuş filtre, 248 yeni kör kontrol kutusu, iki yeni gece klibi, gerçek dedektör tekrarında 375 karenin birebir eşleşmesi ve okunabilir önizleme. Sonuç: docs/OYUNCU-SUZGECI-SONUCLARI.md. Gündüz 25 sahte kutu→0, forma kaybı 0, doğru 83→95; gece ek başka-renk ataması nedeniyle yalnız 117093 profili etkin. 89 ilgili test geçti; genel doğruluk/oyuncu kimliği/olay doğruluğu tamamlanmış sayılmaz.
+
 - [x] Codex kamera: aydınlık 117093 maçını ayrı kalibrasyonla işle, kör dış kontrolü ölç ve başarısız ışık varsayılanını geri al. (417b25e)
   Done when: üç kaynak klip/hash, 172 kutu etiketi, 65 saha işareti, aynı kutularda ham/çim karşılaştırması, üretim yolu eşitliği ve takip önizlemesi hazır. Sonuç: docs/GUNDUZ-MACI-SONUCLARI.md; kontrol ham 53/13/8, çim 16/54/4 (doğru/yanlış/atanamayan). Ham varsayılan, normalizasyon açık seçimle korunur. 29 ilgili ve 2.594 tam yerel test geçti, 1 atlandı. Kişi olmayan tespit ve olay doğruluğu çözülmüş sayılmaz.
 
