@@ -1,0 +1,15 @@
+{
+  "date": "2026-09-14",
+  "decision_made_before_control_labeling": true,
+  "development_segments": [0, 3],
+  "control_segments": [6, 9],
+  "sample_times_seconds": [5, 20],
+  "candidate": "bright_quarter",
+  "rule": "Median of the brightest max(2, ceil(N/4)) RGB observations per eligible track, ranked by max RGB channel; existing clustering and rejection unchanged.",
+  "development": {
+    "baseline": {"correct": 36, "wrong": 10, "unassigned": 3, "other_assigned": 1},
+    "candidate": {"correct": 41, "wrong": 8, "unassigned": 0, "other_assigned": 1}
+  },
+  "control_acceptance": "Correct player assignments must increase, wrong player assignments must not increase, other-colour assignments must not increase.",
+  "limits": "One match, Codex visual labels without independent adjudication; does not establish player identity, pass accuracy or match generalization."
+}
