@@ -53,8 +53,8 @@ class DetectorConfig:
     tile_aspect: float = 16 / 9
     resolution: int | None = None
     device: str | None = None   # None → cuda varsa cuda
-    # Dilimler toplu tahmin. None → (tiles+1)²/2+1: örtüşmeli ızgara (tiles+1)²
-    # dilim üretir, iki eşit batch + en fazla 1 dolgu (ölçüm: 6 dilim → 25 en hızlı).
+    # None: Torch uses the actual overlapping slice count for two balanced batches.
+    # ONNX retains its separately measured legacy grouping.
     batch_size: int | None = None
     half: bool = True           # fp16 çıkarım (CUDA'da); CPU'da yok sayılır
 
@@ -72,6 +72,32 @@ class DetectorConfig:
         cols, rows = self.tile_grid(width, height)
         # Örtüşmeli ızgara ≈ (cols+1)(rows+1) dilim → iki eşit batch + ≤1 dolgu
         return (cols + 1) * (rows + 1) // 2 + 1
+
+    def torch_batch_size(self, width: int, height: int) -> int:
+        """Balance the actual slicer windows, including its final edge window.
+
+        The nominal grid undercounts overlapping panoramic slices: 4096x1080
+        produces 55 windows, not 50. Batch 26 pads them to 78; batch 28 needs 56.
+        This changes grouping only, never the slice geometry or detection rules.
+        """
+        if self.batch_size is not None or self.tiles <= 1:
+            return self.effective_batch_size(width, height)
+        cols, rows = self.tile_grid(width, height)
+
+        def windows(size: int, divisions: int) -> int:
+            tile = int(size / divisions)
+            overlap = int(tile * self.tile_overlap)
+            stride = tile - overlap
+            if tile <= 0 or stride <= 0 or overlap < 0:
+                raise ValueError("Positive tile dimensions and overlap in [0, 1) required")
+            if size <= tile:
+                return 1
+            if overlap == 0:
+                return (size + stride - 1) // stride
+            return (size - tile + stride - 1) // stride + 1
+
+        count = windows(width, cols) * windows(height, rows)
+        return (count + 1) // 2
     # İnce ayarlı ağırlık klasörü (scripts/train_topview_detector.py çıktısı:
     # checkpoint_best_total.pth + meta.json). None → COCO ön-eğitimli.
     weights: str | None = None
@@ -233,7 +259,7 @@ class RFDetrDetector:
 
     def _prepare(self, width: int, height: int) -> int:
         """İlk kareyi görünce batch boyutunu sabitle + fp16 derle."""
-        batch = self.cfg.effective_batch_size(width, height)
+        batch = self.cfg.torch_batch_size(width, height)
         if not self._prepared:
             self._prepared = True
             if batch > 1 and self.cfg.half and self.device.startswith("cuda"):

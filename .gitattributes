@@ -6,6 +6,8 @@ docs/measurements/joint-identity-control-day-evidence/** -text
 docs/measurements/duplicate-part-*.json -text
 docs/measurements/tracker-backends-*.json -text
 docs/measurements/deepocsort-*.json -text
+docs/measurements/torch-batch-*.json -text
+docs/TORCH-GRUPLAMA-KONTROL-PLANI.md -text
 docs/SABIT-KAMERA-KONTROL-ETIKETLEME.md -text
 docs/SABIT-KAMERA-KIMLIK-PLANI.md -text
 
