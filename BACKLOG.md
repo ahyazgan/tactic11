@@ -9,6 +9,18 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Codex kamera: kaybolan iki gündüz kimlik bağlantısını görüntü/karar iziyle ayır ve tekrarlanabilir regresyon senaryolarına bağla. (f31e088)
+  Done when: 407 kaynak örnek karesinden iki hata yeniden üretildi; görüntü/karar izi ve dört tanı kolu kaydedildi. 17 yeni test, eski korumalarla birlikte 63 test geçti. Sonuç: docs/KIMLIK-HATA-DENETIMI-SONUCLARI.md. Beyazda parçalı kutu + hareket kapısı, mavide oyuncu/hakem alt-gövde karışımı ayrıldı. Oracle müdahaleleri üretim düzeltmesi değildir; üretim kodu değişmedi, yeni kontrol açılmadı.
+
+- [x] Codex kamera: Deep OC-SORT + OSNet görünüş eşleştirmesini ölç ve video/canlı takip motoru seçimine entegre et. (b2310a9)
+  Done when: sabit resmî model/kod, 11 kesitte üç kol, video/sıcak/izole canlı seçim, 22 birebir eski çıktı ve 164.772 kişi gözlemi; 95 ilgili CV testi ve 2.893 uygulama testi geçti. Sonuç: docs/TAKIP-REID-SONUCLARI.md. ReID bazı kişi çiftlerini iyileştirdi, fakat iki eski doğru gündüz bağlantısını kaybetti ve bazı forma hatalarını artırdı; deneysel açık seçimle entegre, varsayılan ByteTrack korundu, yeni kontrol açılmadı.
+
+- [x] Codex kamera: açık kaynak ByteTrack/BoT-SORT/OC-SORT motorlarını aynı tespitlerde karşılaştır; Deep OC-SORT uyumluluğunu incele. (3eb023b)
+  Done when: 11 kesit, motor başına 4.125 kare, 44 birebir tekrar; kişi/forma/kapsam ve süre ölçümleri, 65 ilgili CV testi, 2.882 uygulama testi ve PR kontrolleri tamamlandı. Sonuç: docs/TAKIP-MOTORU-KARSILASTIRMA-SONUCLARI.md. Hiçbir alternatif tüm geliştirme kapılarını geçmedi; üretim motoru korundu, yeni kontrol açılmadı. Deep OC-SORT'un kaynak/CUDA uyumu incelendi; ReID çıkarımı henüz ölçülmedi.
+
+- [x] Codex kamera: kişi kimliği/forma zincirini ortak üretim akışında düzelt; mükerrer parçaları, kimlik devrini, güvenli bağlantıyı ve canlı segment kimliklerini birlikte doğrula. (401adb3, 9f571a3, 8a66672)
+  Done when: değişmez kutularla üretim tekrarı, kişi bağlantısı denetimi, dondurulmuş kontrol, video/canlı/önizleme ve bütün PR kontrolleri tamamlandı. 2.877 uygulama, 164 ilgili CV ve gerçek PostgreSQL'de 14 test geçti. Sonuç: docs/SABIT-KAMERA-KIMLIK-SONUCLARI.md. Gündüz kontrolünde aynı kişi bağlantısı 92/134→90/134 gerilediği için deneysel profil otomatik açılmadı; gündüz kontrolünün bağımsızlık sınırları raporlu, genel kişi kimliği doğruluğu tamamlanmış sayılmaz.
+
 - [x] Codex kamera: kesme/tekrar/kalibrasyon boşluğunda kimlik ve forma geçmişini ayır, çekimler arası hız hesabını kes; takip süresini aynı tespitlerde ölç. (76797ec)
   Done when: 13 gerçek CV/çekirdek testi, 87 ilgili uygulama testi, 2.635 tam yerel test; üretim yolunda 1.125 sabit kamera karesinin oyuncu/renk geçmişi eşit. Sonuç: docs/TAKIP-SUREKLILIGI-SONUCLARI.md. Daha uzun bekleme gündüz doğruyu 195→194 düşürüp karışık ID'yi 7→8 artırdığı için reddedildi; gerçek süre raporlanıyor. Sabit kamerada oyuncular arası ID değişimi ve genel forma/olay doğruluğu tamamlanmış sayılmaz.
 

@@ -89,7 +89,7 @@ def ingest_derived_passes(
         )
 
     mevcut = {
-        e.source_event_id for e in session.execute(
+        (e.source_event_id, e.period) for e in session.execute(
             select(models.EventRow).where(
                 models.EventRow.sport == football.SPORT_NAME,
                 models.EventRow.tenant_id == tenant_id,
@@ -102,11 +102,14 @@ def ingest_derived_passes(
     now = datetime.now(UTC)
     yazilan = 0
     for p in passes:
-        # Tekil kimlik: dakika + veren + alan. Aynı segment yeniden işlenirse
-        # çift kayıt oluşmaz.
-        eid = (f"{p['minute']:.4f}-{p['from_player_external_id']}"
-               f"-{p['to_player_external_id']}")
-        if eid in mevcut:
+        period = int(p.get("period", 1 if float(p["minute"]) < 45 else 2))
+        # Anonymous player IDs are match-scoped; the database event key is
+        # unique across matches. Legacy keys remain idempotent in their own
+        # match and period without rewriting already stored events.
+        legacy_eid = (f"{p['minute']:.4f}-{p['from_player_external_id']}"
+                      f"-{p['to_player_external_id']}")
+        eid = f"{match_id}-{period}-{legacy_eid}"
+        if (eid, period) in mevcut or (legacy_eid, period) in mevcut:
             continue
         session.add(models.EventRow(
             sport=football.SPORT_NAME, tenant_id=tenant_id,
@@ -116,7 +119,7 @@ def ingest_derived_passes(
             player_external_id=p.get("from_player_external_id"),
             event_type="pass",
             minute=float(p["minute"]),
-            period=int(p.get("period", 1 if float(p["minute"]) < 45 else 2)),
+            period=period,
             start_x=p.get("start_x"), start_y=p.get("start_y"),
             end_x=p.get("end_x"), end_y=p.get("end_y"),
             # "completed" (d ile) — SAĞLAYICI ingest'iyle AYNI sözcük olmalı.
@@ -136,7 +139,7 @@ def ingest_derived_passes(
             }, ensure_ascii=False),
             created_at=now,
         ))
-        mevcut.add(eid)
+        mevcut.add((eid, period))
         yazilan += 1
     return yazilan
 
@@ -159,28 +162,33 @@ def ingest_derived_defenses(
     )
     if replace:
         session.execute(delete(models.EventRow).where(*scope))
-    existing = set(session.execute(select(models.EventRow.source_event_id).where(*scope)).scalars())
+    existing = {
+        (event_id, period) for event_id, period in session.execute(
+            select(models.EventRow.source_event_id, models.EventRow.period).where(*scope))
+    }
     written = 0
     for event in payload["derived_defensive_actions"]:
         if event["action_type"] != "ball_recovery":
             raise ValueError("video defense supports observed ball_recovery only")
-        eid = (f"{event['period']}-{event['minute']:.4f}-{event['player_external_id']}"
-               f"-{event['previous_player_external_id']}")
-        if eid in existing:
+        period = int(event["period"])
+        legacy_eid = (f"{period}-{event['minute']:.4f}-{event['player_external_id']}"
+                      f"-{event['previous_player_external_id']}")
+        eid = f"{match_id}-{legacy_eid}"
+        if (eid, period) in existing or (legacy_eid, period) in existing:
             continue
         session.add(models.EventRow(
             sport=football.SPORT_NAME, tenant_id=tenant_id,
             source=DERIVED_DEFENSE_SOURCE, source_event_id=eid,
             match_external_id=match_id, team_external_id=event["team_external_id"],
             player_external_id=event["player_external_id"], event_type="defensive_action",
-            minute=event["minute"], period=event["period"],
+            minute=event["minute"], period=period,
             start_x=event["x"], start_y=event["y"], pattern="ball_recovery",
             outcome="successful", is_goal=False, key_pass=False,
             raw_json=json.dumps({**event, "derived": True, "estimated": True,
                                  "coverage": "observed_recoveries_only"}),
             created_at=datetime.now(UTC),
         ))
-        existing.add(eid)
+        existing.add((eid, period))
         written += 1
     return written
 

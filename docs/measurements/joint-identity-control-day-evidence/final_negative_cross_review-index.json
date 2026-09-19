@@ -1,0 +1,528 @@
+{
+  "changed_seg03-01.jpg": [
+    {
+      "left": "0-686-d12",
+      "right": "0-716-d26",
+      "same_endpoint": "0-716-d25",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 68.05207528314456,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-0-686-d12.jpg"
+      ]
+    },
+    {
+      "left": "0-686-d25",
+      "right": "0-716-d25",
+      "same_endpoint": "0-716-d26",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 68.05207528314456,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-0-686-d25.jpg"
+      ]
+    },
+    {
+      "left": "3-374-d14",
+      "right": "3-404-d13",
+      "same_endpoint": "3-404-d15",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 28.8376423991391,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-3-374-d14.jpg"
+      ]
+    },
+    {
+      "left": "3-686-d5",
+      "right": "3-716-d9",
+      "same_endpoint": "3-716-d8",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 30.728968925917446,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-3-686-d5.jpg"
+      ]
+    },
+    {
+      "left": "3-686-d13",
+      "right": "3-716-d8",
+      "same_endpoint": "3-716-d9",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 30.728968925917446,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-3-686-d13.jpg"
+      ]
+    },
+    {
+      "left": "3-686-d23",
+      "right": "3-716-d8",
+      "same_endpoint": "3-716-d9",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 30.728968925917446,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-3-686-d23.jpg"
+      ]
+    }
+  ],
+  "seg6-01.jpg": [
+    {
+      "left": "6-374-d0",
+      "right": "6-404-d3",
+      "same_endpoint": "6-404-d2",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 72.16658246723341,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d0.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d2",
+      "right": "6-404-d3",
+      "same_endpoint": "6-404-d6",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 42.83074428783605,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d2.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d3",
+      "right": "6-404-d6",
+      "same_endpoint": "6-404-d3",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 42.83074428783605,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d3.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d5",
+      "right": "6-404-d8",
+      "same_endpoint": "6-404-d7",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 115.4671261726146,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d5.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d6",
+      "right": "6-404-d3",
+      "same_endpoint": "6-404-d4",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 59.89405522723019,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d6.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d8",
+      "right": "6-404-d10",
+      "same_endpoint": "6-404-d9",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 174.77468754442103,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d8.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d9",
+      "right": "6-404-d9",
+      "same_endpoint": "6-404-d10",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 174.77468754442103,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d9.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d10",
+      "right": "6-404-d10",
+      "same_endpoint": "6-404-d12",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 625.7503776716799,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d10.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d11",
+      "right": "6-404-d24",
+      "same_endpoint": "6-404-d13",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 37.9939474003755,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d11.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d12",
+      "right": "6-404-d13",
+      "same_endpoint": "6-404-d14",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 51.4713588440212,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d12.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d13",
+      "right": "6-404-d17",
+      "same_endpoint": "6-404-d0",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 41.08679836638528,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d13.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d14",
+      "right": "6-404-d16",
+      "same_endpoint": "6-404-d15",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 23.145788797586917,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d14.jpg"
+      ]
+    }
+  ],
+  "seg6-02.jpg": [
+    {
+      "left": "6-374-d15",
+      "right": "6-404-d15",
+      "same_endpoint": "6-404-d16",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 23.145788797586917,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d15.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d16",
+      "right": "6-404-d15",
+      "same_endpoint": "6-404-d18",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 25.106146727756233,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d16.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d17",
+      "right": "6-404-d0",
+      "same_endpoint": "6-404-d17",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 41.08679836638528,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d17.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d22",
+      "right": "6-404-d13",
+      "same_endpoint": "6-404-d24",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 37.9939474003755,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d22.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d23",
+      "right": "6-404-d7",
+      "same_endpoint": "6-404-d8",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 115.4671261726146,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d23.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d24",
+      "right": "6-404-d10",
+      "same_endpoint": "6-404-d9",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 174.77468754442103,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d24.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d25",
+      "right": "6-404-d14",
+      "same_endpoint": "6-404-d28",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 634.6801244340038,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d25.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d30",
+      "right": "6-404-d12",
+      "same_endpoint": "6-404-d38",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 1007.945027752177,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d30.jpg"
+      ]
+    },
+    {
+      "left": "6-374-d38",
+      "right": "6-404-d40",
+      "same_endpoint": "6-404-d41",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 383.6492246833006,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-374-d38.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d4",
+      "right": "6-716-d5",
+      "same_endpoint": "6-716-d3",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 40.328582063469575,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d4.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d5",
+      "right": "6-716-d3",
+      "same_endpoint": "6-716-d5",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 40.328582063469575,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d5.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d6",
+      "right": "6-716-d6",
+      "same_endpoint": "6-716-d4",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 56.27920248913003,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d6.jpg"
+      ]
+    }
+  ],
+  "seg6-03.jpg": [
+    {
+      "left": "6-686-d7",
+      "right": "6-716-d7",
+      "same_endpoint": "6-716-d19",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 103.78043809564619,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d7.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d8",
+      "right": "6-716-d19",
+      "same_endpoint": "6-716-d7",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 103.78043809564619,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d8.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d9",
+      "right": "6-716-d5",
+      "same_endpoint": "6-716-d6",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 53.550255674576384,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d9.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d10",
+      "right": "6-716-d10",
+      "same_endpoint": "6-716-d8",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 205.27209457814766,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d10.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d12",
+      "right": "6-716-d8",
+      "same_endpoint": "6-716-d10",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 205.27209457814766,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d12.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d15",
+      "right": "6-716-d14",
+      "same_endpoint": "6-716-d11",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 54.03694527893046,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d15.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d16",
+      "right": "6-716-d11",
+      "same_endpoint": "6-716-d12",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 59.15422771239601,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d16.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d18",
+      "right": "6-716-d11",
+      "same_endpoint": "6-716-d14",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 54.03694527893046,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d18.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d19",
+      "right": "6-716-d14",
+      "same_endpoint": "6-716-d13",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 62.1574303086777,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d19.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d20",
+      "right": "6-716-d15",
+      "same_endpoint": "6-716-d16",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 79.15027242530502,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d20.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d21",
+      "right": "6-716-d16",
+      "same_endpoint": "6-716-d15",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 79.15027242530502,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d21.jpg"
+      ]
+    },
+    {
+      "left": "6-686-d25",
+      "right": "6-716-d10",
+      "same_endpoint": "6-716-d8",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 205.27209457814766,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d25.jpg"
+      ]
+    }
+  ],
+  "seg6-04.jpg": [
+    {
+      "left": "6-686-d27",
+      "right": "6-716-d12",
+      "same_endpoint": "6-716-d21",
+      "relation": "different",
+      "kind": "nearest_clearly_different_endpoint_person",
+      "endpoint_center_distance_px": 684.6763641552208,
+      "visual_basis": "Different simultaneously visible endpoint person. Distance is measured from the SAME endpoint center after excluding ambiguous/non-person boxes and redundant supported body parts.",
+      "review_images": [
+        "association-6-686-d27.jpg"
+      ]
+    }
+  ]
+}

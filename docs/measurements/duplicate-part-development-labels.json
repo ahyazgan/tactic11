@@ -1,0 +1,222 @@
+{
+  "records": [
+    {
+      "id": "0-500-148",
+      "segment": 0,
+      "frame_idx": 500,
+      "bbox": [
+        2468.875,
+        230.0,
+        2488.625,
+        244.9140625
+      ],
+      "support_bbox": [
+        2471.125,
+        192.0,
+        2492.875,
+        243.875
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0000.mp4"
+    },
+    {
+      "id": "0-250-113",
+      "segment": 0,
+      "frame_idx": 250,
+      "bbox": [
+        2555.25,
+        230.07415771484375,
+        2571.75,
+        242.9453125
+      ],
+      "support_bbox": [
+        2555.5,
+        195.375,
+        2575.0,
+        242.375
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0000.mp4"
+    },
+    {
+      "id": "0-624-173",
+      "segment": 0,
+      "frame_idx": 624,
+      "bbox": [
+        2367.0,
+        230.0,
+        2385.21875,
+        246.28125
+      ],
+      "support_bbox": [
+        2363.8125,
+        199.75,
+        2387.125,
+        246.125
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0000.mp4"
+    },
+    {
+      "id": "3-124-50",
+      "segment": 3,
+      "frame_idx": 124,
+      "bbox": [
+        1880.25,
+        243.5,
+        1905.5,
+        270.0
+      ],
+      "support_bbox": [
+        1876.25,
+        246.609375,
+        1905.0,
+        311.125
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4"
+    },
+    {
+      "id": "3-500-107",
+      "segment": 3,
+      "frame_idx": 500,
+      "bbox": [
+        2764.25,
+        230.0,
+        2777.0,
+        247.265625
+      ],
+      "support_bbox": [
+        2765.0625,
+        204.875,
+        2784.8125,
+        245.75
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4"
+    },
+    {
+      "id": "3-624-132",
+      "segment": 3,
+      "frame_idx": 624,
+      "bbox": [
+        2394.0,
+        230.0,
+        2420.4375,
+        244.3515625
+      ],
+      "support_bbox": [
+        2394.1875,
+        191.125,
+        2421.0,
+        243.375
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4"
+    },
+    {
+      "id": "6-124-60",
+      "segment": 6,
+      "frame_idx": 124,
+      "bbox": [
+        1420.25,
+        256.0,
+        1442.5,
+        270.0
+      ],
+      "support_bbox": [
+        1420.25,
+        258.09375,
+        1443.75,
+        319.3125
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0006.mp4"
+    },
+    {
+      "id": "6-500-72",
+      "segment": 6,
+      "frame_idx": 500,
+      "bbox": [
+        2318.0,
+        230.0164794921875,
+        2331.0,
+        245.6796875
+      ],
+      "support_bbox": [
+        2317.25,
+        192.875,
+        2337.75,
+        245.375
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0006.mp4"
+    },
+    {
+      "id": "6-250-84",
+      "segment": 6,
+      "frame_idx": 250,
+      "bbox": [
+        1105.75,
+        253.625,
+        1124.75,
+        270.0
+      ],
+      "support_bbox": [
+        1106.5,
+        256.046875,
+        1126.25,
+        299.1875
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0006.mp4"
+    },
+    {
+      "id": "6-250-72",
+      "segment": 6,
+      "frame_idx": 250,
+      "bbox": [
+        2450.625,
+        230.0,
+        2469.25,
+        246.609375
+      ],
+      "support_bbox": [
+        2450.625,
+        195.0,
+        2471.5,
+        245.375
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0006.mp4"
+    },
+    {
+      "id": "6-624-72",
+      "segment": 6,
+      "frame_idx": 624,
+      "bbox": [
+        2290.75,
+        230.02059936523438,
+        2306.25,
+        243.1328125
+      ],
+      "support_bbox": [
+        2291.0,
+        190.0,
+        2311.25,
+        243.25
+      ],
+      "relation": "same_person_body_part",
+      "video": "data/tracking/bench/daylight_117093/source/seg_0006.mp4"
+    }
+  ],
+  "reviewer": "Codex, visual comparison of both boxes in the original image",
+  "purpose": "Separate duplicate part removal from independent player loss; original kit labels remain unchanged",
+  "scope": "Development only, selected nested pairs; not exhaustive person recall",
+  "input_sha256": {
+    ".cache\\nested_review\\labelled_pairs.jpg": "be161468a2a83ee8e36439066472e85829d82dd09dad00feaa6303671ed50494",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0006.json": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9"
+  }
+}

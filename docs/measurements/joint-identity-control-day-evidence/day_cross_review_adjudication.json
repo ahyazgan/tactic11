@@ -1,0 +1,147 @@
+{
+  "status": "cross_review_complete_awaiting_final_negative_gallery_review",
+  "human_review": false,
+  "immutable_first_passes": {
+    "agent_seg03_manual_notes.json": "834af6d7ccd69e6221d48786deae199032c072a33f75e6d961338141c84e5d1a",
+    "agent_seg03_labels.json": "7f1d21d915371d1149e325b9c943ce589cfefed6bff7d287397c3de64cefb730",
+    "agent_seg03_pairs.json": "f9e5fcfcc11f684b82afa65c0e82c7674ac08f7a5840307648d0c7128bb30bda",
+    "root_seg6_labels.json": "723ad24b3da57145e049480139b886a7850ce736abd480e394b31cc30314e31b",
+    "root_seg6_pairs.json": "50fc7b2033fa12dc135ca1db8986cee7060147c79209adc69d02b404fadd91cf"
+  },
+  "kit_adjudications": [
+    {
+      "id": "6-374-d23",
+      "first_pass_kit": "uncertain",
+      "adjudicated_kit": "white",
+      "reason": "Fixed temporal context shows the whole white-clad person owning these isolated legs. No supporting full-body source box exists, so this is not a duplicate.",
+      "evidence": "association-6-374-d23.jpg",
+      "reviewers_agree": true
+    },
+    {
+      "id": "6-374-d24",
+      "first_pass_kit": "uncertain",
+      "adjudicated_kit": "other",
+      "reason": "Red lower legs belong to the visible red-clad source person d8; clothing uses whole-person context, consistently with other source parts.",
+      "evidence": "association-6-374-d24.jpg",
+      "reviewers_agree": true
+    },
+    {
+      "id": "6-686-d7",
+      "first_pass_kit": "white",
+      "adjudicated_kit": "uncertain",
+      "reason": "Strong blue cast and side view leave white versus blue clothing unresolved; continuous physical-person association remains clear.",
+      "evidence": "association-6-686-d7.jpg",
+      "reviewers_agree": true
+    },
+    {
+      "id": "6-686-d25",
+      "first_pass_kit": "uncertain",
+      "adjudicated_kit": "other",
+      "reason": "Red lower legs belong to the visible red-clad source person d10; clothing uses whole-person context, consistently with other source parts.",
+      "evidence": "association-6-686-d25.jpg",
+      "reviewers_agree": true
+    },
+    {
+      "id": "6-686-d37",
+      "first_pass_kit": "uncertain",
+      "adjudicated_kit": "not_person",
+      "reason": "Fixed strip shows an unworn black shoe on the ground separate from moving feet.",
+      "evidence": "association-6-686-d37.jpg",
+      "reviewers_agree": true
+    }
+  ],
+  "pair_adjudications": [
+    {
+      "left": "0-686-d26",
+      "right": "0-716-d12",
+      "first_pass": "same",
+      "adjudicated": "uncertain",
+      "reason": "Blue upper-body endpoint includes a substantial nearby white head/body.",
+      "reviewers_agree": true
+    },
+    {
+      "left": "3-374-d17",
+      "right": "3-404-d12",
+      "first_pass": "same",
+      "adjudicated": "uncertain",
+      "reason": "Blue endpoint includes meaningful nearby white head and shoulder.",
+      "reviewers_agree": true
+    },
+    {
+      "left": "3-686-d7",
+      "right": "3-716-d12",
+      "first_pass": "same",
+      "adjudicated": "uncertain",
+      "reason": "White upper-body endpoint includes a foreground blue head/body.",
+      "reviewers_agree": true
+    },
+    {
+      "left": "3-686-d8",
+      "right": "3-716-d10",
+      "first_pass": "same",
+      "adjudicated": "uncertain",
+      "reason": "Blue endpoint includes a meaningful overlapping white body.",
+      "reviewers_agree": true
+    },
+    {
+      "left": "6-374-d18",
+      "right": "6-404-d19",
+      "first_pass": "same",
+      "adjudicated": "uncertain",
+      "reason": "Endpoint contains two recognizable heads and substantial blue/white bodies.",
+      "reviewers_agree": true
+    },
+    {
+      "left": "6-374-d21",
+      "right": "6-404-d21",
+      "first_pass": "same",
+      "adjudicated": "uncertain",
+      "reason": "Blue endpoint includes a meaningful overlapping white head/body.",
+      "reviewers_agree": true
+    },
+    {
+      "left": "6-686-d24",
+      "right": "6-716-d17",
+      "first_pass": "same",
+      "adjudicated": "uncertain",
+      "reason": "Endpoint contains two blue heads and substantial parts of two players.",
+      "reviewers_agree": true
+    }
+  ],
+  "negative_reselections": [
+    {
+      "left": "0-686-d12",
+      "old_right": "0-716-d12",
+      "new_right": "0-716-d26"
+    },
+    {
+      "left": "0-686-d25",
+      "old_right": "0-716-d12",
+      "new_right": "0-716-d25"
+    },
+    {
+      "left": "3-374-d14",
+      "old_right": "3-404-d12",
+      "new_right": "3-404-d13"
+    },
+    {
+      "left": "3-686-d5",
+      "old_right": "3-716-d10",
+      "new_right": "3-716-d9"
+    },
+    {
+      "left": "3-686-d13",
+      "old_right": "3-716-d10",
+      "new_right": "3-716-d8"
+    },
+    {
+      "left": "3-686-d23",
+      "old_right": "3-716-d10",
+      "new_right": "3-716-d8"
+    }
+  ],
+  "unresolved_unchanged": {
+    "6-374-d37": "Shoe near feet remains unresolved within the fixed window.",
+    "6-686-d11": "Cyan canopy shape remains unresolved person versus equipment."
+  }
+}

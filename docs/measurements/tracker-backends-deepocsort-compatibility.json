@@ -1,0 +1,44 @@
+{
+  "repository": "https://github.com/GerardMaggiolino/Deep-OC-SORT",
+  "commit": "6bb51d027b137233f5c520b6fcc4f2ae387a6ba9",
+  "inspected_at": "2026-09-19",
+  "license_at_repository_root": "MIT",
+  "source_sha256": {
+    "LICENSE.md": "ca7c882eb15711022daa1b6e719f1e3801335a3e6cf7c3d6a8bf81967b278717",
+    "main.py": "a7282fb5fd54357d54941ba2db274d7d1f1c8bd7ceb0ec20afb57612328306da",
+    "README.md": "e28064fd39b395eaf80ecb87ed6d0d3dbad1e8768987f409a536fb0c561e5305",
+    "trackers__integrated_ocsort_embedding__embedding.py": "8ec2e330cf935a2d123c8fed76a3df2f35c09b91af8278798c180721c81a2ee0",
+    "trackers__ocsort_embedding__embedding.py": "c9ebf3ac3e656d90c7a33218baf301de4943fc71dddd37182ad2ffbf074f321a"
+  },
+  "runtime": {
+    "torch": "2.11.0+cu128",
+    "cuda_available": true,
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda_tensor_smoke_passed": true,
+    "onnxruntime": "1.30.0",
+    "onnx_available_providers": [
+      "TensorrtExecutionProvider",
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "optional_imports": {
+      "torchreid": false,
+      "fastreid": false,
+      "faiss": false,
+      "filterpy": false,
+      "lap": false
+    }
+  },
+  "findings": [
+    "Original embedding code uses CUDA/FP16 and FastReID; it is not a drop-in replacement for supervision.Detections.",
+    "No ONNX embedding path is present in the inspected embedding modules.",
+    "The standard embedding path selects MOT17/MOT20-specific weights; another dataset requires an explicit model choice.",
+    "The embedding cache checks row count on a tag hit, not exact source boxes: our adapter must include source/model/preprocessing/box hashes.",
+    "The original implementation was documented for Python 3.8/Ubuntu 18.04. Current local CUDA works; an earlier project note about unavailable CUDA no longer describes this environment."
+  ],
+  "readme_model_folder": "https://drive.google.com/drive/folders/1cCOx_fadIOmeU4XRrHgQ_B5D7tEwJOPx",
+  "model_weights_loaded": false,
+  "reid_inference_run": false,
+  "accuracy_measured": false,
+  "decision": "Separate ReID integration and verified weights are needed. This phase measures the motion backends only; no Deep OC-SORT accuracy claim."
+}

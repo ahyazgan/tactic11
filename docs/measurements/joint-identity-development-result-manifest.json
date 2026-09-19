@@ -1,0 +1,14 @@
+{
+  "docs\\measurements\\joint-identity-development-day-results.json": {
+    "copied_from": ".cache\\kit_joint_agent\\production_joint_day_v1\\report.json",
+    "sha256": "348f1d10876a93b8617eebd1e108d4b258942582096eb07b2a7f0397d971588b"
+  },
+  "docs\\measurements\\joint-identity-development-night-results.json": {
+    "copied_from": ".cache\\kit_joint_agent\\production_joint_night_v1\\report.json",
+    "sha256": "c18412dd8667bff0603da4ce568311e80011fba31d8ed0f43fb5b5b53cbe7b85"
+  },
+  "docs\\measurements\\joint-identity-development-night-extra-results.json": {
+    "copied_from": ".cache\\kit_joint_agent\\production_joint_night_new_v1\\report.json",
+    "sha256": "741006a586732aacf13d819fe02d8e45d5f154d653317c96358141a3fc440fed"
+  }
+}

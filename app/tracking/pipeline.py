@@ -26,10 +26,15 @@ import numpy as np
 
 from app.domain.tracking import TrackingFrame
 from app.tracking.calibration import CalibrationError, PitchCalibration
+from app.tracking.camera import STATIC_SOURCE
 from app.tracking.detect import DetectorConfig, OnnxDetector, RFDetrDetector, make_detector
 from app.tracking.frames import BallObservation, TrackObservation, build_frame
+from app.tracking.identity_namespace import SegmentIdentityNamespace
+from app.tracking.kit_evidence import extract_kit_evidence
 from app.tracking.person_filter import annotated_boundary, filter_person_tracks
+from app.tracking.person_parts import nested_person_mask
 from app.tracking.teams import TeamAssigner, kit_color
+from app.tracking.tracker_config import validate_tracker_config
 
 # İki arka uç aynı arayüzü verir (detect / split / predict_single / device)
 Detector = RFDetrDetector | OnnxDetector
@@ -82,6 +87,9 @@ class PipelineConfig:
     preview_width: int = 1600
     normalize_kit_light: bool = False  # deneysel; gündüz dış kontrolde regresyon
     filter_off_pitch_tracks: bool | None = None  # None: yalnız doğrulanmış kamera profili
+    refine_player_identities: bool | None = None  # None: doğrulanmış sabit kamera profili
+    tracker_backend: str = "supervision"  # deepocsort: explicit experimental fixed-camera profile
+    reid_model: str = "data/tracking/models/osnet_ain_ms_d_c.pth.tar"
 
 
 @dataclass
@@ -96,6 +104,28 @@ class SampledObservation:
     # hattın sabit kalibrasyonu kullanılır (sabit kamera).
     calibration: PitchCalibration | None = None
     continuity_id: int = 0
+    # Internal observations remain JSON-serializable for exact detector replay.
+    # Nine values: bright RGB, broad RGB, saturated-fabric RGB.
+    person_kit: dict[str, tuple[float, ...]] | None = None
+    person_teams: dict[str, int | None] | None = None
+
+
+def identity_refinement_enabled(cfg: PipelineConfig, calib: PitchCalibration | None) -> bool:
+    supported = (calib is not None and cfg.source_name == STATIC_SOURCE
+                 and not cfg.per_frame_calibration and not cfg.normalize_kit_light)
+    if cfg.refine_player_identities is True and not supported:
+        raise ValueError("kimlik iyileştirme sabit kamera kaynağı, sabit kalibrasyon ve ham forma rengi gerektirir")
+    if cfg.refine_player_identities is not None:
+        return cfg.refine_player_identities
+    return bool(supported and getattr(calib, "meta", {}).get("identity_profile")
+                == "fixed_camera_identity_v1")
+
+
+def observed_team(sample: SampledObservation, tid: int, fallback: dict[int, int | None]) -> int | None:
+    """A linked fragment's unknown shirt must remain unknown in its own frames."""
+    if sample.person_teams is not None and str(tid) in sample.person_teams:
+        return sample.person_teams[str(tid)]
+    return fallback.get(tid)
 
 
 def person_filter_enabled(cfg: PipelineConfig, calib: PitchCalibration | None) -> bool:
@@ -298,6 +328,9 @@ def collect_observations(
 
     info = video_info(video_path)
     validate_video_calibration(info, calib)
+    validate_tracker_config(cfg, calib)
+    SegmentIdentityNamespace(cfg.period, cfg.clip_offset_minutes)
+    refine = identity_refinement_enabled(cfg, calib)
     det = detector or make_detector(cfg.detector)
     # Takipçi GERÇEK örnekleme hızıyla kurulur (kaynak fps / tam adım), istenenle değil.
     fps_eff = effective_track_fps(float(info["fps"]), cfg.track_fps)
@@ -309,13 +342,23 @@ def collect_observations(
     # checks. ByteTrack scales this buffer again by frame_rate / 30: the
     # seconds-correct experiment increased kit/identity errors in daylight.
     # Report the actual lifetime below (docs/TAKIP-SUREKLILIGI-SONUCLARI.md).
-    tracker = sv.ByteTrack(
-        track_activation_threshold=cfg.track_activation_threshold,
-        lost_track_buffer=max(1, int(cfg.lost_track_seconds * fps_eff)),
-        minimum_matching_threshold=0.8,
-        frame_rate=max(1, round(fps_eff)),
-        minimum_consecutive_frames=1,
-    )
+    tracker: Any
+    if cfg.tracker_backend == "deepocsort":
+        from app.tracking.deepocsort import DeepOCSortTracker, OSNetEmbedder
+
+        tracker = DeepOCSortTracker(
+            threshold=cfg.track_activation_threshold,
+            lost_frames=int(max(1, round(fps_eff)) / 30 * max(1, int(cfg.lost_track_seconds * fps_eff))),
+            embedder=OSNetEmbedder(cfg.reid_model),
+        )
+    else:
+        tracker = sv.ByteTrack(
+            track_activation_threshold=cfg.track_activation_threshold,
+            lost_track_buffer=max(1, int(cfg.lost_track_seconds * fps_eff)),
+            minimum_matching_threshold=0.8,
+            frame_rate=max(1, round(fps_eff)),
+            minimum_consecutive_frames=1,
+        )
     teams = TeamAssigner()
     per_frame = None
     if cfg.per_frame_calibration:
@@ -364,6 +407,7 @@ def collect_observations(
     highest_track_id = 0
     tracker_resets = 0
     calibration_gap_resets = 0
+    parts_removed = 0
 
     for order, frame_idx, seconds, rgb in iter_video_frames(video_path, cfg.track_fps, cfg.max_seconds):
         frame_calib = calib
@@ -418,12 +462,22 @@ def collect_observations(
         previous_tracked_order = order
         all_det = det.detect(rgb)
         persons, balls = det.split(all_det)
+        if refine:
+            keep, parts = nested_person_mask(persons.xyxy)
+            persons = persons[keep]
+            parts_removed += len(parts)
         persons = persons[_on_pitch_mask(persons, frame_calib, cfg.pitch_margin_m)]
         balls = balls[_on_pitch_mask(balls, frame_calib, 1.0)]
         if len(balls) > 0:
             balls = balls[balls.confidence >= cfg.ball_threshold]
-        tracked = tracker.update_with_detections(persons)
+        if cfg.tracker_backend == "deepocsort":
+            import cv2
+
+            tracked = tracker.update_with_detections(persons, cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
+        else:
+            tracked = tracker.update_with_detections(persons)
         rows: list[tuple[int, float, float, float, float, float]] = []
+        person_kit: dict[str, tuple[float, ...]] | None = {} if refine else None
         for xyxy, conf, tid in zip(tracked.xyxy, tracked.confidence, tracked.tracker_id, strict=True):
             if tid is None:
                 continue
@@ -432,8 +486,15 @@ def collect_observations(
             hits[tid] = hits.get(tid, 0) + 1
             x1, y1, x2, y2 = (float(v) for v in xyxy)
             rows.append((tid, x1, y1, x2, y2, float(conf)))
-            teams.observe(tid, kit_color(rgb, (x1, y1, x2, y2),
-                                         normalize_light=cfg.normalize_kit_light))
+            if person_kit is not None:
+                evidence = extract_kit_evidence(rgb, (x1, y1, x2, y2))
+                if evidence is not None:
+                    person_kit[str(tid)] = tuple(float(v) for v in np.concatenate(
+                        [evidence.bright, evidence.broad, evidence.appearance]))
+                teams.observe(tid, evidence.broad if evidence is not None else None)
+            else:
+                teams.observe(tid, kit_color(rgb, (x1, y1, x2, y2),
+                                             normalize_light=cfg.normalize_kit_light))
 
         ball = None
         ball_source = None
@@ -451,7 +512,7 @@ def collect_observations(
             last_ball = (ball[0], ball[1], order)
         samples.append(SampledObservation(order, frame_idx, seconds, rows, ball, ball_source,
                                           calibration=frame_calib if per_frame else None,
-                                          continuity_id=continuity_id))
+                                          continuity_id=continuity_id, person_kit=person_kit))
         if observation_hook is not None:
             observation_hook(rgb, all_det, samples[-1])
         if progress and order % 50 == 0:
@@ -493,9 +554,16 @@ def collect_observations(
                              "effective_lost_track_seconds": (tracker.max_time_lost / fps_eff
                                  if hasattr(tracker, "max_time_lost") else None),
                              "person_filter": person_filter,
+                             "identity_refinement_enabled": refine,
+                             "duplicate_parts_removed": parts_removed,
                              "kit_color_method": "local_grass_v1" if cfg.normalize_kit_light else "raw_rgb_v1",
                              "ball_spikes_rejected": ball_spikes_rejected,
                              "effective_track_fps": round(fps_eff, 2)}
+    if cfg.tracker_backend == "deepocsort":
+        from app.tracking.deepocsort import MODEL_SHA256, PROFILE
+
+        stats["tracker"] = {"backend": "deepocsort", "profile": PROFILE,
+                            "model_sha256": MODEL_SHA256, "experimental": True}
     if per_frame is not None:
         d_cal = per_frame.frames_calibrated - base[0]
         d_rej = per_frame.frames_rejected - base[1]
@@ -602,6 +670,7 @@ def build_frames(
     event_frames: list[TrackingFrame] | None = None,
 ) -> list[TrackingFrame]:
     stride = output_stride(cfg)
+    identity_scope = SegmentIdentityNamespace(cfg.period, cfg.clip_offset_minutes)
     player_v, ball_v = compute_velocities(samples, calib, cfg.track_fps)
     out: list[TrackingFrame] = []
     for s in samples:
@@ -610,8 +679,8 @@ def build_frames(
         vmap = player_v.get(s.order, {})
         players = [
             TrackObservation(
-                track_id=tid, u=(x1 + x2) / 2, v=y2,
-                team=team_by_track.get(tid), conf=conf,
+                track_id=identity_scope.scope_track_id(tid), u=(x1 + x2) / 2, v=y2,
+                team=observed_team(s, tid, team_by_track), conf=conf,
                 velocity_mps=vmap.get(tid),
             )
             for tid, x1, y1, x2, y2, conf in s.persons
@@ -630,7 +699,7 @@ def build_frames(
             source_name=cfg.source_name,
         )
         if fr is not None:
-            fr = fr.model_copy(update={"continuity_id": s.continuity_id})
+            fr = fr.model_copy(update={"continuity_id": identity_scope.scope_continuity_id(s.continuity_id)})
             if event_frames is not None:
                 event_frames.append(fr)
             if s.order % stride == 0:
@@ -686,7 +755,7 @@ def write_preview(
             _draw_pitch_lines(bgr, frame_calib)
         if s is not None:
             for tid, x1, y1, x2, y2, _conf in s.persons:
-                c = colors[team_by_track.get(tid)]
+                c = colors[observed_team(s, tid, team_by_track)]
                 cv2.rectangle(bgr, (int(x1), int(y1)), (int(x2), int(y2)), c, 2)
                 cv2.putText(bgr, str(tid), (int(x1), int(y1) - 4), cv2.FONT_HERSHEY_SIMPLEX, 0.6, c, 2)
             if s.ball:
@@ -758,7 +827,17 @@ def process_video(
     samples, assigner, calib_stats = collect_observations(
         video_path, cfg, detector=detector, calib=calib, calibrator=calibrator)
     tracks = {tid for s in samples for tid, *_ in s.persons}
-    assignment = assigner.fit(team_anchor, eligible_tracks=tracks)
+    if identity_refinement_enabled(cfg, calib):
+        from app.tracking.player_identity import refine_player_tracks
+
+        assert calib is not None
+        assignment, identity_stats = refine_player_tracks(
+            samples, calib, fps_eff=calib_stats["effective_track_fps"], anchor=team_anchor)
+        calib_stats["identity_refinement"] = identity_stats
+        calib_stats["kit_color_method"] = "dual_torso_v1"
+        tracks = {tid for s in samples for tid, *_ in s.persons}
+    else:
+        assignment = assigner.fit(team_anchor, eligible_tracks=tracks)
     event_frames: list[TrackingFrame] = []
     frames = build_frames(
         samples, assignment.team_by_track, calib,
@@ -798,6 +877,9 @@ def process_video(
         "defensive_actions": {"count": len(recovery_out.actions),
                               "rejected": recovery_out.rejected, "note": recovery_out.note},
         "tracks": len(tracks),
+        "identity_scope": {"period": cfg.period, "clip_offset_minutes": cfg.clip_offset_minutes,
+                           "namespace": SegmentIdentityNamespace(cfg.period, cfg.clip_offset_minutes).namespace,
+                           "cross_segment_person_identity": False},
         "players_per_frame_mean": round(float(np.mean(per_frame)), 1) if per_frame else 0.0,
         "team_counts": {
             "home": sum(1 for t in tracks if assignment.team_by_track.get(t) == 0),
@@ -805,7 +887,7 @@ def process_video(
             "unassigned": sum(1 for t in tracks if assignment.team_by_track.get(t) is None),
         },
         "team_assignment_quality": {
-            "color_method": "local_grass_v1" if cfg.normalize_kit_light else "raw_rgb_v1",
+            "color_method": calib_stats.get("kit_color_method", "raw_rgb_v1"),
             "frames_evaluated": len(frames),
             "overfull_frames": overfull_frames,
             "overfull_frame_ratio": round(overfull_frames / len(frames), 3) if frames else 0.0,

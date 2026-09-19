@@ -19,7 +19,7 @@ dev = [
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-extend-exclude = ["alembic/versions"]
+extend-exclude = ["alembic/versions", "app/tracking/_vendor"]
 
 [tool.ruff.lint]
 # E/W: pycodestyle, F: pyflakes, I: isort, B: bugbear, UP: pyupgrade, SIM: simplify
@@ -41,7 +41,7 @@ ignore = ["E501", "B008"]
 
 [tool.mypy]
 python_version = "3.11"
-exclude = ["alembic/versions", "venv", "tests/fixtures"]
+exclude = ["alembic/versions", "venv", "tests/fixtures", "app/tracking/_vendor"]
 # Gradually strict — şimdilik kibar
 ignore_missing_imports = true
 warn_unused_ignores = true
@@ -55,3 +55,8 @@ ignore_errors = true  # test ergonomics > strict typing
 [[tool.mypy.overrides]]
 module = "scripts.*"
 ignore_errors = true  # operasyonel/demo scriptler — app/ strict, scripts gevşek
+
+[[tool.mypy.overrides]]
+module = "app.tracking._vendor.*"
+follow_imports = "skip"
+ignore_errors = true

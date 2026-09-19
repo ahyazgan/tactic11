@@ -1,0 +1,12 @@
+{
+  "ocsort.py": {
+    "before_sha256_lf": "bd45152b6561e610ec71aa336a4cc2fa3ad3adf19f7288bce3185ad06f00f85a",
+    "after_sha256_lf": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "change": "Trailing whitespace and blank EOF removed; executable AST unchanged"
+  },
+  "kalmanfilter.py": {
+    "before_sha256_lf": "76d5998a4c5cae45a9261336c055b5cd801082e3651036535d4378c33bdea2f1",
+    "after_sha256_lf": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "change": "Trailing whitespace only; executable code unchanged"
+  }
+}

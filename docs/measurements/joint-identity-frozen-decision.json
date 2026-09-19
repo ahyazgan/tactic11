@@ -1,0 +1,189 @@
+{
+  "frozen_at_utc": "2026-09-14T12:09:25.693548+00:00",
+  "candidate": "fixed_camera_identity_v1",
+  "control_viewed": false,
+  "day_control_is_same_development_clips": true,
+  "control_selection": {
+    "day": {
+      "segments": [
+        0,
+        3,
+        6
+      ],
+      "frames": [
+        374,
+        686
+      ]
+    },
+    "night": {
+      "segments": [
+        40,
+        50
+      ],
+      "frames": [
+        374,
+        686
+      ]
+    },
+    "pair_delta_frames": 30
+  },
+  "code_sha256_lf": {
+    "app/tracking/pipeline.py": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+    "app/tracking/player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app/tracking/identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app/tracking/identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app/tracking/identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app/tracking/person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app/tracking/kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app/tracking/teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app/tracking/person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app/tracking/frames.py": "c619ce2aec58df9bb08c056046f80c54be4007854e5cca562533b3cfab6a7713",
+    "scripts/track_video.py": "4d185093875d701e305013e8105e3c2c3eaaf30475e10250d2ca3199da26e960",
+    "scripts/track_live.py": "ed327c604f02daa4353c76adc502f833d0f8868afc2ec93453a205551bb0d572",
+    "scripts/soccertrack_v2/cache_ball_candidates.py": "c39466b8ae98fd5b723b1a6150007f9595679f162731c405fba12e7b4fa93029",
+    "scripts/soccertrack_v2/benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+    "scripts/soccertrack_v2/prepare_identity_control.py": "b4f1eba3ec12a3ab06e9964db7cc46e56a1e3c096072d0f5216cd782cfc4a4f0",
+    "scripts/soccertrack_v2/kit_joint_features.py": "b5d908eb55eefae4f4704b8e9821c1273b601f2c786694ca12c6aec8d00d38f6"
+  },
+  "input_sha256": {
+    "data/tracking/calibrations/soccertrack_v2_117092_landmarks.json": "ceeb386a7e4923f1264fd7e7db6674251e15bb3e29c63eacff8f0523d4164d07",
+    "data/tracking/calibrations/soccertrack_v2_117093_landmarks.json": "b38cffb26ac40619039d9b34a19deba98b30cebd9ed0d7a30e66c911216bfd9e",
+    "docs/SABIT-KAMERA-KIMLIK-PLANI.md": "c9c31bea0a7da99f6ba40827e9965aa16d235b1ec78e792815999dedd320df89",
+    "docs/SABIT-KAMERA-KONTROL-ETIKETLEME.md": "e4b02da4f6c9fc117977ee620efd02b9432b2fa16c20d34a967122a71dabb462",
+    "docs/measurements/joint-identity-control-source.json": "28aa270d68ca102d35fa4649ba77be92f531b069ec53f8886938d867cf45a4d2",
+    "data/tracking/models/rfdetr_mixed_small/meta.json": "b99d593d7b82cee084e622f818abea22b3509aafc3fbba6bd9c29105dc8e53ea",
+    "data/tracking/models/rfdetr_mixed_small/checkpoint_best_total.pth": "7b295626163b8a05bfc6ec326930132e24fb0ec1b4ba8951650e3c999aabdf01"
+  },
+  "frozen_anchors": {
+    "day": {
+      "before": {
+        "centers": [
+          [
+            119.9,
+            149.7,
+            188.0
+          ],
+          [
+            205.4,
+            216.8,
+            235.5
+          ]
+        ],
+        "blue_slot": 0,
+        "source": ".cache/kit_joint_agent/production_joint_day_v1/before/seg_0000.json",
+        "sha256": "80821d2b5b67bd0b4c80218c1a7ed5a570f1c4e042a1c163e18c0b4688f056f6"
+      },
+      "after": {
+        "centers": [
+          [
+            135.5,
+            174.4,
+            234.5
+          ],
+          [
+            228.5,
+            239.5,
+            249.7
+          ]
+        ],
+        "blue_slot": 0,
+        "source": ".cache/kit_joint_agent/production_joint_day_v1/after/seg_0000.json",
+        "sha256": "550841853e00556e42570ca178ab0dc114926114ff5dd1bd921c4e8cca78739a"
+      }
+    },
+    "night": {
+      "before": {
+        "centers": [
+          [
+            94.3,
+            101.0,
+            91.6
+          ],
+          [
+            176.1,
+            180.4,
+            174.0
+          ]
+        ],
+        "blue_slot": 0,
+        "source": ".cache/kit_joint_agent/production_joint_night_v1/before/seg_0000.json",
+        "sha256": "b7d7b1b374b3b70465d9c3167e2356e4be80a3cfec338ade228b5fd1427b7f81"
+      },
+      "after": {
+        "centers": [
+          [
+            112.1,
+            119.9,
+            105.8
+          ],
+          [
+            211.6,
+            216.2,
+            207.4
+          ]
+        ],
+        "blue_slot": 0,
+        "source": ".cache/kit_joint_agent/production_joint_night_v1/after/seg_0000.json",
+        "sha256": "7f6bd439341589bf96286ebe060db5a8ef70bd33900c58b55d2786ea6ca7a3a4"
+      }
+    }
+  },
+  "parameters": {
+    "nested_part": {
+      "max_height_ratio": 0.55,
+      "max_area_ratio": 0.4,
+      "max_width_ratio": 1.15,
+      "minimum_body_height": 20,
+      "minimum_containment": 0.8
+    },
+    "split": {
+      "history": 32,
+      "minimum_history": 5,
+      "confirmations": 3,
+      "rgb_floor": 60,
+      "tint_floor": 15,
+      "spread_factor": 2,
+      "max_gap_samples": 1.5,
+      "auxiliary_contact_window_seconds": 0.64,
+      "auxiliary_broad_rgb_floor": 40,
+      "auxiliary_broad_tint_floor": 10
+    },
+    "link": {
+      "max_gap_seconds": 1.6,
+      "ambiguity_margin": 0.25,
+      "max_bidirectional_residual_body_heights": 0.75,
+      "max_cost": 1.2,
+      "rgb_distance": 90,
+      "tint_distance": 18,
+      "minimum_directional_speed_body_heights_per_second": 0.25,
+      "endpoint_observations": 6,
+      "endpoint_window_seconds": 0.5,
+      "minimum_endpoint_observations": 3,
+      "pitch_speed_mps": 12,
+      "pitch_distance_tolerance_m": 1.5,
+      "endpoint_collision_reject": true,
+      "cannot_link_components": true,
+      "known_team_component_conflicts_reject": true,
+      "time_overlapping_components_reject": true,
+      "palette_refit": false
+    },
+    "kit": {
+      "bright_fraction": 0.2,
+      "broad_fraction": 0.4,
+      "broad_tint_only_veto": true,
+      "refit_after_link": false
+    },
+    "tracker": "unchanged validated legacy Supervision ByteTrack lifetime"
+  },
+  "acceptance": {
+    "evaluate_day_and_night_separately": true,
+    "unique_person_correct_not_decreased": true,
+    "wrong_kit_not_increased": true,
+    "other_assigned_not_increased": true,
+    "true_person_coverage_not_decreased": true,
+    "same_person_pairs_not_decreased": true,
+    "different_person_pairs_not_decreased": true,
+    "failures_do_not_enable_automatic_profile": true
+  },
+  "scope": "Anonymous within-clip identity estimates; segment namespaces prevent unsupported cross-clip identity reuse. No full-video IDF1/HOTA or roster recognition claim. Profile metadata may be enabled only after this frozen candidate passes that source control; geometry and thresholds remain unchanged."
+}

@@ -41,7 +41,16 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    BigInteger,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -62,7 +71,7 @@ class MatchLoadSample(Base):
         String(36), ForeignKey("tenants.id", ondelete="CASCADE"), nullable=True,
     )
     match_external_id: Mapped[int] = mapped_column(Integer, index=True)
-    player_external_id: Mapped[int] = mapped_column(Integer, index=True)
+    player_external_id: Mapped[int] = mapped_column(BigInteger, index=True)
     team_external_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     # Maç saati. Kümülatif değerler "maç başından bu dakikaya" kadardır.
     minute: Mapped[float] = mapped_column(Float)
