@@ -9,8 +9,8 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
-- [ ] Codex kamera: kaybolan iki gündüz kimlik bağlantısını görüntü/karar iziyle ayır ve tekrarlanabilir regresyon senaryolarına bağla.
-  Done when: değişmez kaynaklarla hata yeniden üretimi, görsel kanıt, tek-kutu oracle ve eşik tanısı, bağımsız CI testleri ve PR kontrolleri. Plan: docs/KIMLIK-HATA-DENETIMI-PLANI.md.
+- [x] Codex kamera: kaybolan iki gündüz kimlik bağlantısını görüntü/karar iziyle ayır ve tekrarlanabilir regresyon senaryolarına bağla. (f31e088)
+  Done when: 407 kaynak örnek karesinden iki hata yeniden üretildi; görüntü/karar izi ve dört tanı kolu kaydedildi. 17 yeni test, eski korumalarla birlikte 63 test geçti. Sonuç: docs/KIMLIK-HATA-DENETIMI-SONUCLARI.md. Beyazda parçalı kutu + hareket kapısı, mavide oyuncu/hakem alt-gövde karışımı ayrıldı. Oracle müdahaleleri üretim düzeltmesi değildir; üretim kodu değişmedi, yeni kontrol açılmadı.
 
 - [x] Codex kamera: Deep OC-SORT + OSNet görünüş eşleştirmesini ölç ve video/canlı takip motoru seçimine entegre et. (b2310a9)
   Done when: sabit resmî model/kod, 11 kesitte üç kol, video/sıcak/izole canlı seçim, 22 birebir eski çıktı ve 164.772 kişi gözlemi; 95 ilgili CV testi ve 2.893 uygulama testi geçti. Sonuç: docs/TAKIP-REID-SONUCLARI.md. ReID bazı kişi çiftlerini iyileştirdi, fakat iki eski doğru gündüz bağlantısını kaybetti ve bazı forma hatalarını artırdı; deneysel açık seçimle entegre, varsayılan ByteTrack korundu, yeni kontrol açılmadı.
