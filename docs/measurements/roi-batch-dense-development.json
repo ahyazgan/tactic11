@@ -1,0 +1,132 @@
+{
+  "scope": "Development dense-evidence replay with immutable main detections and real ROI.",
+  "hashes": {
+    "app\\tracking\\anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app\\tracking\\calibration.py": "9cce58bcbc532635042a6fdca94ee6b12b7dbc51dba50763c494d2b9130fcbfe",
+    "app\\tracking\\camera.py": "0cec5fa5c9ddddb14cc3fc60cc2ff2dcdafd512bd67b8c74d3069ab9d7219f5f",
+    "app\\tracking\\deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app\\tracking\\detect.py": "af7febdda736a8f61cc6ffdd9adccd182ce5d3c101c5f48bc4800fa8963f7647",
+    "app\\tracking\\frames.py": "1cb411e85ee1a5f614b9fd1e9bf735ff278289334a358237ccf6338e4a6d3456",
+    "app\\tracking\\homography_fit.py": "274301cbcaa78636bed5104bbcb9f08e99810e6746800da4219a42e0898f9e6c",
+    "app\\tracking\\identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+    "app\\tracking\\identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app\\tracking\\identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app\\tracking\\identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app\\tracking\\kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app\\tracking\\passes.py": "3ab759ca3d0b417451f8f4527cca391e28010216ab92fd6545221ac196552265",
+    "app\\tracking\\person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app\\tracking\\person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app\\tracking\\pipeline.py": "5fd95b40cd71b56d35bd870b822441472d7334a12d25d5b8b05d2a413bd05a52",
+    "app\\tracking\\pitch_lines.py": "3283fe4e695004b683b5b63a5f6c5ad521a4e9d78d23b9b3673ad40e9245d654",
+    "app\\tracking\\pitch_model.py": "34a48302af97457d6c92006d094b0acb2457292aaea9ae13c06135fecc65ec8b",
+    "app\\tracking\\player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app\\tracking\\recoveries.py": "c7dc67427e907a58ffffe175fc606b43a442ee91acda1c43fdee21afb66df2d8",
+    "app\\tracking\\replay.py": "1f9cae4a47f2ac106433ac9be9ca1b938d0a271064db33f9833037272070e1fe",
+    "app\\tracking\\teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app\\tracking\\tracker_config.py": "d9f0497d2e60c25b0ab0f6a94e2b188f00b1926d57a286aeac48f8a36d5332e0",
+    "app\\tracking\\__init__.py": "84f594b074a83977eab56248889b1e963ee19fef277fd3eaef0f907847248eb5",
+    "app\\tracking\\_vendor\\__init__.py": "c658f47c20cf512966e93c8cc6448dc6ff119523fd5d60aa17564cea1d07f598",
+    "app\\tracking\\_vendor\\deepocsort\\association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app\\tracking\\_vendor\\deepocsort\\kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app\\tracking\\_vendor\\deepocsort\\ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app\\tracking\\_vendor\\deepocsort\\osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app\\tracking\\_vendor\\deepocsort\\__init__.py": "8402dfb550c4986abfc676f04b34fbfcc7bd73f25f12ba6d9c9e9725335083c1",
+    "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\roi_dense_development_v1.py": "dcf4375ccda7203a32c2777ef28d0dd9af5703c9aad29900ee3d951ad2019dcb",
+    "scripts\\soccertrack_v2\\roi_control.py": "ff883afe7426e359b351fa6db300a434c0880faa6f4281a7c4a57a393abab087",
+    "data\\tracking\\models\\rfdetr_mixed_small\\checkpoint_best_total.pth": "7b295626163b8a05bfc6ec326930132e24fb0ec1b4ba8951650e3c999aabdf01",
+    "data\\tracking\\models\\rfdetr_mixed_small\\meta.json": "b99d593d7b82cee084e622f818abea22b3509aafc3fbba6bd9c29105dc8e53ea",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+    "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0020.mp4": "fece86e7a119a50640eaed7ce485e833733446377f12c7f61af18e56b4905368",
+    "data\\tracking\\calibrations\\soccertrack_v2_117093_landmarks.json": "b38cffb26ac40619039d9b34a19deba98b30cebd9ed0d7a30e66c911216bfd9e",
+    "data\\tracking\\calibrations\\soccertrack_v2_117092_landmarks.json": "ceeb386a7e4923f1264fd7e7db6674251e15bb3e29c63eacff8f0523d4164d07",
+    ".cache\\roi-single-batch-development-v1\\day\\main-detections.json": "f1aac711d27d971ce972fa66b0a7aa5cf22aabc9eb52906d66ebe5d2703c793d",
+    ".cache\\roi-single-batch-development-v1\\night\\main-detections.json": "811e992a9737e4843309e0b35a79982d1c131acfb5ad68cf672fb5297946d536"
+  },
+  "reports": {
+    "day": {
+      "rows": [
+        {
+          "name": "legacy",
+          "repeat": 0,
+          "samples_sha256": "a08f6a39dbe62a3093c35de73584f17bf8c2164a86da24774389a44e13aedcc8",
+          "frames_sha256": "22e454d199f64e114407a921a58f11430e4b5376bfded12efe4da021cceac2b7",
+          "events_sha256": "bb19e996c1c8fa6f9d4ceb0b4d8474c5c5bcc50c03adf8fe7c024b1c4e384dcf"
+        },
+        {
+          "name": "legacy",
+          "repeat": 1,
+          "samples_sha256": "a08f6a39dbe62a3093c35de73584f17bf8c2164a86da24774389a44e13aedcc8",
+          "frames_sha256": "22e454d199f64e114407a921a58f11430e4b5376bfded12efe4da021cceac2b7",
+          "events_sha256": "bb19e996c1c8fa6f9d4ceb0b4d8474c5c5bcc50c03adf8fe7c024b1c4e384dcf"
+        },
+        {
+          "name": "candidate",
+          "repeat": 0,
+          "samples_sha256": "470a746ff11ec0352c7f4d5e97ff7d41707347b99e51d68eea262b958ed84b5f",
+          "frames_sha256": "22e454d199f64e114407a921a58f11430e4b5376bfded12efe4da021cceac2b7",
+          "events_sha256": "bb19e996c1c8fa6f9d4ceb0b4d8474c5c5bcc50c03adf8fe7c024b1c4e384dcf"
+        },
+        {
+          "name": "candidate",
+          "repeat": 1,
+          "samples_sha256": "470a746ff11ec0352c7f4d5e97ff7d41707347b99e51d68eea262b958ed84b5f",
+          "frames_sha256": "22e454d199f64e114407a921a58f11430e4b5376bfded12efe4da021cceac2b7",
+          "events_sha256": "bb19e996c1c8fa6f9d4ceb0b4d8474c5c5bcc50c03adf8fe7c024b1c4e384dcf"
+        }
+      ],
+      "dense": {
+        "passed": true,
+        "failures": [],
+        "max_ball_position_error_px": 0.0,
+        "max_ball_confidence_error": 0.000732421875,
+        "samples_compared": 126
+      },
+      "repeats_exact": true,
+      "frames_exact": true,
+      "events_exact": true
+    },
+    "night": {
+      "rows": [
+        {
+          "name": "legacy",
+          "repeat": 0,
+          "samples_sha256": "728458083b84d599b6253bbe20c5ef045ebf718daf8987d590ac462a46c34dc7",
+          "frames_sha256": "84c3582581eb465a6dc25cdb3a45d97929122376fd6029331830311c6e27ee92",
+          "events_sha256": "620a7668861a8f7f610d359bdcc8d86093ab4d73b87c6c1f8afd5adbe524624e"
+        },
+        {
+          "name": "legacy",
+          "repeat": 1,
+          "samples_sha256": "728458083b84d599b6253bbe20c5ef045ebf718daf8987d590ac462a46c34dc7",
+          "frames_sha256": "84c3582581eb465a6dc25cdb3a45d97929122376fd6029331830311c6e27ee92",
+          "events_sha256": "620a7668861a8f7f610d359bdcc8d86093ab4d73b87c6c1f8afd5adbe524624e"
+        },
+        {
+          "name": "candidate",
+          "repeat": 0,
+          "samples_sha256": "1655adc1c110cc4e0e5abd05aa37ab40972235b9a6885c2b32568647572b5a7c",
+          "frames_sha256": "84c3582581eb465a6dc25cdb3a45d97929122376fd6029331830311c6e27ee92",
+          "events_sha256": "620a7668861a8f7f610d359bdcc8d86093ab4d73b87c6c1f8afd5adbe524624e"
+        },
+        {
+          "name": "candidate",
+          "repeat": 1,
+          "samples_sha256": "1655adc1c110cc4e0e5abd05aa37ab40972235b9a6885c2b32568647572b5a7c",
+          "frames_sha256": "84c3582581eb465a6dc25cdb3a45d97929122376fd6029331830311c6e27ee92",
+          "events_sha256": "620a7668861a8f7f610d359bdcc8d86093ab4d73b87c6c1f8afd5adbe524624e"
+        }
+      ],
+      "dense": {
+        "passed": true,
+        "failures": [],
+        "max_ball_position_error_px": 0.0,
+        "max_ball_confidence_error": 0.0029296875,
+        "samples_compared": 126
+      },
+      "repeats_exact": true,
+      "frames_exact": true,
+      "events_exact": true
+    }
+  },
+  "limitations": "Cached immutable main detections, real source RGB and ROI. No timing claim; CPU application tests may run concurrently. These are old development clips, not new controls."
+}

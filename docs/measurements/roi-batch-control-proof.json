@@ -1,0 +1,48 @@
+{
+  "frozen_commit": "7fa50fa",
+  "default_promotion": false,
+  "reason": "Day final frame equality failed",
+  "groups": {
+    "day": {
+      "result_sha256": "8770b248e3c19a59eb3b5e5f005a5f7321e361432a5c4d4654badd73a1068192",
+      "passed": false,
+      "warm_seconds_legacy": 167.56707029999234,
+      "warm_seconds_candidate": 139.3652723999694,
+      "warm_reduction_percent": 16.830155142972757,
+      "differences": [
+        {
+          "path": ".frames[97].ball.velocity_mps",
+          "legacy": 1.14,
+          "candidate": 1.15
+        },
+        {
+          "path": ".frames[97].ball.x",
+          "legacy": 35.133,
+          "candidate": 35.132
+        },
+        {
+          "path": ".frames[97].ball.y",
+          "legacy": 95.278,
+          "candidate": 95.276
+        },
+        {
+          "path": ".frames[98].ball.velocity_mps",
+          "legacy": 1.53,
+          "candidate": 1.51
+        }
+      ],
+      "changed_output_frames": 2,
+      "players_exact": true
+    },
+    "night": {
+      "result_sha256": "06d9422bee9245538c8a211d58724be8d742e8f8887ec0ea9c75d5a5a40f1b67",
+      "passed": true,
+      "warm_seconds_legacy": 84.09227640001336,
+      "warm_seconds_candidate": 85.26621829997748,
+      "warm_reduction_percent": -1.3960163170989313,
+      "differences": [],
+      "changed_output_frames": 0,
+      "players_exact": true
+    }
+  }
+}

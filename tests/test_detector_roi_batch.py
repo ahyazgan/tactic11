@@ -26,6 +26,7 @@ class Model:
 
 
 def detector(**config):
+    config.setdefault("roi_single_batch", True)
     result = RFDetrDetector.__new__(RFDetrDetector)
     result.cfg = DetectorConfig(threshold=.37, **config)
     result._model_kwargs = {"device": "cuda", "pretrain_weights": "existing-checkpoint", "resolution": 512}
@@ -89,3 +90,7 @@ def test_roi_models_are_not_shared_between_detector_instances():
     assert first._roi_model is not second._roi_model
     assert first._roi_model.kwargs["pretrain_weights"] == "existing-checkpoint"
     assert second._roi_model.kwargs["pretrain_weights"] == "another-checkpoint"
+
+
+def test_roi_optimization_is_not_enabled_by_default():
+    assert DetectorConfig().roi_single_batch is False

@@ -41,7 +41,7 @@ def main() -> None:
     parser.add_argument("--seconds", type=float, default=10.)
     parser.add_argument("--runs", type=int, default=2)
     parser.add_argument("--batch-size", type=int, help="Explicit development detector batch; default keeps production configuration")
-    parser.add_argument("--roi-single-batch", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--roi-single-batch", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--capture-samples", action="store_true", help="Preserve dense player/ball evidence before output downsampling")
     args = parser.parse_args()
     if (args.out.exists() or args.runs < 2 or not 0 < args.seconds <= 30

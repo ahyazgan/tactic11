@@ -333,8 +333,8 @@ def main() -> int:
     p.add_argument("--backend", default="auto", choices=["auto", "torch", "onnx"],
                    help="Dedektör arka ucu: auto=ONNX modeli varsa ONNX, yoksa torch")
     p.add_argument("--onnx-model", default=None, help="ONNX model yolu (bkz. export_detector_onnx.py)")
-    p.add_argument("--roi-single-batch", action=argparse.BooleanOptionalAction, default=True,
-                   help="CUDA FP16 top ROI için ayrı tek görüntülük model; kapatmak için --no-roi-single-batch")
+    p.add_argument("--roi-single-batch", action=argparse.BooleanOptionalAction, default=False,
+                   help="Deneysel CUDA FP16 top ROI modeli; küçük top farkları üretebilir (varsayılan kapalı)")
     p.add_argument("--camera", default="auto",
                    choices=["auto", "static", "broadcast", "operated"],
                    help="Kamera davranışı. auto=ilk segmentten tespit et (sonra "

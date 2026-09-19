@@ -60,8 +60,9 @@ class DetectorConfig:
     batch_size: int | None = None
     half: bool = True           # fp16 çıkarım (CUDA'da); CPU'da yok sayılır
     # A lazy independent batch-one model avoids padding every ball ROI to the
-    # full panoramic batch. Only used after successful CUDA fp16 preparation.
-    roi_single_batch: bool = True
+    # full panoramic batch. Opt-in: the frozen control changed final ball output.
+    # Only used after successful CUDA fp16 preparation.
+    roi_single_batch: bool = False
 
     def tile_grid(self, width: int, height: int) -> tuple[int, int]:
         """(sütun, satır) — satır = `tiles`, sütun görüntü oranından."""
