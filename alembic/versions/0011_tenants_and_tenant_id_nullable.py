@@ -91,7 +91,7 @@ def upgrade() -> None:
         sa.Column("slug", sa.String(length=64), nullable=False),
         sa.Column("name", sa.String(length=200), nullable=False),
         sa.Column("settings_json", sa.Text(), nullable=False, server_default="{}"),
-        sa.Column("active", sa.Boolean(), nullable=False, server_default=sa.text("1")),
+        sa.Column("active", sa.Boolean(), nullable=False, server_default=sa.true()),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.UniqueConstraint("slug", name="uq_tenants_slug"),
     )
@@ -108,7 +108,7 @@ def upgrade() -> None:
         sa.Column("email", sa.String(length=255), nullable=False),
         sa.Column("password_hash", sa.String(length=100), nullable=False),
         sa.Column("role", sa.String(length=16), nullable=False),
-        sa.Column("active", sa.Boolean(), nullable=False, server_default=sa.text("1")),
+        sa.Column("active", sa.Boolean(), nullable=False, server_default=sa.true()),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("last_login_at", sa.DateTime(timezone=True), nullable=True),
         sa.UniqueConstraint("tenant_id", "email", name="uq_users_tenant_email"),
