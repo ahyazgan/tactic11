@@ -520,3 +520,26 @@ def test_lexicographic_ranker_ignores_the_pool_top() -> None:
     cands = [(1, 0.14, 0.1), (2, 0.03, 0.9)]
     rank = m._lexicographic()
     assert rank(cands, 0.2151)((1, 0.14, 0.1)) == rank(cands, 0.0)((1, 0.14, 0.1))
+
+
+def test_tenant_measurement_guards_thin_cells_like_production() -> None:
+    """Ölçüm scripti ince hücrede üretimle AYNI kuralı uygular.
+
+    Uygulamazsa ölçüm, üretimde çalışmayan bir nesneyi ölçer. PSG'de yedek
+    kaleci hücresi 1-2 gözlemle ikinci sıraya çıkmıştı; korumayla o hücre genel
+    tablonun ölçülmüş değerini alır, kalabalık hücre kiracı değerini korur.
+    """
+    from app.data.loaders.tenant_prior import MIN_CELL_OBS, global_prior, off_prior_for
+    from app.engine.coach_benchmark import WhoPrior
+    from scripts import fit_tenant_prior as ftp
+
+    genel = global_prior()
+    kiraci = WhoPrior(table={("GK", False): 0.14, ("MID", True): 0.20},
+                      fitted_on=5, seen={("GK", False): MIN_CELL_OBS - 1,
+                                         ("MID", True): MIN_CELL_OBS})
+    korumali = ftp._guarded(kiraci, genel)
+    assert korumali.table[("GK", False)] == genel.table[("GK", False)]
+    assert korumali.table[("MID", True)] == 0.20
+    # Üretim kuralıyla birebir: ince hücre None (→ genel), kalabalık hücre kiracı.
+    assert off_prior_for(kiraci, "G", False) is None
+    assert off_prior_for(kiraci, "M", True) == 0.20

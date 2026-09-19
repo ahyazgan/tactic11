@@ -3307,11 +3307,12 @@ def live_decision_endpoint(
         eligible_ids = set(resolve_on_pitch(
             appearances, current_minute, team_external_id=my_team_id,
         ).player_ids)
-        # Kiracının KENDİ tablosu varsa o kullanılır, yoksa genel tabloya
-        # düşülür. Genel tablo kendi verisine benzemeyen kulüpte ölçülebilir
-        # şekilde kötü (docs/KARNE-KIM-BAGIMSIZ.md); kendi tablosu 20 maçtan
-        # sonra onu iki ayrık yarıda da geçiyor (docs/KARNE-KIRACI-ONSELI.md).
-        # Bu maç fit'e GİRMEZ: tablo tahmin ettiği hamleden öğrenmemeli.
+        # Kiracının KENDİ tablosu, kendi ayrık-yarı sınavını geçiyorsa
+        # kullanılır; geçemiyorsa genel tabloda kalınır. Genel tablo kendi
+        # verisine benzemeyen kulüpte ölçülebilir şekilde kötü (Barcelona, PSG),
+        # benzeyen kulüpte ise zaten doğru tablo (Arsenal WFC: fark tam sıfır)
+        # — docs/KARNE-KIRACI-ONSELI.md. Bu maç fit'e GİRMEZ: tablo tahmin
+        # ettiği hamleden öğrenmemeli.
         tenant_prior = fit_tenant_off_prior(
             session, team_external_id=my_team_id, exclude_match_id=match_id)
         off_prior = {}
@@ -3496,7 +3497,8 @@ def live_decision_endpoint(
         "onsel_kaynagi": ("kiracının kendi geçmişi" if tenant_prior is not None
                           else "genel elit tablo"),
         "onsel_fit_hamle": (tenant_prior.fitted_on if tenant_prior is not None else None),
-        "onsel_kapi_mac": TENANT_PRIOR_MIN_MATCHES,
+        # Taban; kapının kendisi kiracının kendi ayrık-yarı sınavıdır.
+        "onsel_taban_mac": TENANT_PRIOR_MIN_MATCHES,
         # Sebepsiz kayıtlar önseli seyreltir (bir kısmı sakatlıktır ve karar
         # değildir). Kapsama raporlanmazsa bu sınır görünmez olur.
         "onsel_sebep_kapsamasi": (

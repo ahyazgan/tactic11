@@ -45,14 +45,14 @@
           "egitim_mac": 10,
           "egitim_hamle": 29,
           "isabet_at_1": 0.157,
-          "isabet_at_k": 0.43,
-          "genel_gecti_mi": false
+          "isabet_at_k": 0.498,
+          "genel_gecti_mi": true
         },
         {
           "egitim_mac": 20,
           "egitim_hamle": 56,
           "isabet_at_1": 0.157,
-          "isabet_at_k": 0.496,
+          "isabet_at_k": 0.498,
           "genel_gecti_mi": true
         },
         {
@@ -85,7 +85,17 @@
         "GK|1": 0.0061,
         "MID|0": 0.0096,
         "MID|1": 0.2086
-      }
+      },
+      "hucre_gozlem": {
+        "DEF|0": 39,
+        "DEF|1": 636,
+        "FWD|0": 58,
+        "FWD|1": 413,
+        "GK|1": 162,
+        "MID|0": 102,
+        "MID|1": 372
+      },
+      "ince_hucre_genelden": []
     },
     {
       "kol": "B'de fit → A'da ölç",
@@ -111,8 +121,8 @@
         {
           "egitim_mac": 10,
           "egitim_hamle": 27,
-          "isabet_at_1": 0.145,
-          "isabet_at_k": 0.518,
+          "isabet_at_1": 0.205,
+          "isabet_at_k": 0.569,
           "genel_gecti_mi": true
         },
         {
@@ -126,7 +136,7 @@
           "egitim_mac": 30,
           "egitim_hamle": 88,
           "isabet_at_1": 0.205,
-          "isabet_at_k": 0.566,
+          "isabet_at_k": 0.569,
           "genel_gecti_mi": true
         },
         {
@@ -152,18 +162,29 @@
         "GK|1": 0.0058,
         "MID|0": 0.0122,
         "MID|1": 0.1663
-      }
+      },
+      "hucre_gozlem": {
+        "DEF|0": 47,
+        "DEF|1": 664,
+        "FWD|0": 70,
+        "FWD|1": 404,
+        "GK|1": 169,
+        "MID|0": 80,
+        "MID|1": 425
+      },
+      "ince_hucre_genelden": []
     }
   ],
   "kapi": {
-    "gecen_mac": 20,
+    "gecen_mac": 10,
     "tum_gecenler": [
+      10,
       20,
       30,
       40,
       50
     ],
     "hukum": "kiracı tablosu bağlanabilir",
-    "not": "en az 20 maçtan sonra kiracının kendi tablosu genel tabloyu iki kolda da geçiyor"
+    "not": "en az 10 maçtan sonra kiracının kendi tablosu genel tabloyu iki kolda da geçiyor"
   }
 }

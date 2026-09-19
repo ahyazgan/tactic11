@@ -13,16 +13,27 @@ ve `compute_sub_timing(off_prior=...)` oyuncu→önsel eşlemesini dışarıdan 
 Eksik olan, o eşlemeyi kiracının kendi geçmişinden üreten ve **ne zaman
 güvenilir olduğunu bilen** parçaydı.
 
-## Kapı: 20 maç
+## Kapı: kiracının kendi ayrık-yarı sınavı
 
-Ölçüldü, seçilmedi. Ayrık yarıda (maç bazında, beraberlik tarafsız) kiracının
-kendi tablosu genel tabloyu İKİ KOLDA da ancak 20 maçtan sonra geçiyor; 10
-maçta bir kol geçiyor, öteki geçmiyor. Kapı kuralı veriden ÖNCE yazılmıştı:
-*iki kolda birden geçen en küçük maç sayısı* (`scripts/fit_tenant_prior.py`,
-`docs/KARNE-KIRACI-ONSELI.md`).
+İlk sürüm yalnız MAÇ SAYISINA bakıyordu (20). Üçüncü kulüp bunun yetmediğini
+gösterdi: Arsenal WFC'nin hücre sırası genel tablonunkiyle birebir aynı ve 20-30
+maçlık tablosu bir kolda genel tablodan KÖTÜ (0,373 vs 0,443). Sayı kapısı o
+tabloyu bağlardı. Ölçülen güvenlik hiçbir zaman maç sayısından gelmiyordu;
+"genel tabloyu İKİ KOLDA da geçme" kuralından geliyordu — maç sayısı onun
+Barcelona'daki vekiliydi.
 
-Altındaki kiracı genel tabloyu kullanmaya devam eder. Bu bir kusur değil,
-doğru varsayılan: 8 hücreli bir tablo az veriyle kolayca gürültüye oturur.
+Şimdi kapı o kuralın kendisi: yükleyici kiracının geçmişini maç bazında ikiye
+böler, her yarıda fit edip öteki yarıda genel tabloyla kıyaslar
+(beraberlik tarafsız isabet@3) ve tablo ancak İKİ KOLDA da genel tabloyu en az
+`MIN_EDGE` geçerse döner. Geçemezse None: kiracı genel tabloda kalır. Bu bir
+kusur değil, ölçülmüş doğru varsayılan — Arsenal WFC için genel tablo zaten
+doğru tablodur.
+
+`TENANT_PRIOR_MIN_MATCHES` (10) artık yalnız bir TABAN: sınavın anlamlı olması
+için her yarıda birkaç maç gerekir. Ölçülen üç kulüpte eğri 10 maçtan itibaren
+dümdüzdü (sekiz hücrede yalnız sıra önemli ve 10 maç sırayı sabitliyor); 10,
+önceden kapatılmış eğrinin en alt noktasıdır, gerçek asgari daha düşük olabilir
+(`docs/KARNE-KIRACI-ONSELI.md`).
 
 ## İki bilinen sınır
 
@@ -42,14 +53,34 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import models
-from app.engine.coach_benchmark import WhoCandidate, WhoPrior, WhoState, fit_who_prior
+from app.engine.coach_benchmark import (
+    WHO_TOP_K,
+    WhoCandidate,
+    WhoPrior,
+    WhoState,
+    fit_who_prior,
+    who_prior_agreement,
+)
+from app.engine.live_sub_recommendation import ELITE_OFF_PRIOR
 from app.sports import football
 
-# Ölçülmüş kapı — bkz. modül docstring'i ve docs/KARNE-KIRACI-ONSELI.md.
-TENANT_PRIOR_MIN_MATCHES = 20
+# Sınavın anlamlı olması için TABAN maç sayısı; kapının kendisi değil (bkz.
+# modül docstring'i ve docs/KARNE-KIRACI-ONSELI.md). Önceden kapatılmış öğrenme
+# eğrisinin en alt noktası; üç kulüpte de eğri buradan itibaren düzdü.
+TENANT_PRIOR_MIN_MATCHES = 10
+# Kiracı tablosunun bir kolda genel tabloyu "geçmiş" sayılması için gereken
+# isabet@3 farkı. Ölçüm scriptiyle aynı sayı; gürültüyü kazanç saymamak için.
+MIN_EDGE = 0.02
 
 # Bunlar KARAR değil, mecburiyettir: önsele girmezler.
 _NOT_A_DECISION = frozenset({"injury", "red_card"})
+
+# Bir hücreye güvenmek için gereken en az ADAY gözlemi. Laplace düzeltmesi
+# (ağırlık 1) 20 gözlemde %5'in altına iner. PSG ölçümünde yedek kaleci hücresi
+# 1-2 gözlemle tablonun ikinci sırasına tırmanmıştı — o hücre için genel
+# tablonun ÖLÇÜLMÜŞ değeri, kiracının uydurmaya yakın değerinden iyidir.
+# Sayı veriye bakılarak SEÇİLMEDİ; maç kapısıyla aynı büyüklük sınıfı.
+MIN_CELL_OBS = 20
 
 # position_played (StatsBomb/API-Football kısa kodu) → önsel grubu.
 # Bilinmeyen "MID" sayılır: canlı motordaki `elite_off_prior` da bilinmeyeni
@@ -146,18 +177,58 @@ def reason_coverage(session: Session, *, team_external_id: int) -> dict[str, int
     }
 
 
+def global_prior() -> WhoPrior:
+    """Üretimdeki `ELITE_OFF_PRIOR`, `WhoPrior` anahtar biçiminde. Sayılar aynı."""
+    table = {(group, starter): ELITE_OFF_PRIOR[(letter, starter)]
+             for letter, group in _LETTER_TO_GROUP.items() for starter in (True, False)}
+    return WhoPrior(table=table, fitted_on=0)
+
+
+def _halves(states: list[WhoState]) -> tuple[list[WhoState], list[WhoState]]:
+    """MAÇ bazında ayrık yarı — aynı maçın hamleleri bölünmez."""
+    ids = sorted({s.match_external_id for s in states})
+    a_ids = {m for i, m in enumerate(ids) if i % 2 == 0}
+    return ([s for s in states if s.match_external_id in a_ids],
+            [s for s in states if s.match_external_id not in a_ids])
+
+
+def _beats_global(train: list[WhoState], test: list[WhoState], genel: WhoPrior) -> bool:
+    """Eğitim yarısından fit edilen tablo, ölçüm yarısında genel tabloyu geçiyor mu?
+
+    İnce hücreler burada da genel değere düşer (`off_prior_for` kuralı), yoksa
+    sınav üretimde çalışmayan bir nesneyi ölçer.
+    """
+    raw = fit_who_prior(train)
+    guarded = WhoPrior(
+        table={k: (v if raw.seen.get(k, 0) >= MIN_CELL_OBS else genel.table.get(k, v))
+               for k, v in raw.table.items()},
+        fitted_on=raw.fitted_on, seen=raw.seen)
+    mine = who_prior_agreement(guarded, test, k=WHO_TOP_K).hit_at_k
+    theirs = who_prior_agreement(genel, test, k=WHO_TOP_K).hit_at_k
+    return mine is not None and theirs is not None and mine - theirs >= MIN_EDGE
+
+
 def fit_tenant_off_prior(
     session: Session, *, team_external_id: int, exclude_match_id: int | None = None,
     min_matches: int = TENANT_PRIOR_MIN_MATCHES,
 ) -> WhoPrior | None:
-    """Kiracının kendi tablosu — yeterli geçmiş yoksa **None** (genel tabloya düş).
+    """Kiracının kendi tablosu — kendi sınavını geçemezse **None** (genel tabloda kal).
 
-    None dönmek başarısızlık değildir: 8 hücreli bir tablo az veriyle gürültüye
-    oturur ve ölçüm 20 maçın altında genel tabloyu geçemediğini gösterdi.
+    Sınav: geçmiş maç bazında ikiye bölünür, her yarıdan fit edilen tablo öteki
+    yarıda genel tabloyla kıyaslanır; İKİ KOLDA da en az `MIN_EDGE` geçmesi
+    şarttır. Tek kolda geçen tablo bağlanmaz — ölçümdeki kuralın aynısı.
+
+    None dönmek başarısızlık değildir. Hücre sırası genel tablonunkiyle aynı
+    olan bir kulüp için (Arsenal WFC böyleydi) genel tablo zaten doğru
+    tablodur; kendi tablosu en iyi hâlde eşit, kötü hâlde gürültülüdür.
     """
     states = tenant_who_states(
         session, team_external_id=team_external_id, exclude_match_id=exclude_match_id)
     if len({s.match_external_id for s in states}) < min_matches:
+        return None
+    genel = global_prior()
+    a, b = _halves(states)
+    if not (_beats_global(a, b, genel) and _beats_global(b, a, genel)):
         return None
     return fit_who_prior(states)
 
@@ -165,7 +236,8 @@ def fit_tenant_off_prior(
 def off_prior_for(
     prior: WhoPrior | None, position: str | None, starter: bool,
 ) -> float | None:
-    """Kiracı tablosundan tek bir oyuncunun önseli; tablo yoksa/hücre boşsa None.
+    """Kiracı tablosundan tek bir oyuncunun önseli; tablo yoksa, hücre boşsa ya da
+    hücre `MIN_CELL_OBS`'tan az gözlemliyse None.
 
     None dönerse çağıran genel `elite_off_prior`'a düşer. Görülmemiş hücreye
     uydurma değer konmaz — 0.5 ("bilinmiyor") burada yanlış olurdu, çünkü genel
@@ -173,4 +245,7 @@ def off_prior_for(
     """
     if prior is None:
         return None
-    return prior.table.get((_group(position), starter))
+    key = (_group(position), starter)
+    if prior.seen and prior.seen.get(key, 0) < MIN_CELL_OBS:
+        return None          # ince hücre: genel tablonun ölçülmüş değeri kazanır
+    return prior.table.get(key)

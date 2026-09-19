@@ -87,7 +87,7 @@ Saf fonksiyonlar; DB/IO yok. Sayısal eşikler sabit ve dokümante — bir sonra
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from app.engine.confidence.attribution import MIN_SAMPLES
 
@@ -267,6 +267,10 @@ class WhoPrior:
 
     table: dict[tuple[str, bool], float]
     fitted_on: int
+    # Hücre başına ADAY gözlemi. Az gözlemli hücre Laplace yüzünden yüksek
+    # görünebilir (PSG'de yedek kaleci hücresi 1-2 gözlemle ikinci sıraya
+    # çıktı); tüketici bu sayıyla o hücreye güvenip güvenmemeye karar verir.
+    seen: dict[tuple[str, bool], int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -645,7 +649,7 @@ def fit_who_prior(states: Sequence[WhoState]) -> WhoPrior:
                 off[key] = off.get(key, 0) + 1
     table = {k: (off.get(k, 0) + PRIOR_LAPLACE) / (n + 2 * PRIOR_LAPLACE)
              for k, n in seen.items()}
-    return WhoPrior(table=table, fitted_on=len(states))
+    return WhoPrior(table=table, fitted_on=len(states), seen=dict(seen))
 
 
 def apply_who_prior(prior: WhoPrior, state: WhoState) -> tuple[int, ...]:
