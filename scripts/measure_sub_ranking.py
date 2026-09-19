@@ -69,16 +69,23 @@ URGENCY_DECIMALS = 3     # motorla aynı yuvarlama; beraberlikler burada doğuyo
 
 # (oyuncu, önsel, bileşik aciliyet)
 Candidate = tuple[int, float, float]
-# Bir kural, o vakanın adaylarını görüp her aday için SIRALAMA ANAHTARI üretir.
-# Eşit anahtar = beraberlik; ölçüm beraberliği rastgele sayar.
-Ranker = Callable[[Sequence[Candidate]], Callable[[Candidate], tuple[float, ...]]]
+# Bir kural, o vakanın adaylarını ve HAVUZ TEPE ÖNSELİNİ görüp her aday için
+# SIRALAMA ANAHTARI üretir. Eşit anahtar = beraberlik; ölçüm beraberliği
+# rastgele sayar. Tepe önsel ayrı geçilir çünkü motor onu eylem eşiğinden
+# ÖNCEKİ havuzdan alır, aday listesinden değil.
+Ranker = Callable[[Sequence[Candidate], float], Callable[[Candidate], tuple[float, ...]]]
+# Bir vaka: (maç, çıkan oyuncu, adaylar, eşik öncesi havuzun en yüksek önseli)
+# Maç kimliği taşınır çünkü ayrık yarı MAÇ bazında bölünmelidir: aynı maçın
+# değişiklikleri iki yarıya dağılırsa yarılar bağımsız olmaz.
+Case = tuple[int, int, list[Candidate], float]
 
 
 def _collect_cases(
     events_dir: Path, tenant: str, team: int,
-) -> list[tuple[int, list[Candidate]]]:
-    """Her gerçek taktik değişiklik için: kim çıktı + adayların önsel/bileşik değerleri."""
-    out: list[tuple[int, list[Candidate]]] = []
+) -> list[Case]:
+    """Her gerçek taktik değişiklik için: kim çıktı + adayların önsel/bileşik
+    değerleri + eylem eşiğinden ÖNCEKİ havuzun en yüksek önseli."""
+    out: list[Case] = []
     with SessionLocal() as s:
         s.info["tenant_id"] = tenant
         mids = sorted({m for (m,) in s.execute(select(
@@ -118,6 +125,14 @@ def _collect_cases(
                 progression = _minute_urgency(minute)
                 passes = [x for x in loaded.passes if x.minute < minute]
                 defs = [x for x in loaded.defensive_actions if x.minute < minute]
+                # Önsel normalizasyonunun TEPE DEĞERİ, motordaki gibi eylem
+                # eşiğinden ÖNCEKİ havuzdan gelir. Motor `prior_max`'ı sahadaki
+                # tüm oyunculardan alır; script filtreden SONRAKİ aday
+                # listesinden alıyordu. En yüksek önselli oyuncu eşikte elenirse
+                # tepe düşer ve herkesin normalize önseli şişer — modellenen
+                # sıralayıcı motorunki olmaktan çıkar.
+                pool_top = max((elite_off_prior(c.group, c.starter)
+                                for c in st.candidates), default=0.0)
                 cands: list[Candidate] = []
                 for c in st.candidates:
                     edge = max(15.0, minute - 15.0)
@@ -137,31 +152,53 @@ def _collect_cases(
                     ) * weight
                     cands.append((c.player_id, elite_off_prior(c.group, c.starter), composite))
                 if cands:
-                    out.append((st.player_off, cands))
+                    out.append((mid, st.player_off, cands, pool_top))
     return out
 
 
 def _blend(w: float) -> Ranker:
     """Motorun bugünkü kuralı: aciliyet = (1−w)·bileşik + w·(önsel / en yüksek önsel).
 
-    Normalizasyon motordaki gibi O VAKANIN adayları arasındaki en yüksek önsele
-    göredir — sahada forvet yoksa tepe değer de düşer.
+    Normalizasyon motordaki gibi O VAKANIN sahadaki oyuncularının en yüksek
+    önseline göredir — sahada forvet yoksa tepe değer de düşer. `pool_top`
+    eylem eşiğinden ÖNCEKİ havuzdan gelir; verilmezse (eski davranış) aday
+    listesinden hesaplanır ve motordan sapar.
     """
-    def factory(cands: Sequence[Candidate]) -> Callable[[Candidate], tuple[float, ...]]:
-        top = max((pr for _, pr, _ in cands), default=0.0) or 1.0
-        return lambda x: (-round(min(1.0, (1.0 - w) * x[2] + w * x[1] / top),
+    def factory(cands: Sequence[Candidate],
+                pool_top: float) -> Callable[[Candidate], tuple[float, ...]]:
+        top = (pool_top or max((pr for _, pr, _ in cands), default=0.0)) or 1.0
+        return lambda x: (-round(max(0.0, min(1.0, (1.0 - w) * x[2] + w * x[1] / top)),
                                  URGENCY_DECIMALS),)
+    return factory
+
+
+def _blend_reversed(w: float) -> Ranker:
+    """Harmanın TERS KONTROLü: bileşiğin yönü çevrilir, ağırlık aynı kalır.
+
+    Ayrık yarıda seçilen ağırlık bugünkünden iyi çıkarsa akla ilk gelen şey
+    "yorgunluk bilgi taşıyor, ağırlığı düşürelim" olur. Ters kontrol bunu
+    sınar: bileşik gerçekten kimin çıkacağını biliyorsa, yönü çevrilince sonuç
+    BELİRGİN ŞEKİLDE kötüleşmelidir. Az kötüleşiyorsa — ve ters sürüm hâlâ saf
+    önseli geçiyorsa — kazanç bilgiden değil, iki kaba ölçeği karıştırmanın
+    yarattığı sıralama yapısından geliyordur.
+    """
+    def factory(cands: Sequence[Candidate],
+                pool_top: float) -> Callable[[Candidate], tuple[float, ...]]:
+        top = (pool_top or max((pr for _, pr, _ in cands), default=0.0)) or 1.0
+        return lambda x: (-round(max(0.0, min(1.0,
+            (1.0 - w) * (1.0 - x[2]) + w * x[1] / top)), URGENCY_DECIMALS),)
     return factory
 
 
 def _lexicographic(reverse_secondary: bool = False) -> Ranker:
     """Önsel grubu belirler, bileşik grup içini sıralar (ters kontrol için ters çevrilir)."""
     sign = 1.0 if reverse_secondary else -1.0
-    return lambda cands: (lambda x: (-x[1], sign * x[2]))
+    return lambda cands, _pool_top: (lambda x: (-x[1], sign * x[2]))
 
 
 def _expected_hits(
     cands: Sequence[Candidate], off: int, rank: Ranker, *, k: int,
+    pool_top: float = 0.0,
 ) -> tuple[float, float]:
     """Eşit anahtarlı adaylar arasında rastgele seçim varsayıp BEKLENEN isabet.
 
@@ -169,7 +206,7 @@ def _expected_hits(
     Aynı anahtarı paylaşan t aday ilk sırayı paylaşır → isabet@1 = 1/t; ilk k
     sınırı bir kademeyi ortadan böldüğünde beklenen pay kalan yer / kademe boyu.
     """
-    key = rank(cands)
+    key = rank(cands, pool_top)
     keyed = sorted(((key(c), c[0]) for c in cands), key=lambda t: t[0])
     tiers: list[list[int]] = []
     prev: tuple[float, ...] | None = None
@@ -191,23 +228,70 @@ def _expected_hits(
     return 0.0, 0.0
 
 
-def _score(
-    rows: Sequence[tuple[int, list[Candidate]]], rank: Ranker, *, k: int = 3,
-) -> dict[str, Any]:
+def _score(rows: Sequence[Case], rank: Ranker, *, k: int = 3) -> dict[str, Any]:
     hit1 = hitk = 0.0
-    for off, cands in rows:
-        a, b = _expected_hits(cands, off, rank, k=k)
+    for _mid, off, cands, pool_top in rows:
+        a, b = _expected_hits(cands, off, rank, k=k, pool_top=pool_top)
         hit1 += a
         hitk += b
     n = len(rows)
     return {"n": n, "isabet_at_1": round(hit1 / n, 3), "isabet_at_3": round(hitk / n, 3)}
 
 
-def _random_baseline(rows: Sequence[tuple[int, list[Candidate]]]) -> dict[str, Any]:
+def _random_baseline(rows: Sequence[Case]) -> dict[str, Any]:
     n = len(rows)
     return {"n": n,
-            "isabet_at_1": round(sum(1 / len(c) for _, c in rows) / n, 3),
-            "isabet_at_3": round(sum(min(1.0, 3 / len(c)) for _, c in rows) / n, 3)}
+            "isabet_at_1": round(sum(1 / len(c) for _m, _o, c, _t in rows) / n, 3),
+            "isabet_at_3": round(sum(min(1.0, 3 / len(c)) for _m, _o, c, _t in rows) / n, 3)}
+
+
+WEIGHT_SWEEP: tuple[float, ...] = (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
+
+
+def _halves(rows: Sequence[Case]) -> tuple[list[Case], list[Case]]:
+    """MAÇ bazında ayrık yarı — aynı maçın değişiklikleri bölünmez."""
+    ids = sorted({r[0] for r in rows})
+    a_ids = {m for i, m in enumerate(ids) if i % 2 == 0}
+    return ([r for r in rows if r[0] in a_ids], [r for r in rows if r[0] not in a_ids])
+
+
+def _split_half_weight(rows: Sequence[Case], *, k: int = 1) -> dict[str, Any]:
+    """Harman ağırlığını ÖTEKİ yarıda seç, bu yarıda ölç.
+
+    Örneklem içi süpürmede on bir adayın en iyisi, ortada hiçbir bilgi olmasa
+    bile tabanın üstüne çıkar — bu depoda ölçülmüş bir tuzak: altı sinyalin en
+    iyisi rastgele tabanı 0,056 geçiyordu (docs/KARNE-GRUP-ICI-SINYAL.md).
+    Ağırlık da bir seçimdir ve bedeli ödenmeden raporlanamaz.
+
+    Hüküm ölçütü: iki yarı AYNI ağırlığı seçmezse sonuç kararsızdır ve
+    ağırlığın bilgi taşıdığı söylenemez.
+    """
+    a, b = _halves(rows)
+    metric = "isabet_at_1" if k == 1 else "isabet_at_3"
+    kollar: list[dict[str, Any]] = []
+    for train, test, label in ((a, b, "A'da seç → B'de ölç"), (b, a, "B'de seç → A'da ölç")):
+        if not train or not test:
+            continue
+        best = max(WEIGHT_SWEEP, key=lambda w: _score(train, _blend(w), k=k)[metric])
+        kollar.append({"kol": label, "secilen_w": best,
+                       "egitimde": _score(train, _blend(best), k=k)[metric],
+                       "olcumde": _score(test, _blend(best), k=k)[metric],
+                       "n": len(test)})
+    if not kollar:
+        return {"hukum": "yetersiz veri"}
+    disari = round(sum(r["olcumde"] for r in kollar) / len(kollar), 3)
+    icerde = round(max(_score(rows, _blend(w), k=k)[metric] for w in WEIGHT_SWEEP), 3)
+    kararli = len({r["secilen_w"] for r in kollar}) == 1
+    return {
+        "olcut": metric, "kollar": kollar,
+        "ornek_disi": disari, "ornek_ici_en_iyi": icerde,
+        "secim_bedeli": round(icerde - disari, 3),
+        "ayni_agirlik_mi": kararli,
+        "suanki_w": ROLE_PRIOR_WEIGHT,
+        "suanki_w_ornek_ici": _score(rows, _blend(ROLE_PRIOR_WEIGHT), k=k)[metric],
+        "not": ("örneklem içi en iyi ile örneklem dışı arasındaki fark SEÇİM BEDELİdir; "
+                "iki yarı farklı ağırlık seçerse sonuç kararsızdır"),
+    }
 
 
 def main() -> int:
@@ -232,6 +316,26 @@ def main() -> int:
     }
     results = {name: _score(rows, rank) for name, rank in rules.items()}
     baseline = _random_baseline(rows)
+    weight = {"isabet_at_1": _split_half_weight(rows, k=1),
+              "isabet_at_3": _split_half_weight(rows, k=3)}
+    # Ayrık yarıda seçilen ağırlık için TERS KONTROL: bileşiğin yönü çevrilince
+    # ne oluyor? Az kötüleşiyorsa kazanç yorgunluğun bilgisinden değildir.
+    ters: dict[str, Any] = {}
+    for metric, k in (("isabet_at_1", 1), ("isabet_at_3", 3)):
+        w = weight[metric].get("kollar", [{}])[0].get("secilen_w")
+        if w is None:
+            continue
+        ileri = _score(rows, _blend(w), k=k)[metric]
+        geri = _score(rows, _blend_reversed(w), k=k)[metric]
+        ters[metric] = {
+            "secilen_w": w, "dogru_yon": ileri, "ters_yon": geri,
+            "fark": round(ileri - geri, 3),
+            "saf_onsel": _score(rows, _blend(1.0), k=k)[metric],
+            "saf_bilesik": _score(rows, _blend(0.0), k=k)[metric],
+            "rastgele": baseline[metric],
+            "not": ("ters yön saf önseli de geçiyorsa kazanç bilgiden değil "
+                    "karışımın sıralama yapısındandır"),
+        }
 
     correct = results["önsel, eşitlikte bileşik"]
     reverse = results["TERS KONTROL: önsel, eşitlikte ters bileşik"]
@@ -244,14 +348,16 @@ def main() -> int:
         "kaynak": {
             "tenant": args.tenant, "takim_external_id": args.team,
             "taktik_degisiklik": len(rows),
-            "ortalama_aday": round(sum(len(c) for _, c in rows) / len(rows), 2),
+            "ortalama_aday": round(sum(len(c) for _m, _o, c, _t in rows) / len(rows), 2),
             "aday_esigi": MIN_ACTIONS,
             "girdi_sha256": hashlib.sha256(json.dumps(
                 [[off, sorted((pid, round(pr, 6), round(co, 6)) for pid, pr, co in c)]
-                 for off, c in rows], sort_keys=True).encode("utf-8")).hexdigest(),
+                 for _m, off, c, _t in rows], sort_keys=True).encode("utf-8")).hexdigest(),
         },
         "rastgele_taban": baseline,
         "siralama_kurallari": results,
+        "harman_agirligi_ayrik_yari": weight,
+        "harman_ters_kontrol": ters,
         "hukum": {
             "grup_bilgisi": ("var" if group_gain >= 0.10 else "yok"),
             "grup_kazanci_at_3": round(group_gain, 3),

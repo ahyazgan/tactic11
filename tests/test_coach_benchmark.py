@@ -22,17 +22,26 @@ from app.engine.coach_benchmark import (
     ShapePrior,
     ShapeState,
     TickObservation,
+    WhoCandidate,
+    WhoPrior,
+    WhoState,
     agreement,
     apply_shape_gate,
+    apply_who_prior,
     build_scorecard,
     expected_calibration_error,
+    expected_who_hits,
     fit_shape_prior,
     lead_times,
     minute_rule,
     selectivity,
     skill_from_auc,
+    skill_from_error,
     split_half_agreement,
+    split_half_definition,
     split_half_shape_gate,
+    who_prior_agreement,
+    who_prior_tiers,
 )
 from app.engine.coach_benchmark.compute import _shape_cell
 
@@ -468,3 +477,165 @@ def test_shape_gate_needs_enough_flags_in_control_half() -> None:
     assert gate.prior_for_b.threshold is not None
     assert gate.gated_a.flagged == 1
     assert gate.verdict == "yetersiz veri"
+
+
+def test_who_prior_tiers_group_equal_candidates_together() -> None:
+    """Önsel tablosu kaba: aynı hücredeki adaylar TEK kademede toplanmalı."""
+    state = WhoState(1, 7, tuple(
+        WhoCandidate(pid, group, True)
+        for pid, group in ((7, "FWD"), (8, "FWD"), (9, "MID"), (10, "DEF"))))
+    prior = WhoPrior({("FWD", True): 0.21, ("MID", True): 0.14, ("DEF", True): 0.03}, 1)
+    assert who_prior_tiers(prior, state) == ((7, 8), (9,), (10,))
+
+
+def test_expected_who_hits_never_rewards_a_fixed_order_inside_a_tier() -> None:
+    """Kademe içinde rastgele seçim varsayılır: iki eşit adayın her biri 1/2."""
+    tiers = ((7, 8), (9,), (10,))
+    for pid in (7, 8):
+        assert expected_who_hits(tiers, pid, k=3) == (pytest.approx(0.5), 1.0)
+    assert expected_who_hits(tiers, 9, k=3) == (0.0, 1.0)
+    # ilk iki kademe üç yeri doldurdu: 10 numara ilk üçe giremez
+    assert expected_who_hits(tiers, 10, k=3) == (0.0, 0.0)
+    # ilk üç sınırı kademeyi ortadan bölerse beklenen pay kalan yer / kademe boyu
+    straddle = ((7,), (8, 9, 10))
+    assert expected_who_hits(straddle, 9, k=3) == (0.0, pytest.approx(2 / 3))
+
+
+def test_who_prior_agreement_ignores_player_id_order() -> None:
+    """Kimlikleri ters çevirmek sonucu DEĞİŞTİRMEMELİ — düzeltilen kusur buydu."""
+    def states(flip):
+        out = []
+        for mid in range(1, 25):
+            ids = [40, 30, 20, 10] if flip else [10, 20, 30, 40]
+            out.append(WhoState(mid, ids[0], tuple(
+                WhoCandidate(pid, "FWD" if i < 2 else "MID", True)
+                for i, pid in enumerate(ids))))
+        return out
+
+    prior = WhoPrior({("FWD", True): 0.21, ("MID", True): 0.14}, 1)
+    duz = who_prior_agreement(prior, states(False))
+    ters = who_prior_agreement(prior, states(True))
+    assert duz.hit_at_1 == ters.hit_at_1 == pytest.approx(0.5)
+
+    def ranked(flip):
+        rows = states(flip)
+        return sum(1 for s in rows if apply_who_prior(prior, s)[0] == s.player_off) / len(rows)
+
+    # aynı veride eski yol kimlik sırasına BAĞLI: 1.0 vs 0.0
+    assert ranked(False) != ranked(True)
+
+
+# --- tanım seçiminin bedeli ---------------------------------------------- #
+
+def _defn_obs(flags: list[bool], acted: list[bool]) -> list[TickObservation]:
+    """Her tik ayrı maçta — _halves maç bazında böldüğü için tikler dağılsın."""
+    return [TickObservation(i, 10.0 + i, f, a)
+            for i, (f, a) in enumerate(zip(flags, acted, strict=True))]
+
+
+def test_definition_choice_picks_in_the_other_half() -> None:
+    """Tanım ÖTEKİ yarıda seçilir; iki yarı da aynı tanımı seçerse kararlı."""
+    n = 40
+    acted = [i % 2 == 0 for i in range(n)]
+    iyi = list(acted)                      # hedefi birebir izler
+    kotu = [not a for a in acted]          # tam tersi
+    pick = split_half_definition({"iyi": _defn_obs(iyi, acted),
+                                  "kotu": _defn_obs(kotu, acted)})
+    assert pick.chosen_for_a == "iyi"
+    assert pick.chosen_for_b == "iyi"
+    assert pick.stable is True
+    assert pick.engine_f1 == 1.0
+
+
+def test_definition_choice_charges_the_selection_cost() -> None:
+    """Bilgi yokken örneklem-içi en iyi, örneklem-dışıdan YÜKSEK çıkar.
+
+    Eski kod iki tanımın ÖLÇÜLMÜŞ F1'inden büyüğünü sabit bir tabana karşı
+    raporluyordu. İki aday arasından en iyisini seçmek, ortada hiçbir sinyal
+    olmasa bile tabanın üstüne çıkar — bu depoda altı sinyalle ölçülmüştü
+    (taban + 0,056, docs/KARNE-GRUP-ICI-SINYAL.md). Fark seçim bedelidir ve
+    örneklem dışı ölçüm onu geri alır.
+    """
+    acted = [i % 3 == 0 for i in range(60)]
+    # İki gürültü tanımı: biri A yarısında şanslı, öteki B yarısında.
+    a_sansli = [(i % 3 == 0) if i % 2 == 0 else (i % 5 == 0) for i in range(60)]
+    b_sansli = [(i % 5 == 0) if i % 2 == 0 else (i % 3 == 0) for i in range(60)]
+    pick = split_half_definition({"a_sansli": _defn_obs(a_sansli, acted),
+                                  "b_sansli": _defn_obs(b_sansli, acted)})
+
+    # İki yarı farklı tanım seçti: sonucun gürültü olduğunun işareti.
+    assert pick.stable is False
+    assert "İKİ YARI FARKLI TANIM SEÇTİ" in pick.note
+
+    en_iyi_ic = max(v for v in pick.in_sample.values() if v is not None)
+    assert pick.engine_f1 is not None
+    assert en_iyi_ic > pick.engine_f1, "seçim bedeli ödenmemiş"
+
+
+def test_definition_choice_refuses_mismatched_tick_sets() -> None:
+    """Tanımlar farklı tikleri kapsıyorsa taban kayar — kıyas reddedilir."""
+    acted = [i % 2 == 0 for i in range(40)]
+    tam = _defn_obs(list(acted), acted)
+    eksik = _defn_obs(list(acted[:30]), acted[:30])
+    pick = split_half_definition({"tam": tam, "eksik": eksik})
+    assert pick.verdict == "yetersiz veri"
+    assert "aynı tik/hedef kümesini paylaşmıyor" in pick.note
+    assert pick.engine_f1 is None
+
+
+def test_definition_choice_with_one_definition_has_no_cost() -> None:
+    """Tek tanım varsa seçim yoktur; sonuç split_half_agreement ile aynı."""
+    acted = [i % 2 == 0 for i in range(40)]
+    obs = _defn_obs(list(acted), acted)
+    pick = split_half_definition({"tek": obs})
+    assert pick.stable is True
+    assert pick.engine_f1 == split_half_agreement(obs).engine_f1
+
+
+def test_skill_from_error_is_zero_at_the_baseline() -> None:
+    """Hata ölçen boyutta da 'taban = 0' sözleşmesi geçerli.
+
+    Kalibrasyon satırı sabit bir ölçek kullanıyordu (1 − ECE/0.25), yani saf
+    tabanla EŞİT hata yapan bir sistem bile pozitif beceri alıyordu — AUC
+    tarafındaki `skill_from_auc` (0.5 → 0) ile aynı sözleşmeyi paylaşmıyordu.
+    """
+    assert skill_from_error(0.20, 0.20) == 0.0      # tabanla aynı → 0
+    assert skill_from_error(0.00, 0.20) == 100.0    # hatasız → 100
+    assert skill_from_error(0.10, 0.20) == 50.0
+    assert skill_from_error(0.30, 0.20) == 0.0      # tabandan kötü → 0'a kırpılır
+    # Taban 0 ya da tanımsızsa oran kurulamaz; uydurma ölçek konmaz.
+    assert skill_from_error(0.10, 0.0) is None
+    assert skill_from_error(None, 0.20) is None
+    assert skill_from_error(0.10, None) is None
+    # Eski sabit ölçek tabanla eşit sistemi ödüllendiriyordu — bir daha olmasın.
+    assert round(max(0.0, 1.0 - 0.20 / 0.25) * 100, 1) == 20.0
+
+
+def test_lead_time_reports_the_saturated_baseline() -> None:
+    """Öncü süre tek başına okunamaz: her tikte bayrak yakmak da 'erken' görünür.
+
+    Ölçüt penceredeki EN ERKEN bayrak. Bu yüzden hiçbir şey bilmeyen, her tikte
+    bayrak yakan bir kural azami öncü süreyi alır — sayı öngörüden değil tik
+    ızgarasının geometrisinden gelir. Taban yanında raporlanmazsa satır
+    yetenek gibi okunur.
+    """
+    ticks = {1: [50.0, 55.0, 60.0, 65.0]}
+    moves = {1: [66.0]}
+
+    # Motor yalnız 65'te bayrak yaktı: 1 dk önce.
+    dar = lead_times(moves, {1: [65.0]}, lookback_min=15.0, all_tick_minutes=ticks)
+    assert dar.mean_lead_min == 1.0
+    # Doygun kural 51+ dakikadaki ilk tikten, yani 55'ten haber verirdi: 11 dk.
+    assert dar.saturated_mean_lead_min == 11.0
+    assert dar.saturated_coverage == 1.0
+    assert "her tikte bayrak yakan kural" in dar.note
+
+    # Motor da her tikte yakarsa öncü süre tabana EŞİT — ve not bunu söyler.
+    doygun = lead_times(moves, ticks, lookback_min=15.0, all_tick_minutes=ticks)
+    assert doygun.mean_lead_min == doygun.saturated_mean_lead_min
+    assert "ızgaranın geometrisi" in doygun.note
+
+    # Izgara verilmezse sayı yorumlanamaz olarak işaretlenir.
+    tabansiz = lead_times(moves, {1: [65.0]}, lookback_min=15.0)
+    assert tabansiz.saturated_mean_lead_min is None
+    assert "tek başına yorumlanamaz" in tabansiz.note

@@ -387,3 +387,69 @@ def test_squad_state_matches_the_engine_on_pitch_rule(client, match, session) ->
                          params={"team_external_id": 11, "minute": minute}).json()
         engine = resolve_on_pitch(apps, minute, team_external_id=11)
         assert set(api["sahada"]) == set(engine.player_ids), f"{minute}. dakikada ayrışma"
+
+
+# --- mükerrer koruması: konu oyuncu ve cevap sonrası donma ------------------- #
+
+def _rec_for(client, minute: float, player: int | None, applied=None) -> dict:
+    return client.post("/admin/matches/7001/decisions", json={
+        "team_external_id": 11, "minute": minute, "period": 2,
+        "decision_type": "substitution", "recommended": True, "applied": applied,
+        "subject_player_external_id": player, "notes": "öneri",
+    }).json()
+
+
+def test_recommendations_about_different_players_are_separate_rows(client, match) -> None:
+    """Farklı oyuncular için öneriler aynı satıra ÇÖKMEMELİ.
+
+    Mükerrer anahtarı yalnız (maç, takım, tip, öneri mi, ±5 dk) olduğunda
+    62. dakikada "Ali'yi çıkar" ile 64. dakikada "Veli'yi çıkar" tek satır
+    oluyordu. Karşı-olgu PAYDASI eksik sayılır, kapsama olduğundan yüksek
+    görünürdü — tam da docs/PILOT-KARSI-OLGU-PLANI.md'nin görmek için kurduğu
+    sayı.
+    """
+    ali = _rec_for(client, 62.0, player=9)
+    veli = _rec_for(client, 64.0, player=4)
+    assert ali["guncellendi"] is False
+    assert veli["guncellendi"] is False
+    assert ali["id"] != veli["id"]
+
+    # Aynı oyuncu için tekrar gösterim hâlâ tek satır — payda şişmiyor.
+    tekrar = _rec_for(client, 65.0, player=9)
+    assert tekrar["guncellendi"] is True
+    assert tekrar["id"] == ali["id"]
+
+    cov = client.get("/admin/matches/7001/decision-coverage",
+                     params={"team_external_id": 11}).json()
+    assert cov["gosterilen_oneri"] == 2
+
+
+def test_confidence_freezes_once_the_coach_has_answered(client, match) -> None:
+    """Koç cevapladıktan sonra gelen gösterim, onun gördüğü güveni EZMEMELİ.
+
+    Kalibrasyon "bu güvenle söylendiğinde ne oldu" sorusunu cevaplar. Sonraki
+    bir anın güvenini koçun cevabına iliştirmek, koçun hiç görmediği bir sayıyı
+    onun beyanına bağlamaktır.
+    """
+    first = client.post("/admin/matches/7001/decisions", json={
+        "team_external_id": 11, "minute": 60.0, "period": 2,
+        "decision_type": "substitution", "recommended": True, "applied": None,
+        "subject_player_external_id": 9, "confidence": 0.4,
+    }).json()
+
+    client.post(f"/admin/decisions/{first['id']}/applied", json={"applied": True})
+
+    # Koç cevapladı; 63. dakikadaki gösterim güveni 0.9'a çekmeye çalışıyor.
+    again = client.post("/admin/matches/7001/decisions", json={
+        "team_external_id": 11, "minute": 63.0, "period": 2,
+        "decision_type": "substitution", "recommended": True, "applied": None,
+        "subject_player_external_id": 9, "confidence": 0.9,
+    }).json()
+    assert again["id"] == first["id"]
+    assert again["applied"] is True, "beyan geri alınmamalı"
+
+    rows = client.get("/admin/matches/7001/decisions",
+                      params={"team_external_id": 11}).json()
+    items = rows if isinstance(rows, list) else rows.get("kararlar", rows.get("items", []))
+    row = next(r for r in items if r["id"] == first["id"])
+    assert row["confidence"] == 0.4, "cevaptan sonra güven donmalı"

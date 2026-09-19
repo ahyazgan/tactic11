@@ -416,3 +416,107 @@ def test_within_group_halves_never_split_one_match() -> None:
     b_ids = {c.match_external_id for c in b}
     assert a_ids & b_ids == set()
     assert len(a) + len(b) == len(cases)
+
+
+def test_refit_baseline_is_frozen_not_read_from_the_live_constant():
+    """Refit'in "eski tablo" sütunu CANLI sabitten okunmamalı.
+
+    `fit_timing_prior` `ELITE_SUB_WINDOW_PRIOR`'ı değiştirmek için var. Kıyas
+    tabanını oradan okursa, refit'ten sonra "eski" tablo yeni tablonun kendisi
+    olur — üstelik örnek-içi ölçüldüğü için refit'i gerileme gibi gösterir.
+    Bir tur bu şekilde yayımlandı; test tekrarını engelliyor.
+    """
+    from pathlib import Path
+
+    from scripts import fit_timing_prior as fit
+
+    assert not hasattr(fit, "ELITE_SUB_WINDOW_PRIOR"), (
+        "canlı tablo ithal edilmiş — kıyas kendini ölçer"
+    )
+
+    base = fit._load_baseline(Path("docs/measurements/timing-prior-baseline.json"))
+    assert len(base["tablo"]) == 50, "dondurulmuş taban refit öncesi 50 hücreydi"
+    assert base["commit"] == "c0527cd"
+
+    from app.engine.sub_timing.elite_prior import ELITE_SUB_WINDOW_PRIOR
+
+    assert base["tablo"] != ELITE_SUB_WINDOW_PRIOR, "taban ile canlı tablo aynı olamaz"
+
+
+def test_prior_source_has_one_home():
+    """Künye tek yerde; ölçüm scripti kendi kopyasını tutmaz.
+
+    `validate_timing_prior` refit'ten sonra bir tur "Barcelona'nın 100 maçı"
+    yazmaya devam etti — tablo yedi kümeden yeniden fit edilmişken.
+    """
+    from app.engine.sub_timing.elite_prior import PRIOR_SOURCE
+    from scripts.validate_timing_prior import PRIOR_SOURCE as imported
+
+    assert imported is PRIOR_SOURCE
+    assert "yedi küme" in PRIOR_SOURCE
+
+
+def test_within_group_baseline_uses_the_same_cases_as_the_hit_average() -> None:
+    """Rastgele taban, isabetin ölçüldüğü AYNI vakalardan gelmeli.
+
+    Eski hâlde isabet yalnız sinyali TANIMLI vakalardan, taban ise TÜM
+    vakalardan hesaplanıyordu. İki farklı payda: sinyalin tanımsız olduğu
+    vakaların grup boyutu ötekilerden farklıysa fark sistematik olarak kayar.
+
+    Yayımlanmış ölçümde (docs/measurements/within-group-signal-2026-09-14.json)
+    seçilen iki sinyal de 329 vakanın hepsinde tanımlıydı, bu yüzden +0,001
+    sonucu ETKİLENMEDİ. Ama pas isabeti sinyalleri 321 ve 318 vakada tanımlıydı;
+    onlardan biri seçilseydi hata sayıya girerdi.
+    """
+    m = measure_within_group_signal
+    Case = m.Case
+
+    def case(mid: int, off: int, peers: tuple[int, ...],
+             feats: dict[int, dict[str, float]]) -> object:
+        return Case(mid, off, "MID", peers, feats)
+
+    # İki vaka: birincide sinyal tanımlı (2 aday), ikincide TANIMSIZ (4 aday).
+    # Eski kural tabanı (1/2 + 1/4) / 2 = 0.375 sayardı; isabet ise yalnız
+    # birinci vakadan gelirdi. Doğrusu: taban da yalnız birinci vakadan, 1/2.
+    tanimli = case(1, 7, (7, 8), {7: {"x": 2.0}, 8: {"x": 1.0}})
+    tanimsiz = case(2, 9, (9, 10, 11, 12), {p: {} for p in (9, 10, 11, 12)})
+
+    value, n, rnd = m._mean_hit([tanimli, tanimsiz], "x", 1)
+    assert n == 1, "sinyali tanımsız vaka isabet ortalamasına girmemeli"
+    assert value == 1.0
+    assert rnd == 0.5, "taban da yalnız o tek vakadan gelmeli, 0.375 değil"
+
+    # Hiç tanımlı vaka yoksa üçü de None döner — uydurma taban üretilmez.
+    assert m._mean_hit([tanimsiz], "x", 1) == (None, 0, None)
+
+
+def test_blend_normalises_by_the_pool_top_not_the_surviving_candidates() -> None:
+    """Önsel normalizasyonu motordaki gibi EŞİK ÖNCESİ havuzun tepesine göre.
+
+    Motor `prior_max`'ı sahadaki tüm oyunculardan alır; script eylem eşiğinden
+    SONRAKİ aday listesinden alıyordu. En yüksek önselli oyuncu eşikte elenirse
+    (az olayı olan bir ilk-11 forveti — tam da en yüksek önselli hücre) tepe
+    çöker ve hayatta kalanların normalize önseli şişer. Şişince önsel, bileşiği
+    bastırır ve modellenen sıralayıcı motorunki olmaktan çıkar.
+    """
+    m = measure_sub_ranking
+    # Eşikten geçen iki aday, ikisi de düşük önselli (yedek orta saha/forvet).
+    a = (1, 0.0074, 0.50)
+    b = (2, 0.0045, 0.60)
+    cands = [a, b]
+
+    # Eski davranış: tepe = 0.0074, yani a'nın normalize önseli tam 1.0.
+    eski = m._blend(0.5)(cands, 0.0)
+    assert eski(a) < eski(b), "eski kuralda önsel bileşiği bastırıyor"
+
+    # Doğrusu: elenen ilk-11 forvetinin önseli (0.2151) tepeyi belirler.
+    yeni = m._blend(0.5)(cands, 0.2151)
+    assert yeni(b) < yeni(a), "havuz tepesiyle bileşik öne geçer"
+
+
+def test_lexicographic_ranker_ignores_the_pool_top() -> None:
+    """Sözlük sıralaması önseli ham kullanır; tepe değeri onu ilgilendirmez."""
+    m = measure_sub_ranking
+    cands = [(1, 0.14, 0.1), (2, 0.03, 0.9)]
+    rank = m._lexicographic()
+    assert rank(cands, 0.2151)((1, 0.14, 0.1)) == rank(cands, 0.0)((1, 0.14, 0.1))

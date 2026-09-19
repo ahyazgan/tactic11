@@ -102,9 +102,15 @@ olduğu gibi bırakıldı; değiştirmek için sebep yok.
 ## Tekrar üretim
 
 ```powershell
-.\venv\Scripts\python.exe -m scripts.validate_timing_prior --corpus-dir C:\sb --independent-dir C:\sb-laliga1516 --label "La Liga 2015/16" --out docs/measurements/karne-zamanlama-bagimsiz-laliga-2015-16.json
-.\venv\Scripts\python.exe -m scripts.validate_timing_prior --corpus-dir C:\sb --independent-dir C:\sb-pl1516 --label "Premier League 2015/16" --out docs/measurements/karne-zamanlama-bagimsiz-premier-league-2015-16.json
+.\venv\Scripts\python.exe -m scripts.validate_timing_prior --corpus-dir C:\sb --independent-dir C:\sb-laliga1516 --subs-allowed 3 --label "La Liga 2015/16" --out docs/measurements/karne-zamanlama-bagimsiz-laliga-2015-16.json
+.\venv\Scripts\python.exe -m scripts.validate_timing_prior --corpus-dir C:\sb --independent-dir C:\sb-pl1516 --subs-allowed 3 --label "Premier League 2015/16" --out docs/measurements/karne-zamanlama-bagimsiz-premier-league-2015-16.json
 ```
+
+`--subs-allowed 3` ŞARTTIR ve komutta yazılı olmalı: bu iki küme 2015/16
+sezonundan, yani 3 hak dönemine ait. Varsayılan 5'tir (bugünün IFAB kuralı) ve
+yazılmazsa hak-bitti kapısı hiç ateşlenmez — ölçüm başka bir nesneyi ölçer.
+Yayımlanan JSON'lar `degisiklik_hakki: 3` damgası taşıyor; komut bir tur bu
+bayrağı atlayarak yazılmıştı.
 
 Script kesişimi kendisi denetler ve kesişim varsa durur. Izgara tablosunun
 SHA-256'sı ölçüm JSON'larında.

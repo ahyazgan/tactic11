@@ -1,0 +1,169 @@
+{
+  "olcum": "Kiracının kendi 'kim çıkar' önseli vs genel tablo",
+  "kaynak": {
+    "tenant": "t-default",
+    "takim_external_id": 217,
+    "mac": 100,
+    "hamle": 331,
+    "girdi_sha256": "aec63372d9f8648cbb68be63c7153ad74e603c83f2f81a6c5b77e087956e66b6"
+  },
+  "cetvel": {
+    "olcut": "beraberlik-tarafsız isabet@3 (who_prior_agreement)",
+    "ayrik_yari": "MAÇ bazında",
+    "kapi_kurali": "genel tabloyu İKİ KOLDA da en az 0.02 geçmek; eğri noktaları önceden kapalı",
+    "egri_noktalari": [
+      10,
+      20,
+      30,
+      40,
+      50
+    ]
+  },
+  "kollar": [
+    {
+      "kol": "A'da fit → B'de ölç",
+      "egitim_mac": 50,
+      "egitim_hamle": 162,
+      "olcum_mac": 50,
+      "kiraci_tablosu": {
+        "isabet_at_1": 0.157,
+        "isabet_at_k": 0.498,
+        "rastgele_at_1": 0.091,
+        "rastgele_at_k": 0.273,
+        "n": 169
+      },
+      "genel_tablo": {
+        "isabet_at_1": 0.136,
+        "isabet_at_k": 0.457,
+        "rastgele_at_1": 0.091,
+        "rastgele_at_k": 0.273,
+        "n": 169
+      },
+      "fark_at_k": 0.041,
+      "ogrenme_egrisi": [
+        {
+          "egitim_mac": 10,
+          "egitim_hamle": 29,
+          "isabet_at_1": 0.157,
+          "isabet_at_k": 0.43,
+          "genel_gecti_mi": false
+        },
+        {
+          "egitim_mac": 20,
+          "egitim_hamle": 56,
+          "isabet_at_1": 0.157,
+          "isabet_at_k": 0.496,
+          "genel_gecti_mi": true
+        },
+        {
+          "egitim_mac": 30,
+          "egitim_hamle": 88,
+          "isabet_at_1": 0.157,
+          "isabet_at_k": 0.498,
+          "genel_gecti_mi": true
+        },
+        {
+          "egitim_mac": 40,
+          "egitim_hamle": 119,
+          "isabet_at_1": 0.157,
+          "isabet_at_k": 0.498,
+          "genel_gecti_mi": true
+        },
+        {
+          "egitim_mac": 50,
+          "egitim_hamle": 162,
+          "isabet_at_1": 0.157,
+          "isabet_at_k": 0.498,
+          "genel_gecti_mi": true
+        }
+      ],
+      "tablo": {
+        "DEF|0": 0.0244,
+        "DEF|1": 0.0564,
+        "FWD|0": 0.0167,
+        "FWD|1": 0.1229,
+        "GK|1": 0.0061,
+        "MID|0": 0.0096,
+        "MID|1": 0.2086
+      }
+    },
+    {
+      "kol": "B'de fit → A'da ölç",
+      "egitim_mac": 50,
+      "egitim_hamle": 169,
+      "olcum_mac": 50,
+      "kiraci_tablosu": {
+        "isabet_at_1": 0.205,
+        "isabet_at_k": 0.569,
+        "rastgele_at_1": 0.091,
+        "rastgele_at_k": 0.273,
+        "n": 162
+      },
+      "genel_tablo": {
+        "isabet_at_1": 0.114,
+        "isabet_at_k": 0.427,
+        "rastgele_at_1": 0.091,
+        "rastgele_at_k": 0.273,
+        "n": 162
+      },
+      "fark_at_k": 0.142,
+      "ogrenme_egrisi": [
+        {
+          "egitim_mac": 10,
+          "egitim_hamle": 27,
+          "isabet_at_1": 0.145,
+          "isabet_at_k": 0.518,
+          "genel_gecti_mi": true
+        },
+        {
+          "egitim_mac": 20,
+          "egitim_hamle": 55,
+          "isabet_at_1": 0.205,
+          "isabet_at_k": 0.563,
+          "genel_gecti_mi": true
+        },
+        {
+          "egitim_mac": 30,
+          "egitim_hamle": 88,
+          "isabet_at_1": 0.205,
+          "isabet_at_k": 0.566,
+          "genel_gecti_mi": true
+        },
+        {
+          "egitim_mac": 40,
+          "egitim_hamle": 135,
+          "isabet_at_1": 0.205,
+          "isabet_at_k": 0.566,
+          "genel_gecti_mi": true
+        },
+        {
+          "egitim_mac": 50,
+          "egitim_hamle": 169,
+          "isabet_at_1": 0.205,
+          "isabet_at_k": 0.569,
+          "genel_gecti_mi": true
+        }
+      ],
+      "tablo": {
+        "DEF|0": 0.0408,
+        "DEF|1": 0.0616,
+        "FWD|0": 0.0139,
+        "FWD|1": 0.1453,
+        "GK|1": 0.0058,
+        "MID|0": 0.0122,
+        "MID|1": 0.1663
+      }
+    }
+  ],
+  "kapi": {
+    "gecen_mac": 20,
+    "tum_gecenler": [
+      20,
+      30,
+      40,
+      50
+    ],
+    "hukum": "kiracı tablosu bağlanabilir",
+    "not": "en az 20 maçtan sonra kiracının kendi tablosu genel tabloyu iki kolda da geçiyor"
+  }
+}

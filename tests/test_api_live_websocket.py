@@ -167,3 +167,100 @@ def test_websocket_match_not_found(session, client):
         msg = ws.receive_text()
         data = json.loads(msg)
         assert "error" in data
+
+
+def test_snapshot_feeds_the_timing_gate_with_used_substitutions(session, monkeypatch):
+    """WebSocket yolu da hak-bitti kapısını ve mevki önselini beslemeli.
+
+    `compute_sub_timing`'e `subs_used` geçilmezse (None) kapı hiç ateşlenmez:
+    hakkı bitmiş bir takıma "şimdi değiştir" denmeye devam eder. `off_prior`
+    geçilmezse "kim çıkar" önseli devreye girmez. İkisi de admin ucunda
+    geçiliyordu, WebSocket yolunda geçilmiyordu — yani panelde ölçülen motor
+    ile karnede ölçülen motor aynı motor değildi
+    (docs/KARNE-DEGISIKLIK-HAKKI.md).
+
+    Dışarıdan gözlenebilir bir fark yok: `sub_timing` snapshot'ı yalnız paket,
+    gerekçe ve ilk üç tavsiyeyi taşıyor. Bu yüzden çağrı YAKALANIYOR — kapının
+    kapalı olduğunu iddia eden bir kontrol, anahtar snapshot'ta hiç olmadığı
+    için boşuna geçerdi.
+    """
+    import app.engine.sub_timing as st_mod
+    from app.api.live import _compute_live_snapshot
+    from app.api.replay_feed import StatsBombReplayFeed
+
+    session.info["tenant_id"] = "t-default"
+    _seed_match_with_events(session)
+    # İlk 11'den beşi çıktı, beş oyuncu sonradan girdi → 5 hak kullanıldı.
+    for pid, out_min in zip(range(100, 105), (55, 58, 60, 62, 65), strict=True):
+        _seed_appearance(session, player_id=pid, minutes=out_min, sub_out=out_min)
+    for pid in range(105, 111):
+        _seed_appearance(session, player_id=pid, minutes=90)
+    for pid, in_min in zip(range(200, 205), (55, 58, 60, 62, 65), strict=True):
+        _seed_appearance(session, player_id=pid, minutes=90 - in_min, sub_in=in_min)
+    session.commit()
+
+    yakalanan: dict = {}
+    gercek = st_mod.compute_sub_timing
+
+    def casus(*a, **kw):
+        yakalanan.update(kw)
+        return gercek(*a, **kw)
+
+    monkeypatch.setattr(st_mod, "compute_sub_timing", casus)
+
+    feed = StatsBombReplayFeed(session, 7001)
+    _compute_live_snapshot(feed, 7001, 11, current_minute=75.0)
+
+    assert yakalanan.get("subs_used") == 5, "kullanılmış hak geçilmiyor"
+    assert yakalanan.get("off_prior"), "mevki önseli geçilmiyor"
+    # Aynı dakikada 105 (ilk 11, hâlâ sahada) ile 200 (sonradan girdi) farklı
+    # önsel almalı — önselin gerçekten kadrodan kurulduğunun kanıtı.
+    prior = yakalanan["off_prior"]
+    assert prior[105] != prior[200]
+
+    # Ve kapı bu sayıyla gerçekten kapanıyor: 5 hak, 5 hak sınırı.
+    from app.engine.sub_timing import elite_sub_window_probability
+    assert elite_sub_window_probability(75.0, "trailing", 5, subs_allowed=5) == 0.0
+
+
+def test_snapshot_uses_the_tenant_table_when_the_session_is_given(session, monkeypatch):
+    """WebSocket yolu da kiracının KENDİ tablosunu kullanmalı — admin ucu gibi.
+
+    İki yol farklı önsel tablosu çalıştırırsa, panelde ölçülen motor karnede
+    ölçülenle aynı olmaz. Bu ayrışma bir kez düzeltildi (subs_used/off_prior);
+    kiracı tablosu eklenirken yeniden açılmasın.
+    """
+    import app.data.loaders.tenant_prior as tp
+    from app.api.live import _compute_live_snapshot
+    from app.api.replay_feed import StatsBombReplayFeed
+    from app.engine.coach_benchmark import WhoPrior
+
+    session.info["tenant_id"] = "t-default"
+    _seed_match_with_events(session)
+    for pid in range(100, 111):
+        _seed_appearance(session, player_id=pid, minutes=90)
+    session.commit()
+
+    # Kiracı tablosu: her hücre 0.99 — genel tablodan AÇIKÇA ayrılsın.
+    sahte = WhoPrior(table={(g, s): 0.99 for g in ("GK", "DEF", "MID", "FWD")
+                            for s in (True, False)}, fitted_on=99)
+    cagrilar: list[dict] = []
+
+    def sahte_fit(session, **kw):
+        cagrilar.append(kw)
+        return sahte
+
+    monkeypatch.setattr(tp, "fit_tenant_off_prior", sahte_fit)
+
+    feed = StatsBombReplayFeed(session, 7001)
+    _compute_live_snapshot(feed, 7001, 11, current_minute=75.0, session=session)
+
+    assert cagrilar, "kiracı tablosu hiç sorulmadı"
+    # Sızıntı koruması: bu maç kendi fit'ine girmemeli.
+    assert cagrilar[0]["exclude_match_id"] == 7001
+    assert cagrilar[0]["team_external_id"] == 11
+
+    # session verilmezse genel tabloya düşer ve kiracı tablosu SORULMAZ.
+    cagrilar.clear()
+    _compute_live_snapshot(feed, 7001, 11, current_minute=75.0)
+    assert cagrilar == []

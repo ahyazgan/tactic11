@@ -56,12 +56,10 @@ from app.engine.coach_benchmark import (
     WHO_TOP_K,
     WhoCandidate,
     WhoPrior,
-    WhoSample,
     WhoStat,
     WhoState,
-    apply_who_prior,
     fit_who_prior,
-    who_agreement,
+    who_prior_agreement,
 )
 from app.engine.live_sub_recommendation import ELITE_OFF_PRIOR
 
@@ -144,11 +142,14 @@ def _frozen_prior() -> WhoPrior:
 
 
 def _rank(prior: WhoPrior, states: list[WhoState], *, k: int) -> WhoStat:
-    return who_agreement(
-        [WhoSample(s.player_off, apply_who_prior(prior, s),
-                   tuple(c.player_id for c in s.candidates)) for s in states],
-        k=k,
-    )
+    """Önselin isabeti — BERABERLİK TARAFSIZ.
+
+    Önce `apply_who_prior` + `who_agreement` kullanılıyordu; o yol kademe içini
+    `player_id`'ye göre sıralıyor ve bu veri kümesinde kimlik sırası bilgi
+    taşıdığı için külliyat isabet@1'ini 0.125'ten 0.181'e çıkarıyordu. Ölçüm
+    artık kademeleri sayıyor (`who_prior_agreement`).
+    """
+    return who_prior_agreement(prior, states, k=k)
 
 
 def _ceiling(states: list[WhoState], *, k: int) -> tuple[WhoStat, WhoStat]:

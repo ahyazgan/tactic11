@@ -86,7 +86,7 @@ Saf fonksiyonlar; DB/IO yok. Sayısal eşikler sabit ve dokümante — bir sonra
 """
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 from app.engine.confidence.attribution import MIN_SAMPLES
@@ -109,6 +109,8 @@ PRIOR_THRESHOLDS: tuple[float, ...] = (0.3, 0.4, 0.5, 0.6)
 # "Kim" boyutu: motorun aday listesi bu uzunlukta değerlendirilir; kazanç eşiği.
 WHO_TOP_K = 3
 WHO_MIN_GAIN = 0.10
+# Önselin hiç görmediği hücre: "bilinmiyor". Sıralamada ortada durur.
+WHO_UNKNOWN_CELL = 0.5
 # Şekil seçiciliği: önsel eşik adayları, destekleyici sinyal sayısı eşikleri,
 # eğitimde harcanabilecek en küçük bayrak bütçesi ve kabul için gereken kaldırma.
 SHAPE_PRIOR_THRESHOLDS: tuple[float, ...] = (0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6)
@@ -187,14 +189,51 @@ class SplitHalfAgreement:
 
 
 @dataclass(frozen=True)
+class DefinitionChoice:
+    """İki motor TANIMI arasındaki seçimin bedeli ÖDENMİŞ hâli.
+
+    `split_half_agreement` eşik seçiminin bedelini ödüyor ama hangi TANIMIN
+    (dar: külliyata yazılmış birincil öneri; geniş: panelde değişiklik sinyali
+    yanmış) raporlanacağı ayrı bir seçimdir. İki tanımın ölçülmüş F1'inden
+    büyüğünü almak, tabanı sabitken, tam olarak deponun başka yerde eleştirdiği
+    çoklu-karşılaştırma tuzağıdır: hiçbir bilgi olmasa bile iki adayın en iyisi
+    tabanın üstüne çıkar.
+
+    Burada tanım ÖTEKİ yarıda seçilir, bu yarıda ölçülür. İki yarı farklı tanım
+    seçerse bu da raporlanır — kararsızlık, sonucun gürültü olduğunun işaretidir
+    (aynı kural `docs/MAC-ICI-YUK-PLANI.md`'de yük sinyalleri için de yazılı).
+    """
+
+    chosen_for_a: str | None        # B'de seçildi, A'da ölçüldü
+    chosen_for_b: str | None
+    engine_f1: float | None         # iki yarının ortalaması, ÖRNEKLEM DIŞI
+    baseline_f1: float | None       # saat kuralı; tanımdan bağımsız (hedefler ortak)
+    in_sample: dict[str, float | None]   # yalnız gösterim; hüküm buradan VERİLMEZ
+    stable: bool                    # iki yarı aynı tanımı mı seçti
+    verdict: str
+    note: str
+
+
+@dataclass(frozen=True)
 class LeadTimeStat:
-    """Antrenör hamlesinden ÖNCE motor kaç dakika erken dedi?"""
+    """Antrenör hamlesinden ÖNCE motor kaç dakika erken dedi?
+
+    **Bu sayı tek başına okunamaz.** Ölçüt penceredeki EN ERKEN bayrak olduğu
+    için, her tikte bayrak yakan bir kural azami öncü süreyi alır — sayı
+    öngörüden çok TİK IZGARASININ GEOMETRİSİNDEN gelir. Bu yüzden doygun
+    tabanı (her tikte bayrak) da hesaplanır: motorun öncü süresi tabana eşitse
+    erken davrandığı için değil, sık bayrak yaktığı için erkendir.
+    """
 
     moves: int
     covered: int                  # öncesinde (lookback içinde) motor bayrağı olan hamle
     coverage: float | None
     mean_lead_min: float | None   # yalnız kapsananlarda
     median_lead_min: float | None
+    # Her tikte bayrak yakan kuralın aynı ölçüsü — tavan. None: ızgara verilmedi.
+    saturated_coverage: float | None = None
+    saturated_mean_lead_min: float | None = None
+    note: str = ""
 
 
 @dataclass(frozen=True)
@@ -433,28 +472,55 @@ def lead_times(
     coach_minutes: dict[int, Sequence[float]],
     engine_flag_minutes: dict[int, Sequence[float]],
     *, lookback_min: float = 15.0,
+    all_tick_minutes: Mapping[int, Sequence[float]] | None = None,
 ) -> LeadTimeStat:
-    """Her gerçek hamle için önceki `lookback` dakikadaki EN ERKEN motor bayrağı."""
-    leads: list[float] = []
-    moves = 0
-    for match_id, minutes in coach_minutes.items():
-        flags = sorted(engine_flag_minutes.get(match_id, ()))
-        for m in minutes:
-            moves += 1
-            prior = [f for f in flags if m - lookback_min <= f < m]
-            if prior:
-                leads.append(m - prior[0])
+    """Her gerçek hamle için önceki `lookback` dakikadaki EN ERKEN motor bayrağı.
+
+    `all_tick_minutes` verilirse aynı ölçü HER TİKTE bayrak yakan kural için de
+    hesaplanır. O taban olmadan sayı yorumlanamaz: en erken bayrak arandığı
+    için sık bayrak yakmak, erken haber vermekle aynı görünür.
+    """
+    def _measure(flags_by_match: Mapping[int, Sequence[float]]) -> tuple[int, list[float]]:
+        out: list[float] = []
+        n = 0
+        for match_id, minutes in coach_minutes.items():
+            flags = sorted(flags_by_match.get(match_id, ()))
+            for m in minutes:
+                n += 1
+                prior = [f for f in flags if m - lookback_min <= f < m]
+                if prior:
+                    out.append(m - prior[0])
+        return n, out
+
+    moves, leads = _measure(engine_flag_minutes)
     covered = len(leads)
     srt = sorted(leads)
     median = None
     if srt:
         mid = len(srt) // 2
         median = srt[mid] if len(srt) % 2 else (srt[mid - 1] + srt[mid]) / 2
+
+    sat_cov = sat_mean = None
+    note = "doygun taban verilmedi — öncü süre tek başına yorumlanamaz"
+    if all_tick_minutes is not None:
+        _, sat_leads = _measure(all_tick_minutes)
+        sat_cov = None if not moves else round(len(sat_leads) / moves, 3)
+        sat_mean = (None if not sat_leads
+                    else round(sum(sat_leads) / len(sat_leads), 1))
+        if sat_mean is not None and leads:
+            pay = round(sum(leads) / covered, 1)
+            note = (f"her tikte bayrak yakan kural {sat_mean} dk önce haber verirdi "
+                    f"(kapsama {sat_cov}); motor {pay} dk (kapsama "
+                    f"{round(covered / moves, 3)})"
+                    + (" — fark yok, öncü süre ızgaranın geometrisi"
+                       if abs(pay - sat_mean) < 0.5 else ""))
+
     return LeadTimeStat(
         moves=moves, covered=covered,
         coverage=None if not moves else round(covered / moves, 3),
         mean_lead_min=None if not leads else round(sum(leads) / covered, 1),
         median_lead_min=None if median is None else round(median, 1),
+        saturated_coverage=sat_cov, saturated_mean_lead_min=sat_mean, note=note,
     )
 
 
@@ -583,12 +649,101 @@ def fit_who_prior(states: Sequence[WhoState]) -> WhoPrior:
 
 
 def apply_who_prior(prior: WhoPrior, state: WhoState) -> tuple[int, ...]:
-    """Adayları P(çıkar)'a göre sırala; görülmemiş hücre 0.5 (bilinmiyor)."""
+    """Adayları P(çıkar)'a göre sırala; görülmemiş hücre 0.5 (bilinmiyor).
+
+    UYARI — bu sıralama PUANLANMAMALIDIR. Önsel tablosunun yalnız birkaç
+    hücresi var (mevki grubu × ilk 11), bu yüzden aynı gruptaki adaylar BİREBİR
+    eşit değer alır ve sıra tamamen `player_id`'ye düşer. Kimlik sırası bu veri
+    kümesinde bilgi taşıyor (küçük kimlik = daha eski oyuncu = daha çok çıkıyor)
+    ve ölçüldü: külliyatta isabet@1'i 0.125'ten 0.181'e çıkarıyor — beceri değil,
+    veri kümesi tesadüfü (docs/KARNE-SIRALAMA.md).
+
+    Bu fonksiyon yalnız GÖSTERİM için bir sıra üretir. Ölçüm
+    `who_prior_agreement` ile yapılır; o beraberlikleri kademe sayar ve beklenen
+    isabeti hesaplar.
+    """
     ranked = sorted(
         state.candidates,
-        key=lambda c: (-prior.table.get((c.group, c.starter), 0.5), c.player_id),
+        key=lambda c: (-prior.table.get((c.group, c.starter), WHO_UNKNOWN_CELL), c.player_id),
     )
     return tuple(c.player_id for c in ranked)
+
+
+def who_prior_tiers(prior: WhoPrior, state: WhoState) -> tuple[tuple[int, ...], ...]:
+    """Adaylar önsel değerine göre KADEMELERE ayrılır; kademe İÇİNDE sıra yoktur.
+
+    Önsel tablosu kaba olduğu için (grup × ilk 11) kademeler kalabalıktır:
+    tipik bir vakada 11 aday 3-4 kademeye düşer. Kademe içinde bir sıra
+    uydurmak, o sıranın veriyle korelasyonunu beceri diye saymaktır.
+    """
+    vals = {c.player_id: prior.table.get((c.group, c.starter), WHO_UNKNOWN_CELL)
+            for c in state.candidates}
+    return tuple(
+        tuple(sorted(pid for pid, v in vals.items() if v == value))
+        for value in sorted(set(vals.values()), reverse=True)
+    )
+
+
+def expected_who_hits(
+    tiers: Sequence[Sequence[int]], player_off: int, *, k: int,
+) -> tuple[float, float]:
+    """Kademe içinde rastgele seçim varsayarak BEKLENEN isabet@1 ve isabet@k.
+
+    Beraberlik yoksa sonuç 0/1'dir — tarafsız ölçüm kesin durumları bozmaz.
+    İlk k sınırı bir kademeyi ortadan bölerse beklenen pay kalan yer / kademe boyu.
+    """
+    before = 0
+    for tier in tiers:
+        if player_off in tier:
+            size = len(tier)
+            at1 = (1.0 / size) if before == 0 else 0.0
+            slots = k - before
+            atk = 0.0 if slots <= 0 else (1.0 if slots >= size else slots / size)
+            return at1, atk
+        before += len(tier)
+    return 0.0, 0.0
+
+
+def who_prior_agreement(
+    prior: WhoPrior, states: Sequence[WhoState], *, k: int = WHO_TOP_K,
+) -> WhoStat:
+    """Önselin isabeti — BERABERLİK TARAFSIZ. `who_agreement` ile aynı cetvel,
+    ama kademe içi sıra uydurmadan.
+
+    `who_agreement` motorun ürettiği GERÇEK sıralı listeyi puanlar; orada sıra
+    bir karardır. Önselde sıra yoktur, kademe vardır — bu yüzden ayrı fonksiyon.
+    """
+    rows = [s for s in states if s.candidates]
+    n = len(rows)
+    if n == 0:
+        return WhoStat(0, None, None, None, None, None, "yetersiz veri",
+                       "gerçek değişiklik yok")
+    hit1 = hitk = 0.0
+    for st in rows:
+        a1, ak = expected_who_hits(who_prior_tiers(prior, st), st.player_off, k=k)
+        hit1 += a1
+        hitk += ak
+    hit1 /= n
+    hitk /= n
+    base1 = sum(1.0 / len(s.candidates) for s in rows) / n
+    basek = sum(min(1.0, k / len(s.candidates)) for s in rows) / n
+
+    if n < MIN_SAMPLES:
+        verdict, note = "yetersiz veri", f"n={n} < {MIN_SAMPLES}"
+    elif hitk - basek >= WHO_MIN_GAIN:
+        verdict = "taban çizgisini geçiyor"
+        note = (f"isabet@{k} {hitk:.0%} vs rastgele {basek:.0%} (beraberlik tarafsız)")
+    elif basek - hitk >= WHO_MIN_GAIN:
+        verdict = "taban çizgisinin altında"
+        note = f"isabet@{k} {hitk:.0%} vs rastgele {basek:.0%} — rastgeleden KÖTÜ"
+    else:
+        verdict = "taban çizgisiyle aynı"
+        note = f"isabet@{k} {hitk:.0%} vs rastgele {basek:.0%} — fark ±{WHO_MIN_GAIN:.2f} bandında"
+    return WhoStat(
+        n=n, hit_at_1=round(hit1, 3), hit_at_k=round(hitk, 3),
+        baseline_at_1=round(base1, 3), baseline_at_k=round(basek, 3),
+        off_pitch_candidate_rate=None, verdict=verdict, note=note,
+    )
 
 
 def split_half_who_prior(states: Sequence[WhoState], *, k: int = WHO_TOP_K) -> WhoStat:
@@ -598,11 +753,29 @@ def split_half_who_prior(states: Sequence[WhoState], *, k: int = WHO_TOP_K) -> W
     a = [s for s in states if s.match_external_id in a_ids]
     b = [s for s in states if s.match_external_id not in a_ids]
     prior_for_a, prior_for_b = fit_who_prior(b), fit_who_prior(a)
-    samples = [
-        WhoSample(s.player_off, apply_who_prior(pr, s), tuple(c.player_id for c in s.candidates))
-        for half, pr in ((a, prior_for_a), (b, prior_for_b)) for s in half
+    # Beraberlik TARAFSIZ: önselde kademe vardır, sıra yoktur. Kademe içini
+    # kimliğe göre sıralamak külliyatta isabet@1'i 0.125'ten 0.181'e çıkarıyordu.
+    merged = [
+        (pr, s) for half, pr in ((a, prior_for_a), (b, prior_for_b)) for s in half
     ]
-    return who_agreement(samples, k=k)
+    hit1 = hitk = 0.0
+    for pr, s in merged:
+        a1, ak = expected_who_hits(who_prior_tiers(pr, s), s.player_off, k=k)
+        hit1 += a1
+        hitk += ak
+    n = len(merged)
+    if n == 0:
+        return WhoStat(0, None, None, None, None, None, "yetersiz veri",
+                       "gerçek değişiklik yok")
+    base = who_prior_agreement(prior_for_a, [s for _pr, s in merged], k=k)
+    return WhoStat(
+        n=n, hit_at_1=round(hit1 / n, 3), hit_at_k=round(hitk / n, 3),
+        baseline_at_1=base.baseline_at_1, baseline_at_k=base.baseline_at_k,
+        off_pitch_candidate_rate=None,
+        verdict=base.verdict if n >= MIN_SAMPLES else "yetersiz veri",
+        note=(f"isabet@{k} {hitk / n:.0%} vs rastgele {base.baseline_at_k:.0%} "
+              f"(beraberlik tarafsız, ayrık yarı)"),
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -697,6 +870,100 @@ def apply_shape_gate(
     return _shape_obs(states, _gated(prior.table, prior.threshold, prior.support_threshold))
 
 
+def split_half_definition(
+    definitions: Mapping[str, Sequence[TickObservation]], *,
+    candidates: Sequence[float] = DEFAULT_MINUTE_THRESHOLDS,
+) -> DefinitionChoice:
+    """Tanımı ÖTEKİ yarıda seç, bu yarıda ölç — seçim bedeli ödensin.
+
+    Tanımlar AYNI tikleri ve AYNI hedefleri paylaşmalıdır; yalnız motor bayrağı
+    değişir. Paylaşmıyorlarsa taban çizgisi tanımdan tanıma kayar ve kıyas
+    anlamını yitirir, bu yüzden kontrol edilir.
+    """
+    names = sorted(definitions)
+    if len(names) < 2:
+        only = names[0] if names else None
+        obs = list(definitions[only]) if only else []
+        sh = split_half_agreement(obs, candidates=candidates) if obs else None
+        return DefinitionChoice(
+            chosen_for_a=only, chosen_for_b=only,
+            engine_f1=sh.engine_f1 if sh else None,
+            baseline_f1=sh.baseline_f1 if sh else None,
+            in_sample={only: agreement(obs).f1} if only else {},
+            stable=True,
+            verdict=sh.verdict if sh else "yetersiz veri",
+            note="tek tanım — seçim yok, bedel de yok" if sh else "tanım verilmedi",
+        )
+
+    keys = {n: [(o.match_external_id, o.minute, o.coach_acted) for o in definitions[n]]
+            for n in names}
+    if len({tuple(v) for v in keys.values()}) != 1:
+        return DefinitionChoice(
+            chosen_for_a=None, chosen_for_b=None, engine_f1=None, baseline_f1=None,
+            in_sample={n: agreement(definitions[n]).f1 for n in names},
+            stable=False, verdict="yetersiz veri",
+            note=("tanımlar aynı tik/hedef kümesini paylaşmıyor — taban çizgisi "
+                  "tanımdan tanıma kayar, kıyas geçersiz"),
+        )
+
+    halves = {n: _halves(list(definitions[n])) for n in names}
+    a_len, b_len = (len(h) for h in halves[names[0]])
+    if a_len < MIN_TICKS_PER_HALF or b_len < MIN_TICKS_PER_HALF:
+        return DefinitionChoice(
+            chosen_for_a=None, chosen_for_b=None, engine_f1=None, baseline_f1=None,
+            in_sample={n: agreement(definitions[n]).f1 for n in names},
+            stable=False, verdict="yetersiz veri",
+            note=(f"yarılar {a_len}/{b_len} tik — hüküm için her yarıda en az "
+                  f"{MIN_TICKS_PER_HALF} gerekir"),
+        )
+
+    def _pick(idx: int) -> str:
+        """idx yarısında en iyi F1'i veren tanımın adı (berabere kalırsa ada göre)."""
+        return min(names, key=lambda n: (-(agreement(halves[n][idx]).f1 or -1.0), n))
+
+    # B'de (idx 1) seç → A'da (idx 0) ölç, ve tersi.
+    chosen_for_a, chosen_for_b = _pick(1), _pick(0)
+    f1_a = agreement(halves[chosen_for_a][0]).f1
+    f1_b = agreement(halves[chosen_for_b][1]).f1
+
+    # Taban tanımdan bağımsız: hedefler ortak, saat kuralı motora bakmıyor.
+    ref_a, ref_b = halves[names[0]]
+    t_a, t_b = _best_threshold(ref_b, candidates), _best_threshold(ref_a, candidates)
+    base_a = minute_rule(ref_a, t_a) if t_a is not None else agreement([])
+    base_b = minute_rule(ref_b, t_b) if t_b is not None else agreement([])
+
+    def _mean(x: float | None, y: float | None) -> float | None:
+        vals = [v for v in (x, y) if v is not None]
+        return round(sum(vals) / len(vals), 3) if vals else None
+
+    eng_f1, base_f1 = _mean(f1_a, f1_b), _mean(base_a.f1, base_b.f1)
+    stable = chosen_for_a == chosen_for_b
+    in_sample = {n: agreement(definitions[n]).f1 for n in names}
+
+    if eng_f1 is None or base_f1 is None:
+        verdict = "yetersiz veri"
+        note = "bir kolda hiç bayrak ya da hiç hamle yok — F1 tanımsız"
+    else:
+        gap = eng_f1 - base_f1
+        verdict = ("taban çizgisini geçiyor" if gap >= MIN_F1_GAIN
+                   else "taban çizgisinin altında" if gap <= -MIN_F1_GAIN
+                   else "taban çizgisiyle aynı")
+        best_in = max(v for v in in_sample.values() if v is not None) if any(
+            v is not None for v in in_sample.values()) else None
+        note = (f"tanım öteki yarıda seçildi: A için '{chosen_for_a}', B için "
+                f"'{chosen_for_b}'" + ("" if stable else " — İKİ YARI FARKLI TANIM SEÇTİ, "
+                                       "sonuç kararsız")
+                + f" · örneklem içi en iyi {best_in}"
+                + (" (örneklem dışı ile arasındaki fark seçim bedelidir)"
+                   if best_in is not None and eng_f1 is not None and best_in > eng_f1 else ""))
+
+    return DefinitionChoice(
+        chosen_for_a=chosen_for_a, chosen_for_b=chosen_for_b,
+        engine_f1=eng_f1, baseline_f1=base_f1, in_sample=in_sample,
+        stable=stable, verdict=verdict, note=note,
+    )
+
+
 def split_half_shape_gate(states: Sequence[ShapeState]) -> ShapeGate:
     """Kapı ÖTEKİ yarıda öğrenilir, bu yarıda ölçülür — önce/sonra yan yana.
 
@@ -765,6 +1032,23 @@ def skill_from_auc(auc: float | None) -> float | None:
     if auc is None:
         return None
     return round(max(0.0, min(1.0, 2.0 * (auc - 0.5))) * 100.0, 1)
+
+
+def skill_from_error(value: float | None, baseline: float | None) -> float | None:
+    """HATA ölçen bir boyut için 0..100 beceri; taban = 0, hatasız = 100.
+
+    `Dimension.skill` sözleşmesi "taban = 0" der. AUC tarafında bu
+    `skill_from_auc` ile sağlanıyor (0.5 → 0). Hata ölçen boyutlarda da aynısı
+    gerekir: tabanla AYNI hatayı yapan sistemin becerisi 0 olmalıdır.
+
+    Kalibrasyon satırı bunun yerine sabit bir ölçek kullanıyordu
+    (`1 − ECE/0.25`), yani saf tabanla eşit bir sistem bile pozitif beceri
+    alıyordu. Taban 0 ya da tanımsızsa oran kurulamaz — None döner, uydurma
+    ölçek konmaz.
+    """
+    if value is None or baseline is None or baseline <= 0:
+        return None
+    return round(max(0.0, min(1.0, (baseline - value) / baseline)) * 100.0, 1)
 
 
 def expected_calibration_error(

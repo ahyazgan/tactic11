@@ -7,7 +7,7 @@ soru var ve bugüne kadar tek sayıda karışıyorlardı:
 - **Doğru kişiyi mi seçiyor?** İlk sıradaki gerçekten o mu?
 
 **Cevap: grubu buluyor, kişiyi bulmuyor.** İlk üçte %47 isabet (rastgele %28),
-ama ilk sırada %11 (rastgele %9). Ters kontrol bunu doğruluyor: yorgunluk
+ama ilk sırada %12,5 (rastgele %9). Ters kontrol bunu doğruluyor: yorgunluk
 sıralamasını TERS çevirmek sonucu kötüleştirmiyor, hatta ilk sırada hafifçe
 iyileştiriyor. Yani grup içindeki sıralama bilgi taşımıyor.
 
@@ -15,8 +15,15 @@ Ayrıca bir kusur bulundu ve giderildi: eşit aday puanlarında sıralama `set`
 yineleme sırasına düşüyordu — koça gösterilen 1. öneri oyuncu kimliğinin
 hash'ine bağlıydı.
 
-Ölçüm: [sub-ranking-2026-09-14.json](measurements/sub-ranking-2026-09-14.json).
+Ölçüm: [sub-ranking-2026-09-14-v2.json](measurements/sub-ranking-2026-09-14-v2.json) (düzeltme sonrası); önceki koşum [sub-ranking-2026-09-14.json](measurements/sub-ranking-2026-09-14.json).
 Sabit kamera / takip dosyalarına dokunulmadı.
+
+> **Yeniden koşuldu (14 Eylül, denetim sonrası).** Ölçümden sonra iki motor
+> kusuru düzeltildi — yorgunluk skorunun eylem bileşeni 45. dakikadan sonra
+> herkes için 1,0'a kilitleniyordu, ve önsel normalizasyonu motorunkinden
+> farklıydı (`docs/KARNE-DENETIM.md`). İkisi de buradaki sıralamayı besliyor,
+> bu yüzden ölçüm AYNI 101 maçla baştan koşuldu. Aşağıdaki tablo düzeltme
+> SONRASIdır; önce/sonra kıyası hemen altında.
 
 ## Sonuçlar
 
@@ -24,15 +31,43 @@ Külliyat: 331 gerçek taktik değişiklik, ortalama 10,8 aday.
 
 | Sıralama kuralı | isabet@1 | isabet@3 |
 |---|---:|---:|
-| Motor harmanı (w = 0,6) — bugünkü | 0,114 | **0,466** |
-| Saf yorgunluk bileşiği (w = 0) | 0,125 | 0,357 |
+| Motor harmanı (w = 0,6) — bugünkü | 0,125 | 0,474 |
+| Saf yorgunluk bileşiği (w = 0) | 0,103 | 0,317 |
 | Saf önsel (w = 1) | 0,125 | 0,442 |
-| Önsel, eşitlikte bileşik | 0,114 | **0,466** |
-| **TERS KONTROL: önsel, eşitlikte TERS bileşik** | **0,126** | 0,434 |
+| Önsel, eşitlikte bileşik | 0,125 | **0,476** |
+| **TERS KONTROL: önsel, eşitlikte TERS bileşik** | **0,131** | 0,435 |
 | Rastgele | 0,093 | 0,279 |
 
 n = 331, standart hata ≈ 0,018. isabet@1 sütunundaki bütün değerler birbirinin
 ve rastgelenin 1–2 standart hatası içinde.
+
+### Düzeltme öncesi / sonrası
+
+| Sıralama kuralı | önce@1 | sonra@1 | önce@3 | sonra@3 |
+|---|---:|---:|---:|---:|
+| Motor harmanı (w = 0,6) | 0,114 | 0,125 | 0,466 | 0,474 |
+| Saf yorgunluk bileşiği (w = 0) | 0,125 | 0,103 | 0,357 | 0,317 |
+| Saf önsel (w = 1) | 0,125 | 0,125 | 0,442 | 0,442 |
+| Önsel, eşitlikte bileşik | 0,114 | 0,125 | 0,466 | 0,476 |
+| TERS KONTROL | 0,126 | 0,131 | 0,434 | 0,435 |
+| Rastgele | 0,093 | 0,093 | 0,279 | 0,279 |
+
+**İki sağlama tuttu.** *Saf önsel* yorgunluğa hiç dokunmaz ve kılı kıpırdamadı
+(0,125 / 0,442). Rastgele taban da aynı kaldı — yani aynı 331 vaka seçildi,
+ortalama aday 10,78 ile birebir aynı. Değişen yalnız yorgunluğun karıştığı
+satırlar; değişmesi gerekenler değişti, değişmemesi gerekenler durdu.
+
+**Hüküm değişmedi.** Grup bilgisi var (isabet@3'te rastgelenin +0,195 üstü,
+yaklaşık 10 standart hata). Grup içi bilgi yok: ters kontrol hâlâ doğru yönü
+geçiyor (0,131 vs 0,125).
+
+**Düzeltilmiş yorgunluk tek başına daha KÖTÜ** (0,125 → 0,103). Bu ters gibi
+görünüyor ama abartılmamalı: fark 1,2 standart hata, yani gürültü. Mekanizması
+da anlaşılır — bozuk bileşen herkeste 1,0'a doymuş olduğu için bileşiğe hiçbir
+şey katmıyordu; düzeltilince katkı vermeye başladı ve kattığı şey bilgi değil.
+Bu, ana bulguyu zayıflatmıyor, **güçlendiriyor**: yorgunluk grup içindeki
+sırayı gerçekten bilmiyor, üstelik şimdi bunu doğru hesaplanmış hâliyle
+bilmiyor.
 
 ## Ters kontrol neden belirleyici
 
@@ -40,12 +75,67 @@ Bir sinyalin bilgi taşıyıp taşımadığını anlamanın en ucuz yolu yönün
 çevirmektir. Yorgunluk grup içindeki sırayı gerçekten belirliyorsa, "en az yorgun
 önce" kuralının "en yorgun önce"den **kötü** olması gerekir.
 
-Olmuyor: ters yön ilk sırada 0,126, doğru yön 0,114. Fark gürültü bandında ama
+Olmuyor: ters yön ilk sırada 0,131, doğru yön 0,125. Fark gürültü bandında ama
 yön yanlış. Yorgunluk bileşiği grup içinde hangi oyuncunun çıkacağını
-**bilmiyor**; `ROLE_PRIOR_WEIGHT` ağırlığını ayarlamak bu kararı düzeltmez.
+**bilmiyor**.
 
-Harman ağırlığının isabet@3'e etkisi de yok: w ≥ 0,2 için 0,466'da sabit. Grubu
-belirleyen önseldir; bileşik yalnız grup içini karıştırır.
+Bu, sözlük sıralamasıyla (önsel önce, bileşik yalnız eşitlik bozar) ölçülmüş
+bir hükümdür. Harman ağırlığını değiştirmek ayrı bir sorudur ve ayrıca sınandı
+— sonuç aşağıda: ayrık yarı bir ipucu verdi, ters kontrol onu tutmadı.
+
+## Harman ağırlığı: ayrık yarı bir ipucu verdi, ters kontrol onu tutmadı
+
+Yeniden koşumda eski bir cümle çöktü: "harman ağırlığının isabet@3'e etkisi yok,
+w ≥ 0,2 için sabit" artık doğru değil. Ağırlık süpürmesi düz değil:
+
+| w | isabet@1 | isabet@3 |
+|---:|---:|---:|
+| 0,0 (saf bileşik) | 0,103 | 0,317 |
+| **0,2** | **0,154** | 0,453 |
+| **0,4** | 0,136 | **0,482** |
+| 0,6 (bugünkü) | 0,125 | 0,474 |
+| 1,0 (saf önsel) | 0,125 | 0,442 |
+
+On bir adayın örneklem-içi en iyisini seçmek tam da bu deponun tekrar tekrar
+yakaladığı hata, bu yüzden ağırlık **ayrık yarıda** seçildi: bir yarıda seç,
+öteki yarıda ölç.
+
+| ölçüt | A'da seç → B'de ölç | B'de seç → A'da ölç | örneklem dışı | seçim bedeli |
+|---|---|---|---:|---:|
+| isabet@1 | w = 0,2 → 0,183 | w = 0,2 → 0,123 | **0,153** | 0,001 |
+| isabet@3 | w = 0,4 → 0,509 | w = 0,4 → 0,454 | **0,482** | 0,000 |
+
+**İki yarı da aynı ağırlığı seçti ve seçim bedeli sıfıra yakın.** Ön-kayıtlı
+kararlılık ölçütü (`docs/MAC-ICI-YUK-PLANI.md`, madde 3) sağlanıyor. Örneklem
+dışı isabet@1 0,153; bugünkü w = 0,6 ise 0,125, rastgele 0,093.
+
+### Ama ağırlık DEĞİŞTİRİLMEDİ
+
+Ters kontrol temiz geçmiyor:
+
+| ölçüt | doğru yön | ters yön | fark | saf önsel | saf bileşik | rastgele |
+|---|---:|---:|---:|---:|---:|---:|
+| isabet@1 (w = 0,2) | 0,154 | 0,140 | 0,014 | 0,125 | 0,103 | 0,093 |
+| isabet@3 (w = 0,4) | 0,482 | 0,450 | 0,032 | 0,442 | 0,317 | 0,279 |
+
+Bileşiğin yönünü çevirmek isabet@1'i yalnız 0,014 düşürüyor — **0,8 standart
+hata**, yani gürültü. Daha belirleyicisi: ters sürüm (0,140) hâlâ hem saf
+önseli (0,125) hem saf bileşiği (0,103) geçiyor. Bileşik gerçekten kimin
+çıkacağını bilseydi, yönü çevrilince saf önselin ALTINA düşmesi gerekirdi.
+
+Kazanç bilginin değil, karışımın kendisinin: önselin yalnız sekiz ayrık değeri
+var ve adayların çoğu beraberlikte. Bileşiği karıştırmak o beraberlikleri
+açıyor — hangi yönde açtığı neredeyse fark etmiyor. Yönden bağımsız bir kazanç,
+tanımı gereği o sinyalin bilgisi değildir.
+
+Buna ek olarak külliyat **tek kulübün** 101 maçı ve o kulüp veri kümesinin en
+atipik takımı (`docs/KARNE-KIM-BAGIMSIZ.md`). Tek kümede ayarlanmış bir ağırlık
+zaten taşınmazdı.
+
+**Karar: `ROLE_PRIOR_WEIGHT` 0,6'da kaldı.** Değiştirmek için iki şey gerekir —
+bağımsız bir külliyatta tekrar eden aynı ağırlık, ve ters kontrolün gerçekten
+DÜŞMESİ (ters yön saf önselin altına inmeli). İkisi de yok. İpucu kayda geçiyor,
+ürüne girmiyor.
 
 ## Beraberlik tarafsızlığı — ölçümün kendisi de düzeltildi
 
@@ -59,6 +149,13 @@ bozuyor:
   isabet@1'i 0,093'ten 0,181'e çıkarıyordu. **Beceri değil, veri kümesi
   tesadüfü.** İlk okumada bunu "saf önsel iki kat daha iyi" diye yorumladım;
   yanlıştı.
+
+**Bu düzeltme önce YALNIZ bu scripte uygulandı.** Karnenin kendi cetveli
+(`apply_who_prior` + `who_agreement`) aynı kimlik sırasını kullanmaya devam
+ediyordu ve bir denetimde yakalandı: orada da külliyat isabet@1'ini 0,125'ten
+0,181'e çıkarıyordu. Ölçüm artık kademe sayıyor (`who_prior_agreement`).
+Ders: bir ölçüm tuzağı bulunduğunda aynı tuzağın ÖTEKİ kullanım yerleri de
+taranmalı — bir yerde düzeltmek yetmiyor.
 
 Script artık beraberlikleri rastgele sayıyor ve **beklenen** isabeti
 hesaplıyor: aynı anahtarı paylaşan t aday ilk sırayı paylaşıyorsa isabet@1 =
@@ -113,10 +210,14 @@ iki yarı farklı sinyal seçti. Bu yön kapalıdır:
 ## Tekrar üretim
 
 ```powershell
-.\venv\Scripts\python.exe -m scripts.measure_sub_ranking --tenant t-default --team 217 --events-dir C:\sb --out docs/measurements/sub-ranking-2026-09-14.json
+# Külliyat veritabanı ŞART: adaylar oradan, olaylar --events-dir'den gelir.
+$env:DATABASE_URL = "sqlite:///C:/.../demo.db"
+# --events-dir: düz klasörde {match_id}.json (StatsBomb açık verisi,
+# open-data/data/events/). Külliyattaki 101 maçın 100'ü gerçek maçtır.
+.\venv\Scripts\python.exe -m scripts.measure_sub_ranking --tenant t-default --team 217 --events-dir C:\sb --out docs/measurements/sub-ranking-2026-09-14-v2.json
 ```
 
 Aday tablosunun SHA-256'sı ölçüm JSON'unda (`kaynak.girdi_sha256`).
 
-Kontroller: **2538 test geçti, 1 atlandı**; ruff temiz; mypy 492 kaynak
+Kontroller: **2670 test geçti, 6 atlandı**; ruff temiz; mypy 510 kaynak
 dosyasında temiz. Külliyat veritabanına ve ham maç dosyalarına yazılmadı.
