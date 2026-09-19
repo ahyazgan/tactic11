@@ -66,6 +66,7 @@ jobs:
           pytest --noconftest -q tests/test_detector_slicer_batches.py tests/test_batch_control.py
           pytest --noconftest -q tests/test_batch_control_replacement.py
           pytest --noconftest -q tests/test_detector_roi_batch.py tests/test_roi_control.py
+          pytest --noconftest -q tests/test_consensus_palette_candidate.py tests/test_consensus_palette_control.py
 
   migrations:
     runs-on: ubuntu-latest
