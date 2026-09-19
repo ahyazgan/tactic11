@@ -1,0 +1,8 @@
+{
+  "freeze_sha256": "01bbd1d53e6d48d9dfbf85121b010d0cf31b86540a726781bc0656adf0131f06",
+  "label_sha256": {
+    "docs\\measurements\\identity-consensus-control-day-labels.json": "84bf0e9982f4d0cba79e79a66d3d01490871fd7102820d55b0af5844103fa06a",
+    "docs\\measurements\\identity-consensus-control-day-pairs.json": "ca2accea935ae2be09d83de5057f22c061e195d145e962cf2b448d7baf57b708"
+  },
+  "predictions_visible_during_labeling": false
+}

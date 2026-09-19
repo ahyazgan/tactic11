@@ -1,0 +1,8 @@
+{
+  "freeze_sha256": "01bbd1d53e6d48d9dfbf85121b010d0cf31b86540a726781bc0656adf0131f06",
+  "label_sha256": {
+    "docs\\measurements\\identity-consensus-control-night-labels.json": "a609515d11582dce31f1f0a992c9c2d895ac819ec97518bf6e850d64c6e5773d",
+    "docs\\measurements\\identity-consensus-control-night-pairs.json": "dfeb62c7da3b652385375899995c77cfc1e050d508f3febc362c828c411dd894"
+  },
+  "predictions_visible_during_labeling": false
+}

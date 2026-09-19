@@ -1,0 +1,3367 @@
+{
+  "protocol": "docs/KIMLIK-UZLASISI-KONTROL-PLANI.md",
+  "reviewer": "Codex single AI visual reviewer",
+  "independently_adjudicated": false,
+  "predictions_visible_during_labeling": false,
+  "reviewed_at_utc": "2026-09-19T13:16:06.632073+00:00",
+  "input_sha256": {
+    "data\\tracking\\bench\\consensus_control_v1\\night\\raw\\seg_0080.json": "6a79fa2f84bd3fa40c56ddff937321221d7a8d9f4612afe471919016c6335eb4",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4": "35bdaaa351824798c33da9bb669fd1366b37e4a14976600f9a2c12b4996aab54",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\raw\\seg_0082.json": "be9c805fdf57b7a07ee4aab2ef63f9a5e6a0e58abe33dae9dd8bc5eca432125e",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4": "81733133b174fea3ad45f55fcc74b6f87fd98a12025976e52a6fe2f4ab89d32d"
+  },
+  "review_artifact_sha256": {
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\annotations-80-working.json": "9e561121ae54d848799521f620cd531ba32e89d1a61d386d96b9416a93090ebe",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\labels.json": "d4dddfc41faf594088c4cf8b20d384672cfdd64fe4f21ac00433be735c14ed2a",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\pairs.json": "9610dd0d65c4e231023dd86406c31dd9d97155132f8a693bc468d3213252dfe2",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\manifest.json": "ead632f490e7a9d1a83f585e9568eb954d183240bf337db686e1a1883324184d",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d0.jpg": "69f1f395edc883007cf6527652482f7d8cfb9d011313d5f300fe5487fe992db7",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d1.jpg": "2b3d39702e38ada1b87c995ef4b7b7647056571a3bab26ccebab3424623691b8",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d10.jpg": "8a1c506630101b2926d3663267d8b33e48c362d1e2e999439281082b9fa811aa",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d11.jpg": "f4da28dc358a88340de33496f337267d0c2f91000a2d10706561204febe68acb",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d12.jpg": "48172c793ab50594e46ae35d5c3afa63a9393059def74ab9521e2ca842748c0b",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d13.jpg": "f92b272217c65b13d426ff1f717c7a6c334ec0d56125998024a6304ac06818e5",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d14.jpg": "65fd365898fbd0c314b7ce437d2ccf973970f723a667ab5660b9fa735fab9ac9",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d15.jpg": "c3cf3553cc118183322d9ac36f0c6a0f11e8bbee6ffee6039fa8ef956bba5615",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d16.jpg": "3a6c0ad7d8dc13d7e0d5626c30e251868c3a1beddc887bb88d365020cd26a01a",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d17.jpg": "59eb12a8db9e85b1c48d224612cbb61d68d55f7705760f74259f894cd61b05d4",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d18.jpg": "93391389ba577c5cb92ab337a173dced955d66838337022a25b9ddd92a19d155",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d19.jpg": "6101a936b240acfb3e89cdfbccd44e971aeaed19141ecb01293d44e59b593fef",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d2.jpg": "035f7b7084ac7d0c8015e1f4ca15172ba4f728e0f01e843efa5e73ff15eb469f",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d20.jpg": "caf5f4a7601f6dd429d2fb212ed25d19ca444346dabc2094db1408a8cd8988a2",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d21.jpg": "c5ed85d959c93a802b90a92bd34f870e2b239ce99e8804b69ca61023f0685441",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d22.jpg": "2c4a138d96f876545b95bb82d1c4476964944c83aeddfbda59653682168e7228",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d3.jpg": "786cf4299900f87c20efd773f7abcf6bee96b80395d88639492086ee572cd510",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d4.jpg": "0ee9c9f60b7701edb87cabb3de7457ebdfdd5f2f18f643a610d75d189172b5fd",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d5.jpg": "1f8d4be5d756e2c1f05c07f97be0ce1b714b1de100705712469f16feed78911a",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d6.jpg": "3c55593452b7c109cfe866b72f452d039ee628c05bb04f018307e39ddc0c8a80",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d7.jpg": "7a5af5040bfe57f2cf04e81409bd5ebef2c9dfd5745c62e04c42b552afce3084",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d8.jpg": "2e1d5b2ce21ff105e57d2e8219e847043c06dcefd9b96f548a01b7ad83d8017c",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-374-d9.jpg": "20fa5c8940aa8a58b89ac118b9e083732a3956f0b052d4893dc5940f75ae1ba0",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d0.jpg": "edb9c5900bb858043e3c9ce47ba245206aa5121725959446827804093a03bdcb",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d1.jpg": "163fcb624f33b9c46237682d0068b0f96544156ab43c0a6f712d6066c98d7779",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d10.jpg": "7b3119b0da75d553d19a8877e465328eeae48da2640b8ee86a364ea931396fe4",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d11.jpg": "0ec7b0ff296fcab83a9ffbf4e8e209b26c157344e6bfb3bc20d55c8103139c51",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d12.jpg": "ef86611d5e1462f230265147487f32c4e3a363fe8d922129151b0b6c8017bd9a",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d13.jpg": "b279f3b7f85c75a534bdc93d002ef05fe7ea6c997867816f7fd0191a7e3e69f1",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d14.jpg": "d9abe210abbd23674e4cad5d1ca6edb519b04792575cc7a25a58b57d4884141b",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d15.jpg": "8b94d79d2f78d8d6535638438316b0c62144de2240316cb226b575ec12ac2c86",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d16.jpg": "756b8af23e436b8ad3c7e25d37c8da7de6e18b4b2ec7428d19061b7d6f3c0edc",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d17.jpg": "b4382fddcd64634c3dd0193c008746261f49bf42cd3bca74798e036e9d4ee527",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d18.jpg": "e6ad2b3b608064c84a217978511dd7cb2d4d3419fee06f812a591ddd79ee5afa",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d19.jpg": "af1d03d468c912f1a3fd72727ffa1aec3c97ae516c2b121b70b60f50f22684a9",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d2.jpg": "acfcca9edf21960987215e5eab3cb883d785f0cad6c835b16092d73ba89ec747",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d20.jpg": "025660a34a7c559902eb1377655be7e85a2eaafdb5474656c45f9e810e25c4b3",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d3.jpg": "e2d7137a3b065941fa9f93909eb02c814d7f66ec9cbb07b0555e8fc5ed8eb130",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d4.jpg": "40d2cb08ae87454c5a3ef08d3da99fdcc003683ec0385be935a216e596dd4453",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d5.jpg": "be287aec9dd6aeedc282d4cbbebd72b1b981c75b582eeb43589ed9e9264d1ceb",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d6.jpg": "04a8579bf494c227bc4fa1b877f9639a2a82a2213e249fcd1b4bd1496284e540",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d7.jpg": "9266432f75db9f0d873cfc1596b599fb4a14f0ef7e974b316fce3cb3ef8aee21",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d8.jpg": "c5420dd7262ec87e9b5d10f3ddc29af25b68405ed52828b0a049ff60fa6eec87",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-80-686-d9.jpg": "129be48d16a804d7d6a23570b85d05e9d9fe017af4276808d118e13192856da1",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d0.jpg": "63ca644053112aedfc0b42c4e905a4b397b3dec8a4a01d586429cac8a4b80a57",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d1.jpg": "593e2a8bf3a4463a8a47143a7854180e2dcf861c613e104785e4c65b5cb3b0c2",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d10.jpg": "ce89511f6fb11cafc5776c0c86ca31ebd8057888b63e41f312089d51f4e8bd22",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d11.jpg": "7a3958de4f3a090cf79d62252c04429771c1d035d493e40628fc3e5339e379df",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d2.jpg": "bfce03f983a900d2aaff250833791ecb0ae70e329359f80d6d760e6c6cb257f7",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d3.jpg": "70bfb860c745af4346aaf7fcbaccd3c9e9848a3c0b6e6de8c572bff89148c961",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d4.jpg": "19ba6695915534bd325773850ea2a927e4516baf60eae6736b8b85e49196ba4c",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d5.jpg": "da6443a63d3b0bcb6f32c7e6c37dad2f428ce068aa3ef19ae5e6e31f93b00a01",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d6.jpg": "be1ca382374a62644da1f15ca13685dda3c46bb91cd5dc26ddc0ae2e127251f5",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d7.jpg": "bae6aacafb731ecd7ee73b0f52c2497a9442ba29818dfca571175ca9c165d394",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d8.jpg": "4b26912d424a44d7003b9dcf040d0ca9cc253065a892892a22c76bd92dfc47b8",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-374-d9.jpg": "d285ae91b4b112b6e9b960965a0307aa75710374cfa6f5e44e312cce8158ad38",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d0.jpg": "ac140cc9b717b5225bf21659d6e96b3f789f7efd3d6da88aed81c75fdbec6f39",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d1.jpg": "64d6123d35fd72ede6bfc58ba1c40bfc7ddbc408407227617ddd18721fa69fff",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d10.jpg": "9cc063e70a22e04bc36cd5deba95df4aa9cdba6092b1209850da35590bed2958",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d11.jpg": "eed6c2302fe2da937aea2e4c19d50d3f8e95c620a8b148013b941161ffbfcd94",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d12.jpg": "5ca1871c5364ab03841ca6e2268a354b183b1a4f9aa2e9870d187a0aaa72adb5",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d13.jpg": "77290b26d98066b8b999c0a945247b73a2357cd841e2461ddbbc9745543cffb3",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d14.jpg": "090550899e59e2d5f4d7646bc1673eff14466b29e628a488f0f358063c238c08",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d15.jpg": "dc74063ab01a6593086cbb19659692a2fffaf548b791a4f3b6efd42f805a3070",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d16.jpg": "12c46cf5e2ffc37fe12d33c814fd23857885d1e0867f3f8b61abb2359239773f",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d17.jpg": "2ae8112a9dc3b8cb6bbc89d356d18827d47f55590a787293c1e54c5fd7351406",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d2.jpg": "241db7d60cc65892806fbb148321f5d68202179e63cc6dc06c73591cbeaad271",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d3.jpg": "35c0e909f5f8a9a1296be668f043f17fb5fc21ec920cf7d33d0c83d976c58ff5",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d4.jpg": "2f218fe96a3b30055f825d37b2280f966b5f7fb1a2e843184844ebb86c806662",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d5.jpg": "bdc1064f72382828d21f233274d4423f7ea9707360e67c4c4e1d9af00a2646ca",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d6.jpg": "4b32bb27f21b4a1ffedef0227b90ef18c04c52be5615889cb87ae8ad3bcda3a1",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d7.jpg": "1310d42bf9395db5c6dd9ee3dce004656180e6ad166109d477d2a0b3e7ba3bc6",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d8.jpg": "9ddb3bdde272c050ada7f0a9f55ce6b488209d88bc70c48ca62b28f95c092bbc",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\association-82-686-d9.jpg": "5f7207ef08f350947dd378a3db92c4adef88034ca55d0e3fa874847ab8b0b927",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0080-f0374-overview.jpg": "795499aa0e8f91ee71073198d584cfa14cbbf8bfeb514e5c2db7fa6ad6a0a663",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0080-f0374-page01.jpg": "b66e92b0be6d993733be76c0d305c61a51e4c8d9da7c3e136df3cb09fac7df9f",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0080-f0404-overview.jpg": "6745e89f99262b4ec7069c05eb91205a832aa6b51e39617fb902aa995a7f9274",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0080-f0404-page01.jpg": "dfab01eea7ae8f0da25998b025922190371e351af5e6ba796a884aaf155e41b0",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0080-f0686-overview.jpg": "052604827c9d1da31c2d74a919749d5d2c0c1da1b0a32f798edb282e991598f8",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0080-f0686-page01.jpg": "df7b28f95a7ff1b24722ca7a645738fadeae1de1320d2b854ffa88da46a35adf",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0080-f0716-overview.jpg": "2ed296ab5947fa106bf4bf0d7b0c5f203a74ba9601ea728d71c2570f77137cfe",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0080-f0716-page01.jpg": "bd955bde192abaf233a05c8953104223d82901b5c495116b828a6014e7078645",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0082-f0374-overview.jpg": "7138d10ffbf5ec3b5262b3ff152db2de8a6a3df415623515f59023ee073adbcf",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0082-f0374-page01.jpg": "266344c20801a16de966051d82f8986de7acc79e5f27e93f84708bc31cc79902",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0082-f0404-overview.jpg": "a323b5e13667540768661ccd6d586db0cf350781a28b187fbddd4abfca548acc",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0082-f0404-page01.jpg": "fa1ebd53eea37840a44613d21ff85ad958f54f51b7ee098038c351c7d7c09d29",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0082-f0686-overview.jpg": "46a4eddcb53b6d0fa08efd74b2ce32c037c244b481dc14876d0b018801cc3ba3",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0082-f0686-page01.jpg": "5d7046453239a8457dd8003ce070ab7f362a24de8d038f8a0d5b885f7e2e6166",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0082-f0716-overview.jpg": "f8cae71ea40eb14cdb847c5a9677fb70800c4dc98b6a8c2874bfafb59d4d37f3",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\s0082-f0716-page01.jpg": "61ffd1c3e2b1b8a6356ed5682cddb3c88c748a02ed72c32ff872a312c7b680ff",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\review\\annotations-82-working.json": "d716f7aa946cb48616b96a273015d3a056e39a001b3761c051783a91e72f4180"
+  },
+  "limitations": "Sparse same-match temporal control, not independent match validation or full-video HOTA/IDF1. Ambiguous mixed boxes withheld. Unambiguous partial endpoint identity is retained and coverage documented.",
+  "source_review": [
+    {
+      "id": "80-374-d0",
+      "status": "not_person",
+      "reason": "Source contact sheet shows background/equipment/light rather than a person."
+    },
+    {
+      "id": "80-374-d1",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-374-d2",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-374-d3",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-374-d4",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-374-d5",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-374-d6",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-374-d7",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-374-d8",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-374-d9",
+      "status": "uncertain",
+      "reason": "Blue player becomes occluded by white player; endpoint d11 contains both without a separate blue box."
+    },
+    {
+      "id": "80-374-d10",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-374-d11",
+      "status": "uncertain",
+      "reason": "White player overlaps blue33 at endpoint d11; mixed-person source box, association withheld."
+    },
+    {
+      "id": "80-374-d12",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-374-d13",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-374-d14",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-374-d15",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-374-d16",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible other clothing."
+    },
+    {
+      "id": "80-374-d17",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-374-d18",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-374-d19",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-374-d20",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-374-d21",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-374-d22",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-686-d0",
+      "status": "not_person",
+      "reason": "Source contact sheet shows background/equipment/light rather than a person."
+    },
+    {
+      "id": "80-686-d1",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible other clothing."
+    },
+    {
+      "id": "80-686-d2",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-686-d3",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-686-d4",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-686-d5",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-686-d6",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-686-d7",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-686-d8",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-686-d9",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-686-d10",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-686-d11",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-686-d12",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-686-d13",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-686-d14",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-686-d15",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-686-d16",
+      "status": "uncertain",
+      "reason": "Start box contains overlapping white and blue players; no unique person assignment."
+    },
+    {
+      "id": "80-686-d17",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-686-d18",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "80-686-d19",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "80-686-d20",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible other clothing."
+    },
+    {
+      "id": "82-374-d0",
+      "status": "not_person",
+      "reason": "Source contact sheet shows background/equipment/light rather than a person."
+    },
+    {
+      "id": "82-374-d1",
+      "status": "not_person",
+      "reason": "Source contact sheet shows background/equipment/light rather than a person."
+    },
+    {
+      "id": "82-374-d2",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-374-d3",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "82-374-d4",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible other clothing."
+    },
+    {
+      "id": "82-374-d5",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-374-d6",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-374-d7",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "82-374-d8",
+      "status": "uncertain",
+      "reason": "Crowded goalmouth with overlapping source boxes; unique endpoint association not reliable from visible sequence."
+    },
+    {
+      "id": "82-374-d9",
+      "status": "uncertain",
+      "reason": "Crowded goalmouth with overlapping source boxes; unique endpoint association not reliable from visible sequence."
+    },
+    {
+      "id": "82-374-d10",
+      "status": "uncertain",
+      "reason": "Crowded goalmouth with overlapping source boxes; unique endpoint association not reliable from visible sequence."
+    },
+    {
+      "id": "82-374-d11",
+      "status": "uncertain",
+      "reason": "Crowded goalmouth with overlapping source boxes; unique endpoint association not reliable from visible sequence."
+    },
+    {
+      "id": "82-686-d0",
+      "status": "not_person",
+      "reason": "Source contact sheet shows background/equipment/light rather than a person."
+    },
+    {
+      "id": "82-686-d1",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible other clothing."
+    },
+    {
+      "id": "82-686-d2",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "82-686-d3",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-686-d4",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-686-d5",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-686-d6",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-686-d7",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "82-686-d8",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "82-686-d9",
+      "status": "uncertain",
+      "reason": "Two white players overlap at endpoint d14; unique endpoint assignment withheld."
+    },
+    {
+      "id": "82-686-d10",
+      "status": "uncertain",
+      "reason": "Start box contains multiple blue players; unique source identity unresolved."
+    },
+    {
+      "id": "82-686-d11",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "82-686-d12",
+      "status": "uncertain",
+      "reason": "Start box contains two white players; kit white, individual identity unresolved."
+    },
+    {
+      "id": "82-686-d13",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-686-d14",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-686-d15",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible white clothing."
+    },
+    {
+      "id": "82-686-d16",
+      "status": "same_labeled",
+      "reason": "Source contact sheet and fixed context show visible blue clothing."
+    },
+    {
+      "id": "82-686-d17",
+      "status": "uncertain",
+      "reason": "Start box contains both white and blue players; unique source identity unresolved."
+    }
+  ],
+  "observations": [
+    {
+      "id": "80-374-d0",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 0,
+      "bbox": [
+        2952.75,
+        435.25,
+        2992.5,
+        474.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d1",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 1,
+      "bbox": [
+        1165.0,
+        784.75,
+        1212.0,
+        859.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d2",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 2,
+      "bbox": [
+        1252.0,
+        760.25,
+        1296.5,
+        831.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d3",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 3,
+      "bbox": [
+        1180.0,
+        722.75,
+        1216.5,
+        776.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d4",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 4,
+      "bbox": [
+        1635.5,
+        775.5,
+        1686.75,
+        869.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d5",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 5,
+      "bbox": [
+        1822.0,
+        667.0,
+        1861.0,
+        734.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d6",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 6,
+      "bbox": [
+        1444.0,
+        675.75,
+        1486.5,
+        735.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d7",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 7,
+      "bbox": [
+        1575.0,
+        663.0,
+        1609.0,
+        718.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d8",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 8,
+      "bbox": [
+        1580.75,
+        589.25,
+        1609.25,
+        639.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d9",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 9,
+      "bbox": [
+        1973.0,
+        571.125,
+        1997.5,
+        618.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d10",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 10,
+      "bbox": [
+        1439.125,
+        637.0,
+        1468.75,
+        685.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d11",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 11,
+      "bbox": [
+        1935.0,
+        580.5,
+        1962.5,
+        629.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d12",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 12,
+      "bbox": [
+        2287.5,
+        686.5,
+        2334.75,
+        767.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d13",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 13,
+      "bbox": [
+        2054.125,
+        606.0,
+        2091.625,
+        675.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d14",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 14,
+      "bbox": [
+        2175.75,
+        669.5,
+        2223.5,
+        747.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d15",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 15,
+      "bbox": [
+        2150.875,
+        604.125,
+        2186.625,
+        669.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d16",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 16,
+      "bbox": [
+        2747.25,
+        650.25,
+        2778.25,
+        706.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d17",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 17,
+      "bbox": [
+        1223.0,
+        831.171875,
+        1266.0,
+        922.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d18",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 18,
+      "bbox": [
+        889.5,
+        1052.625,
+        956.25,
+        1163.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d19",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 19,
+      "bbox": [
+        1131.0,
+        879.75,
+        1176.0,
+        965.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d20",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 20,
+      "bbox": [
+        1251.0,
+        810.05810546875,
+        1287.5,
+        871.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d21",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 21,
+      "bbox": [
+        827.25,
+        965.25,
+        884.5,
+        1051.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-374-d22",
+      "segment": 80,
+      "frame_idx": 374,
+      "detector_index": 22,
+      "bbox": [
+        3641.0,
+        1134.25,
+        3698.0,
+        1218.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "80-404-d0",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 0,
+      "bbox": [
+        3076.25,
+        444.25,
+        3151.0,
+        475.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d1",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 1,
+      "bbox": [
+        1154.75,
+        763.0,
+        1195.0,
+        834.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d2",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 2,
+      "bbox": [
+        1392.0,
+        636.125,
+        1419.5,
+        690.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d3",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 3,
+      "bbox": [
+        1247.5,
+        738.75,
+        1290.0,
+        801.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d4",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 4,
+      "bbox": [
+        1296.5,
+        760.75,
+        1342.0,
+        839.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d5",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 5,
+      "bbox": [
+        1065.5,
+        739.75,
+        1104.5,
+        799.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d6",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 6,
+      "bbox": [
+        1572.0,
+        746.5,
+        1614.0,
+        834.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d7",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 7,
+      "bbox": [
+        2045.5,
+        602.375,
+        2074.0,
+        666.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d8",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 8,
+      "bbox": [
+        1699.5,
+        660.625,
+        1733.0,
+        727.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d9",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 9,
+      "bbox": [
+        1502.25,
+        660.625,
+        1533.0,
+        722.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d10",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 10,
+      "bbox": [
+        1363.25,
+        687.5,
+        1394.0625,
+        750.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d11",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 11,
+      "bbox": [
+        1923.0,
+        576.375,
+        1952.5,
+        634.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d12",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 12,
+      "bbox": [
+        1509.625,
+        606.25,
+        1535.125,
+        650.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d13",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 13,
+      "bbox": [
+        1670.0,
+        660.25,
+        1704.5,
+        730.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d14",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 14,
+      "bbox": [
+        2135.0,
+        663.0,
+        2177.5,
+        744.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d15",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 15,
+      "bbox": [
+        1972.109375,
+        602.75,
+        2003.875,
+        669.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d16",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 16,
+      "bbox": [
+        2082.75,
+        656.0,
+        2119.0,
+        732.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d17",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 17,
+      "bbox": [
+        2712.3125,
+        640.375,
+        2748.125,
+        700.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d18",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 18,
+      "bbox": [
+        1279.0,
+        810.029052734375,
+        1325.0,
+        876.6875
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d19",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 19,
+      "bbox": [
+        914.75,
+        1024.5,
+        976.5,
+        1126.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d20",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 20,
+      "bbox": [
+        843.25,
+        959.25,
+        891.25,
+        1045.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d21",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 21,
+      "bbox": [
+        1231.0,
+        828.15625,
+        1270.0,
+        905.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d22",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 22,
+      "bbox": [
+        3641.0,
+        1131.25,
+        3702.0,
+        1217.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-404-d23",
+      "segment": 80,
+      "frame_idx": 404,
+      "detector_index": 23,
+      "bbox": [
+        3642.0,
+        1019.0,
+        3690.0,
+        1082.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "80-686-d0",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 0,
+      "bbox": [
+        3075.5,
+        444.0,
+        3150.5,
+        476.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d1",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 1,
+      "bbox": [
+        1076.0,
+        713.0,
+        1113.5,
+        767.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d2",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 2,
+      "bbox": [
+        1698.25,
+        609.125,
+        1732.75,
+        674.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d3",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 3,
+      "bbox": [
+        1667.0,
+        744.75,
+        1718.0,
+        840.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d4",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 4,
+      "bbox": [
+        1733.0,
+        610.75,
+        1765.5,
+        674.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d5",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 5,
+      "bbox": [
+        1601.0,
+        761.75,
+        1650.25,
+        848.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d6",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 6,
+      "bbox": [
+        1842.5,
+        570.875,
+        1869.0,
+        622.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d7",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 7,
+      "bbox": [
+        1905.5,
+        549.0,
+        1930.5,
+        590.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d8",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 8,
+      "bbox": [
+        1722.25,
+        575.125,
+        1750.0,
+        618.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d9",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 9,
+      "bbox": [
+        2405.5,
+        660.875,
+        2453.0,
+        733.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d10",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 10,
+      "bbox": [
+        2677.0,
+        653.0,
+        2715.5,
+        712.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d11",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 11,
+      "bbox": [
+        2152.25,
+        579.0,
+        2185.0,
+        632.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d12",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 12,
+      "bbox": [
+        2063.125,
+        581.0,
+        2094.875,
+        636.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d13",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 13,
+      "bbox": [
+        2489.0,
+        593.75,
+        2522.0,
+        640.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d14",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 14,
+      "bbox": [
+        2431.5,
+        581.25,
+        2461.5,
+        627.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d15",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 15,
+      "bbox": [
+        2290.25,
+        554.875,
+        2324.5,
+        604.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d16",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 16,
+      "bbox": [
+        2409.0,
+        563.125,
+        2437.5,
+        602.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d17",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 17,
+      "bbox": [
+        2182.0,
+        539.375,
+        2209.25,
+        577.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d18",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 18,
+      "bbox": [
+        2208.375,
+        556.25,
+        2234.25,
+        595.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d19",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 19,
+      "bbox": [
+        2155.25,
+        546.25,
+        2182.25,
+        585.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-686-d20",
+      "segment": 80,
+      "frame_idx": 686,
+      "detector_index": 20,
+      "bbox": [
+        3379.25,
+        998.5,
+        3437.0,
+        1092.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "80-716-d0",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 0,
+      "bbox": [
+        3074.75,
+        444.5,
+        3151.0,
+        476.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d1",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 1,
+      "bbox": [
+        1103.0,
+        705.75,
+        1147.25,
+        760.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d2",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 2,
+      "bbox": [
+        1787.5,
+        728.5,
+        1827.0,
+        818.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d3",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 3,
+      "bbox": [
+        1926.0,
+        561.375,
+        1951.5,
+        614.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d4",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 4,
+      "bbox": [
+        1788.25,
+        593.5,
+        1817.5,
+        657.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d5",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 5,
+      "bbox": [
+        1817.5,
+        601.375,
+        1844.0,
+        657.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d6",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 6,
+      "bbox": [
+        1686.0,
+        766.0,
+        1729.75,
+        853.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d7",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 7,
+      "bbox": [
+        1974.0,
+        547.625,
+        1998.0,
+        586.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d8",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 8,
+      "bbox": [
+        1828.5,
+        565.875,
+        1851.5,
+        610.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d9",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 9,
+      "bbox": [
+        2513.0,
+        664.0,
+        2563.0,
+        736.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d10",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 10,
+      "bbox": [
+        2158.875,
+        580.5,
+        2189.25,
+        632.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d11",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 11,
+      "bbox": [
+        2246.0,
+        585.0,
+        2275.25,
+        634.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d12",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 12,
+      "bbox": [
+        2608.0,
+        609.375,
+        2639.0,
+        657.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d13",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 13,
+      "bbox": [
+        2383.0,
+        564.125,
+        2411.0,
+        613.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d14",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 14,
+      "bbox": [
+        2267.75,
+        553.0,
+        2293.75,
+        596.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d15",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 15,
+      "bbox": [
+        2570.0,
+        597.125,
+        2598.0,
+        642.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d16",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 16,
+      "bbox": [
+        2423.25,
+        565.125,
+        2453.25,
+        615.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d17",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 17,
+      "bbox": [
+        2526.5,
+        572.125,
+        2552.5,
+        612.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d18",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 18,
+      "bbox": [
+        2219.75,
+        534.375,
+        2245.25,
+        578.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d19",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 19,
+      "bbox": [
+        2236.0,
+        547.375,
+        2263.5,
+        587.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d20",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 20,
+      "bbox": [
+        2514.5,
+        571.625,
+        2537.5,
+        607.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d21",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 21,
+      "bbox": [
+        2733.125,
+        657.875,
+        2772.75,
+        719.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "80-716-d22",
+      "segment": 80,
+      "frame_idx": 716,
+      "detector_index": 22,
+      "bbox": [
+        3427.75,
+        991.75,
+        3483.5,
+        1078.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-374-d0",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 0,
+      "bbox": [
+        2953.5,
+        435.0,
+        2991.75,
+        473.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d1",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 1,
+      "bbox": [
+        3076.25,
+        445.0,
+        3150.0,
+        475.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d2",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 2,
+      "bbox": [
+        1912.0,
+        608.75,
+        1940.5,
+        672.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d3",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 3,
+      "bbox": [
+        1928.0,
+        602.375,
+        1957.5,
+        666.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d4",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 4,
+      "bbox": [
+        1390.5,
+        656.75,
+        1426.625,
+        719.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d5",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 5,
+      "bbox": [
+        2300.5,
+        596.625,
+        2345.0,
+        675.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d6",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 6,
+      "bbox": [
+        2736.25,
+        637.125,
+        2767.5,
+        688.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d7",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 7,
+      "bbox": [
+        2830.5,
+        652.25,
+        2856.25,
+        700.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d8",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 8,
+      "bbox": [
+        2956.25,
+        686.0,
+        2988.0,
+        740.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d9",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 9,
+      "bbox": [
+        2923.0,
+        672.0,
+        2959.0,
+        732.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d10",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 10,
+      "bbox": [
+        2976.0,
+        693.75,
+        3009.5,
+        744.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-374-d11",
+      "segment": 82,
+      "frame_idx": 374,
+      "detector_index": 11,
+      "bbox": [
+        2990.5,
+        674.25,
+        3019.5,
+        717.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "82-404-d0",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 0,
+      "bbox": [
+        2953.75,
+        434.75,
+        2991.75,
+        473.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d1",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 1,
+      "bbox": [
+        1908.0,
+        605.75,
+        1936.0,
+        665.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d2",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 2,
+      "bbox": [
+        1392.3125,
+        658.75,
+        1428.4375,
+        720.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d3",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 3,
+      "bbox": [
+        1929.0,
+        600.875,
+        1961.0,
+        661.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d4",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 4,
+      "bbox": [
+        2300.5,
+        599.375,
+        2333.5,
+        656.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d5",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 5,
+      "bbox": [
+        2737.875,
+        635.0,
+        2768.625,
+        687.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d6",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 6,
+      "bbox": [
+        2841.25,
+        654.125,
+        2869.5,
+        701.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d7",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 7,
+      "bbox": [
+        2944.5,
+        681.75,
+        2977.75,
+        735.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d8",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 8,
+      "bbox": [
+        2968.75,
+        691.5,
+        3004.0,
+        745.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d9",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 9,
+      "bbox": [
+        2991.25,
+        675.0,
+        3019.25,
+        718.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d10",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 10,
+      "bbox": [
+        2989.5,
+        695.25,
+        3021.5,
+        746.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-404-d11",
+      "segment": 82,
+      "frame_idx": 404,
+      "detector_index": 11,
+      "bbox": [
+        3007.5,
+        676.25,
+        3038.5,
+        720.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "82-686-d0",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 0,
+      "bbox": [
+        3076.0,
+        444.75,
+        3151.5,
+        476.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d1",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 1,
+      "bbox": [
+        1228.0,
+        693.75,
+        1268.0,
+        753.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d2",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 2,
+      "bbox": [
+        2009.5,
+        671.25,
+        2047.0,
+        744.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d3",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 3,
+      "bbox": [
+        2300.5,
+        713.0,
+        2347.5,
+        801.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d4",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 4,
+      "bbox": [
+        2414.5,
+        606.5,
+        2453.0,
+        666.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d5",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 5,
+      "bbox": [
+        1965.140625,
+        672.75,
+        2004.5625,
+        746.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d6",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 6,
+      "bbox": [
+        2506.0,
+        578.125,
+        2531.0,
+        617.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d7",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 7,
+      "bbox": [
+        2744.25,
+        696.5,
+        2782.0,
+        765.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d8",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 8,
+      "bbox": [
+        2693.0,
+        620.375,
+        2723.375,
+        671.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d9",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 9,
+      "bbox": [
+        3032.5,
+        714.5,
+        3067.5,
+        775.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d10",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 10,
+      "bbox": [
+        2926.0,
+        664.75,
+        2956.5,
+        715.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d11",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 11,
+      "bbox": [
+        2897.5,
+        656.75,
+        2925.25,
+        704.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d12",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 12,
+      "bbox": [
+        2798.125,
+        636.125,
+        2828.375,
+        683.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d13",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 13,
+      "bbox": [
+        2880.25,
+        690.25,
+        2910.75,
+        735.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d14",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 14,
+      "bbox": [
+        3201.0,
+        893.3125,
+        3246.0,
+        974.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d15",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 15,
+      "bbox": [
+        3091.09375,
+        810.0,
+        3122.0,
+        869.78125
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d16",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 16,
+      "bbox": [
+        3292.875,
+        847.75,
+        3319.5,
+        906.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-686-d17",
+      "segment": 82,
+      "frame_idx": 686,
+      "detector_index": 17,
+      "bbox": [
+        3655.0,
+        967.25,
+        3689.5,
+        1024.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "82-716-d0",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 0,
+      "bbox": [
+        3076.25,
+        443.5,
+        3151.0,
+        476.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d1",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 1,
+      "bbox": [
+        1194.0,
+        703.0,
+        1237.0,
+        764.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d2",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 2,
+      "bbox": [
+        1964.5,
+        716.5,
+        2006.0,
+        804.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d3",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 3,
+      "bbox": [
+        2005.0,
+        699.5,
+        2043.0,
+        788.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d4",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 4,
+      "bbox": [
+        2292.25,
+        729.5,
+        2339.75,
+        828.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d5",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 5,
+      "bbox": [
+        2262.75,
+        596.25,
+        2292.0,
+        655.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d6",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 6,
+      "bbox": [
+        2463.5,
+        575.75,
+        2488.0,
+        623.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d7",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 7,
+      "bbox": [
+        2600.0,
+        602.125,
+        2628.0,
+        653.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d8",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 8,
+      "bbox": [
+        2616.69921875,
+        695.0,
+        2656.1875,
+        772.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d9",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 9,
+      "bbox": [
+        2630.125,
+        619.125,
+        2660.84375,
+        672.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d10",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 10,
+      "bbox": [
+        2801.375,
+        687.75,
+        2831.75,
+        745.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d11",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 11,
+      "bbox": [
+        2920.5,
+        670.0,
+        2949.0,
+        721.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d12",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 12,
+      "bbox": [
+        2759.75,
+        636.625,
+        2790.0,
+        685.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d13",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 13,
+      "bbox": [
+        2857.5,
+        653.5,
+        2884.0,
+        697.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d14",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 14,
+      "bbox": [
+        3029.5,
+        718.25,
+        3061.5,
+        775.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d15",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 15,
+      "bbox": [
+        2735.1875,
+        626.75,
+        2762.75,
+        673.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d16",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 16,
+      "bbox": [
+        2993.75,
+        768.5,
+        3029.0,
+        823.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d17",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 17,
+      "bbox": [
+        2294.75,
+        810.0,
+        2330.5,
+        830.71875
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d18",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 18,
+      "bbox": [
+        3209.5,
+        895.875,
+        3253.625,
+        969.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d19",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 19,
+      "bbox": [
+        3157.375,
+        810.05810546875,
+        3190.75,
+        865.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d20",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 20,
+      "bbox": [
+        3574.5,
+        932.9375,
+        3610.0,
+        984.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d21",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 21,
+      "bbox": [
+        3668.5,
+        978.0,
+        3701.5,
+        1035.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "82-716-d22",
+      "segment": 82,
+      "frame_idx": 716,
+      "detector_index": 22,
+      "bbox": [
+        3667.0,
+        1021.375,
+        3705.0,
+        1092.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4",
+      "seconds": 28.64
+    }
+  ],
+  "pairs": [
+    {
+      "left": "80-374-d1",
+      "right": "80-404-d1",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d1",
+      "right": "80-404-d21",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d2",
+      "right": "80-404-d3",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d2",
+      "right": "80-404-d4",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d3",
+      "right": "80-404-d5",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d3",
+      "right": "80-404-d1",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d4",
+      "right": "80-404-d6",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d4",
+      "right": "80-404-d13",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d5",
+      "right": "80-404-d8",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d5",
+      "right": "80-404-d13",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d6",
+      "right": "80-404-d10",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d6",
+      "right": "80-404-d9",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d7",
+      "right": "80-404-d9",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d7",
+      "right": "80-404-d12",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d8",
+      "right": "80-404-d12",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d8",
+      "right": "80-404-d9",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d10",
+      "right": "80-404-d2",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d10",
+      "right": "80-404-d9",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d12",
+      "right": "80-404-d14",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d12",
+      "right": "80-404-d16",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d13",
+      "right": "80-404-d15",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d13",
+      "right": "80-404-d7",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d14",
+      "right": "80-404-d16",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d14",
+      "right": "80-404-d14",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d15",
+      "right": "80-404-d7",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d15",
+      "right": "80-404-d14",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d16",
+      "right": "80-404-d17",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d16",
+      "right": "80-404-d14",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d17",
+      "right": "80-404-d18",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d17",
+      "right": "80-404-d21",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d18",
+      "right": "80-404-d19",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d18",
+      "right": "80-404-d20",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d19",
+      "right": "80-404-d21",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d19",
+      "right": "80-404-d1",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d20",
+      "right": "80-404-d4",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d20",
+      "right": "80-404-d21",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d21",
+      "right": "80-404-d20",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d21",
+      "right": "80-404-d19",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-374-d22",
+      "right": "80-404-d22",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-374-d22",
+      "right": "80-404-d23",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d1",
+      "right": "80-716-d1",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d1",
+      "right": "80-716-d6",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d2",
+      "right": "80-716-d4",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d2",
+      "right": "80-716-d5",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d3",
+      "right": "80-716-d2",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d3",
+      "right": "80-716-d6",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d4",
+      "right": "80-716-d5",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d4",
+      "right": "80-716-d4",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d5",
+      "right": "80-716-d6",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d5",
+      "right": "80-716-d2",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d6",
+      "right": "80-716-d3",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d6",
+      "right": "80-716-d8",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d7",
+      "right": "80-716-d7",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d7",
+      "right": "80-716-d3",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d8",
+      "right": "80-716-d8",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d8",
+      "right": "80-716-d4",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d9",
+      "right": "80-716-d9",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d9",
+      "right": "80-716-d16",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d10",
+      "right": "80-716-d21",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d10",
+      "right": "80-716-d12",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d11",
+      "right": "80-716-d11",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d11",
+      "right": "80-716-d10",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d12",
+      "right": "80-716-d10",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d12",
+      "right": "80-716-d7",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d13",
+      "right": "80-716-d12",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d13",
+      "right": "80-716-d20",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d14",
+      "right": "80-716-d15",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d14",
+      "right": "80-716-d16",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d15",
+      "right": "80-716-d13",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d15",
+      "right": "80-716-d14",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d17",
+      "right": "80-716-d18",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d17",
+      "right": "80-716-d10",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d18",
+      "right": "80-716-d14",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d18",
+      "right": "80-716-d18",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d19",
+      "right": "80-716-d19",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d19",
+      "right": "80-716-d10",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "80-686-d20",
+      "right": "80-716-d22",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "80-686-d20",
+      "right": "80-716-d21",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-374-d2",
+      "right": "82-404-d1",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-374-d2",
+      "right": "82-404-d3",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-374-d3",
+      "right": "82-404-d3",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-374-d3",
+      "right": "82-404-d1",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-374-d4",
+      "right": "82-404-d2",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-374-d4",
+      "right": "82-404-d1",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-374-d5",
+      "right": "82-404-d4",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-374-d5",
+      "right": "82-404-d3",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-374-d6",
+      "right": "82-404-d5",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-374-d6",
+      "right": "82-404-d6",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-374-d7",
+      "right": "82-404-d6",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-374-d7",
+      "right": "82-404-d5",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d1",
+      "right": "82-716-d1",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d1",
+      "right": "82-716-d2",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d2",
+      "right": "82-716-d3",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d2",
+      "right": "82-716-d2",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d3",
+      "right": "82-716-d4",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d3",
+      "right": "82-716-d5",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d4",
+      "right": "82-716-d5",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d4",
+      "right": "82-716-d6",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d5",
+      "right": "82-716-d2",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d5",
+      "right": "82-716-d3",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d6",
+      "right": "82-716-d6",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d6",
+      "right": "82-716-d7",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d7",
+      "right": "82-716-d8",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d7",
+      "right": "82-716-d10",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d8",
+      "right": "82-716-d9",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d8",
+      "right": "82-716-d15",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d11",
+      "right": "82-716-d13",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d11",
+      "right": "82-716-d11",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d13",
+      "right": "82-716-d10",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d13",
+      "right": "82-716-d11",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d14",
+      "right": "82-716-d18",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d14",
+      "right": "82-716-d19",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d15",
+      "right": "82-716-d16",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d15",
+      "right": "82-716-d19",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    },
+    {
+      "left": "82-686-d16",
+      "right": "82-716-d19",
+      "relation": "same",
+      "visual_basis": "Continuous source-image motion and appearance in fixed context strip."
+    },
+    {
+      "left": "82-686-d16",
+      "right": "82-716-d18",
+      "relation": "different",
+      "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule."
+    }
+  ]
+}

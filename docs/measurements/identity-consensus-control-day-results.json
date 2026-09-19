@@ -1,0 +1,3401 @@
+{
+  "results": {
+    "supervision": {
+      "kit": {
+        "correct": 70,
+        "wrong": 10,
+        "unassigned": 14,
+        "kit_boxes_missing": 14,
+        "other_assigned": 7,
+        "not_person_remaining": 0,
+        "conflicting_track_labels": 0
+      },
+      "pairs": {
+        "control": {
+          "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+          "source_unmatched_observations": [],
+          "observations": 380,
+          "covered_observations": 189,
+          "counts": {
+            "same_pairs": 102,
+            "same_correct": 80,
+            "different_pairs": 102,
+            "different_correct": 71,
+            "same_uncovered": 21,
+            "different_uncovered": 31,
+            "false_split": 1
+          },
+          "outcomes": [
+            {
+              "left": "60-374-d0",
+              "right": "60-404-d0",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d0",
+              "right": "60-404-d30",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d2",
+              "right": "60-404-d3",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d2",
+              "right": "60-404-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d3",
+              "right": "60-404-d15",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d3",
+              "right": "60-404-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d4",
+              "right": "60-404-d6",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d4",
+              "right": "60-404-d4",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d6",
+              "right": "60-404-d11",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d6",
+              "right": "60-404-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d7",
+              "right": "60-404-d14",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d7",
+              "right": "60-404-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d20",
+              "right": "60-404-d21",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d20",
+              "right": "60-404-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d8",
+              "right": "60-404-d2",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d8",
+              "right": "60-404-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d9",
+              "right": "60-404-d12",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d9",
+              "right": "60-404-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d10",
+              "right": "60-404-d13",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d10",
+              "right": "60-404-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d11",
+              "right": "60-404-d5",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d11",
+              "right": "60-404-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d12",
+              "right": "60-404-d7",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d12",
+              "right": "60-404-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d14",
+              "right": "60-404-d16",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d14",
+              "right": "60-404-d13",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d1",
+              "right": "60-404-d27",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d1",
+              "right": "60-404-d0",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d17",
+              "right": "60-404-d18",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d17",
+              "right": "60-404-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d18",
+              "right": "60-404-d17",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d18",
+              "right": "60-404-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d23",
+              "right": "60-404-d34",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d23",
+              "right": "60-404-d20",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d24",
+              "right": "60-404-d29",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d24",
+              "right": "60-404-d27",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d25",
+              "right": "60-404-d26",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d25",
+              "right": "60-404-d28",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d26",
+              "right": "60-404-d25",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d26",
+              "right": "60-404-d29",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d27",
+              "right": "60-404-d31",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d27",
+              "right": "60-404-d26",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d28",
+              "right": "60-404-d30",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d28",
+              "right": "60-404-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d29",
+              "right": "60-404-d28",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d29",
+              "right": "60-404-d30",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d31",
+              "right": "60-404-d32",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d31",
+              "right": "60-404-d19",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d0",
+              "right": "60-716-d6",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d0",
+              "right": "60-716-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d1",
+              "right": "60-716-d1",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d1",
+              "right": "60-716-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d3",
+              "right": "60-716-d2",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d3",
+              "right": "60-716-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d5",
+              "right": "60-716-d3",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d5",
+              "right": "60-716-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d6",
+              "right": "60-716-d4",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d6",
+              "right": "60-716-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d7",
+              "right": "60-716-d5",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d7",
+              "right": "60-716-d9",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d8",
+              "right": "60-716-d9",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d8",
+              "right": "60-716-d30",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d9",
+              "right": "60-716-d8",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d9",
+              "right": "60-716-d9",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d10",
+              "right": "60-716-d7",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d10",
+              "right": "60-716-d6",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d11",
+              "right": "60-716-d10",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d11",
+              "right": "60-716-d12",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d12",
+              "right": "60-716-d30",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d12",
+              "right": "60-716-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d13",
+              "right": "60-716-d14",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d13",
+              "right": "60-716-d31",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d14",
+              "right": "60-716-d15",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d14",
+              "right": "60-716-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d21",
+              "right": "60-716-d18",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d21",
+              "right": "60-716-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d22",
+              "right": "60-716-d19",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d22",
+              "right": "60-716-d20",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d23",
+              "right": "60-716-d20",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d23",
+              "right": "60-716-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d24",
+              "right": "60-716-d21",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d24",
+              "right": "60-716-d19",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d25",
+              "right": "60-716-d25",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d25",
+              "right": "60-716-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d27",
+              "right": "60-716-d26",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d27",
+              "right": "60-716-d25",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d28",
+              "right": "60-716-d0",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d28",
+              "right": "60-716-d23",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d29",
+              "right": "60-716-d22",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d29",
+              "right": "60-716-d25",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d30",
+              "right": "60-716-d27",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d30",
+              "right": "60-716-d28",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d31",
+              "right": "60-716-d23",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d31",
+              "right": "60-716-d24",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d32",
+              "right": "60-716-d24",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d32",
+              "right": "60-716-d4",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d34",
+              "right": "60-716-d29",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d34",
+              "right": "60-716-d6",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d35",
+              "right": "60-716-d31",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d35",
+              "right": "60-716-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d37",
+              "right": "60-716-d32",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d37",
+              "right": "60-716-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d39",
+              "right": "60-716-d35",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d39",
+              "right": "60-716-d25",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d40",
+              "right": "60-716-d28",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d40",
+              "right": "60-716-d35",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d0",
+              "right": "62-404-d0",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d0",
+              "right": "62-404-d24",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d2",
+              "right": "62-404-d1",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d2",
+              "right": "62-404-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d4",
+              "right": "62-404-d2",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d4",
+              "right": "62-404-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d5",
+              "right": "62-404-d3",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d5",
+              "right": "62-404-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d8",
+              "right": "62-404-d5",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d8",
+              "right": "62-404-d4",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d9",
+              "right": "62-404-d4",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d9",
+              "right": "62-404-d26",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d11",
+              "right": "62-404-d11",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d11",
+              "right": "62-404-d10",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d12",
+              "right": "62-404-d10",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d12",
+              "right": "62-404-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d13",
+              "right": "62-404-d15",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d13",
+              "right": "62-404-d21",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d14",
+              "right": "62-404-d21",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d14",
+              "right": "62-404-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d15",
+              "right": "62-404-d16",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d15",
+              "right": "62-404-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d16",
+              "right": "62-404-d12",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d16",
+              "right": "62-404-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d17",
+              "right": "62-404-d17",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d17",
+              "right": "62-404-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d18",
+              "right": "62-404-d18",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d18",
+              "right": "62-404-d12",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d19",
+              "right": "62-404-d19",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d19",
+              "right": "62-404-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d20",
+              "right": "62-404-d14",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d20",
+              "right": "62-404-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d22",
+              "right": "62-404-d22",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d22",
+              "right": "62-404-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d23",
+              "right": "62-404-d23",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d23",
+              "right": "62-404-d24",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d25",
+              "right": "62-404-d26",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d25",
+              "right": "62-404-d4",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d26",
+              "right": "62-404-d25",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d26",
+              "right": "62-404-d5",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d27",
+              "right": "62-404-d27",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d27",
+              "right": "62-404-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d29",
+              "right": "62-404-d28",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d29",
+              "right": "62-404-d13",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d30",
+              "right": "62-404-d13",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d30",
+              "right": "62-404-d29",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d31",
+              "right": "62-404-d29",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d31",
+              "right": "62-404-d13",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d34",
+              "right": "62-404-d20",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "62-374-d34",
+              "right": "62-404-d18",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d0",
+              "right": "62-716-d0",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d0",
+              "right": "62-716-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d1",
+              "right": "62-716-d2",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d1",
+              "right": "62-716-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d2",
+              "right": "62-716-d3",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d2",
+              "right": "62-716-d1",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d3",
+              "right": "62-716-d7",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d3",
+              "right": "62-716-d6",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d4",
+              "right": "62-716-d4",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d4",
+              "right": "62-716-d5",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d5",
+              "right": "62-716-d5",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d5",
+              "right": "62-716-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d6",
+              "right": "62-716-d1",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d6",
+              "right": "62-716-d5",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d7",
+              "right": "62-716-d6",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d7",
+              "right": "62-716-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d10",
+              "right": "62-716-d8",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d10",
+              "right": "62-716-d9",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d11",
+              "right": "62-716-d21",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d11",
+              "right": "62-716-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d12",
+              "right": "62-716-d9",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d12",
+              "right": "62-716-d8",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d15",
+              "right": "62-716-d11",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d15",
+              "right": "62-716-d10",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d18",
+              "right": "62-716-d10",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d18",
+              "right": "62-716-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d21",
+              "right": "62-716-d24",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d21",
+              "right": "62-716-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d24",
+              "right": "62-716-d14",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d24",
+              "right": "62-716-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d25",
+              "right": "62-716-d13",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d25",
+              "right": "62-716-d18",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d27",
+              "right": "62-716-d19",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d27",
+              "right": "62-716-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d28",
+              "right": "62-716-d18",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d28",
+              "right": "62-716-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d29",
+              "right": "62-716-d17",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d29",
+              "right": "62-716-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d30",
+              "right": "62-716-d16",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d30",
+              "right": "62-716-d0",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d31",
+              "right": "62-716-d20",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d31",
+              "right": "62-716-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d32",
+              "right": "62-716-d22",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d32",
+              "right": "62-716-d21",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d33",
+              "right": "62-716-d15",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d33",
+              "right": "62-716-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d36",
+              "right": "62-716-d30",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d36",
+              "right": "62-716-d20",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            }
+          ]
+        }
+      },
+      "output_observations": 17786
+    },
+    "consensus": {
+      "kit": {
+        "correct": 70,
+        "wrong": 10,
+        "unassigned": 14,
+        "kit_boxes_missing": 14,
+        "other_assigned": 7,
+        "not_person_remaining": 0,
+        "conflicting_track_labels": 0
+      },
+      "pairs": {
+        "control": {
+          "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+          "source_unmatched_observations": [],
+          "observations": 380,
+          "covered_observations": 189,
+          "counts": {
+            "same_pairs": 102,
+            "same_correct": 80,
+            "different_pairs": 102,
+            "different_correct": 71,
+            "same_uncovered": 21,
+            "different_uncovered": 31,
+            "false_split": 1
+          },
+          "outcomes": [
+            {
+              "left": "60-374-d0",
+              "right": "60-404-d0",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d0",
+              "right": "60-404-d30",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d2",
+              "right": "60-404-d3",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d2",
+              "right": "60-404-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d3",
+              "right": "60-404-d15",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d3",
+              "right": "60-404-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d4",
+              "right": "60-404-d6",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d4",
+              "right": "60-404-d4",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d6",
+              "right": "60-404-d11",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d6",
+              "right": "60-404-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d7",
+              "right": "60-404-d14",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d7",
+              "right": "60-404-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d20",
+              "right": "60-404-d21",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d20",
+              "right": "60-404-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d8",
+              "right": "60-404-d2",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d8",
+              "right": "60-404-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d9",
+              "right": "60-404-d12",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d9",
+              "right": "60-404-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d10",
+              "right": "60-404-d13",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d10",
+              "right": "60-404-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d11",
+              "right": "60-404-d5",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d11",
+              "right": "60-404-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d12",
+              "right": "60-404-d7",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d12",
+              "right": "60-404-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d14",
+              "right": "60-404-d16",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d14",
+              "right": "60-404-d13",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d1",
+              "right": "60-404-d27",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d1",
+              "right": "60-404-d0",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d17",
+              "right": "60-404-d18",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d17",
+              "right": "60-404-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d18",
+              "right": "60-404-d17",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d18",
+              "right": "60-404-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-374-d23",
+              "right": "60-404-d34",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d23",
+              "right": "60-404-d20",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d24",
+              "right": "60-404-d29",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d24",
+              "right": "60-404-d27",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d25",
+              "right": "60-404-d26",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d25",
+              "right": "60-404-d28",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d26",
+              "right": "60-404-d25",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d26",
+              "right": "60-404-d29",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d27",
+              "right": "60-404-d31",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d27",
+              "right": "60-404-d26",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d28",
+              "right": "60-404-d30",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d28",
+              "right": "60-404-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d29",
+              "right": "60-404-d28",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d29",
+              "right": "60-404-d30",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-374-d31",
+              "right": "60-404-d32",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-374-d31",
+              "right": "60-404-d19",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d0",
+              "right": "60-716-d6",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d0",
+              "right": "60-716-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d1",
+              "right": "60-716-d1",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d1",
+              "right": "60-716-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d3",
+              "right": "60-716-d2",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d3",
+              "right": "60-716-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d5",
+              "right": "60-716-d3",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d5",
+              "right": "60-716-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d6",
+              "right": "60-716-d4",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d6",
+              "right": "60-716-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d7",
+              "right": "60-716-d5",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d7",
+              "right": "60-716-d9",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d8",
+              "right": "60-716-d9",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d8",
+              "right": "60-716-d30",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d9",
+              "right": "60-716-d8",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d9",
+              "right": "60-716-d9",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d10",
+              "right": "60-716-d7",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d10",
+              "right": "60-716-d6",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d11",
+              "right": "60-716-d10",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d11",
+              "right": "60-716-d12",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d12",
+              "right": "60-716-d30",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d12",
+              "right": "60-716-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d13",
+              "right": "60-716-d14",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d13",
+              "right": "60-716-d31",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d14",
+              "right": "60-716-d15",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d14",
+              "right": "60-716-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d21",
+              "right": "60-716-d18",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d21",
+              "right": "60-716-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d22",
+              "right": "60-716-d19",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d22",
+              "right": "60-716-d20",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d23",
+              "right": "60-716-d20",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d23",
+              "right": "60-716-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d24",
+              "right": "60-716-d21",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d24",
+              "right": "60-716-d19",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d25",
+              "right": "60-716-d25",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d25",
+              "right": "60-716-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d27",
+              "right": "60-716-d26",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d27",
+              "right": "60-716-d25",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d28",
+              "right": "60-716-d0",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d28",
+              "right": "60-716-d23",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d29",
+              "right": "60-716-d22",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d29",
+              "right": "60-716-d25",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d30",
+              "right": "60-716-d27",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d30",
+              "right": "60-716-d28",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d31",
+              "right": "60-716-d23",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d31",
+              "right": "60-716-d24",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d32",
+              "right": "60-716-d24",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d32",
+              "right": "60-716-d4",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d34",
+              "right": "60-716-d29",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d34",
+              "right": "60-716-d6",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d35",
+              "right": "60-716-d31",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "60-686-d35",
+              "right": "60-716-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d37",
+              "right": "60-716-d32",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d37",
+              "right": "60-716-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d39",
+              "right": "60-716-d35",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d39",
+              "right": "60-716-d25",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "60-686-d40",
+              "right": "60-716-d28",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "60-686-d40",
+              "right": "60-716-d35",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d0",
+              "right": "62-404-d0",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d0",
+              "right": "62-404-d24",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d2",
+              "right": "62-404-d1",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d2",
+              "right": "62-404-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d4",
+              "right": "62-404-d2",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d4",
+              "right": "62-404-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d5",
+              "right": "62-404-d3",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d5",
+              "right": "62-404-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d8",
+              "right": "62-404-d5",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d8",
+              "right": "62-404-d4",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d9",
+              "right": "62-404-d4",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d9",
+              "right": "62-404-d26",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d11",
+              "right": "62-404-d11",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d11",
+              "right": "62-404-d10",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d12",
+              "right": "62-404-d10",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d12",
+              "right": "62-404-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d13",
+              "right": "62-404-d15",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d13",
+              "right": "62-404-d21",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d14",
+              "right": "62-404-d21",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d14",
+              "right": "62-404-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d15",
+              "right": "62-404-d16",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d15",
+              "right": "62-404-d22",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d16",
+              "right": "62-404-d12",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d16",
+              "right": "62-404-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d17",
+              "right": "62-404-d17",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d17",
+              "right": "62-404-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d18",
+              "right": "62-404-d18",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d18",
+              "right": "62-404-d12",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d19",
+              "right": "62-404-d19",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d19",
+              "right": "62-404-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d20",
+              "right": "62-404-d14",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d20",
+              "right": "62-404-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d22",
+              "right": "62-404-d22",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d22",
+              "right": "62-404-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d23",
+              "right": "62-404-d23",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d23",
+              "right": "62-404-d24",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d25",
+              "right": "62-404-d26",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d25",
+              "right": "62-404-d4",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d26",
+              "right": "62-404-d25",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d26",
+              "right": "62-404-d5",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d27",
+              "right": "62-404-d27",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d27",
+              "right": "62-404-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-374-d29",
+              "right": "62-404-d28",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d29",
+              "right": "62-404-d13",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d30",
+              "right": "62-404-d13",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d30",
+              "right": "62-404-d29",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d31",
+              "right": "62-404-d29",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-374-d31",
+              "right": "62-404-d13",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-374-d34",
+              "right": "62-404-d20",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "62-374-d34",
+              "right": "62-404-d18",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d0",
+              "right": "62-716-d0",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d0",
+              "right": "62-716-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d1",
+              "right": "62-716-d2",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d1",
+              "right": "62-716-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d2",
+              "right": "62-716-d3",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d2",
+              "right": "62-716-d1",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d3",
+              "right": "62-716-d7",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d3",
+              "right": "62-716-d6",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d4",
+              "right": "62-716-d4",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d4",
+              "right": "62-716-d5",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d5",
+              "right": "62-716-d5",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d5",
+              "right": "62-716-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d6",
+              "right": "62-716-d1",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d6",
+              "right": "62-716-d5",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d7",
+              "right": "62-716-d6",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d7",
+              "right": "62-716-d7",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d10",
+              "right": "62-716-d8",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d10",
+              "right": "62-716-d9",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d11",
+              "right": "62-716-d21",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d11",
+              "right": "62-716-d2",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d12",
+              "right": "62-716-d9",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d12",
+              "right": "62-716-d8",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d15",
+              "right": "62-716-d11",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d15",
+              "right": "62-716-d10",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d18",
+              "right": "62-716-d10",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d18",
+              "right": "62-716-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d21",
+              "right": "62-716-d24",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d21",
+              "right": "62-716-d11",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d24",
+              "right": "62-716-d14",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d24",
+              "right": "62-716-d15",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d25",
+              "right": "62-716-d13",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d25",
+              "right": "62-716-d18",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d27",
+              "right": "62-716-d19",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d27",
+              "right": "62-716-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d28",
+              "right": "62-716-d18",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d28",
+              "right": "62-716-d17",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d29",
+              "right": "62-716-d17",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d29",
+              "right": "62-716-d16",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d30",
+              "right": "62-716-d16",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d30",
+              "right": "62-716-d0",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d31",
+              "right": "62-716-d20",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d31",
+              "right": "62-716-d3",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d32",
+              "right": "62-716-d22",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d32",
+              "right": "62-716-d21",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "62-686-d33",
+              "right": "62-716-d15",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d33",
+              "right": "62-716-d14",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": null,
+              "passed": false
+            },
+            {
+              "left": "62-686-d36",
+              "right": "62-716-d30",
+              "relation": "same",
+              "visual_basis": "Continuous source-image motion and appearance in fixed context strip.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "62-686-d36",
+              "right": "62-716-d20",
+              "relation": "different",
+              "visual_basis": "Visually distinct endpoint person; nearest eligible box by frozen distance rule.",
+              "linked": false,
+              "passed": true
+            }
+          ]
+        }
+      },
+      "output_observations": 17786
+    }
+  },
+  "regressions": [],
+  "boundaries": [
+    {
+      "segment": 60,
+      "continuity_id": 0,
+      "raw_id": 13,
+      "new_id": 220,
+      "first_order": 5,
+      "confirmed_order": 7,
+      "prior_motion_id": 13,
+      "new_motion_id": 14
+    },
+    {
+      "segment": 60,
+      "continuity_id": 0,
+      "raw_id": 186,
+      "new_id": 221,
+      "first_order": 318,
+      "confirmed_order": 320,
+      "prior_motion_id": 329,
+      "new_motion_id": 310
+    },
+    {
+      "segment": 62,
+      "continuity_id": 0,
+      "raw_id": 73,
+      "new_id": 197,
+      "first_order": 112,
+      "confirmed_order": 114,
+      "prior_motion_id": 83,
+      "new_motion_id": 33
+    },
+    {
+      "segment": 62,
+      "continuity_id": 0,
+      "raw_id": 86,
+      "new_id": 198,
+      "first_order": 137,
+      "confirmed_order": 139,
+      "prior_motion_id": 15,
+      "new_motion_id": 131
+    }
+  ],
+  "boundary_review_required": true,
+  "prediction_sha256": {
+    "data\\tracking\\bench\\consensus_control_v1\\day\\predictions\\supervision\\seg_0060.json": "b6bca6f7aaa05830d3681e0ee49861b188bd7871e36c3fcdc1bcb6196e3240c5",
+    "data\\tracking\\bench\\consensus_control_v1\\day\\predictions\\supervision\\seg_0062.json": "39bfd60d2862847c5e89ccad3411be81cbf94a31bfb2aa91b71a4c1326f05f20",
+    "data\\tracking\\bench\\consensus_control_v1\\day\\predictions\\consensus\\seg_0060.json": "19e08eb44bd0b44e3c57f616125a00a397d63c1fa2ce803fb951c336731a97fe",
+    "data\\tracking\\bench\\consensus_control_v1\\day\\predictions\\consensus\\seg_0062.json": "43f13874ed3d776f41ef5f0c601d18a207d411f38519518f1acde2d70ffbc518"
+  },
+  "label_seal_sha256": "e957244db274e54e27b7a5c2616d7f9762e6e281ffc1c3841e24519958a17437",
+  "blue_slot": 0,
+  "slot_source": "frozen development anchors",
+  "source_review_counts": {
+    "same_labeled": 102,
+    "uncertain": 22,
+    "visible_person_without_source_box": 20,
+    "not_person": 52
+  },
+  "kit_label_counts": {
+    "blue": 44,
+    "white": 50,
+    "other": 36,
+    "uncertain": 14,
+    "not_person": 52
+  },
+  "limitations": "Sparse same-match temporal control, not independent match validation or full-video HOTA/IDF1. Ambiguous mixed boxes withheld. Unambiguous partial endpoint identity is retained and coverage documented.",
+  "independently_adjudicated": false,
+  "freeze_sha256": "01bbd1d53e6d48d9dfbf85121b010d0cf31b86540a726781bc0656adf0131f06",
+  "scorer_sha256": "43bdca43709c4bc97965d06e844dfbd4afc335182404d83f89c9153a7b4342b1",
+  "promotion": "Not authorized by sparse scores alone; all boundaries require source review and a positive control correction."
+}

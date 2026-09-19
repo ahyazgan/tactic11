@@ -12,8 +12,20 @@
 - [x] Codex kamera: sistemi gerçek dedektör/aktarım ile doğrula; bağımsız motor ve renk uzlaşısını geliştirmede ölçerek açık seçimle entegre et. (d25c7a0)
   Done when: 30 saniyelik gerçek RF-DETR/OSNet/top ROI çıktısı ve bellek DB aktarımı doğrulandı; 11 kesitte üretim/araştırma eşitliği, 22 eski çıktı ve 164.772 gözlem birebir korundu. Son kodda 83 CV + 4 kanıt zinciri testi, Ruff ve mypy geçti; tam uygulama koşusu 2.926 başarılı/51 atlanan test verdi. Gündüz etiketlerinde yalnız bir yanlış kişi birleşmesi düzeldi; forma doğruluğu korunur. Sonuç: docs/KIMLIK-UZLASISI-SONUCLARI.md. Deneysel consensus varsayılan değil; yeni kontrol ve gerçek zaman hedefi henüz geçilmedi.
 
-- [ ] Codex kamera: sabitlenmiş uzlaşı adayını önceden ayrılmış iki gündüz ve iki gece kontrolünde kör etiketlerle değerlendir.
+- [x] Codex kamera: sabitlenmiş uzlaşı adayını önceden ayrılmış iki gündüz ve iki gece kontrolünde kör etiketlerle değerlendir. (27e7800; sonuç raporu bu değişiklikte)
   Done when: kod/model/parametre/plan hashleri kontrol açılmadan sabit; bütün başlangıç kutuları ve kişi ilişkileri tahminden bağımsız etiketli, tüm yeni ayrımlar incelenmiş, kaynak bazında gerileme kapıları ve kapsam sınırları raporlu. Plan: docs/KIMLIK-UZLASISI-KONTROL-PLANI.md. Gerileme veya bağımsız olumlu ayrım yoksa varsayılan değişmez.
+
+- [x] Codex kamera: Torch ana dedektöründe gerçek dilim sayısıyla gruplamayı düzelt, eski/yeni çıktı eşitliğini yeni gündüz ve gece kesitlerinde doğrula. (154968d; kontrol 4f1ec8a/e0e06a5)
+  Done when: geliştirmede gündüz %28,4/gece %5,8 süre azalması, iki kontrolün dörder tekrarında kare ve olay eşitliği, 2.947 uygulama + 32 ilgili CV testi ve kanıt zinciri raporlu. İlk gece aralık hatası korunup görüntü açılmadan ikame edildi; aday kodu değişmedi. Sonuç: docs/TORCH-GRUPLAMA-SONUCLARI.md. Gerçek zaman veya kimlik doğruluğu tamamlanmış sayılmaz.
+
+- [x] Codex kamera: ayrı top ROI modelini yoğun gözlem ve yeni gündüz/gece kontrolleriyle sınayıp varsayılan kararını ver. (6567f89; kontrol 7fa50fa)
+  Done when: gerçek iki kol/iki tekrar, bütünlük ve ayrıntılı top/oyuncu eşitliği raporlu. Gündüz iki son kare farklı olduğu için varsayılan kapalı; gece çıktı eşit fakat hız artmadı. Sonuç: docs/ROI-GRUPLAMA-SONUCLARI.md. Açık deneysel seçim video/canlı yollarında korunur.
+
+- [x] Codex kamera: genel/spor OSNet, GTA kısa parça bağlantısı, optik akış ve mevcut palet desteğini tüm eski ayrımlarda ölç.
+  Done when: yedi ayrımın tamamı, sabit model/kod kaynakları, negatif bulgular, hareket görselleri ve 15 kesit önbellek tanısı raporlu. RGB palet adayı altı doğru ayrımı koruyup beyaz 6 yanlış bölünmesini reddediyor; bağımsız kontrol başarısı değildir. Sonuç: docs/KIMLIK-GORUNUS-TANISI.md; toplu durum: docs/TAKIP-ENTEGRASYON-DURUMU.md.
+
+- [ ] Codex kamera: kontrolde görülen beyaz 6 numara yanlış bölünmesini geliştirme senaryosuna bağla; görünüş/renk/hareket desteğini tüm ayrımlarda karşılaştır.
+  Done when: yanlış ayrımın kaynak/karar izi açıklanır, alternatif yalnız geliştirmede seçilir; hız ve kutu/kimlik/takım kapsamı ölçülür, sonraki aday yeni kontrolden geçmeden varsayılan olmaz. Önceki aday dört kontrolde üç doğru/bir yanlış ayrım üretti ve reddedildi. Sonuç: docs/KIMLIK-UZLASISI-KONTROL-SONUCLARI.md.
 
 - [x] Codex kamera: kaybolan iki gündüz kimlik bağlantısını görüntü/karar iziyle ayır ve tekrarlanabilir regresyon senaryolarına bağla. (f31e088)
   Done when: 407 kaynak örnek karesinden iki hata yeniden üretildi; görüntü/karar izi ve dört tanı kolu kaydedildi. 17 yeni test, eski korumalarla birlikte 63 test geçti. Sonuç: docs/KIMLIK-HATA-DENETIMI-SONUCLARI.md. Beyazda parçalı kutu + hareket kapısı, mavide oyuncu/hakem alt-gövde karışımı ayrıldı. Oracle müdahaleleri üretim düzeltmesi değildir; üretim kodu değişmedi, yeni kontrol açılmadı.

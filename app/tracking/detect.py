@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -38,6 +39,7 @@ PERSON_NAMES = {"person"}
 BALL_NAMES = {"sports ball"}
 ONNX_MODEL_DIR = Path("data/tracking/models/onnx")
 ONNX_NUM_SELECT = 300           # PostProcess varsayılanı: eşikten önce alınan Q×C çifti
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -53,10 +55,14 @@ class DetectorConfig:
     tile_aspect: float = 16 / 9
     resolution: int | None = None
     device: str | None = None   # None → cuda varsa cuda
-    # Dilimler toplu tahmin. None → (tiles+1)²/2+1: örtüşmeli ızgara (tiles+1)²
-    # dilim üretir, iki eşit batch + en fazla 1 dolgu (ölçüm: 6 dilim → 25 en hızlı).
+    # None: Torch uses the actual overlapping slice count for two balanced batches.
+    # ONNX retains its separately measured legacy grouping.
     batch_size: int | None = None
     half: bool = True           # fp16 çıkarım (CUDA'da); CPU'da yok sayılır
+    # A lazy independent batch-one model avoids padding every ball ROI to the
+    # full panoramic batch. Opt-in: the frozen control changed final ball output.
+    # Only used after successful CUDA fp16 preparation.
+    roi_single_batch: bool = False
 
     def tile_grid(self, width: int, height: int) -> tuple[int, int]:
         """(sütun, satır) — satır = `tiles`, sütun görüntü oranından."""
@@ -72,6 +78,32 @@ class DetectorConfig:
         cols, rows = self.tile_grid(width, height)
         # Örtüşmeli ızgara ≈ (cols+1)(rows+1) dilim → iki eşit batch + ≤1 dolgu
         return (cols + 1) * (rows + 1) // 2 + 1
+
+    def torch_batch_size(self, width: int, height: int) -> int:
+        """Balance the actual slicer windows, including its final edge window.
+
+        The nominal grid undercounts overlapping panoramic slices: 4096x1080
+        produces 55 windows, not 50. Batch 26 pads them to 78; batch 28 needs 56.
+        This changes grouping only, never the slice geometry or detection rules.
+        """
+        if self.batch_size is not None or self.tiles <= 1:
+            return self.effective_batch_size(width, height)
+        cols, rows = self.tile_grid(width, height)
+
+        def windows(size: int, divisions: int) -> int:
+            tile = int(size / divisions)
+            overlap = int(tile * self.tile_overlap)
+            stride = tile - overlap
+            if tile <= 0 or stride <= 0 or overlap < 0:
+                raise ValueError("Positive tile dimensions and overlap in [0, 1) required")
+            if size <= tile:
+                return 1
+            if overlap == 0:
+                return (size + stride - 1) // stride
+            return (size - tile + stride - 1) // stride + 1
+
+        count = windows(width, cols) * windows(height, rows)
+        return (count + 1) // 2
     # İnce ayarlı ağırlık klasörü (scripts/train_topview_detector.py çıktısı:
     # checkpoint_best_total.pth + meta.json). None → COCO ön-eğitimli.
     weights: str | None = None
@@ -155,6 +187,9 @@ class RFDetrDetector:
         if meta:
             kwargs["pretrain_weights"] = str(Path(self.cfg.weights) / "checkpoint_best_total.pth")  # type: ignore[arg-type]
         self.model = cls(**kwargs)
+        self._model_kwargs = dict(kwargs)
+        self._roi_model: Any = None
+        self._roi_attempted = False
         self._meta = meta
         # Derlenmiş model sabit batch ister; dilim sayısı kare boyutuna bağlı
         # olduğu için derleme ilk `detect()` çağrısına ertelenir.
@@ -205,6 +240,26 @@ class RFDetrDetector:
 
     def predict_single(self, image_rgb: np.ndarray):
         """Tek görüntü (dilimsiz) tahmin — ROI aramaları için."""
+        if (self.cfg.roi_single_batch and self.cfg.half and self.device.startswith("cuda")
+                and self._fixed_batch is not None and self._fixed_batch > 1):
+            if not self._roi_attempted:
+                self._roi_attempted = True
+                roi = None
+                try:
+                    # Keep the main model's compiled batch and weights intact.
+                    # A separate instance also isolates every detector/session.
+                    roi = type(self.model)(**self._model_kwargs)
+                    roi.inference(dtype=self._torch.float16, batch_size=1)
+                    self._roi_model = roi
+                except Exception as error:  # noqa: BLE001 — optional optimization
+                    roi = None  # release a partially prepared model before fallback
+                    logger.warning("Single-batch ROI preparation failed (%s); using main detector",
+                                   type(error).__name__)
+            if self._roi_model is not None:
+                output = self._roi_model.predict([image_rgb], threshold=self.cfg.threshold)
+                result = output[0] if isinstance(output, list) else output
+                result.metadata = {}
+                return result
         return self._predict(image_rgb)
 
     def _predict(self, image_rgb: np.ndarray):
@@ -233,7 +288,7 @@ class RFDetrDetector:
 
     def _prepare(self, width: int, height: int) -> int:
         """İlk kareyi görünce batch boyutunu sabitle + fp16 derle."""
-        batch = self.cfg.effective_batch_size(width, height)
+        batch = self.cfg.torch_batch_size(width, height)
         if not self._prepared:
             self._prepared = True
             if batch > 1 and self.cfg.half and self.device.startswith("cuda"):
