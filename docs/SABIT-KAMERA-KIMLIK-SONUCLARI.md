@@ -226,10 +226,43 @@ geçiş ve veri koruyan geri geçiş testi CI'da her denemeye özel şemada çal
 yerel uygulama testleri izole SQLite kullanır. Son test sayıları ve PR sonucu
 tamamlama kaydına eklenir.
 
-Birleşik kodda yerel tam uygulama sonucu **2.837 geçti, 9 atlandı**
+14 Eylül birleşik kodunda yerel tam uygulama sonucu **2.837 geçti, 9 atlandı**
 (262,20 saniye); ayrıca gerçek CV ortamında ilgili **164 test geçti**.
 Ruff temiz, mypy 529 kaynak dosyasında hatasız. Frontend TypeScript ve Next
 ESLint kuralları geçti; üretim derlemesi 55/55 statik sayfa üretti.
 Derlemeden sonra yalnız anonim iz açıklaması değişti ve tip/lint kontrolü
-tekrar geçti. Son PostgreSQL bootstrap düzeltmeleri ayrıca geçiş testleriyle
-ve son PR commit'inin tam CI koşusuyla doğrulanır.
+tekrar geçti.
+
+## 19 Eylül tamamlama kaydı
+
+Son üretim kodu `8a66672bd7a7a577cb722ef18ace9de2d34aedf0` üzerinde tam yerel
+uygulama koşusu **2.877 geçti, 15 atlandı** (136,72 saniye). İlgili gerçek CV
+ortamı sonucu **164 geçti**; donmuş sınıflandırıcı ve kontrol kararları
+değişmedi. Ruff temiz, mypy **532 kaynak dosyasında hatasız**. Claude'un
+#253–#261 arasındaki birleşmiş değişiklikleri mevcut dalda korundu.
+
+[CI koşusunda](https://github.com/ahyazgan/tactic11/actions/runs/35433366094)
+uygulama, lint, Docker, SQLite geçişleri ve PostgreSQL kontrolü geçti.
+[Tarayıcı uçtan uca testi](https://github.com/ahyazgan/tactic11/actions/runs/35433366036)
+ve Vercel dağıtım kontrolü de aynı kodda başarılı.
+[Gerçek PostgreSQL 16 koşusunda](https://github.com/ahyazgan/tactic11/actions/runs/35433366094/job/105871768714)
+**14 test geçti**: temiz kurulum, eski Alembic sürüm tablosundan yükseltme,
+büyük oyuncu kimlikleri ve UUID kayıtlarının geçiş/geri geçişte korunması.
+
+Bu doğrulama sırasında temiz PostgreSQL kurulumunu engelleyen tarihsel geçiş
+hataları da düzeltildi. `0011` gerçek boolean varsayılanı ve tipli UTC zaman
+değeri kullanır. Alembic sürüm sütunu uzun revizyon adları için en az 128
+karaktere hazırlanır; var olan sürüm satırları ve daha geniş sütunlar korunur.
+`0020`/`0021` kullanıcı yabancı anahtarları, `users.id` ile aynı metin tipinde
+kurulur. Yeni `0035_note_author_user_id_str`, önceden kurulmuş not yazarı
+sütununu veri kaybetmeden dönüştürür; ORM ve not API'si UUID metnini korur,
+eski sayısal API girdileri metne çevrilerek kabul edilir. `0023` ve `0035`
+geri geçişleri UUID'yi daraltmaz; düzeltilmiş önceki şemaların metin tipi
+korunur. Canlı veritabanına geçiş uygulanmadı; bütün geçiş testleri geçici,
+izole veritabanı veya şemalarda çalıştı.
+
+Bu kapanış, üretimdeki kesit kimliği/veritabanı/canlı palet/API/arayüz
+tutarlılığını ve deneyin tamamlandığını kaydeder. Deneysel kişi bölme/bağlama
+profilinin kabul kararı değişmedi: otomatik kullanım kapalıdır. Genel kişi
+kimliği, forma numarası, kadro eşleşmesi veya olay doğruluğu tamamlanmış
+sayılmaz.
