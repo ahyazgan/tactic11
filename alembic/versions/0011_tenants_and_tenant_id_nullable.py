@@ -137,18 +137,18 @@ def upgrade() -> None:
 
     # ---- 4) Default tenant seed (backward-compat) ----------------------------
     from datetime import UTC, datetime as _dt
-    now_iso = _dt.now(UTC).isoformat()
+    now = _dt.now(UTC)
     op.execute(
         sa.text(
             "INSERT INTO tenants (id, slug, name, settings_json, active, created_at) "
             "VALUES (:id, :slug, :name, :settings, :active, :now)"
         ).bindparams(
+            sa.bindparam("now", now, type_=sa.DateTime(timezone=True)),
             id=DEFAULT_TENANT_ID,
             slug="default",
             name="Default Tenant",
             settings="{}",
             active=True,
-            now=now_iso,
         )
     )
 
