@@ -127,6 +127,24 @@ interface LiveDecisionResponse {
   context?: ContextDecision;
   /** engine.space_map — yalnız pozisyon karesi olan maçlarda gelir */
   space_map?: SpaceMapOut;
+  /** Kadro farkındalığı: hangi önsel tablosunun konuştuğu ve kullanılan hak. */
+  kadro?: KadroOut;
+}
+
+interface KadroOut {
+  girildi: boolean;
+  kullanilmis_hak: number | null;
+  degisiklik_hakki: number;
+  sahadaki: number | null;
+  uyari: string | null;
+  /** "kiracının kendi geçmişi" | "genel elit tablo" */
+  onsel_kaynagi?: string;
+  onsel_fit_hamle?: number | null;
+  onsel_taban_mac?: number;
+  onsel_sebep_kapsamasi?: {
+    cikis: number; sebepli: number; sebepsiz: number; kapsama: number;
+    taktik: number; sakatlik: number; kirmizi_kart: number;
+  } | null;
 }
 
 // --------------------------------------------------------------------------- //
@@ -1702,6 +1720,44 @@ export default function LiveDecisionPage() {
       */}
       {!DEMO_MODE && (
         <div className="rc" style={{ marginTop: 24 }}>
+          {/*
+            Hangi tablonun konuştuğu GÖRÜNÜR olsun. Genel tablo kendi verisine
+            benzemeyen kulüpte ölçülebilir şekilde kötü (Barcelona, PSG), benzeyen
+            kulüpte zaten doğru (Arsenal WFC, Chelsea FCW, Leverkusen) —
+            docs/KARNE-KIRACI-ONSELI.md. Panel bunu söylemezse ölçülmüş sınır
+            gizlenmiş olur. Sebep kapsaması düşükken kiracı tablosu seyreltilmiştir.
+          */}
+          {liveData?.kadro && (
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12,
+                          color: "var(--dim)", marginBottom: 10 }}>
+              <span>
+                Değişiklik hakkı{" "}
+                <b style={{ color: "var(--ink)" }}>
+                  {liveData.kadro.kullanilmis_hak ?? 0}/{liveData.kadro.degisiklik_hakki}
+                </b>
+              </span>
+              {liveData.kadro.sahadaki != null && (
+                <span>Sahada <b style={{ color: "var(--ink)" }}>{liveData.kadro.sahadaki}</b></span>
+              )}
+              {liveData.kadro.onsel_kaynagi && (
+                <span>
+                  &quot;Kim çıkar&quot; önseli:{" "}
+                  <b style={{ color: "var(--ink)" }}>{liveData.kadro.onsel_kaynagi}</b>
+                  {liveData.kadro.onsel_fit_hamle != null && ` (${liveData.kadro.onsel_fit_hamle} hamleden)`}
+                </span>
+              )}
+              {liveData.kadro.onsel_sebep_kapsamasi && liveData.kadro.onsel_sebep_kapsamasi.cikis > 0 && (
+                <span title="Sebebi kaydedilmiş çıkışların payı; düşükse kiracı tablosu sakatlık hamleleriyle seyreltilmiştir">
+                  Sebep kapsaması{" "}
+                  <b style={{ color: "var(--ink)" }}>
+                    %{Math.round(liveData.kadro.onsel_sebep_kapsamasi.kapsama * 100)}
+                  </b>
+                  {" "}({liveData.kadro.onsel_sebep_kapsamasi.sakatlik} sakatlık,{" "}
+                  {liveData.kadro.onsel_sebep_kapsamasi.kirmizi_kart} kırmızı)
+                </span>
+              )}
+            </div>
+          )}
           <SquadEntry matchId={matchId} teamId={teamId} minute={minute} />
         </div>
       )}
