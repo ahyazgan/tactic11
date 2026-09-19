@@ -12,8 +12,11 @@
 - [x] Codex kamera: sistemi gerçek dedektör/aktarım ile doğrula; bağımsız motor ve renk uzlaşısını geliştirmede ölçerek açık seçimle entegre et. (d25c7a0)
   Done when: 30 saniyelik gerçek RF-DETR/OSNet/top ROI çıktısı ve bellek DB aktarımı doğrulandı; 11 kesitte üretim/araştırma eşitliği, 22 eski çıktı ve 164.772 gözlem birebir korundu. Son kodda 83 CV + 4 kanıt zinciri testi, Ruff ve mypy geçti; tam uygulama koşusu 2.926 başarılı/51 atlanan test verdi. Gündüz etiketlerinde yalnız bir yanlış kişi birleşmesi düzeldi; forma doğruluğu korunur. Sonuç: docs/KIMLIK-UZLASISI-SONUCLARI.md. Deneysel consensus varsayılan değil; yeni kontrol ve gerçek zaman hedefi henüz geçilmedi.
 
-- [ ] Codex kamera: sabitlenmiş uzlaşı adayını önceden ayrılmış iki gündüz ve iki gece kontrolünde kör etiketlerle değerlendir.
+- [x] Codex kamera: sabitlenmiş uzlaşı adayını önceden ayrılmış iki gündüz ve iki gece kontrolünde kör etiketlerle değerlendir. (27e7800; sonuç raporu bu değişiklikte)
   Done when: kod/model/parametre/plan hashleri kontrol açılmadan sabit; bütün başlangıç kutuları ve kişi ilişkileri tahminden bağımsız etiketli, tüm yeni ayrımlar incelenmiş, kaynak bazında gerileme kapıları ve kapsam sınırları raporlu. Plan: docs/KIMLIK-UZLASISI-KONTROL-PLANI.md. Gerileme veya bağımsız olumlu ayrım yoksa varsayılan değişmez.
+
+- [ ] Codex kamera: kontrolde görülen beyaz 6 numara yanlış bölünmesini geliştirme senaryosuna bağla; ana dedektör gecikmesini doğruluk kaybı olmadan azaltmayı ölç.
+  Done when: yanlış ayrımın kaynak/karar izi açıklanır, alternatif yalnız geliştirmede seçilir; hız ve kutu/kimlik/takım kapsamı ölçülür, sonraki aday yeni kontrolden geçmeden varsayılan olmaz. Önceki aday dört kontrolde üç doğru/bir yanlış ayrım üretti ve reddedildi. Sonuç: docs/KIMLIK-UZLASISI-KONTROL-SONUCLARI.md.
 
 - [x] Codex kamera: kaybolan iki gündüz kimlik bağlantısını görüntü/karar iziyle ayır ve tekrarlanabilir regresyon senaryolarına bağla. (f31e088)
   Done when: 407 kaynak örnek karesinden iki hata yeniden üretildi; görüntü/karar izi ve dört tanı kolu kaydedildi. 17 yeni test, eski korumalarla birlikte 63 test geçti. Sonuç: docs/KIMLIK-HATA-DENETIMI-SONUCLARI.md. Beyazda parçalı kutu + hareket kapısı, mavide oyuncu/hakem alt-gövde karışımı ayrıldı. Oracle müdahaleleri üretim düzeltmesi değildir; üretim kodu değişmedi, yeni kontrol açılmadı.
