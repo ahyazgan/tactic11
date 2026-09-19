@@ -15,7 +15,10 @@
 - [x] Codex kamera: sabitlenmiş uzlaşı adayını önceden ayrılmış iki gündüz ve iki gece kontrolünde kör etiketlerle değerlendir. (27e7800; sonuç raporu bu değişiklikte)
   Done when: kod/model/parametre/plan hashleri kontrol açılmadan sabit; bütün başlangıç kutuları ve kişi ilişkileri tahminden bağımsız etiketli, tüm yeni ayrımlar incelenmiş, kaynak bazında gerileme kapıları ve kapsam sınırları raporlu. Plan: docs/KIMLIK-UZLASISI-KONTROL-PLANI.md. Gerileme veya bağımsız olumlu ayrım yoksa varsayılan değişmez.
 
-- [ ] Codex kamera: kontrolde görülen beyaz 6 numara yanlış bölünmesini geliştirme senaryosuna bağla; ana dedektör gecikmesini doğruluk kaybı olmadan azaltmayı ölç.
+- [x] Codex kamera: Torch ana dedektöründe gerçek dilim sayısıyla gruplamayı düzelt, eski/yeni çıktı eşitliğini yeni gündüz ve gece kesitlerinde doğrula. (154968d; kontrol 4f1ec8a/e0e06a5)
+  Done when: geliştirmede gündüz %28,4/gece %5,8 süre azalması, iki kontrolün dörder tekrarında kare ve olay eşitliği, 2.947 uygulama + 32 ilgili CV testi ve kanıt zinciri raporlu. İlk gece aralık hatası korunup görüntü açılmadan ikame edildi; aday kodu değişmedi. Sonuç: docs/TORCH-GRUPLAMA-SONUCLARI.md. Gerçek zaman veya kimlik doğruluğu tamamlanmış sayılmaz.
+
+- [ ] Codex kamera: kontrolde görülen beyaz 6 numara yanlış bölünmesini geliştirme senaryosuna bağla; görünüş/renk/hareket desteğini tüm ayrımlarda karşılaştır.
   Done when: yanlış ayrımın kaynak/karar izi açıklanır, alternatif yalnız geliştirmede seçilir; hız ve kutu/kimlik/takım kapsamı ölçülür, sonraki aday yeni kontrolden geçmeden varsayılan olmaz. Önceki aday dört kontrolde üç doğru/bir yanlış ayrım üretti ve reddedildi. Sonuç: docs/KIMLIK-UZLASISI-KONTROL-SONUCLARI.md.
 
 - [x] Codex kamera: kaybolan iki gündüz kimlik bağlantısını görüntü/karar iziyle ayır ve tekrarlanabilir regresyon senaryolarına bağla. (f31e088)

@@ -1,0 +1,68 @@
+{
+  "day-development-legacy": {
+    "original": ".cache\\tracking-profile-supervision-v3\\report.json",
+    "committed": "docs\\measurements\\torch-batch-day-development-legacy.json",
+    "sha256": "82c1d859c7009c9e7986c8d8078591f85224c0ba48c47ad4484ed8ff97d5855d",
+    "output_hashes_verified": true
+  },
+  "day-development-candidate": {
+    "original": ".cache\\tracking-profile-supervision-batch28-v1\\report.json",
+    "committed": "docs\\measurements\\torch-batch-day-development-candidate.json",
+    "sha256": "d7077b3e8ca59ff9e31c70ec1638ed79955bf691ea4f355777a507657712a988",
+    "output_hashes_verified": true
+  },
+  "night-development-legacy": {
+    "original": ".cache\\tracking-profile-night-batch16-v1\\report.json",
+    "committed": "docs\\measurements\\torch-batch-night-development-legacy.json",
+    "sha256": "a072c05523c26837905247091326341f097db3bef6d40b5cea56f8e44199cc3b",
+    "output_hashes_verified": true
+  },
+  "night-development-candidate": {
+    "original": ".cache\\tracking-profile-night-auto-v1\\report.json",
+    "committed": "docs\\measurements\\torch-batch-night-development-candidate.json",
+    "sha256": "f7764c1a00ef017cca8595a84e80f99f8ac8ec5c091d0ca7c711b7333e19d0c1",
+    "output_hashes_verified": true
+  },
+  "day-micro": {
+    "original": ".cache\\detector-batch-day-development-v1\\report.json",
+    "committed": "docs\\measurements\\torch-batch-day-micro.json",
+    "sha256": "bd1d734df5938243836b2590ba9c895ce768dc705b6665ee34bd9aa5b6f279ee",
+    "exact_raw_detection_equality_by_batch": {
+      "26": true,
+      "28": true,
+      "11": true,
+      "14": true
+    },
+    "probe_script": ".cache\\detector_batch_development_v1.py",
+    "probe_script_sha256": "90dc05ec6b2ec746e4b5bb4d42edfd7c476730fee30bea47901da5cb8cce8e63",
+    "probe_script_text": "\"\"\"Development-only detector batching probe; no application defaults are modified.\"\"\"\nimport gc,hashlib,json,time\nfrom pathlib import Path\nimport cv2,numpy as np,torch\nfrom app.tracking.detect import DetectorConfig,make_detector\nout=Path('.cache/detector-batch-day-development-v1'); out.mkdir(exist_ok=False)\nvideo=Path('data/tracking/bench/daylight_117093/source/seg_0003.mp4'); cap=cv2.VideoCapture(str(video)); frames={}\nfor f in [0,374,686]:\n cap.set(cv2.CAP_PROP_POS_FRAMES,f); ok,img=cap.read(); assert ok; frames[f]=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)\ncap.release(); reports=[]\nfor batch in [26,28,11,14]:\n cfg=DetectorConfig(model='small',weights='data/tracking/models/rfdetr_mixed_small',tiles=4,backend='torch',batch_size=batch); start=time.perf_counter(); det=make_detector(cfg); calls=[]; original=det._predict_batch\n def measure(images):\n  calls.append(len(images)); return original(images)\n det._predict_batch=measure\n det.detect(frames[0]); torch.cuda.synchronize(); prep=time.perf_counter()-start; calls.clear(); rows=[]\n for repeat in range(2):\n  for f,img in frames.items():\n   torch.cuda.synchronize(); start=time.perf_counter(); d=det.detect(img); torch.cuda.synchronize(); elapsed=time.perf_counter()-start\n   payload=dict(xyxy=d.xyxy.tolist(),confidence=d.confidence.tolist(),class_id=d.class_id.tolist()); serialized=json.dumps(payload,sort_keys=True); (out/f'batch-{batch}-repeat-{repeat}-frame-{f}.json').write_text(serialized)\n   rows.append(dict(repeat=repeat,frame=f,seconds=elapsed,count=len(d),sha256=hashlib.sha256(serialized.encode()).hexdigest()))\n report=dict(batch=batch,prepared_batch=det._fixed_batch,preparation_seconds=prep,calls=calls,rows=rows,mean_seconds=float(np.mean([r['seconds'] for r in rows]))); reports.append(report); (out/f'batch-{batch}-report.json').write_text(json.dumps(report,indent=2)); print(json.dumps(report),flush=True)\n del det,original; gc.collect(); torch.cuda.empty_cache()\n(out/'report.json').write_text(json.dumps(dict(video=str(video),video_sha256=hashlib.sha256(video.read_bytes()).hexdigest(),scope=__doc__,runs=reports),indent=2))\n"
+  },
+  "night-micro": {
+    "original": ".cache\\detector-batch-night-development-v1\\report.json",
+    "committed": "docs\\measurements\\torch-batch-night-micro.json",
+    "sha256": "65f96d4d62415c3b5a6cdd80c51694d7456fc177454a535184010e76cbdea80f",
+    "exact_raw_detection_equality_by_batch": {
+      "16": true,
+      "15": true,
+      "10": false
+    },
+    "probe_script": ".cache\\detector_batch_night_development_v1.py",
+    "probe_script_sha256": "bf570b351bf5674865e19aae7c8029e42f3c651e6f683b7c1048ddd31da3ac44",
+    "probe_script_text": "\"\"\"Development-only detector batching probe; no application defaults are modified.\"\"\"\nimport gc,hashlib,json,time\nfrom pathlib import Path\nimport cv2,numpy as np,torch\nfrom app.tracking.detect import DetectorConfig,make_detector\nout=Path('.cache/detector-batch-night-development-v1'); out.mkdir(exist_ok=False)\nvideo=Path('data/tracking/bench/perimeter_control_night/source/seg_0020.mp4'); cap=cv2.VideoCapture(str(video)); frames={}\nfor f in [0,374,686]:\n cap.set(cv2.CAP_PROP_POS_FRAMES,f); ok,img=cap.read(); assert ok; frames[f]=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)\ncap.release(); reports=[]\nfor batch in [16,15,10]:\n cfg=DetectorConfig(model='small',weights='data/tracking/models/rfdetr_mixed_small',tiles=4,backend='torch',batch_size=batch); start=time.perf_counter(); det=make_detector(cfg); calls=[]; original=det._predict_batch\n def measure(images):\n  calls.append(len(images)); return original(images)\n det._predict_batch=measure\n det.detect(frames[0]); torch.cuda.synchronize(); prep=time.perf_counter()-start; calls.clear(); rows=[]\n for repeat in range(2):\n  for f,img in frames.items():\n   torch.cuda.synchronize(); start=time.perf_counter(); d=det.detect(img); torch.cuda.synchronize(); elapsed=time.perf_counter()-start\n   payload=dict(xyxy=d.xyxy.tolist(),confidence=d.confidence.tolist(),class_id=d.class_id.tolist()); serialized=json.dumps(payload,sort_keys=True); (out/f'batch-{batch}-repeat-{repeat}-frame-{f}.json').write_text(serialized)\n   rows.append(dict(repeat=repeat,frame=f,seconds=elapsed,count=len(d),sha256=hashlib.sha256(serialized.encode()).hexdigest()))\n report=dict(batch=batch,prepared_batch=det._fixed_batch,preparation_seconds=prep,calls=calls,rows=rows,mean_seconds=float(np.mean([r['seconds'] for r in rows]))); reports.append(report); (out/f'batch-{batch}-report.json').write_text(json.dumps(report,indent=2)); print(json.dumps(report),flush=True)\n del det,original; gc.collect(); torch.cuda.empty_cache()\n(out/'report.json').write_text(json.dumps(dict(video=str(video),video_sha256=hashlib.sha256(video.read_bytes()).hexdigest(),scope=__doc__,runs=reports),indent=2))\n"
+  },
+  "day-development-comparison": {
+    "all_four_frame_outputs_exact": true,
+    "warm_legacy_seconds": 70.8780099999858,
+    "warm_candidate_seconds": 50.73095249995822,
+    "warm_reduction_percent": 28.42497623738536,
+    "derived_events_compared": false
+  },
+  "night-development-comparison": {
+    "all_four_frame_outputs_exact": true,
+    "warm_legacy_seconds": 33.813656000013,
+    "warm_candidate_seconds": 31.850021399965044,
+    "warm_reduction_percent": 5.807223566854757,
+    "derived_events_compared": false
+  },
+  "limitations": "Development measurements selected the candidate before controls. Local RTX 5060 Laptop; no preview or database. Micro probes have only three source frames, two repeats. Post-hoc archive hashes verify preserved files, not an independently timestamped microbenchmark environment. The full profiling reports pin code/model/input hashes. All intermediate detections were not compared in full pipeline runs."
+}

@@ -1,0 +1,61 @@
+{
+  "candidate_commit": "154968d",
+  "initial_freeze_commit": "4f1ec8a",
+  "night_replacement_freeze_commit": "e0e06a5",
+  "candidate_code_preserved_across_replacement": true,
+  "decisions": {
+    "docs\\measurements\\torch-batch-frozen-decision.json": "1bddd2d9fa7e9c75f7e565b177854c9bf60991f2745fc8506453a5817387ec07",
+    "docs\\measurements\\torch-batch-night-replacement-decision.json": "189a6e7e7a1f33e40d738e9a13331f3e7e7ea5cc4988f1a9c3360c0e1e112f23"
+  },
+  "groups": {
+    "day": {
+      "result": "docs\\measurements\\torch-batch-day-control-result.json",
+      "result_sha256": "5de8182cfc838dc5348832b407c129d352d0c2cd7710a93761a7b7444fcd2547",
+      "evidence_sha256": {
+        "data\\tracking\\bench\\torch_batch_control_v1\\day\\legacy\\run_0.frames.json": "d6e74c925e9d3aca5111d74cbe6e1686db7dd5b9a210be35618277e7f0273e70",
+        "data\\tracking\\bench\\torch_batch_control_v1\\day\\legacy\\run_0.summary.json": "3be5ecfd0adcbbed5210ad093c42e2d049b498ec7f987bfce4dcbd82e43a997f",
+        "data\\tracking\\bench\\torch_batch_control_v1\\day\\legacy\\run_1.frames.json": "d6e74c925e9d3aca5111d74cbe6e1686db7dd5b9a210be35618277e7f0273e70",
+        "data\\tracking\\bench\\torch_batch_control_v1\\day\\legacy\\run_1.summary.json": "3be5ecfd0adcbbed5210ad093c42e2d049b498ec7f987bfce4dcbd82e43a997f",
+        "data\\tracking\\bench\\torch_batch_control_v1\\day\\automatic\\run_0.frames.json": "d6e74c925e9d3aca5111d74cbe6e1686db7dd5b9a210be35618277e7f0273e70",
+        "data\\tracking\\bench\\torch_batch_control_v1\\day\\automatic\\run_0.summary.json": "3be5ecfd0adcbbed5210ad093c42e2d049b498ec7f987bfce4dcbd82e43a997f",
+        "data\\tracking\\bench\\torch_batch_control_v1\\day\\automatic\\run_1.frames.json": "d6e74c925e9d3aca5111d74cbe6e1686db7dd5b9a210be35618277e7f0273e70",
+        "data\\tracking\\bench\\torch_batch_control_v1\\day\\automatic\\run_1.summary.json": "3be5ecfd0adcbbed5210ad093c42e2d049b498ec7f987bfce4dcbd82e43a997f"
+      },
+      "exact_frames_equal": true,
+      "exact_events_equal": true,
+      "event_counts": {
+        "derived_passes": 1,
+        "derived_defensive_actions": 0
+      },
+      "warm_legacy_seconds": 77.88998099998571,
+      "warm_candidate_seconds": 57.49659190000966,
+      "warm_reduction_percent": 26.182300776244627,
+      "cpu_test_overlap": true
+    },
+    "night": {
+      "result": "docs\\measurements\\torch-batch-night-control-result.json",
+      "result_sha256": "c72f3d138c7dbe060c6ff954a796e6305de0aae938f1828626fa7e6919894523",
+      "evidence_sha256": {
+        "data\\tracking\\bench\\torch_batch_control_replacement_v1\\night\\legacy\\run_0.frames.json": "360dc286f56ce69b660b2065b9591d27889c58f07f1fa5b4cba94d11f83c0914",
+        "data\\tracking\\bench\\torch_batch_control_replacement_v1\\night\\legacy\\run_0.summary.json": "bf8e0b15d336461dde4748c70e963a9e7d22ac1501ec69b6a79d23f66a550bdf",
+        "data\\tracking\\bench\\torch_batch_control_replacement_v1\\night\\legacy\\run_1.frames.json": "360dc286f56ce69b660b2065b9591d27889c58f07f1fa5b4cba94d11f83c0914",
+        "data\\tracking\\bench\\torch_batch_control_replacement_v1\\night\\legacy\\run_1.summary.json": "bf8e0b15d336461dde4748c70e963a9e7d22ac1501ec69b6a79d23f66a550bdf",
+        "data\\tracking\\bench\\torch_batch_control_replacement_v1\\night\\automatic\\run_0.frames.json": "360dc286f56ce69b660b2065b9591d27889c58f07f1fa5b4cba94d11f83c0914",
+        "data\\tracking\\bench\\torch_batch_control_replacement_v1\\night\\automatic\\run_0.summary.json": "bf8e0b15d336461dde4748c70e963a9e7d22ac1501ec69b6a79d23f66a550bdf",
+        "data\\tracking\\bench\\torch_batch_control_replacement_v1\\night\\automatic\\run_1.frames.json": "360dc286f56ce69b660b2065b9591d27889c58f07f1fa5b4cba94d11f83c0914",
+        "data\\tracking\\bench\\torch_batch_control_replacement_v1\\night\\automatic\\run_1.summary.json": "bf8e0b15d336461dde4748c70e963a9e7d22ac1501ec69b6a79d23f66a550bdf"
+      },
+      "exact_frames_equal": true,
+      "exact_events_equal": true,
+      "event_counts": {
+        "derived_passes": 0,
+        "derived_defensive_actions": 0
+      },
+      "warm_legacy_seconds": 30.05947739997646,
+      "warm_candidate_seconds": 27.96182740002405,
+      "warm_reduction_percent": 6.97833156591755,
+      "cpu_test_overlap": false
+    }
+  },
+  "limitations": "Local RTX 5060 Laptop, two times from already used matches, not new independent matches. Day control partly overlaps CPU tests and mypy; its times are descriptive. Initial night extraction was invalid/out of range; zero decodable frames and no detector run; replacement time was frozen before opening its pixels and candidate code was unchanged. Exact output parity is not proof of correct player identities or real-world event labels. Preview and database excluded. Full intermediate detections not compared."
+}
