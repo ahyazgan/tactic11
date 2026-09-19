@@ -106,12 +106,23 @@ gösteriyor: sınırdayken bir maç eksilince tablo üretilmiyor.
 
 ## İki bilinen sınır
 
-1. **Sakatlık hamleleri ayıklanamıyor.** `player_appearances` taktik/sakatlık
-   ayrımı taşımıyor. Kırmızı kartlar ayıklanıyor (`red_cards`), sakatlıklar
-   ayıklanamıyor ve tabloyu seyreltiyor. Yukarıdaki ölçüm taktik hamleleri
-   süzebiliyordu (olay verisinden `tactical` bayrağı), üretim yolu süzemiyor —
-   **yani gerçek kazanç buradaki 0,092'den bir miktar DÜŞÜK olabilir.** Bunu
-   kapatmanın yolu değişiklik kaydına sebep alanı eklemektir; eklenmedi.
+1. **Sakatlık hamleleri — KAPATILDI (19 Eylül).** Bu sınır yazıldığında
+   `player_appearances` taktik/sakatlık ayrımı taşımıyordu; sakatlık bir karar
+   değil mecburiyettir ve önsele girince tabloyu seyreltiyordu. `0036` göçü
+   `substitution_reason` alanını ekledi ("tactical" | "injury" | "red_card"),
+   değişiklik ucu sebebi yazıyor, kadro giriş ekranı tek dokunuşla soruyor ve
+   fitter sakatlıkları süzüyor.
+
+   **Eski satırlar NULL kalır ve geriye dönük "taktik" VARSAYILMAZ** —
+   "sakatlıktı" demek de "taktikti" demek kadar uydurma olurdu. Kullanılırlar
+   ama sebepsiz oldukları raporlanır: `reason_coverage` kaç çıkışın sebepli
+   kaydedildiğini verir ve panel bunu `kadro.onsel_sebep_kapsamasi` ile
+   gösterir. Kapsama düşükken tablo hâlâ seyreltilmiş demektir, ve artık bu
+   **görünür**.
+
+   Yukarıdaki 0,092'lik ölçüm olay verisinden `tactical` bayrağıyla süzülmüş
+   hamleler üzerinde yapılmıştı; üretim yolu kapsama %100'e çıktıkça o ölçüme
+   yaklaşır. Kapsama düşükken **gerçek kazanç 0,092'nin altındadır.**
 2. **Tek kiracı ölçüldü.** Sonuç "bir kiracının kendi tablosu kendi maçlarında
    genel tabloyu geçer" der. Mekanizma geneldir (genel tablo kulüp-dışı fit
    edilmiştir) ama ikinci bir kiracıda tekrarlanmadı. Barcelona bu veri

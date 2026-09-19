@@ -3290,6 +3290,7 @@ def live_decision_endpoint(
         TENANT_PRIOR_MIN_MATCHES,
         fit_tenant_off_prior,
         off_prior_for,
+        reason_coverage,
     )
     from app.engine.live_lineup import resolve_on_pitch
     from app.engine.live_sub_recommendation import elite_off_prior
@@ -3496,6 +3497,11 @@ def live_decision_endpoint(
                           else "genel elit tablo"),
         "onsel_fit_hamle": (tenant_prior.fitted_on if tenant_prior is not None else None),
         "onsel_kapi_mac": TENANT_PRIOR_MIN_MATCHES,
+        # Sebepsiz kayıtlar önseli seyreltir (bir kısmı sakatlıktır ve karar
+        # değildir). Kapsama raporlanmazsa bu sınır görünmez olur.
+        "onsel_sebep_kapsamasi": (
+            reason_coverage(session, team_external_id=my_team_id)
+            if tenant_prior is not None else None),
     }
 
     # Faz 8: bağlam motoru (orkestra şefi) — 9+ sinyali tek karara indirger
