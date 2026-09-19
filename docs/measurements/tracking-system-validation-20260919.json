@@ -1,0 +1,317 @@
+{
+  "git_head": "0799aa5e91d6a1dd568706bc70fdfba9b751ca04",
+  "source_seconds": 30,
+  "actual_detector": true,
+  "detector_cache_replay": false,
+  "backend": "torch CUDA RF-DETR mixed small tiles=4 + Deep OC-SORT OSNet",
+  "frames": 125,
+  "decoded_preview_frames": 125,
+  "preview_fps": 4.167,
+  "preview_size": [
+    1600,
+    422
+  ],
+  "elapsed_seconds_from_cli_log": 268.3,
+  "timing_scope": "Cold end-to-end run including detector preparation, inference, top ROI, OSNet and preview; CPU application tests overlapped part of run. Not a steady-state performance benchmark.",
+  "application_tests": {
+    "passed": 2905,
+    "skipped": 48
+  },
+  "focused_cv_tests": {
+    "passed": 63
+  },
+  "summary": {
+    "sampled_frames": 375,
+    "track_fps": 15.0,
+    "effective_track_fps": 12.5,
+    "frames_written": 125,
+    "fps_out": 5.0,
+    "event_frames_used": 125,
+    "dense_events": false,
+    "defensive_actions": {
+      "count": 0,
+      "rejected": {
+        "ball_unobserved_or_team_invalid": 99
+      },
+      "note": "yaln\u0131z g\u00f6zlenmi\u015f top kazan\u0131mlar\u0131; tackle/interception ayr\u0131m\u0131 ve tam savunma kapsamas\u0131 yok"
+    },
+    "tracks": 89,
+    "identity_scope": {
+      "period": 1,
+      "clip_offset_minutes": 0.0,
+      "namespace": 0,
+      "cross_segment_person_identity": false
+    },
+    "players_per_frame_mean": 24.0,
+    "team_counts": {
+      "home": 50,
+      "away": 31,
+      "unassigned": 8
+    },
+    "team_assignment_quality": {
+      "color_method": "raw_rgb_v1",
+      "frames_evaluated": 125,
+      "overfull_frames": 90,
+      "overfull_frame_ratio": 0.72,
+      "assigned_players_per_frame": 22.28,
+      "note": "bir tak\u0131ma 12+ oyuncu atanm\u0131\u015f kareler var; tak\u0131m atamas\u0131 belirsiz"
+    },
+    "ball_frames": 365,
+    "ball_sources": {
+      "det": 244,
+      "roi": 34,
+      "interp": 87
+    },
+    "calibration_reprojection_m": 1.432,
+    "passes": {
+      "count": 9,
+      "complete": 5,
+      "turnovers": 4,
+      "actor_ratio": 0.552,
+      "rejected": {
+        "u\u00e7u\u015f \u00e7ok uzun (top izlenemedi)": 1
+      },
+      "note": "9 pas denemesi (%56 isabet) \u00b7 4 top kayb\u0131 \u00b7 karelerin %55'inde tutucu belirlendi \u00b7 7 pasta top enterpole edilmi\u015fti (k\u0131r\u0131lgan)"
+    },
+    "calibration_stats": {
+      "per_frame_calibration": false,
+      "tracker_resets": 0,
+      "calibration_gap_resets": 0,
+      "requested_lost_track_seconds": 1.5,
+      "effective_lost_track_seconds": 0.56,
+      "person_filter": {
+        "method": "annotated_perimeter_track_v1",
+        "applied": true,
+        "skip_reason": null,
+        "observations_before": 11443,
+        "observations_removed": 2445,
+        "tracks_removed": 30,
+        "min_field_observations": 2,
+        "tolerance_px": 2.16,
+        "rejected_tracks": [
+          {
+            "continuity_id": 0,
+            "track_id": 1
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 2
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 3
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 4
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 28
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 29
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 30
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 31
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 32
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 42
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 44
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 55
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 72
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 98
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 104
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 110
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 134
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 135
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 142
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 152
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 167
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 170
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 188
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 196
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 214
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 215
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 224
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 226
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 227
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 229
+          }
+        ],
+        "enablement": "camera_profile"
+      },
+      "identity_refinement_enabled": false,
+      "duplicate_parts_removed": 0,
+      "kit_color_method": "raw_rgb_v1",
+      "ball_spikes_rejected": 14,
+      "effective_track_fps": 12.5,
+      "tracker": {
+        "backend": "deepocsort",
+        "profile": "deepocsort-osnet-fixed-v1",
+        "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+        "experimental": true
+      }
+    },
+    "team_colors": [
+      [
+        120.0,
+        157.0,
+        200.8
+      ],
+      [
+        234.6,
+        239.1,
+        245.2
+      ]
+    ]
+  },
+  "ingest": {
+    "scope": "Read a real tracking output and verify its ingest in disposable memory only.\n\nNo configured/live database is opened. This checks transport and idempotency,\nnot whether the detected people, ball or derived events are correct.\n",
+    "payload_sha256": "a1a7461a17158e393eabd4c679acda946a7a11c3c9b65f6f3386f677ac7cb07a",
+    "verifier_sha256": "3a47f9d0093a0dbddba6b27730f215ddb0542f467a89903c2752525e698422f4",
+    "database": "sqlite:///:memory:",
+    "first_ingest": {
+      "match_id": 990901,
+      "tenant_id": "tracking-verification",
+      "match_created": true,
+      "frames_removed": 0,
+      "frames_written": 125,
+      "passes_written": 9,
+      "defensive_actions_written": 0,
+      "source_video": "seg_0003.mp4"
+    },
+    "repeat_append": {
+      "match_id": 990901,
+      "tenant_id": "tracking-verification",
+      "match_created": false,
+      "frames_removed": 0,
+      "frames_written": 0,
+      "passes_written": 0,
+      "defensive_actions_written": 0,
+      "source_video": "seg_0003.mp4"
+    },
+    "frames_verified": 125,
+    "players_verified": 2996,
+    "derived_events_verified": 9,
+    "evidence_preserved": true,
+    "accuracy_validated": false,
+    "persistent_database_written": false
+  },
+  "sha256": {
+    ".cache\\system-validation-live-v1\\frames.json": "a1a7461a17158e393eabd4c679acda946a7a11c3c9b65f6f3386f677ac7cb07a",
+    ".cache\\system-validation-live-v1\\preview.mp4": "6fe1cc759a936cb675aa9f27a9f6184a345fa3e094f591f678b2eaedcf51f78e",
+    ".cache\\system-validation-live-v1\\review.jpg": "188d827af6012ab786848668e7e90c85a3b1af158d96551530dbc5e92c964172",
+    ".cache\\system-validation-live-v1\\run.log": "05fc8193d55577cdd56d6c4f74a00e14415074782e884cd3ec92a21252afa29a",
+    ".cache\\system-validation-live-v1\\ingest-verification.json": "e840adfe924c9b9aa6a567eb195d7aae5799d2d1cc3caef4c0ee6fc07aeae1ed",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+    "data\\tracking\\calibrations\\soccertrack_v2_117093_landmarks.json": "b38cffb26ac40619039d9b34a19deba98b30cebd9ed0d7a30e66c911216bfd9e",
+    "data\\tracking\\models\\rfdetr_mixed_small\\checkpoint_best_total.pth": "7b295626163b8a05bfc6ec326930132e24fb0ec1b4ba8951650e3c999aabdf01",
+    "data\\tracking\\models\\rfdetr_mixed_small\\meta.json": "b99d593d7b82cee084e622f818abea22b3509aafc3fbba6bd9c29105dc8e53ea",
+    "data\\tracking\\models\\osnet_ain_ms_d_c.pth.tar": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+    "app\\tracking\\anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app\\tracking\\calibration.py": "9cce58bcbc532635042a6fdca94ee6b12b7dbc51dba50763c494d2b9130fcbfe",
+    "app\\tracking\\camera.py": "0cec5fa5c9ddddb14cc3fc60cc2ff2dcdafd512bd67b8c74d3069ab9d7219f5f",
+    "app\\tracking\\deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app\\tracking\\detect.py": "9ccacb9e21b26e6c31f7e82fa64f38f10827a13d419167df55164e823f1ca3af",
+    "app\\tracking\\frames.py": "1cb411e85ee1a5f614b9fd1e9bf735ff278289334a358237ccf6338e4a6d3456",
+    "app\\tracking\\homography_fit.py": "274301cbcaa78636bed5104bbcb9f08e99810e6746800da4219a42e0898f9e6c",
+    "app\\tracking\\identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app\\tracking\\identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app\\tracking\\identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app\\tracking\\kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app\\tracking\\passes.py": "3ab759ca3d0b417451f8f4527cca391e28010216ab92fd6545221ac196552265",
+    "app\\tracking\\person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app\\tracking\\person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app\\tracking\\pipeline.py": "73c6cfffcca2a73d7407802be412fd8993405ffe4788a145e9fa048cab619757",
+    "app\\tracking\\pitch_lines.py": "3283fe4e695004b683b5b63a5f6c5ad521a4e9d78d23b9b3673ad40e9245d654",
+    "app\\tracking\\pitch_model.py": "34a48302af97457d6c92006d094b0acb2457292aaea9ae13c06135fecc65ec8b",
+    "app\\tracking\\player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app\\tracking\\recoveries.py": "c7dc67427e907a58ffffe175fc606b43a442ee91acda1c43fdee21afb66df2d8",
+    "app\\tracking\\replay.py": "1f9cae4a47f2ac106433ac9be9ca1b938d0a271064db33f9833037272070e1fe",
+    "app\\tracking\\teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app\\tracking\\tracker_config.py": "14f8f35b1652a2f7b6371badf4f2dbb9183d299ba9164bb20f7ffa32cc316719",
+    "app\\tracking\\__init__.py": "84f594b074a83977eab56248889b1e963ee19fef277fd3eaef0f907847248eb5",
+    "app\\tracking\\_vendor\\__init__.py": "c658f47c20cf512966e93c8cc6448dc6ff119523fd5d60aa17564cea1d07f598",
+    "app\\tracking\\_vendor\\deepocsort\\association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app\\tracking\\_vendor\\deepocsort\\kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app\\tracking\\_vendor\\deepocsort\\ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app\\tracking\\_vendor\\deepocsort\\osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app\\tracking\\_vendor\\deepocsort\\__init__.py": "8402dfb550c4986abfc676f04b34fbfcc7bd73f25f12ba6d9c9e9725335083c1",
+    "scripts\\track_video.py": "79c5d52bc091960a38804b3f9324fb8f4f88e134cfe4212f73340121eaa29ad2",
+    "scripts\\verify_tracking_payload.py": "3a47f9d0093a0dbddba6b27730f215ddb0542f467a89903c2752525e698422f4"
+  },
+  "accuracy_approved": false,
+  "new_control_opened": false
+}

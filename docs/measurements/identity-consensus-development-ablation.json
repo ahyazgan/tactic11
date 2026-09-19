@@ -1,0 +1,673 @@
+{
+  "scope": "Previously seen development only; rejected geometrical associations are not used by production consensus.",
+  "runs": {
+    "global_geometry": {
+      "report_sha256": "132f20ab6e067236a0d5877d848eaaa296758af699014c176f4bf22e2e769c65",
+      "decisions": {
+        "deepocsort_motion": {
+          "regressions": {
+            "day": [
+              "kit.correct",
+              "kit.unassigned",
+              "kit.other_assigned"
+            ],
+            "night": [
+              "kit.wrong"
+            ],
+            "night_extra": [
+              "kit.wrong",
+              "kit.other_assigned"
+            ],
+            "night_old_control": [
+              "kit.correct",
+              "kit.unassigned",
+              "joint-identity-control-night-pairs.different_correct",
+              "joint-identity-control-night-pairs.false_join",
+              "joint-identity-control-night-pairs.40-686-d13->40-716-d12",
+              "joint-identity-control-night-pairs.40-686-d15->40-716-d12"
+            ]
+          },
+          "person_improvement": true,
+          "development_pass": false
+        },
+        "deepocsort": {
+          "regressions": {
+            "day": [
+              "kit.correct",
+              "kit.unassigned",
+              "kit.other_assigned"
+            ],
+            "night": [
+              "kit.wrong"
+            ],
+            "night_extra": [
+              "kit.wrong",
+              "kit.other_assigned"
+            ],
+            "night_old_control": [
+              "kit.correct",
+              "kit.wrong",
+              "kit.unassigned",
+              "joint-identity-control-night-pairs.different_correct",
+              "joint-identity-control-night-pairs.false_join",
+              "joint-identity-control-night-pairs.40-686-d13->40-716-d12",
+              "joint-identity-control-night-pairs.40-686-d15->40-716-d12"
+            ]
+          },
+          "person_improvement": true,
+          "development_pass": false
+        }
+      },
+      "kit": {
+        "day": {
+          "supervision": {
+            "correct": 285,
+            "wrong": 28,
+            "unassigned": 2,
+            "kit_boxes_missing": 1,
+            "other_assigned": 27,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 7
+          },
+          "deepocsort_motion": {
+            "correct": 272,
+            "wrong": 28,
+            "unassigned": 15,
+            "kit_boxes_missing": 1,
+            "other_assigned": 31,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 10
+          },
+          "deepocsort": {
+            "correct": 277,
+            "wrong": 28,
+            "unassigned": 10,
+            "kit_boxes_missing": 1,
+            "other_assigned": 31,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 10
+          }
+        },
+        "night": {
+          "supervision": {
+            "correct": 95,
+            "wrong": 13,
+            "unassigned": 15,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 3
+          },
+          "deepocsort_motion": {
+            "correct": 100,
+            "wrong": 20,
+            "unassigned": 3,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 5
+          },
+          "deepocsort": {
+            "correct": 99,
+            "wrong": 21,
+            "unassigned": 3,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 4
+          }
+        },
+        "night_extra": {
+          "supervision": {
+            "correct": 50,
+            "wrong": 12,
+            "unassigned": 5,
+            "kit_boxes_missing": 0,
+            "other_assigned": 3,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 2
+          },
+          "deepocsort_motion": {
+            "correct": 52,
+            "wrong": 13,
+            "unassigned": 2,
+            "kit_boxes_missing": 0,
+            "other_assigned": 5,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 3
+          },
+          "deepocsort": {
+            "correct": 52,
+            "wrong": 13,
+            "unassigned": 2,
+            "kit_boxes_missing": 0,
+            "other_assigned": 5,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 4
+          }
+        },
+        "night_old_control": {
+          "supervision": {
+            "correct": 52,
+            "wrong": 9,
+            "unassigned": 4,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "deepocsort_motion": {
+            "correct": 50,
+            "wrong": 9,
+            "unassigned": 6,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "deepocsort": {
+            "correct": 44,
+            "wrong": 15,
+            "unassigned": 6,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          }
+        }
+      }
+    },
+    "local_geometry": {
+      "report_sha256": "738d02e11619712126fcdd359ba1c387cc0c21363f3ac706c24cefb8dc2c9262",
+      "decisions": {
+        "deepocsort_motion": {
+          "regressions": {
+            "day": [
+              "kit.correct",
+              "kit.wrong",
+              "kit.other_assigned"
+            ],
+            "night": [
+              "kit.wrong"
+            ],
+            "night_extra": [],
+            "night_old_control": [
+              "kit.correct",
+              "kit.wrong",
+              "kit.unassigned",
+              "joint-identity-control-night-pairs.40-374-d16->40-404-d17"
+            ]
+          },
+          "person_improvement": true,
+          "development_pass": false
+        },
+        "deepocsort": {
+          "regressions": {
+            "day": [
+              "kit.correct",
+              "kit.wrong",
+              "kit.other_assigned"
+            ],
+            "night": [
+              "kit.wrong"
+            ],
+            "night_extra": [
+              "kit.other_assigned"
+            ],
+            "night_old_control": [
+              "kit.correct",
+              "kit.wrong",
+              "joint-identity-control-night-pairs.40-374-d16->40-404-d17"
+            ]
+          },
+          "person_improvement": true,
+          "development_pass": false
+        }
+      },
+      "kit": {
+        "day": {
+          "supervision": {
+            "correct": 285,
+            "wrong": 28,
+            "unassigned": 2,
+            "kit_boxes_missing": 1,
+            "other_assigned": 27,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 7
+          },
+          "deepocsort_motion": {
+            "correct": 278,
+            "wrong": 36,
+            "unassigned": 1,
+            "kit_boxes_missing": 1,
+            "other_assigned": 32,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 13
+          },
+          "deepocsort": {
+            "correct": 282,
+            "wrong": 32,
+            "unassigned": 1,
+            "kit_boxes_missing": 1,
+            "other_assigned": 32,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 10
+          }
+        },
+        "night": {
+          "supervision": {
+            "correct": 95,
+            "wrong": 13,
+            "unassigned": 15,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 3
+          },
+          "deepocsort_motion": {
+            "correct": 98,
+            "wrong": 18,
+            "unassigned": 7,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 4
+          },
+          "deepocsort": {
+            "correct": 100,
+            "wrong": 17,
+            "unassigned": 6,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 4
+          }
+        },
+        "night_extra": {
+          "supervision": {
+            "correct": 50,
+            "wrong": 12,
+            "unassigned": 5,
+            "kit_boxes_missing": 0,
+            "other_assigned": 3,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 2
+          },
+          "deepocsort_motion": {
+            "correct": 53,
+            "wrong": 11,
+            "unassigned": 3,
+            "kit_boxes_missing": 0,
+            "other_assigned": 3,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 2
+          },
+          "deepocsort": {
+            "correct": 52,
+            "wrong": 12,
+            "unassigned": 3,
+            "kit_boxes_missing": 0,
+            "other_assigned": 5,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 2
+          }
+        },
+        "night_old_control": {
+          "supervision": {
+            "correct": 52,
+            "wrong": 9,
+            "unassigned": 4,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "deepocsort_motion": {
+            "correct": 49,
+            "wrong": 10,
+            "unassigned": 6,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "deepocsort": {
+            "correct": 50,
+            "wrong": 11,
+            "unassigned": 4,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          }
+        }
+      }
+    },
+    "color_refine_candidate": {
+      "report_sha256": "b31d34f2f8b697dca12f02ccf69d10ab877469252d03fc95576a3476815c7df0",
+      "decisions": {
+        "deepocsort_motion": {
+          "regressions": {
+            "day": [
+              "kit.correct",
+              "kit.unassigned",
+              "kit.other_assigned",
+              "kit.conflicting_track_labels"
+            ],
+            "night": [
+              "kit.wrong",
+              "kit.conflicting_track_labels"
+            ],
+            "night_extra": [
+              "kit.wrong",
+              "kit.other_assigned",
+              "kit.conflicting_track_labels"
+            ],
+            "night_old_control": [
+              "kit.correct",
+              "kit.unassigned",
+              "joint-identity-control-night-pairs.different_correct",
+              "joint-identity-control-night-pairs.false_join",
+              "joint-identity-control-night-pairs.40-686-d13->40-716-d12",
+              "joint-identity-control-night-pairs.40-686-d15->40-716-d12"
+            ]
+          },
+          "no_regression": false
+        },
+        "deepocsort": {
+          "regressions": {
+            "day": [
+              "kit.correct",
+              "kit.unassigned",
+              "kit.other_assigned",
+              "kit.conflicting_track_labels"
+            ],
+            "night": [
+              "kit.wrong",
+              "kit.conflicting_track_labels"
+            ],
+            "night_extra": [
+              "kit.wrong",
+              "kit.other_assigned",
+              "kit.conflicting_track_labels"
+            ],
+            "night_old_control": [
+              "kit.correct",
+              "kit.wrong",
+              "kit.unassigned",
+              "joint-identity-control-night-pairs.different_correct",
+              "joint-identity-control-night-pairs.false_join",
+              "joint-identity-control-night-pairs.40-686-d13->40-716-d12",
+              "joint-identity-control-night-pairs.40-686-d15->40-716-d12"
+            ]
+          },
+          "no_regression": false
+        }
+      },
+      "kit": {
+        "day": {
+          "supervision": {
+            "correct": 285,
+            "wrong": 28,
+            "unassigned": 2,
+            "kit_boxes_missing": 1,
+            "other_assigned": 27,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 7
+          },
+          "deepocsort_motion": {
+            "correct": 277,
+            "wrong": 26,
+            "unassigned": 12,
+            "kit_boxes_missing": 1,
+            "other_assigned": 31,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 8
+          },
+          "deepocsort": {
+            "correct": 282,
+            "wrong": 26,
+            "unassigned": 7,
+            "kit_boxes_missing": 1,
+            "other_assigned": 31,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 8
+          }
+        },
+        "night": {
+          "supervision": {
+            "correct": 95,
+            "wrong": 13,
+            "unassigned": 15,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 3
+          },
+          "deepocsort_motion": {
+            "correct": 100,
+            "wrong": 20,
+            "unassigned": 3,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 5
+          },
+          "deepocsort": {
+            "correct": 99,
+            "wrong": 21,
+            "unassigned": 3,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 4
+          }
+        },
+        "night_extra": {
+          "supervision": {
+            "correct": 50,
+            "wrong": 12,
+            "unassigned": 5,
+            "kit_boxes_missing": 0,
+            "other_assigned": 3,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 2
+          },
+          "deepocsort_motion": {
+            "correct": 52,
+            "wrong": 13,
+            "unassigned": 2,
+            "kit_boxes_missing": 0,
+            "other_assigned": 5,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 3
+          },
+          "deepocsort": {
+            "correct": 52,
+            "wrong": 13,
+            "unassigned": 2,
+            "kit_boxes_missing": 0,
+            "other_assigned": 5,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 4
+          }
+        },
+        "night_old_control": {
+          "supervision": {
+            "correct": 52,
+            "wrong": 9,
+            "unassigned": 4,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "deepocsort_motion": {
+            "correct": 50,
+            "wrong": 9,
+            "unassigned": 6,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "deepocsort": {
+            "correct": 44,
+            "wrong": 15,
+            "unassigned": 6,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          }
+        }
+      }
+    },
+    "color_refine_baseline": {
+      "report_sha256": "f11954a1b60ecfcae0d249ff5841dd2533d4ac6fdf74752f1ce119eaf4035f08",
+      "decisions": {
+        "deepocsort_motion": {
+          "regressions": {
+            "day": [],
+            "night": [],
+            "night_extra": [],
+            "night_old_control": []
+          },
+          "no_regression": true,
+          "person_improvement": true,
+          "development_pass": true
+        },
+        "deepocsort": {
+          "regressions": {
+            "day": [],
+            "night": [],
+            "night_extra": [],
+            "night_old_control": []
+          },
+          "no_regression": true,
+          "person_improvement": true,
+          "development_pass": true
+        }
+      },
+      "kit": {
+        "day": {
+          "supervision": {
+            "correct": 285,
+            "wrong": 28,
+            "unassigned": 2,
+            "kit_boxes_missing": 1,
+            "other_assigned": 27,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 7
+          },
+          "deepocsort_motion": {
+            "correct": 285,
+            "wrong": 28,
+            "unassigned": 2,
+            "kit_boxes_missing": 1,
+            "other_assigned": 27,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 6
+          },
+          "deepocsort": {
+            "correct": 285,
+            "wrong": 28,
+            "unassigned": 2,
+            "kit_boxes_missing": 1,
+            "other_assigned": 27,
+            "not_person_remaining": 1,
+            "conflicting_track_labels": 6
+          }
+        },
+        "night": {
+          "supervision": {
+            "correct": 95,
+            "wrong": 13,
+            "unassigned": 15,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 3
+          },
+          "deepocsort_motion": {
+            "correct": 95,
+            "wrong": 13,
+            "unassigned": 15,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 3
+          },
+          "deepocsort": {
+            "correct": 95,
+            "wrong": 13,
+            "unassigned": 15,
+            "kit_boxes_missing": 0,
+            "other_assigned": 4,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 3
+          }
+        },
+        "night_extra": {
+          "supervision": {
+            "correct": 50,
+            "wrong": 12,
+            "unassigned": 5,
+            "kit_boxes_missing": 0,
+            "other_assigned": 3,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 2
+          },
+          "deepocsort_motion": {
+            "correct": 50,
+            "wrong": 12,
+            "unassigned": 5,
+            "kit_boxes_missing": 0,
+            "other_assigned": 3,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 2
+          },
+          "deepocsort": {
+            "correct": 50,
+            "wrong": 12,
+            "unassigned": 5,
+            "kit_boxes_missing": 0,
+            "other_assigned": 3,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 2
+          }
+        },
+        "night_old_control": {
+          "supervision": {
+            "correct": 52,
+            "wrong": 9,
+            "unassigned": 4,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "deepocsort_motion": {
+            "correct": 52,
+            "wrong": 9,
+            "unassigned": 4,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "deepocsort": {
+            "correct": 52,
+            "wrong": 9,
+            "unassigned": 4,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          }
+        }
+      }
+    }
+  },
+  "new_control_opened": false
+}

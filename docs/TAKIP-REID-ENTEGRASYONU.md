@@ -6,6 +6,10 @@ indirilmez. Varsayılan `supervision` motoru önceki doğrulanmış ByteTrack yo
 `deepocsort` deneysel profildir; geliştirme/kontrol kapıları geçilmeden otomatik
 seçilmez. Genel futbol kişi kimliği doğruluğu veya "en iyi motor" iddiası yoktur.
 
+`--tracker consensus` aynı OSNet kurulumu ile mevcut ByteTrack'i koruyup
+kimlik ayrımlarını ikinci akış ve renk kanıtıyla doğrulayan ayrı deneysel
+seçenektir. Ayrıntı: [KIMLIK-UZLASISI-SONUCLARI.md](KIMLIK-UZLASISI-SONUCLARI.md).
+
 ## Kurulum
 
 Mevcut `venv-cv` ortamında çalışan CUDA Torch kurulumu gerekir. Bu makinede
