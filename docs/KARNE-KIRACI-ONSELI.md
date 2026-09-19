@@ -197,15 +197,48 @@ maçtan itibaren dümdüz kaldı (sekiz hücrede yalnız *sıra* önemli ve 10 m
 sırayı sabitliyor). 10, önceden kapatılmış eğrinin en alt noktasıdır; gerçek
 asgari daha düşük olabilir, ölçülmedi.
 
+### Dördüncü ve beşinci kulüp: hipotez düştü — 19 Eylül, aynı gün
+
+Yukarıdaki "elit erkek kulüpleri orta-saha-önce" hipotezi iki kulüpten
+çıkmıştı; üçüncüsünde sınandı. Bayern açık veride yok, **Bayer Leverkusen**
+var (Bundesliga 2015/16 + 2023/24, 68 maç — Alonso'nun yenilmez şampiyonu
+dahil). Kadın tarafında **Chelsea FCW** (WSL, 4 sezon, 78 maç).
+
+Veri gelmeden yazılan beklenti: *Leverkusen orta-saha-önce çıkar ve genel
+tabloyu geçer; Chelsea FCW genel tabloyla aynı sırada, kazanç ≈ 0.*
+
+| kulüp | hamle | kiracı isabet@3 | genel | fark (A / B) | ilk-11 sırası | kapı |
+|---|---:|---:|---:|---|---|---|
+| Barcelona | 331 | 0,534 | 0,442 | +0,041 / +0,142 | **orta saha** > forvet | geçti |
+| PSG | 298 | 0,537 | 0,400 | +0,123 / +0,150 | **orta saha** > forvet | geçti |
+| Arsenal WFC | 242 | 0,429 | 0,429 | 0,000 / 0,000 | forvet > orta saha | bağlanmaz |
+| Chelsea FCW | 281 | 0,536 | 0,536 | 0,000 / 0,000 | forvet > orta saha | bağlanmaz |
+| **Leverkusen** | 229 | 0,582 | 0,582 | 0,000 / 0,000 | **forvet** > orta saha | bağlanmaz |
+
+**Leverkusen beklentiyi çürüttü.** Forvet-önce (0,21–0,23 > 0,09–0,12), sırası
+genel tablonunkiyle birebir aynı, fark tam sıfır — ve genel tablo ona ölçülen
+bütün kulüplerden iyi oturuyor (0,60 / 0,56). "Elitlik" hangi kulübün genel
+tablodan sapacağını **söylemiyor**. Chelsea FCW beklendiği gibi çıktı.
+
+Doğru okuma artık şu: kulübün değişiklik alışkanlığı **kulübe özgüdür** ve bir
+etiketten (elit / kadın / lig) tahmin edilemez. Beş kulüpte iki kere sapma
+görüldü, üç kere görülmedi; sapma varsa kazanç büyük (+0,09 / +0,14), yoksa
+tam sıfır. Bu tam olarak, kapıyı bir sezgiye değil kiracının **kendi ayrık-yarı
+sınavına** bağlamanın gerekçesidir: üç "sıfır" kulüpte de kapı kendiliğinden
+kapalı kaldı, hiçbirine genel tablodan kötü bir tablo bağlanmadı.
+
+Yanlış çıkan beklenti burada silinmedi; iki kulüpten kural çıkarmanın ne kadar
+kolay olduğunu göstermek için duruyor.
+
 ### Ne bilinmiyor
 
-- "Elit erkek kulüpleri orta-saha-önce" iki kulüpten çıkan bir hipotezdir.
-  Üçüncü bir elit kulüp (Bayern 2015/16 ya da 2023/24 açık veride var) bunu
-  sınayabilir; ölçülmedi.
-- Arsenal WFC bir kadın kulübü. "Kadın futbolu genel-tablo-benzeri" denemez;
-  tek kulüp. Chelsea FCW / Manchester City WFC aynı veride mevcut.
-- Üretim yolu hâlâ `substitution_reason` kapsamasına bağlı (sınır 1); üç
+- Beş kulüp, ikisi sapıyor. Sapanların ortak bir özelliği var mı (topa sahip
+  olma, orta saha kalabalığı, antrenör) — ölçülmedi ve iki örnekle ölçülemez.
+- Üretim yolu hâlâ `substitution_reason` kapsamasına bağlı (sınır 1); beş
   ölçüm de olay verisindeki `tactical` bayrağıyla süzülmüş hamlelerle yapıldı.
+
+Ölçümler: [tenant-prior-904-leverkusen.json](measurements/tenant-prior-904-leverkusen.json),
+[tenant-prior-971-chelsea-fcw.json](measurements/tenant-prior-971-chelsea-fcw.json).
 
 Ölçümler: [tenant-prior-131-psg.json](measurements/tenant-prior-131-psg.json),
 [tenant-prior-968-arsenal-wfc.json](measurements/tenant-prior-968-arsenal-wfc.json);
@@ -218,10 +251,13 @@ Barcelona ince-hücre korumasıyla yeniden koşuldu ve güncellendi.
 .\venv\Scripts\python.exe -m scripts.fit_tenant_prior --tenant t-default --team 217 --events-dir C:\sb --out docs/measurements/tenant-prior-217.json
 .\venv\Scripts\python.exe -m scripts.fit_tenant_prior --tenant psg --team 131 --events-dir C:\sb-psg --out docs/measurements/tenant-prior-131-psg.json
 .\venv\Scripts\python.exe -m scripts.fit_tenant_prior --tenant arsenal-wfc --team 968 --events-dir C:\sb-arsenal-wfc --out docs/measurements/tenant-prior-968-arsenal-wfc.json
+.\venv\Scripts\python.exe -m scripts.fit_tenant_prior --tenant leverkusen --team 904 --events-dir C:\sb-leverkusen --out docs/measurements/tenant-prior-904-leverkusen.json
+.\venv\Scripts\python.exe -m scripts.fit_tenant_prior --tenant chelsea-fcw --team 971 --events-dir C:\sb-chelsea-fcw --out docs/measurements/tenant-prior-971-chelsea-fcw.json
 ```
 
-PSG: Ligue 1 `7/27`, `7/108`, `7/235`; Arsenal WFC: FA WSL `37/4`, `37/42`,
-`37/90`, `37/281` (`open-data/data/matches/`). Takım kimliğine göre süzülür.
+PSG: Ligue 1 `7/27`, `7/108`, `7/235`; Arsenal WFC ve Chelsea FCW: FA WSL
+`37/4`, `37/42`, `37/90`, `37/281`; Leverkusen: Bundesliga `9/27`, `9/281`
+(`open-data/data/matches/`). Takım kimliğine göre süzülür.
 
 `--events-dir`: düz klasörde `{match_id}.json` (StatsBomb açık verisi,
 `open-data/data/events/`). Girdi tablosunun SHA-256'sı ölçüm JSON'unda.
