@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from datetime import UTC, datetime
 from io import StringIO
 from pathlib import Path
 from uuid import uuid4
@@ -9,9 +10,13 @@ from uuid import uuid4
 import pytest
 import sqlalchemy as sa
 from alembic.config import Config
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
+from alembic.script import ScriptDirectory
 
 from alembic import command
 from app.core.config import get_settings
+from app.db import models
 from app.db.migration_bootstrap import bootstrap_version_table
 from app.db.session import _normalize_db_url
 
@@ -112,5 +117,60 @@ def test_postgresql_upgrade_resumes_from_existing_32_character_version_table(pos
     with engine.connect() as connection:
         assert sa.inspect(connection).get_columns("alembic_version")[0]["type"].length == 128
         assert connection.execute(sa.text("SELECT version_num FROM alembic_version")).scalar_one() == (
-            "0034_player_external_ids_bigint")
+            ScriptDirectory.from_config(config()).get_current_head())
         assert "players" in sa.inspect(connection).get_table_names()
+
+
+@pytest.mark.parametrize("backend", ["sqlite", "postgresql"])
+def test_user_foreign_keys_preserve_uuid_on_upgrade_and_downgrade(backend, request, monkeypatch):
+    if backend == "postgresql":
+        engine = request.getfixturevalue("postgres_schema")
+    else:
+        path = request.getfixturevalue("tmp_path") / "legacy_note_authors.db"
+        url = f"sqlite:///{path}"
+        monkeypatch.setenv("DATABASE_URL", url)
+        get_settings.cache_clear()
+        engine = sa.create_engine(url)
+    try:
+        command.upgrade(config(), "0034_player_external_ids_bigint")
+        with engine.begin() as connection:
+            if backend == "sqlite":
+                # Recreate the historical permissive INTEGER column, which
+                # could contain UUID text even before its type was corrected.
+                operations = Operations(MigrationContext.configure(connection))
+                with operations.batch_alter_table("notes") as batch:
+                    batch.alter_column("author_user_id", existing_type=sa.String(36),
+                                       type_=sa.Integer(), existing_nullable=True)
+            tenant = connection.execute(sa.select(models.Tenant.id)).scalars().first()
+            authors = ["42", "02a2dd86-30c5-455b-91bd-369be9b7ec2d"]
+            now = datetime.now(UTC)
+            for author in authors:
+                connection.execute(models.User.__table__.insert().values(
+                    id=author, tenant_id=tenant, email=f"{author}@example.test",
+                    password_hash="test-only", role="analyst", active=True, created_at=now,
+                ))
+                connection.execute(models.Note.__table__.insert().values(
+                    tenant_id=tenant, author_user_id=author, subject_type="match", subject_id=1,
+                    body=author, created_at=now, updated_at=now,
+                ))
+                connection.execute(models.DataAccessLog.__table__.insert().values(
+                    tenant_id=tenant, user_id=author, subject_type="player", subject_id=1,
+                    data_category="test", sensitivity="test", action="read", created_at=now,
+                ))
+        before = sorted(sa.inspect(engine).get_foreign_keys("notes"),
+                        key=lambda fk: fk["constrained_columns"])
+        command.upgrade(config(), "head")
+        for target in ("0034_player_external_ids_bigint", "0022_physical_tests"):
+            command.downgrade(config(), target)
+            with engine.connect() as connection:
+                assert connection.execute(sa.select(models.Note.author_user_id).order_by(models.Note.id)).scalars().all() == authors
+                assert connection.execute(sa.select(models.DataAccessLog.user_id).order_by(models.DataAccessLog.id)).scalars().all() == authors
+                columns = {c["name"]: c for c in sa.inspect(connection).get_columns("notes")}
+                assert isinstance(columns["author_user_id"]["type"], sa.String)
+                assert sorted(sa.inspect(connection).get_foreign_keys("notes"),
+                              key=lambda fk: fk["constrained_columns"]) == before
+        command.upgrade(config(), "head")
+    finally:
+        if backend == "sqlite":
+            engine.dispose()
+        get_settings.cache_clear()

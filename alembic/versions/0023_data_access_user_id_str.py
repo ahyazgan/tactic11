@@ -33,11 +33,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    with op.batch_alter_table("data_access_log") as batch_op:
-        batch_op.alter_column(
-            "user_id",
-            existing_type=sa.String(length=36),
-            type_=sa.Integer(),
-            existing_nullable=True,
-            postgresql_using="user_id::integer",
-        )
+    # Corrected 0021 already uses the users.id type. Retain UUIDs rather than
+    # narrowing them into an incompatible FK or casting them to zero on SQLite.
+    pass

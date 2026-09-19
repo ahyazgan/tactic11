@@ -38,6 +38,14 @@ def test_create_top_level_note(session: Session) -> None:
     assert out.reply_count == 0
 
 
+@pytest.mark.parametrize("author", ["02a2dd86-30c5-455b-91bd-369be9b7ec2d", 42])
+def test_note_author_uuid_and_legacy_numeric_identifier_roundtrip(session: Session, author):
+    out = create_note(_payload(author_user_id=author), session=session)
+    session.expire_all()
+    listed = list_notes(subject_type="team", subject_id=11, session=session)
+    assert out.author_user_id == listed[0].author_user_id == str(author)
+
+
 def test_create_reply_increments_parent_reply_count(session: Session) -> None:
     parent = create_note(_payload(body="ana not"), session=session)
     reply = create_note(
