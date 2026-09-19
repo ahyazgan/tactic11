@@ -60,6 +60,7 @@ jobs:
         run: |
           python -c "from trackers import BoTSORTTracker, OCSORTTracker, ByteTrackTracker; import supervision"
           pytest --noconftest -q tests/test_tracker_backend_benchmark.py tests/test_deepocsort.py tests/test_tracking_reid_integration.py
+          pytest --noconftest -q tests/test_identity_failure_audit.py
 
   migrations:
     runs-on: ubuntu-latest
