@@ -144,3 +144,10 @@ geçti**; bunun 15'i yeni motor/ölçüm testidir. Ruff temiz, mypy **533 dosyad
 hatasız**. CI'a sabit sürümlerle dört gerçek motoru çalıştıran ayrı kontrol
 eklendi; uygulama testindeki opsiyonel CV atlamaları bu kontrolü ikame etmez.
 Bu turda üretim/frontend/veritabanı davranışı değiştirilmedi.
+
+`3eb023b` commit'inin [CI koşusunda](https://github.com/ahyazgan/tactic11/actions/runs/35436144822)
+uygulama **2.882 geçti, 25 atlandı**; ayrı gerçek motor işi **15 geçti, 0
+atlandı**. Son eklenen CV testi uygulama ortamında da atlandığından yerel tam
+koşunun 24 atlaması CI'da 25'tir. Sekiz PR kontrolünün tamamı geçti. Frontend
+değişmediği için yol filtreli e2e işi bu PR'da tetiklenmedi; geçmiş e2e koşusu
+bu commit'in testi gibi sunulmadı.

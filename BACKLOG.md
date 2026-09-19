@@ -9,8 +9,8 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
-- [ ] Codex kamera: açık kaynak ByteTrack/BoT-SORT/OC-SORT motorlarını aynı tespitlerde karşılaştır; Deep OC-SORT uyumluluğunu incele.
-  Done when: kaynak eşitliği, kişi/forma/kapsam ve süre ölçümleri, kabul kararı, testler ve PR kontrolleri tamamlanır. Plan: docs/TAKIP-MOTORU-KARSILASTIRMA-PLANI.md.
+- [x] Codex kamera: açık kaynak ByteTrack/BoT-SORT/OC-SORT motorlarını aynı tespitlerde karşılaştır; Deep OC-SORT uyumluluğunu incele. (3eb023b)
+  Done when: 11 kesit, motor başına 4.125 kare, 44 birebir tekrar; kişi/forma/kapsam ve süre ölçümleri, 65 ilgili CV testi, 2.882 uygulama testi ve PR kontrolleri tamamlandı. Sonuç: docs/TAKIP-MOTORU-KARSILASTIRMA-SONUCLARI.md. Hiçbir alternatif tüm geliştirme kapılarını geçmedi; üretim motoru korundu, yeni kontrol açılmadı. Deep OC-SORT'un kaynak/CUDA uyumu incelendi; ReID çıkarımı henüz ölçülmedi.
 
 - [x] Codex kamera: kişi kimliği/forma zincirini ortak üretim akışında düzelt; mükerrer parçaları, kimlik devrini, güvenli bağlantıyı ve canlı segment kimliklerini birlikte doğrula. (401adb3, 9f571a3, 8a66672)
   Done when: değişmez kutularla üretim tekrarı, kişi bağlantısı denetimi, dondurulmuş kontrol, video/canlı/önizleme ve bütün PR kontrolleri tamamlandı. 2.877 uygulama, 164 ilgili CV ve gerçek PostgreSQL'de 14 test geçti. Sonuç: docs/SABIT-KAMERA-KIMLIK-SONUCLARI.md. Gündüz kontrolünde aynı kişi bağlantısı 92/134→90/134 gerilediği için deneysel profil otomatik açılmadı; gündüz kontrolünün bağımsızlık sınırları raporlu, genel kişi kimliği doğruluğu tamamlanmış sayılmaz.
