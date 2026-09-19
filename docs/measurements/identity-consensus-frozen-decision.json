@@ -1,0 +1,1649 @@
+{
+  "created_utc": "2026-09-19T12:42:02.961521+00:00",
+  "code_commit": "e1f180c1cc911786cd71d700b9d9a77862c4ab42",
+  "control_pixels_opened": false,
+  "profile": "bytetrack-osnet-color-consensus-v1",
+  "code_sha256_lf": {
+    "app/tracking/anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app/tracking/calibration.py": "9cce58bcbc532635042a6fdca94ee6b12b7dbc51dba50763c494d2b9130fcbfe",
+    "app/tracking/camera.py": "6ca94dbecae543063260260ccea7584005e6486279935ddc0e8c81fc53c6924a",
+    "app/tracking/deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app/tracking/detect.py": "2e40f311bb39fc8af6dc806f68a3aa102c55a36763d15524b7e42a95589b8c85",
+    "app/tracking/frames.py": "c619ce2aec58df9bb08c056046f80c54be4007854e5cca562533b3cfab6a7713",
+    "app/tracking/homography_fit.py": "eb1f3b71e3228d4099926852ae2eeae43bb36dec0c60ac5b189e7646ccf6b9ec",
+    "app/tracking/identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+    "app/tracking/identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app/tracking/identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app/tracking/identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app/tracking/kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app/tracking/passes.py": "c5a17549b1a041c8fa61497b72a86dccf278213ab9af1ec4eb86dfc394846878",
+    "app/tracking/person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app/tracking/person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app/tracking/pipeline.py": "5fd95b40cd71b56d35bd870b822441472d7334a12d25d5b8b05d2a413bd05a52",
+    "app/tracking/pitch_lines.py": "3283fe4e695004b683b5b63a5f6c5ad521a4e9d78d23b9b3673ad40e9245d654",
+    "app/tracking/pitch_model.py": "cb8cfb97189c5ff9b33276e862007ef7a2f2a7857cb9adbebcd1fa0ec7bddf8d",
+    "app/tracking/player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app/tracking/recoveries.py": "c7dc67427e907a58ffffe175fc606b43a442ee91acda1c43fdee21afb66df2d8",
+    "app/tracking/replay.py": "1b74a8de6bdeed354aa6660ca9f45cd4045a0f7ca67d355d105a0aa235cfd686",
+    "app/tracking/teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app/tracking/tracker_config.py": "d9f0497d2e60c25b0ab0f6a94e2b188f00b1926d57a286aeac48f8a36d5332e0",
+    "app/tracking/__init__.py": "9b90b3399aac57c8e94fc93fb938317e223dc4c1a8f7709d9074edb6639622a3",
+    "app/tracking/_vendor/__init__.py": "5cd05c98e04f76401abb48a6ffb71a432b87fa9b0a7a6a52524d6318739ec3a7",
+    "app/tracking/_vendor/deepocsort/association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app/tracking/_vendor/deepocsort/kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app/tracking/_vendor/deepocsort/ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app/tracking/_vendor/deepocsort/osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app/tracking/_vendor/deepocsort/__init__.py": "40275e9fcf4f0e93d7d5c4371ca54aa894fc53212bae12205381bc126fd4daf1",
+    "C:/Users/Yazgan/Desktop/manager 2/football-intelligence/scripts/soccertrack_v2/consensus_control.py": "19f9d8c2d375dfc767957f14a5892cf560209470bc3eb50a372182f7f9bd6681",
+    "tests/test_consensus_control.py": "a28c15a15c41f615da113eb68fb8332ba4ca4723b39fac9e9fe1856feceab0eb",
+    "scripts/soccertrack_v2/prepare_identity_control.py": "b4f1eba3ec12a3ab06e9964db7cc46e56a1e3c096072d0f5216cd782cfc4a4f0",
+    "scripts/soccertrack_v2/benchmark_tracker_backends.py": "bbfc258162d7dcbecfeacd61097b2781bc8bfda6e713ce5e940c4e6cb18b91d9",
+    "scripts/soccertrack_v2/benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+    "scripts/soccertrack_v2/benchmark_track_buffer.py": "db6897bcde785b705abf63583fb751b9c18639f889618ff90a9aa17399f5c135"
+  },
+  "input_sha256": {
+    "data/tracking/models/osnet_ain_ms_d_c.pth.tar": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+    "data/tracking/models/rfdetr_mixed_small/checkpoint_best_total.pth": "7b295626163b8a05bfc6ec326930132e24fb0ec1b4ba8951650e3c999aabdf01",
+    "data/tracking/models/rfdetr_mixed_small/meta.json": "b99d593d7b82cee084e622f818abea22b3509aafc3fbba6bd9c29105dc8e53ea",
+    "docs/KIMLIK-UZLASISI-KONTROL-PLANI.md": "5e05731eb610971e674743e67ca049efdd20783ba3a4f9f683db8e65dff88d00",
+    "docs/SABIT-KAMERA-KONTROL-ETIKETLEME.md": "e4b02da4f6c9fc117977ee620efd02b9432b2fa16c20d34a967122a71dabb462",
+    "docs/measurements/identity-consensus-development-results.json": "ef43b050c524ddf45203ef5dc088c6d53b2ff4eb0cd73881f310907306e64e46",
+    "docs/measurements/identity-consensus-production-parity.json": "7d21b1143fb67b11c36526b3756dde4e5f5508950cf5a8648ffa5eb53b813f91",
+    "docs/measurements/joint-identity-consensus-integration-parity.json": "8a47a627650e0c632d280848d7c4ba2978e4c4fb1963b4380e06801369aef7e9",
+    "data/tracking/bench/identity_day_detections/seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    "data/tracking/datasets/soccertrack_v2/117093/117093_panorama_1st_half.mp4": "f50dfebc70743439a8c778abe06953885a50be8b47e3c9d3d1ce8d533fe315c8",
+    "docs/measurements/joint-identity-development-day-results.json": "348f1d10876a93b8617eebd1e108d4b258942582096eb07b2a7f0397d971588b",
+    "data/tracking/bench/landmark_candidates_v1/seg_0000.json": "d96e0195e861b6bb837dcedc11d839633b5e96e3ad568b24b75f768978f074e8",
+    "data/tracking/datasets/soccertrack_v2/117092/117092_panorama_1st_half.mp4": "9fabe074b0c6fc5812a602dd4119f3e6cb724e2f06b8a3a1eb9358b9734c036e",
+    "docs/measurements/joint-identity-development-night-results.json": "c18412dd8667bff0603da4ce568311e80011fba31d8ed0f43fb5b5b53cbe7b85"
+  },
+  "groups": {
+    "day": {
+      "source": "data/tracking/datasets/soccertrack_v2/117093/117093_panorama_1st_half.mp4",
+      "segments": {
+        "60": 1800,
+        "62": 1860
+      },
+      "config": {
+        "fps_out": 5.0,
+        "dense_events": false,
+        "track_fps": 15.0,
+        "max_seconds": null,
+        "detector": {
+          "model": "small",
+          "threshold": 0.35,
+          "tiles": 4,
+          "tile_overlap": 0.15,
+          "tile_aspect": 1.7777777777777777,
+          "resolution": null,
+          "device": null,
+          "batch_size": null,
+          "half": true,
+          "weights": "data/tracking/models/rfdetr_mixed_small",
+          "backend": "torch",
+          "onnx_model": null
+        },
+        "track_activation_threshold": 0.25,
+        "lost_track_seconds": 1.5,
+        "min_track_seconds": 0.4,
+        "pitch_margin_m": 2.0,
+        "ball_threshold": 0.4,
+        "ball_roi_px": 320,
+        "ball_gap_seconds": 1.0,
+        "clip_offset_minutes": 0.0,
+        "period": 1,
+        "source_name": "video_tracking",
+        "per_frame_calibration": false,
+        "allow_reacquire": false,
+        "detect_cuts": false,
+        "detect_replays": false,
+        "preview_path": null,
+        "preview_width": 1600,
+        "normalize_kit_light": false,
+        "filter_off_pitch_tracks": null,
+        "refine_player_identities": false,
+        "tracker_backend": "supervision",
+        "reid_model": "data/tracking/models/osnet_ain_ms_d_c.pth.tar"
+      },
+      "calibration": {
+        "image_size": [
+          4096,
+          1080
+        ],
+        "pitch_length_m": 105.0,
+        "pitch_width_m": 68.0,
+        "method": "tps",
+        "points": [
+          {
+            "image": [
+              111.399,
+              598.321
+            ],
+            "pitch": [
+              0.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              161.899,
+              605.488
+            ],
+            "pitch": [
+              5.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              237.066,
+              613.988
+            ],
+            "pitch": [
+              11.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              325.732,
+              624.154
+            ],
+            "pitch": [
+              16.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              436.84,
+              636.498
+            ],
+            "pitch": [
+              22.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              583.84,
+              652.498
+            ],
+            "pitch": [
+              27.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              782.84,
+              671.248
+            ],
+            "pitch": [
+              33.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1055.09,
+              691.998
+            ],
+            "pitch": [
+              38.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1418.34,
+              711.748
+            ],
+            "pitch": [
+              44.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1869.84,
+              718.748
+            ],
+            "pitch": [
+              49.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2129.34,
+              714.498
+            ],
+            "pitch": [
+              52.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2386.424,
+              707.331
+            ],
+            "pitch": [
+              55.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2806.09,
+              680.331
+            ],
+            "pitch": [
+              61.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3113.424,
+              651.998
+            ],
+            "pitch": [
+              66.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3346.757,
+              626.665
+            ],
+            "pitch": [
+              72.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3519.34,
+              606.206
+            ],
+            "pitch": [
+              77.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3647.424,
+              590.206
+            ],
+            "pitch": [
+              83.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3743.924,
+              577.706
+            ],
+            "pitch": [
+              88.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3822.09,
+              567.373
+            ],
+            "pitch": [
+              94.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3882.757,
+              559.04
+            ],
+            "pitch": [
+              99.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3935.257,
+              552.04
+            ],
+            "pitch": [
+              105.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1156.007,
+              219.623
+            ],
+            "pitch": [
+              0.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1224.507,
+              210.123
+            ],
+            "pitch": [
+              5.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1307.507,
+              200.373
+            ],
+            "pitch": [
+              11.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1391.007,
+              191.373
+            ],
+            "pitch": [
+              16.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1481.257,
+              183.373
+            ],
+            "pitch": [
+              22.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1577.507,
+              175.873
+            ],
+            "pitch": [
+              27.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1671.007,
+              168.873
+            ],
+            "pitch": [
+              33.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1772.007,
+              163.623
+            ],
+            "pitch": [
+              38.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1874.007,
+              159.373
+            ],
+            "pitch": [
+              44.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1977.257,
+              156.873
+            ],
+            "pitch": [
+              49.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2033.257,
+              156.373
+            ],
+            "pitch": [
+              52.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2088.945,
+              155.186
+            ],
+            "pitch": [
+              55.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2190.528,
+              155.727
+            ],
+            "pitch": [
+              61.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2295.153,
+              157.894
+            ],
+            "pitch": [
+              66.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2392.153,
+              160.727
+            ],
+            "pitch": [
+              72.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2484.819,
+              165.227
+            ],
+            "pitch": [
+              77.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2572.819,
+              170.061
+            ],
+            "pitch": [
+              83.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2661.152,
+              175.894
+            ],
+            "pitch": [
+              88.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2738.486,
+              182.561
+            ],
+            "pitch": [
+              94.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2826.986,
+              191.061
+            ],
+            "pitch": [
+              99.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2895.986,
+              198.894
+            ],
+            "pitch": [
+              105.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              434.819,
+              475.561
+            ],
+            "pitch": [
+              0.0,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              646.944,
+              395.686
+            ],
+            "pitch": [
+              0.0,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              731.569,
+              363.686
+            ],
+            "pitch": [
+              0.0,
+              37.66
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              839.194,
+              325.436
+            ],
+            "pitch": [
+              0.0,
+              30.34
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              913.319,
+              299.186
+            ],
+            "pitch": [
+              0.0,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1034.319,
+              258.436
+            ],
+            "pitch": [
+              0.0,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1293.819,
+              225.561
+            ],
+            "pitch": [
+              16.5,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              711.569,
+              455.561
+            ],
+            "pitch": [
+              16.5,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              730.819,
+              386.311
+            ],
+            "pitch": [
+              5.5,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              991.069,
+              289.311
+            ],
+            "pitch": [
+              5.5,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3619.069,
+              437.477
+            ],
+            "pitch": [
+              105.0,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3364.111,
+              423.227
+            ],
+            "pitch": [
+              88.5,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2770.278,
+              208.811
+            ],
+            "pitch": [
+              88.5,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3067.944,
+              265.811
+            ],
+            "pitch": [
+              99.5,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3333.944,
+              355.561
+            ],
+            "pitch": [
+              99.5,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3412.944,
+              364.311
+            ],
+            "pitch": [
+              105.0,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3326.444,
+              334.061
+            ],
+            "pitch": [
+              105.0,
+              37.66
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3217.194,
+              297.561
+            ],
+            "pitch": [
+              105.0,
+              30.34
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3143.694,
+              274.311
+            ],
+            "pitch": [
+              105.0,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3017.319,
+              234.249
+            ],
+            "pitch": [
+              105.0,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2059.104,
+              297.778
+            ],
+            "pitch": [
+              52.5,
+              43.15
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2050.104,
+              245.278
+            ],
+            "pitch": [
+              52.5,
+              34.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2043.104,
+              211.278
+            ],
+            "pitch": [
+              52.5,
+              24.85
+            ],
+            "label": ""
+          }
+        ],
+        "meta": {
+          "camera": "fixed_panoramic",
+          "experimental": true,
+          "person_filter_profile": "annotated_perimeter_track_v1",
+          "person_filter_validation": "docs/OYUNCU-SUZGECI-SONUCLARI.md",
+          "source": "annotated pitch landmarks; no player/event GT fitting",
+          "keypoint_sha256": "bcc874620cfa1bcbd49b33a6132abf51f35525f25cafb677084e8ce3e803a94f"
+        }
+      },
+      "anchor": [
+        [
+          119.9,
+          149.7,
+          188.0
+        ],
+        [
+          205.4,
+          216.8,
+          235.5
+        ]
+      ]
+    },
+    "night": {
+      "source": "data/tracking/datasets/soccertrack_v2/117092/117092_panorama_1st_half.mp4",
+      "segments": {
+        "80": 2400,
+        "82": 2460
+      },
+      "config": {
+        "fps_out": 5.0,
+        "dense_events": false,
+        "track_fps": 15.0,
+        "max_seconds": null,
+        "detector": {
+          "model": "small",
+          "threshold": 0.35,
+          "tiles": 4,
+          "tile_overlap": 0.15,
+          "tile_aspect": 1.7777777777777777,
+          "resolution": null,
+          "device": null,
+          "batch_size": null,
+          "half": true,
+          "weights": "data/tracking/models/rfdetr_mixed_small",
+          "backend": "torch",
+          "onnx_model": null
+        },
+        "track_activation_threshold": 0.25,
+        "lost_track_seconds": 1.5,
+        "min_track_seconds": 0.4,
+        "pitch_margin_m": 2.0,
+        "ball_threshold": 0.4,
+        "ball_roi_px": 320,
+        "ball_gap_seconds": 1.0,
+        "clip_offset_minutes": 0.0,
+        "period": 1,
+        "source_name": "video_tracking",
+        "per_frame_calibration": false,
+        "allow_reacquire": false,
+        "detect_cuts": false,
+        "detect_replays": false,
+        "preview_path": null,
+        "preview_width": 1600,
+        "normalize_kit_light": false,
+        "filter_off_pitch_tracks": null,
+        "refine_player_identities": false,
+        "tracker_backend": "supervision",
+        "reid_model": "data/tracking/models/osnet_ain_ms_d_c.pth.tar"
+      },
+      "calibration": {
+        "image_size": [
+          3840,
+          1906
+        ],
+        "pitch_length_m": 105.0,
+        "pitch_width_m": 68.0,
+        "method": "tps",
+        "points": [
+          {
+            "image": [
+              230.0,
+              1121.0
+            ],
+            "pitch": [
+              0.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              270.0,
+              1142.0
+            ],
+            "pitch": [
+              5.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              311.0,
+              1158.0
+            ],
+            "pitch": [
+              11.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              388.0,
+              1192.0
+            ],
+            "pitch": [
+              16.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              490.0,
+              1222.0
+            ],
+            "pitch": [
+              22.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              614.0,
+              1260.0
+            ],
+            "pitch": [
+              27.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              776.0,
+              1309.0
+            ],
+            "pitch": [
+              33.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1007.0,
+              1364.0
+            ],
+            "pitch": [
+              38.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1282.0,
+              1424.0
+            ],
+            "pitch": [
+              44.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1665.0,
+              1467.0
+            ],
+            "pitch": [
+              49.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1986.0,
+              1452.0
+            ],
+            "pitch": [
+              52.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2289.0,
+              1419.0
+            ],
+            "pitch": [
+              55.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2633.0,
+              1347.0
+            ],
+            "pitch": [
+              61.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2928.0,
+              1274.0
+            ],
+            "pitch": [
+              66.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3172.0,
+              1190.0
+            ],
+            "pitch": [
+              72.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3368.0,
+              1114.0
+            ],
+            "pitch": [
+              77.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3482.0,
+              1070.0
+            ],
+            "pitch": [
+              83.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3557.0,
+              1040.0
+            ],
+            "pitch": [
+              88.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3603.0,
+              1016.0
+            ],
+            "pitch": [
+              94.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3643.0,
+              1001.0
+            ],
+            "pitch": [
+              99.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3670.0,
+              994.0
+            ],
+            "pitch": [
+              105.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1136.0,
+              682.0
+            ],
+            "pitch": [
+              0.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1183.0,
+              671.0
+            ],
+            "pitch": [
+              5.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1237.0,
+              655.0
+            ],
+            "pitch": [
+              11.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1316.0,
+              641.0
+            ],
+            "pitch": [
+              16.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1386.0,
+              626.0
+            ],
+            "pitch": [
+              22.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1488.0,
+              609.0
+            ],
+            "pitch": [
+              27.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1586.0,
+              595.0
+            ],
+            "pitch": [
+              33.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1698.0,
+              581.0
+            ],
+            "pitch": [
+              38.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1792.0,
+              570.0
+            ],
+            "pitch": [
+              44.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1880.0,
+              563.0
+            ],
+            "pitch": [
+              49.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1936.0,
+              560.0
+            ],
+            "pitch": [
+              52.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1987.0,
+              561.0
+            ],
+            "pitch": [
+              55.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2049.0,
+              559.0
+            ],
+            "pitch": [
+              61.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2122.0,
+              559.0
+            ],
+            "pitch": [
+              66.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2203.0,
+              561.0
+            ],
+            "pitch": [
+              72.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2300.0,
+              563.0
+            ],
+            "pitch": [
+              77.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2419.0,
+              569.0
+            ],
+            "pitch": [
+              83.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2529.0,
+              576.0
+            ],
+            "pitch": [
+              88.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2614.0,
+              584.0
+            ],
+            "pitch": [
+              94.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2690.0,
+              595.0
+            ],
+            "pitch": [
+              99.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2756.0,
+              606.0
+            ],
+            "pitch": [
+              105.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              507.0,
+              988.0
+            ],
+            "pitch": [
+              0.0,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              690.0,
+              894.0
+            ],
+            "pitch": [
+              0.0,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              767.0,
+              856.0
+            ],
+            "pitch": [
+              0.0,
+              37.66
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              867.0,
+              808.0
+            ],
+            "pitch": [
+              0.0,
+              30.34
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              940.0,
+              776.0
+            ],
+            "pitch": [
+              0.0,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1066.0,
+              717.0
+            ],
+            "pitch": [
+              0.0,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1259.0,
+              674.0
+            ],
+            "pitch": [
+              16.5,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              714.0,
+              969.0
+            ],
+            "pitch": [
+              16.5,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              737.0,
+              886.0
+            ],
+            "pitch": [
+              5.5,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              936.0,
+              791.0
+            ],
+            "pitch": [
+              5.5,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3409.0,
+              867.0
+            ],
+            "pitch": [
+              105.0,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3186.0,
+              850.0
+            ],
+            "pitch": [
+              88.5,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2619.0,
+              607.0
+            ],
+            "pitch": [
+              88.5,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2884.0,
+              669.0
+            ],
+            "pitch": [
+              99.5,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3132.0,
+              772.0
+            ],
+            "pitch": [
+              99.5,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3203.0,
+              781.0
+            ],
+            "pitch": [
+              105.0,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3130.0,
+              745.0
+            ],
+            "pitch": [
+              105.0,
+              37.66
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3027.0,
+              703.0
+            ],
+            "pitch": [
+              105.0,
+              30.34
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2950.0,
+              677.0
+            ],
+            "pitch": [
+              105.0,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2836.0,
+              634.0
+            ],
+            "pitch": [
+              105.0,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1943.0,
+              719.0
+            ],
+            "pitch": [
+              52.5,
+              43.15
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1942.0,
+              660.0
+            ],
+            "pitch": [
+              52.5,
+              34.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1940.0,
+              622.0
+            ],
+            "pitch": [
+              52.5,
+              24.85
+            ],
+            "label": ""
+          }
+        ],
+        "meta": {
+          "camera": "fixed_panoramic",
+          "source": "annotated pitch landmarks; no player/event GT fitting",
+          "keypoint_sha256": "910c20d8883e689e740557e96037b4681ce75b60d94e1a800c09cab0da305aa7"
+        }
+      },
+      "anchor": [
+        [
+          94.3,
+          101.0,
+          91.6
+        ],
+        [
+          176.1,
+          180.4,
+          174.0
+        ]
+      ]
+    }
+  },
+  "detector_note": "Explicit torch backend; all other parameters copied from development caches",
+  "acceptance": "No source-group regressions and independently verified positive boundary; never auto-promote on unchanged output"
+}
