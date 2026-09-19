@@ -1,0 +1,205 @@
+{
+  "video": "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0020.mp4",
+  "video_sha256": "fece86e7a119a50640eaed7ce485e833733446377f12c7f61af18e56b4905368",
+  "scope": "Development-only detector batching probe; no application defaults are modified.",
+  "runs": [
+    {
+      "batch": 16,
+      "prepared_batch": 16,
+      "preparation_seconds": 7.945498000015505,
+      "calls": [
+        16,
+        14,
+        16,
+        14,
+        16,
+        14,
+        16,
+        14,
+        16,
+        14,
+        16,
+        14
+      ],
+      "rows": [
+        {
+          "repeat": 0,
+          "frame": 0,
+          "seconds": 0.16773990000365302,
+          "count": 21,
+          "sha256": "364edcafe2a1c7e92f8039b868c7a262e0e9b56416260a1881819433fee6cd0d"
+        },
+        {
+          "repeat": 0,
+          "frame": 374,
+          "seconds": 0.17635229998268187,
+          "count": 23,
+          "sha256": "67af01837e88c97a612a26811d090272982060cec4fddd8ca0ed0c24e0e3433b"
+        },
+        {
+          "repeat": 0,
+          "frame": 686,
+          "seconds": 0.1755288999993354,
+          "count": 24,
+          "sha256": "459ac7107a70441b65d3e8044c0de7a1db56b3d4cc595e1e119a692e559d9225"
+        },
+        {
+          "repeat": 1,
+          "frame": 0,
+          "seconds": 0.17995160003192723,
+          "count": 21,
+          "sha256": "364edcafe2a1c7e92f8039b868c7a262e0e9b56416260a1881819433fee6cd0d"
+        },
+        {
+          "repeat": 1,
+          "frame": 374,
+          "seconds": 0.22199049999471754,
+          "count": 23,
+          "sha256": "67af01837e88c97a612a26811d090272982060cec4fddd8ca0ed0c24e0e3433b"
+        },
+        {
+          "repeat": 1,
+          "frame": 686,
+          "seconds": 0.24059940001461655,
+          "count": 24,
+          "sha256": "459ac7107a70441b65d3e8044c0de7a1db56b3d4cc595e1e119a692e559d9225"
+        }
+      ],
+      "mean_seconds": 0.19369376667115526
+    },
+    {
+      "batch": 15,
+      "prepared_batch": 15,
+      "preparation_seconds": 3.890570299990941,
+      "calls": [
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15,
+        15
+      ],
+      "rows": [
+        {
+          "repeat": 0,
+          "frame": 0,
+          "seconds": 0.15432829997735098,
+          "count": 21,
+          "sha256": "364edcafe2a1c7e92f8039b868c7a262e0e9b56416260a1881819433fee6cd0d"
+        },
+        {
+          "repeat": 0,
+          "frame": 374,
+          "seconds": 0.16684939997503534,
+          "count": 23,
+          "sha256": "67af01837e88c97a612a26811d090272982060cec4fddd8ca0ed0c24e0e3433b"
+        },
+        {
+          "repeat": 0,
+          "frame": 686,
+          "seconds": 0.16738419997273013,
+          "count": 24,
+          "sha256": "459ac7107a70441b65d3e8044c0de7a1db56b3d4cc595e1e119a692e559d9225"
+        },
+        {
+          "repeat": 1,
+          "frame": 0,
+          "seconds": 0.16555729997344315,
+          "count": 21,
+          "sha256": "364edcafe2a1c7e92f8039b868c7a262e0e9b56416260a1881819433fee6cd0d"
+        },
+        {
+          "repeat": 1,
+          "frame": 374,
+          "seconds": 0.1854747999459505,
+          "count": 23,
+          "sha256": "67af01837e88c97a612a26811d090272982060cec4fddd8ca0ed0c24e0e3433b"
+        },
+        {
+          "repeat": 1,
+          "frame": 686,
+          "seconds": 0.22060309996595606,
+          "count": 24,
+          "sha256": "459ac7107a70441b65d3e8044c0de7a1db56b3d4cc595e1e119a692e559d9225"
+        }
+      ],
+      "mean_seconds": 0.17669951663507769
+    },
+    {
+      "batch": 10,
+      "prepared_batch": 10,
+      "preparation_seconds": 3.8159508000244386,
+      "calls": [
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
+      ],
+      "rows": [
+        {
+          "repeat": 0,
+          "frame": 0,
+          "seconds": 0.16532989998813719,
+          "count": 21,
+          "sha256": "54d8ef7617fa5ab9ff3511c4dd0e43b6557e991fe0f2ad74d3cf37876ee4f1c9"
+        },
+        {
+          "repeat": 0,
+          "frame": 374,
+          "seconds": 0.16867119999369606,
+          "count": 23,
+          "sha256": "e576d241bb75cc50b044fd29f6bbe8b99d002be5798ac2f9c5a0fdf2acc39e27"
+        },
+        {
+          "repeat": 0,
+          "frame": 686,
+          "seconds": 0.1721434000064619,
+          "count": 24,
+          "sha256": "fa425245ba7dbb6ffad9994dbc672c0fe646699a06848aac07a56be5f8ade3a8"
+        },
+        {
+          "repeat": 1,
+          "frame": 0,
+          "seconds": 0.17462959996191785,
+          "count": 21,
+          "sha256": "54d8ef7617fa5ab9ff3511c4dd0e43b6557e991fe0f2ad74d3cf37876ee4f1c9"
+        },
+        {
+          "repeat": 1,
+          "frame": 374,
+          "seconds": 0.20003170002019033,
+          "count": 23,
+          "sha256": "e576d241bb75cc50b044fd29f6bbe8b99d002be5798ac2f9c5a0fdf2acc39e27"
+        },
+        {
+          "repeat": 1,
+          "frame": 686,
+          "seconds": 0.20572589995572343,
+          "count": 24,
+          "sha256": "fa425245ba7dbb6ffad9994dbc672c0fe646699a06848aac07a56be5f8ade3a8"
+        }
+      ],
+      "mean_seconds": 0.18108861665435447
+    }
+  ]
+}

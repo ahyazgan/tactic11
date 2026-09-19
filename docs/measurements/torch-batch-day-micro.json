@@ -1,0 +1,299 @@
+{
+  "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+  "video_sha256": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+  "scope": "Development-only detector batching probe; no application defaults are modified.",
+  "runs": [
+    {
+      "batch": 26,
+      "prepared_batch": 26,
+      "preparation_seconds": 12.260528599959798,
+      "calls": [
+        26,
+        26,
+        3,
+        26,
+        26,
+        3,
+        26,
+        26,
+        3,
+        26,
+        26,
+        3,
+        26,
+        26,
+        3,
+        26,
+        26,
+        3
+      ],
+      "rows": [
+        {
+          "repeat": 0,
+          "frame": 0,
+          "seconds": 0.40953770000487566,
+          "count": 45,
+          "sha256": "0d789b72c718ae025d1bac5a2a04b165b372b96fac2f280e14c62f2dd2162473"
+        },
+        {
+          "repeat": 0,
+          "frame": 374,
+          "seconds": 0.5032558999955654,
+          "count": 39,
+          "sha256": "b07b812db4450ff35a1cb3e18c71478c80e579a068c928f0d11e6abca17364fc"
+        },
+        {
+          "repeat": 0,
+          "frame": 686,
+          "seconds": 0.47493790002772585,
+          "count": 41,
+          "sha256": "d75573bb2aeca9d8a1d5a0b68b6dba25072a042b5ec6d2c23c53df38c948b5ce"
+        },
+        {
+          "repeat": 1,
+          "frame": 0,
+          "seconds": 0.5305810999707319,
+          "count": 45,
+          "sha256": "0d789b72c718ae025d1bac5a2a04b165b372b96fac2f280e14c62f2dd2162473"
+        },
+        {
+          "repeat": 1,
+          "frame": 374,
+          "seconds": 0.4810548000386916,
+          "count": 39,
+          "sha256": "b07b812db4450ff35a1cb3e18c71478c80e579a068c928f0d11e6abca17364fc"
+        },
+        {
+          "repeat": 1,
+          "frame": 686,
+          "seconds": 0.5195629000081681,
+          "count": 41,
+          "sha256": "d75573bb2aeca9d8a1d5a0b68b6dba25072a042b5ec6d2c23c53df38c948b5ce"
+        }
+      ],
+      "mean_seconds": 0.48648838334095973
+    },
+    {
+      "batch": 28,
+      "prepared_batch": 28,
+      "preparation_seconds": 4.151060800009873,
+      "calls": [
+        28,
+        27,
+        28,
+        27,
+        28,
+        27,
+        28,
+        27,
+        28,
+        27,
+        28,
+        27
+      ],
+      "rows": [
+        {
+          "repeat": 0,
+          "frame": 0,
+          "seconds": 0.27762460004305467,
+          "count": 45,
+          "sha256": "0d789b72c718ae025d1bac5a2a04b165b372b96fac2f280e14c62f2dd2162473"
+        },
+        {
+          "repeat": 0,
+          "frame": 374,
+          "seconds": 0.2840389999910258,
+          "count": 39,
+          "sha256": "b07b812db4450ff35a1cb3e18c71478c80e579a068c928f0d11e6abca17364fc"
+        },
+        {
+          "repeat": 0,
+          "frame": 686,
+          "seconds": 0.3434094000258483,
+          "count": 41,
+          "sha256": "d75573bb2aeca9d8a1d5a0b68b6dba25072a042b5ec6d2c23c53df38c948b5ce"
+        },
+        {
+          "repeat": 1,
+          "frame": 0,
+          "seconds": 0.3124062999850139,
+          "count": 45,
+          "sha256": "0d789b72c718ae025d1bac5a2a04b165b372b96fac2f280e14c62f2dd2162473"
+        },
+        {
+          "repeat": 1,
+          "frame": 374,
+          "seconds": 0.30357859999639913,
+          "count": 39,
+          "sha256": "b07b812db4450ff35a1cb3e18c71478c80e579a068c928f0d11e6abca17364fc"
+        },
+        {
+          "repeat": 1,
+          "frame": 686,
+          "seconds": 0.3560002000303939,
+          "count": 41,
+          "sha256": "d75573bb2aeca9d8a1d5a0b68b6dba25072a042b5ec6d2c23c53df38c948b5ce"
+        }
+      ],
+      "mean_seconds": 0.31284301667862263
+    },
+    {
+      "batch": 11,
+      "prepared_batch": 11,
+      "preparation_seconds": 3.9838299000402912,
+      "calls": [
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11,
+        11
+      ],
+      "rows": [
+        {
+          "repeat": 0,
+          "frame": 0,
+          "seconds": 0.271386300039012,
+          "count": 45,
+          "sha256": "0d789b72c718ae025d1bac5a2a04b165b372b96fac2f280e14c62f2dd2162473"
+        },
+        {
+          "repeat": 0,
+          "frame": 374,
+          "seconds": 0.2769171999534592,
+          "count": 39,
+          "sha256": "b07b812db4450ff35a1cb3e18c71478c80e579a068c928f0d11e6abca17364fc"
+        },
+        {
+          "repeat": 0,
+          "frame": 686,
+          "seconds": 0.359482100000605,
+          "count": 41,
+          "sha256": "d75573bb2aeca9d8a1d5a0b68b6dba25072a042b5ec6d2c23c53df38c948b5ce"
+        },
+        {
+          "repeat": 1,
+          "frame": 0,
+          "seconds": 0.323072700004559,
+          "count": 45,
+          "sha256": "0d789b72c718ae025d1bac5a2a04b165b372b96fac2f280e14c62f2dd2162473"
+        },
+        {
+          "repeat": 1,
+          "frame": 374,
+          "seconds": 0.30592140002408996,
+          "count": 39,
+          "sha256": "b07b812db4450ff35a1cb3e18c71478c80e579a068c928f0d11e6abca17364fc"
+        },
+        {
+          "repeat": 1,
+          "frame": 686,
+          "seconds": 0.34117490000789985,
+          "count": 41,
+          "sha256": "d75573bb2aeca9d8a1d5a0b68b6dba25072a042b5ec6d2c23c53df38c948b5ce"
+        }
+      ],
+      "mean_seconds": 0.3129924333382708
+    },
+    {
+      "batch": 14,
+      "prepared_batch": 14,
+      "preparation_seconds": 4.003687299962621,
+      "calls": [
+        14,
+        14,
+        14,
+        13,
+        14,
+        14,
+        14,
+        13,
+        14,
+        14,
+        14,
+        13,
+        14,
+        14,
+        14,
+        13,
+        14,
+        14,
+        14,
+        13,
+        14,
+        14,
+        14,
+        13
+      ],
+      "rows": [
+        {
+          "repeat": 0,
+          "frame": 0,
+          "seconds": 0.2880120999761857,
+          "count": 45,
+          "sha256": "0d789b72c718ae025d1bac5a2a04b165b372b96fac2f280e14c62f2dd2162473"
+        },
+        {
+          "repeat": 0,
+          "frame": 374,
+          "seconds": 0.28165729995816946,
+          "count": 39,
+          "sha256": "b07b812db4450ff35a1cb3e18c71478c80e579a068c928f0d11e6abca17364fc"
+        },
+        {
+          "repeat": 0,
+          "frame": 686,
+          "seconds": 0.36178710003150627,
+          "count": 41,
+          "sha256": "d75573bb2aeca9d8a1d5a0b68b6dba25072a042b5ec6d2c23c53df38c948b5ce"
+        },
+        {
+          "repeat": 1,
+          "frame": 0,
+          "seconds": 0.32077240000944585,
+          "count": 45,
+          "sha256": "0d789b72c718ae025d1bac5a2a04b165b372b96fac2f280e14c62f2dd2162473"
+        },
+        {
+          "repeat": 1,
+          "frame": 374,
+          "seconds": 0.327051299973391,
+          "count": 39,
+          "sha256": "b07b812db4450ff35a1cb3e18c71478c80e579a068c928f0d11e6abca17364fc"
+        },
+        {
+          "repeat": 1,
+          "frame": 686,
+          "seconds": 0.3657167999772355,
+          "count": 41,
+          "sha256": "d75573bb2aeca9d8a1d5a0b68b6dba25072a042b5ec6d2c23c53df38c948b5ce"
+        }
+      ],
+      "mean_seconds": 0.3241661666543223
+    }
+  ]
+}

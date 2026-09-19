@@ -38,13 +38,16 @@ def main() -> None:
     parser.add_argument("--tracker", choices=["supervision", "deepocsort", "consensus"], default="supervision")
     parser.add_argument("--seconds", type=float, default=10.)
     parser.add_argument("--runs", type=int, default=2)
+    parser.add_argument("--batch-size", type=int, help="Explicit development detector batch; default keeps production configuration")
     args = parser.parse_args()
-    if args.out.exists() or args.runs < 2 or not 0 < args.seconds <= 30:
+    if (args.out.exists() or args.runs < 2 or not 0 < args.seconds <= 30
+            or (args.batch_size is not None and args.batch_size < 1)):
         parser.error("Fresh output, at least two runs and 0 < seconds <= 30 required")
     import torch
 
     cfg = PipelineConfig(max_seconds=args.seconds, tracker_backend=args.tracker,
-        detector=DetectorConfig(model="small", weights="data/tracking/models/rfdetr_mixed_small", tiles=4, backend="torch"))
+        detector=DetectorConfig(model="small", weights="data/tracking/models/rfdetr_mixed_small", tiles=4,
+            backend="torch", batch_size=args.batch_size))
     cal = PitchCalibration.load(args.calibration)
     paths = [args.video, args.calibration, Path(__file__)] + list(Path("app/tracking").rglob("*.py"))
     paths += [Path(cfg.detector.weights or "") / name for name in ("checkpoint_best_total.pth", "meta.json")]
@@ -94,6 +97,7 @@ def main() -> None:
         payload = frames_to_json(frames, match_id=990905)
         serialized = json.dumps(payload, sort_keys=True).encode()
         (args.out / f"run_{run}.frames.json").write_bytes(serialized)
+        (args.out / f"run_{run}.summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
         runs.append(dict(run=run, pipeline_seconds=seconds, source_seconds=args.seconds,
             realtime_factor=seconds / args.seconds, output_sha256=hashlib.sha256(serialized).hexdigest(),
             frames=len(frames), sampled_frames=summary["sampled_frames"],
