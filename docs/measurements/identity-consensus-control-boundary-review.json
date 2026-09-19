@@ -1,0 +1,127 @@
+{
+  "scope": "All candidate boundaries across all four controls; four day and zero night. Post-prediction exhaustive source audit, separate from sealed blind sparse labels.",
+  "reviewer": "Codex single AI reviewer",
+  "independently_adjudicated": false,
+  "records": [
+    {
+      "segment": 60,
+      "continuity_id": 0,
+      "raw_id": 13,
+      "new_id": 220,
+      "first_order": 5,
+      "confirmed_order": 7,
+      "prior_motion_id": 13,
+      "new_motion_id": 14,
+      "image": "data\\tracking\\bench\\consensus_control_v1\\boundary-review-v1\\day-60-boundary-0.jpg",
+      "orders": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "verdict": "correct_separation",
+      "visual_basis": "Blue player before overlap, white player after overlap; raw identity crosses distinct people. Transition boxes overlap, exact pixel-perfect timing is not claimed.",
+      "image_sha256": "67be25a4119500a088f1ef6c2c74d5b7531d1c1b7b5256b6e7028e46948ad4c8",
+      "review_artifact": "docs\\measurements\\identity-consensus-boundary-0.jpg"
+    },
+    {
+      "segment": 60,
+      "continuity_id": 0,
+      "raw_id": 186,
+      "new_id": 221,
+      "first_order": 318,
+      "confirmed_order": 320,
+      "prior_motion_id": 329,
+      "new_motion_id": 310,
+      "image": "data\\tracking\\bench\\consensus_control_v1\\boundary-review-v1\\day-60-boundary-1.jpg",
+      "orders": [
+        315,
+        316,
+        317,
+        318,
+        319,
+        320,
+        321,
+        322,
+        323,
+        324
+      ],
+      "verdict": "false_split",
+      "visual_basis": "White number6 is continuously the same person before and after order318; this is a false split.",
+      "image_sha256": "ac2de066c893b6f7894aaca158d2fc9cd6db984894e65c72bd242b88a7a5cb4b",
+      "review_artifact": "docs\\measurements\\identity-consensus-boundary-1.jpg"
+    },
+    {
+      "segment": 62,
+      "continuity_id": 0,
+      "raw_id": 73,
+      "new_id": 197,
+      "first_order": 112,
+      "confirmed_order": 114,
+      "prior_motion_id": 83,
+      "new_motion_id": 33,
+      "image": "data\\tracking\\bench\\consensus_control_v1\\boundary-review-v1\\day-62-boundary-2.jpg",
+      "orders": [
+        108,
+        109,
+        110,
+        112,
+        113,
+        114,
+        115
+      ],
+      "verdict": "correct_separation",
+      "visual_basis": "Blue player at orders108-110, white number8 after112; raw identity switches between distinct overlapping players.",
+      "image_sha256": "c45c7fe797c30241fdd08fd7c25934a5f16e2f048a76fda7bdce7188e00ef101",
+      "review_artifact": "docs\\measurements\\identity-consensus-boundary-2.jpg"
+    },
+    {
+      "segment": 62,
+      "continuity_id": 0,
+      "raw_id": 86,
+      "new_id": 198,
+      "first_order": 137,
+      "confirmed_order": 139,
+      "prior_motion_id": 15,
+      "new_motion_id": 131,
+      "image": "data\\tracking\\bench\\consensus_control_v1\\boundary-review-v1\\day-62-boundary-3.jpg",
+      "orders": [
+        133,
+        134,
+        135,
+        136,
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143
+      ],
+      "verdict": "correct_separation",
+      "visual_basis": "White number29 before137, blue number9 after crossing; raw identity switches between distinct people.",
+      "image_sha256": "c92e648fba2e518f92b416acf79465ebdfe08bde565062400755846dad313ad1",
+      "review_artifact": "docs\\measurements\\identity-consensus-boundary-3.jpg"
+    }
+  ],
+  "day_counts": {
+    "correct_separation": 3,
+    "false_split": 1
+  },
+  "promotion": "rejected_due_to_false_split",
+  "night_counts": {
+    "correct_separation": 0,
+    "false_split": 0
+  },
+  "group_result_sha256": {
+    "day": "90a8d961c08634e0ac447c9bd4b2792bfee3275fb5b752cbc760c4b5159b5838",
+    "night": "f8a6dffc35b5466946be145b4d1a50a3d95afa9d9aef0d882ed03ed5f32f1172"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "scope": "Measure a real fixed-camera pipeline without changing its decisions.\n\nPreparation is separated from repeated warm runs. Nested detector and ReID\ntimings are descriptive components, not additive independent benchmarks.\nNo database is opened, no settings are tuned and existing outputs are refused.\n",
+  "config": {
+    "fps_out": 5.0,
+    "dense_events": false,
+    "track_fps": 15.0,
+    "max_seconds": 10.0,
+    "detector": {
+      "model": "small",
+      "threshold": 0.35,
+      "tiles": 4,
+      "tile_overlap": 0.15,
+      "tile_aspect": 1.7777777777777777,
+      "resolution": null,
+      "device": null,
+      "batch_size": null,
+      "half": true,
+      "weights": "data/tracking/models/rfdetr_mixed_small",
+      "backend": "torch",
+      "onnx_model": null
+    },
+    "track_activation_threshold": 0.25,
+    "lost_track_seconds": 1.5,
+    "min_track_seconds": 0.4,
+    "pitch_margin_m": 2.0,
+    "ball_threshold": 0.4,
+    "ball_roi_px": 320,
+    "ball_gap_seconds": 1.0,
+    "clip_offset_minutes": 0.0,
+    "period": 1,
+    "source_name": "video_tracking",
+    "per_frame_calibration": false,
+    "allow_reacquire": false,
+    "detect_cuts": false,
+    "detect_replays": false,
+    "preview_path": null,
+    "preview_width": 1600,
+    "normalize_kit_light": false,
+    "filter_off_pitch_tracks": null,
+    "refine_player_identities": null,
+    "tracker_backend": "supervision",
+    "reid_model": "data/tracking/models/osnet_ain_ms_d_c.pth.tar"
+  },
+  "preparation_seconds": 3.684791400039103,
+  "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "python": "3.12.10",
+  "hashes": {
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+    "data\\tracking\\calibrations\\soccertrack_v2_117093_landmarks.json": "b38cffb26ac40619039d9b34a19deba98b30cebd9ed0d7a30e66c911216bfd9e",
+    "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\scripts\\profile_tracking.py": "bf6c36523887e363d3a1efeb67f77f14dc152fdc2f6bd713c9d6a0dce8fc7625",
+    "app\\tracking\\anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app\\tracking\\calibration.py": "9cce58bcbc532635042a6fdca94ee6b12b7dbc51dba50763c494d2b9130fcbfe",
+    "app\\tracking\\camera.py": "0cec5fa5c9ddddb14cc3fc60cc2ff2dcdafd512bd67b8c74d3069ab9d7219f5f",
+    "app\\tracking\\deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app\\tracking\\detect.py": "9ccacb9e21b26e6c31f7e82fa64f38f10827a13d419167df55164e823f1ca3af",
+    "app\\tracking\\frames.py": "1cb411e85ee1a5f614b9fd1e9bf735ff278289334a358237ccf6338e4a6d3456",
+    "app\\tracking\\homography_fit.py": "274301cbcaa78636bed5104bbcb9f08e99810e6746800da4219a42e0898f9e6c",
+    "app\\tracking\\identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+    "app\\tracking\\identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app\\tracking\\identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app\\tracking\\identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app\\tracking\\kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app\\tracking\\passes.py": "3ab759ca3d0b417451f8f4527cca391e28010216ab92fd6545221ac196552265",
+    "app\\tracking\\person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app\\tracking\\person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app\\tracking\\pipeline.py": "5fd95b40cd71b56d35bd870b822441472d7334a12d25d5b8b05d2a413bd05a52",
+    "app\\tracking\\pitch_lines.py": "3283fe4e695004b683b5b63a5f6c5ad521a4e9d78d23b9b3673ad40e9245d654",
+    "app\\tracking\\pitch_model.py": "34a48302af97457d6c92006d094b0acb2457292aaea9ae13c06135fecc65ec8b",
+    "app\\tracking\\player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app\\tracking\\recoveries.py": "c7dc67427e907a58ffffe175fc606b43a442ee91acda1c43fdee21afb66df2d8",
+    "app\\tracking\\replay.py": "1f9cae4a47f2ac106433ac9be9ca1b938d0a271064db33f9833037272070e1fe",
+    "app\\tracking\\teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app\\tracking\\tracker_config.py": "d9f0497d2e60c25b0ab0f6a94e2b188f00b1926d57a286aeac48f8a36d5332e0",
+    "app\\tracking\\__init__.py": "84f594b074a83977eab56248889b1e963ee19fef277fd3eaef0f907847248eb5",
+    "app\\tracking\\_vendor\\__init__.py": "c658f47c20cf512966e93c8cc6448dc6ff119523fd5d60aa17564cea1d07f598",
+    "app\\tracking\\_vendor\\deepocsort\\association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app\\tracking\\_vendor\\deepocsort\\kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app\\tracking\\_vendor\\deepocsort\\ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app\\tracking\\_vendor\\deepocsort\\osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app\\tracking\\_vendor\\deepocsort\\__init__.py": "8402dfb550c4986abfc676f04b34fbfcc7bd73f25f12ba6d9c9e9725335083c1",
+    "data\\tracking\\models\\rfdetr_mixed_small\\checkpoint_best_total.pth": "7b295626163b8a05bfc6ec326930132e24fb0ec1b4ba8951650e3c999aabdf01",
+    "data\\tracking\\models\\rfdetr_mixed_small\\meta.json": "b99d593d7b82cee084e622f818abea22b3509aafc3fbba6bd9c29105dc8e53ea"
+  },
+  "runs": [
+    {
+      "run": 0,
+      "pipeline_seconds": 77.3163615000085,
+      "source_seconds": 10.0,
+      "realtime_factor": 7.73163615000085,
+      "output_sha256": "22e454d199f64e114407a921a58f11430e4b5376bfded12efe4da021cceac2b7",
+      "frames": 42,
+      "sampled_frames": 126,
+      "components": {
+        "detect_4096x1080": {
+          "calls": 126,
+          "total_seconds": 66.38564039987978,
+          "mean_ms": 526.8701619038078,
+          "p95_ms": 524.9866249941988
+        },
+        "roi_320x180": {
+          "calls": 34,
+          "total_seconds": 5.557516900065821,
+          "mean_ms": 163.4563794137006,
+          "p95_ms": 175.9113000181969
+        }
+      }
+    },
+    {
+      "run": 1,
+      "pipeline_seconds": 70.8780099999858,
+      "source_seconds": 10.0,
+      "realtime_factor": 7.0878009999985805,
+      "output_sha256": "22e454d199f64e114407a921a58f11430e4b5376bfded12efe4da021cceac2b7",
+      "frames": 42,
+      "sampled_frames": 126,
+      "components": {
+        "detect_4096x1080": {
+          "calls": 126,
+          "total_seconds": 59.992654700006824,
+          "mean_ms": 476.1321801587843,
+          "p95_ms": 503.66900001245085
+        },
+        "roi_320x180": {
+          "calls": 34,
+          "total_seconds": 5.366568500176072,
+          "mean_ms": 157.8402500051786,
+          "p95_ms": 171.676480025053
+        }
+      }
+    }
+  ],
+  "repeated_output_equal": true,
+  "limitations": "Local hardware; no preview or database; first pipeline run may include tracker/model initialization. GPU must be otherwise idle."
+}

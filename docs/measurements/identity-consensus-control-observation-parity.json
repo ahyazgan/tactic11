@@ -1,0 +1,33 @@
+{
+  "records": [
+    {
+      "group": "day",
+      "segment": 60,
+      "samples": 375,
+      "observations": 8507,
+      "boxes_confidence_time_and_teams_equal": true
+    },
+    {
+      "group": "day",
+      "segment": 62,
+      "samples": 375,
+      "observations": 9279,
+      "boxes_confidence_time_and_teams_equal": true
+    },
+    {
+      "group": "night",
+      "segment": 80,
+      "samples": 375,
+      "observations": 7613,
+      "boxes_confidence_time_and_teams_equal": true
+    },
+    {
+      "group": "night",
+      "segment": 82,
+      "samples": 375,
+      "observations": 4622,
+      "boxes_confidence_time_and_teams_equal": true
+    }
+  ],
+  "total_observations": 30021
+}
