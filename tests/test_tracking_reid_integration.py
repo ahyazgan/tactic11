@@ -20,7 +20,8 @@ def calibration():
     ]})
 
 
-def test_live_reid_transport_paths_and_restart_context(monkeypatch, tmp_path):
+@pytest.mark.parametrize("roi_single_batch", [True, False])
+def test_live_reid_transport_paths_and_restart_context(monkeypatch, tmp_path, roi_single_batch):
     from app.tracking import deepocsort
 
     monkeypatch.chdir(tmp_path)
@@ -34,6 +35,7 @@ def test_live_reid_transport_paths_and_restart_context(monkeypatch, tmp_path):
         if cmd[2] == "scripts.track_video":
             assert cmd[cmd.index("--tracker") + 1] == "deepocsort"
             assert cmd[cmd.index("--reid-model") + 1] == str(model)
+            assert ("--roi-single-batch" if roi_single_batch else "--no-roi-single-batch") in cmd
             Path(cmd[cmd.index("--out") + 1]).write_text(json.dumps({"summary": summary}))
             captured.append("isolated")
         return SimpleNamespace(returncode=0, stdout="frames_written: 0", stderr="")
@@ -42,6 +44,7 @@ def test_live_reid_transport_paths_and_restart_context(monkeypatch, tmp_path):
         def __init__(self, *, pipeline_kwargs, **kwargs):
             assert pipeline_kwargs["tracker_backend"] == "deepocsort"
             assert pipeline_kwargs["reid_model"] == str(model)
+            assert kwargs["detector_cfg"].roi_single_batch == roi_single_batch
             self.team_anchor = None
             self.warmup_seconds = 0.
 
@@ -60,7 +63,8 @@ def test_live_reid_transport_paths_and_restart_context(monkeypatch, tmp_path):
         (watch / "segment.mp4").write_bytes(b"test fixture")
         args = ["track_live", "--watch", str(watch), "--match-id", "1", "--home-team", "10",
                 "--away-team", "20", "--camera", "static", "--tracker", "deepocsort",
-                "--reid-model", "weights/osnet.pth.tar", "--once"]
+                "--reid-model", "weights/osnet.pth.tar", "--once",
+                "--roi-single-batch" if roi_single_batch else "--no-roi-single-batch"]
         if mode == "isolated":
             args.append("--isolate")
         monkeypatch.setattr(sys, "argv", args)
@@ -76,7 +80,8 @@ def test_live_reid_transport_paths_and_restart_context(monkeypatch, tmp_path):
     assert captured == ["warm", "isolated"]
 
 
-def test_recorded_cli_passes_reid_profile(monkeypatch, tmp_path):
+@pytest.mark.parametrize("roi_single_batch", [True, False])
+def test_recorded_cli_passes_reid_profile(monkeypatch, tmp_path, roi_single_batch):
     monkeypatch.setattr(track_video, "video_info", lambda _: dict(width=100, height=100, fps=25., frames=10))
     monkeypatch.setattr(track_video.PitchCalibration, "load", lambda _: calibration())
     received = []
@@ -89,10 +94,11 @@ def test_recorded_cli_passes_reid_profile(monkeypatch, tmp_path):
     monkeypatch.setattr(sys, "argv", ["track_video", "--video", "source.mp4", "--out",
         str(tmp_path / "out.json"), "--match-id", "1", "--home-team", "10", "--away-team", "20",
         "--camera", "static", "--calibration", "cal.json", "--tracker", "deepocsort",
-        "--reid-model", "model.pth.tar"])
+        "--reid-model", "model.pth.tar", "--roi-single-batch" if roi_single_batch else "--no-roi-single-batch"])
     assert track_video.main() == 0
     assert received[0].tracker_backend == "deepocsort"
     assert received[0].reid_model == "model.pth.tar"
+    assert received[0].detector.roi_single_batch == roi_single_batch
 
 
 @pytest.mark.parametrize("values", [dict(tracker_backend="unknown"),

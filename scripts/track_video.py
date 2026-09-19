@@ -61,6 +61,8 @@ def main() -> int:
                    help="Dedektör arka ucu. auto=ONNX modeli varsa (ya da torch yüklenemiyorsa) ONNX, "
                         "yoksa torch. ONNX modeli: scripts/export_detector_onnx.py")
     p.add_argument("--onnx-model", default=None, help="ONNX model yolu (varsayılan: data/tracking/models/onnx/…)")
+    p.add_argument("--roi-single-batch", action=argparse.BooleanOptionalAction, default=True,
+                   help="CUDA FP16 top ROI için ayrı tek görüntülük model; --no-roi-single-batch eski dolguyu kullanır")
     p.add_argument("--clip-offset-minutes", type=float, default=0.0, help="Klibin maç dakikası başlangıcı")
     p.add_argument("--period", type=int, default=1)
     p.add_argument("--preview", default=None, help="Etiketli önizleme mp4 yolu")
@@ -166,7 +168,7 @@ def main() -> int:
         source_name=source_name,
         fps_out=args.fps, track_fps=args.track_fps, max_seconds=args.max_seconds,
         detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution, weights=args.weights,
-                                backend=args.backend, onnx_model=args.onnx_model),
+                                backend=args.backend, onnx_model=args.onnx_model, roi_single_batch=args.roi_single_batch),
         clip_offset_minutes=args.clip_offset_minutes, period=args.period,
         preview_path=args.preview, ball_threshold=args.ball_threshold,
     )

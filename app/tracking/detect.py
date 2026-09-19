@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -38,6 +39,7 @@ PERSON_NAMES = {"person"}
 BALL_NAMES = {"sports ball"}
 ONNX_MODEL_DIR = Path("data/tracking/models/onnx")
 ONNX_NUM_SELECT = 300           # PostProcess varsayılanı: eşikten önce alınan Q×C çifti
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -57,6 +59,9 @@ class DetectorConfig:
     # ONNX retains its separately measured legacy grouping.
     batch_size: int | None = None
     half: bool = True           # fp16 çıkarım (CUDA'da); CPU'da yok sayılır
+    # A lazy independent batch-one model avoids padding every ball ROI to the
+    # full panoramic batch. Only used after successful CUDA fp16 preparation.
+    roi_single_batch: bool = True
 
     def tile_grid(self, width: int, height: int) -> tuple[int, int]:
         """(sütun, satır) — satır = `tiles`, sütun görüntü oranından."""
@@ -181,6 +186,9 @@ class RFDetrDetector:
         if meta:
             kwargs["pretrain_weights"] = str(Path(self.cfg.weights) / "checkpoint_best_total.pth")  # type: ignore[arg-type]
         self.model = cls(**kwargs)
+        self._model_kwargs = dict(kwargs)
+        self._roi_model: Any = None
+        self._roi_attempted = False
         self._meta = meta
         # Derlenmiş model sabit batch ister; dilim sayısı kare boyutuna bağlı
         # olduğu için derleme ilk `detect()` çağrısına ertelenir.
@@ -231,6 +239,26 @@ class RFDetrDetector:
 
     def predict_single(self, image_rgb: np.ndarray):
         """Tek görüntü (dilimsiz) tahmin — ROI aramaları için."""
+        if (self.cfg.roi_single_batch and self.cfg.half and self.device.startswith("cuda")
+                and self._fixed_batch is not None and self._fixed_batch > 1):
+            if not self._roi_attempted:
+                self._roi_attempted = True
+                roi = None
+                try:
+                    # Keep the main model's compiled batch and weights intact.
+                    # A separate instance also isolates every detector/session.
+                    roi = type(self.model)(**self._model_kwargs)
+                    roi.inference(dtype=self._torch.float16, batch_size=1)
+                    self._roi_model = roi
+                except Exception as error:  # noqa: BLE001 — optional optimization
+                    roi = None  # release a partially prepared model before fallback
+                    logger.warning("Single-batch ROI preparation failed (%s); using main detector",
+                                   type(error).__name__)
+            if self._roi_model is not None:
+                output = self._roi_model.predict([image_rgb], threshold=self.cfg.threshold)
+                result = output[0] if isinstance(output, list) else output
+                result.metadata = {}
+                return result
         return self._predict(image_rgb)
 
     def _predict(self, image_rgb: np.ndarray):

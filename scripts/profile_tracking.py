@@ -11,6 +11,7 @@ import hashlib
 import json
 import platform
 from collections import defaultdict
+from contextlib import nullcontext
 from dataclasses import asdict
 from pathlib import Path
 from time import perf_counter
@@ -18,6 +19,7 @@ from unittest.mock import patch
 
 import numpy as np
 
+from app.tracking import pipeline
 from app.tracking.calibration import PitchCalibration
 from app.tracking.deepocsort import OSNetEmbedder
 from app.tracking.detect import DetectorConfig, make_detector
@@ -39,6 +41,8 @@ def main() -> None:
     parser.add_argument("--seconds", type=float, default=10.)
     parser.add_argument("--runs", type=int, default=2)
     parser.add_argument("--batch-size", type=int, help="Explicit development detector batch; default keeps production configuration")
+    parser.add_argument("--roi-single-batch", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--capture-samples", action="store_true", help="Preserve dense player/ball evidence before output downsampling")
     args = parser.parse_args()
     if (args.out.exists() or args.runs < 2 or not 0 < args.seconds <= 30
             or (args.batch_size is not None and args.batch_size < 1)):
@@ -47,7 +51,7 @@ def main() -> None:
 
     cfg = PipelineConfig(max_seconds=args.seconds, tracker_backend=args.tracker,
         detector=DetectorConfig(model="small", weights="data/tracking/models/rfdetr_mixed_small", tiles=4,
-            backend="torch", batch_size=args.batch_size))
+            backend="torch", batch_size=args.batch_size, roi_single_batch=args.roi_single_batch))
     cal = PitchCalibration.load(args.calibration)
     paths = [args.video, args.calibration, Path(__file__)] + list(Path("app/tracking").rglob("*.py"))
     paths += [Path(cfg.detector.weights or "") / name for name in ("checkpoint_best_total.pth", "meta.json")]
@@ -62,6 +66,13 @@ def main() -> None:
     for run in range(args.runs):
         components = defaultdict(list)
         original_embedding = OSNetEmbedder.compute_embedding
+        original_collect = pipeline.collect_observations
+        collected = []
+
+        def capture(*a, original_collect=original_collect, collected=collected, **kw):
+            result = original_collect(*a, **kw)
+            collected.append(result[0])
+            return result
 
         class MeasuredDetector:
             def __init__(self, timings):
@@ -90,7 +101,8 @@ def main() -> None:
             return result
 
         start = perf_counter()
-        with patch.object(OSNetEmbedder, "compute_embedding", embedding):
+        with (patch.object(OSNetEmbedder, "compute_embedding", embedding),
+              patch.object(pipeline, "collect_observations", side_effect=capture) if args.capture_samples else nullcontext()):
             frames, summary = process_video(args.video, cal, cfg=cfg, detector=MeasuredDetector(components),
                 match_id=990905, home_team_id=217, away_team_id=213)
         seconds = perf_counter() - start
@@ -98,9 +110,19 @@ def main() -> None:
         serialized = json.dumps(payload, sort_keys=True).encode()
         (args.out / f"run_{run}.frames.json").write_bytes(serialized)
         (args.out / f"run_{run}.summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+        sample_hash = None
+        if args.capture_samples:
+            if len(collected) != 1:
+                raise ValueError("Expected exactly one observation collection per run")
+            keys = ("order", "frame_idx", "seconds", "persons", "ball", "ball_source", "continuity_id", "person_teams")
+            dense = json.dumps([{key: getattr(s, key) for key in keys} for s in collected[0]], sort_keys=True).encode()
+            (args.out / f"run_{run}.samples.json").write_bytes(dense)
+            sample_hash = hashlib.sha256(dense).hexdigest()
         runs.append(dict(run=run, pipeline_seconds=seconds, source_seconds=args.seconds,
             realtime_factor=seconds / args.seconds, output_sha256=hashlib.sha256(serialized).hexdigest(),
             frames=len(frames), sampled_frames=summary["sampled_frames"],
+            sample_output_sha256=sample_hash,
+            roi_model_prepared=getattr(detector, "_roi_model", None) is not None,
             components={name: dict(calls=len(values), total_seconds=sum(values),
                 mean_ms=1000 * float(np.mean(values)), p95_ms=1000 * float(np.percentile(values, 95)))
                 for name, values in components.items()}))
