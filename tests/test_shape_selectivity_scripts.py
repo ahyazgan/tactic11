@@ -543,3 +543,33 @@ def test_tenant_measurement_guards_thin_cells_like_production() -> None:
     # Üretim kuralıyla birebir: ince hücre None (→ genel), kalabalık hücre kiracı.
     assert off_prior_for(kiraci, "G", False) is None
     assert off_prior_for(kiraci, "M", True) == 0.20
+
+
+def test_ranking_measurement_can_take_its_match_set_from_the_events_dir(
+    tmp_path, monkeypatch,
+) -> None:
+    """`--all-matches`: karar külliyatı olmayan kulüpte maç kümesi olay klasöründen.
+
+    Ölçüm karar satırlarının içeriğini hiç kullanmaz, yalnız maç kimliğini;
+    PSG'de külliyat yok. Sayısal olmayan dosya adları atlanır, kimlikler sıralı
+    gelir ve Decision tablosuna hiç bakılmaz.
+    """
+    m = measure_sub_ranking
+    for name in ("15.json", "7.json", "notlar.json"):
+        (tmp_path / name).write_text("[]", encoding="utf-8")
+
+    gorulen: list[int] = []
+
+    class _Loaded:
+        total = 0
+
+    def sahte_load(session, mid):
+        gorulen.append(mid)
+        return _Loaded()
+
+    monkeypatch.setattr(m, "who_states_from_events", lambda ev, mid, team=None: [object()])
+    monkeypatch.setattr(m, "load_match_events", sahte_load)
+
+    rows = m._collect_cases(tmp_path, "psg", 131, all_matches=True)
+    assert rows == []                      # olay yok → vaka yok, ama maçlar dolaşıldı
+    assert gorulen == [7, 15]              # sıralı, 'notlar.json' atlandı

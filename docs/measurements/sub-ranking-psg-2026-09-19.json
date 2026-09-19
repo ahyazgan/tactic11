@@ -1,0 +1,126 @@
+{
+  "olcum": "Değişiklik önerisi sıralaması: doğru grup mu, doğru kişi mi?",
+  "kaynak": {
+    "tenant": "psg",
+    "takim_external_id": 131,
+    "taktik_degisiklik": 298,
+    "ortalama_aday": 10.77,
+    "aday_esigi": 5,
+    "mac_kumesi": "olay klasörü",
+    "girdi_sha256": "330b51fe63b9ffde430c26773f8167fd8a9c326feb27817ab4223f835ac4feb9"
+  },
+  "rastgele_taban": {
+    "n": 298,
+    "isabet_at_1": 0.093,
+    "isabet_at_3": 0.279
+  },
+  "siralama_kurallari": {
+    "motor harmanı (w=0.6)": {
+      "n": 298,
+      "isabet_at_1": 0.107,
+      "isabet_at_3": 0.389
+    },
+    "saf yorgunluk bileşiği (w=0)": {
+      "n": 298,
+      "isabet_at_1": 0.12,
+      "isabet_at_3": 0.299
+    },
+    "saf önsel (w=1)": {
+      "n": 298,
+      "isabet_at_1": 0.115,
+      "isabet_at_3": 0.401
+    },
+    "önsel, eşitlikte bileşik": {
+      "n": 298,
+      "isabet_at_1": 0.111,
+      "isabet_at_3": 0.389
+    },
+    "TERS KONTROL: önsel, eşitlikte ters bileşik": {
+      "n": 298,
+      "isabet_at_1": 0.131,
+      "isabet_at_3": 0.402
+    }
+  },
+  "harman_agirligi_ayrik_yari": {
+    "isabet_at_1": {
+      "olcut": "isabet_at_1",
+      "kollar": [
+        {
+          "kol": "A'da seç → B'de ölç",
+          "secilen_w": 0.2,
+          "egitimde": 0.124,
+          "olcumde": 0.137,
+          "n": 161
+        },
+        {
+          "kol": "B'de seç → A'da ölç",
+          "secilen_w": 0.1,
+          "egitimde": 0.155,
+          "olcumde": 0.113,
+          "n": 137
+        }
+      ],
+      "ornek_disi": 0.125,
+      "ornek_ici_en_iyi": 0.136,
+      "secim_bedeli": 0.011,
+      "ayni_agirlik_mi": false,
+      "suanki_w": 0.6,
+      "suanki_w_ornek_ici": 0.107,
+      "not": "örneklem içi en iyi ile örneklem dışı arasındaki fark SEÇİM BEDELİdir; iki yarı farklı ağırlık seçerse sonuç kararsızdır"
+    },
+    "isabet_at_3": {
+      "olcut": "isabet_at_3",
+      "kollar": [
+        {
+          "kol": "A'da seç → B'de ölç",
+          "secilen_w": 0.2,
+          "egitimde": 0.423,
+          "olcumde": 0.379,
+          "n": 161
+        },
+        {
+          "kol": "B'de seç → A'da ölç",
+          "secilen_w": 0.9,
+          "egitimde": 0.413,
+          "olcumde": 0.361,
+          "n": 137
+        }
+      ],
+      "ornek_disi": 0.37,
+      "ornek_ici_en_iyi": 0.401,
+      "secim_bedeli": 0.031,
+      "ayni_agirlik_mi": false,
+      "suanki_w": 0.6,
+      "suanki_w_ornek_ici": 0.389,
+      "not": "örneklem içi en iyi ile örneklem dışı arasındaki fark SEÇİM BEDELİdir; iki yarı farklı ağırlık seçerse sonuç kararsızdır"
+    }
+  },
+  "harman_ters_kontrol": {
+    "isabet_at_1": {
+      "secilen_w": 0.2,
+      "dogru_yon": 0.131,
+      "ters_yon": 0.133,
+      "fark": -0.002,
+      "saf_onsel": 0.115,
+      "saf_bilesik": 0.12,
+      "rastgele": 0.093,
+      "not": "ters yön saf önseli de geçiyorsa kazanç bilgiden değil karışımın sıralama yapısındandır"
+    },
+    "isabet_at_3": {
+      "secilen_w": 0.2,
+      "dogru_yon": 0.399,
+      "ters_yon": 0.419,
+      "fark": -0.02,
+      "saf_onsel": 0.401,
+      "saf_bilesik": 0.299,
+      "rastgele": 0.279,
+      "not": "ters yön saf önseli de geçiyorsa kazanç bilgiden değil karışımın sıralama yapısındandır"
+    }
+  },
+  "hukum": {
+    "grup_bilgisi": "var",
+    "grup_kazanci_at_3": 0.11,
+    "grup_ici_bilgi": "YOK",
+    "not": "ters kontrol doğru yönü geçiyorsa grup içindeki sıralama bilgi taşımıyordur; harman ağırlığını ayarlamak o kararı düzeltmez"
+  }
+}

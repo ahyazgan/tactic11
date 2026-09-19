@@ -81,20 +81,30 @@ Case = tuple[int, int, list[Candidate], float]
 
 
 def _collect_cases(
-    events_dir: Path, tenant: str, team: int,
+    events_dir: Path, tenant: str, team: int, *, all_matches: bool = False,
 ) -> list[Case]:
     """Her gerçek taktik değişiklik için: kim çıktı + adayların önsel/bileşik
-    değerleri + eylem eşiğinden ÖNCEKİ havuzun en yüksek önseli."""
+    değerleri + eylem eşiğinden ÖNCEKİ havuzun en yüksek önseli.
+
+    Maç kümesi varsayılan olarak karar KÜLLİYATINDAN gelir (Barcelona böyle
+    kuruldu). `all_matches` ile olay klasöründeki her maç alınır: karar
+    külliyatı olmayan ikinci bir kulüpte (PSG) aynı ölçümü tekrar etmek için.
+    Ölçümün kendisi karar satırlarını kullanmaz — yalnız maç kimliğini.
+    Barcelona'da iki yol aynı 100 maçı verir.
+    """
     out: list[Case] = []
     with SessionLocal() as s:
         s.info["tenant_id"] = tenant
-        mids = sorted({m for (m,) in s.execute(select(
-            models.Decision.match_external_id,
-        ).where(
-            models.Decision.sport == football.SPORT_NAME,
-            models.Decision.tenant_id == tenant,
-            models.Decision.team_external_id == team,
-        ).distinct())})
+        if all_matches:
+            mids = sorted(int(f.stem) for f in events_dir.glob("*.json") if f.stem.isdigit())
+        else:
+            mids = sorted({m for (m,) in s.execute(select(
+                models.Decision.match_external_id,
+            ).where(
+                models.Decision.sport == football.SPORT_NAME,
+                models.Decision.tenant_id == tenant,
+                models.Decision.team_external_id == team,
+            ).distinct())})
         for mid in mids:
             p = events_dir / f"{mid}.json"
             if not p.is_file():
@@ -299,10 +309,14 @@ def main() -> int:
     p.add_argument("--tenant", default="t-default")
     p.add_argument("--team", type=int, default=217)
     p.add_argument("--events-dir", type=Path, required=True)
+    p.add_argument("--all-matches", action="store_true",
+                   help="maç kümesini karar külliyatından değil olay klasöründen al "
+                        "(külliyatı olmayan kulüp için)")
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
 
-    rows = _collect_cases(args.events_dir, args.tenant, args.team)
+    rows = _collect_cases(args.events_dir, args.tenant, args.team,
+                          all_matches=args.all_matches)
     if not rows:
         print("değişiklik örneği çıkmadı — külliyat olayları ve --events-dir gerekli")
         return 1
@@ -350,6 +364,7 @@ def main() -> int:
             "taktik_degisiklik": len(rows),
             "ortalama_aday": round(sum(len(c) for _m, _o, c, _t in rows) / len(rows), 2),
             "aday_esigi": MIN_ACTIONS,
+            "mac_kumesi": "olay klasörü" if args.all_matches else "karar külliyatı",
             "girdi_sha256": hashlib.sha256(json.dumps(
                 [[off, sorted((pid, round(pr, 6), round(co, 6)) for pid, pr, co in c)]
                  for _m, off, c, _t in rows], sort_keys=True).encode("utf-8")).hexdigest(),
