@@ -1,0 +1,170 @@
+{
+  "reviewed_at_utc": "2026-09-14T13:22:49.328203+00:00",
+  "reviewer": "kit_classifier agent; source-only permitted development QA frames",
+  "export_command": "venv-cv/Scripts/python.exe -m scripts.soccertrack_v2.export_joint_identity --out data/tracking/bench/joint_identity_export_integration_v1",
+  "manifest": {
+    "path": "data/tracking/bench/joint_identity_export_integration_v1/manifest.json",
+    "sha256": "7614200347348b5a3c09e79e633ead126579264ae3e4b7a70822182ff517da1a"
+  },
+  "original_manifest": {
+    "path": "data/tracking/bench/joint_identity_export_v1/manifest.json",
+    "sha256": "3ac8a1baca8efce3227f5fb9b39f2f8874c0316e81281708b4fedae8db980b77"
+  },
+  "original_all_files_unchanged": true,
+  "source_video_and_observation_cache_unchanged": true,
+  "all_13_media_json_qa_output_files_byte_equal_to_first_export": true,
+  "production_code_verification": {
+    "mode": "integration_amendment",
+    "matches_original_freeze": false,
+    "original_freeze": {
+      "path": "docs/measurements/joint-identity-frozen-decision.json",
+      "sha256": "bd8c9176c818dd952b112260feb5d30d051b627ccb30a04638fc8eb763cabb0c"
+    },
+    "original_code_sha256_lf": {
+      "app/tracking/pipeline.py": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+      "app/tracking/player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+      "app/tracking/identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+      "app/tracking/identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+      "app/tracking/identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+      "app/tracking/person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+      "app/tracking/kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+      "app/tracking/teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+      "app/tracking/person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+      "app/tracking/frames.py": "c619ce2aec58df9bb08c056046f80c54be4007854e5cca562533b3cfab6a7713",
+      "scripts/track_video.py": "4d185093875d701e305013e8105e3c2c3eaaf30475e10250d2ca3199da26e960",
+      "scripts/track_live.py": "ed327c604f02daa4353c76adc502f833d0f8868afc2ec93453a205551bb0d572",
+      "scripts/soccertrack_v2/cache_ball_candidates.py": "c39466b8ae98fd5b723b1a6150007f9595679f162731c405fba12e7b4fa93029",
+      "scripts/soccertrack_v2/benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+      "scripts/soccertrack_v2/prepare_identity_control.py": "b4f1eba3ec12a3ab06e9964db7cc46e56a1e3c096072d0f5216cd782cfc4a4f0",
+      "scripts/soccertrack_v2/kit_joint_features.py": "b5d908eb55eefae4f4704b8e9821c1273b601f2c786694ca12c6aec8d00d38f6"
+    },
+    "production_code_sha256_lf": {
+      "app/tracking/pipeline.py": "ea555a6ebd24c25aa6b1a702c571645d8fdd4f75e518fa8eea97d64a15e25bc3",
+      "app/tracking/player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+      "app/tracking/identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+      "app/tracking/identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+      "app/tracking/identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+      "app/tracking/person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+      "app/tracking/kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+      "app/tracking/teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+      "app/tracking/person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+      "app/tracking/frames.py": "c619ce2aec58df9bb08c056046f80c54be4007854e5cca562533b3cfab6a7713",
+      "scripts/track_video.py": "ed1f243a1e8d5909f14a8743d20b4ddb6be7c21169e669d39031705f75d366a7",
+      "scripts/track_live.py": "a6fd16cf76b142e2dc77c97f79955ef2873334b421f4852f04b3bf9c371e49a7",
+      "scripts/soccertrack_v2/cache_ball_candidates.py": "c39466b8ae98fd5b723b1a6150007f9595679f162731c405fba12e7b4fa93029",
+      "scripts/soccertrack_v2/benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+      "scripts/soccertrack_v2/prepare_identity_control.py": "b4f1eba3ec12a3ab06e9964db7cc46e56a1e3c096072d0f5216cd782cfc4a4f0",
+      "scripts/soccertrack_v2/kit_joint_features.py": "b5d908eb55eefae4f4704b8e9821c1273b601f2c786694ca12c6aec8d00d38f6"
+    },
+    "integration_amendment": {
+      "path": "docs/measurements/joint-identity-integration-amendment.json",
+      "sha256": "9fa78242f1e8a7ee31f105d3be6d0c41ca4332f617eabd49cdd51e0b23fd8e01"
+    },
+    "parity_evidence": {
+      "path": "docs/measurements/joint-identity-integration-parity.json",
+      "sha256": "bd9fa55652e2771f4111126b2c3be6d54d77da23bb6010010ad971b46920602d"
+    },
+    "code_changes": {
+      "app/tracking/pipeline.py": {
+        "before_sha256_lf": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+        "after_sha256_lf": "ea555a6ebd24c25aa6b1a702c571645d8fdd4f75e518fa8eea97d64a15e25bc3",
+        "reason": "Reject identity refinement for broadcast/nonfixed source even when per-frame calibration is explicitly disabled; fixed-camera classifier unchanged."
+      },
+      "scripts/track_video.py": {
+        "before_sha256_lf": "4d185093875d701e305013e8105e3c2c3eaaf30475e10250d2ca3199da26e960",
+        "after_sha256_lf": "ed1f243a1e8d5909f14a8743d20b4ddb6be7c21169e669d39031705f75d366a7",
+        "reason": "Validate and pass team palette; align operated-camera cut/replay flags with warm worker."
+      },
+      "scripts/track_live.py": {
+        "before_sha256_lf": "ed327c604f02daa4353c76adc502f833d0f8868afc2ec93453a205551bb0d572",
+        "after_sha256_lf": "a6fd16cf76b142e2dc77c97f79955ef2873334b421f4852f04b3bf9c371e49a7",
+        "reason": "Persist first valid palette atomically across isolated/warm restarts; bind it to match/team/calibration/refinement/camera settings; resolve source/model paths before child cwd changes."
+      }
+    },
+    "added_integration_code_sha256_lf": {
+      "app/tracking/anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+      "tests/test_tracking_cli_identity.py": "9c18146e86297c459ebabf0a2fa0eaaecc806f553a44bc867dfc60925cf1dad6",
+      "tests/test_identity_source_guard.py": "89b07437204b8140b55ca71ab9b85fa2be7776f049dd7e89e10aa2c8032f1a30"
+    }
+  },
+  "variants": {
+    "before": {
+      "json_equal_to_original": true,
+      "json_bytes_equal_to_original": true,
+      "scoped_ids_and_per_observation_teams_verified": true,
+      "frames": 375,
+      "player_observations": 8828,
+      "unknown_team_observations": 816,
+      "json_sha256": "9ed0d30ec018e18deaba642ab40cb466aba31018c5df6dcd92e73827b1401b5f"
+    },
+    "after": {
+      "json_equal_to_original": true,
+      "json_bytes_equal_to_original": true,
+      "scoped_ids_and_per_observation_teams_verified": true,
+      "frames": 375,
+      "player_observations": 8638,
+      "unknown_team_observations": 1481,
+      "json_sha256": "356d2e1ec9cd0971b2a70f857ff2c97c37158865933f8bac7ed780e5a382e0a4"
+    }
+  },
+  "ball_fields_equal_between_variants": true,
+  "decode_validation": {
+    "before": {
+      "decoded_frames": 375,
+      "fps": 12.5,
+      "duration_seconds": 30.0,
+      "width": 2048,
+      "height": 646,
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "opencv_full_decode": true,
+      "ffmpeg_full_decode": true,
+      "qa_images": [
+        "data/tracking/bench/joint_identity_export_integration_v1/qa/before-source-124.jpg",
+        "data/tracking/bench/joint_identity_export_integration_v1/qa/before-source-500.jpg"
+      ]
+    },
+    "after": {
+      "decoded_frames": 375,
+      "fps": 12.5,
+      "duration_seconds": 30.0,
+      "width": 2048,
+      "height": 646,
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "opencv_full_decode": true,
+      "ffmpeg_full_decode": true,
+      "qa_images": [
+        "data/tracking/bench/joint_identity_export_integration_v1/qa/after-source-124.jpg",
+        "data/tracking/bench/joint_identity_export_integration_v1/qa/after-source-500.jpg"
+      ]
+    },
+    "comparison": {
+      "decoded_frames": 375,
+      "fps": 12.5,
+      "duration_seconds": 30.0,
+      "width": 2048,
+      "height": 1292,
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "opencv_full_decode": true,
+      "ffmpeg_full_decode": true,
+      "qa_images": [
+        "data/tracking/bench/joint_identity_export_integration_v1/qa/comparison-source-124.jpg",
+        "data/tracking/bench/joint_identity_export_integration_v1/qa/comparison-source-500.jpg"
+      ]
+    }
+  },
+  "visual_review": {
+    "images": [
+      "data\\tracking\\bench\\joint_identity_export_integration_v1\\qa\\comparison-source-124.jpg",
+      "data\\tracking\\bench\\joint_identity_export_integration_v1\\qa\\comparison-source-500.jpg"
+    ],
+    "development_source_frames": [
+      124,
+      500
+    ],
+    "control_predictions_viewed": false,
+    "finding": "Before/after panels remain aligned to the same daylight source; overlays and anonymous-team legend are legible, without cropping or corruption. This checks export presentation, not new identity or ball accuracy."
+  }
+}

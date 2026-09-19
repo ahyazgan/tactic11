@@ -210,6 +210,14 @@ venv-cv\Scripts\python.exe -m scripts.soccertrack_v2.export_joint_identity `
   --out data/tracking/bench/joint_identity_export_reproduction
 ```
 
+Bu komut güncel entegrasyonla ayrıca
+`data/tracking/bench/joint_identity_export_integration_v1` altında çalıştırıldı.
+13 medya/JSON/inceleme dosyası ilk dışa aktarımla bayt düzeyinde aynı çıktı;
+8.828 önce ve 8.638 sonra kişi gözleminde yerel takım/kimlik sözleşmesi korundu.
+[Güncel manifest](measurements/joint-identity-integration-preview-manifest.json)
+ve [doğrulama](measurements/joint-identity-integration-preview-review.json)
+entegrasyon ekini de kaydeder.
+
 Doğrulama; gerçek Supervision takipçisiyle önbellek tekrarı, çekirdek CV
 regresyonları, sıcak/kayıtlı/ayrı süreç ve yeniden başlatma testleri, büyük
 kimlikli olay/eşleme/yük kayıtları, kesit kapsamlı API testleri, tam uygulama
@@ -217,3 +225,11 @@ testleri, Ruff/mypy ve frontend tip/derleme kontrolünü kapsar. PostgreSQL 16
 geçiş ve veri koruyan geri geçiş testi CI'da her denemeye özel şemada çalışır;
 yerel uygulama testleri izole SQLite kullanır. Son test sayıları ve PR sonucu
 tamamlama kaydına eklenir.
+
+Birleşik kodda yerel tam uygulama sonucu **2.837 geçti, 9 atlandı**
+(262,20 saniye); ayrıca gerçek CV ortamında ilgili **164 test geçti**.
+Ruff temiz, mypy 529 kaynak dosyasında hatasız. Frontend TypeScript ve Next
+ESLint kuralları geçti; üretim derlemesi 55/55 statik sayfa üretti.
+Derlemeden sonra yalnız anonim iz açıklaması değişti ve tip/lint kontrolü
+tekrar geçti. Son PostgreSQL bootstrap düzeltmeleri ayrıca geçiş testleriyle
+ve son PR commit'inin tam CI koşusuyla doğrulanır.
