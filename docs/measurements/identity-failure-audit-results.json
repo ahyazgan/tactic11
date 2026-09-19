@@ -1,0 +1,303 @@
+{
+  "scope": "Reproduce two known identity splits without changing the production tracker.\n\nThe one-box removals are visually annotated oracle interventions, never an\nautomatic detector filter. Both windows are already-seen development data.\n",
+  "fixture_sha256": {
+    "tests\\fixtures\\identity_failures\\white_turn.json.gz": "22b667039ddac564d7414cde92c7e89ec91a7279a6906849032d680c63bd5c6b",
+    "tests\\fixtures\\identity_failures\\blue_referee.json.gz": "7a80efa0790f6f83dc9888182019c4b347125f81a34199a6c1d0e7470d598e1c"
+  },
+  "code_sha256_lf": {
+    "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\scripts\\soccertrack_v2\\audit_identity_failures.py": "212ce6037622410e034fac0ad532086e84f2a72f7a17cc9646bf91965bac0987",
+    "app\\tracking\\deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app\\tracking\\_vendor\\deepocsort\\association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app\\tracking\\_vendor\\deepocsort\\kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app\\tracking\\_vendor\\deepocsort\\ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app\\tracking\\_vendor\\deepocsort\\osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app\\tracking\\_vendor\\deepocsort\\__init__.py": "40275e9fcf4f0e93d7d5c4371ca54aa894fc53212bae12205381bc126fd4daf1"
+  },
+  "production_changed": false,
+  "new_control_opened": false,
+  "detailed_trace_sha256": "9bffac2571eef5c9cf02a38bfc9f136da2d40e48ffc659a4f9063f5f64c0176b",
+  "results": {
+    "white_turn": {
+      "original": {
+        "iou": 0.3,
+        "oracle_fragment_removed": false,
+        "endpoint_ids": {
+          "0-280-d20": 9,
+          "0-310-d18": 175
+        },
+        "linked": false,
+        "event_first_stage": {
+          "frame_idx": 298,
+          "target_id": 9,
+          "candidates": [
+            {
+              "raw_index": 17,
+              "box": [
+                2075.0,
+                181.25,
+                2095.625,
+                216.125
+              ],
+              "iou": 0.2122928328003773,
+              "geometrically_eligible": false,
+              "assigned_track_id": null
+            },
+            {
+              "raw_index": 18,
+              "box": [
+                2066.75,
+                191.875,
+                2086.25,
+                225.0
+              ],
+              "iou": 0.45133725131120433,
+              "geometrically_eligible": true,
+              "assigned_track_id": 9
+            }
+          ]
+        },
+        "window_frames": 36
+      },
+      "iou_02": {
+        "iou": 0.2,
+        "oracle_fragment_removed": false,
+        "endpoint_ids": {
+          "0-280-d20": 9,
+          "0-310-d18": 146
+        },
+        "linked": false,
+        "event_first_stage": {
+          "frame_idx": 298,
+          "target_id": 9,
+          "candidates": [
+            {
+              "raw_index": 17,
+              "box": [
+                2075.0,
+                181.25,
+                2095.625,
+                216.125
+              ],
+              "iou": 0.2122928328003773,
+              "geometrically_eligible": true,
+              "assigned_track_id": null
+            },
+            {
+              "raw_index": 18,
+              "box": [
+                2066.75,
+                191.875,
+                2086.25,
+                225.0
+              ],
+              "iou": 0.45133725131120433,
+              "geometrically_eligible": true,
+              "assigned_track_id": 9
+            }
+          ]
+        },
+        "window_frames": 36
+      },
+      "oracle": {
+        "iou": 0.3,
+        "oracle_fragment_removed": true,
+        "endpoint_ids": {
+          "0-280-d20": 9,
+          "0-310-d18": 175
+        },
+        "linked": false,
+        "event_first_stage": {
+          "frame_idx": 298,
+          "target_id": 9,
+          "candidates": [
+            {
+              "raw_index": 17,
+              "box": [
+                2075.0,
+                181.25,
+                2095.625,
+                216.125
+              ],
+              "iou": 0.2122928328003773,
+              "geometrically_eligible": false,
+              "assigned_track_id": null
+            }
+          ]
+        },
+        "window_frames": 36
+      },
+      "oracle_iou_02": {
+        "iou": 0.2,
+        "oracle_fragment_removed": true,
+        "endpoint_ids": {
+          "0-280-d20": 9,
+          "0-310-d18": 9
+        },
+        "linked": true,
+        "event_first_stage": {
+          "frame_idx": 298,
+          "target_id": 9,
+          "candidates": [
+            {
+              "raw_index": 17,
+              "box": [
+                2075.0,
+                181.25,
+                2095.625,
+                216.125
+              ],
+              "iou": 0.2122928328003773,
+              "geometrically_eligible": true,
+              "assigned_track_id": 9
+            }
+          ]
+        },
+        "window_frames": 36
+      }
+    },
+    "blue_referee": {
+      "original": {
+        "iou": 0.3,
+        "oracle_fragment_removed": false,
+        "endpoint_ids": {
+          "3-440-d10": 146,
+          "3-460-d10": 152
+        },
+        "linked": false,
+        "event_first_stage": {
+          "frame_idx": 458,
+          "target_id": 146,
+          "candidates": [
+            {
+              "raw_index": 14,
+              "box": [
+                2609.5,
+                205.625,
+                2634.0,
+                239.375
+              ],
+              "iou": 0.4745158668034234,
+              "geometrically_eligible": true,
+              "assigned_track_id": 152
+            },
+            {
+              "raw_index": 24,
+              "box": [
+                2602.25,
+                230.0,
+                2628.0,
+                248.25
+              ],
+              "iou": 0.4284654117157755,
+              "geometrically_eligible": true,
+              "assigned_track_id": 146
+            }
+          ]
+        },
+        "window_frames": 31
+      },
+      "iou_02": {
+        "iou": 0.2,
+        "oracle_fragment_removed": false,
+        "endpoint_ids": {
+          "3-440-d10": 130,
+          "3-460-d10": 136
+        },
+        "linked": false,
+        "event_first_stage": {
+          "frame_idx": 458,
+          "target_id": 130,
+          "candidates": [
+            {
+              "raw_index": 14,
+              "box": [
+                2609.5,
+                205.625,
+                2634.0,
+                239.375
+              ],
+              "iou": 0.4745158668034234,
+              "geometrically_eligible": true,
+              "assigned_track_id": 136
+            },
+            {
+              "raw_index": 24,
+              "box": [
+                2602.25,
+                230.0,
+                2628.0,
+                248.25
+              ],
+              "iou": 0.4284654117157755,
+              "geometrically_eligible": true,
+              "assigned_track_id": 130
+            }
+          ]
+        },
+        "window_frames": 31
+      },
+      "oracle": {
+        "iou": 0.3,
+        "oracle_fragment_removed": true,
+        "endpoint_ids": {
+          "3-440-d10": 146,
+          "3-460-d10": 146
+        },
+        "linked": true,
+        "event_first_stage": {
+          "frame_idx": 458,
+          "target_id": 146,
+          "candidates": [
+            {
+              "raw_index": 14,
+              "box": [
+                2609.5,
+                205.625,
+                2634.0,
+                239.375
+              ],
+              "iou": 0.4745158668034234,
+              "geometrically_eligible": true,
+              "assigned_track_id": 146
+            }
+          ]
+        },
+        "window_frames": 31
+      },
+      "oracle_iou_02": {
+        "iou": 0.2,
+        "oracle_fragment_removed": true,
+        "endpoint_ids": {
+          "3-440-d10": 130,
+          "3-460-d10": 130
+        },
+        "linked": true,
+        "event_first_stage": {
+          "frame_idx": 458,
+          "target_id": 130,
+          "candidates": [
+            {
+              "raw_index": 14,
+              "box": [
+                2609.5,
+                205.625,
+                2634.0,
+                239.375
+              ],
+              "iou": 0.4745158668034234,
+              "geometrically_eligible": true,
+              "assigned_track_id": 130
+            }
+          ]
+        },
+        "window_frames": 31
+      }
+    }
+  },
+  "visual_artifact_sha256": {
+    "blue_referee.jpg": "d48ba3cae446b1914d3ee7dc20084bc59c1ead3ee5f115616a962a8972a388ef",
+    "blue_referee.mp4": "22b3a19ecd5329b804873aa6e9730a33ed5669754ac79df5f3d3571170bb52ea",
+    "white_turn.jpg": "b9458901aa230deadf2993cbc2e92ab35f0af24133ae7ea57cd4451862b67ede",
+    "white_turn.mp4": "18c327d5c814b358616b1298154f94dd0582705eb28d2630e53fa2fbc31b6c94"
+  }
+}
