@@ -1,0 +1,77 @@
+{
+  "recorded_at_utc": "2026-09-19T15:15:52.333322+00:00",
+  "scope": "Explicit ROI option defaults false across recorded/warm/isolated CLI. Historical identity evidence immutable; 22 cached collection outputs reproduce exactly. This replay does not re-evaluate detector/ball accuracy.",
+  "original_freeze": {
+    "path": "docs/measurements/joint-identity-frozen-decision.json",
+    "sha256": "bd8c9176c818dd952b112260feb5d30d051b627ccb30a04638fc8eb763cabb0c"
+  },
+  "code_changes": {
+    "app/tracking/pipeline.py": {
+      "before_sha256_lf": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+      "after_sha256_lf": "5fd95b40cd71b56d35bd870b822441472d7334a12d25d5b8b05d2a413bd05a52",
+      "reason": "Reject identity refinement for broadcast/nonfixed source even when per-frame calibration is explicitly disabled; fixed-camera classifier unchanged. Add explicit fixed-camera Deep OC-SORT selection while preserving validated default outputs. Add explicit consensus selection; preserve primary detections and team evidence while a shadow tracker corroborates color boundaries."
+    },
+    "scripts/track_video.py": {
+      "before_sha256_lf": "4d185093875d701e305013e8105e3c2c3eaaf30475e10250d2ca3199da26e960",
+      "after_sha256_lf": "ee547efd427ee5039993005cd25830bc010ee566f98efaa6c63c4a79aab3b20d",
+      "reason": "Validate and pass team palette; align operated-camera cut/replay flags with warm worker. Add explicit fixed-camera Deep OC-SORT selection while preserving validated default outputs. Add opt-in ROI flag, default false; preserve old default command behavior."
+    },
+    "scripts/track_live.py": {
+      "before_sha256_lf": "ed327c604f02daa4353c76adc502f833d0f8868afc2ec93453a205551bb0d572",
+      "after_sha256_lf": "6b88f093953f7170fec1f4fe04ecfcf3748fa3929cc95606cd2c18d212af668a",
+      "reason": "Persist first valid palette atomically across isolated/warm restarts; bind it to match/team/calibration/refinement/camera settings; resolve source/model paths before child cwd changes. Add explicit fixed-camera Deep OC-SORT selection while preserving validated default outputs. Add opt-in ROI flag, default false; preserve old default command behavior."
+    }
+  },
+  "added_integration_code_sha256_lf": {
+    "app/tracking/_vendor/__init__.py": "5cd05c98e04f76401abb48a6ffb71a432b87fa9b0a7a6a52524d6318739ec3a7",
+    "app/tracking/_vendor/deepocsort/__init__.py": "40275e9fcf4f0e93d7d5c4371ca54aa894fc53212bae12205381bc126fd4daf1",
+    "app/tracking/_vendor/deepocsort/association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app/tracking/_vendor/deepocsort/kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app/tracking/_vendor/deepocsort/ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app/tracking/_vendor/deepocsort/osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app/tracking/anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app/tracking/deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app/tracking/detect.py": "266672b1eab57d56014e3b898cdba75a0d2c0426436a1fbde92f32a5bc879c2b",
+    "app/tracking/identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+    "app/tracking/tracker_config.py": "d9f0497d2e60c25b0ab0f6a94e2b188f00b1926d57a286aeac48f8a36d5332e0",
+    "scripts/setup_tracking_reid.py": "5622c0d3a20d7717d541466bd21ddc0c12ef64284f10a018e2650c061cce34de",
+    "scripts/soccertrack_v2/benchmark_deepocsort.py": "af08765ed0feb34e8efb5cfce2e93a2415df5fd5405a05575b70bb9b8356d144",
+    "scripts/soccertrack_v2/export_joint_identity.py": "85a4caf02aa21fb03396354f0b2fc40d4e8b34ef4ef9811722df2b681c837773",
+    "scripts/soccertrack_v2/replay_consensus_defaults.py": "1bf64b1528ca0d7f33a07838d94fe10502a7094c39e6387390b74d30eaed91ef",
+    "scripts/soccertrack_v2/replay_consensus_integration.py": "a7bf237117f1690ccb2ac5c6885bde99cb1bd962d25866e0aef80cf5454e63f3",
+    "scripts/soccertrack_v2/replay_reid_integration.py": "548cc74b44036675b64eb11f5ed6844090a36ebdf4f929fdd23503f3488d9e75",
+    "scripts/soccertrack_v2/replay_roi_defaults.py": "551cc1721e02098f494938b2fad3846432a7da010869fbe2dc2c0aa5658d6066",
+    "tests/test_deepocsort.py": "5e0c721b5ba6c5a35580e1eaffc1b5baa0aa7a682a14913a6219e5cd9b4fde0c",
+    "tests/test_detector_roi_batch.py": "b25c5cea7bb3cdfbd5a7614aa3038ef56841c9903e636e1a329538b318e73088",
+    "tests/test_identity_consensus.py": "516a664a80b8d8f049d0ee65e2502da73a52690c7efabfb693013ad217ddd67b",
+    "tests/test_identity_source_guard.py": "89b07437204b8140b55ca71ab9b85fa2be7776f049dd7e89e10aa2c8032f1a30",
+    "tests/test_tracking_cli_identity.py": "9c18146e86297c459ebabf0a2fa0eaaecc806f553a44bc867dfc60925cf1dad6",
+    "tests/test_tracking_reid_freeze.py": "882f859aac8642322d8165729f775f2ddc18231d85bac7812caf20a3f98c94d8",
+    "tests/test_tracking_reid_integration.py": "cb9bb1d62aa4d16b110ceab11ca03f813b87b94dd3ad507550c265af2eb9d03b"
+  },
+  "parity_evidence": {
+    "path": "docs/measurements/joint-identity-roi-integration-parity.json",
+    "sha256": "b26a49c8bbfdd7ecb4585b18dc804cc1c1760a5e5f75564e7293ebadbd0c92f9"
+  },
+  "unchanged_classifier_and_parameters": true,
+  "decision": "Default identity and team classifiers unchanged. Separate neural ROI control failed day final ball equality; ROI stays opt-in. Main Torch grouping was separately validated by PR270.",
+  "additional_integration_scope": [
+    "BigInteger player identity storage and guarded migration",
+    "cross-match/per-period derived-event identity and legacy retry compatibility",
+    "scope-specific UI denominator and shared lossless frame/table token",
+    "Pinned OSNet checkpoint and licensed Deep OC-SORT adapter",
+    "Recorded/warm/isolated tracker selection and independent camera epochs",
+    "Only new default config fields removed for 22 byte-identical prior payloads",
+    "Explicit disabled ROI field excluded only from cache metadata comparison; all source observations/outputs retained."
+  ],
+  "limits": [
+    "Fixed-camera replay parity does not prove moving-camera isolated/warm calibration equivalence.",
+    "IDs isolate segments; they do not identify a person across segments.",
+    "Original preview manifest uses the original freeze; its fixed-camera output is covered by parity."
+  ],
+  "version": 4,
+  "previous_amendment": {
+    "path": "docs/measurements/joint-identity-consensus-integration-amendment.json",
+    "sha256": "68a36fb8ff6402c06507ab8bdb9a853b492e7ce552df5f235e23ec1b2673f416"
+  }
+}

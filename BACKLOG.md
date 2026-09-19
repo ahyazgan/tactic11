@@ -18,6 +18,9 @@
 - [x] Codex kamera: Torch ana dedektöründe gerçek dilim sayısıyla gruplamayı düzelt, eski/yeni çıktı eşitliğini yeni gündüz ve gece kesitlerinde doğrula. (154968d; kontrol 4f1ec8a/e0e06a5)
   Done when: geliştirmede gündüz %28,4/gece %5,8 süre azalması, iki kontrolün dörder tekrarında kare ve olay eşitliği, 2.947 uygulama + 32 ilgili CV testi ve kanıt zinciri raporlu. İlk gece aralık hatası korunup görüntü açılmadan ikame edildi; aday kodu değişmedi. Sonuç: docs/TORCH-GRUPLAMA-SONUCLARI.md. Gerçek zaman veya kimlik doğruluğu tamamlanmış sayılmaz.
 
+- [x] Codex kamera: ayrı top ROI modelini yoğun gözlem ve yeni gündüz/gece kontrolleriyle sınayıp varsayılan kararını ver. (6567f89; kontrol 7fa50fa)
+  Done when: gerçek iki kol/iki tekrar, bütünlük ve ayrıntılı top/oyuncu eşitliği raporlu. Gündüz iki son kare farklı olduğu için varsayılan kapalı; gece çıktı eşit fakat hız artmadı. Sonuç: docs/ROI-GRUPLAMA-SONUCLARI.md. Açık deneysel seçim video/canlı yollarında korunur.
+
 - [ ] Codex kamera: kontrolde görülen beyaz 6 numara yanlış bölünmesini geliştirme senaryosuna bağla; görünüş/renk/hareket desteğini tüm ayrımlarda karşılaştır.
   Done when: yanlış ayrımın kaynak/karar izi açıklanır, alternatif yalnız geliştirmede seçilir; hız ve kutu/kimlik/takım kapsamı ölçülür, sonraki aday yeni kontrolden geçmeden varsayılan olmaz. Önceki aday dört kontrolde üç doğru/bir yanlış ayrım üretti ve reddedildi. Sonuç: docs/KIMLIK-UZLASISI-KONTROL-SONUCLARI.md.
 

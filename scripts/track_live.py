@@ -333,6 +333,8 @@ def main() -> int:
     p.add_argument("--backend", default="auto", choices=["auto", "torch", "onnx"],
                    help="Dedektör arka ucu: auto=ONNX modeli varsa ONNX, yoksa torch")
     p.add_argument("--onnx-model", default=None, help="ONNX model yolu (bkz. export_detector_onnx.py)")
+    p.add_argument("--roi-single-batch", action=argparse.BooleanOptionalAction, default=False,
+                   help="Deneysel CUDA FP16 top ROI modeli; küçük top farkları üretebilir (varsayılan kapalı)")
     p.add_argument("--camera", default="auto",
                    choices=["auto", "static", "broadcast", "operated"],
                    help="Kamera davranışı. auto=ilk segmentten tespit et (sonra "
@@ -414,7 +416,7 @@ def main() -> int:
             calibration=args.calibration,
             detector_cfg=DetectorConfig(
                 threshold=args.threshold, tiles=args.tiles, weights=args.weights,
-                backend=args.backend, onnx_model=args.onnx_model,
+                backend=args.backend, onnx_model=args.onnx_model, roi_single_batch=args.roi_single_batch,
             ),
             pipeline_kwargs={
                 "tracker_backend": args.tracker, "reid_model": args.reid_model,
@@ -442,6 +444,7 @@ def main() -> int:
         cmd = [
             sys.executable, "-m", "scripts.track_video",
             *(["--dense-events"] if args.dense_events else []),
+            "--roi-single-batch" if args.roi_single_batch else "--no-roi-single-batch",
             "--video", str(seg),
             *(["--calibration", args.calibration] if args.calibration else []),
             "--out", str(frames_json), "--match-id", str(args.match_id),
