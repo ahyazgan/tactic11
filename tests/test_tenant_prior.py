@@ -9,6 +9,7 @@ from app.data.loaders.tenant_prior import (
     TENANT_PRIOR_MIN_MATCHES,
     fit_tenant_off_prior,
     off_prior_for,
+    reason_coverage,
     tenant_who_states,
 )
 from app.db import models
@@ -149,3 +150,66 @@ def test_unknown_position_counts_as_midfield_like_the_engine(
     assert states
     from app.data.loaders.tenant_prior import _group
     assert _group(position) == expected
+
+
+def test_injury_substitutions_do_not_feed_the_prior(session) -> None:
+    """Sakatlık bir KARAR değil, mecburiyettir — önsele girmez.
+
+    Ölçülen sınırdı: tablo sakatlık hamlelerini ayıklayamadığı için "bu kulüp
+    bu mevkiyi çıkarır" iddiası seyreliyordu (docs/KARNE-KIRACI-ONSELI.md).
+    0036 göçü sebebi taşıyor; buradan sonrası süzülüyor.
+    """
+    session.info["tenant_id"] = "t-default"
+    _squad(session, 4000, off=6)
+    _squad(session, 4001, off=7)
+    session.commit()
+    assert len(tenant_who_states(session, team_external_id=TEAM)) == 2
+
+    # 4001'deki hamleyi sakatlık olarak işaretle: hamle sayısı 1'e düşmeli.
+    row = session.query(models.PlayerAppearance).filter(
+        models.PlayerAppearance.match_external_id == 4001,
+        models.PlayerAppearance.player_external_id == 7).one()
+    row.substitution_reason = "injury"
+    session.commit()
+    states = tenant_who_states(session, team_external_id=TEAM)
+    assert len(states) == 1
+    assert states[0].match_external_id == 4000
+
+
+def test_unlabelled_rows_are_still_counted(session) -> None:
+    """Sebebi NULL olan eski satırlar SAYILIR — geriye dönük varsayım yapılmaz.
+
+    "Sakatlıktı" demek de "taktikti" demek kadar uydurma olurdu. Kullanılırlar
+    ama sebepsiz oldukları raporlanır.
+    """
+    session.info["tenant_id"] = "t-default"
+    _squad(session, 5000, off=6)          # sebep NULL
+    session.commit()
+    assert len(tenant_who_states(session, team_external_id=TEAM)) == 1
+
+    kapsama = reason_coverage(session, team_external_id=TEAM)
+    assert kapsama["cikis"] == 1
+    assert kapsama["sebepli"] == 0
+    assert kapsama["kapsama"] == 0.0
+
+
+def test_reason_coverage_counts_each_kind(session) -> None:
+    """Kapsama sınırın kendisini görünür kılar; raporlanmazsa sessizce kaybolur."""
+    session.info["tenant_id"] = "t-default"
+    _squad(session, 6000, off=6)
+    _squad(session, 6001, off=7)
+    _squad(session, 6002, off=None, red=8)
+    session.commit()
+    for mid, pid, sebep in ((6000, 6, "tactical"), (6001, 7, "injury"),
+                            (6002, 8, "red_card")):
+        row = session.query(models.PlayerAppearance).filter(
+            models.PlayerAppearance.match_external_id == mid,
+            models.PlayerAppearance.player_external_id == pid).one()
+        row.substitution_reason = sebep
+    session.commit()
+
+    k = reason_coverage(session, team_external_id=TEAM)
+    assert k == {"cikis": 3, "sebepli": 3, "sebepsiz": 0, "kapsama": 1.0,
+                 "taktik": 1, "sakatlik": 1, "kirmizi_kart": 1}
+    # Önsele yalnız taktik olan girer.
+    assert len(tenant_who_states(session, team_external_id=TEAM)) == 1

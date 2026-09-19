@@ -26,11 +26,12 @@ doğru varsayılan: 8 hücreli bir tablo az veriyle kolayca gürültüye oturur.
 
 ## İki bilinen sınır
 
-1. **Sakatlık hamleleri ayıklanamıyor.** `player_appearances` taktik/sakatlık
-   ayrımı taşımıyor. Kırmızı kartlar ayıklanır (`red_cards`), sakatlıklar
-   ayıklanamaz ve tabloyu seyreltir. Külliyat ölçümü taktik hamleleri
-   süzebiliyordu; oradaki kazanç bu yüzden burada olduğundan biraz YÜKSEK
-   görünebilir.
+1. **Sebepsiz eski kayıtlar.** 0036 göçünden beri her değişiklik sebebini
+   taşıyor (`substitution_reason`) ve sakatlık hamleleri artık ayıklanıyor —
+   sakatlık bir karar değil, mecburiyettir. Ama o göçten ÖNCE yazılmış satırlar
+   NULL'dur ve geriye dönük "taktik" VARSAYILMAZ; kullanılırlar ama sebepli
+   olmadıkları `reason_coverage` ile raporlanır. Kapsama düşükse tablo hâlâ
+   seyreltilmiş demektir.
 2. **Sızıntı riski.** Canlı maçta fit yapılırken o maç DIŞARIDA bırakılmalıdır,
    yoksa tablo tahmin ettiği hamleden öğrenir. `exclude_match_id` bunun içindir
    ve çağıranın sorumluluğunda değil, varsayılan davranıştır.
@@ -47,6 +48,9 @@ from app.sports import football
 # Ölçülmüş kapı — bkz. modül docstring'i ve docs/KARNE-KIRACI-ONSELI.md.
 TENANT_PRIOR_MIN_MATCHES = 20
 
+# Bunlar KARAR değil, mecburiyettir: önsele girmezler.
+_NOT_A_DECISION = frozenset({"injury", "red_card"})
+
 # position_played (StatsBomb/API-Football kısa kodu) → önsel grubu.
 # Bilinmeyen "MID" sayılır: canlı motordaki `elite_off_prior` da bilinmeyeni
 # orta saha kabul eder — en kalabalık grup, en yüksek önselli değil.
@@ -61,10 +65,18 @@ def _group(position: str | None) -> str:
 def tenant_who_states(
     session: Session, *, team_external_id: int, exclude_match_id: int | None = None,
 ) -> list[WhoState]:
-    """Kiracının geçmişindeki her değişiklik: kim çıktı, o an sahada kimler vardı?
+    """Kiracının geçmişindeki her TAKTİK değişiklik: kim çıktı, o an sahada kimler?
 
-    Kırmızı kartlar HAMLE SAYILMAZ (çıkış zorunluydu, karar değil) ama sahadaki
-    oyuncu havuzundan da düşerler — atıldıktan sonra aday olamazlar.
+    Hamle sayılmayanlar — ikisi de KARAR değil, mecburiyet:
+
+    - **kırmızı kart** (`red_cards` ya da `substitution_reason == "red_card"`),
+    - **sakatlık** (`substitution_reason == "injury"`).
+
+    İkisi de sahadaki oyuncu havuzundan düşer: çıktıktan sonra aday olamazlar.
+
+    Sebebi NULL olan satırlar (0036 göçünden öncesi) hamle SAYILIR — geriye
+    dönük "sakatlıktı" demek de "taktikti" demek kadar uydurma olurdu. Kaçının
+    sebepli olduğu `reason_coverage` ile ölçülebilir.
     """
     rows = session.execute(
         select(models.PlayerAppearance).where(
@@ -83,6 +95,8 @@ def tenant_who_states(
     for mid, squad in by_match.items():
         for r in squad:
             if r.substituted_out_minute is None or r.red_cards:
+                continue
+            if r.substitution_reason in _NOT_A_DECISION:
                 continue
             minute = float(r.substituted_out_minute)
             # Aday havuzu: o dakikada sahada olanlar. Yarı açık aralık motordaki
@@ -104,6 +118,32 @@ def tenant_who_states(
             states.append(WhoState(match_external_id=mid, player_off=r.player_external_id,
                                    candidates=cands))
     return states
+
+
+def reason_coverage(session: Session, *, team_external_id: int) -> dict[str, int | float]:
+    """Kiracının değişikliklerinin kaçı SEBEPLİ kaydedilmiş?
+
+    Kapsama düşükse tablo hâlâ seyreltilmiş demektir: sebebi bilinmeyen
+    hamlelerin bir kısmı sakatlıktır ve önsele girmemeliydi. Bu sayı
+    raporlanmazsa sınır görünmez olur — 0036 göçünden önceki bütün veri
+    NULL'dur ve sessizce "taktik" gibi davranır.
+    """
+    rows = session.execute(
+        select(models.PlayerAppearance.substitution_reason).where(
+            models.PlayerAppearance.sport == football.SPORT_NAME,
+            models.PlayerAppearance.team_external_id == team_external_id,
+            models.PlayerAppearance.substituted_out_minute.is_not(None),
+        )
+    ).scalars().all()
+    toplam = len(rows)
+    sebepli = sum(1 for r in rows if r)
+    return {
+        "cikis": toplam, "sebepli": sebepli, "sebepsiz": toplam - sebepli,
+        "kapsama": round(sebepli / toplam, 3) if toplam else 0.0,
+        "taktik": sum(1 for r in rows if r == "tactical"),
+        "sakatlik": sum(1 for r in rows if r == "injury"),
+        "kirmizi_kart": sum(1 for r in rows if r == "red_card"),
+    }
 
 
 def fit_tenant_off_prior(

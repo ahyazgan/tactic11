@@ -453,3 +453,52 @@ def test_confidence_freezes_once_the_coach_has_answered(client, match) -> None:
     items = rows if isinstance(rows, list) else rows.get("kararlar", rows.get("items", []))
     row = next(r for r in items if r["id"] == first["id"])
     assert row["confidence"] == 0.4, "cevaptan sonra güven donmalı"
+
+
+# --- hamlenin sebebi -------------------------------------------------------- #
+
+def test_substitution_records_its_reason(client, match) -> None:
+    """Sebep kaydedilmeli: sakatlık kiracının 'kim çıkar' önseline girmemeli."""
+    _lineup(client)
+    r = client.post("/admin/matches/7001/substitution", json={
+        "team_external_id": 11, "minute": 55, "player_off": 9, "player_on": 20,
+        "reason": "injury",
+    })
+    assert r.status_code == 200
+
+    state = client.get("/admin/matches/7001/squad-state",
+                       params={"team_external_id": 11, "minute": 60}).json()
+    assert state["kullanilmis_hak"] == 1, "sakatlık DEĞİŞİKLİK HAKKI harcar"
+
+
+def test_reason_defaults_to_tactical(client, match, session) -> None:
+    """Varsayılan taktik — istisna olan sakatlıktır, tersi değil."""
+    _lineup(client)
+    client.post("/admin/matches/7001/substitution", json={
+        "team_external_id": 11, "minute": 55, "player_off": 9, "player_on": 20,
+    })
+    from app.data.loaders.tenant_prior import reason_coverage
+    k = reason_coverage(session, team_external_id=11)
+    assert k["taktik"] == 1 and k["sakatlik"] == 0
+
+
+def test_unknown_reason_is_rejected(client, match) -> None:
+    """Bilinmeyen sebep sessizce 'taktik' sayılmamalı — yazılmamış veri uydurma."""
+    _lineup(client)
+    r = client.post("/admin/matches/7001/substitution", json={
+        "team_external_id": 11, "minute": 55, "player_off": 9, "player_on": 20,
+        "reason": "rotation",
+    })
+    assert r.status_code == 400
+    assert "rotation" in r.json()["detail"]
+
+
+def test_dismissal_labels_itself_a_red_card(client, match, session) -> None:
+    """Kırmızı kart da sebebini yazar: iki yol aynı alanı doldursun."""
+    _lineup(client)
+    client.post("/admin/matches/7001/dismissal", json={
+        "team_external_id": 11, "minute": 70, "player_external_id": 4,
+    })
+    from app.data.loaders.tenant_prior import reason_coverage
+    k = reason_coverage(session, team_external_id=11)
+    assert k["kirmizi_kart"] == 1 and k["kapsama"] == 1.0

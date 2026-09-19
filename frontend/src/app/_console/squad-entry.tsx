@@ -74,6 +74,9 @@ export function SquadEntry({ matchId, teamId, minute }: {
   const [on, setOn] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [redMode, setRedMode] = useState(false);
+  // Sakatlık hamlesi bir KARAR değil, mecburiyettir: kiracının "kim çıkar"
+  // önseline girmemeli. Varsayılan taktik, çünkü istisna olan sakatlıktır.
+  const [reason, setReason] = useState<"tactical" | "injury">("tactical");
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, setPending] = useState<Agreement[]>([]);
 
@@ -114,10 +117,10 @@ export function SquadEntry({ matchId, teamId, minute }: {
   const saveSub = async () => {
     if (off == null || on == null) return;
     const r = (await call(`/admin/matches/${matchId}/substitution`, {
-      team_external_id: teamId, minute, player_off: off, player_on: on,
+      team_external_id: teamId, minute, player_off: off, player_on: on, reason,
     }, "POST")) as SubResponse | null;
     if (!r) return;
-    setOff(null); setOn(null);
+    setOff(null); setOn(null); setReason("tactical");
     const matched = r.oneriyle_uyusma?.aday_listesinde_gecen_oneri ?? [];
     setPending(matched.filter((m) => m.applied == null));
     setMsg(`değişiklik kaydedildi · kullanılan hak ${r.kullanilmis_hak}`);
@@ -204,6 +207,25 @@ export function SquadEntry({ matchId, teamId, minute }: {
                     onClick={() => setOn(on === p.player_external_id ? null : p.player_external_id)} />
             ))}
           </div>
+          {/*
+            Sebep TEK DOKUNUŞ: sakatlık hamlesi kiracının "kim çıkar" önseline
+            girmemeli — mecburiyet karar değildir. Sormak yerine varsayılan
+            koymak da olurdu ama o zaman her sakatlık sessizce taktik sayılırdı.
+          */}
+          {!redMode && (
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <span style={{ fontSize: 12.5, color: "var(--dim)" }}>Sebep</span>
+              {(["tactical", "injury"] as const).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setReason(r)}
+                  style={btn(reason === r ? "primary" : "ghost")}
+                >
+                  {r === "tactical" ? "Taktik" : "Sakatlık"}
+                </button>
+              ))}
+            </div>
+          )}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button
               onClick={saveSub}

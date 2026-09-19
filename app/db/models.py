@@ -238,6 +238,11 @@ class PlayerAppearance(Base):
     second_yellow: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     substituted_in_minute: Mapped[int | None] = mapped_column(Integer, nullable=True)
     substituted_out_minute: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Hamle KARAR mıydı, mecburiyet miydi? "tactical" | "injury" | "red_card".
+    # NULL = bilinmiyor (0036 göçünden önceki satırlar). Geriye dönük "taktik"
+    # VARSAYILMAZ: kiracının kendi önseli buradan fit ediliyor ve sakatlık bir
+    # karar değildir (docs/KARNE-KIRACI-ONSELI.md).
+    substitution_reason: Mapped[str | None] = mapped_column(String(16), nullable=True)
     position_played: Mapped[str | None] = mapped_column(String(5), nullable=True)
     formation_played: Mapped[str | None] = mapped_column(String(10), nullable=True)
     captain: Mapped[bool | None] = mapped_column(Boolean, nullable=True)

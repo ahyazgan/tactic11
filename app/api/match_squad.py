@@ -88,6 +88,12 @@ class DismissalIn(BaseModel):
     player_external_id: int
 
 
+# Hamlenin sebebi. "tactical" bir KARARdır ve kiracının kendi "kim çıkar"
+# önselini besler; "injury" mecburiyettir ve beslemez. Kırmızı kart ayrı uçtan
+# ("red_card") gelir ve zaten hak harcamaz.
+SUB_REASONS = ("tactical", "injury")
+
+
 class SubstitutionIn(BaseModel):
     team_external_id: int
     minute: float = Field(..., ge=0, le=130)
@@ -95,6 +101,11 @@ class SubstitutionIn(BaseModel):
     player_on: int
     position: str | None = Field(default=None, max_length=8,
                                  description="girenin mevkisi; boşsa çıkanınki devralınır")
+    # Varsayılan "tactical": canlı maçta koç dokunmadan geçmesin diye değil —
+    # değişikliklerin büyük çoğunluğu taktiktir ve sakatlık İSTİSNAdır. Yanlış
+    # varsayılan olmasın diye ekranda tek dokunuşla değiştirilebiliyor.
+    reason: str = Field(default="tactical",
+                        description="tactical | injury — sakatlık önsele girmez")
 
 
 def _match_or_404(session: Session, match_id: int) -> models.Match:
@@ -434,8 +445,14 @@ def post_substitution(
 
     agreement = _agreement(session, match_id, payload.team_external_id,
                            payload.minute, payload.player_off)
+    if payload.reason not in SUB_REASONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"reason '{payload.reason}' geçersiz — {' | '.join(SUB_REASONS)}. "
+                   f"Kırmızı kart için POST /admin/matches/{match_id}/dismissal.")
     _touch_minutes(rows, payload.minute)
     off.substituted_out_minute = _whole_minute(payload.minute)
+    off.substitution_reason = payload.reason
     off.minutes = max(MIN_PLAYED_MINUTES,
                       int(payload.minute - float(off.substituted_in_minute or 0)))
     on = by_id.get(payload.player_on)
@@ -496,6 +513,7 @@ def post_dismissal(
     before = _subs_used(rows, payload.minute)
     row.substituted_out_minute = _whole_minute(payload.minute)
     row.red_cards = 1
+    row.substitution_reason = "red_card"
     row.minutes = max(MIN_PLAYED_MINUTES,
                       int(payload.minute - float(row.substituted_in_minute or 0)))
     session.commit()
