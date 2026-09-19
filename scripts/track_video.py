@@ -77,6 +77,9 @@ def main() -> int:
                         "static=sabit kamera (tam analiz), broadcast=hareketli/yayın "
                         "(top-merkezli, şekil ve bölge analizi kapalı), operated=tek "
                         "hareketli kamera (kesme/tekrar süzgeci kapalı)")
+    from app.tracking.tracker_config import add_tracker_arguments
+
+    add_tracker_arguments(p)
     args = p.parse_args()
 
     anchor = None
@@ -153,6 +156,7 @@ def main() -> int:
         print("kesmeden sonra yeniden yakalama: AÇIK (çapadan, %85 inlier şartı)")
 
     cfg = PipelineConfig(
+        tracker_backend=args.tracker, reid_model=args.reid_model,
         refine_player_identities={"auto": None, "on": True, "off": False}[args.refine_identities],
         dense_events=args.dense_events,
         per_frame_calibration=per_frame,

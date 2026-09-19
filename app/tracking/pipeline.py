@@ -34,6 +34,7 @@ from app.tracking.kit_evidence import extract_kit_evidence
 from app.tracking.person_filter import annotated_boundary, filter_person_tracks
 from app.tracking.person_parts import nested_person_mask
 from app.tracking.teams import TeamAssigner, kit_color
+from app.tracking.tracker_config import validate_tracker_config
 
 # İki arka uç aynı arayüzü verir (detect / split / predict_single / device)
 Detector = RFDetrDetector | OnnxDetector
@@ -87,6 +88,8 @@ class PipelineConfig:
     normalize_kit_light: bool = False  # deneysel; gündüz dış kontrolde regresyon
     filter_off_pitch_tracks: bool | None = None  # None: yalnız doğrulanmış kamera profili
     refine_player_identities: bool | None = None  # None: doğrulanmış sabit kamera profili
+    tracker_backend: str = "supervision"  # deepocsort: explicit experimental fixed-camera profile
+    reid_model: str = "data/tracking/models/osnet_ain_ms_d_c.pth.tar"
 
 
 @dataclass
@@ -325,6 +328,7 @@ def collect_observations(
 
     info = video_info(video_path)
     validate_video_calibration(info, calib)
+    validate_tracker_config(cfg, calib)
     SegmentIdentityNamespace(cfg.period, cfg.clip_offset_minutes)
     refine = identity_refinement_enabled(cfg, calib)
     det = detector or make_detector(cfg.detector)
@@ -338,13 +342,23 @@ def collect_observations(
     # checks. ByteTrack scales this buffer again by frame_rate / 30: the
     # seconds-correct experiment increased kit/identity errors in daylight.
     # Report the actual lifetime below (docs/TAKIP-SUREKLILIGI-SONUCLARI.md).
-    tracker = sv.ByteTrack(
-        track_activation_threshold=cfg.track_activation_threshold,
-        lost_track_buffer=max(1, int(cfg.lost_track_seconds * fps_eff)),
-        minimum_matching_threshold=0.8,
-        frame_rate=max(1, round(fps_eff)),
-        minimum_consecutive_frames=1,
-    )
+    tracker: Any
+    if cfg.tracker_backend == "deepocsort":
+        from app.tracking.deepocsort import DeepOCSortTracker, OSNetEmbedder
+
+        tracker = DeepOCSortTracker(
+            threshold=cfg.track_activation_threshold,
+            lost_frames=int(max(1, round(fps_eff)) / 30 * max(1, int(cfg.lost_track_seconds * fps_eff))),
+            embedder=OSNetEmbedder(cfg.reid_model),
+        )
+    else:
+        tracker = sv.ByteTrack(
+            track_activation_threshold=cfg.track_activation_threshold,
+            lost_track_buffer=max(1, int(cfg.lost_track_seconds * fps_eff)),
+            minimum_matching_threshold=0.8,
+            frame_rate=max(1, round(fps_eff)),
+            minimum_consecutive_frames=1,
+        )
     teams = TeamAssigner()
     per_frame = None
     if cfg.per_frame_calibration:
@@ -456,7 +470,12 @@ def collect_observations(
         balls = balls[_on_pitch_mask(balls, frame_calib, 1.0)]
         if len(balls) > 0:
             balls = balls[balls.confidence >= cfg.ball_threshold]
-        tracked = tracker.update_with_detections(persons)
+        if cfg.tracker_backend == "deepocsort":
+            import cv2
+
+            tracked = tracker.update_with_detections(persons, cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
+        else:
+            tracked = tracker.update_with_detections(persons)
         rows: list[tuple[int, float, float, float, float, float]] = []
         person_kit: dict[str, tuple[float, ...]] | None = {} if refine else None
         for xyxy, conf, tid in zip(tracked.xyxy, tracked.confidence, tracked.tracker_id, strict=True):
@@ -540,6 +559,11 @@ def collect_observations(
                              "kit_color_method": "local_grass_v1" if cfg.normalize_kit_light else "raw_rgb_v1",
                              "ball_spikes_rejected": ball_spikes_rejected,
                              "effective_track_fps": round(fps_eff, 2)}
+    if cfg.tracker_backend == "deepocsort":
+        from app.tracking.deepocsort import MODEL_SHA256, PROFILE
+
+        stats["tracker"] = {"backend": "deepocsort", "profile": PROFILE,
+                            "model_sha256": MODEL_SHA256, "experimental": True}
     if per_frame is not None:
         d_cal = per_frame.frames_calibrated - base[0]
         d_rej = per_frame.frames_rejected - base[1]

@@ -357,7 +357,15 @@ def main() -> int:
     p.add_argument("--isolate", action="store_true",
                    help="Her segmenti ayrı süreçte işle (model her seferinde yeniden "
                         "yüklenir — yavaş, ama segment çökmesi izleyiciyi etkilemez)")
+    from app.tracking.tracker_config import add_tracker_arguments, tracker_context
+
+    add_tracker_arguments(p)
     args = p.parse_args()
+    args.reid_model = str(Path(args.reid_model).resolve())
+    try:
+        tracker_state = tracker_context(args.tracker, args.reid_model)
+    except ValueError as exc:
+        p.error(str(exc))
 
     watch = Path(args.watch).resolve()
     if args.calibration:
@@ -376,6 +384,7 @@ def main() -> int:
     out_dir.mkdir(exist_ok=True)
     state = _load_state(watch)
     anchor_context = {
+        **tracker_state,
         "match_id": args.match_id, "home_team": args.home_team, "away_team": args.away_team,
         "calibration_sha256": (hashlib.sha256(Path(args.calibration).read_bytes()).hexdigest()
                                if args.calibration else None),
@@ -408,6 +417,7 @@ def main() -> int:
                 backend=args.backend, onnx_model=args.onnx_model,
             ),
             pipeline_kwargs={
+                "tracker_backend": args.tracker, "reid_model": args.reid_model,
                 "refine_player_identities": {"auto": None, "on": True, "off": False}[args.refine_identities],
                 "dense_events": args.dense_events,
                 "fps_out": args.fps, "track_fps": args.track_fps,
@@ -438,6 +448,7 @@ def main() -> int:
             "--home-team", str(args.home_team), "--away-team", str(args.away_team),
             "--fps", str(args.fps), "--track-fps", str(args.track_fps),
             "--refine-identities", args.refine_identities,
+            "--tracker", args.tracker, "--reid-model", args.reid_model,
             "--tiles", str(args.tiles), "--threshold", str(args.threshold),
             "--ball-threshold", str(args.threshold),
             "--clip-offset-minutes", repr(offset), "--period", str(args.period),
