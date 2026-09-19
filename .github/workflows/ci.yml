@@ -47,6 +47,20 @@ jobs:
       - name: pytest
         run: pytest -q
 
+  tracker_backends:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned research trackers (no detector or ReID model)
+        run: pip install pytest numpy==2.3.5 scipy==1.15.3 supervision==0.30.2 trackers==2.6.0 "pydantic>=2,<3"
+      - name: Check real backends and evidence preservation
+        run: |
+          python -c "from trackers import BoTSORTTracker, OCSORTTracker, ByteTrackTracker; import supervision"
+          pytest --noconftest -q tests/test_tracker_backend_benchmark.py
+
   migrations:
     runs-on: ubuntu-latest
     steps:
