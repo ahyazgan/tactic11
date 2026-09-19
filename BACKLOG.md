@@ -21,6 +21,9 @@
 - [x] Codex kamera: ayrı top ROI modelini yoğun gözlem ve yeni gündüz/gece kontrolleriyle sınayıp varsayılan kararını ver. (6567f89; kontrol 7fa50fa)
   Done when: gerçek iki kol/iki tekrar, bütünlük ve ayrıntılı top/oyuncu eşitliği raporlu. Gündüz iki son kare farklı olduğu için varsayılan kapalı; gece çıktı eşit fakat hız artmadı. Sonuç: docs/ROI-GRUPLAMA-SONUCLARI.md. Açık deneysel seçim video/canlı yollarında korunur.
 
+- [x] Codex kamera: genel/spor OSNet, GTA kısa parça bağlantısı, optik akış ve mevcut palet desteğini tüm eski ayrımlarda ölç.
+  Done when: yedi ayrımın tamamı, sabit model/kod kaynakları, negatif bulgular, hareket görselleri ve 15 kesit önbellek tanısı raporlu. RGB palet adayı altı doğru ayrımı koruyup beyaz 6 yanlış bölünmesini reddediyor; bağımsız kontrol başarısı değildir. Sonuç: docs/KIMLIK-GORUNUS-TANISI.md; toplu durum: docs/TAKIP-ENTEGRASYON-DURUMU.md.
+
 - [ ] Codex kamera: kontrolde görülen beyaz 6 numara yanlış bölünmesini geliştirme senaryosuna bağla; görünüş/renk/hareket desteğini tüm ayrımlarda karşılaştır.
   Done when: yanlış ayrımın kaynak/karar izi açıklanır, alternatif yalnız geliştirmede seçilir; hız ve kutu/kimlik/takım kapsamı ölçülür, sonraki aday yeni kontrolden geçmeden varsayılan olmaz. Önceki aday dört kontrolde üç doğru/bir yanlış ayrım üretti ve reddedildi. Sonuç: docs/KIMLIK-UZLASISI-KONTROL-SONUCLARI.md.
 
