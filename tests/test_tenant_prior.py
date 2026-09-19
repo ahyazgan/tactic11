@@ -52,24 +52,44 @@ def _seed(session, matches: int, *, off_pos_player: int = 6) -> None:
     session.commit()
 
 
-def test_gate_returns_none_below_the_measured_threshold(session) -> None:
-    """20 maçın altında kiracı tablosu ÜRETİLMEZ — genel tabloya düşülür.
-
-    Kapı ölçüldü, seçilmedi: ayrık yarıda kiracının kendi tablosu genel tabloyu
-    İKİ KOLDA da ancak 20 maçtan sonra geçiyor (docs/KARNE-KIRACI-ONSELI.md).
-    Sekiz hücreli bir tablo az veriyle gürültüye oturur.
-    """
+def test_gate_returns_none_below_the_floor(session) -> None:
+    """Taban maç sayısının altında sınav kurulamaz — genel tabloya düşülür."""
     session.info["tenant_id"] = "t-default"
     _seed(session, TENANT_PRIOR_MIN_MATCHES - 1)
     assert fit_tenant_off_prior(session, team_external_id=TEAM) is None
 
 
-def test_gate_opens_at_the_threshold(session) -> None:
+def test_gate_opens_when_the_tenant_beats_the_global_table_in_both_halves(session) -> None:
+    """Orta-saha-önce bir kulüp (Barcelona/PSG gibi) kendi sınavını geçer."""
     session.info["tenant_id"] = "t-default"
-    _seed(session, TENANT_PRIOR_MIN_MATCHES)
+    _seed(session, TENANT_PRIOR_MIN_MATCHES, off_pos_player=6)     # 6 = orta saha
     prior = fit_tenant_off_prior(session, team_external_id=TEAM)
     assert prior is not None
     assert prior.fitted_on == TENANT_PRIOR_MIN_MATCHES
+
+
+def test_gate_stays_closed_for_a_global_like_club_even_with_plenty_of_matches(session) -> None:
+    """Hücre sırası genel tabloyla aynıysa kendi tablosu BAĞLANMAZ — 30 maçta bile.
+
+    Arsenal WFC böyleydi: sırası genel tablonunkiyle birebir aynı, farkı tam
+    sıfır, 20-30 maçlık tablosu bir kolda genel tablodan KÖTÜ. Yalnız maç
+    sayısına bakan eski kapı o tabloyu bağlardı.
+    """
+    session.info["tenant_id"] = "t-default"
+    _seed(session, 30, off_pos_player=10)                          # 10 = forvet
+    assert fit_tenant_off_prior(session, team_external_id=TEAM) is None
+
+
+def test_thin_cells_fall_back_to_the_global_value(session) -> None:
+    """Az gözlemli hücre Laplace yüzünden yükselir; genel tablonun ölçülmüş değeri kazanır.
+
+    PSG'de yedek kaleci hücresi 1-2 gözlemle ikinci sıraya çıkmıştı.
+    """
+    from app.engine.coach_benchmark import WhoPrior
+    ince = WhoPrior(table={("GK", False): 0.14, ("MID", True): 0.20},
+                    fitted_on=5, seen={("GK", False): 2, ("MID", True): 300})
+    assert off_prior_for(ince, "G", False) is None       # 2 gözlem: genel tabloya düş
+    assert off_prior_for(ince, "M", True) == 0.20        # 300 gözlem: kiracı değeri
 
 
 def test_current_match_is_excluded_from_its_own_fit(session) -> None:
@@ -86,7 +106,7 @@ def test_current_match_is_excluded_from_its_own_fit(session) -> None:
     # Dışlama kapıyı da gerçekten daraltır: tam sınırdayken bir maç eksilince
     # tablo üretilmez.
     session.query(models.PlayerAppearance).filter(
-        models.PlayerAppearance.match_external_id == 1020).delete()
+        models.PlayerAppearance.match_external_id == 1000 + TENANT_PRIOR_MIN_MATCHES).delete()
     session.commit()
     assert fit_tenant_off_prior(session, team_external_id=TEAM) is not None
     assert fit_tenant_off_prior(

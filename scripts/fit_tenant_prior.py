@@ -34,7 +34,7 @@ geçiyorsa kaç maçtan sonra?
 
 ## Kullanım
 
-    $env:DATABASE_URL = "sqlite:///C:/.../demo.db"
+    # Veritabanı GEREKMEZ: hamleler ve kadrolar olay dosyalarından okunur.
     venv\\Scripts\\python.exe -m scripts.fit_tenant_prior
         --tenant t-default --team 217 --events-dir C:\\sb
         --out docs/measurements/tenant-prior-217.json
@@ -48,6 +48,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from app.data.loaders.tenant_prior import MIN_CELL_OBS
 from app.engine.coach_benchmark import (
     WHO_TOP_K,
     WhoPrior,
@@ -100,16 +101,28 @@ def _score(prior: WhoPrior, states: list[WhoState], k: int) -> dict[str, Any]:
             "n": st.n}
 
 
+def _guarded(kiraci: WhoPrior, genel: WhoPrior) -> WhoPrior:
+    """Üretimdeki `off_prior_for` kuralı: ince hücre genel tablonun değerini alır.
+
+    Ölçüm üretimde çalışmayan bir nesneyi ölçmesin diye buradadır. Kural
+    `app/data/loaders/tenant_prior.py` ile aynı: hücre `MIN_CELL_OBS`'tan az
+    aday gözlemiyle fit edildiyse kiracı değeri değil genel değer kullanılır.
+    """
+    table = {k: (v if kiraci.seen.get(k, 0) >= MIN_CELL_OBS else genel.table.get(k, v))
+             for k, v in kiraci.table.items()}
+    return WhoPrior(table=table, fitted_on=kiraci.fitted_on, seen=kiraci.seen)
+
+
 def _arm(train: list[WhoState], test: list[WhoState], label: str,
          genel: WhoPrior, k: int) -> dict[str, Any]:
-    kiraci = fit_who_prior(train)
+    kiraci = _guarded(fit_who_prior(train), genel)
     kd, gd = _score(kiraci, test, k), _score(genel, test, k)
     egri = []
     for n in CURVE_MATCHES:
         alt = _first_n_matches(train, n)
         if len({s.match_external_id for s in alt}) < n:
             break      # o kadar maç yok; eğri burada biter
-        s = _score(fit_who_prior(alt), test, k)
+        s = _score(_guarded(fit_who_prior(alt), genel), test, k)
         egri.append({"egitim_mac": n, "egitim_hamle": len(alt),
                      "isabet_at_1": s["isabet_at_1"], "isabet_at_k": s["isabet_at_k"],
                      "genel_gecti_mi": bool(
@@ -124,8 +137,10 @@ def _arm(train: list[WhoState], test: list[WhoState], label: str,
         "fark_at_k": (None if kd["isabet_at_k"] is None or gd["isabet_at_k"] is None
                       else round(kd["isabet_at_k"] - gd["isabet_at_k"], 3)),
         "ogrenme_egrisi": egri,
-        "tablo": {f"{g}|{int(s)}": round(v, 4)
-                  for (g, s), v in sorted(fit_who_prior(train).table.items())},
+        "tablo": {f"{g}|{int(s)}": round(v, 4) for (g, s), v in sorted(kiraci.table.items())},
+        "hucre_gozlem": {f"{g}|{int(s)}": n for (g, s), n in sorted(kiraci.seen.items())},
+        "ince_hucre_genelden": sorted(f"{g}|{int(s)}" for (g, s), n in kiraci.seen.items()
+                                      if n < MIN_CELL_OBS),
     }
 
 
