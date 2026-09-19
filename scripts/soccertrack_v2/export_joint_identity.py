@@ -30,7 +30,7 @@ from app.tracking.pipeline import (
     write_preview,
 )
 
-DEFAULT_AMENDMENT = Path("docs/measurements/joint-identity-integration-amendment.json")
+DEFAULT_AMENDMENT = Path("docs/measurements/joint-identity-reid-integration-amendment.json")
 INTEGRATION_ALLOWLIST = frozenset({
     "app/tracking/pipeline.py", "scripts/track_video.py", "scripts/track_live.py",
 })
@@ -38,6 +38,16 @@ ADDED_INTEGRATION_ALLOWLIST = frozenset({
     "app/tracking/anchor_state.py", "tests/test_tracking_cli_identity.py",
     "tests/test_identity_source_guard.py",
 })
+REID_INTEGRATION_ALLOWLIST = ADDED_INTEGRATION_ALLOWLIST | frozenset({
+    "app/tracking/deepocsort.py", "app/tracking/tracker_config.py",
+    "app/tracking/_vendor/__init__.py", "app/tracking/_vendor/deepocsort/__init__.py",
+    "app/tracking/_vendor/deepocsort/ocsort.py", "app/tracking/_vendor/deepocsort/association.py",
+    "app/tracking/_vendor/deepocsort/kalmanfilter.py", "app/tracking/_vendor/deepocsort/osnet_ain.py",
+    "tests/test_deepocsort.py", "tests/test_tracking_reid_integration.py",
+    "tests/test_tracking_reid_freeze.py", "scripts/soccertrack_v2/replay_reid_integration.py",
+    "scripts/soccertrack_v2/benchmark_deepocsort.py", "scripts/setup_tracking_reid.py",
+})
+PREVIOUS_AMENDMENT_SHA256 = "9fa78242f1e8a7ee31f105d3be6d0c41ca4332f617eabd49cdd51e0b23fd8e01"
 
 
 def digest(path: Path) -> str:
@@ -99,6 +109,15 @@ def verify_frozen_code(path: Path, amendment_path: Path | None = DEFAULT_AMENDME
     amendment = json.loads(amendment_bytes)
     if not isinstance(amendment, dict):
         raise ValueError("Invalid integration amendment")
+    amendment_version = amendment.get("version", 1)
+    if amendment_version not in (1, 2):
+        raise ValueError("Unsupported integration amendment version")
+    if amendment_version == 2:
+        previous = _reference(amendment.get("previous_amendment"), "previous amendment")
+        if (previous["sha256"] != PREVIOUS_AMENDMENT_SHA256
+                or not Path(previous["path"]).is_file()
+                or digest(Path(previous["path"])) != PREVIOUS_AMENDMENT_SHA256):
+            raise ValueError("Previous integration amendment must remain immutable")
     original = _reference(amendment.get("original_freeze"), "original freeze")
     if Path(original["path"]).resolve() != path.resolve() or original["sha256"] != freeze_digest:
         raise ValueError("Amendment original freeze path or raw digest does not match")
@@ -118,7 +137,8 @@ def verify_frozen_code(path: Path, amendment_path: Path | None = DEFAULT_AMENDME
         changed = sorted(name for name in actual if actual[name] != amended.get(name))
         raise ValueError(f"Production files do not match amended hashes: {', '.join(changed)}")
     added = amendment.get("added_integration_code_sha256_lf")
-    if not isinstance(added, dict) or set(added) != ADDED_INTEGRATION_ALLOWLIST:
+    allowed_added = REID_INTEGRATION_ALLOWLIST if amendment_version == 2 else ADDED_INTEGRATION_ALLOWLIST
+    if not isinstance(added, dict) or set(added) != allowed_added:
         raise ValueError("Amendment must identify exactly the allowed integration helper and evidence tests")
     added = {name: _sha256(value, name) for name, value in added.items()}
     actual_added = {

@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [ ] Codex kamera: Deep OC-SORT + OSNet görünüş eşleştirmesini ölç ve video/canlı takip motoru seçimine entegre et.
+  Done when: resmî sabit model/kod, gerçek görüntü karşılaştırması, kaynak kutu/reset/çapa güvenliği, varsayılan tekrar kanıtı ve son PR kontrolleri tamamlandı. Plan: docs/TAKIP-REID-ENTEGRASYON-PLANI.md.
+
 - [x] Codex kamera: açık kaynak ByteTrack/BoT-SORT/OC-SORT motorlarını aynı tespitlerde karşılaştır; Deep OC-SORT uyumluluğunu incele. (3eb023b)
   Done when: 11 kesit, motor başına 4.125 kare, 44 birebir tekrar; kişi/forma/kapsam ve süre ölçümleri, 65 ilgili CV testi, 2.882 uygulama testi ve PR kontrolleri tamamlandı. Sonuç: docs/TAKIP-MOTORU-KARSILASTIRMA-SONUCLARI.md. Hiçbir alternatif tüm geliştirme kapılarını geçmedi; üretim motoru korundu, yeni kontrol açılmadı. Deep OC-SORT'un kaynak/CUDA uyumu incelendi; ReID çıkarımı henüz ölçülmedi.
 

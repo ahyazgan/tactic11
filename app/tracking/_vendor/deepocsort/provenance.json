@@ -1,0 +1,25 @@
+{
+  "commit": "6bb51d027b137233f5c520b6fcc4f2ae387a6ba9",
+  "files": {
+    "ocsort.py": {
+      "source_path": "trackers/integrated_ocsort_embedding/ocsort.py",
+      "original_sha256_lf": "2f4d4ccf8ce7f703367607bcb45d7a6b92ea496500881bf3599fe0a65563388c",
+      "adapted_sha256_lf": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d"
+    },
+    "association.py": {
+      "source_path": "trackers/integrated_ocsort_embedding/association.py",
+      "original_sha256_lf": "f3fe722f4dab0268f509d59ef18ec8207ca6ad101e9d78b94e4bd3edbe8dd932",
+      "adapted_sha256_lf": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055"
+    },
+    "kalmanfilter.py": {
+      "source_path": "trackers/integrated_ocsort_embedding/kalmanfilter.py",
+      "original_sha256_lf": "76d5998a4c5cae45a9261336c055b5cd801082e3651036535d4378c33bdea2f1",
+      "adapted_sha256_lf": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36"
+    },
+    "osnet_ain.py": {
+      "source_path": "external/deep-person-reid/torchreid/models/osnet_ain.py",
+      "original_sha256_lf": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+      "adapted_sha256_lf": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4"
+    }
+  }
+}

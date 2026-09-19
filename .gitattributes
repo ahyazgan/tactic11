@@ -5,6 +5,7 @@ docs/measurements/joint-identity-*.txt -text
 docs/measurements/joint-identity-control-day-evidence/** -text
 docs/measurements/duplicate-part-*.json -text
 docs/measurements/tracker-backends-*.json -text
+docs/measurements/deepocsort-*.json -text
 docs/SABIT-KAMERA-KONTROL-ETIKETLEME.md -text
 docs/SABIT-KAMERA-KIMLIK-PLANI.md -text
 

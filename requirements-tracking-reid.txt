@@ -1,0 +1,5 @@
+# Optional additions to the existing venv-cv. Install a CUDA-compatible Torch
+# build separately; the measured build is torch 2.11.0+cu128 (RTX 5060 Laptop).
+# OSNet model downloads are explicit via scripts.setup_tracking_reid.
+filterpy==1.4.5
+gdown==6.2.0

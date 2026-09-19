@@ -1,0 +1,229 @@
+{
+  "video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+  "source_seconds": 30,
+  "frames_written": 125,
+  "summary": {
+    "sampled_frames": 375,
+    "track_fps": 15.0,
+    "effective_track_fps": 12.5,
+    "frames_written": 125,
+    "fps_out": 5.0,
+    "event_frames_used": 125,
+    "dense_events": false,
+    "derived_events": {
+      "derived_passes": [],
+      "derived_defensive_actions": []
+    },
+    "defensive_actions": {
+      "count": 0,
+      "rejected": {
+        "ball_unobserved_or_team_invalid": 125
+      },
+      "note": "yaln\u0131z g\u00f6zlenmi\u015f top kazan\u0131mlar\u0131; tackle/interception ayr\u0131m\u0131 ve tam savunma kapsamas\u0131 yok"
+    },
+    "tracks": 89,
+    "identity_scope": {
+      "period": 1,
+      "clip_offset_minutes": 0.0,
+      "namespace": 0,
+      "cross_segment_person_identity": false
+    },
+    "players_per_frame_mean": 24.0,
+    "team_counts": {
+      "home": 50,
+      "away": 31,
+      "unassigned": 8
+    },
+    "team_assignment_quality": {
+      "color_method": "raw_rgb_v1",
+      "frames_evaluated": 125,
+      "overfull_frames": 90,
+      "overfull_frame_ratio": 0.72,
+      "assigned_players_per_frame": 22.28,
+      "note": "bir tak\u0131ma 12+ oyuncu atanm\u0131\u015f kareler var; tak\u0131m atamas\u0131 belirsiz"
+    },
+    "ball_frames": 0,
+    "ball_sources": {
+      "det": 0,
+      "roi": 0,
+      "interp": 0
+    },
+    "calibration_reprojection_m": 1.432,
+    "passes": {
+      "count": 0,
+      "complete": 0,
+      "turnovers": 0,
+      "actor_ratio": 0.0,
+      "rejected": {},
+      "note": "hi\u00e7bir karede topu tutan belirlenemedi \u2014 top takibi ya da tak\u0131m atamas\u0131 \u00e7al\u0131\u015fmam\u0131\u015f; pas \u00e7\u0131kar\u0131m\u0131 yap\u0131lamaz"
+    },
+    "calibration_stats": {
+      "per_frame_calibration": false,
+      "tracker_resets": 0,
+      "calibration_gap_resets": 0,
+      "requested_lost_track_seconds": 1.5,
+      "effective_lost_track_seconds": 0.56,
+      "person_filter": {
+        "method": "annotated_perimeter_track_v1",
+        "applied": true,
+        "skip_reason": null,
+        "observations_before": 11443,
+        "observations_removed": 2445,
+        "tracks_removed": 30,
+        "min_field_observations": 2,
+        "tolerance_px": 2.16,
+        "rejected_tracks": [
+          {
+            "continuity_id": 0,
+            "track_id": 1
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 2
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 3
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 4
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 28
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 29
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 30
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 31
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 32
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 42
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 44
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 55
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 72
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 98
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 104
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 110
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 134
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 135
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 142
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 152
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 167
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 170
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 188
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 196
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 214
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 215
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 224
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 226
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 227
+          },
+          {
+            "continuity_id": 0,
+            "track_id": 229
+          }
+        ],
+        "enablement": "camera_profile"
+      },
+      "identity_refinement_enabled": false,
+      "duplicate_parts_removed": 0,
+      "kit_color_method": "raw_rgb_v1",
+      "ball_spikes_rejected": 0,
+      "effective_track_fps": 12.5,
+      "tracker": {
+        "backend": "deepocsort",
+        "profile": "deepocsort-osnet-fixed-v1",
+        "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+        "experimental": true
+      }
+    },
+    "team_colors": [
+      [
+        120.0,
+        157.0,
+        200.8
+      ],
+      [
+        234.6,
+        239.1,
+        245.2
+      ]
+    ]
+  },
+  "scope": "Actual process_video + OSNet CUDA + source decoding/color/frames/preview. Detector replayed immutable RF-DETR person boxes; no detector rerun or ball input. No DB ingest.",
+  "artifacts": {
+    ".cache\\reid_pipeline_demo_v2\\preview.mp4": "952e2d6f324fa7d747ee0b5bc2a481241c9cfb7fab217ef6d271a29f3fbc3d74",
+    ".cache\\reid_pipeline_demo_v2\\frames.json": "2c27d49eba8b1ed8084ed3e1d861a40f4d67b8c321d62b96ca98c2becfa66eac"
+  }
+}
