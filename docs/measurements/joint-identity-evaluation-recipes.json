@@ -1,0 +1,20 @@
+{
+  "scope": "Byte-exact historical audit recipes, not modules to run over existing frozen results. Original file and output locations are retained inside each archive. Core reusable evaluators are committed under scripts/soccertrack_v2.",
+  "recipes": [
+    {
+      "original_path": ".cache/joint_control_day_blind/score_frozen_day.py",
+      "archive_path": "docs/measurements/joint-identity-control-day-scoring.py.txt",
+      "sha256": "331e15d37f42e545d5a492cf8cab6bc186382bc36cb8334c2b04463fb54e8866"
+    },
+    {
+      "original_path": ".cache/kit_joint_agent/promote_night_control_results.py",
+      "archive_path": "docs/measurements/joint-identity-control-night-scoring.py.txt",
+      "sha256": "f206b3f4bcb99334bfbed3bd9c389de22d9a89f2c753a93531c9feb2faf74d52"
+    },
+    {
+      "original_path": ".cache/kit_joint_agent/promote_integration_parity_v1.py",
+      "archive_path": "docs/measurements/joint-identity-integration-parity-recipe.py.txt",
+      "sha256": "c466d79898aa7b8779b5e91ba169b3e250f02b41fadbfe66b005c1190dbaaceb"
+    }
+  ]
+}

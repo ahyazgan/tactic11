@@ -1,0 +1,3123 @@
+{
+  "protocol": "docs/SABIT-KAMERA-KONTROL-ETIKETLEME.md",
+  "selection": "all raw person detections at374/686; association endpoints404/716",
+  "predictions_visible_during_labeling": false,
+  "independently_adjudicated": false,
+  "reviewer": "root model visual review; no human review",
+  "input_sha256": {
+    "data\\tracking\\bench\\identity_day_detections\\seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0006.json": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4": "d3810e6d7d940bcd854d594a6c4a76998db9200874bf19e2b1b828611a6b6372"
+  },
+  "observations": [
+    {
+      "id": "6-374-d0",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 0,
+      "bbox": [
+        1351.875,
+        224.5,
+        1372.5,
+        268.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d1",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 1,
+      "bbox": [
+        1271.75,
+        237.25,
+        1294.875,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d2",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 2,
+      "bbox": [
+        1357.75,
+        159.375,
+        1372.875,
+        189.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d3",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 3,
+      "bbox": [
+        1309.125,
+        166.375,
+        1324.125,
+        194.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d4",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 4,
+      "bbox": [
+        1261.75,
+        233.5,
+        1281.4375,
+        269.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d5",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 5,
+      "bbox": [
+        1528.75,
+        143.5,
+        1545.25,
+        175.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d6",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 6,
+      "bbox": [
+        1238.9375,
+        174.25,
+        1253.9375,
+        202.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d7",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 7,
+      "bbox": [
+        1586.0,
+        141.125,
+        1603.25,
+        168.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d8",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 8,
+      "bbox": [
+        2322.0,
+        188.5,
+        2343.9375,
+        245.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d9",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 9,
+      "bbox": [
+        2480.5,
+        143.875,
+        2497.375,
+        162.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d10",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 10,
+      "bbox": [
+        3100.25,
+        226.25,
+        3119.25,
+        251.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d11",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 11,
+      "bbox": [
+        777.5,
+        312.25,
+        800.25,
+        355.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d12",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 12,
+      "bbox": [
+        751.25,
+        318.875,
+        772.0,
+        358.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d13",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 13,
+      "bbox": [
+        1097.0,
+        249.109375,
+        1117.5,
+        290.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d14",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 14,
+      "bbox": [
+        877.8125,
+        313.6875,
+        898.625,
+        356.1875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d15",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 15,
+      "bbox": [
+        860.625,
+        329.1875,
+        882.5,
+        374.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d16",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 16,
+      "bbox": [
+        917.75,
+        282.6875,
+        936.625,
+        323.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d17",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 17,
+      "bbox": [
+        1141.0,
+        264.71875,
+        1161.0,
+        310.4375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d18",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 18,
+      "bbox": [
+        956.0,
+        272.65625,
+        974.875,
+        311.3125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d19",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 19,
+      "bbox": [
+        986.5,
+        268.3125,
+        1005.25,
+        307.9375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d20",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 20,
+      "bbox": [
+        1000.0,
+        275.875,
+        1020.375,
+        312.9375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d21",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 21,
+      "bbox": [
+        976.875,
+        272.0625,
+        994.625,
+        312.4375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d22",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 22,
+      "bbox": [
+        807.1875,
+        297.1875,
+        828.34375,
+        338.5625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d23",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 23,
+      "bbox": [
+        1634.375,
+        230.07415771484375,
+        1654.125,
+        255.1875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d24",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 24,
+      "bbox": [
+        2321.5,
+        230.09063720703125,
+        2337.5,
+        245.671875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d25",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 25,
+      "bbox": [
+        162.625,
+        531.1875,
+        193.75,
+        571.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d26",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 26,
+      "bbox": [
+        468.0,
+        681.125,
+        482.0625,
+        693.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d27",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 27,
+      "bbox": [
+        774.0520629882812,
+        713.875,
+        784.96875,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d28",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 28,
+      "bbox": [
+        2977.0,
+        719.25,
+        2998.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d29",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 29,
+      "bbox": [
+        3624.25,
+        635.125,
+        3636.125,
+        652.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d30",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 30,
+      "bbox": [
+        3989.75,
+        697.125,
+        4034.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d31",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 31,
+      "bbox": [
+        556.625,
+        891.5,
+        583.125,
+        919.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d32",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 32,
+      "bbox": [
+        1795.5,
+        793.625,
+        1824.0,
+        818.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d33",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 33,
+      "bbox": [
+        2105.75,
+        808.625,
+        2123.125,
+        828.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d34",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 34,
+      "bbox": [
+        3156.875,
+        742.34375,
+        3189.5625,
+        771.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d35",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 35,
+      "bbox": [
+        3619.5,
+        797.125,
+        3643.25,
+        821.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d36",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 36,
+      "bbox": [
+        775.8193359375,
+        949.625,
+        810.53125,
+        973.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d37",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 37,
+      "bbox": [
+        846.8125,
+        966.625,
+        889.0,
+        987.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-374-d38",
+      "segment": 6,
+      "frame_idx": 374,
+      "detector_index": 38,
+      "bbox": [
+        1343.125,
+        926.0,
+        1428.0,
+        1060.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 14.96
+    },
+    {
+      "id": "6-404-d0",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 0,
+      "bbox": [
+        1099.5,
+        245.625,
+        1120.75,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d1",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 1,
+      "bbox": [
+        1216.5,
+        237.375,
+        1229.0,
+        269.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d2",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 2,
+      "bbox": [
+        1328.5,
+        226.5,
+        1349.875,
+        268.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d3",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 3,
+      "bbox": [
+        1305.25,
+        166.375,
+        1320.125,
+        194.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d4",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 4,
+      "bbox": [
+        1245.5625,
+        172.5,
+        1260.875,
+        202.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d5",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 5,
+      "bbox": [
+        1222.65625,
+        236.375,
+        1242.625,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d6",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 6,
+      "bbox": [
+        1347.0,
+        159.875,
+        1363.375,
+        190.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d7",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 7,
+      "bbox": [
+        1528.75,
+        143.25,
+        1545.5,
+        176.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d8",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 8,
+      "bbox": [
+        1616.0,
+        206.5,
+        1639.1875,
+        256.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d9",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 9,
+      "bbox": [
+        2317.5,
+        190.25,
+        2338.5,
+        244.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d10",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 10,
+      "bbox": [
+        2480.875,
+        142.875,
+        2500.0,
+        162.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d11",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 11,
+      "bbox": [
+        2391.625,
+        127.4375,
+        2409.3125,
+        153.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d12",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 12,
+      "bbox": [
+        3100.75,
+        225.75,
+        3119.75,
+        251.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d13",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 13,
+      "bbox": [
+        778.75,
+        312.625,
+        801.0,
+        355.3125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d14",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 14,
+      "bbox": [
+        729.0,
+        321.5625,
+        749.0,
+        362.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d15",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 15,
+      "bbox": [
+        915.875,
+        302.6875,
+        937.125,
+        343.8125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d16",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 16,
+      "bbox": [
+        900.4375,
+        318.0,
+        918.875,
+        360.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d17",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 17,
+      "bbox": [
+        1119.0,
+        270.0625,
+        1141.75,
+        316.8125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d18",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 18,
+      "bbox": [
+        903.375,
+        283.03125,
+        922.25,
+        321.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d19",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 19,
+      "bbox": [
+        931.5,
+        277.8125,
+        948.625,
+        315.6875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d20",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 20,
+      "bbox": [
+        987.625,
+        269.5625,
+        1008.875,
+        311.1875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d21",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 21,
+      "bbox": [
+        940.75,
+        281.25,
+        960.75,
+        321.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d22",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 22,
+      "bbox": [
+        1021.5,
+        265.40625,
+        1039.75,
+        302.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d23",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 23,
+      "bbox": [
+        1006.375,
+        269.5,
+        1025.5,
+        310.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d24",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 24,
+      "bbox": [
+        812.75,
+        295.25,
+        833.75,
+        336.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d25",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 25,
+      "bbox": [
+        1229.75,
+        241.8671875,
+        1253.0,
+        283.3125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d26",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 26,
+      "bbox": [
+        2318.25,
+        230.0494384765625,
+        2330.25,
+        245.0859375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d27",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 27,
+      "bbox": [
+        3641.0,
+        272.71875,
+        3664.96875,
+        300.5625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d28",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 28,
+      "bbox": [
+        128.125,
+        540.3125,
+        159.375,
+        583.6875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d29",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 29,
+      "bbox": [
+        468.0625,
+        681.0,
+        482.25,
+        693.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d30",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 30,
+      "bbox": [
+        774.0208282470703,
+        713.875,
+        784.9921875,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d31",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 31,
+      "bbox": [
+        2977.0,
+        719.25,
+        2998.75,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d32",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 32,
+      "bbox": [
+        556.875,
+        891.5,
+        583.25,
+        919.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d33",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 33,
+      "bbox": [
+        1163.0,
+        766.6875,
+        1276.5,
+        827.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d34",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 34,
+      "bbox": [
+        1795.5,
+        793.5,
+        1824.0,
+        818.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d35",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 35,
+      "bbox": [
+        2105.625,
+        808.625,
+        2122.75,
+        828.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d36",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 36,
+      "bbox": [
+        3157.875,
+        742.59375,
+        3189.75,
+        771.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d37",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 37,
+      "bbox": [
+        3620.0,
+        797.0,
+        3642.625,
+        821.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d38",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 38,
+      "bbox": [
+        3963.5,
+        700.1328125,
+        4020.0,
+        754.9375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d39",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 39,
+      "bbox": [
+        776.041015625,
+        949.625,
+        810.71875,
+        973.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d40",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 40,
+      "bbox": [
+        979.0,
+        819.890625,
+        1056.25,
+        968.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-404-d41",
+      "segment": 6,
+      "frame_idx": 404,
+      "detector_index": 41,
+      "bbox": [
+        1337.875,
+        945.0,
+        1432.5,
+        1062.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 16.16
+    },
+    {
+      "id": "6-686-d0",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 0,
+      "bbox": [
+        1142.25,
+        190.375,
+        1158.75,
+        219.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d1",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 1,
+      "bbox": [
+        1071.5,
+        246.375,
+        1090.25,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d2",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 2,
+      "bbox": [
+        1083.25,
+        246.125,
+        1102.75,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d3",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 3,
+      "bbox": [
+        1031.25,
+        252.25,
+        1050.0,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d4",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 4,
+      "bbox": [
+        1347.0,
+        159.75,
+        1363.125,
+        192.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d5",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 5,
+      "bbox": [
+        1304.125,
+        167.0,
+        1319.75,
+        196.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d6",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 6,
+      "bbox": [
+        1241.1875,
+        223.25,
+        1259.3125,
+        263.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d7",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 7,
+      "bbox": [
+        1588.25,
+        205.75,
+        1609.0,
+        257.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d8",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 8,
+      "bbox": [
+        1528.75,
+        143.25,
+        1544.75,
+        176.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d9",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 9,
+      "bbox": [
+        1247.4375,
+        173.875,
+        1261.875,
+        202.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d10",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 10,
+      "bbox": [
+        2285.75,
+        192.25,
+        2302.75,
+        242.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d11",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 11,
+      "bbox": [
+        2248.5,
+        128.625,
+        2265.0,
+        152.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d12",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 12,
+      "bbox": [
+        2478.125,
+        141.75,
+        2494.125,
+        161.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d13",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 13,
+      "bbox": [
+        2709.375,
+        125.1875,
+        2726.828125,
+        154.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d14",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 14,
+      "bbox": [
+        3101.75,
+        226.125,
+        3120.5,
+        251.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d15",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 15,
+      "bbox": [
+        782.25,
+        309.6875,
+        802.75,
+        352.4375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d16",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 16,
+      "bbox": [
+        725.5,
+        324.25,
+        745.5,
+        364.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d17",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 17,
+      "bbox": [
+        821.0,
+        292.125,
+        841.0,
+        334.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d18",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 18,
+      "bbox": [
+        833.25,
+        293.9375,
+        853.25,
+        332.6875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d19",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 19,
+      "bbox": [
+        897.5,
+        278.84375,
+        915.75,
+        316.4375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d20",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 20,
+      "bbox": [
+        1113.75,
+        268.625,
+        1135.5,
+        314.1875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d21",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 21,
+      "bbox": [
+        1032.75,
+        275.8125,
+        1050.5,
+        317.8125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d22",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 22,
+      "bbox": [
+        1042.75,
+        252.953125,
+        1062.25,
+        294.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d23",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 23,
+      "bbox": [
+        980.875,
+        312.1875,
+        1005.0,
+        365.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d24",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 24,
+      "bbox": [
+        1054.75,
+        254.109375,
+        1070.75,
+        292.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d25",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 25,
+      "bbox": [
+        2287.75,
+        230.0,
+        2300.75,
+        243.1171875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d26",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 26,
+      "bbox": [
+        3641.0208282470703,
+        272.65625,
+        3665.0,
+        300.0625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d27",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 27,
+      "bbox": [
+        68.875,
+        552.25,
+        102.4375,
+        592.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d28",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 28,
+      "bbox": [
+        468.5625,
+        681.0,
+        482.5,
+        693.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d29",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 29,
+      "bbox": [
+        748.25,
+        714.0,
+        783.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d30",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 30,
+      "bbox": [
+        774.079833984375,
+        713.75,
+        784.8203125,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d31",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 31,
+      "bbox": [
+        2977.0,
+        719.25,
+        2998.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d32",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 32,
+      "bbox": [
+        1795.25,
+        793.875,
+        1824.25,
+        818.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d33",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 33,
+      "bbox": [
+        2105.75,
+        808.5,
+        2123.125,
+        828.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d34",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 34,
+      "bbox": [
+        3157.21875,
+        742.0,
+        3189.0625,
+        771.0625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d35",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 35,
+      "bbox": [
+        556.375,
+        891.6875,
+        582.625,
+        920.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d36",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 36,
+      "bbox": [
+        776.625,
+        948.125,
+        811.875,
+        973.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d37",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 37,
+      "bbox": [
+        846.5625,
+        966.5,
+        888.0,
+        987.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-686-d38",
+      "segment": 6,
+      "frame_idx": 686,
+      "detector_index": 38,
+      "bbox": [
+        1220.0,
+        902.75,
+        1303.625,
+        1065.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 27.44
+    },
+    {
+      "id": "6-716-d0",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 0,
+      "bbox": [
+        1071.75,
+        247.25,
+        1090.75,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d1",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 1,
+      "bbox": [
+        1081.75,
+        246.5,
+        1101.25,
+        269.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d2",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 2,
+      "bbox": [
+        1031.25,
+        253.625,
+        1050.0,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d3",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 3,
+      "bbox": [
+        1344.5,
+        160.5,
+        1361.625,
+        192.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d4",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 4,
+      "bbox": [
+        1239.3125,
+        223.875,
+        1258.5625,
+        263.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d5",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 5,
+      "bbox": [
+        1304.875,
+        165.5,
+        1321.125,
+        196.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d6",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 6,
+      "bbox": [
+        1251.0625,
+        174.0,
+        1268.875,
+        203.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d7",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 7,
+      "bbox": [
+        1528.5,
+        144.0,
+        1545.0,
+        175.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d8",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 8,
+      "bbox": [
+        2285.25,
+        192.875,
+        2302.25,
+        243.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d9",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 9,
+      "bbox": [
+        2248.75,
+        128.875,
+        2265.25,
+        152.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d10",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 10,
+      "bbox": [
+        2479.75,
+        142.875,
+        2496.875,
+        162.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d11",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 11,
+      "bbox": [
+        782.0,
+        310.25,
+        802.5,
+        352.9375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d12",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 12,
+      "bbox": [
+        724.0,
+        324.8125,
+        745.0,
+        364.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d13",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 13,
+      "bbox": [
+        893.4375,
+        279.8125,
+        913.375,
+        316.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d14",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 14,
+      "bbox": [
+        833.09375,
+        294.375,
+        853.0625,
+        332.125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d15",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 15,
+      "bbox": [
+        1025.25,
+        277.6875,
+        1047.0,
+        318.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d16",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 16,
+      "bbox": [
+        1104.0,
+        270.625,
+        1126.25,
+        316.0625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d17",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 17,
+      "bbox": [
+        1047.75,
+        253.5625,
+        1066.25,
+        293.78125
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d18",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 18,
+      "bbox": [
+        1032.75,
+        255.28125,
+        1052.0,
+        296.75
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d19",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 19,
+      "bbox": [
+        1588.25,
+        230.0494384765625,
+        1608.25,
+        257.015625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d20",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 20,
+      "bbox": [
+        2287.25,
+        230.0,
+        2300.0,
+        243.171875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d21",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 21,
+      "bbox": [
+        74.6875,
+        549.875,
+        101.6875,
+        590.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d22",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 22,
+      "bbox": [
+        468.5,
+        681.125,
+        482.375,
+        693.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d23",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 23,
+      "bbox": [
+        774.0034713745117,
+        713.75,
+        784.7734375,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d24",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 24,
+      "bbox": [
+        2976.75,
+        719.25,
+        2998.5,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d25",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 25,
+      "bbox": [
+        575.25,
+        891.375,
+        595.5,
+        914.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d26",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 26,
+      "bbox": [
+        787.984375,
+        946.75,
+        811.15625,
+        960.0
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d27",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 27,
+      "bbox": [
+        823.25,
+        794.125,
+        903.75,
+        930.25
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d28",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 28,
+      "bbox": [
+        1795.5,
+        793.8125,
+        1824.5,
+        818.625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d29",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 29,
+      "bbox": [
+        2105.75,
+        808.5,
+        2123.125,
+        828.5
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d30",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 30,
+      "bbox": [
+        3156.59375,
+        741.9375,
+        3189.25,
+        771.0625
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d31",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 31,
+      "bbox": [
+        556.5,
+        891.625,
+        582.25,
+        920.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d32",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 32,
+      "bbox": [
+        774.75,
+        948.0,
+        812.0,
+        973.375
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    },
+    {
+      "id": "6-716-d33",
+      "segment": 6,
+      "frame_idx": 716,
+      "detector_index": 33,
+      "bbox": [
+        846.75,
+        966.75,
+        887.625,
+        987.875
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4",
+      "seconds": 28.64
+    }
+  ],
+  "pairs": [
+    {
+      "left": "6-374-d0",
+      "right": "6-404-d2",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d0.jpg"
+    },
+    {
+      "left": "6-374-d2",
+      "right": "6-404-d6",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d2.jpg"
+    },
+    {
+      "left": "6-374-d3",
+      "right": "6-404-d3",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d3.jpg"
+    },
+    {
+      "left": "6-374-d5",
+      "right": "6-404-d7",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d5.jpg"
+    },
+    {
+      "left": "6-374-d6",
+      "right": "6-404-d4",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d6.jpg"
+    },
+    {
+      "left": "6-374-d8",
+      "right": "6-404-d9",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d8.jpg"
+    },
+    {
+      "left": "6-374-d9",
+      "right": "6-404-d10",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d9.jpg"
+    },
+    {
+      "left": "6-374-d10",
+      "right": "6-404-d12",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d10.jpg"
+    },
+    {
+      "left": "6-374-d11",
+      "right": "6-404-d13",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d11.jpg"
+    },
+    {
+      "left": "6-374-d12",
+      "right": "6-404-d14",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d12.jpg"
+    },
+    {
+      "left": "6-374-d13",
+      "right": "6-404-d0",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d13.jpg"
+    },
+    {
+      "left": "6-374-d14",
+      "right": "6-404-d15",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d14.jpg"
+    },
+    {
+      "left": "6-374-d15",
+      "right": "6-404-d16",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d15.jpg"
+    },
+    {
+      "left": "6-374-d16",
+      "right": "6-404-d18",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d16.jpg"
+    },
+    {
+      "left": "6-374-d17",
+      "right": "6-404-d17",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d17.jpg"
+    },
+    {
+      "left": "6-374-d18",
+      "right": "6-404-d19",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d18.jpg"
+    },
+    {
+      "left": "6-374-d21",
+      "right": "6-404-d21",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d21.jpg"
+    },
+    {
+      "left": "6-374-d22",
+      "right": "6-404-d24",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d22.jpg"
+    },
+    {
+      "left": "6-374-d23",
+      "right": "6-404-d8",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Only waist/legs boxed. Same isolated person visible in temporal strip; no full-body source box at start.",
+      "review_image": "association-6-374-d23.jpg"
+    },
+    {
+      "left": "6-374-d24",
+      "right": "6-404-d9",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Contained red lower-leg duplicate of source d8.",
+      "review_image": "association-6-374-d24.jpg"
+    },
+    {
+      "left": "6-374-d25",
+      "right": "6-404-d28",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d25.jpg"
+    },
+    {
+      "left": "6-374-d30",
+      "right": "6-404-d38",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d30.jpg"
+    },
+    {
+      "left": "6-374-d38",
+      "right": "6-404-d41",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d38.jpg"
+    },
+    {
+      "left": "6-686-d4",
+      "right": "6-716-d3",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d4.jpg"
+    },
+    {
+      "left": "6-686-d5",
+      "right": "6-716-d5",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d5.jpg"
+    },
+    {
+      "left": "6-686-d6",
+      "right": "6-716-d4",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d6.jpg"
+    },
+    {
+      "left": "6-686-d7",
+      "right": "6-716-d19",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Isolated player has pale trousers and light kit; blue cast in side view. Flag for second review.",
+      "review_image": "association-6-686-d7.jpg"
+    },
+    {
+      "left": "6-686-d8",
+      "right": "6-716-d7",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d8.jpg"
+    },
+    {
+      "left": "6-686-d9",
+      "right": "6-716-d6",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d9.jpg"
+    },
+    {
+      "left": "6-686-d10",
+      "right": "6-716-d8",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d10.jpg"
+    },
+    {
+      "left": "6-686-d12",
+      "right": "6-716-d10",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d12.jpg"
+    },
+    {
+      "left": "6-686-d15",
+      "right": "6-716-d11",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d15.jpg"
+    },
+    {
+      "left": "6-686-d16",
+      "right": "6-716-d12",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d16.jpg"
+    },
+    {
+      "left": "6-686-d18",
+      "right": "6-716-d14",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d18.jpg"
+    },
+    {
+      "left": "6-686-d19",
+      "right": "6-716-d13",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d19.jpg"
+    },
+    {
+      "left": "6-686-d20",
+      "right": "6-716-d16",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d20.jpg"
+    },
+    {
+      "left": "6-686-d21",
+      "right": "6-716-d15",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d21.jpg"
+    },
+    {
+      "left": "6-686-d24",
+      "right": "6-716-d17",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d24.jpg"
+    },
+    {
+      "left": "6-686-d25",
+      "right": "6-716-d8",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Contained red lower-leg duplicate of source d10.",
+      "review_image": "association-6-686-d25.jpg"
+    },
+    {
+      "left": "6-686-d27",
+      "right": "6-716-d21",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d27.jpg"
+    }
+  ],
+  "instructions": "Fill right/relation only from visible person continuity; uncertain and source-missing cases stay explicit. Add the protocol's nearest clearly different person pair separately. Do not use tracker IDs.",
+  "association_review": [
+    {
+      "left": "6-374-d0",
+      "right": "6-404-d2",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d0.jpg"
+    },
+    {
+      "left": "6-374-d1",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Walking group overlaps; single shirt and endpoint identity not certain.",
+      "review_image": "association-6-374-d1.jpg"
+    },
+    {
+      "left": "6-374-d2",
+      "right": "6-404-d6",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d2.jpg"
+    },
+    {
+      "left": "6-374-d3",
+      "right": "6-404-d3",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d3.jpg"
+    },
+    {
+      "left": "6-374-d4",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Walking group overlaps; single shirt and endpoint identity not certain.",
+      "review_image": "association-6-374-d4.jpg"
+    },
+    {
+      "left": "6-374-d5",
+      "right": "6-404-d7",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d5.jpg"
+    },
+    {
+      "left": "6-374-d6",
+      "right": "6-404-d4",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d6.jpg"
+    },
+    {
+      "left": "6-374-d7",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "visible_person_without_source_box",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d7.jpg"
+    },
+    {
+      "left": "6-374-d8",
+      "right": "6-404-d9",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d8.jpg"
+    },
+    {
+      "left": "6-374-d9",
+      "right": "6-404-d10",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d9.jpg"
+    },
+    {
+      "left": "6-374-d10",
+      "right": "6-404-d12",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d10.jpg"
+    },
+    {
+      "left": "6-374-d11",
+      "right": "6-404-d13",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d11.jpg"
+    },
+    {
+      "left": "6-374-d12",
+      "right": "6-404-d14",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d12.jpg"
+    },
+    {
+      "left": "6-374-d13",
+      "right": "6-404-d0",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d13.jpg"
+    },
+    {
+      "left": "6-374-d14",
+      "right": "6-404-d15",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d14.jpg"
+    },
+    {
+      "left": "6-374-d15",
+      "right": "6-404-d16",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d15.jpg"
+    },
+    {
+      "left": "6-374-d16",
+      "right": "6-404-d18",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d16.jpg"
+    },
+    {
+      "left": "6-374-d17",
+      "right": "6-404-d17",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d17.jpg"
+    },
+    {
+      "left": "6-374-d18",
+      "right": "6-404-d19",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d18.jpg"
+    },
+    {
+      "left": "6-374-d19",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d19.jpg"
+    },
+    {
+      "left": "6-374-d20",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d20.jpg"
+    },
+    {
+      "left": "6-374-d21",
+      "right": "6-404-d21",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d21.jpg"
+    },
+    {
+      "left": "6-374-d22",
+      "right": "6-404-d24",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d22.jpg"
+    },
+    {
+      "left": "6-374-d23",
+      "right": "6-404-d8",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Only waist/legs boxed. Same isolated person visible in temporal strip; no full-body source box at start.",
+      "review_image": "association-6-374-d23.jpg"
+    },
+    {
+      "left": "6-374-d24",
+      "right": "6-404-d9",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Contained red lower-leg duplicate of source d8.",
+      "review_image": "association-6-374-d24.jpg"
+    },
+    {
+      "left": "6-374-d25",
+      "right": "6-404-d28",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d25.jpg"
+    },
+    {
+      "left": "6-374-d26",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d26.jpg"
+    },
+    {
+      "left": "6-374-d27",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d27.jpg"
+    },
+    {
+      "left": "6-374-d28",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d28.jpg"
+    },
+    {
+      "left": "6-374-d29",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d29.jpg"
+    },
+    {
+      "left": "6-374-d30",
+      "right": "6-404-d38",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d30.jpg"
+    },
+    {
+      "left": "6-374-d31",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d31.jpg"
+    },
+    {
+      "left": "6-374-d32",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d32.jpg"
+    },
+    {
+      "left": "6-374-d33",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d33.jpg"
+    },
+    {
+      "left": "6-374-d34",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d34.jpg"
+    },
+    {
+      "left": "6-374-d35",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d35.jpg"
+    },
+    {
+      "left": "6-374-d36",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d36.jpg"
+    },
+    {
+      "left": "6-374-d37",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Shoe at foreground feet; source pixels do not resolve attached body part versus spare shoe confidently.",
+      "review_image": "association-6-374-d37.jpg"
+    },
+    {
+      "left": "6-374-d38",
+      "right": "6-404-d41",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-374-d38.jpg"
+    },
+    {
+      "left": "6-686-d0",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "visible_person_without_source_box",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d0.jpg"
+    },
+    {
+      "left": "6-686-d1",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Overlapping white torsos; box does not support a unique identity.",
+      "review_image": "association-6-686-d1.jpg"
+    },
+    {
+      "left": "6-686-d2",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Overlapping white torsos; box does not support a unique identity.",
+      "review_image": "association-6-686-d2.jpg"
+    },
+    {
+      "left": "6-686-d3",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Partial head/torso in blue cluster; individual correspondence uncertain.",
+      "review_image": "association-6-686-d3.jpg"
+    },
+    {
+      "left": "6-686-d4",
+      "right": "6-716-d3",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d4.jpg"
+    },
+    {
+      "left": "6-686-d5",
+      "right": "6-716-d5",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d5.jpg"
+    },
+    {
+      "left": "6-686-d6",
+      "right": "6-716-d4",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d6.jpg"
+    },
+    {
+      "left": "6-686-d7",
+      "right": "6-716-d19",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Isolated player has pale trousers and light kit; blue cast in side view. Flag for second review.",
+      "review_image": "association-6-686-d7.jpg"
+    },
+    {
+      "left": "6-686-d8",
+      "right": "6-716-d7",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d8.jpg"
+    },
+    {
+      "left": "6-686-d9",
+      "right": "6-716-d6",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d9.jpg"
+    },
+    {
+      "left": "6-686-d10",
+      "right": "6-716-d8",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d10.jpg"
+    },
+    {
+      "left": "6-686-d11",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Cyan shape under canopy; not enough visible anatomy to distinguish person from fabric/equipment.",
+      "review_image": "association-6-686-d11.jpg"
+    },
+    {
+      "left": "6-686-d12",
+      "right": "6-716-d10",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d12.jpg"
+    },
+    {
+      "left": "6-686-d13",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "visible_person_without_source_box",
+      "visual_basis": "Two walking sideline people share box; no separate endpoint box.",
+      "review_image": "association-6-686-d13.jpg"
+    },
+    {
+      "left": "6-686-d14",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "visible_person_without_source_box",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d14.jpg"
+    },
+    {
+      "left": "6-686-d15",
+      "right": "6-716-d11",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d15.jpg"
+    },
+    {
+      "left": "6-686-d16",
+      "right": "6-716-d12",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d16.jpg"
+    },
+    {
+      "left": "6-686-d17",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "visible_person_without_source_box",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d17.jpg"
+    },
+    {
+      "left": "6-686-d18",
+      "right": "6-716-d14",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d18.jpg"
+    },
+    {
+      "left": "6-686-d19",
+      "right": "6-716-d13",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d19.jpg"
+    },
+    {
+      "left": "6-686-d20",
+      "right": "6-716-d16",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d20.jpg"
+    },
+    {
+      "left": "6-686-d21",
+      "right": "6-716-d15",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d21.jpg"
+    },
+    {
+      "left": "6-686-d22",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Box spans substantial parts of multiple blue players.",
+      "review_image": "association-6-686-d22.jpg"
+    },
+    {
+      "left": "6-686-d23",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "visible_person_without_source_box",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d23.jpg"
+    },
+    {
+      "left": "6-686-d24",
+      "right": "6-716-d17",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d24.jpg"
+    },
+    {
+      "left": "6-686-d25",
+      "right": "6-716-d8",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Contained red lower-leg duplicate of source d10.",
+      "review_image": "association-6-686-d25.jpg"
+    },
+    {
+      "left": "6-686-d26",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d26.jpg"
+    },
+    {
+      "left": "6-686-d27",
+      "right": "6-716-d21",
+      "relation": "same",
+      "source_visibility": "same",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d27.jpg"
+    },
+    {
+      "left": "6-686-d28",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d28.jpg"
+    },
+    {
+      "left": "6-686-d29",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d29.jpg"
+    },
+    {
+      "left": "6-686-d30",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d30.jpg"
+    },
+    {
+      "left": "6-686-d31",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d31.jpg"
+    },
+    {
+      "left": "6-686-d32",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d32.jpg"
+    },
+    {
+      "left": "6-686-d33",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d33.jpg"
+    },
+    {
+      "left": "6-686-d34",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d34.jpg"
+    },
+    {
+      "left": "6-686-d35",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d35.jpg"
+    },
+    {
+      "left": "6-686-d36",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "not_person",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d36.jpg"
+    },
+    {
+      "left": "6-686-d37",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "uncertain",
+      "visual_basis": "Shoe at foreground feet; source pixels do not resolve attached body part versus spare shoe confidently.",
+      "review_image": "association-6-686-d37.jpg"
+    },
+    {
+      "left": "6-686-d38",
+      "right": null,
+      "relation": "uncertain",
+      "source_visibility": "visible_person_without_source_box",
+      "visual_basis": "Visible source crop and fixed temporal context; clothing only, no roster or model identity inference.",
+      "review_image": "association-6-686-d38.jpg"
+    }
+  ],
+  "nearest_negative_candidates_need_second_review": true
+}

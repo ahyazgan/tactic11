@@ -1,0 +1,16 @@
+# Frozen evidence is hashed byte-for-byte; preserve the original line endings.
+docs/measurements/identity-*.json -text
+docs/measurements/joint-identity-*.json -text
+docs/measurements/joint-identity-*.txt -text
+docs/measurements/joint-identity-control-day-evidence/** -text
+docs/measurements/duplicate-part-*.json -text
+docs/SABIT-KAMERA-KONTROL-ETIKETLEME.md -text
+docs/SABIT-KAMERA-KIMLIK-PLANI.md -text
+
+# These earlier source labels were hashed from Windows working-tree bytes.
+# Keep the same materialized bytes on every platform without changing git blobs.
+docs/measurements/daylight-117093-labels.json text eol=crlf
+docs/measurements/perimeter-control-day-labels.json text eol=crlf
+docs/measurements/perimeter-control-night-labels.json text eol=crlf
+docs/measurements/kit-fixed-development-labels.json text eol=crlf
+docs/measurements/kit-fixed-control-labels.json text eol=crlf

@@ -1,0 +1,43 @@
+{
+  "protocol": "Separate development label adjudication based on exact source frame plus temporal context; original label files are unchanged. This manifest is an explicit optional benchmark overlay, not silent rewriting of prior measurements. Report both original-label and adjudicated results when comparing historical scores.",
+  "reviewer": "identity_validation agent; exact-frame visual inspection",
+  "independently_adjudicated_from_original": true,
+  "second_human_reviewer": false,
+  "records": [
+    {
+      "id": "6-500-21",
+      "source_labels": "docs\\measurements\\daylight-117093-labels.json",
+      "source_labels_sha256": "3ee2db96a0836730320d05b5e3edf120ae96871bf1776164ec7a6d7788e5f872",
+      "original_label": "white",
+      "adjudicated_label": "blue",
+      "segment": 6,
+      "frame_idx": 500,
+      "bbox": [
+        999.0,
+        289.59375,
+        1020.0,
+        332.3125
+      ],
+      "reason": "Exact frame500 and adjacent492/508 show the same blue number36 player; the white stripe/number and shade were mistaken for a white shirt in the isolated old crop.",
+      "evidence": "docs/measurements/identity-kit-adjudication-review.jpg"
+    },
+    {
+      "id": "3-624-45",
+      "source_labels": "docs\\measurements\\perimeter-control-day-labels.json",
+      "source_labels_sha256": "02aecfd791292dadf1a0cbe3ce1e62df47c6d7dbfb405910dac0231217c91fe8",
+      "original_label": "white",
+      "adjudicated_label": "uncertain",
+      "segment": 3,
+      "frame_idx": 624,
+      "bbox": [
+        2618.5,
+        175.625,
+        2640.75,
+        215.375
+      ],
+      "reason": "Exact frame624 box includes a blue foreground player and part of a white player behind. Adjacent616/632 establish overlap; a unique blue/white label for this mixed detection is not defensible.",
+      "evidence": "docs/measurements/identity-kit-adjudication-review.jpg"
+    }
+  ],
+  "evidence_sha256": "f51e6b196746b5096960a90c3f18ef64fa07d8717b0529dfe65f2c6b9ea020cc"
+}

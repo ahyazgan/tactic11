@@ -1,0 +1,901 @@
+{
+  "scores": {
+    "before": {
+      "kit_labels": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "mapping_segment_labels",
+        "source_matched_labels": 342,
+        "source_total_labels": 342,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 195,
+          "wrong": 22,
+          "unassigned": 1,
+          "kit_boxes_missing": 0,
+          "other_assigned": 16,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 7
+        },
+        "unique_person_score": {
+          "correct": 194,
+          "wrong": 22,
+          "unassigned": 1,
+          "kit_boxes_missing": 0,
+          "other_assigned": 16,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 7
+        },
+        "annotated_duplicate_labels_excluded": 11
+      },
+      "adjudicated_labels": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "mapping_segment_labels",
+        "source_matched_labels": 342,
+        "source_total_labels": 342,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 196,
+          "wrong": 20,
+          "unassigned": 1,
+          "kit_boxes_missing": 0,
+          "other_assigned": 16,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 6
+        },
+        "unique_person_score": {
+          "correct": 195,
+          "wrong": 20,
+          "unassigned": 1,
+          "kit_boxes_missing": 0,
+          "other_assigned": 16,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 6
+        },
+        "annotated_duplicate_labels_excluded": 11
+      },
+      "pair_labels": [
+        {
+          "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+          "source_unmatched_observations": [],
+          "observations": 39,
+          "covered_observations": 39,
+          "counts": {
+            "same_pairs": 22,
+            "same_correct": 15,
+            "false_split": 7,
+            "different_pairs": 7,
+            "different_correct": 1,
+            "false_join": 6,
+            "uncertain_excluded": 4
+          },
+          "outcomes": [
+            {
+              "left": "0-280-d15",
+              "right": "0-290-d16",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Blue number 9, uninterrupted visible run.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "0-280-d19",
+              "right": "0-290-d19",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "White opponent approaches blue 9 without overlap.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "0-280-d20",
+              "right": "0-310-d18",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Separate white player runs right throughout the sequence.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "0-280-d15",
+              "right": "0-310-d19",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Blue 9 bends/falls during contact; white opponent remains standing separately.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "0-280-d19",
+              "right": "0-310-d13",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "White opponent stays upright after contact; blue 9 bends separately.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "0-280-d15",
+              "right": "0-310-d13",
+              "relation": "different",
+              "case": "tackle",
+              "visual_basis": "Blue 9 and upright white opponent are separate people.",
+              "linked": true,
+              "passed": false
+            },
+            {
+              "left": "0-280-d19",
+              "right": "0-310-d19",
+              "relation": "different",
+              "case": "tackle",
+              "visual_basis": "White opponent and falling blue 9 are separate people.",
+              "linked": true,
+              "passed": false
+            },
+            {
+              "left": "0-310-d19",
+              "right": "0-340-d21",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Falling blue 9 becomes the seated blue player at the same location.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "0-310-d13",
+              "right": "0-320-d19",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Upright white opponent moves right while blue 9 lies behind.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "3-350-d14",
+              "right": "3-360-d14",
+              "relation": "same",
+              "case": "white45",
+              "visual_basis": "Blue runner remains on left of white opponent before crossing.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "3-350-d15",
+              "right": "3-360-d13",
+              "relation": "same",
+              "case": "white45",
+              "visual_basis": "White opponent remains separately visible before crossing.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "3-360-d14",
+              "right": "3-380-d16",
+              "relation": "same",
+              "case": "white45",
+              "visual_basis": "Blue runner passes behind white opponent and emerges to the right.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "3-360-d13",
+              "right": "3-380-d13",
+              "relation": "same",
+              "case": "white45",
+              "visual_basis": "White opponent turns left as blue runner emerges on right.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "3-360-d14",
+              "right": "3-380-d13",
+              "relation": "different",
+              "case": "white45",
+              "visual_basis": "Blue runner and white opponent are different people.",
+              "linked": true,
+              "passed": false
+            },
+            {
+              "left": "3-360-d13",
+              "right": "3-380-d16",
+              "relation": "different",
+              "case": "white45",
+              "visual_basis": "White opponent and blue runner are different people.",
+              "linked": true,
+              "passed": false
+            },
+            {
+              "left": "3-360-d6",
+              "right": "3-440-d10",
+              "relation": "same",
+              "case": "blue34",
+              "visual_basis": "Blue number 8 remains beside referee through crossing, then moves right.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "3-360-d7",
+              "right": "3-440-d9",
+              "relation": "same",
+              "case": "blue34",
+              "visual_basis": "White runner approaches from left behind blue 8 and emerges separately on left.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "3-360-d6",
+              "right": "3-440-d9",
+              "relation": "different",
+              "case": "blue34",
+              "visual_basis": "Blue number 8 and white runner are distinct people.",
+              "linked": true,
+              "passed": false
+            },
+            {
+              "left": "3-360-d7",
+              "right": "3-440-d10",
+              "relation": "different",
+              "case": "blue34",
+              "visual_basis": "White runner and blue number 8 are distinct people.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "3-440-d10",
+              "right": "3-460-d10",
+              "relation": "same",
+              "case": "blue34",
+              "visual_basis": "Blue runner continues right away from white runner and referee.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "3-440-d9",
+              "right": "3-460-d9",
+              "relation": "same",
+              "case": "blue34",
+              "visual_basis": "White runner remains left of referee and blue runner.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-0-d22",
+              "right": "6-40-d24",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-40-d24",
+              "right": "6-80-d24",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-280-d13",
+              "right": "6-320-d16",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-440-d16",
+              "right": "6-460-d14",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-460-d14",
+              "right": "6-500-d18",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-500-d18",
+              "right": "6-540-d19",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-620-d19",
+              "right": "6-660-d20",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-280-d15",
+              "right": "6-320-d23",
+              "relation": "different",
+              "case": "white75",
+              "visual_basis": "White number 40 before crowd overlap and fully blue foreground player afterward; same-person relation rejected.",
+              "linked": true,
+              "passed": false
+            }
+          ]
+        },
+        {
+          "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+          "source_unmatched_observations": [],
+          "observations": 20,
+          "covered_observations": 20,
+          "counts": {
+            "different_pairs": 2,
+            "different_correct": 2,
+            "same_pairs": 5,
+            "same_correct": 2,
+            "false_split": 3,
+            "uncertain_excluded": 3
+          },
+          "outcomes": [
+            {
+              "left": "0-726-d12",
+              "right": "0-732-d16",
+              "relation": "different",
+              "visual_basis": "Blue number38 torso before gap; white opponent torso after gap. Both physical people remain separately visible in adjacent frames.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-01-s0-181-185.jpg",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "0-658-d32",
+              "right": "0-688-d35",
+              "relation": "same",
+              "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "0-26-d5",
+              "right": "0-52-d9",
+              "relation": "different",
+              "visual_basis": "Running white outfield player before gap; stationary dark-clothed sideline person afterward. White player remains separately visible to the left.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-03-s0-30-60.jpg",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "0-274-d19",
+              "right": "0-294-d16",
+              "relation": "same",
+              "visual_basis": "Same white player who approaches blue number9 at the tackle, independently visible before contact.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-04-s0-93-223.jpg",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-550-d21",
+              "right": "6-572-d17",
+              "relation": "same",
+              "visual_basis": "White player bends then turns to join the nearby group; same path remains visible across gap and after entry.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-08-s6-192-178.jpg",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "0-242-d14",
+              "right": "0-264-d6",
+              "relation": "same",
+              "visual_basis": "White player remains independently visible beside referee, turns and crosses to the right; no same-kit substitution along this short path.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-09-s0-96-227.jpg",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "3-118-d33",
+              "right": "3-124-d28",
+              "relation": "same",
+              "visual_basis": "Isolated blue player, jersey38 visible after turn; before and after boxes cover different body extents of the same person.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-10-s3-27-164.jpg",
+              "linked": false,
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "duplicate_parts": {
+        "annotated_parts": 11,
+        "source_matched_parts": 11,
+        "removed_with_support_preserved": 0
+      }
+    },
+    "after": {
+      "kit_labels": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "mapping_segment_labels",
+        "source_matched_labels": 342,
+        "source_total_labels": 342,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 204,
+          "wrong": 12,
+          "unassigned": 2,
+          "kit_boxes_missing": 1,
+          "other_assigned": 10,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 1
+        },
+        "unique_person_score": {
+          "correct": 204,
+          "wrong": 12,
+          "unassigned": 1,
+          "kit_boxes_missing": 0,
+          "other_assigned": 10,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 1
+        },
+        "annotated_duplicate_labels_excluded": 11
+      },
+      "adjudicated_labels": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "mapping_segment_labels",
+        "source_matched_labels": 342,
+        "source_total_labels": 342,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 204,
+          "wrong": 11,
+          "unassigned": 2,
+          "kit_boxes_missing": 1,
+          "other_assigned": 10,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 0
+        },
+        "unique_person_score": {
+          "correct": 204,
+          "wrong": 11,
+          "unassigned": 1,
+          "kit_boxes_missing": 0,
+          "other_assigned": 10,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 0
+        },
+        "annotated_duplicate_labels_excluded": 11
+      },
+      "pair_labels": [
+        {
+          "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+          "source_unmatched_observations": [],
+          "observations": 39,
+          "covered_observations": 39,
+          "counts": {
+            "same_pairs": 22,
+            "same_correct": 16,
+            "false_split": 6,
+            "different_pairs": 7,
+            "different_correct": 7,
+            "uncertain_excluded": 4
+          },
+          "outcomes": [
+            {
+              "left": "0-280-d15",
+              "right": "0-290-d16",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Blue number 9, uninterrupted visible run.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "0-280-d19",
+              "right": "0-290-d19",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "White opponent approaches blue 9 without overlap.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "0-280-d20",
+              "right": "0-310-d18",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Separate white player runs right throughout the sequence.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "0-280-d15",
+              "right": "0-310-d19",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Blue 9 bends/falls during contact; white opponent remains standing separately.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "0-280-d19",
+              "right": "0-310-d13",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "White opponent stays upright after contact; blue 9 bends separately.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "0-280-d15",
+              "right": "0-310-d13",
+              "relation": "different",
+              "case": "tackle",
+              "visual_basis": "Blue 9 and upright white opponent are separate people.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "0-280-d19",
+              "right": "0-310-d19",
+              "relation": "different",
+              "case": "tackle",
+              "visual_basis": "White opponent and falling blue 9 are separate people.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "0-310-d19",
+              "right": "0-340-d21",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Falling blue 9 becomes the seated blue player at the same location.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "0-310-d13",
+              "right": "0-320-d19",
+              "relation": "same",
+              "case": "tackle",
+              "visual_basis": "Upright white opponent moves right while blue 9 lies behind.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "3-350-d14",
+              "right": "3-360-d14",
+              "relation": "same",
+              "case": "white45",
+              "visual_basis": "Blue runner remains on left of white opponent before crossing.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "3-350-d15",
+              "right": "3-360-d13",
+              "relation": "same",
+              "case": "white45",
+              "visual_basis": "White opponent remains separately visible before crossing.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "3-360-d14",
+              "right": "3-380-d16",
+              "relation": "same",
+              "case": "white45",
+              "visual_basis": "Blue runner passes behind white opponent and emerges to the right.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "3-360-d13",
+              "right": "3-380-d13",
+              "relation": "same",
+              "case": "white45",
+              "visual_basis": "White opponent turns left as blue runner emerges on right.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "3-360-d14",
+              "right": "3-380-d13",
+              "relation": "different",
+              "case": "white45",
+              "visual_basis": "Blue runner and white opponent are different people.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "3-360-d13",
+              "right": "3-380-d16",
+              "relation": "different",
+              "case": "white45",
+              "visual_basis": "White opponent and blue runner are different people.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "3-360-d6",
+              "right": "3-440-d10",
+              "relation": "same",
+              "case": "blue34",
+              "visual_basis": "Blue number 8 remains beside referee through crossing, then moves right.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "3-360-d7",
+              "right": "3-440-d9",
+              "relation": "same",
+              "case": "blue34",
+              "visual_basis": "White runner approaches from left behind blue 8 and emerges separately on left.",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "3-360-d6",
+              "right": "3-440-d9",
+              "relation": "different",
+              "case": "blue34",
+              "visual_basis": "Blue number 8 and white runner are distinct people.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "3-360-d7",
+              "right": "3-440-d10",
+              "relation": "different",
+              "case": "blue34",
+              "visual_basis": "White runner and blue number 8 are distinct people.",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "3-440-d10",
+              "right": "3-460-d10",
+              "relation": "same",
+              "case": "blue34",
+              "visual_basis": "Blue runner continues right away from white runner and referee.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "3-440-d9",
+              "right": "3-460-d9",
+              "relation": "same",
+              "case": "blue34",
+              "visual_basis": "White runner remains left of referee and blue runner.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-0-d22",
+              "right": "6-40-d24",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-40-d24",
+              "right": "6-80-d24",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-280-d13",
+              "right": "6-320-d16",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-440-d16",
+              "right": "6-460-d14",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-460-d14",
+              "right": "6-500-d18",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-500-d18",
+              "right": "6-540-d19",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-620-d19",
+              "right": "6-660-d20",
+              "relation": "same",
+              "case": "stable-blue36",
+              "visual_basis": "Blue number 36 stays independently visible; context sequence preserves the person despite shadow.",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "6-280-d15",
+              "right": "6-320-d23",
+              "relation": "different",
+              "case": "white75",
+              "visual_basis": "White number 40 before crowd overlap and fully blue foreground player afterward; same-person relation rejected.",
+              "linked": false,
+              "passed": true
+            }
+          ]
+        },
+        {
+          "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+          "source_unmatched_observations": [],
+          "observations": 20,
+          "covered_observations": 20,
+          "counts": {
+            "different_pairs": 2,
+            "different_correct": 2,
+            "same_pairs": 5,
+            "same_correct": 1,
+            "false_split": 4,
+            "uncertain_excluded": 3
+          },
+          "outcomes": [
+            {
+              "left": "0-726-d12",
+              "right": "0-732-d16",
+              "relation": "different",
+              "visual_basis": "Blue number38 torso before gap; white opponent torso after gap. Both physical people remain separately visible in adjacent frames.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-01-s0-181-185.jpg",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "0-658-d32",
+              "right": "0-688-d35",
+              "relation": "same",
+              "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+              "linked": true,
+              "passed": true
+            },
+            {
+              "left": "0-26-d5",
+              "right": "0-52-d9",
+              "relation": "different",
+              "visual_basis": "Running white outfield player before gap; stationary dark-clothed sideline person afterward. White player remains separately visible to the left.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-03-s0-30-60.jpg",
+              "linked": false,
+              "passed": true
+            },
+            {
+              "left": "0-274-d19",
+              "right": "0-294-d16",
+              "relation": "same",
+              "visual_basis": "Same white player who approaches blue number9 at the tackle, independently visible before contact.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-04-s0-93-223.jpg",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "6-550-d21",
+              "right": "6-572-d17",
+              "relation": "same",
+              "visual_basis": "White player bends then turns to join the nearby group; same path remains visible across gap and after entry.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-08-s6-192-178.jpg",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "0-242-d14",
+              "right": "0-264-d6",
+              "relation": "same",
+              "visual_basis": "White player remains independently visible beside referee, turns and crosses to the right; no same-kit substitution along this short path.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-09-s0-96-227.jpg",
+              "linked": false,
+              "passed": false
+            },
+            {
+              "left": "3-118-d33",
+              "right": "3-124-d28",
+              "relation": "same",
+              "visual_basis": "Isolated blue player, jersey38 visible after turn; before and after boxes cover different body extents of the same person.",
+              "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-10-s3-27-164.jpg",
+              "linked": false,
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "duplicate_parts": {
+        "annotated_parts": 11,
+        "source_matched_parts": 11,
+        "removed_with_support_preserved": 11
+      }
+    }
+  },
+  "source_sha256": {
+    "data/tracking/bench/identity_day_detections/seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    ".cache/kit_joint_agent/raw_features_day_0000.json": "db801c4007bfa00975e84dba5b78b05c21d502418634e376371bde85da84bb3e",
+    "data/tracking/bench/daylight_117093/source/seg_0000.mp4": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2",
+    "data/tracking/bench/identity_day_detections/seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+    ".cache/kit_joint_agent/raw_features_day_0003.json": "8bcec618ac279bfc4f8dd2a17e0366ec9d1994c5b715c5fe83e2f46758db8af8",
+    "data/tracking/bench/daylight_117093/source/seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+    "data/tracking/bench/identity_day_detections/seg_0006.json": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9",
+    ".cache/kit_joint_agent/raw_features_day_0006.json": "16fd5ebd264f6204a6a8ce3ecae25b19f3ba77ed5703e4c779ea9e34693dda85",
+    "data/tracking/bench/daylight_117093/source/seg_0006.mp4": "d3810e6d7d940bcd854d594a6c4a76998db9200874bf19e2b1b828611a6b6372",
+    "docs/measurements/daylight-117093-labels.json": "3ee2db96a0836730320d05b5e3edf120ae96871bf1776164ec7a6d7788e5f872",
+    "docs/measurements/perimeter-control-day-labels.json": "02aecfd791292dadf1a0cbe3ce1e62df47c6d7dbfb405910dac0231217c91fe8",
+    "docs/measurements/identity-kit-label-adjudication.json": "7fffdaa74d1bb6e99697a06714bd0f6f20d957b0d4e6eced7095117c50e8027f",
+    "docs/measurements/identity-person-development-labels.json": "877b0f723cf94fa169759b39950bce374a1e8f5a5e90016e5db36ebb3ea0414e",
+    "docs/measurements/identity-link-audit-development-labels.json": "d4134cac9d33c7d2d75e7eda65d8423627a462d9701b7dfaa5a17fadc104b7e0",
+    "docs/measurements/duplicate-part-development-labels.json": "acfc77f17e10f927b8cc96b9199e5762de6b4df457cbad05caa4536f9dc33467"
+  },
+  "production_sha256": {
+    "C:/Users/Yazgan/Desktop/manager 2/football-intelligence/scripts/soccertrack_v2/benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+    "C:/Users/Yazgan/Desktop/manager 2/football-intelligence/app/tracking/pipeline.py": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+    "app/tracking/kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app/tracking/person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app/tracking/identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app/tracking/identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app/tracking/player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app/tracking/teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app/tracking/person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app/tracking/identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app/tracking/frames.py": "c619ce2aec58df9bb08c056046f80c54be4007854e5cca562533b3cfab6a7713"
+  },
+  "anchors": {
+    "before": [
+      [
+        119.9,
+        149.7,
+        188.0
+      ],
+      [
+        205.4,
+        216.8,
+        235.5
+      ]
+    ],
+    "after": [
+      [
+        135.5,
+        174.4,
+        234.5
+      ],
+      [
+        228.5,
+        239.5,
+        249.7
+      ]
+    ]
+  },
+  "anchor_report": null,
+  "scope": "Production replay of fixed detections and pixels. No label-driven fitting. Ball fields restored."
+}

@@ -1,0 +1,336 @@
+{
+  "protocol": "Independent visual identity audit of the ten highest-cost accepted development link edges. Selected before viewing the strips; all ten retained, including wrong and ambiguous links. No new control frame374 or686 was viewed. Pair labels use exact original detections, not candidate IDs. These are post-selection development diagnostics, not a representative independent accuracy estimate.",
+  "split": "development_only",
+  "reviewer": "identity_validation agent, source temporal strips",
+  "observations": [
+    {
+      "id": "0-726-d12",
+      "segment": 0,
+      "frame_idx": 726,
+      "bbox": [
+        2136.125,
+        233.5,
+        2158.0,
+        269.5
+      ],
+      "detector_index": 12
+    },
+    {
+      "id": "0-732-d16",
+      "segment": 0,
+      "frame_idx": 732,
+      "bbox": [
+        2106.125,
+        240.0,
+        2128.375,
+        270.0
+      ],
+      "detector_index": 16
+    },
+    {
+      "id": "0-658-d32",
+      "segment": 0,
+      "frame_idx": 658,
+      "bbox": [
+        2547.375,
+        482.21875,
+        2589.0,
+        611.125
+      ],
+      "detector_index": 32
+    },
+    {
+      "id": "0-688-d35",
+      "segment": 0,
+      "frame_idx": 688,
+      "bbox": [
+        2322.73583984375,
+        488.734375,
+        2364.03125,
+        594.125
+      ],
+      "detector_index": 35
+    },
+    {
+      "id": "0-26-d5",
+      "segment": 0,
+      "frame_idx": 26,
+      "bbox": [
+        1415.125,
+        169.125,
+        1439.5,
+        200.25
+      ],
+      "detector_index": 5
+    },
+    {
+      "id": "0-52-d9",
+      "segment": 0,
+      "frame_idx": 52,
+      "bbox": [
+        1440.25,
+        153.0,
+        1457.5,
+        184.75
+      ],
+      "detector_index": 9
+    },
+    {
+      "id": "0-274-d19",
+      "segment": 0,
+      "frame_idx": 274,
+      "bbox": [
+        2022.625,
+        193.75,
+        2044.0,
+        237.25
+      ],
+      "detector_index": 19
+    },
+    {
+      "id": "0-294-d16",
+      "segment": 0,
+      "frame_idx": 294,
+      "bbox": [
+        1987.25,
+        178.75,
+        2014.375,
+        228.625
+      ],
+      "detector_index": 16
+    },
+    {
+      "id": "3-378-d13",
+      "segment": 3,
+      "frame_idx": 378,
+      "bbox": [
+        2542.0,
+        183.875,
+        2565.0,
+        225.25
+      ],
+      "detector_index": 13
+    },
+    {
+      "id": "3-400-d6",
+      "segment": 3,
+      "frame_idx": 400,
+      "bbox": [
+        2577.0,
+        189.0,
+        2604.5,
+        236.25
+      ],
+      "detector_index": 6
+    },
+    {
+      "id": "3-602-d22",
+      "segment": 3,
+      "frame_idx": 602,
+      "bbox": [
+        2652.5,
+        230.0,
+        2672.5,
+        260.765625
+      ],
+      "detector_index": 22
+    },
+    {
+      "id": "3-618-d27",
+      "segment": 3,
+      "frame_idx": 618,
+      "bbox": [
+        2667.5,
+        230.0,
+        2687.0,
+        267.0
+      ],
+      "detector_index": 27
+    },
+    {
+      "id": "6-594-d4",
+      "segment": 6,
+      "frame_idx": 594,
+      "bbox": [
+        1028.875,
+        255.125,
+        1049.75,
+        270.0
+      ],
+      "detector_index": 4
+    },
+    {
+      "id": "6-598-d4",
+      "segment": 6,
+      "frame_idx": 598,
+      "bbox": [
+        1022.0,
+        255.5,
+        1042.5,
+        270.0
+      ],
+      "detector_index": 4
+    },
+    {
+      "id": "6-550-d21",
+      "segment": 6,
+      "frame_idx": 550,
+      "bbox": [
+        1045.0,
+        265.21875,
+        1062.75,
+        302.25
+      ],
+      "detector_index": 21
+    },
+    {
+      "id": "6-572-d17",
+      "segment": 6,
+      "frame_idx": 572,
+      "bbox": [
+        1054.5,
+        257.1875,
+        1072.5,
+        298.3125
+      ],
+      "detector_index": 17
+    },
+    {
+      "id": "0-242-d14",
+      "segment": 0,
+      "frame_idx": 242,
+      "bbox": [
+        1640.0,
+        189.75,
+        1663.3125,
+        231.625
+      ],
+      "detector_index": 14
+    },
+    {
+      "id": "0-264-d6",
+      "segment": 0,
+      "frame_idx": 264,
+      "bbox": [
+        1693.125,
+        185.875,
+        1715.5,
+        227.0
+      ],
+      "detector_index": 6
+    },
+    {
+      "id": "3-118-d33",
+      "segment": 3,
+      "frame_idx": 118,
+      "bbox": [
+        3117.0,
+        475.2109375,
+        3147.5,
+        524.4375
+      ],
+      "detector_index": 33
+    },
+    {
+      "id": "3-124-d28",
+      "segment": 3,
+      "frame_idx": 124,
+      "bbox": [
+        3132.5,
+        452.75,
+        3158.25,
+        499.5
+      ],
+      "detector_index": 28
+    }
+  ],
+  "pairs": [
+    {
+      "left": "0-726-d12",
+      "right": "0-732-d16",
+      "relation": "different",
+      "visual_basis": "Blue number38 torso before gap; white opponent torso after gap. Both physical people remain separately visible in adjacent frames.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-01-s0-181-185.jpg"
+    },
+    {
+      "left": "0-658-d32",
+      "right": "0-688-d35",
+      "relation": "same",
+      "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg"
+    },
+    {
+      "left": "0-26-d5",
+      "right": "0-52-d9",
+      "relation": "different",
+      "visual_basis": "Running white outfield player before gap; stationary dark-clothed sideline person afterward. White player remains separately visible to the left.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-03-s0-30-60.jpg"
+    },
+    {
+      "left": "0-274-d19",
+      "right": "0-294-d16",
+      "relation": "same",
+      "visual_basis": "Same white player who approaches blue number9 at the tackle, independently visible before contact.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-04-s0-93-223.jpg"
+    },
+    {
+      "left": "3-378-d13",
+      "right": "3-400-d6",
+      "relation": "uncertain",
+      "visual_basis": "White runner before gap; entry box at400 covers both white and blue opponents. White continuation is plausible, but the unique person represented by the entry box is ambiguous.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-05-s3-158-154.jpg"
+    },
+    {
+      "left": "3-602-d22",
+      "right": "3-618-d27",
+      "relation": "uncertain",
+      "visual_basis": "Three blue players cross during gap; the before box becomes a lower-body fragment and the after box is a blue number11 body. This strip alone does not establish a unique same-person association.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-06-s3-166-115.jpg"
+    },
+    {
+      "left": "6-594-d4",
+      "right": "6-598-d4",
+      "relation": "uncertain",
+      "visual_basis": "Very small head/shoulder boxes among adjacent blue players; individual identity cannot be resolved confidently.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-07-s6-123-140.jpg"
+    },
+    {
+      "left": "6-550-d21",
+      "right": "6-572-d17",
+      "relation": "same",
+      "visual_basis": "White player bends then turns to join the nearby group; same path remains visible across gap and after entry.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-08-s6-192-178.jpg"
+    },
+    {
+      "left": "0-242-d14",
+      "right": "0-264-d6",
+      "relation": "same",
+      "visual_basis": "White player remains independently visible beside referee, turns and crosses to the right; no same-kit substitution along this short path.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-09-s0-96-227.jpg"
+    },
+    {
+      "left": "3-118-d33",
+      "right": "3-124-d28",
+      "relation": "same",
+      "visual_basis": "Isolated blue player, jersey38 visible after turn; before and after boxes cover different body extents of the same person.",
+      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-10-s3-27-164.jpg"
+    }
+  ],
+  "source_cache_sha256": {
+    "data\\tracking\\bench\\identity_day_detections\\seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0006.json": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9"
+  },
+  "review_sha256": {
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-01-s0-181-185.jpg": "25e4efa367c35a34df44c1f2c28c7c96e4cdc4a661f8602cb22e058735cd4a7c",
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg": "53797e7695884d3b5ae806f26425edac5a26044854b9723f6da7b6b42f713a72",
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-03-s0-30-60.jpg": "2d54a8f30afdb14757c16408a7e09a7654adfb18365551d614b090194982ba9b",
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-04-s0-93-223.jpg": "c506a29cbf328734db7730dcaff5af9b1396c44047f49b937b28291b18398271",
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-05-s3-158-154.jpg": "69589f909004d9861571f417efffdc44bbb5c0553a34878b26a8fc6cee89298d",
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-06-s3-166-115.jpg": "9f5f3e017b368ada9fa21ff7906f405880e874adb17d82a57038061f1dedae85",
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-07-s6-123-140.jpg": "a9875aae77bd38b9990ef367058bfab0ac8c0b509fb23448e2a512cb6d375806",
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-08-s6-192-178.jpg": "01a6decd37b0c33bc1fda2f55224803aa44837978d30ece3a8589cbc1b7b0653",
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-09-s0-96-227.jpg": "440075568035c52b6f7968806bfaa1fc41163180629d79ae9c79497685285f54",
+    ".cache\\identity_eval_agent\\link-audit-v1\\edge-10-s3-27-164.jpg": "96908ad1d0a91a631e375781ba253c840a4efce261b1e360ac4095ca16c6597f"
+  }
+}

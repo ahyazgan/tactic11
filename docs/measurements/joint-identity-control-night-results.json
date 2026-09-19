@@ -1,0 +1,3684 @@
+{
+  "candidate": "fixed_camera_identity_v1",
+  "control": "night segments40/50, fixed frames374/686 and endpoints404/716",
+  "reported_at_utc": "2026-09-14T12:36:31.238105+00:00",
+  "candidate_frozen_at_utc": "2026-09-14T12:09:25.693548+00:00",
+  "labels_frozen_at_utc": "2026-09-14T12:31:37.440896+00:00",
+  "first_prediction_read_after_label_freeze": true,
+  "frozen_code_sha256_lf": {
+    "app/tracking/pipeline.py": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+    "app/tracking/player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app/tracking/identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app/tracking/identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app/tracking/identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app/tracking/person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app/tracking/kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app/tracking/teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app/tracking/person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app/tracking/frames.py": "c619ce2aec58df9bb08c056046f80c54be4007854e5cca562533b3cfab6a7713",
+    "scripts/track_video.py": "4d185093875d701e305013e8105e3c2c3eaaf30475e10250d2ca3199da26e960",
+    "scripts/track_live.py": "ed327c604f02daa4353c76adc502f833d0f8868afc2ec93453a205551bb0d572",
+    "scripts/soccertrack_v2/cache_ball_candidates.py": "c39466b8ae98fd5b723b1a6150007f9595679f162731c405fba12e7b4fa93029",
+    "scripts/soccertrack_v2/benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+    "scripts/soccertrack_v2/prepare_identity_control.py": "b4f1eba3ec12a3ab06e9964db7cc46e56a1e3c096072d0f5216cd782cfc4a4f0",
+    "scripts/soccertrack_v2/kit_joint_features.py": "b5d908eb55eefae4f4704b8e9821c1273b601f2c786694ca12c6aec8d00d38f6"
+  },
+  "frozen_code_verified_before_and_after": true,
+  "source_sha256": {
+    ".cache/kit_joint_agent/production_joint_night_v1/report.json": "c18412dd8667bff0603da4ce568311e80011fba31d8ed0f43fb5b5b53cbe7b85",
+    "data/tracking/bench/joint_identity_control/raw_v1/seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+    "data/tracking/bench/joint_identity_control/features/seg_0040.json": "eda9adbf8df36916826328d2ca168f369780c412425f9d78b444c263f0c925fe",
+    "data/tracking/bench/joint_identity_control/source/seg_0040.mp4": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a",
+    "data/tracking/bench/joint_identity_control/raw_v1/seg_0050.json": "8a4cb524a0b88949c0448a4e022b6415b55acf1eee093fca7dd117e08ebc1d43",
+    "data/tracking/bench/joint_identity_control/features/seg_0050.json": "4ba69d2c8216cc6c7ff08e07911201e6b19edafbcd02a96532e1761f5bd0c87a",
+    "data/tracking/bench/joint_identity_control/source/seg_0050.mp4": "fef8c382ebad00fdfaefd0e214192decc91980e312b8f6e2d871b2eb5dc10604",
+    "docs/measurements/joint-identity-control-night-labels.json": "c33b9dc372e55d14e997dda593f2fe6790ab04597863ff635db6cb2dbdc9e529",
+    "docs/measurements/joint-identity-control-night-pairs.json": "2668d60cf95f419b70f2bf6e3bed99b27b79ba1c03963dbdd01a519cc025c0ef",
+    "docs/measurements/joint-identity-frozen-decision.json": "bd8c9176c818dd952b112260feb5d30d051b627ccb30a04638fc8eb763cabb0c",
+    "docs/measurements/joint-identity-control-night-label-freeze.json": "bd95ac5914a55b70480ee06204320efe61db53fed5802334f6ae363808ca73f7"
+  },
+  "replay_output_sha256": {
+    ".cache/kit_joint_agent/production_joint_night_control_v1/report.json": "aa02e37fb180a2cb9c82ff84769c698818849bc79b0f05dff429fc98e2aa1ed4",
+    ".cache/kit_joint_agent/production_joint_night_control_v1/before/seg_0040.json": "644f9531fd2c23f0a5bab4b78b8e49d729c2bce77f26f8cb83a8990022ee75e4",
+    ".cache/kit_joint_agent/production_joint_night_control_v1/before/seg_0050.json": "819b5953fc148ba2a46732e8f231509bf40b4f5c9e4319b5e682d3628785b7ec",
+    ".cache/kit_joint_agent/production_joint_night_control_v1/after/seg_0040.json": "710472cff3f35a2ee54271d00d8851a7b993c62dd0faf2cd4026010ff0341377",
+    ".cache/kit_joint_agent/production_joint_night_control_v1/after/seg_0050.json": "9fd70719973827168e6100a58fa116c85920c2b4085591494a85fde8bf656160"
+  },
+  "anchors": {
+    "before": [
+      [
+        94.3,
+        101.0,
+        91.6
+      ],
+      [
+        176.1,
+        180.4,
+        174.0
+      ]
+    ],
+    "after": [
+      [
+        112.1,
+        119.9,
+        105.8
+      ],
+      [
+        211.6,
+        216.2,
+        207.4
+      ]
+    ]
+  },
+  "anchor_report": ".cache/kit_joint_agent/production_joint_night_v1/report.json",
+  "baseline_source_equality": {
+    "40": true,
+    "50": true
+  },
+  "label_counts": {
+    "not_person": 8,
+    "white": 34,
+    "blue": 31,
+    "uncertain": 6,
+    "other": 4
+  },
+  "association_source_counts": {
+    "start_boxes": 83,
+    "start_status": {
+      "not_person": 8,
+      "same": 63,
+      "uncertain": 5,
+      "visible_person_without_source_box": 7
+    },
+    "concrete_pairs": {
+      "same": 63,
+      "different": 63,
+      "uncertain": 8
+    },
+    "scored_observations": 138,
+    "all_raw_observations": 164
+  },
+  "source_coverage_notes": "Seven explicit source-endpoint-miss start boxes represent eight visibly undetected people: three boxes/four people in40, four boxes/four people in50. This does not include merged/ambiguous source-box cases: those remain a separate category without inferred unique-person counts.",
+  "observed_source_box_coverage": {
+    "before": {
+      "unambiguous_real_person_start_boxes": {
+        "total": 69,
+        "present": 69,
+        "missing": []
+      },
+      "uncertain_start_boxes": {
+        "total": 6,
+        "present": 5,
+        "missing": [
+          "40-686-d11"
+        ]
+      },
+      "not_person_start_boxes": {
+        "total": 8,
+        "present": 0,
+        "missing": [
+          "40-374-d0",
+          "40-374-d1",
+          "40-374-d2",
+          "40-686-d0",
+          "50-374-d0",
+          "50-374-d1",
+          "50-686-d0",
+          "50-686-d1"
+        ]
+      }
+    },
+    "after": {
+      "unambiguous_real_person_start_boxes": {
+        "total": 69,
+        "present": 69,
+        "missing": []
+      },
+      "uncertain_start_boxes": {
+        "total": 6,
+        "present": 5,
+        "missing": [
+          "40-686-d11"
+        ]
+      },
+      "not_person_start_boxes": {
+        "total": 8,
+        "present": 0,
+        "missing": [
+          "40-374-d0",
+          "40-374-d1",
+          "40-374-d2",
+          "40-686-d0",
+          "50-374-d0",
+          "50-374-d1",
+          "50-686-d0",
+          "50-686-d1"
+        ]
+      }
+    }
+  },
+  "scores": {
+    "before": {
+      "kits": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "development_anchor_report",
+        "source_matched_labels": 83,
+        "source_total_labels": 83,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 52,
+          "wrong": 9,
+          "unassigned": 4,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "unique_person_score": {
+          "correct": 52,
+          "wrong": 9,
+          "unassigned": 4,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "annotated_duplicate_labels_excluded": 0
+      },
+      "pair_score": {
+        "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+        "source_unmatched_observations": [],
+        "observations": 138,
+        "covered_observations": 136,
+        "counts": {
+          "same_pairs": 63,
+          "same_correct": 59,
+          "different_pairs": 63,
+          "different_correct": 61,
+          "false_split": 2,
+          "same_uncovered": 2,
+          "different_uncovered": 2,
+          "uncertain_excluded": 8
+        }
+      },
+      "pair_outcomes": [
+        {
+          "left": "40-374-d3",
+          "right": "40-404-d3",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d3",
+          "right": "40-404-d4",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d4",
+          "right": "40-404-d15",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d4",
+          "right": "40-404-d20",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d5",
+          "right": "40-404-d4",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d5",
+          "right": "40-404-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d6",
+          "right": "40-404-d7",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d6",
+          "right": "40-404-d12",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d8",
+          "right": "40-404-d9",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d8",
+          "right": "40-404-d13",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d9",
+          "right": "40-404-d5",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d9",
+          "right": "40-404-d14",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d10",
+          "right": "40-404-d10",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d10",
+          "right": "40-404-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d11",
+          "right": "40-404-d12",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d11",
+          "right": "40-404-d8",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d13",
+          "right": "40-404-d13",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d13",
+          "right": "40-404-d9",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d14",
+          "right": "40-404-d16",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d14",
+          "right": "40-404-d17",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d15",
+          "right": "40-404-d21",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d15",
+          "right": "40-404-d16",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d16",
+          "right": "40-404-d17",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d16",
+          "right": "40-404-d18",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d17",
+          "right": "40-404-d19",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d17",
+          "right": "40-404-d20",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d18",
+          "right": "40-404-d18",
+          "relation": "same",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "40-374-d18",
+          "right": "40-404-d17",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d19",
+          "right": "40-404-d20",
+          "relation": "same",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "40-374-d19",
+          "right": "40-404-d19",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d1",
+          "right": "40-716-d2",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d1",
+          "right": "40-716-d4",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d2",
+          "right": "40-716-d3",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d2",
+          "right": "40-716-d4",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d3",
+          "right": "40-716-d4",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d3",
+          "right": "40-716-d2",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d4",
+          "right": "40-716-d5",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d4",
+          "right": "40-716-d8",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d5",
+          "right": "40-716-d6",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d5",
+          "right": "40-716-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d6",
+          "right": "40-716-d7",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d6",
+          "right": "40-716-d11",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d9",
+          "right": "40-716-d9",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d9",
+          "right": "40-716-d11",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d11",
+          "right": "40-716-d11",
+          "relation": "same",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "40-686-d11",
+          "right": "40-716-d7",
+          "relation": "different",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "40-686-d13",
+          "right": "40-716-d13",
+          "relation": "same",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "40-686-d13",
+          "right": "40-716-d12",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d15",
+          "right": "40-716-d12",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d15",
+          "right": "40-716-d13",
+          "relation": "different",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "50-374-d2",
+          "right": "50-404-d5",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d2",
+          "right": "50-404-d4",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d3",
+          "right": "50-404-d8",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d3",
+          "right": "50-404-d2",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d4",
+          "right": "50-404-d3",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d4",
+          "right": "50-404-d6",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d5",
+          "right": "50-404-d4",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d5",
+          "right": "50-404-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d6",
+          "right": "50-404-d7",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d6",
+          "right": "50-404-d6",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d7",
+          "right": "50-404-d6",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d7",
+          "right": "50-404-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d9",
+          "right": "50-404-d2",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d9",
+          "right": "50-404-d8",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d11",
+          "right": "50-404-d9",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d11",
+          "right": "50-404-d14",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d12",
+          "right": "50-404-d11",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d12",
+          "right": "50-404-d13",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d13",
+          "right": "50-404-d13",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d13",
+          "right": "50-404-d17",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d14",
+          "right": "50-404-d14",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d14",
+          "right": "50-404-d16",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d16",
+          "right": "50-404-d16",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d16",
+          "right": "50-404-d14",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d17",
+          "right": "50-404-d10",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d17",
+          "right": "50-404-d11",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d18",
+          "right": "50-404-d17",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d18",
+          "right": "50-404-d13",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d19",
+          "right": "50-404-d18",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d19",
+          "right": "50-404-d19",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d20",
+          "right": "50-404-d19",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d20",
+          "right": "50-404-d18",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d21",
+          "right": "50-404-d20",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d21",
+          "right": "50-404-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d3",
+          "right": "50-716-d6",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d3",
+          "right": "50-716-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d4",
+          "right": "50-716-d4",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d4",
+          "right": "50-716-d2",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d5",
+          "right": "50-716-d2",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d5",
+          "right": "50-716-d21",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d6",
+          "right": "50-716-d5",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d6",
+          "right": "50-716-d6",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d7",
+          "right": "50-716-d7",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d7",
+          "right": "50-716-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d8",
+          "right": "50-716-d8",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d8",
+          "right": "50-716-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d9",
+          "right": "50-716-d9",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d9",
+          "right": "50-716-d7",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d11",
+          "right": "50-716-d13",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d11",
+          "right": "50-716-d12",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d12",
+          "right": "50-716-d3",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d12",
+          "right": "50-716-d8",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d13",
+          "right": "50-716-d10",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d13",
+          "right": "50-716-d15",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d14",
+          "right": "50-716-d11",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d14",
+          "right": "50-716-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d15",
+          "right": "50-716-d14",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d15",
+          "right": "50-716-d12",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d16",
+          "right": "50-716-d16",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d16",
+          "right": "50-716-d15",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d17",
+          "right": "50-716-d12",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d17",
+          "right": "50-716-d14",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d18",
+          "right": "50-716-d17",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d18",
+          "right": "50-716-d11",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d19",
+          "right": "50-716-d15",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d19",
+          "right": "50-716-d16",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d20",
+          "right": "50-716-d20",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d20",
+          "right": "50-716-d18",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d21",
+          "right": "50-716-d19",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d21",
+          "right": "50-716-d20",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d22",
+          "right": "50-716-d18",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d22",
+          "right": "50-716-d20",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d23",
+          "right": "50-716-d22",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d23",
+          "right": "50-716-d13",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d24",
+          "right": "50-716-d21",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d24",
+          "right": "50-716-d2",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        }
+      ],
+      "per_segment": {
+        "40": {
+          "kits": {
+            "correct": 21,
+            "wrong": 5,
+            "unassigned": 2,
+            "kit_boxes_missing": 0,
+            "other_assigned": 0,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "pairs": {
+            "same_correct": 21,
+            "different_correct": 23,
+            "same_wrong": 2,
+            "same_uncovered": 2,
+            "different_uncovered": 2
+          }
+        },
+        "50": {
+          "kits": {
+            "correct": 31,
+            "wrong": 4,
+            "unassigned": 2,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 0
+          },
+          "pairs": {
+            "same_correct": 38,
+            "different_correct": 38
+          }
+        }
+      }
+    },
+    "after": {
+      "kits": {
+        "blue_slot": 0,
+        "mapping_segment": 0,
+        "slot_source": "development_anchor_report",
+        "source_matched_labels": 83,
+        "source_total_labels": 83,
+        "source_unmatched_ids": [],
+        "legacy_detected_box_score": {
+          "correct": 52,
+          "wrong": 9,
+          "unassigned": 4,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "unique_person_score": {
+          "correct": 52,
+          "wrong": 9,
+          "unassigned": 4,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "annotated_duplicate_labels_excluded": 0
+      },
+      "pair_score": {
+        "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+        "source_unmatched_observations": [],
+        "observations": 138,
+        "covered_observations": 136,
+        "counts": {
+          "same_pairs": 63,
+          "same_correct": 59,
+          "different_pairs": 63,
+          "different_correct": 61,
+          "false_split": 2,
+          "same_uncovered": 2,
+          "different_uncovered": 2,
+          "uncertain_excluded": 8
+        }
+      },
+      "pair_outcomes": [
+        {
+          "left": "40-374-d3",
+          "right": "40-404-d3",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d3",
+          "right": "40-404-d4",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d4",
+          "right": "40-404-d15",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d4",
+          "right": "40-404-d20",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d5",
+          "right": "40-404-d4",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d5",
+          "right": "40-404-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d6",
+          "right": "40-404-d7",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d6",
+          "right": "40-404-d12",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d8",
+          "right": "40-404-d9",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d8",
+          "right": "40-404-d13",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d9",
+          "right": "40-404-d5",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d9",
+          "right": "40-404-d14",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d10",
+          "right": "40-404-d10",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d10",
+          "right": "40-404-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d11",
+          "right": "40-404-d12",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d11",
+          "right": "40-404-d8",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d13",
+          "right": "40-404-d13",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d13",
+          "right": "40-404-d9",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d14",
+          "right": "40-404-d16",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d14",
+          "right": "40-404-d17",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d15",
+          "right": "40-404-d21",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d15",
+          "right": "40-404-d16",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d16",
+          "right": "40-404-d17",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d16",
+          "right": "40-404-d18",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d17",
+          "right": "40-404-d19",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-374-d17",
+          "right": "40-404-d20",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d18",
+          "right": "40-404-d18",
+          "relation": "same",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "40-374-d18",
+          "right": "40-404-d17",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-374-d19",
+          "right": "40-404-d20",
+          "relation": "same",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "40-374-d19",
+          "right": "40-404-d19",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d1",
+          "right": "40-716-d2",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d1",
+          "right": "40-716-d4",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d2",
+          "right": "40-716-d3",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d2",
+          "right": "40-716-d4",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d3",
+          "right": "40-716-d4",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d3",
+          "right": "40-716-d2",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d4",
+          "right": "40-716-d5",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d4",
+          "right": "40-716-d8",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d5",
+          "right": "40-716-d6",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d5",
+          "right": "40-716-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d6",
+          "right": "40-716-d7",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d6",
+          "right": "40-716-d11",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d9",
+          "right": "40-716-d9",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d9",
+          "right": "40-716-d11",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d11",
+          "right": "40-716-d11",
+          "relation": "same",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "40-686-d11",
+          "right": "40-716-d7",
+          "relation": "different",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "40-686-d13",
+          "right": "40-716-d13",
+          "relation": "same",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "40-686-d13",
+          "right": "40-716-d12",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "40-686-d15",
+          "right": "40-716-d12",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "40-686-d15",
+          "right": "40-716-d13",
+          "relation": "different",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "50-374-d2",
+          "right": "50-404-d5",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d2",
+          "right": "50-404-d4",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d3",
+          "right": "50-404-d8",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d3",
+          "right": "50-404-d2",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d4",
+          "right": "50-404-d3",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d4",
+          "right": "50-404-d6",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d5",
+          "right": "50-404-d4",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d5",
+          "right": "50-404-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d6",
+          "right": "50-404-d7",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d6",
+          "right": "50-404-d6",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d7",
+          "right": "50-404-d6",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d7",
+          "right": "50-404-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d9",
+          "right": "50-404-d2",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d9",
+          "right": "50-404-d8",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d11",
+          "right": "50-404-d9",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d11",
+          "right": "50-404-d14",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d12",
+          "right": "50-404-d11",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d12",
+          "right": "50-404-d13",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d13",
+          "right": "50-404-d13",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d13",
+          "right": "50-404-d17",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d14",
+          "right": "50-404-d14",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d14",
+          "right": "50-404-d16",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d16",
+          "right": "50-404-d16",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d16",
+          "right": "50-404-d14",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d17",
+          "right": "50-404-d10",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d17",
+          "right": "50-404-d11",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d18",
+          "right": "50-404-d17",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d18",
+          "right": "50-404-d13",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d19",
+          "right": "50-404-d18",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d19",
+          "right": "50-404-d19",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d20",
+          "right": "50-404-d19",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d20",
+          "right": "50-404-d18",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-374-d21",
+          "right": "50-404-d20",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-374-d21",
+          "right": "50-404-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d3",
+          "right": "50-716-d6",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d3",
+          "right": "50-716-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d4",
+          "right": "50-716-d4",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d4",
+          "right": "50-716-d2",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d5",
+          "right": "50-716-d2",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d5",
+          "right": "50-716-d21",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d6",
+          "right": "50-716-d5",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d6",
+          "right": "50-716-d6",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d7",
+          "right": "50-716-d7",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d7",
+          "right": "50-716-d5",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d8",
+          "right": "50-716-d8",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d8",
+          "right": "50-716-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d9",
+          "right": "50-716-d9",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d9",
+          "right": "50-716-d7",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d11",
+          "right": "50-716-d13",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d11",
+          "right": "50-716-d12",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d12",
+          "right": "50-716-d3",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d12",
+          "right": "50-716-d8",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d13",
+          "right": "50-716-d10",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d13",
+          "right": "50-716-d15",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d14",
+          "right": "50-716-d11",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d14",
+          "right": "50-716-d3",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d15",
+          "right": "50-716-d14",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d15",
+          "right": "50-716-d12",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d16",
+          "right": "50-716-d16",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d16",
+          "right": "50-716-d15",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d17",
+          "right": "50-716-d12",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d17",
+          "right": "50-716-d14",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d18",
+          "right": "50-716-d17",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d18",
+          "right": "50-716-d11",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d19",
+          "right": "50-716-d15",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d19",
+          "right": "50-716-d16",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d20",
+          "right": "50-716-d20",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d20",
+          "right": "50-716-d18",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d21",
+          "right": "50-716-d19",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d21",
+          "right": "50-716-d20",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d22",
+          "right": "50-716-d18",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d22",
+          "right": "50-716-d20",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d23",
+          "right": "50-716-d22",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d23",
+          "right": "50-716-d13",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "50-686-d24",
+          "right": "50-716-d21",
+          "relation": "same",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "50-686-d24",
+          "right": "50-716-d2",
+          "relation": "different",
+          "linked": false,
+          "passed": true
+        }
+      ],
+      "per_segment": {
+        "40": {
+          "kits": {
+            "correct": 21,
+            "wrong": 5,
+            "unassigned": 2,
+            "kit_boxes_missing": 0,
+            "other_assigned": 0,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 1
+          },
+          "pairs": {
+            "same_correct": 21,
+            "different_correct": 23,
+            "same_wrong": 2,
+            "same_uncovered": 2,
+            "different_uncovered": 2
+          }
+        },
+        "50": {
+          "kits": {
+            "correct": 31,
+            "wrong": 4,
+            "unassigned": 2,
+            "kit_boxes_missing": 0,
+            "other_assigned": 1,
+            "not_person_remaining": 0,
+            "conflicting_track_labels": 0
+          },
+          "pairs": {
+            "same_correct": 38,
+            "different_correct": 38
+          }
+        }
+      }
+    }
+  },
+  "kit_outcomes": {
+    "before": [
+      {
+        "id": "40-374-d0",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-374-d1",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-374-d2",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-374-d3",
+        "kit": "white",
+        "present": true,
+        "identity": 44,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "40-374-d4",
+        "kit": "blue",
+        "present": true,
+        "identity": 4,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d5",
+        "kit": "blue",
+        "present": true,
+        "identity": 40,
+        "team": 1,
+        "status": "wrong"
+      },
+      {
+        "id": "40-374-d6",
+        "kit": "blue",
+        "present": true,
+        "identity": 15,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d7",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 47,
+        "team": 1,
+        "status": "team_assigned"
+      },
+      {
+        "id": "40-374-d8",
+        "kit": "white",
+        "present": true,
+        "identity": 6,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d9",
+        "kit": "white",
+        "present": true,
+        "identity": 16,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d10",
+        "kit": "blue",
+        "present": true,
+        "identity": 31,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d11",
+        "kit": "white",
+        "present": true,
+        "identity": 8,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d12",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 48,
+        "team": 1,
+        "status": "team_assigned"
+      },
+      {
+        "id": "40-374-d13",
+        "kit": "blue",
+        "present": true,
+        "identity": 41,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d14",
+        "kit": "white",
+        "present": true,
+        "identity": 9,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d15",
+        "kit": "blue",
+        "present": true,
+        "identity": 14,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d16",
+        "kit": "white",
+        "present": true,
+        "identity": 30,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d17",
+        "kit": "white",
+        "present": true,
+        "identity": 37,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d18",
+        "kit": "white",
+        "present": true,
+        "identity": 34,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "40-374-d19",
+        "kit": "blue",
+        "present": true,
+        "identity": 46,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d0",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-686-d1",
+        "kit": "blue",
+        "present": true,
+        "identity": 40,
+        "team": 1,
+        "status": "wrong"
+      },
+      {
+        "id": "40-686-d2",
+        "kit": "blue",
+        "present": true,
+        "identity": 31,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d3",
+        "kit": "white",
+        "present": true,
+        "identity": 69,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "40-686-d4",
+        "kit": "white",
+        "present": true,
+        "identity": 16,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d5",
+        "kit": "blue",
+        "present": true,
+        "identity": 55,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d6",
+        "kit": "blue",
+        "present": true,
+        "identity": 59,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d7",
+        "kit": "white",
+        "present": true,
+        "identity": 60,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d8",
+        "kit": "white",
+        "present": true,
+        "identity": 67,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "40-686-d9",
+        "kit": "white",
+        "present": true,
+        "identity": 47,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d10",
+        "kit": "blue",
+        "present": true,
+        "identity": 6,
+        "team": 1,
+        "status": "wrong"
+      },
+      {
+        "id": "40-686-d11",
+        "kit": "uncertain",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-686-d12",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 46,
+        "team": 0,
+        "status": "team_assigned"
+      },
+      {
+        "id": "40-686-d13",
+        "kit": "white",
+        "present": true,
+        "identity": 9,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d14",
+        "kit": "white",
+        "present": true,
+        "identity": 64,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d15",
+        "kit": "blue",
+        "present": true,
+        "identity": 14,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d0",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "50-374-d1",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "50-374-d2",
+        "kit": "blue",
+        "present": true,
+        "identity": 34,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d3",
+        "kit": "blue",
+        "present": true,
+        "identity": 30,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d4",
+        "kit": "blue",
+        "present": true,
+        "identity": 36,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d5",
+        "kit": "white",
+        "present": true,
+        "identity": 15,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d6",
+        "kit": "blue",
+        "present": true,
+        "identity": 37,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d7",
+        "kit": "white",
+        "present": true,
+        "identity": 3,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d8",
+        "kit": "white",
+        "present": true,
+        "identity": 1,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d9",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 29,
+        "team": 0,
+        "status": "team_assigned"
+      },
+      {
+        "id": "50-374-d10",
+        "kit": "blue",
+        "present": true,
+        "identity": 6,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d11",
+        "kit": "white",
+        "present": true,
+        "identity": 13,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d12",
+        "kit": "white",
+        "present": true,
+        "identity": 4,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d13",
+        "kit": "white",
+        "present": true,
+        "identity": 10,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d14",
+        "kit": "blue",
+        "present": true,
+        "identity": 7,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d15",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 18,
+        "team": 0,
+        "status": "team_assigned"
+      },
+      {
+        "id": "50-374-d16",
+        "kit": "white",
+        "present": true,
+        "identity": 9,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d17",
+        "kit": "blue",
+        "present": true,
+        "identity": 12,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-374-d18",
+        "kit": "blue",
+        "present": true,
+        "identity": 23,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d19",
+        "kit": "white",
+        "present": true,
+        "identity": 40,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "50-374-d20",
+        "kit": "other",
+        "present": true,
+        "identity": 11,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-374-d21",
+        "kit": "white",
+        "present": true,
+        "identity": 19,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "50-686-d0",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "50-686-d1",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "50-686-d2",
+        "kit": "other",
+        "present": true,
+        "identity": 43,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-686-d3",
+        "kit": "white",
+        "present": true,
+        "identity": 15,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d4",
+        "kit": "blue",
+        "present": true,
+        "identity": 36,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d5",
+        "kit": "white",
+        "present": true,
+        "identity": 13,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d6",
+        "kit": "blue",
+        "present": true,
+        "identity": 37,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d7",
+        "kit": "blue",
+        "present": true,
+        "identity": 6,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d8",
+        "kit": "white",
+        "present": true,
+        "identity": 10,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d9",
+        "kit": "white",
+        "present": true,
+        "identity": 46,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d10",
+        "kit": "other",
+        "present": true,
+        "identity": 51,
+        "team": 1,
+        "status": "team_assigned"
+      },
+      {
+        "id": "50-686-d11",
+        "kit": "blue",
+        "present": true,
+        "identity": 12,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-686-d12",
+        "kit": "white",
+        "present": true,
+        "identity": 3,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d13",
+        "kit": "white",
+        "present": true,
+        "identity": 4,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d14",
+        "kit": "blue",
+        "present": true,
+        "identity": 30,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d15",
+        "kit": "white",
+        "present": true,
+        "identity": 42,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d16",
+        "kit": "white",
+        "present": true,
+        "identity": 9,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d17",
+        "kit": "blue",
+        "present": true,
+        "identity": 29,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d18",
+        "kit": "blue",
+        "present": true,
+        "identity": 23,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d19",
+        "kit": "blue",
+        "present": true,
+        "identity": 18,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d20",
+        "kit": "other",
+        "present": true,
+        "identity": 11,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-686-d21",
+        "kit": "white",
+        "present": true,
+        "identity": 40,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "50-686-d22",
+        "kit": "blue",
+        "present": true,
+        "identity": 7,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d23",
+        "kit": "white",
+        "present": true,
+        "identity": 56,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "50-686-d24",
+        "kit": "blue",
+        "present": true,
+        "identity": 57,
+        "team": 0,
+        "status": "correct"
+      }
+    ],
+    "after": [
+      {
+        "id": "40-374-d0",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-374-d1",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-374-d2",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-374-d3",
+        "kit": "white",
+        "present": true,
+        "identity": 44,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "40-374-d4",
+        "kit": "blue",
+        "present": true,
+        "identity": 4,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d5",
+        "kit": "blue",
+        "present": true,
+        "identity": 40,
+        "team": 1,
+        "status": "wrong"
+      },
+      {
+        "id": "40-374-d6",
+        "kit": "blue",
+        "present": true,
+        "identity": 15,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d7",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 47,
+        "team": 1,
+        "status": "team_assigned"
+      },
+      {
+        "id": "40-374-d8",
+        "kit": "white",
+        "present": true,
+        "identity": 6,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d9",
+        "kit": "white",
+        "present": true,
+        "identity": 16,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d10",
+        "kit": "blue",
+        "present": true,
+        "identity": 31,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d11",
+        "kit": "white",
+        "present": true,
+        "identity": 8,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d12",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 48,
+        "team": 1,
+        "status": "team_assigned"
+      },
+      {
+        "id": "40-374-d13",
+        "kit": "blue",
+        "present": true,
+        "identity": 41,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d14",
+        "kit": "white",
+        "present": true,
+        "identity": 9,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d15",
+        "kit": "blue",
+        "present": true,
+        "identity": 14,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d16",
+        "kit": "white",
+        "present": true,
+        "identity": 30,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d17",
+        "kit": "white",
+        "present": true,
+        "identity": 37,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-374-d18",
+        "kit": "white",
+        "present": true,
+        "identity": 34,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "40-374-d19",
+        "kit": "blue",
+        "present": true,
+        "identity": 46,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d0",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-686-d1",
+        "kit": "blue",
+        "present": true,
+        "identity": 40,
+        "team": 1,
+        "status": "wrong"
+      },
+      {
+        "id": "40-686-d2",
+        "kit": "blue",
+        "present": true,
+        "identity": 31,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d3",
+        "kit": "white",
+        "present": true,
+        "identity": 69,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "40-686-d4",
+        "kit": "white",
+        "present": true,
+        "identity": 16,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d5",
+        "kit": "blue",
+        "present": true,
+        "identity": 55,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d6",
+        "kit": "blue",
+        "present": true,
+        "identity": 59,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d7",
+        "kit": "white",
+        "present": true,
+        "identity": 60,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d8",
+        "kit": "white",
+        "present": true,
+        "identity": 67,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "40-686-d9",
+        "kit": "white",
+        "present": true,
+        "identity": 47,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d10",
+        "kit": "blue",
+        "present": true,
+        "identity": 6,
+        "team": 1,
+        "status": "wrong"
+      },
+      {
+        "id": "40-686-d11",
+        "kit": "uncertain",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "40-686-d12",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 46,
+        "team": 0,
+        "status": "team_assigned"
+      },
+      {
+        "id": "40-686-d13",
+        "kit": "white",
+        "present": true,
+        "identity": 9,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d14",
+        "kit": "white",
+        "present": true,
+        "identity": 64,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "40-686-d15",
+        "kit": "blue",
+        "present": true,
+        "identity": 14,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d0",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "50-374-d1",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "50-374-d2",
+        "kit": "blue",
+        "present": true,
+        "identity": 33,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d3",
+        "kit": "blue",
+        "present": true,
+        "identity": 29,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d4",
+        "kit": "blue",
+        "present": true,
+        "identity": 35,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d5",
+        "kit": "white",
+        "present": true,
+        "identity": 15,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d6",
+        "kit": "blue",
+        "present": true,
+        "identity": 36,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d7",
+        "kit": "white",
+        "present": true,
+        "identity": 3,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d8",
+        "kit": "white",
+        "present": true,
+        "identity": 1,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d9",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 23,
+        "team": 0,
+        "status": "team_assigned"
+      },
+      {
+        "id": "50-374-d10",
+        "kit": "blue",
+        "present": true,
+        "identity": 6,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d11",
+        "kit": "white",
+        "present": true,
+        "identity": 13,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d12",
+        "kit": "white",
+        "present": true,
+        "identity": 4,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d13",
+        "kit": "white",
+        "present": true,
+        "identity": 10,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d14",
+        "kit": "blue",
+        "present": true,
+        "identity": 7,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d15",
+        "kit": "uncertain",
+        "present": true,
+        "identity": 18,
+        "team": 0,
+        "status": "team_assigned"
+      },
+      {
+        "id": "50-374-d16",
+        "kit": "white",
+        "present": true,
+        "identity": 9,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d17",
+        "kit": "blue",
+        "present": true,
+        "identity": 12,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-374-d18",
+        "kit": "blue",
+        "present": true,
+        "identity": 22,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-374-d19",
+        "kit": "white",
+        "present": true,
+        "identity": 39,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "50-374-d20",
+        "kit": "other",
+        "present": true,
+        "identity": 11,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-374-d21",
+        "kit": "white",
+        "present": true,
+        "identity": 19,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "50-686-d0",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "50-686-d1",
+        "kit": "not_person",
+        "present": false,
+        "identity": null,
+        "team": null,
+        "status": "missing"
+      },
+      {
+        "id": "50-686-d2",
+        "kit": "other",
+        "present": true,
+        "identity": 41,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-686-d3",
+        "kit": "white",
+        "present": true,
+        "identity": 15,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d4",
+        "kit": "blue",
+        "present": true,
+        "identity": 35,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d5",
+        "kit": "white",
+        "present": true,
+        "identity": 13,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d6",
+        "kit": "blue",
+        "present": true,
+        "identity": 36,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d7",
+        "kit": "blue",
+        "present": true,
+        "identity": 6,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d8",
+        "kit": "white",
+        "present": true,
+        "identity": 10,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d9",
+        "kit": "white",
+        "present": true,
+        "identity": 1,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d10",
+        "kit": "other",
+        "present": true,
+        "identity": 48,
+        "team": 1,
+        "status": "team_assigned"
+      },
+      {
+        "id": "50-686-d11",
+        "kit": "blue",
+        "present": true,
+        "identity": 12,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-686-d12",
+        "kit": "white",
+        "present": true,
+        "identity": 3,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d13",
+        "kit": "white",
+        "present": true,
+        "identity": 4,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d14",
+        "kit": "blue",
+        "present": true,
+        "identity": 29,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d15",
+        "kit": "white",
+        "present": true,
+        "identity": 40,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d16",
+        "kit": "white",
+        "present": true,
+        "identity": 9,
+        "team": 1,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d17",
+        "kit": "blue",
+        "present": true,
+        "identity": 23,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d18",
+        "kit": "blue",
+        "present": true,
+        "identity": 22,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d19",
+        "kit": "blue",
+        "present": true,
+        "identity": 55,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d20",
+        "kit": "other",
+        "present": true,
+        "identity": 11,
+        "team": null,
+        "status": "unassigned"
+      },
+      {
+        "id": "50-686-d21",
+        "kit": "white",
+        "present": true,
+        "identity": 39,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "50-686-d22",
+        "kit": "blue",
+        "present": true,
+        "identity": 7,
+        "team": 0,
+        "status": "correct"
+      },
+      {
+        "id": "50-686-d23",
+        "kit": "white",
+        "present": true,
+        "identity": 19,
+        "team": 0,
+        "status": "wrong"
+      },
+      {
+        "id": "50-686-d24",
+        "kit": "blue",
+        "present": true,
+        "identity": 53,
+        "team": 0,
+        "status": "correct"
+      }
+    ]
+  },
+  "full_clip_statistics": {
+    "before": {
+      "40": {
+        "per_frame_calibration": false,
+        "tracker_resets": 0,
+        "calibration_gap_resets": 0,
+        "requested_lost_track_seconds": 1.5,
+        "effective_lost_track_seconds": 0.56,
+        "person_filter": {
+          "method": "annotated_perimeter_track_v1",
+          "applied": false,
+          "skip_reason": "disabled",
+          "observations_before": 6451,
+          "observations_removed": 0,
+          "tracks_removed": 0,
+          "min_field_observations": 2,
+          "enablement": "camera_profile"
+        },
+        "identity_refinement_enabled": false,
+        "duplicate_parts_removed": 0,
+        "kit_color_method": "raw_rgb_v1",
+        "ball_spikes_rejected": 0,
+        "effective_track_fps": 12.5,
+        "player_summary": {
+          "observations": 6451,
+          "tracks": 69,
+          "unassigned_observations": 619,
+          "overfull_frames": 0
+        },
+        "ball_fields": "restored immutable source observations; ball selection was not re-evaluated"
+      },
+      "50": {
+        "per_frame_calibration": false,
+        "tracker_resets": 0,
+        "calibration_gap_resets": 0,
+        "requested_lost_track_seconds": 1.5,
+        "effective_lost_track_seconds": 0.56,
+        "person_filter": {
+          "method": "annotated_perimeter_track_v1",
+          "applied": false,
+          "skip_reason": "disabled",
+          "observations_before": 7751,
+          "observations_removed": 0,
+          "tracks_removed": 0,
+          "min_field_observations": 2,
+          "enablement": "camera_profile"
+        },
+        "identity_refinement_enabled": false,
+        "duplicate_parts_removed": 0,
+        "kit_color_method": "raw_rgb_v1",
+        "ball_spikes_rejected": 0,
+        "effective_track_fps": 12.5,
+        "player_summary": {
+          "observations": 7751,
+          "tracks": 46,
+          "unassigned_observations": 909,
+          "overfull_frames": 59
+        },
+        "ball_fields": "restored immutable source observations; ball selection was not re-evaluated"
+      }
+    },
+    "after": {
+      "40": {
+        "per_frame_calibration": false,
+        "tracker_resets": 0,
+        "calibration_gap_resets": 0,
+        "requested_lost_track_seconds": 1.5,
+        "effective_lost_track_seconds": 0.56,
+        "person_filter": {
+          "method": "annotated_perimeter_track_v1",
+          "applied": false,
+          "skip_reason": "disabled",
+          "observations_before": 6451,
+          "observations_removed": 0,
+          "tracks_removed": 0,
+          "min_field_observations": 2,
+          "enablement": "camera_profile"
+        },
+        "identity_refinement_enabled": true,
+        "duplicate_parts_removed": 3,
+        "kit_color_method": "dual_torso_v1",
+        "ball_spikes_rejected": 0,
+        "effective_track_fps": 12.5,
+        "identity_refinement": {
+          "method": "fixed_camera_identity_v1",
+          "anonymous_identities": true,
+          "raw_tracks": 69,
+          "tracklets": 69,
+          "linked_tracks": 67,
+          "splits": [],
+          "links": [
+            {
+              "continuity_id": 0,
+              "from_track": 27,
+              "to_track": 50,
+              "cost": 0.5118604935327999,
+              "gap_seconds": 1.0399999999999991,
+              "forward_residual": 0.1447072152579011,
+              "backward_residual": 0.3000055515454559
+            },
+            {
+              "continuity_id": 0,
+              "from_track": 71,
+              "to_track": 72,
+              "cost": 0.24427634933155723,
+              "gap_seconds": 0.16000000000000014,
+              "forward_residual": 0.12734511423966252,
+              "backward_residual": 0.09865022698377646
+            }
+          ],
+          "local_unassigned_observations": 485
+        },
+        "player_summary": {
+          "observations": 6451,
+          "tracks": 67,
+          "unassigned_observations": 485,
+          "overfull_frames": 0
+        },
+        "ball_fields": "restored immutable source observations; ball selection was not re-evaluated"
+      },
+      "50": {
+        "per_frame_calibration": false,
+        "tracker_resets": 0,
+        "calibration_gap_resets": 0,
+        "requested_lost_track_seconds": 1.5,
+        "effective_lost_track_seconds": 0.56,
+        "person_filter": {
+          "method": "annotated_perimeter_track_v1",
+          "applied": false,
+          "skip_reason": "disabled",
+          "observations_before": 7719,
+          "observations_removed": 0,
+          "tracks_removed": 0,
+          "min_field_observations": 2,
+          "enablement": "camera_profile"
+        },
+        "identity_refinement_enabled": true,
+        "duplicate_parts_removed": 40,
+        "kit_color_method": "dual_torso_v1",
+        "ball_spikes_rejected": 0,
+        "effective_track_fps": 12.5,
+        "identity_refinement": {
+          "method": "fixed_camera_identity_v1",
+          "anonymous_identities": true,
+          "raw_tracks": 43,
+          "tracklets": 44,
+          "linked_tracks": 40,
+          "splits": [
+            {
+              "continuity_id": 0,
+              "raw_track_id": 18,
+              "previous_identity": 18,
+              "identity": 55,
+              "first_order": 189,
+              "confirmed_order": 191,
+              "first_seconds": 15.12,
+              "confirmed_seconds": 15.28,
+              "source": "collision_appearance"
+            }
+          ],
+          "links": [
+            {
+              "continuity_id": 0,
+              "from_track": 17,
+              "to_track": 26,
+              "cost": 0.6859363310387756,
+              "gap_seconds": 0.8799999999999999,
+              "forward_residual": 0.20709169017635368,
+              "backward_residual": 0.33897297264370124
+            },
+            {
+              "continuity_id": 0,
+              "from_track": 23,
+              "to_track": 28,
+              "cost": 0.9118782758877725,
+              "gap_seconds": 1.0399999999999996,
+              "forward_residual": 0.6860011157893231,
+              "backward_residual": 0.21366229780527315
+            },
+            {
+              "continuity_id": 0,
+              "from_track": 1,
+              "to_track": 43,
+              "cost": 0.207149572845953,
+              "gap_seconds": 0.3999999999999986,
+              "forward_residual": 0.1468525227636799,
+              "backward_residual": 0.015529859815413468
+            },
+            {
+              "continuity_id": 0,
+              "from_track": 19,
+              "to_track": 52,
+              "cost": 0.5537316669692383,
+              "gap_seconds": 0.16000000000000014,
+              "forward_residual": 0.3144870750478222,
+              "backward_residual": 0.529399960111852
+            }
+          ],
+          "local_unassigned_observations": 919
+        },
+        "player_summary": {
+          "observations": 7719,
+          "tracks": 40,
+          "unassigned_observations": 919,
+          "overfull_frames": 54
+        },
+        "ball_fields": "restored immutable source observations; ball selection was not re-evaluated"
+      }
+    }
+  },
+  "acceptance_gates": {
+    "unique_person_correct_not_decreased": {
+      "before": 52,
+      "after": 52,
+      "passed": true
+    },
+    "wrong_kit_not_increased": {
+      "before": 9,
+      "after": 9,
+      "passed": true
+    },
+    "other_assigned_not_increased": {
+      "before": 1,
+      "after": 1,
+      "passed": true
+    },
+    "true_person_coverage_not_decreased": {
+      "before": 69,
+      "after": 69,
+      "passed": true
+    },
+    "same_person_pairs_not_decreased": {
+      "before": 59,
+      "after": 59,
+      "passed": true
+    },
+    "different_person_pairs_not_decreased": {
+      "before": 61,
+      "after": 61,
+      "passed": true
+    }
+  },
+  "failed_gates": [],
+  "decision": "All predefined night nonregression gates pass with unchanged labeled scores. No improvement demonstrated on these control labels; night alone does not authorize enabling the profile.",
+  "remaining_errors": {
+    "kit_wrong": 9,
+    "kit_unassigned": 4,
+    "other_assigned": 1,
+    "false_split": 2,
+    "same_uncovered": 2,
+    "different_uncovered": 2,
+    "description": "The same six failing scored relations remain in both variants; two false splits and two missing pair observations. Missing observations are not counted as successful different-person separation."
+  },
+  "limitations": [
+    "Sparse visual identity pairs, not full-video IDF1/HOTA or roster identity.",
+    "Same match/source as development, held-out clips; no independent-match claim.",
+    "Seven explicit endpoint-missing start boxes and merged/ambiguous source boxes are separate detector-coverage categories, not removed tracking predictions.",
+    "Full-clip split/link/part-removal counts describe algorithm actions, not visually established correctness outside the frozen labels.",
+    "No retuning or relabeling after control prediction results were opened."
+  ]
+}

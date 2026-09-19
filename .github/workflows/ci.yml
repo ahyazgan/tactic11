@@ -71,6 +71,39 @@ jobs:
           alembic downgrade base
           alembic upgrade head
 
+  postgres_identity_migration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: identity_test
+          POSTGRES_PASSWORD: identity_test
+          POSTGRES_DB: identity_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U identity_test -d identity_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - name: install
+        run: pip install --disable-pip-version-check -r requirements-dev.txt
+      - name: PostgreSQL external player identity migration and rollback
+        env:
+          DATABASE_URL: "sqlite:///:memory:"
+          TEST_POSTGRES_URL: "postgresql+psycopg://identity_test:identity_test@localhost:5432/identity_test"
+        run: pytest -q tests/test_player_external_id_bigint.py tests/test_migration_bootstrap.py tests/test_migration_boolean_defaults.py -k postgresql
+
   docker_build:
     runs-on: ubuntu-latest
     # Dockerfile değişirse veya main'e merge'de doğrula; PR'larda da

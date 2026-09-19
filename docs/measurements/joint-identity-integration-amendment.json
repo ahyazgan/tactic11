@@ -1,0 +1,46 @@
+{
+  "recorded_at_utc": "2026-09-14T13:04:18.078139+00:00",
+  "scope": "Post-control integration fixes only; no classifier parameter tuning or label/score revision.",
+  "original_freeze": {
+    "path": "docs/measurements/joint-identity-frozen-decision.json",
+    "sha256": "bd8c9176c818dd952b112260feb5d30d051b627ccb30a04638fc8eb763cabb0c"
+  },
+  "code_changes": {
+    "app/tracking/pipeline.py": {
+      "before_sha256_lf": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+      "after_sha256_lf": "ea555a6ebd24c25aa6b1a702c571645d8fdd4f75e518fa8eea97d64a15e25bc3",
+      "reason": "Reject identity refinement for broadcast/nonfixed source even when per-frame calibration is explicitly disabled; fixed-camera classifier unchanged."
+    },
+    "scripts/track_video.py": {
+      "before_sha256_lf": "4d185093875d701e305013e8105e3c2c3eaaf30475e10250d2ca3199da26e960",
+      "after_sha256_lf": "ed1f243a1e8d5909f14a8743d20b4ddb6be7c21169e669d39031705f75d366a7",
+      "reason": "Validate and pass team palette; align operated-camera cut/replay flags with warm worker."
+    },
+    "scripts/track_live.py": {
+      "before_sha256_lf": "ed327c604f02daa4353c76adc502f833d0f8868afc2ec93453a205551bb0d572",
+      "after_sha256_lf": "a6fd16cf76b142e2dc77c97f79955ef2873334b421f4852f04b3bf9c371e49a7",
+      "reason": "Persist first valid palette atomically across isolated/warm restarts; bind it to match/team/calibration/refinement/camera settings; resolve source/model paths before child cwd changes."
+    }
+  },
+  "added_integration_code_sha256_lf": {
+    "app/tracking/anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "tests/test_tracking_cli_identity.py": "9c18146e86297c459ebabf0a2fa0eaaecc806f553a44bc867dfc60925cf1dad6",
+    "tests/test_identity_source_guard.py": "89b07437204b8140b55ca71ab9b85fa2be7776f049dd7e89e10aa2c8032f1a30"
+  },
+  "parity_evidence": {
+    "path": "docs/measurements/joint-identity-integration-parity.json",
+    "sha256": "bd9fa55652e2771f4111126b2c3be6d54d77da23bb6010010ad971b46920602d"
+  },
+  "unchanged_classifier_and_parameters": true,
+  "decision": "No automatic identity profile enabled: day control same-person pairs regressed; night extra-development other-kit assignments regressed; night control unchanged.",
+  "additional_integration_scope": [
+    "BigInteger player identity storage and guarded migration",
+    "cross-match/per-period derived-event identity and legacy retry compatibility",
+    "scope-specific UI denominator and shared lossless frame/table token"
+  ],
+  "limits": [
+    "Fixed-camera replay parity does not prove moving-camera isolated/warm calibration equivalence.",
+    "IDs isolate segments; they do not identify a person across segments.",
+    "Original preview manifest uses the original freeze; its fixed-camera output is covered by parity."
+  ]
+}

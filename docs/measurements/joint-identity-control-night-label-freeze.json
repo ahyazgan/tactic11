@@ -1,0 +1,59 @@
+{
+  "frozen_at_utc": "2026-09-14T12:31:37.440896+00:00",
+  "candidate_freeze_sha256": "bd8c9176c818dd952b112260feb5d30d051b627ccb30a04638fc8eb763cabb0c",
+  "checked_frozen_code_files": 16,
+  "predictions_opened": false,
+  "output_sha256": {
+    "docs/measurements/joint-identity-control-night-labels.json": "c33b9dc372e55d14e997dda593f2fe6790ab04597863ff635db6cb2dbdc9e529",
+    "docs/measurements/joint-identity-control-night-pairs.json": "2668d60cf95f419b70f2bf6e3bed99b27b79ba1c03963dbdd01a519cc025c0ef"
+  },
+  "cross_review_sha256": {
+    "40": "f063d2d73195751ecf1cd87c263f67a5d82e045d87ff9c18e8149bc3d292be85",
+    "50": "fa8eb04b78215717266d8751973fdfa62824ad1759673eb48a662389c985c42e"
+  },
+  "counts": {
+    "kits": {
+      "not_person": 8,
+      "white": 34,
+      "blue": 31,
+      "uncertain": 6,
+      "other": 4
+    },
+    "identity": {
+      "start_boxes": 83,
+      "start_status": {
+        "not_person": 8,
+        "same": 63,
+        "uncertain": 5,
+        "visible_person_without_source_box": 7
+      },
+      "concrete_pairs": {
+        "same": 63,
+        "different": 63,
+        "uncertain": 8
+      },
+      "scored_observations": 138,
+      "all_raw_observations": 164
+    }
+  },
+  "source_provenance": {
+    ".cache/joint_control_night_blind/40/labels.json": "d47b2ed8689136a480d487a40e07f4e8cd2dc2c0b7d239931bc06b6366076b3f",
+    ".cache/joint_control_night_blind/40/pairs.json": "21c5632156e35f25d324d1edba2c85a8cd5795aa901558cebf6cab85fa9f87ee",
+    ".cache/joint_control_night_blind/40/manifest.json": "6d5a5d21a86e65616dd3bbec775fed4e20b57eb5ebb1dc125bd2c95055170e93",
+    ".cache/joint_control_night_blind/40/labels_review_v1.json": "4d0d987aaed509474c097e3bf50b9d8597a2ba734c983c4421bfef16cc3d031d",
+    ".cache/joint_control_night_blind/40/pairs_review_v1.json": "5636fa73974652c399d011878836d7dee9e24ad7125d2239213655092575b3bc",
+    ".cache/joint_control_night_blind/40/cross_review_by_kit_classifier_v1.json": "f063d2d73195751ecf1cd87c263f67a5d82e045d87ff9c18e8149bc3d292be85",
+    "data/tracking/bench/joint_identity_control/raw_v1/seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+    "data/tracking/bench/joint_identity_control/source/seg_0040.mp4": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a",
+    "data/tracking/bench/joint_identity_control/features/seg_0040.json": "eda9adbf8df36916826328d2ca168f369780c412425f9d78b444c263f0c925fe",
+    ".cache/joint_control_night_blind/50/labels.json": "4ff2c14c6ab554677fd7560bd35c90d56bf960df6197c4638f27715beaac4387",
+    ".cache/joint_control_night_blind/50/pairs.json": "e5cd7cb99b54f3a8cc8303220512c3ae3a9817edf4714deb2e3c188b04db143e",
+    ".cache/joint_control_night_blind/50/manifest.json": "c84b165082278f24b8544aca99b2dbafde08dbea927a013219333f3a7ebe10f8",
+    ".cache/joint_control_night_blind/50/labels_review_v1.json": "363c4e378922c595e073c77013d0809e02087b02a5938f33d7256452003085af",
+    ".cache/joint_control_night_blind/50/pairs_review_v1.json": "3c8704c540311c0d88c1267abd78197f5d301db99030576d0e05fc5f064702ff",
+    ".cache/joint_control_night_blind/50/cross_review_identity_tracker_v1.json": "fa8eb04b78215717266d8751973fdfa62824ad1759673eb48a662389c985c42e",
+    "data/tracking/bench/joint_identity_control/raw_v1/seg_0050.json": "8a4cb524a0b88949c0448a4e022b6415b55acf1eee093fca7dd117e08ebc1d43",
+    "data/tracking/bench/joint_identity_control/source/seg_0050.mp4": "fef8c382ebad00fdfaefd0e214192decc91980e312b8f6e2d871b2eb5dc10604",
+    "data/tracking/bench/joint_identity_control/features/seg_0050.json": "4ba69d2c8216cc6c7ff08e07911201e6b19edafbcd02a96532e1761f5bd0c87a"
+  }
+}

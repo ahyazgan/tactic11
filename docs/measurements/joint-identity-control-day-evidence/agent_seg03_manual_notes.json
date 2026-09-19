@@ -1,0 +1,636 @@
+{
+  "reviewer": "Codex identity_validation; source-only visual review, no prediction outputs",
+  "frames": {
+    "0-374": {
+      "kits": [
+        "b",
+        "w",
+        "o",
+        "o",
+        "o",
+        "o",
+        "o",
+        "o",
+        "o",
+        "w",
+        "b",
+        "b",
+        "b",
+        "b",
+        "b",
+        "w",
+        "w",
+        "w",
+        "w",
+        "w",
+        "o",
+        "w",
+        "o",
+        "o",
+        "o",
+        "b",
+        "b",
+        "w",
+        "b",
+        "w",
+        "b",
+        "o",
+        "w",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "o",
+        "n",
+        "o"
+      ],
+      "same": {
+        "0": 1,
+        "1": 15,
+        "2": 0,
+        "3": 6,
+        "4": 3,
+        "5": 9,
+        "6": 7,
+        "7": 8,
+        "8": 4,
+        "9": 13,
+        "10": 14,
+        "11": 11,
+        "12": 12,
+        "13": 20,
+        "14": 22,
+        "15": 17,
+        "16": 16,
+        "17": 18,
+        "18": 19,
+        "19": 21,
+        "20": 23,
+        "21": 33,
+        "22": 27,
+        "23": 26,
+        "24": 28,
+        "25": 32,
+        "26": 29,
+        "28": 30,
+        "30": 31,
+        "32": 33,
+        "43": 42,
+        "45": 44
+      },
+      "unresolved": {
+        "27": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "White person remains visible, but endpoint d2 merges white and blue torsos; no unique white box.",
+          "candidate": 2
+        },
+        "29": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "White person becomes occluded behind blue endpoint d31; no separate white detection.",
+          "candidate": 31
+        },
+        "31": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Start box is black-clothed person legs; person visible at endpoint without any raw box."
+        }
+      },
+      "details": {
+        "21": "Upper-body duplicate of source d32 white person.",
+        "31": "Partial legs of black-clothed person, not a full duplicate.",
+        "36": "Box encloses a carried white towel/object, not the person.",
+        "33": "Goal/net structure false positive.",
+        "34": "Blue cone false positive.",
+        "35": "Painted field logo false positive.",
+        "37": "Painted field lettering false positive.",
+        "38": "Blue cone false positive.",
+        "39": "Equipment/white cylindrical object false positive.",
+        "40": "Ball false positive.",
+        "41": "Blue cone false positive.",
+        "42": "Painted field lettering false positive.",
+        "44": "Orange sideline cone/object false positive."
+      },
+      "endpoint_exclude": [
+        2,
+        10,
+        24,
+        34,
+        35,
+        37,
+        38,
+        39,
+        40,
+        41,
+        43
+      ],
+      "endpoint_groups": [
+        [
+          10,
+          15
+        ],
+        [
+          24,
+          33
+        ]
+      ],
+      "reviewed_strips": [
+        0,
+        1,
+        2,
+        9,
+        13,
+        18,
+        10,
+        27,
+        29,
+        20,
+        23,
+        24,
+        36,
+        43
+      ]
+    },
+    "0-686": {
+      "kits": [
+        "n",
+        "o",
+        "o",
+        "o",
+        "o",
+        "u",
+        "b",
+        "b",
+        "b",
+        "w",
+        "w",
+        "w",
+        "b",
+        "b",
+        "o",
+        "o",
+        "b",
+        "w",
+        "w",
+        "w",
+        "w",
+        "w",
+        "o",
+        "n",
+        "o",
+        "w",
+        "b",
+        "b",
+        "w",
+        "b",
+        "w",
+        "o",
+        "n",
+        "n",
+        "n",
+        "b",
+        "w",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "o",
+        "o",
+        "o"
+      ],
+      "same": {
+        "1": 1,
+        "2": 0,
+        "3": 3,
+        "4": 2,
+        "6": 4,
+        "7": 5,
+        "8": 8,
+        "9": 9,
+        "10": 10,
+        "11": 7,
+        "12": 25,
+        "13": 18,
+        "14": 14,
+        "16": 11,
+        "17": 16,
+        "18": 15,
+        "19": 17,
+        "20": 19,
+        "21": 30,
+        "22": 31,
+        "24": 24,
+        "25": 26,
+        "26": 12,
+        "27": 28,
+        "28": 30,
+        "29": 27,
+        "30": 29,
+        "31": 31,
+        "35": 35,
+        "36": 29,
+        "44": 43,
+        "45": 44,
+        "46": 45
+      },
+      "unresolved": {
+        "5": {
+          "visibility": "merged_source_box",
+          "reason": "Two adjacent sideline people substantially share the start and endpoint boxes; one identity is not unique.",
+          "candidate": 6
+        },
+        "15": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Dark-clothed sideline person stays behind the far blue player; no unique raw endpoint box."
+        }
+      },
+      "details": {
+        "0": "Green object/tarp on bench false positive.",
+        "5": "Merged adjacent sideline people, do not force one kit or person identity.",
+        "21": "Head/upper-body duplicate of white source d28.",
+        "22": "Head duplicate of red source d31.",
+        "23": "Vehicle false positive.",
+        "32": "Goal/net structure false positive.",
+        "33": "Blue cone false positive.",
+        "34": "Painted field logo false positive.",
+        "36": "Shoe/feet duplicate belonging to white source d30; connected legs visible.",
+        "37": "Painted field lettering false positive.",
+        "38": "Blue cone false positive.",
+        "39": "Equipment/white cylindrical object false positive.",
+        "40": "Ball false positive.",
+        "41": "Blue cone false positive.",
+        "42": "Painted field lettering false positive.",
+        "43": "Orange cone false positive."
+      },
+      "endpoint_exclude": [
+        6,
+        13,
+        20,
+        23,
+        32,
+        33,
+        34,
+        36,
+        38,
+        39,
+        40,
+        41,
+        42,
+        46
+      ],
+      "endpoint_groups": [
+        [
+          13,
+          26
+        ],
+        [
+          20,
+          30
+        ],
+        [
+          45,
+          46
+        ]
+      ],
+      "reviewed_strips": [
+        1,
+        6,
+        9,
+        10,
+        17,
+        26,
+        30,
+        14,
+        22,
+        24,
+        35,
+        44,
+        8
+      ]
+    },
+    "3-374": {
+      "kits": [
+        "o",
+        "o",
+        "o",
+        "o",
+        "o",
+        "b",
+        "b",
+        "w",
+        "b",
+        "b",
+        "w",
+        "b",
+        "o",
+        "w",
+        "w",
+        "b",
+        "w",
+        "b",
+        "u",
+        "o",
+        "b",
+        "w",
+        "w",
+        "w",
+        "b",
+        "b",
+        "w",
+        "o",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "o"
+      ],
+      "same": {
+        "0": 1,
+        "1": 0,
+        "4": 2,
+        "5": 3,
+        "6": 4,
+        "11": 7,
+        "12": 8,
+        "13": 13,
+        "14": 15,
+        "15": 14,
+        "16": 9,
+        "17": 12,
+        "20": 11,
+        "21": 17,
+        "22": 18,
+        "25": 19,
+        "26": 20,
+        "37": 31
+      },
+      "unresolved": {
+        "2": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Standing dark-clothed sideline person remains visible, absent from raw endpoint detections."
+        },
+        "3": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Dark-clothed sideline person remains visible, absent from raw endpoint detections."
+        },
+        "7": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "White and blue players overlap in endpoint d5; no unique white box.",
+          "candidate": 5
+        },
+        "9": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Blue and white players substantially share endpoint d5.",
+          "candidate": 5
+        },
+        "8": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Blue and white players substantially share endpoint d6.",
+          "candidate": 6
+        },
+        "10": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "White and blue players substantially share endpoint d6.",
+          "candidate": 6
+        },
+        "18": {
+          "visibility": "merged_source_box",
+          "reason": "Start box encloses standing white person and blue foreground head/torso; not one unique person.",
+          "candidate": 10
+        },
+        "19": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Yellow-clothed person visible in the fixed temporal strip at endpoint, but no raw endpoint box."
+        },
+        "23": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Endpoint d16 merges white foreground and blue player behind.",
+          "candidate": 16
+        },
+        "24": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Endpoint d16 merges blue and white players.",
+          "candidate": 16
+        },
+        "27": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Red-clothed person visible behind white endpoint d20, without a separate box."
+        }
+      },
+      "details": {
+        "18": "Merged white person and blue foreground player; kit uncertain.",
+        "20": "Partial lower body of blue foreground player.",
+        "21": "Partial lower body of a separate white player.",
+        "28": "Goal/net structure false positive.",
+        "29": "Blue cone false positive.",
+        "30": "Painted field logo false positive.",
+        "31": "Painted field lettering false positive.",
+        "32": "Equipment/white cylindrical object false positive.",
+        "33": "Ball false positive.",
+        "34": "Blue cone false positive.",
+        "35": "Painted field lettering false positive.",
+        "36": "Orange cone false positive."
+      },
+      "endpoint_exclude": [
+        5,
+        6,
+        16,
+        21,
+        22,
+        23,
+        24,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "endpoint_groups": [],
+      "reviewed_strips": [
+        0,
+        5,
+        8,
+        14,
+        16,
+        23,
+        26,
+        4,
+        37
+      ],
+      "extra_review": [
+        "zoom-3-374-crossing-0.jpg",
+        "zoom-3-374-crossing-1.jpg"
+      ]
+    },
+    "3-686": {
+      "kits": [
+        "u",
+        "o",
+        "o",
+        "o",
+        "o",
+        "w",
+        "b",
+        "w",
+        "b",
+        "o",
+        "w",
+        "w",
+        "w",
+        "b",
+        "b",
+        "w",
+        "u",
+        "b",
+        "u",
+        "w",
+        "w",
+        "b",
+        "w",
+        "b",
+        "w",
+        "w",
+        "b",
+        "o",
+        "n",
+        "n",
+        "n",
+        "n",
+        "o",
+        "n",
+        "n",
+        "n",
+        "n",
+        "n",
+        "o",
+        "n",
+        "o"
+      ],
+      "same": {
+        "1": 1,
+        "2": 2,
+        "3": 5,
+        "4": 3,
+        "5": 8,
+        "6": 6,
+        "7": 12,
+        "8": 10,
+        "9": 11,
+        "10": 13,
+        "11": 15,
+        "12": 14,
+        "13": 9,
+        "14": 17,
+        "15": 16,
+        "17": 18,
+        "19": 21,
+        "20": 19,
+        "22": 27,
+        "23": 9,
+        "24": 19,
+        "25": 28,
+        "26": 29,
+        "27": 30,
+        "32": 34,
+        "38": 37,
+        "40": 37
+      },
+      "unresolved": {
+        "0": {
+          "visibility": "merged_source_box",
+          "reason": "Start and endpoint d0 contain two standing dark-clothed sideline people.",
+          "candidate": 0
+        },
+        "16": {
+          "visibility": "merged_source_box",
+          "reason": "Blue player box substantially includes the foreground white players head; no unique source person assignment.",
+          "candidate": 22
+        },
+        "18": {
+          "visibility": "merged_source_box",
+          "reason": "Start d18 clearly merges two blue players, one foreground and one behind; they separate to endpoint d7 and d20.",
+          "candidate": 20
+        },
+        "21": {
+          "visibility": "visible_person_without_source_box",
+          "reason": "Blue partial source person becomes overlapping blue/white endpoint d23, with no unique blue box.",
+          "candidate": 23
+        }
+      },
+      "details": {
+        "0": "Two dark-clothed sideline people in one box.",
+        "16": "Blue player plus foreground white head in source box; kit uncertain.",
+        "18": "Two blue players in one source box; uncertain because no unique person, despite both shirts being blue.",
+        "23": "Leg duplicate of blue source d13.",
+        "24": "Feet duplicate of white source d20.",
+        "28": "Goal/net structure false positive.",
+        "29": "Blue cone false positive.",
+        "30": "Painted field logo false positive.",
+        "31": "Painted field lettering false positive.",
+        "33": "Equipment/white cylindrical object false positive.",
+        "34": "Ball false positive.",
+        "35": "Blue cone false positive.",
+        "36": "Painted field lettering false positive.",
+        "37": "Orange cone false positive.",
+        "39": "Unworn shoe lying on the path, false positive.",
+        "40": "Attached shoe/foot of source d38 person in navy top and white shorts; duplicate part."
+      },
+      "endpoint_exclude": [
+        0,
+        23,
+        25,
+        26,
+        31,
+        32,
+        33,
+        36,
+        38,
+        39,
+        40,
+        41,
+        42
+      ],
+      "endpoint_groups": [
+        [
+          9,
+          26
+        ],
+        [
+          25,
+          30
+        ],
+        [
+          37,
+          42
+        ]
+      ],
+      "reviewed_strips": [
+        0,
+        5,
+        7,
+        10,
+        17,
+        25,
+        32,
+        39,
+        38
+      ],
+      "extra_review": [
+        "zoom-3-686-crossing-0.jpg",
+        "zoom-3-686-crossing-1.jpg"
+      ]
+    }
+  }
+}

@@ -28,7 +28,8 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     if any((args.out / f"seg_{s:04d}.json").exists() for s in args.segments):
         p.error("choose fresh segments/output; existing evidence must not be overwritten")
-    cfg = PipelineConfig(detector=DetectorConfig(model="small", weights="data/tracking/models/rfdetr_mixed_small", tiles=4))
+    cfg = PipelineConfig(refine_player_identities=False,
+                         detector=DetectorConfig(model="small", weights="data/tracking/models/rfdetr_mixed_small", tiles=4))
     detector = make_detector(cfg.detector)
     cal = PitchCalibration.load(args.calibration)
     candidates = {}

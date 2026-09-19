@@ -32,7 +32,7 @@ class NotePayload(BaseModel):
     subject_id: int
     body: str = Field(..., min_length=1, max_length=4096)
     parent_note_id: int | None = None
-    author_user_id: int | None = None
+    author_user_id: str | None = Field(default=None, max_length=36, coerce_numbers_to_str=True)
 
 
 class NoteOut(BaseModel):
@@ -40,7 +40,7 @@ class NoteOut(BaseModel):
     subject_type: str
     subject_id: int
     parent_note_id: int | None
-    author_user_id: int | None
+    author_user_id: str | None
     body: str
     created_at: datetime
     updated_at: datetime

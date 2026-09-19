@@ -19,6 +19,7 @@ import sys
 import time
 from pathlib import Path
 
+from app.tracking.anchor_state import team_anchor
 from app.tracking.calibration import PitchCalibration
 from app.tracking.camera import (
     BROADCAST_SOURCE,
@@ -42,9 +43,13 @@ def main() -> int:
     p.add_argument("--match-id", type=int, required=True)
     p.add_argument("--home-team", type=int, required=True)
     p.add_argument("--away-team", type=int, required=True)
+    p.add_argument("--team-anchor-json", default=None,
+                   help="Önceki segmentte sabitlenmiş iki RGB takım rengi (JSON)")
     p.add_argument("--fps", type=float, default=5.0, help="Çıktı kare hızı (TrackingFrame/sn)")
     p.add_argument("--track-fps", type=float, default=15.0, help="Tespit+takip kare hızı (küçük/hızlı oyuncular için yüksek)")
     p.add_argument("--dense-events", action="store_true", help="Deneysel: olay çıkarımında tüm takip karelerini kullan")
+    p.add_argument("--refine-identities", choices=["auto", "on", "off"], default="auto",
+                   help="Sabit kamera kimlik/forma iyileştirme; auto=doğrulanmış kamera profili")
     p.add_argument("--max-seconds", type=float, default=None)
     p.add_argument("--model", default="medium", choices=["nano", "small", "medium", "base", "large"])
     p.add_argument("--threshold", type=float, default=0.35)
@@ -67,11 +72,21 @@ def main() -> int:
                    help="Kesmeden sonra ÇAPADAN yeniden yakala. auto=yayın "
                         "görüntüsünde aç. Kapalıyken ilk kesmede takip kopar ve "
                         "bir daha toparlanmaz (videonun kalanı atılır).")
-    p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast"],
+    p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast", "operated"],
                    help="Kamera davranışı: auto=videodan tespit et (varsayılan), "
                         "static=sabit kamera (tam analiz), broadcast=hareketli/yayın "
-                        "(top-merkezli, şekil ve bölge analizi kapalı)")
+                        "(top-merkezli, şekil ve bölge analizi kapalı), operated=tek "
+                        "hareketli kamera (kesme/tekrar süzgeci kapalı)")
     args = p.parse_args()
+
+    anchor = None
+    if args.team_anchor_json is not None:
+        try:
+            anchor = team_anchor(json.loads(args.team_anchor_json))
+        except json.JSONDecodeError:
+            p.error("takım renk çapası geçerli JSON olmalı")
+        if anchor is None:
+            p.error("takım renk çapası iki ayrı ve geçerli RGB rengi içermeli")
 
     calib = PitchCalibration.load(args.calibration) if args.calibration else None
     info = video_info(args.video)
@@ -138,11 +153,12 @@ def main() -> int:
         print("kesmeden sonra yeniden yakalama: AÇIK (çapadan, %85 inlier şartı)")
 
     cfg = PipelineConfig(
+        refine_player_identities={"auto": None, "on": True, "off": False}[args.refine_identities],
         dense_events=args.dense_events,
         per_frame_calibration=per_frame,
         allow_reacquire=per_frame and reacquire,
-        detect_cuts=per_frame,
-        detect_replays=per_frame and moving,
+        detect_cuts=per_frame and args.camera != "operated",
+        detect_replays=per_frame and moving and args.camera != "operated",
         source_name=source_name,
         fps_out=args.fps, track_fps=args.track_fps, max_seconds=args.max_seconds,
         detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution, weights=args.weights,
@@ -153,7 +169,7 @@ def main() -> int:
     started = time.time()
     frames, summary = process_video(
         args.video, calib, match_id=args.match_id,
-        home_team_id=args.home_team, away_team_id=args.away_team, cfg=cfg,
+        home_team_id=args.home_team, away_team_id=args.away_team, cfg=cfg, team_anchor=anchor,
     )
     # Etiketi GERÇEKLEŞENE göre düzelt — canlı hatla (scripts/track_live.py)
     # aynı kural. İki yolun aynı görüntüde farklı etiket üretmesi, karelerin bir
