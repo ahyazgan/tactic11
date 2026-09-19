@@ -137,6 +137,53 @@ bağımsız bir külliyatta tekrar eden aynı ağırlık, ve ters kontrolün ger
 DÜŞMESİ (ters yön saf önselin altına inmeli). İkisi de yok. İpucu kayda geçiyor,
 ürüne girmiyor.
 
+### İkinci külliyatta tekrar: PSG — 19 Eylül 2026, ipucu düştü
+
+PSG'nin 95 maçı veritabanına alındı (`scripts/ingest_club_matches.py`, yerel
+StatsBomb dosyalarından) ve aynı ölçüm `--all-matches` ile koşuldu: 298 taktik
+değişiklik, ortalama 10,77 aday. Ölçümden önce kayda geçen beklenti: *ipucu
+tekrar etmez; ayrıca harmanın önseli genel tablodur ve genel tablo PSG için
+yanlış sıradadır (PSG orta-saha-önce, `docs/KARNE-KIRACI-ONSELI.md`), yani saf
+önsel burada zayıf kalmalı.*
+
+| Sıralama kuralı | isabet@1 | isabet@3 |
+|---|---:|---:|
+| Motor harmanı (w = 0,6) — bugünkü | 0,107 | 0,389 |
+| Saf yorgunluk bileşiği (w = 0) | 0,120 | 0,299 |
+| Saf önsel (w = 1) | 0,115 | 0,401 |
+| Önsel, eşitlikte bileşik | 0,111 | 0,389 |
+| **TERS KONTROL** | **0,131** | **0,402** |
+| Rastgele | 0,093 | 0,279 |
+
+Ana bulgu PSG'de de aynı: grup bilgisi var (+0,110 isabet@3), grup içi bilgi
+yok — ters yön yine doğru yönü geçiyor. Grup kazancı Barcelona'dakinden küçük
+(+0,110 vs +0,195), tam da beklendiği gibi: bu ölçümde motor **genel** önseli
+kullanıyor ve genel tablo PSG'nin sırasını yanlış biliyor.
+
+**Ağırlık ipucunun iki şartı da düştü:**
+
+| ölçüt | A'da seç → B'de ölç | B'de seç → A'da ölç | örneklem dışı | bugünkü w = 0,6 |
+|---|---|---|---:|---:|
+| isabet@1 | w = 0,2 → 0,137 | w = **0,1** → 0,113 | 0,125 | 0,107 |
+| isabet@3 | w = 0,2 → 0,379 | w = **0,9** → 0,361 | 0,370 | **0,389** |
+
+1. **Yarılar aynı ağırlığı seçmedi.** isabet@3'te biri 0,2, öteki 0,9 — yani
+   ölçek üzerinde neredeyse iki uç. Bu, kararsızlığın ta kendisi. Üstelik
+   örneklem dışı isabet@3 (0,370) bugünkü ağırlığın altında kaldı.
+2. **Ters kontrol düşmedi, tersine döndü.** w = 0,2'de bileşiğin yönünü
+   çevirmek isabet@1'i 0,131'den 0,133'e, isabet@3'ü 0,399'dan **0,419'a**
+   çıkarıyor. Yorgunluk bileşiği PSG'de de kimin çıkacağını bilmiyor; çevrilmiş
+   hâli daha iyi.
+
+Barcelona'daki w = 0,2 kazancı, tek kulübe özgü bir beraberlik-açma
+artefaktıymış. `ROLE_PRIOR_WEIGHT` 0,6'da kalıyor ve bu soru **kapandı**.
+
+Açık kalan tek şey ayrı bir sorudur: bu ölçüm motorun genel önselini kullanır.
+PSG kendi tablosunu kullansaydı (üretimde kullanacak — kapıyı geçti) grup
+kazancı büyür; ölçüm scripti henüz kiracı tablosuyla koşmuyor.
+
+Ölçüm: [sub-ranking-psg-2026-09-19.json](measurements/sub-ranking-psg-2026-09-19.json).
+
 ## Beraberlik tarafsızlığı — ölçümün kendisi de düzeltildi
 
 Motor aciliyeti 3 haneye yuvarlıyor, bu yüzden aynı mevki grubundaki oyuncular
@@ -215,6 +262,10 @@ $env:DATABASE_URL = "sqlite:///C:/.../demo.db"
 # --events-dir: düz klasörde {match_id}.json (StatsBomb açık verisi,
 # open-data/data/events/). Külliyattaki 101 maçın 100'ü gerçek maçtır.
 .\venv\Scripts\python.exe -m scripts.measure_sub_ranking --tenant t-default --team 217 --events-dir C:\sb --out docs/measurements/sub-ranking-2026-09-14-v2.json
+
+# İkinci kulüp (karar külliyatı yok): önce maçlar ve olaylar yerel dosyalardan DB'ye, sonra --all-matches.
+.\venv\Scripts\python.exe -m scripts.ingest_club_matches --tenant psg --team 131 --matches C:\sb-matches\7_27.json --matches C:\sb-matches\7_108.json --matches C:\sb-matches\7_235.json --events-dir C:\sb-psg
+.\venv\Scripts\python.exe -m scripts.measure_sub_ranking --tenant psg --team 131 --events-dir C:\sb-psg --all-matches --out docs/measurements/sub-ranking-psg-2026-09-19.json
 ```
 
 Aday tablosunun SHA-256'sı ölçüm JSON'unda (`kaynak.girdi_sha256`).
