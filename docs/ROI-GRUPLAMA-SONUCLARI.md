@@ -59,7 +59,15 @@ kanıt dosyalarının üzerine yazılmamalıdır.
 - [Geliştirme betikleri ve kanıt zinciri](measurements/roi-batch-development-proof.json)
 - [Yoğun geliştirme karşılaştırması](measurements/roi-batch-dense-development.json)
 
-Aday aşamasında tam uygulama: 2.964 başarılı, 60 atlanan test. Son varsayılan
+Son tam uygulama: **2.969 başarılı, 60 atlanan test**. Son varsayılan
 koruması, canlı/video aktarımı ve dedektör yollarında 71 ilgili CV testi geçti;
-Ruff temiz, mypy 551 kaynak dosyasında hatasız.
+Ruff temiz, mypy 552 kaynak dosyasında hatasız.
+
+İlk PR koşusu eski CLI hashlerini bekleyen kanıt testinde durdu. Eski üç
+uyumluluk kaydı değişmeden dördüncü kayıt eklendi; 22 eski çıktının 164.772
+kişi gözlemi yeniden birebir üretildi. Yalnız üç varsayılan yapılandırma alanı
+karşılaştırma metadatasından çıkarıldı; yeni ROI alanının false olması zorunlu.
+Bu önbellek tekrarı sinir ağı/top doğruluğu ölçümü değildir. Kanıt zincirinin
+27 testi geçti. [Yeni uyumluluk kaydı](measurements/joint-identity-roi-integration-amendment.json)
+ve [tam tekrar kanıtı](measurements/joint-identity-roi-integration-parity.json).
 Kimlik doğruluğu, olay doğruluğu ve genel gerçek zaman hedefi tamamlanmış değildir.
