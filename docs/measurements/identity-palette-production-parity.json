@@ -1,0 +1,333 @@
+{
+  "real_pipeline": {
+    "scope": "Real RGB/OSNet pipeline parity for the palette candidate on 15 old clips.\nRF-DETR inputs are frozen person detections. No new control, ball inference or DB writes.\n",
+    "hashes": {
+      "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\consensus_palette_production_v2.py": "2c2fdac60ff299810c3adcb3e74d27eb57c49a22d3db771e2704f3f24309352e",
+      ".cache\\identity_consensus_palette_candidate_v1.py": "5429cc76b642532f0f8bb6c54da137e0abc4633fc6bc29731cb9e1a275cffaae",
+      ".cache\\consensus-palette-gate-development-v1\\report.json": "fc4f60d67d970eaad933ebd85077e5ab46d6dea922124a8eb32a3c6ae3fe9d7f",
+      "data\\tracking\\models\\osnet_ain_ms_d_c.pth.tar": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+      "app\\tracking\\anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+      "app\\tracking\\calibration.py": "9cce58bcbc532635042a6fdca94ee6b12b7dbc51dba50763c494d2b9130fcbfe",
+      "app\\tracking\\camera.py": "0cec5fa5c9ddddb14cc3fc60cc2ff2dcdafd512bd67b8c74d3069ab9d7219f5f",
+      "app\\tracking\\deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+      "app\\tracking\\detect.py": "266672b1eab57d56014e3b898cdba75a0d2c0426436a1fbde92f32a5bc879c2b",
+      "app\\tracking\\frames.py": "1cb411e85ee1a5f614b9fd1e9bf735ff278289334a358237ccf6338e4a6d3456",
+      "app\\tracking\\homography_fit.py": "274301cbcaa78636bed5104bbcb9f08e99810e6746800da4219a42e0898f9e6c",
+      "app\\tracking\\identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+      "app\\tracking\\identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+      "app\\tracking\\identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+      "app\\tracking\\identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+      "app\\tracking\\kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+      "app\\tracking\\passes.py": "3ab759ca3d0b417451f8f4527cca391e28010216ab92fd6545221ac196552265",
+      "app\\tracking\\person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+      "app\\tracking\\person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+      "app\\tracking\\pipeline.py": "5fd95b40cd71b56d35bd870b822441472d7334a12d25d5b8b05d2a413bd05a52",
+      "app\\tracking\\pitch_lines.py": "3283fe4e695004b683b5b63a5f6c5ad521a4e9d78d23b9b3673ad40e9245d654",
+      "app\\tracking\\pitch_model.py": "34a48302af97457d6c92006d094b0acb2457292aaea9ae13c06135fecc65ec8b",
+      "app\\tracking\\player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+      "app\\tracking\\recoveries.py": "c7dc67427e907a58ffffe175fc606b43a442ee91acda1c43fdee21afb66df2d8",
+      "app\\tracking\\replay.py": "1f9cae4a47f2ac106433ac9be9ca1b938d0a271064db33f9833037272070e1fe",
+      "app\\tracking\\teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+      "app\\tracking\\tracker_config.py": "d9f0497d2e60c25b0ab0f6a94e2b188f00b1926d57a286aeac48f8a36d5332e0",
+      "app\\tracking\\__init__.py": "84f594b074a83977eab56248889b1e963ee19fef277fd3eaef0f907847248eb5",
+      "app\\tracking\\_vendor\\__init__.py": "c658f47c20cf512966e93c8cc6448dc6ff119523fd5d60aa17564cea1d07f598",
+      "app\\tracking\\_vendor\\deepocsort\\association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+      "app\\tracking\\_vendor\\deepocsort\\kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+      "app\\tracking\\_vendor\\deepocsort\\ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+      "app\\tracking\\_vendor\\deepocsort\\osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+      "app\\tracking\\_vendor\\deepocsort\\__init__.py": "8402dfb550c4986abfc676f04b34fbfcc7bd73f25f12ba6d9c9e9725335083c1",
+      "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\consensus_palette_gate_development_v1.py": "c82da8ab66dba1a58fb7aacbe33fde1d2be08ce5afe02323bb07b5cf7a27356b",
+      ".cache\\consensus-production-v2\\day\\seg_0000.json": "b55f8e4d710333637af00030bb495807697457419759474c5de5cd3f414475be",
+      "data\\tracking\\bench\\identity_day_detections\\seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+      ".cache\\consensus-production-v2\\day\\seg_0003.json": "e6ca912261ac2812d97763302c78bedf54a3dc93c8c8bb95c839460468b8dd4c",
+      "data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+      ".cache\\consensus-production-v2\\day\\seg_0006.json": "08c5c99d16e797992de1773bb2a17b6aa1322d17bbb24495e63b5176e8af39f4",
+      "data\\tracking\\bench\\identity_day_detections\\seg_0006.json": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9",
+      ".cache\\consensus-production-v2\\night\\seg_0000.json": "d2169fef4341f534b65a0d126223e5ce38b87773de03e6ffe76c4927e308f3d1",
+      "data\\tracking\\bench\\landmark_candidates_v1\\seg_0000.json": "d96e0195e861b6bb837dcedc11d839633b5e96e3ad568b24b75f768978f074e8",
+      ".cache\\consensus-production-v2\\night\\seg_0003.json": "e6b8192c3e28fe0ce68e1b6368e4b570cee28199716ddaa79c24a4db45947235",
+      "data\\tracking\\bench\\landmark_candidates_v1\\seg_0003.json": "fd180b240df279d1a04b5721315e94d8796fa0d22101a3c75fa2f976f781a86e",
+      ".cache\\consensus-production-v2\\night\\seg_0006.json": "7d8f982db67442265f24b1c98562686db5cb322649879e3a5eb70805adb5e120",
+      "data\\tracking\\bench\\landmark_candidates_v1\\seg_0006.json": "3d7b85eb129dfbfb29e65143082f7a1851defcc775904727e5e369e6a17fc882",
+      ".cache\\consensus-production-v2\\night\\seg_0009.json": "b10920eec3c8f623ef57ed5ab919520631aca59efce5e0f3180dd5513198b37b",
+      "data\\tracking\\bench\\landmark_candidates_v1\\seg_0009.json": "518ca89f534436ff5f2a0d14aae56ea49adf7dba0448261de004b935d37b3a95",
+      ".cache\\consensus-production-v2\\night_extra\\seg_0020.json": "b1ab3d58ffe499890fe1c3026a5c4cde63d005fc0ff29b3c65046df33305c259",
+      ".cache\\kit_joint_agent\\night_new_raw_v1\\seg_0020.json": "3b0b35d5888ff2722f2ca1e0b6691324202e198225a3acb89742b0cd3dd30795",
+      ".cache\\consensus-production-v2\\night_extra\\seg_0030.json": "b6934a8ecd13dc055e6d0f96f064b67d01723a61ddbcff3371397ab10a5bd7bc",
+      ".cache\\kit_joint_agent\\night_new_raw_v1\\seg_0030.json": "ecf11ca0769441ec7afcd1048523def07bd9b6590f9ec5778b24fdfc9360270d",
+      ".cache\\consensus-production-v2\\night_old_control\\seg_0040.json": "d3ecb9452924dfee304016b46d5f72e7961758718122a745bbdc47ecf9fa5820",
+      "data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+      ".cache\\consensus-production-v2\\night_old_control\\seg_0050.json": "e3f49182e46c6ae92e4ef7a153626897cb6c33fcf4f7308dc9e9bfe17aa6343c",
+      "data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0050.json": "8a4cb524a0b88949c0448a4e022b6415b55acf1eee093fca7dd117e08ebc1d43",
+      "data\\tracking\\bench\\consensus_control_v1\\day\\predictions\\consensus\\seg_0060.json": "19e08eb44bd0b44e3c57f616125a00a397d63c1fa2ce803fb951c336731a97fe",
+      "data\\tracking\\bench\\consensus_control_v1\\day\\raw\\seg_0060.json": "7706280dd88f73b4f44b35cde080a1e7a29cb00d693ab7b290c5b4dac2aa7847",
+      "data\\tracking\\bench\\consensus_control_v1\\day\\predictions\\consensus\\seg_0062.json": "43f13874ed3d776f41ef5f0c601d18a207d411f38519518f1acde2d70ffbc518",
+      "data\\tracking\\bench\\consensus_control_v1\\day\\raw\\seg_0062.json": "d248e3395d3830bcb0ea1e609e8ad44404c17e2fd7fea296a6054038ddc2e1b9",
+      "data\\tracking\\bench\\consensus_control_v1\\night\\predictions\\consensus\\seg_0080.json": "6b0de4b175c1cba592990d43c3a33c8db96e44e996855e484afb601a2246c086",
+      "data\\tracking\\bench\\consensus_control_v1\\night\\raw\\seg_0080.json": "6a79fa2f84bd3fa40c56ddff937321221d7a8d9f4612afe471919016c6335eb4",
+      "data\\tracking\\bench\\consensus_control_v1\\night\\predictions\\consensus\\seg_0082.json": "07f2766fd09928c0b747547967739dc2bb5a279ad0918446e7befa66f037d22c",
+      "data\\tracking\\bench\\consensus_control_v1\\night\\raw\\seg_0082.json": "be9c805fdf57b7a07ee4aab2ef63f9a5e6a0e58abe33dae9dd8bc5eca432125e",
+      ".cache\\consensus-palette-gate-development-v1\\day\\seg_0000.json": "8009f045500867eb95bad6363c5f2f771dde7ecb86db991a3e38a279b201d0a9",
+      ".cache\\consensus-palette-gate-development-v1\\day\\seg_0003.json": "6f501870a33535d90d1def5bdb9e2a7d78872958071d24f45d6e8a4d2ad87623",
+      ".cache\\consensus-palette-gate-development-v1\\day\\seg_0006.json": "ca7eabb68ddd025fb6d664e2d433555a953eefa4ec5f2c5c4652bf56ac18f316",
+      ".cache\\consensus-palette-gate-development-v1\\night\\seg_0000.json": "361eca3a9c52fe0274e351ce010d23fa5715434cea355e9301c22cc00892e03f",
+      ".cache\\consensus-palette-gate-development-v1\\night\\seg_0003.json": "5ee091a98b884125994da089970f1b6eeb52b289fa5b58d63d57c021e54ab002",
+      ".cache\\consensus-palette-gate-development-v1\\night\\seg_0006.json": "8cc12b47ba4c2a781e9e9d67a1cb6024877d76b2ef6f5ca299cb5a1de72de384",
+      ".cache\\consensus-palette-gate-development-v1\\night\\seg_0009.json": "e503797186ffc340ce340429ab1386a035386bd399104f0814079d1230b33b1b",
+      ".cache\\consensus-palette-gate-development-v1\\night_extra\\seg_0020.json": "cb23cf823e046c7e1d6161a56fa43bd114387b7aa70085eed7e3e59e03863c75",
+      ".cache\\consensus-palette-gate-development-v1\\night_extra\\seg_0030.json": "728923ce224837b5a2dd2c518f1fd7ca96c2fe5da3832a46fc466452cb15cbe7",
+      ".cache\\consensus-palette-gate-development-v1\\night_old_control\\seg_0040.json": "ad8b6d2b6a19254d7ac9b9842f1157b41b833bf05a28334b2a6b0f2eec9d8fa2",
+      ".cache\\consensus-palette-gate-development-v1\\night_old_control\\seg_0050.json": "75fcc619396c66e8cefa08a85c1d196a1bc3e88550e2a5b400e64f44b458d24b",
+      ".cache\\consensus-palette-gate-development-v1\\closed_day\\seg_0060.json": "0977bf0bb52bb8af712a143b29a411972951c4dfde978504faf1b565c8b7adc3",
+      ".cache\\consensus-palette-gate-development-v1\\closed_day\\seg_0062.json": "2936774a7f17e915055c51d1a300fcf8b8047493695c3731b783a2e14c8f6b27",
+      ".cache\\consensus-palette-gate-development-v1\\closed_night\\seg_0080.json": "35df3da30576908662b90ec6a2f9ca20d08330a260aa33bfe37ed4972714e998",
+      ".cache\\consensus-palette-gate-development-v1\\closed_night\\seg_0082.json": "8f8a0d3be53016747fa0eed101a659a0ead1583cff51e32b7e347a584c5a02a1",
+      "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2",
+      "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+      "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4": "d3810e6d7d940bcd854d594a6c4a76998db9200874bf19e2b1b828611a6b6372",
+      "data\\tracking\\live\\990401\\seg_0000.mp4": "4e8321ea9da98664437a9700cb5a5318fb9641b8957a3ebfab54485a74ade2e1",
+      "data\\tracking\\live\\990401\\seg_0003.mp4": "3e3bd50e00e8ca797fc53cce807eef60a92cb0aaf37f069553d567971243c066",
+      "data\\tracking\\live\\990401\\seg_0006.mp4": "8dc05ebcd6bb42fade86c402eae24b394c7ff47251d60d9adc35efe5d2cbec9f",
+      "data\\tracking\\live\\990401\\seg_0009.mp4": "5e0498e0cdc1b4cc113a3a7127916ba3d11d4bbab042f5f8515294c4c5950bc7",
+      "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0020.mp4": "fece86e7a119a50640eaed7ce485e833733446377f12c7f61af18e56b4905368",
+      "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0030.mp4": "c23aa824839bd371b5aecbda10159662e62129c094ef0834380c9ca9a6493499",
+      "data\\tracking\\bench\\joint_identity_control\\source\\seg_0040.mp4": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a",
+      "data\\tracking\\bench\\joint_identity_control\\source\\seg_0050.mp4": "fef8c382ebad00fdfaefd0e214192decc91980e312b8f6e2d871b2eb5dc10604",
+      "data\\tracking\\bench\\consensus_control_v1\\day\\source\\seg_0060.mp4": "bfa25642925051de9e13596d597ce8a1c88889eac52f8277b8577cd323013a29",
+      "data\\tracking\\bench\\consensus_control_v1\\day\\source\\seg_0062.mp4": "c7b1977629be9ac0c6f8a8f6a9721ea8561fc2b767644e8415b69f84f7354eb6",
+      "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4": "35bdaaa351824798c33da9bb669fd1366b37e4a14976600f9a2c12b4996aab54",
+      "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4": "81733133b174fea3ad45f55fcc74b6f87fd98a12025976e52a6fe2f4ab89d32d"
+    },
+    "reports": [
+      {
+        "group": "day",
+        "segment": 0,
+        "equal": true,
+        "pipeline_seconds": 37.83976010000333,
+        "output": ".cache\\consensus-palette-production-v2\\day\\seg_0000.json",
+        "output_sha256": "785d624dd58a9516f3ea321ece287c8712b2aae80eba8d35783d690ff8382ca4",
+        "observations": 8861,
+        "boundaries": [
+          {
+            "continuity_id": 0,
+            "raw_id": 68,
+            "new_id": 204,
+            "first_order": 152,
+            "confirmed_order": 154,
+            "prior_motion_id": 10,
+            "new_motion_id": 37
+          },
+          {
+            "continuity_id": 0,
+            "raw_id": 72,
+            "new_id": 205,
+            "first_order": 212,
+            "confirmed_order": 214,
+            "prior_motion_id": 81,
+            "new_motion_id": 3
+          }
+        ]
+      },
+      {
+        "group": "day",
+        "segment": 3,
+        "equal": true,
+        "pipeline_seconds": 30.513073899957817,
+        "output": ".cache\\consensus-palette-production-v2\\day\\seg_0003.json",
+        "output_sha256": "405df5174cce7cb1c52fab731244923dd935c79a48d5b20ad12a9119a98fc260",
+        "observations": 8828,
+        "boundaries": [
+          {
+            "continuity_id": 0,
+            "raw_id": 8,
+            "new_id": 162,
+            "first_order": 262,
+            "confirmed_order": 264,
+            "prior_motion_id": 154,
+            "new_motion_id": 156
+          }
+        ]
+      },
+      {
+        "group": "day",
+        "segment": 6,
+        "equal": true,
+        "pipeline_seconds": 28.675659900007304,
+        "output": ".cache\\consensus-palette-production-v2\\day\\seg_0006.json",
+        "output_sha256": "6e1acf4da4c83f2785cbc412c25ff68e90de339c4b9d4a2c11d169c383983b5a",
+        "observations": 7391,
+        "boundaries": []
+      },
+      {
+        "group": "night",
+        "segment": 0,
+        "equal": true,
+        "pipeline_seconds": 26.409743800002616,
+        "output": ".cache\\consensus-palette-production-v2\\night\\seg_0000.json",
+        "output_sha256": "484f67228d169bbccdbda9682ce65c474fdaa66b5ea5db6b453888c3aa514a02",
+        "observations": 7066,
+        "boundaries": []
+      },
+      {
+        "group": "night",
+        "segment": 3,
+        "equal": true,
+        "pipeline_seconds": 23.298383700021077,
+        "output": ".cache\\consensus-palette-production-v2\\night\\seg_0003.json",
+        "output_sha256": "551f7209695cfd917993ce61f22d91cc23942dddebd80dda61af7911d9921236",
+        "observations": 6397,
+        "boundaries": []
+      },
+      {
+        "group": "night",
+        "segment": 6,
+        "equal": true,
+        "pipeline_seconds": 26.911050599999726,
+        "output": ".cache\\consensus-palette-production-v2\\night\\seg_0006.json",
+        "output_sha256": "b0ae3ddd2ce9cc9948f3ded8985c5581dd4f9a1a8ac6db38f8197551914dff52",
+        "observations": 7866,
+        "boundaries": []
+      },
+      {
+        "group": "night",
+        "segment": 9,
+        "equal": true,
+        "pipeline_seconds": 25.22478819999378,
+        "output": ".cache\\consensus-palette-production-v2\\night\\seg_0009.json",
+        "output_sha256": "5759b9bea034e1e0708b6ccae24b1389d42f335ae176c34538c0a95752249e76",
+        "observations": 7258,
+        "boundaries": []
+      },
+      {
+        "group": "night_extra",
+        "segment": 20,
+        "equal": true,
+        "pipeline_seconds": 27.16912879998563,
+        "output": ".cache\\consensus-palette-production-v2\\night_extra\\seg_0020.json",
+        "output_sha256": "0155d1be90ec9adbc1c3514eaa9a830aba967c1872025e9ce92393af477e28fb",
+        "observations": 7364,
+        "boundaries": []
+      },
+      {
+        "group": "night_extra",
+        "segment": 30,
+        "equal": true,
+        "pipeline_seconds": 28.899551199981943,
+        "output": ".cache\\consensus-palette-production-v2\\night_extra\\seg_0030.json",
+        "output_sha256": "8ab367fa1fafb9209d3b478fc1d6fef00ce330ad0ed1c941f2fbf4eda6728360",
+        "observations": 7598,
+        "boundaries": []
+      },
+      {
+        "group": "night_old_control",
+        "segment": 40,
+        "equal": true,
+        "pipeline_seconds": 27.305110000015702,
+        "output": ".cache\\consensus-palette-production-v2\\night_old_control\\seg_0040.json",
+        "output_sha256": "b90e1907d68b6a9e14681607611384d99633febce92fe61805cc3a661a5edfc5",
+        "observations": 6451,
+        "boundaries": []
+      },
+      {
+        "group": "night_old_control",
+        "segment": 50,
+        "equal": true,
+        "pipeline_seconds": 28.80246179999085,
+        "output": ".cache\\consensus-palette-production-v2\\night_old_control\\seg_0050.json",
+        "output_sha256": "815e78c2092a47fa67f209129c22f6e72350108ea17ea311eea4c3b68b64bb61",
+        "observations": 7751,
+        "boundaries": []
+      },
+      {
+        "group": "closed_day",
+        "segment": 60,
+        "equal": true,
+        "pipeline_seconds": 29.240660200011916,
+        "output": ".cache\\consensus-palette-production-v2\\closed_day\\seg_0060.json",
+        "output_sha256": "1006f6bdb6dafe26f9c80d38ff6b3f5de06a2f02790dd9531169b395320ad9e6",
+        "observations": 8507,
+        "boundaries": [
+          {
+            "continuity_id": 0,
+            "raw_id": 13,
+            "new_id": 220,
+            "first_order": 5,
+            "confirmed_order": 7,
+            "prior_motion_id": 13,
+            "new_motion_id": 14
+          }
+        ]
+      },
+      {
+        "group": "closed_day",
+        "segment": 62,
+        "equal": true,
+        "pipeline_seconds": 30.706477399973664,
+        "output": ".cache\\consensus-palette-production-v2\\closed_day\\seg_0062.json",
+        "output_sha256": "a65e77831c3803dc65ba627e3a91c28a2749f9c195b5d4ca584eda9e29807320",
+        "observations": 9279,
+        "boundaries": [
+          {
+            "continuity_id": 0,
+            "raw_id": 73,
+            "new_id": 197,
+            "first_order": 112,
+            "confirmed_order": 114,
+            "prior_motion_id": 83,
+            "new_motion_id": 33
+          },
+          {
+            "continuity_id": 0,
+            "raw_id": 86,
+            "new_id": 198,
+            "first_order": 137,
+            "confirmed_order": 139,
+            "prior_motion_id": 15,
+            "new_motion_id": 131
+          }
+        ]
+      },
+      {
+        "group": "closed_night",
+        "segment": 80,
+        "equal": true,
+        "pipeline_seconds": 28.8967281000223,
+        "output": ".cache\\consensus-palette-production-v2\\closed_night\\seg_0080.json",
+        "output_sha256": "fed9126b6fc489351c8bae3392e32adfe87c6529816c7ce98ddb2cff925bad18",
+        "observations": 7613,
+        "boundaries": []
+      },
+      {
+        "group": "closed_night",
+        "segment": 82,
+        "equal": true,
+        "pipeline_seconds": 21.343429400003515,
+        "output": ".cache\\consensus-palette-production-v2\\closed_night\\seg_0082.json",
+        "output_sha256": "346c006ecd0f9f68ca9f6e1e1ee4848691d14526d68dadd0ce9ad430ca2867a7",
+        "observations": 4622,
+        "boundaries": []
+      }
+    ],
+    "all_equal": true,
+    "limitations": "Old development/closed controls only; timing includes real OSNet setup but excludes main detector and ball. Not a real-time benchmark."
+  },
+  "format_parity": {
+    "source": ".cache\\identity_consensus_palette_candidate_v1.py",
+    "source_sha256": "5429cc76b642532f0f8bb6c54da137e0abc4633fc6bc29731cb9e1a275cffaae",
+    "target": "scripts\\soccertrack_v2\\candidates\\identity_consensus_palette_v2.py",
+    "target_sha256": "af4aea241ab883279f33b6b5bdb1671311c377e57438b70b1df47aa640841a62",
+    "ast_equal": true,
+    "only_change": "Expand one-line conditional returns and split a semicolon; identical Python AST."
+  },
+  "script": {
+    "path": ".cache\\consensus_palette_production_v2.py",
+    "sha256": "2c2fdac60ff299810c3adcb3e74d27eb57c49a22d3db771e2704f3f24309352e",
+    "text": "\"\"\"Real RGB/OSNet pipeline parity for the palette candidate on 15 old clips.\nRF-DETR inputs are frozen person detections. No new control, ball inference or DB writes.\n\"\"\"\nimport hashlib,importlib.util,json,sys,time\nfrom pathlib import Path\nfrom dataclasses import asdict\nfrom unittest.mock import patch\nimport numpy as np\nimport supervision as sv\nfrom app.tracking import pipeline,identity_consensus\nfrom app.tracking.calibration import PitchCalibration\nfrom app.tracking.detect import DetectorConfig\nfrom app.tracking.deepocsort import DEFAULT_MODEL\nfrom app.tracking.frames import frames_to_json\n\ndef load(p):return json.loads(Path(p).read_text())\ndef sha(p):\n    with Path(p).open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()\ncandidate_path=Path('.cache/identity_consensus_palette_candidate_v1.py')\nspec=importlib.util.spec_from_file_location('palette_candidate',candidate_path);module=importlib.util.module_from_spec(spec);sys.modules[spec.name]=module;spec.loader.exec_module(module)\nprevious=Path('.cache/consensus-palette-gate-development-v1/report.json');prior=load(previous)\nout=Path('.cache/consensus-palette-production-v2');out.mkdir(exist_ok=False)\npaths=[Path(__file__),candidate_path,previous,Path(DEFAULT_MODEL)]+list(Path('app/tracking').rglob('*.py'))\npaths += [Path(p) for p in prior['hashes']]\npaths += [Path(r['output']) for r in prior['reports']]\n# Cache reports already pin source videos through earlier evidence. Pin again here.\nraw_paths={}\nvideo_paths={}\nfor row in prior['reports']:\n    group,seg=row['group'],row['segment']\n    if group.startswith('closed_'):\n        raw=Path('data/tracking/bench/consensus_control_v1')/group.removeprefix('closed_')/'raw'/f'seg_{seg:04d}.json'\n    else:\n        from scripts.soccertrack_v2.benchmark_tracker_backends import groups\n        raw=Path(groups()[group]['cache'])/f'seg_{seg:04d}.json'\n    raw_paths[group,seg]=raw\n    if group.startswith('closed_'):\n        video_paths[group,seg]=Path('data/tracking/bench/consensus_control_v1')/group.removeprefix('closed_')/'source'/f'seg_{seg:04d}.mp4'\n    else:\n        from scripts.soccertrack_v2.benchmark_deepocsort import VIDEO_DIRS\n        video_paths[group,seg]=Path(VIDEO_DIRS[group])/f'seg_{seg:04d}.mp4'\n    paths.append(video_paths[group,seg])\nhashes={str(p):sha(p) for p in paths};reports=[]\nfor row in prior['reports']:\n    group,seg=row['group'],row['segment'];raw=load(raw_paths[group,seg]);expected=load(row['output'])\n    cfg=pipeline.PipelineConfig(**{k:v for k,v in raw['config'].items() if k!='detector'})\n    cfg.detector=DetectorConfig(**raw['config']['detector']);cfg.tracker_backend='consensus';cfg.refine_player_identities=False;cfg.preview_path=None\n    cal=PitchCalibration.from_dict(raw['calibration']);anchor=np.asarray(expected['original_summary']['team_colors'])\n    class Cached:\n        position=0\n        def detect(self,rgb):\n            s=raw['samples'][self.position];self.position+=1;people=raw['detected_persons'][str(s['order'])]\n            return sv.Detections(xyxy=np.asarray([p['box'] for p in people]).reshape(-1,4),confidence=np.asarray([p['confidence'] for p in people]),class_id=np.zeros(len(people),dtype=int))\n        def split(self,d):return d,sv.Detections.empty()\n    detector=Cached();collected=[];original=pipeline.collect_observations\n    def capture(*a,**kw):\n        result=original(*a,**kw);collected.append(result[0]);return result\n    start=time.perf_counter()\n    with patch.object(identity_consensus,'ConsensusTeamAssigner',module.ConsensusTeamAssigner),patch.object(pipeline,'collect_observations',side_effect=capture):\n        frames,summary=pipeline.process_video(video_paths[group,seg],cal,cfg=cfg,detector=detector,team_anchor=anchor,match_id=990908,home_team_id=217,away_team_id=213)\n    elapsed=time.perf_counter()-start\n    samples=json.loads(json.dumps([asdict(s) for s in collected[0]]))\n    assert detector.position==len(raw['samples'])\n    equal=samples==expected['samples']\n    target=out/group/f'seg_{seg:04d}.json';target.parent.mkdir(parents=True,exist_ok=True)\n    target.write_text(json.dumps(dict(samples=samples,summary=summary,frames=frames_to_json(frames,match_id=990908)))+'\\n')\n    reports.append(dict(group=group,segment=seg,equal=equal,pipeline_seconds=elapsed,output=str(target),output_sha256=sha(target),\n        observations=sum(len(s['persons']) for s in samples),boundaries=summary['calibration_stats']['identity_consensus']['boundaries']))\n    print(group,seg,'exact samples',equal,'seconds',round(elapsed,2),flush=True)\n    if not equal:\n        (out/'failure.json').write_text(json.dumps(reports,indent=2));raise ValueError('Candidate production mismatch')\nassert hashes=={p:sha(p) for p in hashes}\n(out/'report.json').write_text(json.dumps(dict(scope=__doc__,hashes=hashes,reports=reports,all_equal=True,\n    limitations='Old development/closed controls only; timing includes real OSNet setup but excludes main detector and ball. Not a real-time benchmark.'),indent=2))\n"
+  },
+  "candidate_source": {
+    "path": ".cache\\identity_consensus_palette_candidate_v1.py",
+    "sha256": "5429cc76b642532f0f8bb6c54da137e0abc4633fc6bc29731cb9e1a275cffaae",
+    "text": "\"\"\"Optional identity partitions supported by independent appearance and motion.\n\nByteTrack retains ownership of source observations and team evidence. A shadow\nDeep OC-SORT/OSNet stream only corroborates persistent color discontinuities.\nThis never joins people, deletes detections, or refits teams after a split.\n\"\"\"\nfrom __future__ import annotations\n\nfrom collections import Counter, defaultdict\nfrom copy import deepcopy\nfrom typing import TYPE_CHECKING, Any\n\nimport numpy as np\n\nfrom app.tracking.identity_split import appearance_phases\nfrom app.tracking.person_filter import filter_person_tracks\nfrom app.tracking.teams import TeamAssigner, TeamAssignment, distinct_team_colors\n\nif TYPE_CHECKING:\n    from app.tracking.calibration import PitchCalibration\n    from app.tracking.pipeline import PipelineConfig, SampledObservation\n\nPROFILE = \"bytetrack-osnet-color-palette-consensus-v2\"\n\n\ndef palette_support(before,after,centers):\n    if len(before)!=3 or len(after)<3 or any(c is None for c in before+after):return False\n    colors=np.asarray(before+after,dtype=float);centers=np.asarray(centers,dtype=float)\n    if colors.shape!=(len(before+after),3) or not np.isfinite(colors).all() or not distinct_team_colors(centers):return False\n    distances=np.linalg.norm(np.asarray([np.median(before,axis=0),np.median(after,axis=0)])[:,None]-centers,axis=2)\n    if np.any(distances[:,0]==distances[:,1]):return False\n    return bool(np.argmin(distances[0])!=np.argmin(distances[1]))\n\n\nclass ConsensusTracker:\n    def __init__(self, primary: Any, secondary: Any):\n        self.primary = primary\n        self.secondary = secondary\n        self.max_time_lost = primary.max_time_lost\n        self.last_secondary: Any = None\n\n    def reset(self) -> None:\n        self.primary.reset()\n        self.secondary.reset()\n        self.last_secondary = None\n\n    def update_with_detections(self, detections: Any, bgr: np.ndarray) -> Any:\n        # Independent copies prevent either implementation changing the other's\n        # input rows or metadata. The returned primary result is not rematched.\n        indices = np.arange(len(detections))\n        self.last_secondary = self.secondary.update_with_detections(detections[indices], bgr)\n        return self.primary.update_with_detections(detections[indices])\n\n\nclass ConsensusTeamAssigner(TeamAssigner):\n    def __init__(self) -> None:\n        super().__init__()\n        self._current_colors: dict[int, np.ndarray | None] = {}\n        self._colors: dict[tuple[int, int, int], np.ndarray | None] = {}\n        self._secondary_samples: list[SampledObservation] = []\n\n    def observe(self, track_id: int, color: np.ndarray | None) -> None:\n        super().observe(track_id, color)\n        self._current_colors[track_id] = None if color is None else np.asarray(color).copy()\n\n    def record_frame(self, sample: SampledObservation, secondary: Any) -> None:\n        from app.tracking.pipeline import SampledObservation\n\n        for person in sample.persons:\n            self._colors[sample.continuity_id, sample.order, person[0]] = self._current_colors.get(person[0])\n        people = [(int(tid), float(box[0]), float(box[1]), float(box[2]), float(box[3]), float(conf))\n                  for tid, box, conf in zip(secondary.tracker_id, secondary.xyxy, secondary.confidence, strict=True)]\n        self._secondary_samples.append(SampledObservation(sample.order, sample.frame_idx, sample.seconds,\n            people, None, continuity_id=sample.continuity_id))\n        self._current_colors.clear()\n\n    def refine(self, samples: list[SampledObservation], assignment: TeamAssignment,\n               calib: PitchCalibration, cfg: PipelineConfig, fps: float) -> tuple[TeamAssignment, dict[str, Any]]:\n        from app.tracking.pipeline import person_filter_enabled\n\n        secondary = deepcopy(self._secondary_samples)\n        hits = Counter((s.continuity_id, p[0]) for s in secondary for p in s.persons)\n        minimum = max(1, round(cfg.min_track_seconds * fps))\n        for sample in secondary:\n            sample.persons = [p for p in sample.persons if hits[sample.continuity_id, p[0]] >= minimum]\n        filter_person_tracks(secondary, calib, enabled=person_filter_enabled(cfg, calib))\n        support: dict[tuple[int, int, tuple[float, ...]], int | None] = {}\n        primary_counts = Counter((s.continuity_id, s.order, tuple(p[1:5])) for s in samples for p in s.persons)\n        for sample in secondary:\n            for person in sample.persons:\n                source_key = (sample.continuity_id, sample.order, tuple(person[1:5]))\n                # Identical boxes cannot establish which original detection\n                # belongs to which stream. Withhold ambiguous support.\n                support[source_key] = person[0] if source_key not in support and primary_counts[source_key] == 1 else None\n        grouped: dict[tuple[int, int], list[tuple[SampledObservation, int, np.ndarray | None, int | None]]] = defaultdict(list)\n        for sample in samples:\n            for index, person in enumerate(sample.persons):\n                key = (sample.continuity_id, sample.order, person[0])\n                grouped[sample.continuity_id, person[0]].append((sample, index, self._colors[key],\n                    support.get((sample.continuity_id, sample.order, tuple(person[1:5])))))\n        next_id = max((p[0] for s in samples for p in s.persons), default=0) + 1\n        mapping = dict(assignment.team_by_track)\n        audit = []\n        for sample in samples:\n            sample.person_teams = {}\n        for (continuity_id, original_id), observations in grouped.items():\n            _, boundaries = appearance_phases([r[2] for r in observations],\n                seconds=[r[0].seconds for r in observations], max_gap_seconds=1.5 / fps)\n            accepted = {}\n            for boundary in boundaries:\n                start, end = boundary.first_index, boundary.confirmed_index\n                before = [r[3] for r in observations[max(0, start - 3):start]]\n                after = [r[3] for r in observations[start:end + 1]]\n                if (len(before) == 3 and len(after) >= 3 and None not in before + after\n                        and len(set(before)) == len(set(after)) == 1 and before[0] != after[0]\n                        and palette_support([r[2] for r in observations[max(0, start - 3):start]],\n                                            [r[2] for r in observations[start:end + 1]], assignment.centers)):\n                    accepted[start] = next_id\n                    mapping[next_id] = assignment.team_by_track.get(original_id)\n                    audit.append(dict(continuity_id=continuity_id, raw_id=original_id, new_id=next_id,\n                        first_order=observations[start][0].order, confirmed_order=observations[end][0].order,\n                        prior_motion_id=before[0], new_motion_id=after[0]))\n                    next_id += 1\n            identity = original_id\n            for position, (sample, index, _, _) in enumerate(observations):\n                identity = accepted.get(position, identity)\n                person = sample.persons[index]\n                sample.persons[index] = (identity, *person[1:])\n                assert sample.person_teams is not None\n                sample.person_teams[str(identity)] = mapping.get(identity)\n        used = {p[0] for s in samples for p in s.persons}\n        mapping = {tid: mapping.get(tid) for tid in used}\n        final = TeamAssignment(mapping, assignment.centers,\n                               frozenset(t for t, team in mapping.items() if team is None), assignment.note)\n        return final, dict(profile=PROFILE, boundaries=audit, boxes_removed=0, boxes_created=0,\n            observation_teams_preserved=True, support_is_ground_truth=False,\n            confirmation=\"Retrospective within each segment; three color observations and stable distinct support IDs\")\n"
+  },
+  "decision": "All 15 actual RGB/OSNet pipeline outputs match the development gate replay; no production default changed. Cached person detections, no ball or DB. New control unopened."
+}

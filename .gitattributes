@@ -21,3 +21,5 @@ docs/measurements/perimeter-control-day-labels.json text eol=crlf
 docs/measurements/perimeter-control-night-labels.json text eol=crlf
 docs/measurements/kit-fixed-development-labels.json text eol=crlf
 docs/measurements/kit-fixed-control-labels.json text eol=crlf
+
+docs/PALET-UZLASISI-KONTROL-PLANI.md -text
