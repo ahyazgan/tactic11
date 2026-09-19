@@ -1,0 +1,184 @@
+{
+  "scope": "Final input-mutation guard did not change any person payload. Timing and code manifest naturally differ.",
+  "first_report_sha256": "3ffbac79942b7bcca254b342da53e5f4f0d1d8e33002e45b4b6d8add2eb4f322",
+  "final_report_sha256": "2d2f13edd3b9ce8e6787ef52cb3a55e62cc359a0a949f01d4ba1e152a566b433",
+  "payloads": {
+    "day\\botsort\\seg_0000.json": {
+      "sha256": "4a3396fdaacc77ed4454199de72a68da3a13535e64a0c9f67f5dabbbab7ceea1",
+      "equal": true
+    },
+    "day\\botsort\\seg_0003.json": {
+      "sha256": "00817960de03320f969db4c3eceff8a8be9af10f0eefe921ec281e1ad68aed25",
+      "equal": true
+    },
+    "day\\botsort\\seg_0006.json": {
+      "sha256": "a282a50713f427a03a3163297cabd2e91d01717d634f279fec2011b9b657ee84",
+      "equal": true
+    },
+    "day\\ocsort\\seg_0000.json": {
+      "sha256": "59156b6886432b842c80e4af28973ae11ed861e60617ce78b353466bf9a4803c",
+      "equal": true
+    },
+    "day\\ocsort\\seg_0003.json": {
+      "sha256": "73daba3d2276df0bb3673dcbb64f125c162b302d437e5fae338f6caa1c936468",
+      "equal": true
+    },
+    "day\\ocsort\\seg_0006.json": {
+      "sha256": "434ff5031433e87f01db55fcf1e39e30493dcc18ce5f6e99fec6159778b1027d",
+      "equal": true
+    },
+    "day\\roboflow_byte\\seg_0000.json": {
+      "sha256": "fceaf5f235bef05f2c741efc75df2ccb8c19bef8051fa1fbe3d6e3b8d5553da6",
+      "equal": true
+    },
+    "day\\roboflow_byte\\seg_0003.json": {
+      "sha256": "d5fbe72d97faff4574155872bef42e96da28a31a4eced1138758981f80cb15bf",
+      "equal": true
+    },
+    "day\\roboflow_byte\\seg_0006.json": {
+      "sha256": "a6617efb84f3aa1f6999c8c0af7d540228ea4cf9e03de7ab705aec45ff770e06",
+      "equal": true
+    },
+    "day\\supervision\\seg_0000.json": {
+      "sha256": "814723c415455469350a883fec6504f48b7d49c05238a12d29ef7c8178184486",
+      "equal": true
+    },
+    "day\\supervision\\seg_0003.json": {
+      "sha256": "5169a57b817abd59872bb078ccd46112284588254d134b41940ca7718948723a",
+      "equal": true
+    },
+    "day\\supervision\\seg_0006.json": {
+      "sha256": "01de76f4033b3c07e4d6ecbe353383353b1f093754eb5ea6799d31147d3f1a84",
+      "equal": true
+    },
+    "night\\botsort\\seg_0000.json": {
+      "sha256": "3734007b8d4f8a6a4ab03c897ca7d8c9e8d7516aa1d70c2b9a95deb2a372b5eb",
+      "equal": true
+    },
+    "night\\botsort\\seg_0003.json": {
+      "sha256": "1ee7a9aa790ed2f58d2ef8b4d8664de59996f3a8b1d910a20eeac3c3db1c2aae",
+      "equal": true
+    },
+    "night\\botsort\\seg_0006.json": {
+      "sha256": "897d4ab3c678b6109eed9d9383e1fda8a892a4c5325d5e2e90ac4b4b610e1a6d",
+      "equal": true
+    },
+    "night\\botsort\\seg_0009.json": {
+      "sha256": "e8582f32dcc92b03cc544f9e3b7df149c6c9f2009d55d3e683e31a4f052399ee",
+      "equal": true
+    },
+    "night\\ocsort\\seg_0000.json": {
+      "sha256": "5f3fb27ec91cef355b2fcdc6f4712581b73a7155c5c1cdf488c6c724a72df81f",
+      "equal": true
+    },
+    "night\\ocsort\\seg_0003.json": {
+      "sha256": "4e0228f121102faa1b61d6d7e7bbe5d666d6e8bcdd1f35a5a496540a7718b3d9",
+      "equal": true
+    },
+    "night\\ocsort\\seg_0006.json": {
+      "sha256": "5a36088d760396dc4831c591a8fe29849d31df05b206b855a0a96488d6b2184e",
+      "equal": true
+    },
+    "night\\ocsort\\seg_0009.json": {
+      "sha256": "4b6039436894586be12247d1cd6466e950385983695023ef3180a33c7d14de30",
+      "equal": true
+    },
+    "night\\roboflow_byte\\seg_0000.json": {
+      "sha256": "8cdb1937cf124cde076102e1f471407f8be9b4273985d90cb4bca8687ed5dfbf",
+      "equal": true
+    },
+    "night\\roboflow_byte\\seg_0003.json": {
+      "sha256": "8f605f4916301eb83bb49846c5bc3c311057563c37b368be75858dd6e73b47ca",
+      "equal": true
+    },
+    "night\\roboflow_byte\\seg_0006.json": {
+      "sha256": "cb77027ba79d848362ec0f35a23ba7d85884dac09b3a50e17da3452f1fb85058",
+      "equal": true
+    },
+    "night\\roboflow_byte\\seg_0009.json": {
+      "sha256": "3ee3315e7720690c93dec5a637a6dc675bdbd580495d1366ac153c1bce8db601",
+      "equal": true
+    },
+    "night\\supervision\\seg_0000.json": {
+      "sha256": "9e98033919597ed68cbf321b2b7530d5217916b4d6e994cfccf5abef791b82c8",
+      "equal": true
+    },
+    "night\\supervision\\seg_0003.json": {
+      "sha256": "815f5ed579cbf12c74f8e46ca25e411ee461f6abde03ffce4a6f90797926c4c5",
+      "equal": true
+    },
+    "night\\supervision\\seg_0006.json": {
+      "sha256": "b18784b7cb0b5958d52f77b961be07978a5865d47810067e8787bf60340225e5",
+      "equal": true
+    },
+    "night\\supervision\\seg_0009.json": {
+      "sha256": "f00dca6e71828d75787883b8d06da3be91f0ad0c2b12440707e7ca9acae2246a",
+      "equal": true
+    },
+    "night_extra\\botsort\\seg_0020.json": {
+      "sha256": "9c86e99dc4e5199a338ed3871ad16d1f48b7c2c2bed654fb1e20d016bc852362",
+      "equal": true
+    },
+    "night_extra\\botsort\\seg_0030.json": {
+      "sha256": "d668a7694413bb7d48e0600419f5f00c55bd8f5dacd912ac068843217101c562",
+      "equal": true
+    },
+    "night_extra\\ocsort\\seg_0020.json": {
+      "sha256": "c925df3a9b3579e172dc17a680cb057783fb0f2cefa725821bc67fc3a1d99b79",
+      "equal": true
+    },
+    "night_extra\\ocsort\\seg_0030.json": {
+      "sha256": "1701b9e23960fc72ab30faf2f565f3c208619cb8c0e2dd9108b915e66728ca5e",
+      "equal": true
+    },
+    "night_extra\\roboflow_byte\\seg_0020.json": {
+      "sha256": "90b90bc5372785be18cc0a164628cf30a0a7033312d5d8c8971803376cf11981",
+      "equal": true
+    },
+    "night_extra\\roboflow_byte\\seg_0030.json": {
+      "sha256": "b1962d9a10bc88bbf6136f68b2479032d200d972f4991f43da817c15517ff400",
+      "equal": true
+    },
+    "night_extra\\supervision\\seg_0020.json": {
+      "sha256": "00c0975a1d2781060e47a87030e4382296a3aa029f07541fa1f1378e82d26b8e",
+      "equal": true
+    },
+    "night_extra\\supervision\\seg_0030.json": {
+      "sha256": "21a6b2b61417a5932ef861aaba15d121dd1eb4307e45a9755215d9e1105d4df6",
+      "equal": true
+    },
+    "night_old_control\\botsort\\seg_0040.json": {
+      "sha256": "861d286ba983328974ec8bacfef87c73399bbf53e92f0912d065bb147f63812c",
+      "equal": true
+    },
+    "night_old_control\\botsort\\seg_0050.json": {
+      "sha256": "00b199c47b4747dd72cb86be55843405ee04a058aee8804575dc0de1f5981723",
+      "equal": true
+    },
+    "night_old_control\\ocsort\\seg_0040.json": {
+      "sha256": "7f37e13e0ea94a8cb26ee050da759e6e7fb6db76974541fcfbb05530cee2049a",
+      "equal": true
+    },
+    "night_old_control\\ocsort\\seg_0050.json": {
+      "sha256": "936f242b3ad373373f38aef871b90ca5d9537f9423f411f5fc436e9dcb6649e6",
+      "equal": true
+    },
+    "night_old_control\\roboflow_byte\\seg_0040.json": {
+      "sha256": "4f8bb55e661707fc8c60e142f86cc4da7369158960be0cd7c54a5cee671032da",
+      "equal": true
+    },
+    "night_old_control\\roboflow_byte\\seg_0050.json": {
+      "sha256": "bcb2edda9842bc7b002524dcc6aadcb75fc8ad1e7ecacaf9afae9b3b4c691a42",
+      "equal": true
+    },
+    "night_old_control\\supervision\\seg_0040.json": {
+      "sha256": "923da8e309617254335cb27abceeee62c080f2990eb0b6c82e64e93b9c5dfee7",
+      "equal": true
+    },
+    "night_old_control\\supervision\\seg_0050.json": {
+      "sha256": "69736d6dcd524cd925782e217b92ec197c60e0fff606532071a8a4560c5cade7",
+      "equal": true
+    }
+  },
+  "all_equal": true
+}
