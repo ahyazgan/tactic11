@@ -18,7 +18,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 
 from app.db import models
@@ -195,7 +195,7 @@ def frames_in_window(
     return out
 
 
-def _base_query(match_id: int):
+def _base_query(match_id: int) -> Select[tuple[models.TrackingFrameRow]]:
     return select(models.TrackingFrameRow).where(
         models.TrackingFrameRow.sport == football.SPORT_NAME,
         models.TrackingFrameRow.match_external_id == match_id,

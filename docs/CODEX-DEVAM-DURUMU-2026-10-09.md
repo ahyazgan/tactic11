@@ -82,3 +82,18 @@ açık kalıyor.
 
 Makine kayıtları ve sınırlı eşitlik kanıtı:
 [devam ölçümü](measurements/codex-resume-20261009.json).
+
+## GitHub doğrulaması
+
+[PR #277](https://github.com/ahyazgan/tactic11/pull/277) açıldı. İlk CI koşusunda
+3.006 uygulama testi geçti, 60 koşullu test atlandı; demo ve gerçek giriş modu
+tarayıcı işleri, iki veritabanı göç kontrolü, takip motorları ve Docker derlemesi
+geçti. CI'ın kurduğu SQLAlchemy 2.1.4, yerel 2.0.50 ortamında görünmeyen sekiz
+tip denetimi hatası ortaya çıkardı. Takip sorgusunun dönüş tipi açıklandı,
+beş özet sorgusunun satırları açık anahtar/değer açılımıyla sözlüğe dönüştürüldü.
+Sorgu filtreleri ve sonuç davranışı korunur; bu uyumluluk düzeltmesi de PR'dadır.
+
+İlk Vercel önizlemesi başarısız oldu. Derleme günlüğünü okuyan CLI mevcut
+oturumu geçersiz buldu, tarayıcı da giriş istedi. Başarısızlığın asıl sebebi
+henüz doğrulanamadı. Vercel kontrolü çözülmeden PR birleştirilmeyecek; normal
+hesap oturumunun yenilenmesi gerekiyor.
