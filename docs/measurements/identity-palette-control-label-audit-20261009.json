@@ -1,0 +1,18 @@
+{
+  "day": {
+    "starts": 198,
+    "ends": 202,
+    "pairs": 216,
+    "all_geometry_and_times_match_raw": true,
+    "all_nearest_different_pairs_match_explicit_endpoint_people": true,
+    "sealed_hashes_unchanged": true
+  },
+  "night": {
+    "starts": 75,
+    "ends": 80,
+    "pairs": 106,
+    "all_geometry_and_times_match_raw": true,
+    "all_nearest_different_pairs_match_explicit_endpoint_people": true,
+    "sealed_hashes_unchanged": true
+  }
+}

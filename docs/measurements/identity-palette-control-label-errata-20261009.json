@@ -1,0 +1,2819 @@
+{
+  "recorded_at_utc": "2026-10-09T15:14:10.365573+00:00",
+  "scope": "Post-unblinding source re-review by the same AI, not a new blind control or independent adjudication.",
+  "trigger": "Output-ID trajectory triage exposed implausible opposing endpoint assignments. Original source strips and endpoint crop pages confirmed two swapped endpoint indices.",
+  "original_evidence_policy": "Keep e3d9618 labels/seals, original score JSON and 9548dc1 decision unchanged. This append-only erratum supersedes interpretation of the affected identity counts.",
+  "reviewer": "Codex single AI source-image reviewer",
+  "independently_adjudicated": false,
+  "predictions_visible_during_rereview": true,
+  "input_sha256": {
+    "docs\\measurements\\identity-palette-control-decision-20261009.json": "f6d469cf9fae9bfc6cd176f05ab383fc75f758c3fb75727fd06cfc87baa63a09",
+    "docs\\measurements\\identity-palette-control-day-pairs.json": "a46c2ce4d8f12c3bb7e0eff58a6a58f9c6856755a76934069e2199918287bba0",
+    "docs\\measurements\\identity-palette-control-day66-source-review.json": "0c041fee51f82cbb7443a3be310a95e48b1d82a97bf12f691533c4faf095f9b1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0064.json": "9116348cf71a1a790b9dff77d79153f10808a02ed3810b96cc08ca81fb79d73d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0066.json": "9ea28f4ec1de868dde62780568a2c0c2ecc97b65d64adc1c6a061dcc032c6e6f",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\predictions\\supervision\\seg_0064.json": "504c0a0bdce09a3d0793d161a38a740bd1909ca24c8ee698c752a633b7ffd49e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\predictions\\supervision\\seg_0066.json": "6cff68e786cdabf706f65c7bbe3f1c3d508b45c9d2204d625129449895c8184f",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\predictions\\consensus\\seg_0064.json": "bb230416ae69016eae0ccdcefea6e98da4ebb8a7f25beac50f3378971d6be3f6",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\predictions\\consensus\\seg_0066.json": "87284a9f44eaf06805131c2c0ee998d4f1336d44f038a46ee667bbb95f86bcbb",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\predictions\\palette\\seg_0064.json": "94f9d1d1ce2173b45d66898ff3a437aa7c4de2e570251848e57d019b5f2caa58",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\predictions\\palette\\seg_0066.json": "6a523baf3065acb474caf8f9633e729df79221cf3b1f2e7bc18ee3e39a98e4fe",
+    "docs\\measurements\\identity-palette-control-night-pairs.json": "9b1c2cfd3b1571a2775d9b0f3572ca9c9f6da0ac3dbca2b1b3837f10fcc3e68b",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\raw\\seg_0078.json": "4426dc8344b11f20daf2820716293a6586e58debb052570e24058185a09a7efe",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\raw\\seg_0084.json": "4b65d1670284750017aca0208c3ba8c5e684dfa65e170bf5f025cbc07b203d27",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\predictions\\supervision\\seg_0078.json": "729b13e2e2a1f1cd0f3d23e4a4e15a883ae088a1399bb7df8936e0338eba2aa8",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\predictions\\supervision\\seg_0084.json": "c89cf4b148eebdd03f95929062f7f7fdf804c8fa76cd50abb27755b2a8a1141a",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\predictions\\consensus\\seg_0078.json": "bc1bd167ee48650cd0614fb95750fc16849b6864a5789948b553b00a82aa9408",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\predictions\\consensus\\seg_0084.json": "29f77fe0a2ca88856d8108705b7942f54b4a638026e55a27003dd4194794ac45",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\predictions\\palette\\seg_0078.json": "d3228044c4a8c1cc4467ae01eba5d61f0b4c3f9614f3fd2889a2909cc2959942",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\predictions\\palette\\seg_0084.json": "e0d16be39552b6394777c692554798a21d229ccd3d4d4840b8e264ed5baed435"
+  },
+  "reviewed_assets_sha256": {
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d31.jpg": "bc0791b746df8c44cac6491d9357ca067a5200d03f5f5226954485d64fb5097e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d41.jpg": "5f56bf8d0c67d5dc360e762ee94ce7c6c353ee0ac2ead84925a478a80e0b8074",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d13.jpg": "40727fac05f13115438b110eff5778e501ff91156bd27104b4a5f096af96e9e0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d15.jpg": "2048583f5cbf43ab697dfa209380e2b669b09d1031bf54be532245a5c4aa2111",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d18.jpg": "7726aa75f99bd5124e3ce22ec64f97c21d4902bcf5cb3f4d603becd8419bf631",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d26.jpg": "77a6623f60c2a71050d10e22dbdfbae4f220c646f75a19a9e4b75e7ac49c266d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d12.jpg": "dba9e4ae332f1d9822828dd8a2b4ed4e65a694c45cd9bf97dd285ef697bbf5d0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d18.jpg": "2ac8b8f439ebf06c0b9a4b326cc89e41ffe3a5c7884348b4db5ebe521301c230",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d22.jpg": "da2df3a8c31f5a653995bc6618e4409c8de55a8eca8b3927eb866acbb0b320ed",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d29.jpg": "b85d3746d649ecd189753573caf876ee3e552fc6f16dd91f63e3e3ed8ee54775",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d30.jpg": "b0f608215713bf34a9001c2e3fc2534c1323815cb9c57923b3051cd6c7e9afda",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d31.jpg": "0a993b1addd0549c7b502080ddbf8c59c38ebfaf56512307d3c4b28420d912e0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\review\\association-84-374-d4.jpg": "c16e77a5e9d8747e7345217d10fd0ae465b65e40a91127b79140cc8a077e6472",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0404-page01.jpg": "e9f737ccc8b99d7fb26994890556819e09f886696ec250043ec09c06004d8519",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0404-page02.jpg": "aefa37873aad8525047263a47adf3f7267e75a18768a443c0775eafd6a0804c4",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0404-overview.jpg": "3fc2ddb597f2ce6d21a98d366d619c60824966c25a93c8d41ed5958319bbe383"
+  },
+  "corrections": [
+    {
+      "left": "66-374-d13",
+      "original_same_right": "66-404-d18",
+      "corrected_same_right": "66-404-d16",
+      "original_negative_right": "66-404-d13",
+      "recomputed_negative_right": "66-404-d13",
+      "source_basis": "The source strip follows the isolated white player beside the lower center-circle arc continuously rightward to endpoint d16 (x 2185), not the distant right-side runner d18 (x 2717)."
+    },
+    {
+      "left": "66-374-d15",
+      "original_same_right": "66-404-d16",
+      "corrected_same_right": "66-404-d18",
+      "original_negative_right": "66-404-d24",
+      "recomputed_negative_right": "66-404-d24",
+      "source_basis": "The source strip follows the foremost right-side white runner toward the right crop edge; the full endpoint overview and crop page identify endpoint d18. Endpoint d16 is the separate center-circle player."
+    }
+  ],
+  "reviewed_original_wrong_pairs": [
+    {
+      "left": "64-686-d31",
+      "right": "64-716-d12",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d31.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "64-686-d41",
+      "right": "64-716-d33",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d41.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "66-374-d13",
+      "right": "66-404-d18",
+      "relation": "same",
+      "verdict": "source_endpoint_index_error",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d13.jpg",
+      "note": "The source strip follows the isolated white player beside the lower center-circle arc continuously rightward to endpoint d16 (x 2185), not the distant right-side runner d18 (x 2717)."
+    },
+    {
+      "left": "66-374-d15",
+      "right": "66-404-d16",
+      "relation": "same",
+      "verdict": "source_endpoint_index_error",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d15.jpg",
+      "note": "The source strip follows the foremost right-side white runner toward the right crop edge; the full endpoint overview and crop page identify endpoint d18. Endpoint d16 is the separate center-circle player."
+    },
+    {
+      "left": "66-374-d18",
+      "right": "66-404-d29",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d18.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "66-374-d26",
+      "right": "66-404-d7",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d26.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "66-686-d12",
+      "right": "66-716-d19",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d12.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "66-686-d18",
+      "right": "66-716-d16",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d18.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "66-686-d22",
+      "right": "66-716-d25",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d22.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "66-686-d22",
+      "right": "66-716-d26",
+      "relation": "different",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d22.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "66-686-d29",
+      "right": "66-716-d26",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d29.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "66-686-d30",
+      "right": "66-716-d25",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d30.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "66-686-d31",
+      "right": "66-716-d24",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d31.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    },
+    {
+      "left": "84-374-d4",
+      "right": "84-404-d11",
+      "relation": "same",
+      "verdict": "source_relation_reaffirmed",
+      "source_asset": "data\\tracking\\bench\\consensus_palette_control_v1\\night\\review\\association-84-374-d4.jpg",
+      "note": "Re-read original source strip: person motion or partial-body attachment supports the sealed relation; no new source relation inferred from output IDs."
+    }
+  ],
+  "groups": {
+    "day": {
+      "original_counts": {
+        "same_pairs": 108,
+        "same_correct": 72,
+        "same_uncovered": 24,
+        "different_pairs": 108,
+        "different_correct": 75,
+        "different_uncovered": 32,
+        "false_split": 12,
+        "false_join": 1
+      },
+      "posthoc_counts": {
+        "same_pairs": 108,
+        "same_correct": 74,
+        "same_uncovered": 24,
+        "different_pairs": 108,
+        "different_correct": 75,
+        "different_uncovered": 32,
+        "false_split": 10,
+        "false_join": 1
+      },
+      "scores_identical_across_three_methods": true,
+      "posthoc_outcomes": [
+        {
+          "left": "64-374-d0",
+          "right": "64-404-d23",
+          "relation": "same",
+          "visual_basis": "The light-shirted player stays to the right of the blue player near the arc throughout the fixed source strip. Start d0 is his upper-body duplicate of d28; end d23 is the full box, with upper-body duplicate d1.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d0",
+          "right": "64-404-d24",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d1",
+          "right": "64-404-d2",
+          "relation": "same",
+          "visual_basis": "Blue field player directly in front of the sideline group moves slightly left and down without crossing another field player in the fixed source strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d1",
+          "right": "64-404-d6",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d2",
+          "right": "64-404-d6",
+          "relation": "same",
+          "visual_basis": "Dark-clothed sideline person immediately behind/right of the blue field player remains at the same railing position throughout the fixed strip.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d2",
+          "right": "64-404-d2",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d5",
+          "right": "64-404-d4",
+          "relation": "same",
+          "visual_basis": "The blue sideline person stays near the same railing post while the adjacent light-clothed person walks behind him to the left.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d5",
+          "right": "64-404-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d6",
+          "right": "64-404-d3",
+          "relation": "same",
+          "visual_basis": "Dark-top sideline person holds the same railing position through the fixed strip; the person walking left is separate.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d6",
+          "right": "64-404-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d11",
+          "right": "64-404-d7",
+          "relation": "same",
+          "visual_basis": "Dark-top person with light shorts stays at the same railing post immediately left of the blue sideline person.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d11",
+          "right": "64-404-d4",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d12",
+          "right": "64-404-d10",
+          "relation": "same",
+          "visual_basis": "Blue field player stays behind the white field player while the dark-clothed person separates left; endpoint d10 is the full box and d30 its lower-body duplicate.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d12",
+          "right": "64-404-d27",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d15",
+          "right": "64-404-d13",
+          "relation": "same",
+          "visual_basis": "White player in front of the blue player near halfway walks right/down and becomes clearly separate; continuous source motion leads to endpoint d13.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d15",
+          "right": "64-404-d8",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d17",
+          "right": "64-404-d14",
+          "relation": "same",
+          "visual_basis": "White player nearest the halfway line jogs right/down across it, distinct from the more distant white/blue pair throughout.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d17",
+          "right": "64-404-d13",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d18",
+          "right": "64-404-d15",
+          "relation": "same",
+          "visual_basis": "Dark-clothed seated person at the right of the bleachers keeps the same seat and posture throughout the fixed strip.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d18",
+          "right": "64-404-d13",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d19",
+          "right": "64-404-d16",
+          "relation": "same",
+          "visual_basis": "Dark-clothed seated person at the left bleacher group remains in the same seat throughout.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d19",
+          "right": "64-404-d8",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d20",
+          "right": "64-404-d17",
+          "relation": "same",
+          "visual_basis": "The isolated red-clothed person remains in the right penalty area throughout; no other person crosses this source trajectory.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d20",
+          "right": "64-404-d14",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d21",
+          "right": "64-404-d19",
+          "relation": "same",
+          "visual_basis": "Blue player to the left of the white player in the left penalty area moves right/down with a visible gap; remains the left-hand player at the endpoint.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d21",
+          "right": "64-404-d25",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d22",
+          "right": "64-404-d21",
+          "relation": "same",
+          "visual_basis": "The back white player near the yellow person moves down/right behind the other white player without swapping positions; endpoint d21 is the back person, distinct from d18.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d22",
+          "right": "64-404-d18",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d23",
+          "right": "64-404-d18",
+          "relation": "same",
+          "visual_basis": "The front white player near the penalty-area line moves down/right while remaining in front of the other white player; endpoint d18 is distinct from the back person d21.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d23",
+          "right": "64-404-d21",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d25",
+          "right": "64-404-d0",
+          "relation": "same",
+          "visual_basis": "The more distant blue player left of the arc moves slightly right/down without approaching another player; endpoint d0 is the same person.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d25",
+          "right": "64-404-d24",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d26",
+          "right": "64-404-d24",
+          "relation": "same",
+          "visual_basis": "Blue player nearest the arc remains to the left of the white player and moves down without a crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d26",
+          "right": "64-404-d23",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d27",
+          "right": "64-404-d25",
+          "relation": "same",
+          "visual_basis": "White player in the left penalty area stays to the right of the blue player throughout the fixed strip and moves down/right.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d27",
+          "right": "64-404-d19",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d28",
+          "right": "64-404-d23",
+          "relation": "same",
+          "visual_basis": "Full box of the white player right of the arc remains separate from the blue neighbor; start d0 is the upper duplicate and endpoint d23 the full box.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d28",
+          "right": "64-404-d24",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d30",
+          "right": "64-404-d31",
+          "relation": "same",
+          "visual_basis": "Blue player below the center circle runs left/down ahead of the adjacent white player; continuous fixed context leads to endpoint d31.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d30",
+          "right": "64-404-d32",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d31",
+          "right": "64-404-d28",
+          "relation": "same",
+          "visual_basis": "White runner follows the blue runner left/down through the strip. Only the blue head touches the lower edge of the start box; the white body is distinct. Endpoint d28 is the white upper-body box.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d31",
+          "right": "64-404-d31",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d32",
+          "right": "64-404-d32",
+          "relation": "same",
+          "visual_basis": "White player below the center circle follows the blue player left/down, separate from the faster white/blue pair below them.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d32",
+          "right": "64-404-d8",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d34",
+          "right": "64-404-d20",
+          "relation": "same",
+          "visual_basis": "Blue player near the scoreboard moves right along the penalty-area edge without a crossing; endpoint d20 follows the same continuous motion.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d34",
+          "right": "64-404-d18",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d35",
+          "right": "64-404-d34",
+          "relation": "same",
+          "visual_basis": "Blue player with a visible light back number moves right/down, apart from the scoreboard-side blue player; endpoint d34 is the full box and d22 its upper duplicate.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-374-d35",
+          "right": "64-404-d18",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-374-d38",
+          "right": "64-404-d26",
+          "relation": "same",
+          "visual_basis": "White player with visible back number 6 turns and runs right in isolation through the fixed strip; endpoint d26 is his upper-body box.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-374-d38",
+          "right": "64-404-d25",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d0",
+          "right": "64-716-d0",
+          "relation": "same",
+          "visual_basis": "Dark-clothed person by the far corner flag stays at the same isolated location.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d0",
+          "right": "64-716-d27",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d1",
+          "right": "64-716-d1",
+          "relation": "same",
+          "visual_basis": "Isolated blue player near the far left touchline moves left without crossing another player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d1",
+          "right": "64-716-d2",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d4",
+          "right": "64-716-d4",
+          "relation": "same",
+          "visual_basis": "Dark-clothed person between the railing groups remains by the same post, separate from the people to the left.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d4",
+          "right": "64-716-d6",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d5",
+          "right": "64-716-d5",
+          "relation": "same",
+          "visual_basis": "Dark-top light-shorts person at the railing remains to the left of the blue sideline person.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d5",
+          "right": "64-716-d4",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d6",
+          "right": "64-716-d6",
+          "relation": "same",
+          "visual_basis": "Dark-clothed person in the right railing gap remains at the same location.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d6",
+          "right": "64-716-d4",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d9",
+          "right": "64-716-d9",
+          "relation": "same",
+          "visual_basis": "Light-top person walks slowly right beside the canopy and remains separate from the seated people.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d9",
+          "right": "64-716-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d10",
+          "right": "64-716-d8",
+          "relation": "same",
+          "visual_basis": "Blue field player nearest the far touchline moves right, clearly separate from the central blue player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d10",
+          "right": "64-716-d11",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d11",
+          "right": "64-716-d7",
+          "relation": "same",
+          "visual_basis": "Blue player near the center-circle edge remains isolated above/right of the white player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d11",
+          "right": "64-716-d9",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d16",
+          "right": "64-716-d12",
+          "relation": "same",
+          "visual_basis": "White player on the halfway line stays separate below the overlapping pair; source d31 is his lower-body duplicate.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d16",
+          "right": "64-716-d35",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d17",
+          "right": "64-716-d15",
+          "relation": "same",
+          "visual_basis": "Dark-clothed seated person at the bleachers remains at the same seat.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d17",
+          "right": "64-716-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d18",
+          "right": "64-716-d19",
+          "relation": "same",
+          "visual_basis": "Dark-clothed sideline person at the left of the exercise group stays by the same bench position; endpoint d19.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d18",
+          "right": "64-716-d18",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d19",
+          "right": "64-716-d23",
+          "relation": "same",
+          "visual_basis": "Red-clothed person remains isolated in the right penalty area.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d19",
+          "right": "64-716-d21",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d20",
+          "right": "64-716-d24",
+          "relation": "same",
+          "visual_basis": "Yellow-clothed person moves right in front of the left goal, without another person crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d20",
+          "right": "64-716-d25",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d21",
+          "right": "64-716-d25",
+          "relation": "same",
+          "visual_basis": "Blue player at the penalty-area line moves right, staying below/left of the yellow person.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d21",
+          "right": "64-716-d24",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d22",
+          "right": "64-716-d26",
+          "relation": "same",
+          "visual_basis": "White player in front of the left goal moves right in isolation as the ball rolls behind.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d22",
+          "right": "64-716-d24",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d23",
+          "right": "64-716-d32",
+          "relation": "same",
+          "visual_basis": "Blue player with visible back number 36 crosses behind the white 12 and emerges on his right; the entire crossing is visible in the fixed strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d23",
+          "right": "64-716-d31",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d24",
+          "right": "64-716-d27",
+          "relation": "same",
+          "visual_basis": "White player nearest the arc turns and moves right, remaining apart from the crossing blue/white pair.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d24",
+          "right": "64-716-d31",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d25",
+          "right": "64-716-d31",
+          "relation": "same",
+          "visual_basis": "White player with visible 12 remains in front while blue 36 passes behind to his right; endpoint d31 preserves the white trajectory.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d25",
+          "right": "64-716-d32",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d26",
+          "right": "64-716-d30",
+          "relation": "same",
+          "visual_basis": "White field player below the initially overlapping pair moves up/right toward them, remaining below the other white player at the endpoint.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d26",
+          "right": "64-716-d28",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d27",
+          "right": "64-716-d28",
+          "relation": "same",
+          "visual_basis": "Blue player above the crossing pair remains apart and moves slightly right.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d27",
+          "right": "64-716-d32",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d28",
+          "right": "64-716-d10",
+          "relation": "same",
+          "visual_basis": "White player with visible 8 stands by the center-circle edge, separate from the blue and dark-clothed people.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d28",
+          "right": "64-716-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d29",
+          "right": "64-716-d33",
+          "relation": "same",
+          "visual_basis": "White player with visible 6 below the center circle remains isolated throughout.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d29",
+          "right": "64-716-d34",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d30",
+          "right": "64-716-d35",
+          "relation": "same",
+          "visual_basis": "White player with visible 29 stays on the halfway line below the circle; endpoint d35 is the partial body box of this same person.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d30",
+          "right": "64-716-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d31",
+          "right": "64-716-d12",
+          "relation": "same",
+          "visual_basis": "Lower legs belong to the white player in source d16, continuously attached in the fixed context; endpoint full box is d12.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "64-686-d31",
+          "right": "64-716-d35",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d32",
+          "right": "64-716-d34",
+          "relation": "same",
+          "visual_basis": "Blue player with visible 9 below the circle remains separate from both white players.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d32",
+          "right": "64-716-d33",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d39",
+          "right": "64-716-d41",
+          "relation": "same",
+          "visual_basis": "Blue player with visible 21 near the near touchline moves right and bends, with no nearby crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "64-686-d39",
+          "right": "64-716-d26",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "64-686-d40",
+          "right": "64-716-d33",
+          "relation": "same",
+          "visual_basis": "Lower-leg fragment belongs to white 6 in source d29, continuously attached to his body in the strip.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d40",
+          "right": "64-716-d34",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "64-686-d41",
+          "right": "64-716-d33",
+          "relation": "same",
+          "visual_basis": "Other lower-leg fragment of the same white 6 in source d29; endpoint d33 is the full body.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "64-686-d41",
+          "right": "64-716-d34",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d0",
+          "right": "66-404-d1",
+          "relation": "same",
+          "visual_basis": "Right-hand blue sideline person of the close pair remains at the railing; the left neighbor stays separate throughout the fixed strip.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d0",
+          "right": "66-404-d0",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d1",
+          "right": "66-404-d0",
+          "relation": "same",
+          "visual_basis": "Left-hand blue sideline person of the close pair remains to the left of the neighbor throughout the fixed strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d1",
+          "right": "66-404-d1",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d2",
+          "right": "66-404-d15",
+          "relation": "same",
+          "visual_basis": "Blue field player nearest the far stands walks right toward the halfway line without a crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d2",
+          "right": "66-404-d6",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d3",
+          "right": "66-404-d6",
+          "relation": "same",
+          "visual_basis": "White player behind the left side of the center circle walks right continuously, separate from the blue player in front.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d3",
+          "right": "66-404-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d4",
+          "right": "66-404-d5",
+          "relation": "same",
+          "visual_basis": "Light-clothed sideline person immediately left of the canopy remains by the same steps throughout the strip.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d4",
+          "right": "66-404-d8",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d5",
+          "right": "66-404-d7",
+          "relation": "same",
+          "visual_basis": "Blue field player at the left edge of the center circle walks right; the partial leg box d26 belongs to him.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d5",
+          "right": "66-404-d9",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d6",
+          "right": "66-404-d2",
+          "relation": "same",
+          "visual_basis": "Dark-clothed sideline person stays between the blue pair and the next railing group.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d6",
+          "right": "66-404-d10",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d7",
+          "right": "66-404-d8",
+          "relation": "same",
+          "visual_basis": "Dark-top person with light shorts remains at the railing position to the left of the light-clothed person by the canopy.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d7",
+          "right": "66-404-d10",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d10",
+          "right": "66-404-d22",
+          "relation": "same",
+          "visual_basis": "White player at the right edge of the center circle accelerates right, remaining below the other white runner throughout the fixed strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d10",
+          "right": "66-404-d14",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d11",
+          "right": "66-404-d14",
+          "relation": "same",
+          "visual_basis": "White player between the halfway-line group and dark field person runs right along the upper side of the circle, staying separate.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d11",
+          "right": "66-404-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d12",
+          "right": "66-404-d12",
+          "relation": "same",
+          "visual_basis": "Blue player behind the overlapping halfway-line pair runs right on their far side and remains distinguishable throughout.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d12",
+          "right": "66-404-d15",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d13",
+          "right": "66-404-d16",
+          "relation": "same",
+          "visual_basis": "The source strip follows the isolated white player beside the lower center-circle arc continuously rightward to endpoint d16 (x 2185), not the distant right-side runner d18 (x 2717).",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d13",
+          "right": "66-404-d13",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d15",
+          "right": "66-404-d18",
+          "relation": "same",
+          "visual_basis": "The source strip follows the foremost right-side white runner toward the right crop edge; the full endpoint overview and crop page identify endpoint d18. Endpoint d16 is the separate center-circle player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d15",
+          "right": "66-404-d24",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d16",
+          "right": "66-404-d24",
+          "relation": "same",
+          "visual_basis": "Upper/right blue player in the chasing trio remains ahead of the other blue player and white chaser through the strip.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d16",
+          "right": "66-404-d19",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d18",
+          "right": "66-404-d29",
+          "relation": "same",
+          "visual_basis": "Blue runner below the far-side group continues right; endpoint d29 is a partial lower-body box of this otherwise unboxed runner.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "66-374-d18",
+          "right": "66-404-d22",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d20",
+          "right": "66-404-d19",
+          "relation": "same",
+          "visual_basis": "White runner on the left of the far-side white/blue pair stays to their left through the fixed strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d20",
+          "right": "66-404-d22",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d23",
+          "right": "66-404-d27",
+          "relation": "same",
+          "visual_basis": "Isolated yellow-clothed person near the left penalty arc walks slowly right throughout the strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d23",
+          "right": "66-404-d3",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d24",
+          "right": "66-404-d28",
+          "relation": "same",
+          "visual_basis": "Partial lower-leg box belongs to the isolated blue player also boxed as start d25; no nearby competing person occurs in the strip.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d24",
+          "right": "66-404-d2",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d25",
+          "right": "66-404-d28",
+          "relation": "same",
+          "visual_basis": "Isolated blue player left of the center circle moves right throughout the strip; endpoint upper-body duplicate d9 belongs to d28.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d25",
+          "right": "66-404-d2",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d26",
+          "right": "66-404-d7",
+          "relation": "same",
+          "visual_basis": "Lower-body fragment of start d5, confirmed by the fixed strip around the same isolated center-circle player.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "66-374-d26",
+          "right": "66-404-d9",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d27",
+          "right": "66-404-d29",
+          "relation": "same",
+          "visual_basis": "Lower-leg fragment of start d18, confirmed by the fixed strip; endpoint d29 is that runner's lower-body box.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d27",
+          "right": "66-404-d22",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d28",
+          "right": "66-404-d31",
+          "relation": "same",
+          "visual_basis": "Red-clothed person in front of the right goal moves right continuously with no competing red person.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d28",
+          "right": "66-404-d32",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d29",
+          "right": "66-404-d32",
+          "relation": "same",
+          "visual_basis": "Isolated white player with visible 6 on the back walks right beneath the attacking group.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d29",
+          "right": "66-404-d34",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-374-d36",
+          "right": "66-404-d38",
+          "relation": "same",
+          "visual_basis": "Blue player with visible 21 on the back stays isolated near the near touchline; endpoint d30 is an upper-body duplicate of d38.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d36",
+          "right": "66-404-d32",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-374-d38",
+          "right": "66-404-d40",
+          "relation": "same",
+          "visual_basis": "Dark training-clothed person runs right along the near touchline, isolated from field players.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-374-d38",
+          "right": "66-404-d31",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d0",
+          "right": "66-716-d5",
+          "relation": "same",
+          "visual_basis": "Dark-top/light-shorts sideline person remains at the isolated railing position left of the blue/dark group.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d0",
+          "right": "66-716-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d1",
+          "right": "66-716-d1",
+          "relation": "same",
+          "visual_basis": "Blue sideline person stays between the two dark-clothed neighbors through the fixed source strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d1",
+          "right": "66-716-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d2",
+          "right": "66-716-d2",
+          "relation": "same",
+          "visual_basis": "Blue sideline person moves slightly left as the dark-clothed person approaches from behind; the blue person remains separately visible.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-686-d2",
+          "right": "66-716-d4",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-686-d3",
+          "right": "66-716-d4",
+          "relation": "same",
+          "visual_basis": "Dark-clothed sideline person walks right behind the nearby blue person and emerges separately to the right at the endpoint.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-686-d3",
+          "right": "66-716-d2",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-686-d4",
+          "right": "66-716-d0",
+          "relation": "same",
+          "visual_basis": "Yellow-clothed person near the left penalty area remains isolated and walks slightly right.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d4",
+          "right": "66-716-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d5",
+          "right": "66-716-d7",
+          "relation": "same",
+          "visual_basis": "Dark sideline person on the left of the blue person remains separate throughout the strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d5",
+          "right": "66-716-d1",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d6",
+          "right": "66-716-d3",
+          "relation": "same",
+          "visual_basis": "Dark/red-trim sideline person on the right of the blue person stays in place.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-686-d6",
+          "right": "66-716-d1",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-686-d7",
+          "right": "66-716-d6",
+          "relation": "same",
+          "visual_basis": "Dark-clothed person at the left of the railing group remains standing while another person walks left past him.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d7",
+          "right": "66-716-d5",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d8",
+          "right": "66-716-d8",
+          "relation": "same",
+          "visual_basis": "Light-clothed person on the steps beside the canopy remains visible in the same place.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-686-d8",
+          "right": "66-716-d4",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-686-d9",
+          "right": "66-716-d9",
+          "relation": "same",
+          "visual_basis": "Isolated blue player at the right edge of the center circle lowers the outstretched arm without another player crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d9",
+          "right": "66-716-d10",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d10",
+          "right": "66-716-d10",
+          "relation": "same",
+          "visual_basis": "Blue player near the far touchline walks slowly right, remaining well separated from the center-circle player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d10",
+          "right": "66-716-d11",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "66-686-d11",
+          "right": "66-716-d13",
+          "relation": "same",
+          "visual_basis": "White player with visible 11 on the back walks forward slowly below the far-side action.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d11",
+          "right": "66-716-d19",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d12",
+          "right": "66-716-d19",
+          "relation": "same",
+          "visual_basis": "White player left of the far-touchline blue player runs right past the blue player moving left; the white runner remains visible and distinct at the endpoint.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "66-686-d12",
+          "right": "66-716-d14",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d13",
+          "right": "66-716-d15",
+          "relation": "same",
+          "visual_basis": "Blue player with visible 7 on the back remains isolated and moves right below the overlapping far-side players.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d13",
+          "right": "66-716-d18",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d15",
+          "right": "66-716-d18",
+          "relation": "same",
+          "visual_basis": "White player nearest the far stands in the right group stays left of the overlapping blue/white pair and remains separately visible.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d15",
+          "right": "66-716-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d17",
+          "right": "66-716-d14",
+          "relation": "same",
+          "visual_basis": "Blue player in front of the far-touchline action moves left as the other blue player and white runner move right; no identity exchange is needed in the visible source sequence.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d17",
+          "right": "66-716-d16",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d18",
+          "right": "66-716-d16",
+          "relation": "same",
+          "visual_basis": "Blue player initially beside the far touchline accelerates right, remaining ahead of the chasing white player; endpoint d16 is separately visible.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "66-686-d18",
+          "right": "66-716-d14",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d20",
+          "right": "66-716-d12",
+          "relation": "same",
+          "visual_basis": "White player initially in front of the far-side blue player moves left/down and stays separately visible below him at the endpoint.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d20",
+          "right": "66-716-d18",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d21",
+          "right": "66-716-d20",
+          "relation": "same",
+          "visual_basis": "Dark-clothed field person stands below the far-side group, separated from the blue/white players.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d21",
+          "right": "66-716-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d22",
+          "right": "66-716-d25",
+          "relation": "same",
+          "visual_basis": "White defender near the penalty arc is crossed by a blue player; the full source strip shows the white player separately on the right at the endpoint.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "66-686-d22",
+          "right": "66-716-d26",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": true,
+          "passed": false
+        },
+        {
+          "left": "66-686-d23",
+          "right": "66-716-d24",
+          "relation": "same",
+          "visual_basis": "White player at the left edge of the penalty area takes a small step and stays isolated above white 12.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d23",
+          "right": "66-716-d28",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d24",
+          "right": "66-716-d23",
+          "relation": "same",
+          "visual_basis": "Central white defender in front of the right goal stays between the crossing pair and the farther-right white player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d24",
+          "right": "66-716-d25",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d25",
+          "right": "66-716-d27",
+          "relation": "same",
+          "visual_basis": "Blue player with visible 21 on the back remains isolated below the action throughout the strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d25",
+          "right": "66-716-d15",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d26",
+          "right": "66-716-d28",
+          "relation": "same",
+          "visual_basis": "White player with visible 12 on the back stays below the penalty-area defenders with no crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d26",
+          "right": "66-716-d24",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d27",
+          "right": "66-716-d30",
+          "relation": "same",
+          "visual_basis": "Rightmost white defender remains between the blue 36 player and red-clothed goalkeeper area.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d27",
+          "right": "66-716-d29",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d28",
+          "right": "66-716-d29",
+          "relation": "same",
+          "visual_basis": "Blue player with visible 36 on the back remains isolated near the penalty-area line.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d28",
+          "right": "66-716-d23",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d29",
+          "right": "66-716-d26",
+          "relation": "same",
+          "visual_basis": "Start is the lower-body fragment of the blue player beside the white defender; the strip follows the blue player crossing left of that defender to endpoint d26.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "66-686-d29",
+          "right": "66-716-d23",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d30",
+          "right": "66-716-d25",
+          "relation": "same",
+          "visual_basis": "Lower-leg duplicate of the white defender in start d22; the strip keeps the legs connected to that white body through the crossing.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "66-686-d30",
+          "right": "66-716-d26",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d31",
+          "right": "66-716-d24",
+          "relation": "same",
+          "visual_basis": "Lower-leg duplicate of start d23, confirmed by the fixed strip of the isolated white defender.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "66-686-d31",
+          "right": "66-716-d28",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "66-686-d32",
+          "right": "66-716-d31",
+          "relation": "same",
+          "visual_basis": "Red-clothed person beside the right goal remains isolated with no competing red person.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "66-686-d32",
+          "right": "66-716-d30",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        }
+      ]
+    },
+    "night": {
+      "original_counts": {
+        "same_pairs": 53,
+        "same_correct": 49,
+        "different_pairs": 53,
+        "different_correct": 49,
+        "different_uncovered": 4,
+        "false_split": 1,
+        "same_uncovered": 3
+      },
+      "posthoc_counts": {
+        "same_pairs": 53,
+        "same_correct": 49,
+        "different_pairs": 53,
+        "different_correct": 49,
+        "different_uncovered": 4,
+        "false_split": 1,
+        "same_uncovered": 3
+      },
+      "scores_identical_across_three_methods": true,
+      "posthoc_outcomes": [
+        {
+          "left": "78-374-d2",
+          "right": "78-404-d4",
+          "relation": "same",
+          "visual_basis": "Isolated white player left of the right-hand group remains separate and moves slightly left.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-374-d2",
+          "right": "78-404-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "78-374-d4",
+          "right": "78-404-d6",
+          "relation": "same",
+          "visual_basis": "Rightmost isolated blue player remains separate throughout the strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-374-d4",
+          "right": "78-404-d8",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-374-d9",
+          "right": "78-404-d5",
+          "relation": "same",
+          "visual_basis": "White player behind the left edge of the right-hand group stays behind the two blue players and remains visible at endpoint d5.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-374-d9",
+          "right": "78-404-d8",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-374-d10",
+          "right": "78-404-d11",
+          "relation": "same",
+          "visual_basis": "Bent white player near the left goal remains bent and separate behind the moving foreground players.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-374-d10",
+          "right": "78-404-d10",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-374-d12",
+          "right": "78-404-d14",
+          "relation": "same",
+          "visual_basis": "Foreground white player near the center circle stays in place, separate from the white player behind him.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-374-d12",
+          "right": "78-404-d13",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-374-d13",
+          "right": "78-404-d15",
+          "relation": "same",
+          "visual_basis": "Isolated white player left of the two central white players steps slowly without a crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-374-d13",
+          "right": "78-404-d13",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-374-d14",
+          "right": "78-404-d13",
+          "relation": "same",
+          "visual_basis": "Rear white player above the foreground white player stays at that position throughout the strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-374-d14",
+          "right": "78-404-d14",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-374-d15",
+          "right": "78-404-d16",
+          "relation": "same",
+          "visual_basis": "Isolated red-clothed person remains separate and turns toward the camera.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-374-d15",
+          "right": "78-404-d14",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-686-d2",
+          "right": "78-716-d1",
+          "relation": "same",
+          "visual_basis": "White player between the left and right groups remains separate with a raised arm.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-686-d2",
+          "right": "78-716-d6",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-686-d5",
+          "right": "78-716-d4",
+          "relation": "same",
+          "visual_basis": "Rightmost blue player remains isolated while the nearby group moves slightly left.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-686-d5",
+          "right": "78-716-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-686-d7",
+          "right": "78-716-d6",
+          "relation": "same",
+          "visual_basis": "Blue player between the isolated white player and overlapping right group remains distinct.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-686-d7",
+          "right": "78-716-d1",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-686-d8",
+          "right": "78-716-d11",
+          "relation": "same",
+          "visual_basis": "Foreground white player at the center-circle edge remains separate throughout the strip.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-686-d8",
+          "right": "78-716-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-686-d9",
+          "right": "78-716-d12",
+          "relation": "same",
+          "visual_basis": "Rear/right white player of the central trio remains distinct with no crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-686-d9",
+          "right": "78-716-d13",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-686-d10",
+          "right": "78-716-d13",
+          "relation": "same",
+          "visual_basis": "Left white player of the central trio remains isolated with no crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-686-d10",
+          "right": "78-716-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "78-686-d11",
+          "right": "78-716-d14",
+          "relation": "same",
+          "visual_basis": "Isolated red-clothed person remains stationary and separate.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "78-686-d11",
+          "right": "78-716-d11",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d1",
+          "right": "84-404-d15",
+          "relation": "same",
+          "visual_basis": "White player in front of the right-side blue player takes small steps forward without crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d1",
+          "right": "84-404-d6",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d2",
+          "right": "84-404-d6",
+          "relation": "same",
+          "visual_basis": "White player immediately right of the left blue player moves forward while the blue neighbor remains left.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d2",
+          "right": "84-404-d8",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d3",
+          "right": "84-404-d8",
+          "relation": "same",
+          "visual_basis": "Blue player left of start white d2 moves slowly without exchanging positions.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d3",
+          "right": "84-404-d6",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d4",
+          "right": "84-404-d11",
+          "relation": "same",
+          "visual_basis": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+          "linked": false,
+          "passed": false
+        },
+        {
+          "left": "84-374-d4",
+          "right": "84-404-d4",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d5",
+          "right": "84-404-d3",
+          "relation": "same",
+          "visual_basis": "White player in front of the left/back blue player remains visible in the same relative position.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d5",
+          "right": "84-404-d5",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d6",
+          "right": "84-404-d10",
+          "relation": "same",
+          "visual_basis": "Blue player behind start white d5 stays behind him with no crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d6",
+          "right": "84-404-d3",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d8",
+          "right": "84-404-d4",
+          "relation": "same",
+          "visual_basis": "Blue player left of the bent white player stays to the left while the ball carrier passes in front.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d8",
+          "right": "84-404-d2",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d9",
+          "right": "84-404-d2",
+          "relation": "same",
+          "visual_basis": "Bent white player in the left group straightens and moves slowly, staying between the blue players.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d9",
+          "right": "84-404-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d10",
+          "right": "84-404-d12",
+          "relation": "same",
+          "visual_basis": "Near-side white player just left of the dark-clothed field person stays distinct throughout.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d10",
+          "right": "84-404-d15",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d11",
+          "right": "84-404-d14",
+          "relation": "same",
+          "visual_basis": "Foreground white player of the central trio runs right, staying in front of the other white player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d11",
+          "right": "84-404-d13",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d12",
+          "right": "84-404-d13",
+          "relation": "same",
+          "visual_basis": "Blue player left of the central two white players runs right without passing either white player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d12",
+          "right": "84-404-d19",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d13",
+          "right": "84-404-d16",
+          "relation": "same",
+          "visual_basis": "Rear white player of the central trio moves right, remaining behind the foreground white player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d13",
+          "right": "84-404-d13",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d14",
+          "right": "84-404-d17",
+          "relation": "same",
+          "visual_basis": "Blue player behind start white d1 remains separate while both take small steps.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d14",
+          "right": "84-404-d15",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d15",
+          "right": "84-404-d18",
+          "relation": "same",
+          "visual_basis": "White player in front of the farthest right-side blue player remains separately visible.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d15",
+          "right": "84-404-d17",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d16",
+          "right": "84-404-d19",
+          "relation": "same",
+          "visual_basis": "Isolated far-side white player accelerates right with no nearby crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d16",
+          "right": "84-404-d20",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d17",
+          "right": "84-404-d20",
+          "relation": "same",
+          "visual_basis": "Farthest right-side blue player remains behind the white player in front, with a separate visible body.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d17",
+          "right": "84-404-d17",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d18",
+          "right": "84-404-d21",
+          "relation": "same",
+          "visual_basis": "Dark-clothed field person near the center-circle edge walks slowly, separately from nearby white players.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d18",
+          "right": "84-404-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-374-d19",
+          "right": "84-404-d22",
+          "relation": "same",
+          "visual_basis": "Isolated red-clothed person remains separate and takes small steps.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-374-d19",
+          "right": "84-404-d14",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d1",
+          "right": "84-716-d2",
+          "relation": "same",
+          "visual_basis": "White player beside the near-side blue runner moves right while remaining behind/left of him.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d1",
+          "right": "84-716-d4",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d2",
+          "right": "84-716-d4",
+          "relation": "same",
+          "visual_basis": "Blue runner beside start white d1 moves ahead/right and stays separate.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "84-686-d2",
+          "right": "84-716-d2",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "84-686-d3",
+          "right": "84-716-d5",
+          "relation": "same",
+          "visual_basis": "Isolated white runner crosses the center-circle edge to the right, in front of the dark field person; the overview confirms his endpoint beyond the fixed crop edge.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d3",
+          "right": "84-716-d7",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d4",
+          "right": "84-716-d6",
+          "relation": "same",
+          "visual_basis": "Far-side white player walks right while the blue runner approaches from the left; separate endpoint body remains visible.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d4",
+          "right": "84-716-d11",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d5",
+          "right": "84-716-d3",
+          "relation": "same",
+          "visual_basis": "Blue player behind the dark field person runs right, is briefly obscured, then emerges to his right at the endpoint.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d5",
+          "right": "84-716-d9",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d6",
+          "right": "84-716-d16",
+          "relation": "same",
+          "visual_basis": "White runner crosses the bright central turf toward the right, remaining ahead of the following blue player.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d6",
+          "right": "84-716-d8",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d7",
+          "right": "84-716-d12",
+          "relation": "same",
+          "visual_basis": "Far-side blue player moves right with the white player approaching from the left, retaining a separate body.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d7",
+          "right": "84-716-d9",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d8",
+          "right": "84-716-d9",
+          "relation": "same",
+          "visual_basis": "Far-side white runner approaches the blue player to his right but remains separately visible at the endpoint.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d8",
+          "right": "84-716-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d9",
+          "right": "84-716-d10",
+          "relation": "same",
+          "visual_basis": "Far-side blue player initially beside the white runner remains behind/left as the white runner advances right.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d9",
+          "right": "84-716-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d10",
+          "right": "84-716-d8",
+          "relation": "same",
+          "visual_basis": "Far-side white runner moves right away from the neighboring blue player and stays separately visible.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d10",
+          "right": "84-716-d12",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d12",
+          "right": "84-716-d11",
+          "relation": "same",
+          "visual_basis": "Far-left blue player approaches the white player on his right; endpoint still shows the blue body separately.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d12",
+          "right": "84-716-d2",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d13",
+          "right": "84-716-d15",
+          "relation": "same",
+          "visual_basis": "Narrow partial box of the far-side blue player; source strip follows this same blue runner to the right.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "84-686-d13",
+          "right": "84-716-d18",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "84-686-d14",
+          "right": "84-716-d13",
+          "relation": "same",
+          "visual_basis": "Isolated blue runner with visible 2 on the back advances right below the other players.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d14",
+          "right": "84-716-d17",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d15",
+          "right": "84-716-d20",
+          "relation": "same",
+          "visual_basis": "Near-right white runner continues right ahead of blue 2; the full endpoint overview confirms his box beyond the fixed strip edge.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d15",
+          "right": "84-716-d14",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d16",
+          "right": "84-716-d14",
+          "relation": "same",
+          "visual_basis": "White runner ahead of the central group approaches the blue ball carrier near the right side.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d16",
+          "right": "84-716-d19",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d17",
+          "right": "84-716-d17",
+          "relation": "same",
+          "visual_basis": "Right/lower white player of the far-side white pair runs right without crossing his teammate.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d17",
+          "right": "84-716-d15",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d18",
+          "right": "84-716-d19",
+          "relation": "same",
+          "visual_basis": "Left/upper white player of the far-side pair runs right, staying behind his teammate.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d18",
+          "right": "84-716-d15",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d19",
+          "right": "84-716-d18",
+          "relation": "same",
+          "visual_basis": "Blue runner above the bright central turf moves right, staying behind the leading white runner.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d19",
+          "right": "84-716-d16",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d21",
+          "right": "84-716-d7",
+          "relation": "same",
+          "visual_basis": "Isolated near-side blue player with visible 35 moves right without another player crossing.",
+          "linked": true,
+          "passed": true
+        },
+        {
+          "left": "84-686-d21",
+          "right": "84-716-d4",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": false,
+          "passed": true
+        },
+        {
+          "left": "84-686-d22",
+          "right": "84-716-d21",
+          "relation": "same",
+          "visual_basis": "Dark-clothed near-touchline runner moves right along the line, separately from the stationary sideline person.",
+          "linked": null,
+          "passed": false
+        },
+        {
+          "left": "84-686-d22",
+          "right": "84-716-d22",
+          "relation": "different",
+          "visual_basis": "Explicit source endpoint person labels differ; nearest clearly different endpoint by frozen distance rule.",
+          "linked": null,
+          "passed": false
+        }
+      ]
+    }
+  },
+  "endpoint_description_errata": {
+    "66-404-d16": "White player by the lower center-circle arc, not the foremost right-side runner.",
+    "66-404-d18": "Foremost right-side white runner, not the lower center-circle player.",
+    "66-404-d34": "Lower-leg duplicate of d18 remains correct; it belongs to start d15, not start d13. Endpoint physical-person membership is unchanged."
+  },
+  "decision": "No promotion remains: sample outputs are identical and both consensus methods emit zero boundaries. Label corrections improve all three methods equally and provide no positive candidate correction.",
+  "limitations": [
+    "These posthoc scores are diagnostic only, not independent or blind accuracy evidence.",
+    "Only the 14 originally wrong relations were re-reviewed in this pass; other correct, uncovered and uncertain labels have not received an independent audit.",
+    "Do not repeat the original 13 false-split count as a verified tracker-error count; two are confirmed source-label index errors.",
+    "Future acceptance still needs fresh frozen controls and independent source adjudication."
+  ]
+}

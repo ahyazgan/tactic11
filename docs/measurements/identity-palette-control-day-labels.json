@@ -1,0 +1,4818 @@
+{
+  "protocol": "docs/PALET-UZLASISI-KONTROL-PLANI.md",
+  "reviewer": "Codex single AI source-image reviewer; no tracker predictions shown",
+  "independently_adjudicated": false,
+  "predictions_visible_during_labeling": false,
+  "writer": {
+    "path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\palette_control_label_writer_v1.py",
+    "sha256": "f2d7c5e229faf03fde07a3801bf500b9bc06f8bb740c58c6c7d15755b7e7b2f5"
+  },
+  "limitations": "Sparse same-match temporal control, not independent match validation or full-video HOTA/IDF1. Single AI reviewer, no human adjudication. Mixed or unclear boxes withheld; explicit missing endpoint coverage.",
+  "review_drafts": [
+    {
+      "path": "docs/measurements/identity-palette-control-day64-source-review.json",
+      "sha256": "9a1ef0fd6c0f66a137be84518bdfd20a26340d69ea88be751493198081b4de7d"
+    },
+    {
+      "path": "docs/measurements/identity-palette-control-day66-source-review.json",
+      "sha256": "0c041fee51f82cbb7443a3be310a95e48b1d82a97bf12f691533c4faf095f9b1"
+    }
+  ],
+  "source_packet_sha256": {
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source-labels64-v1\\labels.json": "f48161cf24b8bcb23cf457b4b6d80694bfd240f55ae7d68239f96a54278f5e10",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source-labels66-v1\\labels.json": "be13c2c75d4bc4fb2ea122cfad81658e7953370a9faa21d4d44ba2bfdbdd9dd0"
+  },
+  "archived_at_utc": "2026-10-09T14:45:13.495491+00:00",
+  "input_sha256": {
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0064.json": "9116348cf71a1a790b9dff77d79153f10808a02ed3810b96cc08ca81fb79d73d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4": "0c98e12ded003e8cd7a37680dd0bebf0d404a6f3dd81c6d0e8ac8c3292bf2c9c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0066.json": "9ea28f4ec1de868dde62780568a2c0c2ecc97b65d64adc1c6a061dcc032c6e6f",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4": "d112b1d93220971374c39563176d0335e9da431a38f98bf8eaf69b481a0e5765"
+  },
+  "review_artifact_sha256": {
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0374-overview.jpg": "2509b35b4bd4b5383aeb09492d47c0ab29c66cb9f609eda0364205cc05a0705a",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0374-page01.jpg": "b5f90ec1c096b0c930480e6616d1369e69d33fad73ed0a2799bf15769b32b6b1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0374-page02.jpg": "e104a141858bc27db88fc41897f4b7ea65a25aa4e6aa595a6f2c31552ecb1860",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0374-page03.jpg": "b6de1269cc3c4006aca02b95c9af3b0a80007e737723bd55daecd1dcc722d59b",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0404-overview.jpg": "fea80196984ad71786bb81de3fb5d129e7fe7dfd16e32a9b78b7ad70e28dadfb",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0404-page01.jpg": "0c906aa071632c6fd59846dd2c55de725293b4c359a47bad4ad5b8c566cb7d0e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0404-page02.jpg": "8bf495b1d12a395454a7defc11ee9c50b13a2aaaefc0c3f27bea2a3fbe7ce3fb",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0686-overview.jpg": "c73938410ed773ede4efd10605a527e0080141bcd5439373d5952ce1f24ff545",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0686-page01.jpg": "dc325837edd788b134c16daa72a6b3e0c84a1c9609ad504e7fbe3746c9e4fe02",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0686-page02.jpg": "f8d700dab678a912eb144721724d36506685d1b229ded5c7049fe42dbe2859b1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0686-page03.jpg": "78314f31c9e1bd6f9a980b9c4548ee640c7575d5d66ef54a2cf989d551f93746",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0716-overview.jpg": "40cf471a3b824975dd1aa9d60384b1634d1e74d60ba3b11732d66a9db349df34",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0716-page01.jpg": "9b608c0b70dc559b15a590b92a59d370701a9d95635961ce981d223a73a59c29",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0716-page02.jpg": "a8f814ccd1a2aaab293f5564d00f3c08bd98eb0229b13b7ff9599b32675cd90e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\s0064-f0716-page03.jpg": "cd188eb271fc5499a23e132f33a96f7cf9f4521f1b5fe49343d9c0b0c4e94bdc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d0.jpg": "3c6f2e4cc86bcff427a7b57ef3498405148b59447fc83dbecd5597ba70bb5cdf",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d1.jpg": "5af37d5701d608ae22f677ae676f0e46fda16ea939bae16a051c538e386cbee3",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d2.jpg": "489edd997c83c7d53940490a309c50cc271f7f3487dcb784255092e23527efce",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d3.jpg": "2b8a7be9f1cec66c481608bf93f2f932c3bd6757cb7e8da361e2c09ad9157847",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d4.jpg": "40c242021f1a6370b6fea89353a34ec13e0be121ca99a925f58f80046ad83b25",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d5.jpg": "07562758534fbab076fb4ad57ffebf766971a5435f2c79b310bb12e0b4c9145e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d6.jpg": "eac4ed89a3cc19a8a19671394a8873f3d569852bfff6e381cecea168b553cd28",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d7.jpg": "bc773c75cc4ed1a1792f93d4ed4e01ee67312c139fab9c3bf82292f5d6e2a9f1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d8.jpg": "cdc4ed70f235a403ea072a48b2625e5e2882b33eaa6b47a17d780b6205fb92bf",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d9.jpg": "ed8e045dde3feeeccf24c85addece35d3ac29ffcf5f7ce802bed7d9d4edeb3f7",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d10.jpg": "9315fe1f67541dbd2b9d11fccb57e399c5fb50b4ebfd6d64df41681e237abaae",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d11.jpg": "c713af89f400a2331af49d9f67ac9be9df59097808d2d320fb05ec07cc545b3b",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d12.jpg": "a7a040b8439d111335fbd244d11f4e3190262c47fd2af13bde2b64a587f2ca7f",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d13.jpg": "60e0f08d034983ddddb91d394806fa6619887fd0aa1487c1f8c65c931babec79",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d14.jpg": "0ac7774f6baeaaaf6216dccad77c783f30715636df696117f348692cab9f603d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d15.jpg": "ac4838710badb24a08679f5c6d621ad91ad153f3dfb8bf7d064bb17a2532516e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d16.jpg": "36650149b28b26573f1e2a27aa58a0eb388ea8320b1c7fcba94f7ba81e4dc3e7",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d17.jpg": "3663d4240754c376b563f8b095a4031c97286280fd38a54c9c1df70baebc96c3",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d18.jpg": "ad9f35880809486d8f7d898d1c5e0948161fd7dd6f900858391184fc994525cf",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d19.jpg": "888c434dc1beec30ec7da1fa652a279364c62cb25dd51c10cb68bd8ed6d334bd",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d20.jpg": "108be2929f00d106f1d6aec88a827e4470a7fc4834310bcc4f8d709ce73de633",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d21.jpg": "6216fd59fd1c4dc6bd14b314caec401213b10d6a2ee0b1b812883121b696537c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d22.jpg": "d3a843fbd2c9bb72949e01b44dd0f7ce95805964bea86970271370ffe5fee789",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d23.jpg": "3cefc418282dd43d91c511698655323ba454a916e81d9d7fe6ade18a701cb96c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d24.jpg": "e08fa1a39078076e09c7fa1a5a76ac1c1241f3af33fcdfbd306ad278fc4f19e6",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d25.jpg": "0b8f678847447bb0ac6dd891c5ec4d5e77c2a759ce0039609563484542982987",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d26.jpg": "c92c37b54f0d8dfd9c77560e61c3e9abf65327cd02181219c5a21e430907fe85",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d27.jpg": "f89a097b2561a13361d8ead6c8bfc6fcc81558702f29e331fd97503f7ff8d12d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d28.jpg": "c25f631e9ae92994c25dd298764f9262fd402192d1e1dee59567bf4dfc2297b9",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d29.jpg": "876cbf809251c10d63c422f8f55894718b32ab14869dc16aede42d453ab47eae",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d30.jpg": "f4e01efac800ef36ca018134107eeb1dc5c1d360ef0939b1d153d56035998936",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d31.jpg": "b8854ba147dadf64a0339d2c8a06c504428ce762cf18ede0bd14902bdec00208",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d32.jpg": "caaf8265f395fc7b485c32d7d1dfd3c357eed6a514e8ab807c9386448edbd72d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d33.jpg": "60b8b9b396ea32d39ad75a3b3174e60a90648d598e979a83570631081547c120",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d34.jpg": "ee8bc71c9ded6c9258e6a7dce49ad333194c9183f1147005ab622081690d753c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d35.jpg": "7874434381d960e5a5661fec824c689565193fb92fe1849a6b69e1152f674427",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d36.jpg": "e76d923f583f2b84f856eb8135e72a6fb6ca716570d5acf0e181275557eb4fd0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d37.jpg": "9552baf30d48e8966613d8f17b1fff8b04fccbf1b276529dd1f47c2bb8a8265c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d38.jpg": "3a56fb4b5d7be43e61d4750f5c7ea111970cc42cb24ffbad2d5e941cf256c0dc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d39.jpg": "2878081fbea9aec07b265264ca7ef74f1a56a9ac732589313451a5d8c4a7c160",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d40.jpg": "b9fa87d8563c9c3983761eb890fbb0ebe4f78128293b82492dad6f3ffc362f6a",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d41.jpg": "b0fe28dbe0e2ad49b4c5fcd558f507f33cddda7a4a4ad48c65b9503239aeab85",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d42.jpg": "79ef6ae408fb30b9fb2d0702f7f939d83de8b2236c6ff02bc2b2722a4dd2e24e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d43.jpg": "6e2bbf391cf1ab29c9f24733bb1418e633bed08b5b9b1453646fd7c4661e8429",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d44.jpg": "e16e8520c4c6e1372835bbfa10f7375a16b45d52dd07b10f2154b4b77eccd5f1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d45.jpg": "9fc0706094ae1a15f7ea899d628995702790e48fd24f8dde4d3926aaf4b6419d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d46.jpg": "5ac57fa081ea7c9dd6475e95abb5c9b7cc33ed588816801b0f0bcf7d403ef080",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d47.jpg": "7040f724d6dc576973b3ec702f54dd5bcbe69258d90e1c7690808aeaded25d46",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-374-d48.jpg": "314e56d378d9748d79e7741fb41b650176f4ae9c993ed8ce31fa08149c81cb7e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d0.jpg": "79832569236fbb5bca5653a23dc038e655d3f95f153d28386f33820f242fdd74",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d1.jpg": "a9d860b5cd6928eacecde70cf1c58e1c6b77781253a1a08de6cec07877c6517e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d2.jpg": "4abc6944abbe4ffc357a65a484fcb0a9e1997014409b5c341e6d2a36c1c39b70",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d3.jpg": "40a6e49f4cfa621935d2a202272be5b1f99d3b8dc83e9b7babfa14337691f2be",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d4.jpg": "5cb66ac25d28c99ed071b32335d66c469e9b753fd78f2704ca78472ffaf26499",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d5.jpg": "8d783b596db760579049a73eb5b443d75e5413aa4a3707eb121beb454b3b22c1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d6.jpg": "9401cacdd64097465f98257fdaf4d7c75172c2ea785ad5507f551060c11b082f",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d7.jpg": "cc3a011a905330b95fd888f4d1eb97819e674a22925e60033b67709ef2c34740",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d8.jpg": "c298e0cfa2cc62341c4ed16b2d9ac67997135f1926f01256daf43770cdc0d247",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d9.jpg": "29eb4fd6e82d1b8a78876bcc6b7c8b0368dd031d3f7336faebc9cf15c74db6dd",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d10.jpg": "b2a3ffcb2d3d22656c6065560379c881af43f03fdd5452683595186944a188dc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d11.jpg": "ab2bf02ab67a43dd6a28ce4957f6f02ff76dbc17fa489c18c784a29a076f1ade",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d12.jpg": "a2a08e8f66dc72019bd8eb95f295e31063678e808896d7a539f8e8b3b8929412",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d13.jpg": "33eb9c99f618e420096c70684311df16242413eb44499cc3e09517e0d74b5b22",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d14.jpg": "3e8e37f9ca3d2a56768517f44e90fb07da823e8be87ba412b498ad587ae69993",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d15.jpg": "7ab695480831497c3b66c9a6ce6d47887b70885f80cc20a6622600f3398f6eae",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d16.jpg": "1f7edc6b71d083d20e65b221221b6e9e4703efd2ca28246532ef62a166b3c681",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d17.jpg": "caf2bfcf8cff916c45f9e27e0be7a72ad07a97eafdd65fc83a2b9e68731aefc0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d18.jpg": "7f2d70f12b1bb7cc3770c635cceef8ad6ebe736b8bef148fdb41f141a6c6efcb",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d19.jpg": "03795223d2af8e72582dfa0ef7d3b61f35ae16a3eb51af85820773d1953708ca",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d20.jpg": "0330069110c1585b445f40eef83bd027f6ef73139fa5682af7db0b4f8cd87db9",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d21.jpg": "8813576bf68b74c297bb41f56dc3ee72747b1880f6148626bae93482b3a51b41",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d22.jpg": "1999ac451753b1aa4e62b52ae7ab124369ea9b8fb47dbceb497881c92b8d7a0a",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d23.jpg": "7d72e18f53a50503fb41d43d2b7019e2dd0d120fa72013d4f08805febc7e76dc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d24.jpg": "6e0f5d1edafd07c140065cdcd57304a5cdf3ce1cc3c113dfec752392556bc88c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d25.jpg": "dc8490527b88d3e6bdbb878641f165ea5c3df02f5bc06f187f32e27fbd4b10d8",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d26.jpg": "a65e0056b13124ca136ce1a4b9860ecfd70c4d43f54b5c281e99e8dc118cf62c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d27.jpg": "0a89611f1d76cbb29cce048c2fafc4435e167d664bef7302fa476e7524ed1eca",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d28.jpg": "8110830716781779405c868c88f79b8716860cf6d7ff31b02df0963c01d394da",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d29.jpg": "4b6364dd3853c7470e0d143a08408b46a9b8fd724348ee538ba167600527ff7c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d30.jpg": "7175ab0405c6a2851e2a35172b27bdd8770ef439a2bb9d2fa45e29d0b58fbd7b",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d31.jpg": "bc0791b746df8c44cac6491d9357ca067a5200d03f5f5226954485d64fb5097e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d32.jpg": "2312c9811c087ab5481dcc17ba8d27d5e62a3f38bb7a197070c9f19471bbf2d5",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d33.jpg": "12afc062177d3cfaacc25c8b2c296f20bb818d36f3aab9250fbf74f7ed3d6f16",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d34.jpg": "b2841381653899367c9f0702895de1f983cfef6b1c6299faef1a3fc839853ba0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d35.jpg": "f373fcc78655f46b624facebb93faef77addfdb126dfb505c867ab8f5c578d84",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d36.jpg": "c9baca8f572ca61c8373dec628c16e24420f0d4e426357ff400b78aa953ae7ae",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d37.jpg": "a1ff249a68d11c1803f6bf1b5f2d6d621ef9bd5e3983ba7b66ad5ab6e46d08b6",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d38.jpg": "348e46a31da9e6a38ad3ecc20765bea090a6abf300c5b249df95c3bd00b3b092",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d39.jpg": "718a8aa7b1e8083bcb4922bc53d36b8933c018171faa99f748c6540f91713427",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d40.jpg": "cb012f4ec7276011d8cfe23987737913672cd97341da6e5473c6141855cebeef",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d41.jpg": "5f56bf8d0c67d5dc360e762ee94ce7c6c353ee0ac2ead84925a478a80e0b8074",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d42.jpg": "a8b469032d1d29f65d6f334e91c5078e1f2809cb766e1bb968724b8e863aa5e4",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d43.jpg": "7295472892ae393a1aac4023b8f9c8819f876682c18adb382584e7cadf7426e9",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d44.jpg": "a6096f5ee5466c669a4da3750e1e8d08ffc3382097315793e50f9548c455f201",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d45.jpg": "19eefb954f45cadedf2c6b6197da77e5d069b7da9dec9b06428b27805927a4dd",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d46.jpg": "c159137fbf85c3fe4f14e9519a3ac4be35865b9b936cdb31255975c94cb23c5c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d47.jpg": "a056bf1de0fe6883027f6b984e08eeb83e238f5019aa4c26a6f630537f0bf26c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d48.jpg": "b2c1a25c55a2db307408a4b98d3121d866ddee3d6dcaa38b2d9aefc28c5c5d25",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d49.jpg": "e8ad8d9d81e5af342c11e5f227f8cd3b38e22c2923fe243c84117f01db595abc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d50.jpg": "c6e7d39be3ff567c6d8c8b2cae93b29f19af66693f033cd00e7ac23b9b4f4686",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d51.jpg": "cc19cfd4a1c09e68630d8be1318cc9818905fea7b30e8a5c395a6ee588e64446",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d52.jpg": "a7ab234ad3b57b8548fa9bf9a09878fed5de65d106600721fc2be4d8dc5f2685",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review64\\association-64-686-d53.jpg": "78f01acafa8e3dc416871f312fd3d89a672bed39851a0a346c09f1c70996645e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0374-overview.jpg": "fba3193dac1ecceb01f84f46e1dd1080232529abafdf3d908dbce4726b90e699",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0374-page01.jpg": "8d424f9396fe78179837d0bcd4f90cb495d6dba1be793f428049cdfa315316f7",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0374-page02.jpg": "7a51d27a8806da0bc190929362970bae1083694ec5d6fbe6c11ba42b2d7f7167",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0404-overview.jpg": "3fc2ddb597f2ce6d21a98d366d619c60824966c25a93c8d41ed5958319bbe383",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0404-page01.jpg": "e9f737ccc8b99d7fb26994890556819e09f886696ec250043ec09c06004d8519",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0404-page02.jpg": "aefa37873aad8525047263a47adf3f7267e75a18768a443c0775eafd6a0804c4",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0404-page03.jpg": "8a2df3f7803b61449598fd17068882b79e3ac698808625c698044fbcf336da3e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0686-overview.jpg": "5c3a2a119de162bea12d944f68c0f513c8cb02b9b0d61deb7be636f52e4d19b1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0686-page01.jpg": "3f75b8b9a8fd8b9c7f867a54cd87731621059f7188e0b12c022fdf938976efea",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0686-page02.jpg": "d77061f1508daddf4321cf490ec07a948a46d3afc172356a26a32cb72d97dbe3",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0716-overview.jpg": "c16b04f250086b19cd700b82f7e5bbaf512dd327a0ee9f074d093c684c044783",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0716-page01.jpg": "864e058a8bed981530e82bca906874642950606d2c92a9660162b6a48828cc65",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\s0066-f0716-page02.jpg": "716a8692148fd6ff1a64d0acf589de3d785238c9bf9cd7e772ef0f8cdd49efa9",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d0.jpg": "e6aa8af17ac25f45810673734c44263ac9c8b0e5dc5447952e6bc962097ce925",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d1.jpg": "8c18e5a21a70c89c90f7bea71f864f2763eebde51c0a2e425fda17bea3011273",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d2.jpg": "663641f3148c03a148dae1de9b80c8816b79ddf79fedc64af41558c8949fba37",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d3.jpg": "2a777ec3c1cd4f5e80b6c0a18940a924ece0e8d1093b0dca154f39163df8c805",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d4.jpg": "a12aef81b1fedb966c1ec1a32a2cecee975b0eb7fb88f89ea619d07e2e68c5cc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d5.jpg": "ee330eb9a252a0e1905e7f4b801039ca76d8ec61de8ac2b5ea00f5fd740340c0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d6.jpg": "178ef96fd6cc2e6d898f3006aa6a65d3bfdd03888417209a5df3ad0a4b5d49e9",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d7.jpg": "587c6b74a1c4c4850572cced4d3f36a013b84e8df90f2a22662ca9ad95b7b9c5",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d8.jpg": "b0ede0c0c3ec8d6dfb128bb8f131376e9b9b06d2e94988bf1a0e20b996d551cb",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d9.jpg": "51150b26fc74d5e5175bd3717b2ac8c2b62c745f0b0bc0f66a30e1ca72b2c72d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d10.jpg": "ed24f302621b9b36c0816887dcf8f1f1e9d9bd1dcc19b663385dc0909c130cf1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d11.jpg": "c45ace1971eef5c44388a91f336ba866f5ed150fded72dbe39e53a5f4a41894f",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d12.jpg": "6c8fd0c23dc451544d4d10fee0c5647817cfc092cd62abd9ebf3593b791324bb",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d13.jpg": "40727fac05f13115438b110eff5778e501ff91156bd27104b4a5f096af96e9e0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d14.jpg": "9b282a83a42efdb5d7a7f5f16cf439c457e8c4266c365ca541d25e6fa9d110ec",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d15.jpg": "2048583f5cbf43ab697dfa209380e2b669b09d1031bf54be532245a5c4aa2111",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d16.jpg": "98745c1ae8b7e6ff6919eea4121159d42cc017166b65a647db40d01ab6fa23c0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d17.jpg": "395e077e7780d14757769b7b9a19a7a41727c7a201251a89e4040d94de087f0f",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d18.jpg": "7726aa75f99bd5124e3ce22ec64f97c21d4902bcf5cb3f4d603becd8419bf631",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d19.jpg": "9a65cd976da3479cf2379d1c54c00450955bb224b3b2fafd84e5d8ce3c79afa6",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d20.jpg": "11f62cdcfb22f840abbe6f892eca676bef3d0849c5b13997b8b1306e096b82c1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d21.jpg": "e7781f2c037dd33f17a13a8f915580b7983ef46054bfb763883a7d4d8850e0c8",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d22.jpg": "5164e0e1fae74470530037c0aebdc2126932c66ac86619f538d5f33f8d3bf824",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d23.jpg": "789d0a3d8da48d979ebbc31b4e2ede1c1acb05bb76accef4e1a00ed79bdc6e92",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d24.jpg": "bf88272c221c586bb0bf88bc288b80119a2cd0129ade5b3f4dacc0783b9510b3",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d25.jpg": "b3b7cbf3332e89927db4cd59100c73e848f58f5bc34159b9cb629144da4459d9",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d26.jpg": "77a6623f60c2a71050d10e22dbdfbae4f220c646f75a19a9e4b75e7ac49c266d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d27.jpg": "b2567a28f48ef4ffdaedb73a4ecc488e685630b7a6dc1f80f878675e98d8db75",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d28.jpg": "192437e1ba0cc4bf55452154fda3c13d090536b2e0fbfee193dd28478f044026",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d29.jpg": "73258fa62e9fec909a425ec97951016f625836a63020c83b17bf823ab4685d29",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d30.jpg": "4bf777fd246789e65e32fc35ce8f724a6c9bc49bdd9e0f9ab30a1d4f32cd82ea",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d31.jpg": "0164e4412b9a37c01246867e6ebbfa8b0aa70d401716348bc8ad15f232a1795d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d32.jpg": "2e71309a06e6bc4ce9d39582b8c7929a0f30d59d275963beb7e521538dee705a",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d33.jpg": "d7b0494d3dddbcb60e4b78c78cec887f82a39409462a1f910065fcd15ee2e632",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d34.jpg": "991b996c41cffebd91b55309706c3e136a96387c1b427f2fd2442d24d5604a83",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d35.jpg": "8eb500a399fc5b1830692715f66a17dafdbe0f2b4876cfc7518d86b40c0b475d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d36.jpg": "6688b4fd9d95c0c8cbbb2ba2ae246c06224b4ddb8eae5eff1ca580a4c4b77af7",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d37.jpg": "8f34c04b66b735e4c523b6fdcda6adb9ac426a1778f0b1fc971c1b6f8a76858f",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d38.jpg": "61551c2a8645c2bbafb943d893abc0e81f865cafea4e6993109420b0ed056e9e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d39.jpg": "f14292e9601a2e192398ddd1b3af0fb3b2cb42058cd8f573c05f82fe7081f9f8",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d40.jpg": "035e1734e0d68e08c2654f715204bc03b83a9c2a4abedfa2cff3c671cb03f843",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d41.jpg": "9c5906bc1dbc5324252302374f6b1b6f2827c518ae8afed7b3cb3b19b5f41eb7",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d42.jpg": "f18eb0b2effb717de37dab4e55b733159179cf41945473a04ea38394f7bc5d18",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d43.jpg": "3e5412f7f98f74a9419586bc9716b1d6bd477559c6173d4d616088004a982435",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d44.jpg": "1fcc017e6b884299ae8616781b9b55413b2faaf8a18a15293df2f0163550d3d4",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d45.jpg": "87e700b325cecd2111cd8d083cb8ef09bbd51344cdb06b6192e4bc19e639ecdc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d46.jpg": "d1aea12e7b9b9f2d4fcce36284d8642a82638e9cb7609a0a643e730201dd2ed4",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-374-d47.jpg": "5169d9d2d158f7ab0dae083736960a7f1abab22bc840897d1c821751a535ced2",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d0.jpg": "f751ad85ef0249f8200860c543c8080b3dad41c6fe7b73f195960322aa1785fc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d1.jpg": "2fe1e034f190a4832051fd268c6b01d92d38bba0c6e01fd6237d68f68e83b342",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d2.jpg": "9b9df99437561aa5f92510ce208d76b6128a7010fdf2aadbed643f4ca8349f41",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d3.jpg": "ed99d62a51e6682f96963993ad9014f2494cf66c2ef829d3032f0de71e78e3d6",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d4.jpg": "56c61e6dd2b2e692c5d46723b30a0fc03d194ced9d83a19fc521d6ee9418340b",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d5.jpg": "e46fd6731979ddf3dea7bae64ac9c8f33df88746b370b4b48408d4e26f628ffe",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d6.jpg": "b55bbdd1c36ff23a663288dae1b97c21f9808b471f4bf35cc2a3515671613162",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d7.jpg": "23fb5189966729162c0438cf786bee7dc06de8cd2e59487d97a84cbb39d428c7",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d8.jpg": "c34b9007d7e2d86eff5bad262696d8605e105f7719da9358b7f0128a1c7c4ab9",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d9.jpg": "82948c11be9a98fae7a45b43df87dc026542d05454ffc303aa750703158cf951",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d10.jpg": "24691e361ffcb195ed50a1b4e3baa2de8243984c5d36f8f220014807325dd1a5",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d11.jpg": "06b023504d926ca8169063f17305221823d1bb5393ec0dd021d9b28d5213de39",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d12.jpg": "dba9e4ae332f1d9822828dd8a2b4ed4e65a694c45cd9bf97dd285ef697bbf5d0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d13.jpg": "b960bf3728a438f2a7ab50d55f0be39750144e02cc0d3eef6c9f48ff814bcde8",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d14.jpg": "6e1f4c5d36581a5c0fb82804b98889599f7b5d8b92b78369c1b7e5ea317aab46",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d15.jpg": "cdcda916bf46716184562ed3c1571ad1f63b312c9a0961131eb8200ea182117a",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d16.jpg": "9a02ba3fc37fe6454b37da268c850ae75cba5f9059d1ccbb1be00a1e806811e6",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d17.jpg": "9aa8b3bbc7d9832496d2e48cc3da5feddc21d58b42cdceefc38aa1cc9a5a0b21",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d18.jpg": "2ac8b8f439ebf06c0b9a4b326cc89e41ffe3a5c7884348b4db5ebe521301c230",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d19.jpg": "361e4ac559865a824e3a177bee8b95aab6060f4d19a18a2451c9654eac3fe724",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d20.jpg": "ff741d5826cc29ce48ed13f8ab38cfca90f6bc94588bf597db366fcb96d4fc22",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d21.jpg": "50a971fad1720025658c5287eb66b7c27fd81e8de677355260f917b19abd195c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d22.jpg": "da2df3a8c31f5a653995bc6618e4409c8de55a8eca8b3927eb866acbb0b320ed",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d23.jpg": "bacf3fae3a14c22690ff59398365e7817d99620b1003765f8efe70cfa7b22939",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d24.jpg": "8f92c0f36a9d551bad0776eae2bdfebe9d208f678ecb50a332cc6688f15b06fc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d25.jpg": "9a29d4ea8586241625cc8e20225ca4ee37ebb0ecc5345c448d5772bc1ea7510c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d26.jpg": "15e6a4f945808d87ce0bbd03b39dae6ef09be093315adef993d09b5b40133137",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d27.jpg": "e5c075274666020ef025065c3c931eac2e647599f1679aabf81e0684afe91f23",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d28.jpg": "3fed33f17b4d9ebd7012edb15aff1a5b757dc73895684d82ad6c0dcec2d8f6c0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d29.jpg": "b85d3746d649ecd189753573caf876ee3e552fc6f16dd91f63e3e3ed8ee54775",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d30.jpg": "b0f608215713bf34a9001c2e3fc2534c1323815cb9c57923b3051cd6c7e9afda",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d31.jpg": "0a993b1addd0549c7b502080ddbf8c59c38ebfaf56512307d3c4b28420d912e0",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d32.jpg": "3b79d69e393da0e5989e2ccbc47b340a1998e92d3594b8bb2da46fecf6d0499d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d33.jpg": "913f82b8c432424eb63c011e8ff90c016230c97d30156b6cb91cbf11d3e6927b",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d34.jpg": "38cd3f38b950e924730555ddce465d1f55303deececa99afec02e59aa829c8b1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d35.jpg": "4a602b8f65fd151613054502597171fafaf7646d68986c9b36c311776e9be248",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d36.jpg": "1dab27f73d42ae97c17186a48b9ee6f7f55c8a7b23b21ec0b35421a10e7c12b4",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d37.jpg": "28014dbb3c29617848ef2cb817c9ed84e13c7e921932ba25b81d824ad5792dcc",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d38.jpg": "c722a5fe1980e74990f9a23844446885a729c4dd06f6f364cd75cc3583f4a651",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d39.jpg": "0924d0bae937d0614c213ab580f8c9ee8b584043f2a0728c80a05370b0e898b1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d40.jpg": "7c63b9638481fb99402fd41af28908ea02737354bdf2c25281ebbbaa1016079a",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d41.jpg": "928f525d7febe47968eff5e4990c59a9bb6d3762f412ec3012eba949d5aa55e5",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d42.jpg": "6b6334697d22c1067f698d40245aa9d9f929daf72dc66e72aa6c64a56fe3e717",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d43.jpg": "5cc16ee0665658c825a957c8469b843ba041b8ebb66d1612b86a6e16ad0a78ac",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d44.jpg": "ca04bedb4fae00f4febd1d5199a335d78e695a002562f2d571d50b107f7ce515",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d45.jpg": "b99c6759edecf952bba5c0da9a25dd82739335b58b457e880b8c9482b91f7695",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\review66\\association-66-686-d46.jpg": "b69280eb24092ae73d6be5fb703eb8d37916259629bc42e372ddfb748adadc75"
+  },
+  "records": [
+    {
+      "id": "64-374-d0",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 0,
+      "bbox": [
+        1188.5,
+        249.25,
+        1207.75,
+        270.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d0.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "The light-shirted player stays to the right of the blue player near the arc throughout the fixed source strip. Start d0 is his upper-body duplicate of d28; end d23 is the full box, with upper-body duplicate d1."
+    },
+    {
+      "id": "64-374-d1",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 1,
+      "bbox": [
+        1494.75,
+        161.5,
+        1511.25,
+        195.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-64-374-d1.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue field player directly in front of the sideline group moves slightly left and down without crossing another field player in the fixed source strip."
+    },
+    {
+      "id": "64-374-d2",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 2,
+      "bbox": [
+        1505.25,
+        145.5,
+        1521.25,
+        177.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d2.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed sideline person immediately behind/right of the blue field player remains at the same railing position throughout the fixed strip."
+    },
+    {
+      "id": "64-374-d3",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 3,
+      "bbox": [
+        1573.0,
+        138.125,
+        1588.5,
+        170.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-64-374-d3.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "A sideline person is visible, but the small shaded upper garment does not permit a reliable blue/white/other kit judgment; no scored association is forced."
+    },
+    {
+      "id": "64-374-d4",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 4,
+      "bbox": [
+        1470.0,
+        149.25,
+        1485.25,
+        178.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d4.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "The light-clothed sideline person walks left behind the adjacent blue person. At the endpoint he is partly occluded among the railing-side people and lacks a clearly separate source box."
+    },
+    {
+      "id": "64-374-d5",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 5,
+      "bbox": [
+        1457.25,
+        149.375,
+        1472.75,
+        181.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-64-374-d5.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "The blue sideline person stays near the same railing post while the adjacent light-clothed person walks behind him to the left."
+    },
+    {
+      "id": "64-374-d6",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 6,
+      "bbox": [
+        1414.75,
+        155.0,
+        1432.0,
+        185.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d6.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-top sideline person holds the same railing position through the fixed strip; the person walking left is separate."
+    },
+    {
+      "id": "64-374-d7",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 7,
+      "bbox": [
+        1533.75,
+        140.75,
+        1549.25,
+        171.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d7.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed person remains in the sideline gap between the two groups, visible at the endpoint without a separate source box."
+    },
+    {
+      "id": "64-374-d8",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 8,
+      "bbox": [
+        1370.375,
+        159.25,
+        1387.75,
+        190.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d8.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed person remains by the left railing group while another dark person walks past; the endpoint person has no separate source box."
+    },
+    {
+      "id": "64-374-d9",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 9,
+      "bbox": [
+        1338.125,
+        163.75,
+        1354.375,
+        195.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d9.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Right-hand dark-clothed person of the leftmost sideline pair remains visible throughout; neither that person nor the neighbor has a separate box at the endpoint."
+    },
+    {
+      "id": "64-374-d10",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 10,
+      "bbox": [
+        1391.375,
+        156.875,
+        1408.25,
+        187.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d10.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed person walks left past the stationary railing person and remains visible among the unboxed sideline group at the endpoint."
+    },
+    {
+      "id": "64-374-d11",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 11,
+      "bbox": [
+        1440.0,
+        152.125,
+        1454.75,
+        183.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d11.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-top person with light shorts stays at the same railing post immediately left of the blue sideline person."
+    },
+    {
+      "id": "64-374-d12",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 12,
+      "bbox": [
+        1597.8125,
+        202.0,
+        1616.625,
+        249.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-64-374-d12.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue field player stays behind the white field player while the dark-clothed person separates left; endpoint d10 is the full box and d30 its lower-body duplicate."
+    },
+    {
+      "id": "64-374-d13",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 13,
+      "bbox": [
+        1592.71875,
+        135.5,
+        1609.3125,
+        168.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-64-374-d13.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Standing sideline person is visible, but shade and the small upper garment do not support a reliable blue/white/other judgment."
+    },
+    {
+      "id": "64-374-d14",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 14,
+      "bbox": [
+        1613.0625,
+        139.125,
+        1629.5,
+        167.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-64-374-d14.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Seated sideline person is visible, but the tiny shaded garment and railing overlap prevent a reliable kit judgment."
+    },
+    {
+      "id": "64-374-d15",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 15,
+      "bbox": [
+        1992.8125,
+        154.5,
+        2010.375,
+        194.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d15.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player in front of the blue player near halfway walks right/down and becomes clearly separate; continuous source motion leads to endpoint d13."
+    },
+    {
+      "id": "64-374-d16",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 16,
+      "bbox": [
+        1983.21875,
+        142.75,
+        2001.625,
+        180.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-64-374-d16.jpg",
+      "box_scope": "mixed_people",
+      "visual_basis": "The source box covers the blue player and a substantial portion of the overlapping white player. A single kit or scored identity is not forced."
+    },
+    {
+      "id": "64-374-d17",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 17,
+      "bbox": [
+        2014.5,
+        194.625,
+        2036.5625,
+        236.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d17.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player nearest the halfway line jogs right/down across it, distinct from the more distant white/blue pair throughout."
+    },
+    {
+      "id": "64-374-d18",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 18,
+      "bbox": [
+        2080.75,
+        112.9375,
+        2096.125,
+        137.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d18.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed seated person at the right of the bleachers keeps the same seat and posture throughout the fixed strip."
+    },
+    {
+      "id": "64-374-d19",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 19,
+      "bbox": [
+        1945.484375,
+        108.1875,
+        1963.0625,
+        134.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d19.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed seated person at the left bleacher group remains in the same seat throughout."
+    },
+    {
+      "id": "64-374-d20",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 20,
+      "bbox": [
+        2809.875,
+        219.375,
+        2831.4375,
+        268.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d20.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "The isolated red-clothed person remains in the right penalty area throughout; no other person crosses this source trajectory."
+    },
+    {
+      "id": "64-374-d21",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 21,
+      "bbox": [
+        794.5,
+        353.6875,
+        814.5,
+        403.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-64-374-d21.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player to the left of the white player in the left penalty area moves right/down with a visible gap; remains the left-hand player at the endpoint."
+    },
+    {
+      "id": "64-374-d22",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 22,
+      "bbox": [
+        607.375,
+        392.375,
+        630.0,
+        433.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d22.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "The back white player near the yellow person moves down/right behind the other white player without swapping positions; endpoint d21 is the back person, distinct from d18."
+    },
+    {
+      "id": "64-374-d23",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 23,
+      "bbox": [
+        590.25,
+        413.625,
+        614.0,
+        465.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d23.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "The front white player near the penalty-area line moves down/right while remaining in front of the other white player; endpoint d18 is distinct from the back person d21."
+    },
+    {
+      "id": "64-374-d24",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 24,
+      "bbox": [
+        663.0,
+        357.875,
+        684.75,
+        406.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-64-374-d24.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Yellow-clothed person remains clearly visible by the goal at frame 404, but the endpoint has no source person box."
+    },
+    {
+      "id": "64-374-d25",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 25,
+      "bbox": [
+        1060.25,
+        242.4453125,
+        1076.5,
+        280.28125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-64-374-d25.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "The more distant blue player left of the arc moves slightly right/down without approaching another player; endpoint d0 is the same person."
+    },
+    {
+      "id": "64-374-d26",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 26,
+      "bbox": [
+        1131.25,
+        265.46875,
+        1150.75,
+        312.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-64-374-d26.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player nearest the arc remains to the left of the white player and moves down without a crossing."
+    },
+    {
+      "id": "64-374-d27",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 27,
+      "bbox": [
+        811.9375,
+        355.5,
+        832.21875,
+        406.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d27.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player in the left penalty area stays to the right of the blue player throughout the fixed strip and moves down/right."
+    },
+    {
+      "id": "64-374-d28",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 28,
+      "bbox": [
+        1190.5,
+        254.59375,
+        1208.75,
+        295.9375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d28.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Full box of the white player right of the arc remains separate from the blue neighbor; start d0 is the upper duplicate and endpoint d23 the full box."
+    },
+    {
+      "id": "64-374-d29",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 29,
+      "bbox": [
+        1578.0,
+        238.2421875,
+        1602.5,
+        287.90625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-64-374-d29.jpg",
+      "box_scope": "mixed_people",
+      "visual_basis": "The start box includes the white player and the dark-clothed person directly behind him, whose head and body overlap before separating left; no single-person scored label is forced."
+    },
+    {
+      "id": "64-374-d30",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 30,
+      "bbox": [
+        1859.5,
+        283.21875,
+        1887.0,
+        359.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-64-374-d30.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player below the center circle runs left/down ahead of the adjacent white player; continuous fixed context leads to endpoint d31."
+    },
+    {
+      "id": "64-374-d31",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 31,
+      "bbox": [
+        1605.3125,
+        379.0,
+        1652.1875,
+        445.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d31.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White runner follows the blue runner left/down through the strip. Only the blue head touches the lower edge of the start box; the white body is distinct. Endpoint d28 is the white upper-body box."
+    },
+    {
+      "id": "64-374-d32",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 32,
+      "bbox": [
+        1926.75,
+        278.15625,
+        1954.25,
+        349.1875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d32.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player below the center circle follows the blue player left/down, separate from the faster white/blue pair below them."
+    },
+    {
+      "id": "64-374-d33",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 33,
+      "bbox": [
+        3641.013885498047,
+        273.03125,
+        3665.125,
+        300.6875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d33.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Canopy roof corner; no person is present in the source box."
+    },
+    {
+      "id": "64-374-d34",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 34,
+      "bbox": [
+        418.75,
+        470.7421875,
+        445.0,
+        525.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-64-374-d34.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player near the scoreboard moves right along the penalty-area edge without a crossing; endpoint d20 follows the same continuous motion."
+    },
+    {
+      "id": "64-374-d35",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 35,
+      "bbox": [
+        596.0,
+        517.21875,
+        625.625,
+        581.9375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-64-374-d35.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player with a visible light back number moves right/down, apart from the scoreboard-side blue player; endpoint d34 is the full box and d22 its upper duplicate."
+    },
+    {
+      "id": "64-374-d36",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 36,
+      "bbox": [
+        576.625,
+        660.0,
+        599.25,
+        672.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d36.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue bottle-shaped object lying beside the pitch line, not a person."
+    },
+    {
+      "id": "64-374-d37",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 37,
+      "bbox": [
+        748.5,
+        713.875,
+        783.5,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d37.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "White painted marking on the ground, not a person."
+    },
+    {
+      "id": "64-374-d38",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 38,
+      "bbox": [
+        963.75,
+        465.8984375,
+        999.75,
+        540.9375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-64-374-d38.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player with visible back number 6 turns and runs right in isolation through the fixed strip; endpoint d26 is his upper-body box."
+    },
+    {
+      "id": "64-374-d39",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 39,
+      "bbox": [
+        2976.0,
+        719.25,
+        2998.75,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d39.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "White painted marking on the ground, not a person."
+    },
+    {
+      "id": "64-374-d40",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 40,
+      "bbox": [
+        556.25,
+        891.125,
+        583.125,
+        920.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d40.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Small pale object on the paved sideline, not a person."
+    },
+    {
+      "id": "64-374-d41",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 41,
+      "bbox": [
+        1365.5,
+        760.125,
+        1384.375,
+        777.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d41.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Small blue and white object on the grass, not a person."
+    },
+    {
+      "id": "64-374-d42",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 42,
+      "bbox": [
+        1795.75,
+        794.0625,
+        1823.25,
+        818.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d42.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Round football on the ground, not a person."
+    },
+    {
+      "id": "64-374-d43",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 43,
+      "bbox": [
+        3154.09375,
+        740.625,
+        3189.75,
+        771.3125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d43.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Small pale bottle-shaped object at the pitch edge, not a person."
+    },
+    {
+      "id": "64-374-d44",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 44,
+      "bbox": [
+        3620.5,
+        797.5625,
+        3641.375,
+        820.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d44.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Red bottle-shaped object on the paved sideline, not a person."
+    },
+    {
+      "id": "64-374-d45",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 45,
+      "bbox": [
+        3571.8125,
+        782.3125,
+        3592.8125,
+        801.6875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d45.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Round pale ball on the grass, not a person."
+    },
+    {
+      "id": "64-374-d46",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 46,
+      "bbox": [
+        777.638671875,
+        949.5,
+        811.53125,
+        973.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d46.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Footwear on the paved sideline, not a person."
+    },
+    {
+      "id": "64-374-d47",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 47,
+      "bbox": [
+        890.75,
+        969.875,
+        945.875,
+        991.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d47.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Loose clothing on the paved sideline, not a person."
+    },
+    {
+      "id": "64-374-d48",
+      "segment": 64,
+      "frame_idx": 374,
+      "detector_index": 48,
+      "bbox": [
+        2381.03125,
+        1006.875,
+        2413.25,
+        1064.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-64-374-d48.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Hanging blue fabric with no human body, not a person."
+    },
+    {
+      "id": "64-686-d0",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 0,
+      "bbox": [
+        1158.75,
+        184.0,
+        1175.25,
+        212.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-64-686-d0.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed person by the far corner flag stays at the same isolated location."
+    },
+    {
+      "id": "64-686-d1",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 1,
+      "bbox": [
+        1320.125,
+        199.25,
+        1341.0,
+        239.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d1.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Isolated blue player near the far left touchline moves left without crossing another player."
+    },
+    {
+      "id": "64-686-d2",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 2,
+      "bbox": [
+        1409.375,
+        229.25,
+        1436.0,
+        269.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "uncertain",
+      "association_review": "association-64-686-d2.jpg",
+      "box_scope": "mixed_people",
+      "visual_basis": "The source box contains overlapping blue and white players who later separate. It has no unique kit or single-person interpretation."
+    },
+    {
+      "id": "64-686-d3",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 3,
+      "bbox": [
+        1457.25,
+        149.375,
+        1473.0,
+        181.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d3.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue sideline person remains visible, but at the endpoint a dark-clothed person overlaps him inside source box d3; no unique endpoint is forced."
+    },
+    {
+      "id": "64-686-d4",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 4,
+      "bbox": [
+        1497.25,
+        145.25,
+        1513.75,
+        177.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-64-686-d4.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed person between the railing groups remains by the same post, separate from the people to the left."
+    },
+    {
+      "id": "64-686-d5",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 5,
+      "bbox": [
+        1438.75,
+        152.75,
+        1455.25,
+        183.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-64-686-d5.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-top light-shorts person at the railing remains to the left of the blue sideline person."
+    },
+    {
+      "id": "64-686-d6",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 6,
+      "bbox": [
+        1533.0,
+        141.375,
+        1549.0,
+        172.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-64-686-d6.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed person in the right railing gap remains at the same location."
+    },
+    {
+      "id": "64-686-d7",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 7,
+      "bbox": [
+        1587.0,
+        134.5,
+        1606.5,
+        168.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "uncertain",
+      "association_review": "association-64-686-d7.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Small shaded sideline garment and bent posture do not allow a reliable blue/white/other kit judgment."
+    },
+    {
+      "id": "64-686-d8",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 8,
+      "bbox": [
+        1469.25,
+        150.75,
+        1485.25,
+        184.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-64-686-d8.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed sideline person walks left across the blue person; both overlap inside endpoint d3, so a unique endpoint is not assigned."
+    },
+    {
+      "id": "64-686-d9",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 9,
+      "bbox": [
+        1736.0,
+        129.0,
+        1753.25,
+        160.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d9.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Light-top person walks slowly right beside the canopy and remains separate from the seated people."
+    },
+    {
+      "id": "64-686-d10",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 10,
+      "bbox": [
+        1659.4375,
+        156.625,
+        1676.25,
+        192.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d10.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue field player nearest the far touchline moves right, clearly separate from the central blue player."
+    },
+    {
+      "id": "64-686-d11",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 11,
+      "bbox": [
+        1761.5,
+        181.375,
+        1781.0,
+        229.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d11.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player near the center-circle edge remains isolated above/right of the white player."
+    },
+    {
+      "id": "64-686-d12",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 12,
+      "bbox": [
+        1617.4375,
+        143.125,
+        1631.875,
+        168.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "uncertain",
+      "association_review": "association-64-686-d12.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Person at the right railing group is small and partly hidden by the rail; clothing cannot be assigned reliably."
+    },
+    {
+      "id": "64-686-d13",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 13,
+      "bbox": [
+        1599.25,
+        139.375,
+        1616.5,
+        168.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "uncertain",
+      "association_review": "association-64-686-d13.jpg",
+      "box_scope": "uncertain",
+      "visual_basis": "The tiny box covers rail/bench and possible partly occluded body fragments. Neither person scope nor kit is reliable."
+    },
+    {
+      "id": "64-686-d14",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 14,
+      "bbox": [
+        2041.125,
+        140.25,
+        2057.0625,
+        176.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d14.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player near halfway remains identifiable in motion, but the white player overlaps the endpoint boxes d13/d14. No unique single-person endpoint is forced."
+    },
+    {
+      "id": "64-686-d15",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 15,
+      "bbox": [
+        2069.75,
+        155.875,
+        2087.75,
+        198.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d15.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player near halfway approaches the blue player; endpoint boxes d13/d14 include their overlapping bodies, so association is withheld."
+    },
+    {
+      "id": "64-686-d16",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 16,
+      "bbox": [
+        2046.0,
+        192.875,
+        2067.75,
+        244.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d16.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player on the halfway line stays separate below the overlapping pair; source d31 is his lower-body duplicate."
+    },
+    {
+      "id": "64-686-d17",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 17,
+      "bbox": [
+        2080.75,
+        112.8125,
+        2096.5,
+        138.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-64-686-d17.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed seated person at the bleachers remains at the same seat."
+    },
+    {
+      "id": "64-686-d18",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 18,
+      "bbox": [
+        2393.6875,
+        123.125,
+        2410.25,
+        151.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-64-686-d18.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed sideline person at the left of the exercise group stays by the same bench position; endpoint d19."
+    },
+    {
+      "id": "64-686-d19",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 19,
+      "bbox": [
+        2811.8125,
+        228.5,
+        2832.0,
+        269.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-64-686-d19.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Red-clothed person remains isolated in the right penalty area."
+    },
+    {
+      "id": "64-686-d20",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 20,
+      "bbox": [
+        785.5,
+        326.3125,
+        812.75,
+        372.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-64-686-d20.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Yellow-clothed person moves right in front of the left goal, without another person crossing."
+    },
+    {
+      "id": "64-686-d21",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 21,
+      "bbox": [
+        700.25,
+        395.25,
+        728.75,
+        458.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d21.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player at the penalty-area line moves right, staying below/left of the yellow person."
+    },
+    {
+      "id": "64-686-d22",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 22,
+      "bbox": [
+        894.0625,
+        377.875,
+        924.5,
+        442.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d22.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player in front of the left goal moves right in isolation as the ball rolls behind."
+    },
+    {
+      "id": "64-686-d23",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 23,
+      "bbox": [
+        1138.75,
+        330.9375,
+        1163.25,
+        392.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d23.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player with visible back number 36 crosses behind the white 12 and emerges on his right; the entire crossing is visible in the fixed strip."
+    },
+    {
+      "id": "64-686-d24",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 24,
+      "bbox": [
+        1119.75,
+        295.25,
+        1145.5,
+        340.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d24.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player nearest the arc turns and moves right, remaining apart from the crossing blue/white pair."
+    },
+    {
+      "id": "64-686-d25",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 25,
+      "bbox": [
+        1157.25,
+        335.1875,
+        1184.0,
+        394.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d25.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player with visible 12 remains in front while blue 36 passes behind to his right; endpoint d31 preserves the white trajectory."
+    },
+    {
+      "id": "64-686-d26",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 26,
+      "bbox": [
+        1326.875,
+        282.6875,
+        1353.125,
+        340.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d26.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White field player below the initially overlapping pair moves up/right toward them, remaining below the other white player at the endpoint."
+    },
+    {
+      "id": "64-686-d27",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 27,
+      "bbox": [
+        1222.21875,
+        271.46875,
+        1242.875,
+        326.6875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d27.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player above the crossing pair remains apart and moves slightly right."
+    },
+    {
+      "id": "64-686-d28",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 28,
+      "bbox": [
+        1705.125,
+        230.1318359375,
+        1727.0,
+        279.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d28.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player with visible 8 stands by the center-circle edge, separate from the blue and dark-clothed people."
+    },
+    {
+      "id": "64-686-d29",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 29,
+      "bbox": [
+        1786.875,
+        396.375,
+        1821.0,
+        491.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d29.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player with visible 6 below the center circle remains isolated throughout."
+    },
+    {
+      "id": "64-686-d30",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 30,
+      "bbox": [
+        2065.0,
+        285.5,
+        2095.375,
+        361.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d30.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player with visible 29 stays on the halfway line below the circle; endpoint d35 is the partial body box of this same person."
+    },
+    {
+      "id": "64-686-d31",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 31,
+      "bbox": [
+        2046.875,
+        230.0,
+        2065.5,
+        247.796875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d31.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "Lower legs belong to the white player in source d16, continuously attached in the fixed context; endpoint full box is d12."
+    },
+    {
+      "id": "64-686-d32",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 32,
+      "bbox": [
+        1935.0,
+        321.5,
+        1962.828125,
+        411.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d32.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player with visible 9 below the circle remains separate from both white players."
+    },
+    {
+      "id": "64-686-d33",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 33,
+      "bbox": [
+        3255.875,
+        265.125,
+        3279.125,
+        280.5625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d33.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue equipment behind the goal net. No human body in this source box."
+    },
+    {
+      "id": "64-686-d34",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 34,
+      "bbox": [
+        3419.25,
+        318.1875,
+        3443.75,
+        333.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d34.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue equipment behind the goal net. No human body in this source box."
+    },
+    {
+      "id": "64-686-d35",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 35,
+      "bbox": [
+        3511.5,
+        349.1875,
+        3538.0,
+        364.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d35.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Duplicate detection of blue equipment behind the goal net. No human body in this source box."
+    },
+    {
+      "id": "64-686-d36",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 36,
+      "bbox": [
+        576.5,
+        659.625,
+        598.5,
+        672.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d36.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue bottle lying on grass. No human body in this source box."
+    },
+    {
+      "id": "64-686-d37",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 37,
+      "bbox": [
+        747.75,
+        713.75,
+        783.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d37.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "White ground paint. No human body in this source box."
+    },
+    {
+      "id": "64-686-d38",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 38,
+      "bbox": [
+        676.25,
+        719.75,
+        709.5,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d38.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Duplicate white ground paint. No human body in this source box."
+    },
+    {
+      "id": "64-686-d39",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 39,
+      "bbox": [
+        993.375,
+        526.8125,
+        1041.75,
+        632.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-64-686-d39.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player with visible 21 near the near touchline moves right and bends, with no nearby crossing."
+    },
+    {
+      "id": "64-686-d40",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 40,
+      "bbox": [
+        1792.0,
+        460.0,
+        1808.75,
+        488.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d40.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "Lower-leg fragment belongs to white 6 in source d29, continuously attached to his body in the strip."
+    },
+    {
+      "id": "64-686-d41",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 41,
+      "bbox": [
+        1802.375,
+        460.0,
+        1817.0,
+        492.28125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-64-686-d41.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "Other lower-leg fragment of the same white 6 in source d29; endpoint d33 is the full body."
+    },
+    {
+      "id": "64-686-d42",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 42,
+      "bbox": [
+        2976.25,
+        719.25,
+        2998.5,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d42.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "White ground paint. No human body in this source box."
+    },
+    {
+      "id": "64-686-d43",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 43,
+      "bbox": [
+        3623.75,
+        635.375,
+        3635.75,
+        652.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d43.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Small stationary blue object on grass, isolated from every person in the temporal strip. No human body in this source box."
+    },
+    {
+      "id": "64-686-d44",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 44,
+      "bbox": [
+        556.0,
+        890.875,
+        582.625,
+        919.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d44.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Small pale object on pavement. No human body in this source box."
+    },
+    {
+      "id": "64-686-d45",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 45,
+      "bbox": [
+        788.5,
+        947.75,
+        809.15625,
+        960.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d45.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Partial detection of footwear on pavement. No human body in this source box."
+    },
+    {
+      "id": "64-686-d46",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 46,
+      "bbox": [
+        1365.75,
+        759.9375,
+        1382.875,
+        776.6875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d46.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue/white object on grass. No human body in this source box."
+    },
+    {
+      "id": "64-686-d47",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 47,
+      "bbox": [
+        1795.75,
+        793.75,
+        1823.25,
+        819.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d47.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Football on grass. No human body in this source box."
+    },
+    {
+      "id": "64-686-d48",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 48,
+      "bbox": [
+        3163.3125,
+        747.1875,
+        3188.4375,
+        771.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d48.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Pale bottle-shaped object. No human body in this source box."
+    },
+    {
+      "id": "64-686-d49",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 49,
+      "bbox": [
+        3620.125,
+        797.6875,
+        3641.375,
+        820.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d49.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Red bottle-shaped object. No human body in this source box."
+    },
+    {
+      "id": "64-686-d50",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 50,
+      "bbox": [
+        3571.25,
+        781.5625,
+        3593.8125,
+        802.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d50.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Pale ball. No human body in this source box."
+    },
+    {
+      "id": "64-686-d51",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 51,
+      "bbox": [
+        778.26171875,
+        949.375,
+        811.71875,
+        973.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d51.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Footwear on pavement. No human body in this source box."
+    },
+    {
+      "id": "64-686-d52",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 52,
+      "bbox": [
+        890.5,
+        970.125,
+        946.25,
+        991.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d52.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Loose clothing on pavement. No human body in this source box."
+    },
+    {
+      "id": "64-686-d53",
+      "segment": 64,
+      "frame_idx": 686,
+      "detector_index": 53,
+      "bbox": [
+        2381.25,
+        1007.5,
+        2413.0625,
+        1064.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-64-686-d53.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Hanging blue fabric. No human body in this source box."
+    },
+    {
+      "id": "66-374-d0",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 0,
+      "bbox": [
+        1537.0,
+        144.125,
+        1553.25,
+        175.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d0.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Right-hand blue sideline person of the close pair remains at the railing; the left neighbor stays separate throughout the fixed strip."
+    },
+    {
+      "id": "66-374-d1",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 1,
+      "bbox": [
+        1527.5,
+        147.625,
+        1545.75,
+        177.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d1.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Left-hand blue sideline person of the close pair remains to the left of the neighbor throughout the fixed strip."
+    },
+    {
+      "id": "66-374-d2",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 2,
+      "bbox": [
+        1984.0,
+        134.625,
+        2001.75,
+        171.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d2.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue field player nearest the far stands walks right toward the halfway line without a crossing."
+    },
+    {
+      "id": "66-374-d3",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 3,
+      "bbox": [
+        1894.25,
+        161.625,
+        1912.25,
+        201.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-66-374-d3.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player behind the left side of the center circle walks right continuously, separate from the blue player in front."
+    },
+    {
+      "id": "66-374-d4",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 4,
+      "bbox": [
+        1690.5,
+        133.25,
+        1708.125,
+        161.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-66-374-d4.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Light-clothed sideline person immediately left of the canopy remains by the same steps throughout the strip."
+    },
+    {
+      "id": "66-374-d5",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 5,
+      "bbox": [
+        1812.25,
+        195.125,
+        1835.25,
+        245.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d5.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue field player at the left edge of the center circle walks right; the partial leg box d26 belongs to him."
+    },
+    {
+      "id": "66-374-d6",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 6,
+      "bbox": [
+        1594.28125,
+        139.125,
+        1610.0,
+        169.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-66-374-d6.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed sideline person stays between the blue pair and the next railing group."
+    },
+    {
+      "id": "66-374-d7",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 7,
+      "bbox": [
+        1647.0625,
+        134.75,
+        1664.875,
+        165.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-66-374-d7.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-top person with light shorts remains at the railing position to the left of the light-clothed person by the canopy."
+    },
+    {
+      "id": "66-374-d8",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 8,
+      "bbox": [
+        1551.701171875,
+        141.875,
+        1571.390625,
+        171.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-66-374-d8.jpg",
+      "box_scope": "uncertain",
+      "visual_basis": "Small shaded shape against the railing beside the blue pair does not clearly separate body and background or support a reliable kit judgment."
+    },
+    {
+      "id": "66-374-d9",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 9,
+      "bbox": [
+        2043.625,
+        175.75,
+        2067.625,
+        226.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-66-374-d9.jpg",
+      "box_scope": "mixed_people",
+      "visual_basis": "Start box includes the overlapping white player and the blue player in front near the halfway line; a single-person association is withheld."
+    },
+    {
+      "id": "66-374-d10",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 10,
+      "bbox": [
+        2258.25,
+        189.0,
+        2283.25,
+        232.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-66-374-d10.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player at the right edge of the center circle accelerates right, remaining below the other white runner throughout the fixed strip."
+    },
+    {
+      "id": "66-374-d11",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 11,
+      "bbox": [
+        2135.0,
+        158.25,
+        2157.0,
+        196.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-66-374-d11.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player between the halfway-line group and dark field person runs right along the upper side of the circle, staying separate."
+    },
+    {
+      "id": "66-374-d12",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 12,
+      "bbox": [
+        2040.4375,
+        152.375,
+        2060.0,
+        189.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d12.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player behind the overlapping halfway-line pair runs right on their far side and remains distinguishable throughout."
+    },
+    {
+      "id": "66-374-d13",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 13,
+      "bbox": [
+        2097.0,
+        220.875,
+        2118.25,
+        269.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-66-374-d13.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player in the lower center-circle area walks right with no crossing; endpoint lower-leg duplicate d34 belongs to endpoint d18."
+    },
+    {
+      "id": "66-374-d14",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 14,
+      "bbox": [
+        2080.5,
+        113.0,
+        2096.5,
+        137.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-66-374-d14.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed seated person remains on the far stand bench, visible at the endpoint without a separate raw box."
+    },
+    {
+      "id": "66-374-d15",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 15,
+      "bbox": [
+        2576.125,
+        205.625,
+        2603.25,
+        246.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-66-374-d15.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Foremost white runner on the right continues ahead of the chasing blue/white cluster. Endpoint d16 is the runner ahead of that cluster."
+    },
+    {
+      "id": "66-374-d16",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 16,
+      "bbox": [
+        2466.375,
+        168.0,
+        2489.75,
+        206.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d16.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Upper/right blue player in the chasing trio remains ahead of the other blue player and white chaser through the strip."
+    },
+    {
+      "id": "66-374-d17",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 17,
+      "bbox": [
+        2481.75,
+        182.625,
+        2506.375,
+        224.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d17.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "The lower blue runner can be followed, but endpoint d25 also includes the closely overlapping white chaser; no clean single-person endpoint is assigned."
+    },
+    {
+      "id": "66-374-d18",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 18,
+      "bbox": [
+        2373.4375,
+        195.125,
+        2400.3125,
+        243.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d18.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue runner below the far-side group continues right; endpoint d29 is a partial lower-body box of this otherwise unboxed runner."
+    },
+    {
+      "id": "66-374-d19",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 19,
+      "bbox": [
+        2394.25,
+        146.5,
+        2412.125,
+        179.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-66-374-d19.jpg",
+      "box_scope": "mixed_people",
+      "visual_basis": "Start crop contains overlapping blue and white body parts in the far-side pair; a single-person label is withheld."
+    },
+    {
+      "id": "66-374-d20",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 20,
+      "bbox": [
+        2339.03125,
+        154.5,
+        2360.59375,
+        192.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-66-374-d20.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White runner on the left of the far-side white/blue pair stays to their left through the fixed strip."
+    },
+    {
+      "id": "66-374-d21",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 21,
+      "bbox": [
+        2377.84375,
+        148.625,
+        2401.4375,
+        180.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-66-374-d21.jpg",
+      "box_scope": "mixed_people",
+      "visual_basis": "White runner overlaps the adjacent blue runner within the start crop; the mixed box is not given a single-person relation."
+    },
+    {
+      "id": "66-374-d22",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 22,
+      "bbox": [
+        2446.3125,
+        193.5,
+        2475.625,
+        230.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-66-374-d22.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White chaser behind two blue runners remains visible, but endpoint d20 overlaps the blue runner, so the relation is withheld."
+    },
+    {
+      "id": "66-374-d23",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 23,
+      "bbox": [
+        1203.0,
+        239.4296875,
+        1224.0,
+        288.03125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-66-374-d23.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Isolated yellow-clothed person near the left penalty arc walks slowly right throughout the strip."
+    },
+    {
+      "id": "66-374-d24",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 24,
+      "bbox": [
+        1604.5,
+        309.5625,
+        1616.0,
+        329.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d24.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "Partial lower-leg box belongs to the isolated blue player also boxed as start d25; no nearby competing person occurs in the strip."
+    },
+    {
+      "id": "66-374-d25",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 25,
+      "bbox": [
+        1607.375,
+        264.1875,
+        1637.9375,
+        329.5625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d25.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Isolated blue player left of the center circle moves right throughout the strip; endpoint upper-body duplicate d9 belongs to d28."
+    },
+    {
+      "id": "66-374-d26",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 26,
+      "bbox": [
+        1812.25,
+        230.0,
+        1835.25,
+        246.28125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d26.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "Lower-body fragment of start d5, confirmed by the fixed strip around the same isolated center-circle player."
+    },
+    {
+      "id": "66-374-d27",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 27,
+      "bbox": [
+        2372.0,
+        230.02471923828125,
+        2389.75,
+        243.9921875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d27.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "Lower-leg fragment of start d18, confirmed by the fixed strip; endpoint d29 is that runner's lower-body box."
+    },
+    {
+      "id": "66-374-d28",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 28,
+      "bbox": [
+        3053.25,
+        246.6875,
+        3072.5,
+        284.4375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-66-374-d28.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Red-clothed person in front of the right goal moves right continuously with no competing red person."
+    },
+    {
+      "id": "66-374-d29",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 29,
+      "bbox": [
+        2709.0,
+        293.625,
+        2730.515625,
+        354.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "white",
+      "association_review": "association-66-374-d29.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Isolated white player with visible 6 on the back walks right beneath the attacking group."
+    },
+    {
+      "id": "66-374-d30",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 30,
+      "bbox": [
+        3102.0,
+        230.0,
+        3119.75,
+        252.109375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "uncertain",
+      "association_review": "association-66-374-d30.jpg",
+      "box_scope": "uncertain",
+      "visual_basis": "Dark stationary shape behind the right goal is too ambiguous to distinguish a seated person from equipment confidently; no association is forced."
+    },
+    {
+      "id": "66-374-d31",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 31,
+      "bbox": [
+        3256.25,
+        266.59375,
+        3276.25,
+        280.28125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d31.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue material in the spare goal net; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d32",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 32,
+      "bbox": [
+        577.125,
+        660.625,
+        599.0,
+        672.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d32.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue bottle; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d33",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 33,
+      "bbox": [
+        748.25,
+        713.875,
+        783.75,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d33.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "White painted turf emblem; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d34",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 34,
+      "bbox": [
+        676.75,
+        720.5,
+        709.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d34.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "White painted turf emblem; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d35",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 35,
+      "bbox": [
+        774.0520629882812,
+        713.75,
+        785.34375,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d35.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "White painted turf emblem; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d36",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 36,
+      "bbox": [
+        2662.25,
+        485.578125,
+        2709.0,
+        597.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "blue",
+      "association_review": "association-66-374-d36.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player with visible 21 on the back stays isolated near the near touchline; endpoint d30 is an upper-body duplicate of d38."
+    },
+    {
+      "id": "66-374-d37",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 37,
+      "bbox": [
+        2977.0,
+        719.25,
+        2998.75,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d37.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Painted turf lettering; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d38",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 38,
+      "bbox": [
+        3265.25,
+        552.8125,
+        3326.625,
+        646.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "other",
+      "association_review": "association-66-374-d38.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark training-clothed person runs right along the near touchline, isolated from field players."
+    },
+    {
+      "id": "66-374-d39",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 39,
+      "bbox": [
+        1163.3046875,
+        766.5,
+        1276.0,
+        827.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d39.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Painted turf lettering; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d40",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 40,
+      "bbox": [
+        1365.5,
+        759.75,
+        1384.125,
+        776.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d40.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue cone; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d41",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 41,
+      "bbox": [
+        1795.75,
+        793.875,
+        1823.25,
+        818.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d41.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Football; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d42",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 42,
+      "bbox": [
+        3620.625,
+        797.5625,
+        3641.75,
+        821.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d42.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Orange cone; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d43",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 43,
+      "bbox": [
+        3571.3125,
+        781.9375,
+        3593.4375,
+        801.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d43.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Football; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d44",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 44,
+      "bbox": [
+        555.75,
+        891.625,
+        582.625,
+        920.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d44.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Metal equipment on the walkway; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d45",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 45,
+      "bbox": [
+        776.8046875,
+        949.625,
+        812.0,
+        972.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d45.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Coiled metal equipment on the walkway; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d46",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 46,
+      "bbox": [
+        890.875,
+        966.625,
+        945.25,
+        991.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d46.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "White cloth or cover on the walkway; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d47",
+      "segment": 66,
+      "frame_idx": 374,
+      "detector_index": 47,
+      "bbox": [
+        2380.875,
+        1006.875,
+        2413.75,
+        1064.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 14.96,
+      "kit": "not_person",
+      "association_review": "association-66-374-d47.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue metal structure at the camera-side edge; no person is present in the source crop."
+    },
+    {
+      "id": "66-686-d0",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 0,
+      "bbox": [
+        1408.75,
+        157.0,
+        1425.5,
+        187.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-66-686-d0.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-top/light-shorts sideline person remains at the isolated railing position left of the blue/dark group."
+    },
+    {
+      "id": "66-686-d1",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 1,
+      "bbox": [
+        1473.25,
+        148.75,
+        1491.25,
+        179.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d1.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue sideline person stays between the two dark-clothed neighbors through the fixed source strip."
+    },
+    {
+      "id": "66-686-d2",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 2,
+      "bbox": [
+        1598.25,
+        138.125,
+        1615.0,
+        169.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d2.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue sideline person moves slightly left as the dark-clothed person approaches from behind; the blue person remains separately visible."
+    },
+    {
+      "id": "66-686-d3",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 3,
+      "bbox": [
+        1555.25,
+        140.5,
+        1572.5,
+        171.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-66-686-d3.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed sideline person walks right behind the nearby blue person and emerges separately to the right at the endpoint."
+    },
+    {
+      "id": "66-686-d4",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 4,
+      "bbox": [
+        1459.75,
+        201.0,
+        1482.0,
+        253.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-66-686-d4.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Yellow-clothed person near the left penalty area remains isolated and walks slightly right."
+    },
+    {
+      "id": "66-686-d5",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 5,
+      "bbox": [
+        1452.5,
+        151.5,
+        1469.75,
+        182.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-66-686-d5.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark sideline person on the left of the blue person remains separate throughout the strip."
+    },
+    {
+      "id": "66-686-d6",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 6,
+      "bbox": [
+        1494.25,
+        151.875,
+        1511.25,
+        178.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-66-686-d6.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark/red-trim sideline person on the right of the blue person stays in place."
+    },
+    {
+      "id": "66-686-d7",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 7,
+      "bbox": [
+        1337.125,
+        161.875,
+        1356.125,
+        194.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-66-686-d7.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed person at the left of the railing group remains standing while another person walks left past him."
+    },
+    {
+      "id": "66-686-d8",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 8,
+      "bbox": [
+        1711.375,
+        124.625,
+        1729.125,
+        155.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d8.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Light-clothed person on the steps beside the canopy remains visible in the same place."
+    },
+    {
+      "id": "66-686-d9",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 9,
+      "bbox": [
+        2200.75,
+        179.375,
+        2234.5,
+        233.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d9.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Isolated blue player at the right edge of the center circle lowers the outstretched arm without another player crossing."
+    },
+    {
+      "id": "66-686-d10",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 10,
+      "bbox": [
+        2132.5,
+        133.625,
+        2150.25,
+        174.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d10.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player near the far touchline walks slowly right, remaining well separated from the center-circle player."
+    },
+    {
+      "id": "66-686-d11",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 11,
+      "bbox": [
+        2472.125,
+        185.5,
+        2495.625,
+        235.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d11.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player with visible 11 on the back walks forward slowly below the far-side action."
+    },
+    {
+      "id": "66-686-d12",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 12,
+      "bbox": [
+        2416.4375,
+        138.0,
+        2435.0625,
+        170.75
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d12.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player left of the far-touchline blue player runs right past the blue player moving left; the white runner remains visible and distinct at the endpoint."
+    },
+    {
+      "id": "66-686-d13",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 13,
+      "bbox": [
+        2671.75,
+        192.375,
+        2696.5,
+        236.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d13.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player with visible 7 on the back remains isolated and moves right below the overlapping far-side players."
+    },
+    {
+      "id": "66-686-d14",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 14,
+      "bbox": [
+        2692.75,
+        163.375,
+        2711.0,
+        197.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d14.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player approaches the nearby blue player; at the endpoint their bodies overlap in d17, so no definite one-person endpoint is assigned."
+    },
+    {
+      "id": "66-686-d15",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 15,
+      "bbox": [
+        2619.75,
+        145.75,
+        2638.0,
+        179.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d15.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player nearest the far stands in the right group stays left of the overlapping blue/white pair and remains separately visible."
+    },
+    {
+      "id": "66-686-d16",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 16,
+      "bbox": [
+        2561.0,
+        139.875,
+        2578.5,
+        169.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d16.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Far-side blue player is partly obscured by the white player in front at the endpoint; d22 includes overlapping foreground body parts, so the endpoint relation is withheld."
+    },
+    {
+      "id": "66-686-d17",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 17,
+      "bbox": [
+        2505.5,
+        147.375,
+        2527.25,
+        184.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d17.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player in front of the far-touchline action moves left as the other blue player and white runner move right; no identity exchange is needed in the visible source sequence."
+    },
+    {
+      "id": "66-686-d18",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 18,
+      "bbox": [
+        2446.3125,
+        136.125,
+        2464.125,
+        167.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d18.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player initially beside the far touchline accelerates right, remaining ahead of the chasing white player; endpoint d16 is separately visible."
+    },
+    {
+      "id": "66-686-d19",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 19,
+      "bbox": [
+        2664.25,
+        157.5,
+        2680.0,
+        192.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d19.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player meets the white player from the right; endpoint d17 contains both overlapping bodies and is withheld."
+    },
+    {
+      "id": "66-686-d20",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 20,
+      "bbox": [
+        2596.5,
+        158.25,
+        2613.0,
+        191.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d20.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player initially in front of the far-side blue player moves left/down and stays separately visible below him at the endpoint."
+    },
+    {
+      "id": "66-686-d21",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 21,
+      "bbox": [
+        2554.375,
+        178.375,
+        2577.5,
+        224.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-66-686-d21.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Dark-clothed field person stands below the far-side group, separated from the blue/white players."
+    },
+    {
+      "id": "66-686-d22",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 22,
+      "bbox": [
+        2904.125,
+        203.625,
+        2921.375,
+        244.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d22.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White defender near the penalty arc is crossed by a blue player; the full source strip shows the white player separately on the right at the endpoint."
+    },
+    {
+      "id": "66-686-d23",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 23,
+      "bbox": [
+        2804.0,
+        200.125,
+        2824.875,
+        243.625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d23.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player at the left edge of the penalty area takes a small step and stays isolated above white 12."
+    },
+    {
+      "id": "66-686-d24",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 24,
+      "bbox": [
+        2968.0,
+        222.625,
+        2987.5,
+        267.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d24.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Central white defender in front of the right goal stays between the crossing pair and the farther-right white player."
+    },
+    {
+      "id": "66-686-d25",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 25,
+      "bbox": [
+        2609.75,
+        260.9375,
+        2637.25,
+        327.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d25.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player with visible 21 on the back remains isolated below the action throughout the strip."
+    },
+    {
+      "id": "66-686-d26",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 26,
+      "bbox": [
+        2811.875,
+        246.984375,
+        2837.0,
+        301.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d26.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "White player with visible 12 on the back stays below the penalty-area defenders with no crossing."
+    },
+    {
+      "id": "66-686-d27",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 27,
+      "bbox": [
+        3081.75,
+        264.15625,
+        3104.5,
+        312.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d27.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Rightmost white defender remains between the blue 36 player and red-clothed goalkeeper area."
+    },
+    {
+      "id": "66-686-d28",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 28,
+      "bbox": [
+        2997.25,
+        271.34375,
+        3019.25,
+        321.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d28.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Blue player with visible 36 on the back remains isolated near the penalty-area line."
+    },
+    {
+      "id": "66-686-d29",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 29,
+      "bbox": [
+        2925.75,
+        230.0,
+        2942.0,
+        253.03125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "blue",
+      "association_review": "association-66-686-d29.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "Start is the lower-body fragment of the blue player beside the white defender; the strip follows the blue player crossing left of that defender to endpoint d26."
+    },
+    {
+      "id": "66-686-d30",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 30,
+      "bbox": [
+        2903.0,
+        230.0,
+        2916.75,
+        245.0546875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d30.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "Lower-leg duplicate of the white defender in start d22; the strip keeps the legs connected to that white body through the crossing."
+    },
+    {
+      "id": "66-686-d31",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 31,
+      "bbox": [
+        2804.5,
+        230.0,
+        2823.625,
+        244.96875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "white",
+      "association_review": "association-66-686-d31.jpg",
+      "box_scope": "partial_person",
+      "visual_basis": "Lower-leg duplicate of start d23, confirmed by the fixed strip of the isolated white defender."
+    },
+    {
+      "id": "66-686-d32",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 32,
+      "bbox": [
+        3180.5625,
+        258.578125,
+        3198.0,
+        298.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "other",
+      "association_review": "association-66-686-d32.jpg",
+      "box_scope": "single_person",
+      "visual_basis": "Red-clothed person beside the right goal remains isolated with no competing red person."
+    },
+    {
+      "id": "66-686-d33",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 33,
+      "bbox": [
+        3641.0,
+        272.59375,
+        3665.15625,
+        301.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d33.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Canopy roof; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d34",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 34,
+      "bbox": [
+        577.125,
+        660.0,
+        598.625,
+        672.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d34.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue bottle; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d35",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 35,
+      "bbox": [
+        748.25,
+        713.875,
+        783.25,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d35.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Painted turf emblem; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d36",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 36,
+      "bbox": [
+        774.0416564941406,
+        713.5,
+        785.28125,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d36.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Painted turf emblem; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d37",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 37,
+      "bbox": [
+        2976.75,
+        719.0,
+        2998.5,
+        730.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d37.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Painted turf lettering; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d38",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 38,
+      "bbox": [
+        1366.0,
+        759.875,
+        1383.0,
+        777.0
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d38.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue cone; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d39",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 39,
+      "bbox": [
+        1796.125,
+        793.875,
+        1823.75,
+        818.875
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d39.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Football; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d40",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 40,
+      "bbox": [
+        3162.9375,
+        747.25,
+        3188.375,
+        771.4375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d40.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Football on painted turf; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d41",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 41,
+      "bbox": [
+        3621.0,
+        797.375,
+        3641.875,
+        820.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d41.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Orange cone; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d42",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 42,
+      "bbox": [
+        3571.5625,
+        781.875,
+        3593.125,
+        802.3125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d42.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Football; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d43",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 43,
+      "bbox": [
+        556.0,
+        892.0,
+        581.75,
+        920.375
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d43.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Metal walkway equipment; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d44",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 44,
+      "bbox": [
+        777.943359375,
+        949.375,
+        811.65625,
+        973.125
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d44.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Coiled metal walkway equipment; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d45",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 45,
+      "bbox": [
+        913.75,
+        970.625,
+        948.0,
+        993.25
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d45.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "White cloth or cover; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d46",
+      "segment": 66,
+      "frame_idx": 686,
+      "detector_index": 46,
+      "bbox": [
+        2381.09375,
+        1007.5,
+        2413.3125,
+        1064.5
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4",
+      "seconds": 27.44,
+      "kit": "not_person",
+      "association_review": "association-66-686-d46.jpg",
+      "box_scope": "not_person",
+      "visual_basis": "Blue camera-side metal structure; no person is visible in the crop."
+    }
+  ],
+  "source_review": [
+    {
+      "id": "64-374-d0",
+      "status": "same_labeled",
+      "reason": "The light-shirted player stays to the right of the blue player near the arc throughout the fixed source strip. Start d0 is his upper-body duplicate of d28; end d23 is the full box, with upper-body duplicate d1."
+    },
+    {
+      "id": "64-374-d1",
+      "status": "same_labeled",
+      "reason": "Blue field player directly in front of the sideline group moves slightly left and down without crossing another field player in the fixed source strip."
+    },
+    {
+      "id": "64-374-d2",
+      "status": "same_labeled",
+      "reason": "Dark-clothed sideline person immediately behind/right of the blue field player remains at the same railing position throughout the fixed strip."
+    },
+    {
+      "id": "64-374-d3",
+      "status": "uncertain",
+      "reason": "A sideline person is visible, but the small shaded upper garment does not permit a reliable blue/white/other kit judgment; no scored association is forced."
+    },
+    {
+      "id": "64-374-d4",
+      "status": "visible_person_without_source_box",
+      "reason": "The light-clothed sideline person walks left behind the adjacent blue person. At the endpoint he is partly occluded among the railing-side people and lacks a clearly separate source box."
+    },
+    {
+      "id": "64-374-d5",
+      "status": "same_labeled",
+      "reason": "The blue sideline person stays near the same railing post while the adjacent light-clothed person walks behind him to the left."
+    },
+    {
+      "id": "64-374-d6",
+      "status": "same_labeled",
+      "reason": "Dark-top sideline person holds the same railing position through the fixed strip; the person walking left is separate."
+    },
+    {
+      "id": "64-374-d7",
+      "status": "visible_person_without_source_box",
+      "reason": "Dark-clothed person remains in the sideline gap between the two groups, visible at the endpoint without a separate source box."
+    },
+    {
+      "id": "64-374-d8",
+      "status": "visible_person_without_source_box",
+      "reason": "Dark-clothed person remains by the left railing group while another dark person walks past; the endpoint person has no separate source box."
+    },
+    {
+      "id": "64-374-d9",
+      "status": "visible_person_without_source_box",
+      "reason": "Right-hand dark-clothed person of the leftmost sideline pair remains visible throughout; neither that person nor the neighbor has a separate box at the endpoint."
+    },
+    {
+      "id": "64-374-d10",
+      "status": "visible_person_without_source_box",
+      "reason": "Dark-clothed person walks left past the stationary railing person and remains visible among the unboxed sideline group at the endpoint."
+    },
+    {
+      "id": "64-374-d11",
+      "status": "same_labeled",
+      "reason": "Dark-top person with light shorts stays at the same railing post immediately left of the blue sideline person."
+    },
+    {
+      "id": "64-374-d12",
+      "status": "same_labeled",
+      "reason": "Blue field player stays behind the white field player while the dark-clothed person separates left; endpoint d10 is the full box and d30 its lower-body duplicate."
+    },
+    {
+      "id": "64-374-d13",
+      "status": "uncertain",
+      "reason": "Standing sideline person is visible, but shade and the small upper garment do not support a reliable blue/white/other judgment."
+    },
+    {
+      "id": "64-374-d14",
+      "status": "uncertain",
+      "reason": "Seated sideline person is visible, but the tiny shaded garment and railing overlap prevent a reliable kit judgment."
+    },
+    {
+      "id": "64-374-d15",
+      "status": "same_labeled",
+      "reason": "White player in front of the blue player near halfway walks right/down and becomes clearly separate; continuous source motion leads to endpoint d13."
+    },
+    {
+      "id": "64-374-d16",
+      "status": "uncertain",
+      "reason": "The source box covers the blue player and a substantial portion of the overlapping white player. A single kit or scored identity is not forced."
+    },
+    {
+      "id": "64-374-d17",
+      "status": "same_labeled",
+      "reason": "White player nearest the halfway line jogs right/down across it, distinct from the more distant white/blue pair throughout."
+    },
+    {
+      "id": "64-374-d18",
+      "status": "same_labeled",
+      "reason": "Dark-clothed seated person at the right of the bleachers keeps the same seat and posture throughout the fixed strip."
+    },
+    {
+      "id": "64-374-d19",
+      "status": "same_labeled",
+      "reason": "Dark-clothed seated person at the left bleacher group remains in the same seat throughout."
+    },
+    {
+      "id": "64-374-d20",
+      "status": "same_labeled",
+      "reason": "The isolated red-clothed person remains in the right penalty area throughout; no other person crosses this source trajectory."
+    },
+    {
+      "id": "64-374-d21",
+      "status": "same_labeled",
+      "reason": "Blue player to the left of the white player in the left penalty area moves right/down with a visible gap; remains the left-hand player at the endpoint."
+    },
+    {
+      "id": "64-374-d22",
+      "status": "same_labeled",
+      "reason": "The back white player near the yellow person moves down/right behind the other white player without swapping positions; endpoint d21 is the back person, distinct from d18."
+    },
+    {
+      "id": "64-374-d23",
+      "status": "same_labeled",
+      "reason": "The front white player near the penalty-area line moves down/right while remaining in front of the other white player; endpoint d18 is distinct from the back person d21."
+    },
+    {
+      "id": "64-374-d24",
+      "status": "visible_person_without_source_box",
+      "reason": "Yellow-clothed person remains clearly visible by the goal at frame 404, but the endpoint has no source person box."
+    },
+    {
+      "id": "64-374-d25",
+      "status": "same_labeled",
+      "reason": "The more distant blue player left of the arc moves slightly right/down without approaching another player; endpoint d0 is the same person."
+    },
+    {
+      "id": "64-374-d26",
+      "status": "same_labeled",
+      "reason": "Blue player nearest the arc remains to the left of the white player and moves down without a crossing."
+    },
+    {
+      "id": "64-374-d27",
+      "status": "same_labeled",
+      "reason": "White player in the left penalty area stays to the right of the blue player throughout the fixed strip and moves down/right."
+    },
+    {
+      "id": "64-374-d28",
+      "status": "same_labeled",
+      "reason": "Full box of the white player right of the arc remains separate from the blue neighbor; start d0 is the upper duplicate and endpoint d23 the full box."
+    },
+    {
+      "id": "64-374-d29",
+      "status": "uncertain",
+      "reason": "The start box includes the white player and the dark-clothed person directly behind him, whose head and body overlap before separating left; no single-person scored label is forced."
+    },
+    {
+      "id": "64-374-d30",
+      "status": "same_labeled",
+      "reason": "Blue player below the center circle runs left/down ahead of the adjacent white player; continuous fixed context leads to endpoint d31."
+    },
+    {
+      "id": "64-374-d31",
+      "status": "same_labeled",
+      "reason": "White runner follows the blue runner left/down through the strip. Only the blue head touches the lower edge of the start box; the white body is distinct. Endpoint d28 is the white upper-body box."
+    },
+    {
+      "id": "64-374-d32",
+      "status": "same_labeled",
+      "reason": "White player below the center circle follows the blue player left/down, separate from the faster white/blue pair below them."
+    },
+    {
+      "id": "64-374-d33",
+      "status": "not_person",
+      "reason": "Canopy roof corner; no person is present in the source box."
+    },
+    {
+      "id": "64-374-d34",
+      "status": "same_labeled",
+      "reason": "Blue player near the scoreboard moves right along the penalty-area edge without a crossing; endpoint d20 follows the same continuous motion."
+    },
+    {
+      "id": "64-374-d35",
+      "status": "same_labeled",
+      "reason": "Blue player with a visible light back number moves right/down, apart from the scoreboard-side blue player; endpoint d34 is the full box and d22 its upper duplicate."
+    },
+    {
+      "id": "64-374-d36",
+      "status": "not_person",
+      "reason": "Blue bottle-shaped object lying beside the pitch line, not a person."
+    },
+    {
+      "id": "64-374-d37",
+      "status": "not_person",
+      "reason": "White painted marking on the ground, not a person."
+    },
+    {
+      "id": "64-374-d38",
+      "status": "same_labeled",
+      "reason": "White player with visible back number 6 turns and runs right in isolation through the fixed strip; endpoint d26 is his upper-body box."
+    },
+    {
+      "id": "64-374-d39",
+      "status": "not_person",
+      "reason": "White painted marking on the ground, not a person."
+    },
+    {
+      "id": "64-374-d40",
+      "status": "not_person",
+      "reason": "Small pale object on the paved sideline, not a person."
+    },
+    {
+      "id": "64-374-d41",
+      "status": "not_person",
+      "reason": "Small blue and white object on the grass, not a person."
+    },
+    {
+      "id": "64-374-d42",
+      "status": "not_person",
+      "reason": "Round football on the ground, not a person."
+    },
+    {
+      "id": "64-374-d43",
+      "status": "not_person",
+      "reason": "Small pale bottle-shaped object at the pitch edge, not a person."
+    },
+    {
+      "id": "64-374-d44",
+      "status": "not_person",
+      "reason": "Red bottle-shaped object on the paved sideline, not a person."
+    },
+    {
+      "id": "64-374-d45",
+      "status": "not_person",
+      "reason": "Round pale ball on the grass, not a person."
+    },
+    {
+      "id": "64-374-d46",
+      "status": "not_person",
+      "reason": "Footwear on the paved sideline, not a person."
+    },
+    {
+      "id": "64-374-d47",
+      "status": "not_person",
+      "reason": "Loose clothing on the paved sideline, not a person."
+    },
+    {
+      "id": "64-374-d48",
+      "status": "not_person",
+      "reason": "Hanging blue fabric with no human body, not a person."
+    },
+    {
+      "id": "64-686-d0",
+      "status": "same_labeled",
+      "reason": "Dark-clothed person by the far corner flag stays at the same isolated location."
+    },
+    {
+      "id": "64-686-d1",
+      "status": "same_labeled",
+      "reason": "Isolated blue player near the far left touchline moves left without crossing another player."
+    },
+    {
+      "id": "64-686-d2",
+      "status": "uncertain",
+      "reason": "The source box contains overlapping blue and white players who later separate. It has no unique kit or single-person interpretation."
+    },
+    {
+      "id": "64-686-d3",
+      "status": "uncertain",
+      "reason": "Blue sideline person remains visible, but at the endpoint a dark-clothed person overlaps him inside source box d3; no unique endpoint is forced."
+    },
+    {
+      "id": "64-686-d4",
+      "status": "same_labeled",
+      "reason": "Dark-clothed person between the railing groups remains by the same post, separate from the people to the left."
+    },
+    {
+      "id": "64-686-d5",
+      "status": "same_labeled",
+      "reason": "Dark-top light-shorts person at the railing remains to the left of the blue sideline person."
+    },
+    {
+      "id": "64-686-d6",
+      "status": "same_labeled",
+      "reason": "Dark-clothed person in the right railing gap remains at the same location."
+    },
+    {
+      "id": "64-686-d7",
+      "status": "uncertain",
+      "reason": "Small shaded sideline garment and bent posture do not allow a reliable blue/white/other kit judgment."
+    },
+    {
+      "id": "64-686-d8",
+      "status": "uncertain",
+      "reason": "Dark-clothed sideline person walks left across the blue person; both overlap inside endpoint d3, so a unique endpoint is not assigned."
+    },
+    {
+      "id": "64-686-d9",
+      "status": "same_labeled",
+      "reason": "Light-top person walks slowly right beside the canopy and remains separate from the seated people."
+    },
+    {
+      "id": "64-686-d10",
+      "status": "same_labeled",
+      "reason": "Blue field player nearest the far touchline moves right, clearly separate from the central blue player."
+    },
+    {
+      "id": "64-686-d11",
+      "status": "same_labeled",
+      "reason": "Blue player near the center-circle edge remains isolated above/right of the white player."
+    },
+    {
+      "id": "64-686-d12",
+      "status": "uncertain",
+      "reason": "Person at the right railing group is small and partly hidden by the rail; clothing cannot be assigned reliably."
+    },
+    {
+      "id": "64-686-d13",
+      "status": "uncertain",
+      "reason": "The tiny box covers rail/bench and possible partly occluded body fragments. Neither person scope nor kit is reliable."
+    },
+    {
+      "id": "64-686-d14",
+      "status": "uncertain",
+      "reason": "Blue player near halfway remains identifiable in motion, but the white player overlaps the endpoint boxes d13/d14. No unique single-person endpoint is forced."
+    },
+    {
+      "id": "64-686-d15",
+      "status": "uncertain",
+      "reason": "White player near halfway approaches the blue player; endpoint boxes d13/d14 include their overlapping bodies, so association is withheld."
+    },
+    {
+      "id": "64-686-d16",
+      "status": "same_labeled",
+      "reason": "White player on the halfway line stays separate below the overlapping pair; source d31 is his lower-body duplicate."
+    },
+    {
+      "id": "64-686-d17",
+      "status": "same_labeled",
+      "reason": "Dark-clothed seated person at the bleachers remains at the same seat."
+    },
+    {
+      "id": "64-686-d18",
+      "status": "same_labeled",
+      "reason": "Dark-clothed sideline person at the left of the exercise group stays by the same bench position; endpoint d19."
+    },
+    {
+      "id": "64-686-d19",
+      "status": "same_labeled",
+      "reason": "Red-clothed person remains isolated in the right penalty area."
+    },
+    {
+      "id": "64-686-d20",
+      "status": "same_labeled",
+      "reason": "Yellow-clothed person moves right in front of the left goal, without another person crossing."
+    },
+    {
+      "id": "64-686-d21",
+      "status": "same_labeled",
+      "reason": "Blue player at the penalty-area line moves right, staying below/left of the yellow person."
+    },
+    {
+      "id": "64-686-d22",
+      "status": "same_labeled",
+      "reason": "White player in front of the left goal moves right in isolation as the ball rolls behind."
+    },
+    {
+      "id": "64-686-d23",
+      "status": "same_labeled",
+      "reason": "Blue player with visible back number 36 crosses behind the white 12 and emerges on his right; the entire crossing is visible in the fixed strip."
+    },
+    {
+      "id": "64-686-d24",
+      "status": "same_labeled",
+      "reason": "White player nearest the arc turns and moves right, remaining apart from the crossing blue/white pair."
+    },
+    {
+      "id": "64-686-d25",
+      "status": "same_labeled",
+      "reason": "White player with visible 12 remains in front while blue 36 passes behind to his right; endpoint d31 preserves the white trajectory."
+    },
+    {
+      "id": "64-686-d26",
+      "status": "same_labeled",
+      "reason": "White field player below the initially overlapping pair moves up/right toward them, remaining below the other white player at the endpoint."
+    },
+    {
+      "id": "64-686-d27",
+      "status": "same_labeled",
+      "reason": "Blue player above the crossing pair remains apart and moves slightly right."
+    },
+    {
+      "id": "64-686-d28",
+      "status": "same_labeled",
+      "reason": "White player with visible 8 stands by the center-circle edge, separate from the blue and dark-clothed people."
+    },
+    {
+      "id": "64-686-d29",
+      "status": "same_labeled",
+      "reason": "White player with visible 6 below the center circle remains isolated throughout."
+    },
+    {
+      "id": "64-686-d30",
+      "status": "same_labeled",
+      "reason": "White player with visible 29 stays on the halfway line below the circle; endpoint d35 is the partial body box of this same person."
+    },
+    {
+      "id": "64-686-d31",
+      "status": "same_labeled",
+      "reason": "Lower legs belong to the white player in source d16, continuously attached in the fixed context; endpoint full box is d12."
+    },
+    {
+      "id": "64-686-d32",
+      "status": "same_labeled",
+      "reason": "Blue player with visible 9 below the circle remains separate from both white players."
+    },
+    {
+      "id": "64-686-d33",
+      "status": "not_person",
+      "reason": "Blue equipment behind the goal net. No human body in this source box."
+    },
+    {
+      "id": "64-686-d34",
+      "status": "not_person",
+      "reason": "Blue equipment behind the goal net. No human body in this source box."
+    },
+    {
+      "id": "64-686-d35",
+      "status": "not_person",
+      "reason": "Duplicate detection of blue equipment behind the goal net. No human body in this source box."
+    },
+    {
+      "id": "64-686-d36",
+      "status": "not_person",
+      "reason": "Blue bottle lying on grass. No human body in this source box."
+    },
+    {
+      "id": "64-686-d37",
+      "status": "not_person",
+      "reason": "White ground paint. No human body in this source box."
+    },
+    {
+      "id": "64-686-d38",
+      "status": "not_person",
+      "reason": "Duplicate white ground paint. No human body in this source box."
+    },
+    {
+      "id": "64-686-d39",
+      "status": "same_labeled",
+      "reason": "Blue player with visible 21 near the near touchline moves right and bends, with no nearby crossing."
+    },
+    {
+      "id": "64-686-d40",
+      "status": "same_labeled",
+      "reason": "Lower-leg fragment belongs to white 6 in source d29, continuously attached to his body in the strip."
+    },
+    {
+      "id": "64-686-d41",
+      "status": "same_labeled",
+      "reason": "Other lower-leg fragment of the same white 6 in source d29; endpoint d33 is the full body."
+    },
+    {
+      "id": "64-686-d42",
+      "status": "not_person",
+      "reason": "White ground paint. No human body in this source box."
+    },
+    {
+      "id": "64-686-d43",
+      "status": "not_person",
+      "reason": "Small stationary blue object on grass, isolated from every person in the temporal strip. No human body in this source box."
+    },
+    {
+      "id": "64-686-d44",
+      "status": "not_person",
+      "reason": "Small pale object on pavement. No human body in this source box."
+    },
+    {
+      "id": "64-686-d45",
+      "status": "not_person",
+      "reason": "Partial detection of footwear on pavement. No human body in this source box."
+    },
+    {
+      "id": "64-686-d46",
+      "status": "not_person",
+      "reason": "Blue/white object on grass. No human body in this source box."
+    },
+    {
+      "id": "64-686-d47",
+      "status": "not_person",
+      "reason": "Football on grass. No human body in this source box."
+    },
+    {
+      "id": "64-686-d48",
+      "status": "not_person",
+      "reason": "Pale bottle-shaped object. No human body in this source box."
+    },
+    {
+      "id": "64-686-d49",
+      "status": "not_person",
+      "reason": "Red bottle-shaped object. No human body in this source box."
+    },
+    {
+      "id": "64-686-d50",
+      "status": "not_person",
+      "reason": "Pale ball. No human body in this source box."
+    },
+    {
+      "id": "64-686-d51",
+      "status": "not_person",
+      "reason": "Footwear on pavement. No human body in this source box."
+    },
+    {
+      "id": "64-686-d52",
+      "status": "not_person",
+      "reason": "Loose clothing on pavement. No human body in this source box."
+    },
+    {
+      "id": "64-686-d53",
+      "status": "not_person",
+      "reason": "Hanging blue fabric. No human body in this source box."
+    },
+    {
+      "id": "66-374-d0",
+      "status": "same_labeled",
+      "reason": "Right-hand blue sideline person of the close pair remains at the railing; the left neighbor stays separate throughout the fixed strip."
+    },
+    {
+      "id": "66-374-d1",
+      "status": "same_labeled",
+      "reason": "Left-hand blue sideline person of the close pair remains to the left of the neighbor throughout the fixed strip."
+    },
+    {
+      "id": "66-374-d2",
+      "status": "same_labeled",
+      "reason": "Blue field player nearest the far stands walks right toward the halfway line without a crossing."
+    },
+    {
+      "id": "66-374-d3",
+      "status": "same_labeled",
+      "reason": "White player behind the left side of the center circle walks right continuously, separate from the blue player in front."
+    },
+    {
+      "id": "66-374-d4",
+      "status": "same_labeled",
+      "reason": "Light-clothed sideline person immediately left of the canopy remains by the same steps throughout the strip."
+    },
+    {
+      "id": "66-374-d5",
+      "status": "same_labeled",
+      "reason": "Blue field player at the left edge of the center circle walks right; the partial leg box d26 belongs to him."
+    },
+    {
+      "id": "66-374-d6",
+      "status": "same_labeled",
+      "reason": "Dark-clothed sideline person stays between the blue pair and the next railing group."
+    },
+    {
+      "id": "66-374-d7",
+      "status": "same_labeled",
+      "reason": "Dark-top person with light shorts remains at the railing position to the left of the light-clothed person by the canopy."
+    },
+    {
+      "id": "66-374-d8",
+      "status": "uncertain",
+      "reason": "Small shaded shape against the railing beside the blue pair does not clearly separate body and background or support a reliable kit judgment."
+    },
+    {
+      "id": "66-374-d9",
+      "status": "uncertain",
+      "reason": "Start box includes the overlapping white player and the blue player in front near the halfway line; a single-person association is withheld."
+    },
+    {
+      "id": "66-374-d10",
+      "status": "same_labeled",
+      "reason": "White player at the right edge of the center circle accelerates right, remaining below the other white runner throughout the fixed strip."
+    },
+    {
+      "id": "66-374-d11",
+      "status": "same_labeled",
+      "reason": "White player between the halfway-line group and dark field person runs right along the upper side of the circle, staying separate."
+    },
+    {
+      "id": "66-374-d12",
+      "status": "same_labeled",
+      "reason": "Blue player behind the overlapping halfway-line pair runs right on their far side and remains distinguishable throughout."
+    },
+    {
+      "id": "66-374-d13",
+      "status": "same_labeled",
+      "reason": "White player in the lower center-circle area walks right with no crossing; endpoint lower-leg duplicate d34 belongs to endpoint d18."
+    },
+    {
+      "id": "66-374-d14",
+      "status": "visible_person_without_source_box",
+      "reason": "Dark-clothed seated person remains on the far stand bench, visible at the endpoint without a separate raw box."
+    },
+    {
+      "id": "66-374-d15",
+      "status": "same_labeled",
+      "reason": "Foremost white runner on the right continues ahead of the chasing blue/white cluster. Endpoint d16 is the runner ahead of that cluster."
+    },
+    {
+      "id": "66-374-d16",
+      "status": "same_labeled",
+      "reason": "Upper/right blue player in the chasing trio remains ahead of the other blue player and white chaser through the strip."
+    },
+    {
+      "id": "66-374-d17",
+      "status": "uncertain",
+      "reason": "The lower blue runner can be followed, but endpoint d25 also includes the closely overlapping white chaser; no clean single-person endpoint is assigned."
+    },
+    {
+      "id": "66-374-d18",
+      "status": "same_labeled",
+      "reason": "Blue runner below the far-side group continues right; endpoint d29 is a partial lower-body box of this otherwise unboxed runner."
+    },
+    {
+      "id": "66-374-d19",
+      "status": "uncertain",
+      "reason": "Start crop contains overlapping blue and white body parts in the far-side pair; a single-person label is withheld."
+    },
+    {
+      "id": "66-374-d20",
+      "status": "same_labeled",
+      "reason": "White runner on the left of the far-side white/blue pair stays to their left through the fixed strip."
+    },
+    {
+      "id": "66-374-d21",
+      "status": "uncertain",
+      "reason": "White runner overlaps the adjacent blue runner within the start crop; the mixed box is not given a single-person relation."
+    },
+    {
+      "id": "66-374-d22",
+      "status": "uncertain",
+      "reason": "White chaser behind two blue runners remains visible, but endpoint d20 overlaps the blue runner, so the relation is withheld."
+    },
+    {
+      "id": "66-374-d23",
+      "status": "same_labeled",
+      "reason": "Isolated yellow-clothed person near the left penalty arc walks slowly right throughout the strip."
+    },
+    {
+      "id": "66-374-d24",
+      "status": "same_labeled",
+      "reason": "Partial lower-leg box belongs to the isolated blue player also boxed as start d25; no nearby competing person occurs in the strip."
+    },
+    {
+      "id": "66-374-d25",
+      "status": "same_labeled",
+      "reason": "Isolated blue player left of the center circle moves right throughout the strip; endpoint upper-body duplicate d9 belongs to d28."
+    },
+    {
+      "id": "66-374-d26",
+      "status": "same_labeled",
+      "reason": "Lower-body fragment of start d5, confirmed by the fixed strip around the same isolated center-circle player."
+    },
+    {
+      "id": "66-374-d27",
+      "status": "same_labeled",
+      "reason": "Lower-leg fragment of start d18, confirmed by the fixed strip; endpoint d29 is that runner's lower-body box."
+    },
+    {
+      "id": "66-374-d28",
+      "status": "same_labeled",
+      "reason": "Red-clothed person in front of the right goal moves right continuously with no competing red person."
+    },
+    {
+      "id": "66-374-d29",
+      "status": "same_labeled",
+      "reason": "Isolated white player with visible 6 on the back walks right beneath the attacking group."
+    },
+    {
+      "id": "66-374-d30",
+      "status": "uncertain",
+      "reason": "Dark stationary shape behind the right goal is too ambiguous to distinguish a seated person from equipment confidently; no association is forced."
+    },
+    {
+      "id": "66-374-d31",
+      "status": "not_person",
+      "reason": "Blue material in the spare goal net; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d32",
+      "status": "not_person",
+      "reason": "Blue bottle; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d33",
+      "status": "not_person",
+      "reason": "White painted turf emblem; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d34",
+      "status": "not_person",
+      "reason": "White painted turf emblem; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d35",
+      "status": "not_person",
+      "reason": "White painted turf emblem; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d36",
+      "status": "same_labeled",
+      "reason": "Blue player with visible 21 on the back stays isolated near the near touchline; endpoint d30 is an upper-body duplicate of d38."
+    },
+    {
+      "id": "66-374-d37",
+      "status": "not_person",
+      "reason": "Painted turf lettering; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d38",
+      "status": "same_labeled",
+      "reason": "Dark training-clothed person runs right along the near touchline, isolated from field players."
+    },
+    {
+      "id": "66-374-d39",
+      "status": "not_person",
+      "reason": "Painted turf lettering; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d40",
+      "status": "not_person",
+      "reason": "Blue cone; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d41",
+      "status": "not_person",
+      "reason": "Football; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d42",
+      "status": "not_person",
+      "reason": "Orange cone; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d43",
+      "status": "not_person",
+      "reason": "Football; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d44",
+      "status": "not_person",
+      "reason": "Metal equipment on the walkway; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d45",
+      "status": "not_person",
+      "reason": "Coiled metal equipment on the walkway; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d46",
+      "status": "not_person",
+      "reason": "White cloth or cover on the walkway; no person is present in the source crop."
+    },
+    {
+      "id": "66-374-d47",
+      "status": "not_person",
+      "reason": "Blue metal structure at the camera-side edge; no person is present in the source crop."
+    },
+    {
+      "id": "66-686-d0",
+      "status": "same_labeled",
+      "reason": "Dark-top/light-shorts sideline person remains at the isolated railing position left of the blue/dark group."
+    },
+    {
+      "id": "66-686-d1",
+      "status": "same_labeled",
+      "reason": "Blue sideline person stays between the two dark-clothed neighbors through the fixed source strip."
+    },
+    {
+      "id": "66-686-d2",
+      "status": "same_labeled",
+      "reason": "Blue sideline person moves slightly left as the dark-clothed person approaches from behind; the blue person remains separately visible."
+    },
+    {
+      "id": "66-686-d3",
+      "status": "same_labeled",
+      "reason": "Dark-clothed sideline person walks right behind the nearby blue person and emerges separately to the right at the endpoint."
+    },
+    {
+      "id": "66-686-d4",
+      "status": "same_labeled",
+      "reason": "Yellow-clothed person near the left penalty area remains isolated and walks slightly right."
+    },
+    {
+      "id": "66-686-d5",
+      "status": "same_labeled",
+      "reason": "Dark sideline person on the left of the blue person remains separate throughout the strip."
+    },
+    {
+      "id": "66-686-d6",
+      "status": "same_labeled",
+      "reason": "Dark/red-trim sideline person on the right of the blue person stays in place."
+    },
+    {
+      "id": "66-686-d7",
+      "status": "same_labeled",
+      "reason": "Dark-clothed person at the left of the railing group remains standing while another person walks left past him."
+    },
+    {
+      "id": "66-686-d8",
+      "status": "same_labeled",
+      "reason": "Light-clothed person on the steps beside the canopy remains visible in the same place."
+    },
+    {
+      "id": "66-686-d9",
+      "status": "same_labeled",
+      "reason": "Isolated blue player at the right edge of the center circle lowers the outstretched arm without another player crossing."
+    },
+    {
+      "id": "66-686-d10",
+      "status": "same_labeled",
+      "reason": "Blue player near the far touchline walks slowly right, remaining well separated from the center-circle player."
+    },
+    {
+      "id": "66-686-d11",
+      "status": "same_labeled",
+      "reason": "White player with visible 11 on the back walks forward slowly below the far-side action."
+    },
+    {
+      "id": "66-686-d12",
+      "status": "same_labeled",
+      "reason": "White player left of the far-touchline blue player runs right past the blue player moving left; the white runner remains visible and distinct at the endpoint."
+    },
+    {
+      "id": "66-686-d13",
+      "status": "same_labeled",
+      "reason": "Blue player with visible 7 on the back remains isolated and moves right below the overlapping far-side players."
+    },
+    {
+      "id": "66-686-d14",
+      "status": "uncertain",
+      "reason": "White player approaches the nearby blue player; at the endpoint their bodies overlap in d17, so no definite one-person endpoint is assigned."
+    },
+    {
+      "id": "66-686-d15",
+      "status": "same_labeled",
+      "reason": "White player nearest the far stands in the right group stays left of the overlapping blue/white pair and remains separately visible."
+    },
+    {
+      "id": "66-686-d16",
+      "status": "uncertain",
+      "reason": "Far-side blue player is partly obscured by the white player in front at the endpoint; d22 includes overlapping foreground body parts, so the endpoint relation is withheld."
+    },
+    {
+      "id": "66-686-d17",
+      "status": "same_labeled",
+      "reason": "Blue player in front of the far-touchline action moves left as the other blue player and white runner move right; no identity exchange is needed in the visible source sequence."
+    },
+    {
+      "id": "66-686-d18",
+      "status": "same_labeled",
+      "reason": "Blue player initially beside the far touchline accelerates right, remaining ahead of the chasing white player; endpoint d16 is separately visible."
+    },
+    {
+      "id": "66-686-d19",
+      "status": "uncertain",
+      "reason": "Blue player meets the white player from the right; endpoint d17 contains both overlapping bodies and is withheld."
+    },
+    {
+      "id": "66-686-d20",
+      "status": "same_labeled",
+      "reason": "White player initially in front of the far-side blue player moves left/down and stays separately visible below him at the endpoint."
+    },
+    {
+      "id": "66-686-d21",
+      "status": "same_labeled",
+      "reason": "Dark-clothed field person stands below the far-side group, separated from the blue/white players."
+    },
+    {
+      "id": "66-686-d22",
+      "status": "same_labeled",
+      "reason": "White defender near the penalty arc is crossed by a blue player; the full source strip shows the white player separately on the right at the endpoint."
+    },
+    {
+      "id": "66-686-d23",
+      "status": "same_labeled",
+      "reason": "White player at the left edge of the penalty area takes a small step and stays isolated above white 12."
+    },
+    {
+      "id": "66-686-d24",
+      "status": "same_labeled",
+      "reason": "Central white defender in front of the right goal stays between the crossing pair and the farther-right white player."
+    },
+    {
+      "id": "66-686-d25",
+      "status": "same_labeled",
+      "reason": "Blue player with visible 21 on the back remains isolated below the action throughout the strip."
+    },
+    {
+      "id": "66-686-d26",
+      "status": "same_labeled",
+      "reason": "White player with visible 12 on the back stays below the penalty-area defenders with no crossing."
+    },
+    {
+      "id": "66-686-d27",
+      "status": "same_labeled",
+      "reason": "Rightmost white defender remains between the blue 36 player and red-clothed goalkeeper area."
+    },
+    {
+      "id": "66-686-d28",
+      "status": "same_labeled",
+      "reason": "Blue player with visible 36 on the back remains isolated near the penalty-area line."
+    },
+    {
+      "id": "66-686-d29",
+      "status": "same_labeled",
+      "reason": "Start is the lower-body fragment of the blue player beside the white defender; the strip follows the blue player crossing left of that defender to endpoint d26."
+    },
+    {
+      "id": "66-686-d30",
+      "status": "same_labeled",
+      "reason": "Lower-leg duplicate of the white defender in start d22; the strip keeps the legs connected to that white body through the crossing."
+    },
+    {
+      "id": "66-686-d31",
+      "status": "same_labeled",
+      "reason": "Lower-leg duplicate of start d23, confirmed by the fixed strip of the isolated white defender."
+    },
+    {
+      "id": "66-686-d32",
+      "status": "same_labeled",
+      "reason": "Red-clothed person beside the right goal remains isolated with no competing red person."
+    },
+    {
+      "id": "66-686-d33",
+      "status": "not_person",
+      "reason": "Canopy roof; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d34",
+      "status": "not_person",
+      "reason": "Blue bottle; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d35",
+      "status": "not_person",
+      "reason": "Painted turf emblem; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d36",
+      "status": "not_person",
+      "reason": "Painted turf emblem; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d37",
+      "status": "not_person",
+      "reason": "Painted turf lettering; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d38",
+      "status": "not_person",
+      "reason": "Blue cone; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d39",
+      "status": "not_person",
+      "reason": "Football; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d40",
+      "status": "not_person",
+      "reason": "Football on painted turf; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d41",
+      "status": "not_person",
+      "reason": "Orange cone; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d42",
+      "status": "not_person",
+      "reason": "Football; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d43",
+      "status": "not_person",
+      "reason": "Metal walkway equipment; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d44",
+      "status": "not_person",
+      "reason": "Coiled metal walkway equipment; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d45",
+      "status": "not_person",
+      "reason": "White cloth or cover; no person is visible in the crop."
+    },
+    {
+      "id": "66-686-d46",
+      "status": "not_person",
+      "reason": "Blue camera-side metal structure; no person is visible in the crop."
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "sealed_at_utc": "2026-10-09T14:45:14.515073+00:00",
+  "freeze_sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea",
+  "label_sha256": {
+    "docs/measurements/identity-palette-control-day-labels.json": "03ea7533669bf10e3be44deaa219a61e4bb3f05fdb9623a974e7b3f6f1872b88",
+    "docs/measurements/identity-palette-control-day-pairs.json": "a46c2ce4d8f12c3bb7e0eff58a6a58f9c6856755a76934069e2199918287bba0"
+  },
+  "source_review_sha256": {
+    "docs/measurements/identity-palette-control-day64-source-review.json": "9a1ef0fd6c0f66a137be84518bdfd20a26340d69ea88be751493198081b4de7d",
+    "docs/measurements/identity-palette-control-day66-source-review.json": "0c041fee51f82cbb7443a3be310a95e48b1d82a97bf12f691533c4faf095f9b1"
+  },
+  "predictions_opened": false,
+  "independently_adjudicated": false,
+  "reviewer": "Codex single AI source-image reviewer; no tracker predictions shown",
+  "start_reviews": 198,
+  "pair_counts": {
+    "same": 108,
+    "different": 108
+  },
+  "source_review_counts": {
+    "same_labeled": 108,
+    "uncertain": 23,
+    "visible_person_without_source_box": 7,
+    "not_person": 60
+  },
+  "kit_counts": {
+    "white": 46,
+    "blue": 44,
+    "other": 34,
+    "uncertain": 14,
+    "not_person": 60
+  },
+  "limitations": "Sparse same-match temporal control, not independent match validation or full-video HOTA/IDF1. Single AI reviewer, no human adjudication. Mixed or unclear boxes withheld; explicit missing endpoint coverage."
+}
