@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-09",
+  "before_direct_api_seconds": 49.145772,
+  "before_next_proxy": {
+    "seconds": 30.06,
+    "status": 500,
+    "error": "ECONNRESET"
+  },
+  "after_next_proxy": [
+    {
+      "phase": "cold",
+      "seconds": 6.734346600016579,
+      "status": 200,
+      "exact_response_equal": true
+    },
+    {
+      "phase": "warm",
+      "seconds": 0.027088200207799673,
+      "status": 200,
+      "exact_response_equal": true
+    }
+  ],
+  "calibrations": 5,
+  "errors_m": {
+    "soccertrack_v2_117092": 0.761,
+    "soccertrack_v2_117092_landmarks": 1.759,
+    "soccertrack_v2_117093_landmarks": 1.432,
+    "teamtrack_soccer_top_D_20220220": 0.04,
+    "vlsc_u19_20190825_kaba": 0.082
+  },
+  "source_sha256": {
+    "data\\tracking\\calibrations\\soccertrack_v2_117092.json": "9ec8dd612f7399838dbc519e43b66a72687addf68dc7ee51b937187303eadf5c",
+    "data\\tracking\\calibrations\\soccertrack_v2_117092_landmarks.json": "ceeb386a7e4923f1264fd7e7db6674251e15bb3e29c63eacff8f0523d4164d07",
+    "data\\tracking\\calibrations\\soccertrack_v2_117093_landmarks.json": "b38cffb26ac40619039d9b34a19deba98b30cebd9ed0d7a30e66c911216bfd9e",
+    "data\\tracking\\calibrations\\teamtrack_soccer_top_D_20220220.json": "1e823237531230496f6773773f66db3be4cb9fbc4914fca983a03503510c0975",
+    "data\\tracking\\calibrations\\vlsc_u19_20190825_kaba.json": "eadb0971c19302532f28234ae9c01a06eb625ace058de3534a4e5a7afda37121"
+  },
+  "frozen_calibration_math_modified": false,
+  "limitation": "Single local before/cold/warm measurements; not a throughput benchmark or identity-accuracy result."
+}

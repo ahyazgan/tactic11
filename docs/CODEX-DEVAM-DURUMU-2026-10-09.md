@@ -99,5 +99,24 @@ dağıtım uyumsuzluğu doğrulandı: proje `engines.node=20.x` istiyordu;
 [Vercel'in 1 Ekim 2026 kapanışı](https://vercel.com/changelog/node-js-20-is-being-deprecated)
 bu sürümle yeni dağıtımları engelliyor. Paket/lock dosyası ve iki tarayıcı CI
 işi Node.js 24'e geçirildi; yerel derleme zaten 24.13.0 ile çalışıyordu.
-Bu düzeltmenin önizleme sonucu ayrıca kontrol edilecek; başarısız bir
-kontrol atlanarak birleştirme yapılmayacak.
+Node 24 önizlemesi ve sekiz CI işi geçti. PR #277 normal merge ile
+`476e5d0` olarak birleşti; ana dalın CI ve Vercel yayını da başarılı.
+
+## Kalibrasyon listesinin zaman aşımı
+
+Son gerçek ekran kontrolünde kalibrasyon listesi ayrı bir gecikme gösterdi.
+500 noktalı TPS dosyasının leave-one-out hata hesabı her listede yeniden
+yapılıyordu: doğrudan API 49,146 saniye sürerken Next proxy 30,06 saniyede
+HTTP 500 / bağlantı kesilmesi verdi.
+
+API özet hesabında BLAS iş parçacığı sayısı geçici olarak bire indirildi;
+hesap sonunda eski limit geri yüklenir. Özetler dosyanın bütün JSON içeriğine
+göre, en fazla 64 girdilik önbellekte tutulur. İçerik değişince yeniden
+hesaplanır; yanıt kopyalanır ve ilk hesaplar kilitle sıraya alınır.
+Kalibrasyon matematiği, kaynak dosyalar ve donmuş takip adayı değiştirilmedi.
+
+Gerçek proxy ölçümü: ilk istek **6,734 sn**, tekrar istek **0,027 sn**;
+ikisi de HTTP 200. Beş kalibrasyonun tüm yanıt alanları eski API ile birebir
+aynı. Bunlar tek yerel ölçümlerdir; genel kapasite veya takip doğruluğu
+iddiası değildir. 12 video/kalibrasyon API testi, Ruff ve mypy geçti.
+Kaynak hashleri ve ölçüm: [kalibrasyon kaydı](measurements/calibration-api-cache-20261009.json).

@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import sys
 import time
+from copy import deepcopy
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -54,6 +55,79 @@ CALIB = {
     ],
     "meta": {"camera": "test"},
 }
+
+
+@pytest.fixture()
+def summary_cache():
+    tracking_jobs._cached_calib_summary.cache_clear()
+    yield
+    tracking_jobs._cached_calib_summary.cache_clear()
+
+
+def test_calibration_summary_reuses_validation_but_rechecks_changed_content(monkeypatch, summary_cache):
+    original = tracking_jobs._calculate_calib_summary
+    calls = []
+
+    def calculate(name, payload):
+        calls.append(payload)
+        return original(name, payload)
+
+    monkeypatch.setattr(tracking_jobs, "_calculate_calib_summary", calculate)
+    first = tracking_jobs._calib_summary("cached", CALIB)
+    assert tracking_jobs._calib_summary("cached", dict(reversed(list(CALIB.items())))) == first
+    assert len(calls) == 1
+    changed = deepcopy(CALIB)
+    changed["points"][0]["image"][0] = 101
+    tracking_jobs._calib_summary("cached", changed)
+    assert len(calls) == 2
+
+
+def test_calibration_summary_result_cannot_poison_future_responses(summary_cache):
+    first = tracking_jobs._calib_summary("safe", CALIB)
+    first["meta"]["camera"] = "tampered"
+    first["valid"] = False
+    again = tracking_jobs._calib_summary("safe", CALIB)
+    assert again["meta"] == {"camera": "test"}
+    assert again["valid"] is True
+
+
+def test_calibration_list_rechecks_replaced_file_and_removes_deleted_file(client, env, summary_cache):
+    import os
+
+    folder = env / "calibrations"
+    folder.mkdir()
+    path = folder / "same.json"
+    invalid = deepcopy(CALIB)
+    invalid["image_size"] = [0, 800]
+    path.write_text(json.dumps(invalid))
+    stamp = path.stat()
+    assert client.get("/tracking/calibrations").json()["calibrations"][0]["valid"] is False
+    path.write_text(json.dumps(CALIB))
+    os.utime(path, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
+    assert client.get("/tracking/calibrations").json()["calibrations"][0]["valid"] is True
+    path.unlink()
+    assert client.get("/tracking/calibrations").json() == {"calibrations": [], "total": 0}
+
+
+def test_calibration_blas_limits_restore_after_validation_failure(monkeypatch, summary_cache):
+    from contextlib import contextmanager
+
+    events = []
+
+    @contextmanager
+    def limits(*, limits, user_api):
+        assert (limits, user_api) == (1, "blas")
+        events.append("enter")
+        try:
+            yield
+        finally:
+            events.append("exit")
+
+    monkeypatch.setattr(tracking_jobs, "threadpool_limits", limits)
+    bad = deepcopy(CALIB)
+    bad["image_size"] = [0, 800]
+    assert tracking_jobs._calib_summary("bad", bad)["valid"] is False
+    assert events == ["enter", "exit"]
 
 
 def test_calibration_save_list_get(client, env):
