@@ -1,0 +1,2203 @@
+{
+  "review_type": "Post-unblinding development review by one AI; source strips selected using prototype events, no independent human adjudication or full-video identity truth.",
+  "scope": "23 prototype motion events and 3 partitions. Source support is local only. The crowded night-3 transition is not declared a proved false join or a successful recovery.",
+  "reviewed_predictions_sha256": {
+    ".cache\\short-gap-development-20261009-v1\\report.json": "57bb4dd3e27d84ec0988f7fd77dca16bcd5d25c79cbde938f970e3ceecbbdfe1",
+    ".cache\\short-gap-partitions-20261009-v2\\report.json": "6b7984f32fba34001f31f582acf3165ba5e5759ec504f441c11302da405d0700"
+  },
+  "review_assets_sha256": {
+    "docs\\measurements\\identity-short-gap-review-0.jpg": "005c1e302406016a7c3b102c8606aa20197dcaf583df59a3557a5acf3cf8ebdd",
+    "docs\\measurements\\identity-short-gap-review-1.jpg": "3bb6de2e03adc04ccd9ff758f626d5977050f663d650edf375f829f478e9334b",
+    "docs\\measurements\\identity-short-gap-review-2.jpg": "4d012ff6c252f13e579a00e04c2e5852f5258b724136a0b04041c3b2f68a5c5d",
+    "docs\\measurements\\identity-short-gap-review-3.jpg": "a00d1c1344f53e23dc7e401ccbb14af8944420a0eed4af3de3f96460af8ac686",
+    "docs\\measurements\\identity-short-gap-review-4.jpg": "b9c3571883bc2bd7dd9e2746f1c398d45b88d18336e6f8cef7530810023c5f6a",
+    "docs\\measurements\\identity-short-gap-review-5.jpg": "35a34234223d59f1489783557349e01c4d8909734297b8158928061af03a69d1",
+    "docs\\measurements\\identity-short-gap-review-6.jpg": "c0fd3aa62b350f0ac5d94ff3286d14e380c27ae5e5d5024a24f92d21a6d38fc7",
+    "docs\\measurements\\identity-short-gap-night-3-motion-147-43-dense.jpg": "3299fb631c7ff385e3db48d359017fe49250cd35c327e3eee25223d15de59efb",
+    "docs\\measurements\\identity-short-gap-night_old_control-40-motion-359-67-dense.jpg": "9c1d91cf3876f0ae14b64e7d0447d7d64fcc74611eb36484f4df8764c54e4ab6"
+  },
+  "records": [
+    {
+      "key": "day-0-motion-127-109",
+      "group": "day",
+      "segment": 0,
+      "event": {
+        "type": "motion",
+        "order": 127,
+        "track_id": 109,
+        "source_index": 17,
+        "proposal": [
+          881.296875,
+          284.765625,
+          907.234375,
+          322.296875
+        ],
+        "matched": true,
+        "previous_mean": [
+          899.4383809200193,
+          301.79020634842004,
+          0.620718171029718,
+          37.9745679769678,
+          2.113839783353677,
+          -0.2872719321927456,
+          3.727595364273688e-07,
+          0.0
+        ]
+      },
+      "orders": [
+        122,
+        123,
+        124,
+        127,
+        128,
+        129
+      ],
+      "boxes": {
+        "122": [
+          882.875,
+          283.59375,
+          905.75,
+          321.1875
+        ],
+        "123": [
+          882.6875,
+          283.46875,
+          907.5,
+          321.0625
+        ],
+        "124": [
+          880.3125,
+          283.96875,
+          906.25,
+          321.5
+        ],
+        "127": [
+          873.1875,
+          283.3125,
+          901.1875,
+          322.75
+        ],
+        "128": [
+          873.625,
+          283.875,
+          899.5,
+          322.9375
+        ],
+        "129": [
+          874.0,
+          284.375,
+          898.875,
+          322.5
+        ]
+      },
+      "rect": [
+        800,
+        243,
+        980,
+        363
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Yellow goalkeeper takes small steps near the goal line; blue player stays separate.",
+      "board": "docs/measurements/identity-short-gap-review-0.jpg",
+      "row": 0,
+      "source_video_sha256": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2"
+    },
+    {
+      "key": "day-0-motion-331-173",
+      "group": "day",
+      "segment": 0,
+      "event": {
+        "type": "motion",
+        "order": 331,
+        "track_id": 173,
+        "source_index": 27,
+        "proposal": [
+          2521.9375,
+          483.0546875,
+          2563.5625,
+          611.9609375
+        ],
+        "matched": true,
+        "previous_mean": [
+          2565.1404963948853,
+          551.0093144309174,
+          0.4635410620357117,
+          131.16725509415485,
+          -8.341372727659214,
+          1.7931421892830197,
+          -7.042698552499701e-07,
+          2.699564273588479
+        ]
+      },
+      "orders": [
+        327,
+        328,
+        329,
+        331,
+        332,
+        333
+      ],
+      "boxes": {
+        "327": [
+          2567.75,
+          490.421875,
+          2633.5,
+          612.625
+        ],
+        "328": [
+          2560.625,
+          488.21875,
+          2615.25,
+          612.75
+        ],
+        "329": [
+          2547.375,
+          482.21875,
+          2589.0,
+          611.125
+        ],
+        "331": [
+          2518.375,
+          478.65625,
+          2558.125,
+          612.375
+        ],
+        "332": [
+          2493.0,
+          492.71875,
+          2541.875,
+          617.0
+        ],
+        "333": [
+          2466.625,
+          489.109375,
+          2528.375,
+          619.75
+        ]
+      },
+      "rect": [
+        2416,
+        443,
+        2683,
+        654
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Isolated blue 21 walks left; jersey and body remain visible.",
+      "board": "docs/measurements/identity-short-gap-review-0.jpg",
+      "row": 1,
+      "source_video_sha256": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2"
+    },
+    {
+      "key": "day-0-partition-152-68",
+      "group": "day",
+      "segment": 0,
+      "event": {
+        "type": "partition",
+        "continuity_id": 0,
+        "raw_id": 68,
+        "new_id": 202,
+        "first_order": 152,
+        "confirmed_order": 154,
+        "old_support": 10,
+        "new_support": 37,
+        "old_palette": 0,
+        "new_palette": 1
+      },
+      "orders": [
+        146,
+        147,
+        148,
+        152,
+        153,
+        154
+      ],
+      "boxes": {
+        "146": [
+          1962.609375,
+          185.75,
+          1985.375,
+          231.625
+        ],
+        "147": [
+          1966.4375,
+          186.75,
+          1988.25,
+          232.125
+        ],
+        "148": [
+          1968.5,
+          186.375,
+          1991.75,
+          231.75
+        ],
+        "152": [
+          1976.25,
+          180.25,
+          2002.5,
+          228.5
+        ],
+        "153": [
+          1975.53125,
+          181.75,
+          2003.3125,
+          227.375
+        ],
+        "154": [
+          1972.25,
+          183.125,
+          2000.0,
+          228.75
+        ]
+      },
+      "rect": [
+        1892,
+        145,
+        2072,
+        267
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue 9 bends/falls in the tackle; the after boxes follow the standing white opponent.",
+      "board": "docs/measurements/identity-short-gap-review-0.jpg",
+      "row": 2,
+      "source_video_sha256": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2"
+    },
+    {
+      "key": "day-3-motion-81-13",
+      "group": "day",
+      "segment": 3,
+      "event": {
+        "type": "motion",
+        "order": 81,
+        "track_id": 13,
+        "source_index": 17,
+        "proposal": [
+          2468.1875,
+          211.875,
+          2499.5,
+          255.125
+        ],
+        "matched": true,
+        "previous_mean": [
+          2462.263574310371,
+          231.81087986915819,
+          0.6625512732104674,
+          44.74023279765771,
+          5.441306734164267,
+          0.9124455789885377,
+          1.113110443187424e-05,
+          0.0
+        ]
+      },
+      "orders": [
+        75,
+        76,
+        77,
+        81,
+        82,
+        83
+      ],
+      "boxes": {
+        "75": [
+          2414.75,
+          202.875,
+          2447.625,
+          250.125
+        ],
+        "76": [
+          2427.0,
+          202.625,
+          2457.5,
+          250.625
+        ],
+        "77": [
+          2431.1875,
+          208.25,
+          2462.5,
+          251.5
+        ],
+        "81": [
+          2472.0,
+          202.5,
+          2504.125,
+          253.625
+        ],
+        "82": [
+          2479.625,
+          204.0,
+          2514.25,
+          255.375
+        ],
+        "83": [
+          2486.875,
+          205.25,
+          2518.375,
+          255.875
+        ]
+      },
+      "rect": [
+        2364,
+        167,
+        2568,
+        290
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "White runner passes the dark official; the selected white body remains visible.",
+      "board": "docs/measurements/identity-short-gap-review-0.jpg",
+      "row": 3,
+      "source_video_sha256": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d"
+    },
+    {
+      "key": "day-3-motion-296-108",
+      "group": "day",
+      "segment": 3,
+      "event": {
+        "type": "motion",
+        "order": 296,
+        "track_id": 108,
+        "source_index": 2,
+        "proposal": [
+          1362.5625,
+          229.625,
+          1382.0625,
+          272.03125
+        ],
+        "matched": true,
+        "previous_mean": [
+          1367.3266776067567,
+          249.1813142263526,
+          0.47984010482972655,
+          44.52682179210243,
+          -0.659704367007828,
+          0.22998792866039286,
+          -1.5986909818735072e-06,
+          -0.1752292192625
+        ]
+      },
+      "orders": [
+        292,
+        293,
+        294,
+        296,
+        297,
+        298
+      ],
+      "boxes": {
+        "292": [
+          1355.125,
+          221.5,
+          1376.0,
+          269.5
+        ],
+        "293": [
+          1358.125,
+          220.125,
+          1378.375,
+          269.25
+        ],
+        "294": [
+          1359.625,
+          230.0,
+          1379.125,
+          272.40625
+        ],
+        "296": [
+          1361.625,
+          219.375,
+          1384.5,
+          269.75
+        ],
+        "297": [
+          1363.375,
+          220.0,
+          1388.0,
+          269.5
+        ],
+        "298": [
+          1364.875,
+          219.125,
+          1390.5,
+          269.75
+        ]
+      },
+      "rect": [
+        1282,
+        184,
+        1462,
+        307
+      ],
+      "video": "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Yellow goalkeeper continues walking without another person entering the selected path.",
+      "board": "docs/measurements/identity-short-gap-review-1.jpg",
+      "row": 0,
+      "source_video_sha256": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d"
+    },
+    {
+      "key": "night-0-motion-329-60",
+      "group": "night",
+      "segment": 0,
+      "event": {
+        "type": "motion",
+        "order": 329,
+        "track_id": 60,
+        "source_index": 19,
+        "proposal": [
+          933.5,
+          813.498046875,
+          971.75,
+          867.01171875
+        ],
+        "matched": true,
+        "previous_mean": [
+          958.0918209011796,
+          838.5762087415716,
+          0.6531420768402867,
+          52.47056291684773,
+          1.9822197923654108,
+          -0.02774172183739125,
+          2.459300838165554e-07,
+          0.0
+        ]
+      },
+      "orders": [
+        324,
+        325,
+        326,
+        329,
+        330,
+        331
+      ],
+      "boxes": {
+        "324": [
+          936.5,
+          811.8154296875,
+          970.25,
+          860.15625
+        ],
+        "325": [
+          936.0,
+          813.3984375,
+          970.75,
+          864.375
+        ],
+        "326": [
+          933.5,
+          812.455078125,
+          971.75,
+          865.96875
+        ],
+        "329": [
+          922.0,
+          817.98828125,
+          961.5,
+          868.1875
+        ],
+        "330": [
+          917.75,
+          819.0625,
+          956.0,
+          867.8125
+        ],
+        "331": [
+          917.25,
+          820.75,
+          951.75,
+          872.0
+        ]
+      },
+      "rect": [
+        854,
+        776,
+        1034,
+        907
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue player moves across the goal area; local pre/post gap appearance is compatible.",
+      "board": "docs/measurements/identity-short-gap-review-1.jpg",
+      "row": 1,
+      "source_video_sha256": "4e8321ea9da98664437a9700cb5a5318fb9641b8957a3ebfab54485a74ade2e1"
+    },
+    {
+      "key": "night-0-motion-345-16",
+      "group": "night",
+      "segment": 0,
+      "event": {
+        "type": "motion",
+        "order": 345,
+        "track_id": 16,
+        "source_index": 18,
+        "proposal": [
+          698.78125,
+          928.375,
+          745.0,
+          983.0
+        ],
+        "matched": true,
+        "previous_mean": [
+          736.7578890195548,
+          945.8271271442568,
+          0.7175814255421556,
+          53.72952618665002,
+          0.6882347913887743,
+          0.33460569621059727,
+          3.396755522802324e-05,
+          0.0
+        ]
+      },
+      "orders": [
+        339,
+        340,
+        341,
+        345,
+        346,
+        347
+      ],
+      "boxes": {
+        "339": [
+          719.75,
+          914.8125,
+          761.5,
+          967.125
+        ],
+        "340": [
+          716.0,
+          917.0,
+          760.0,
+          969.75
+        ],
+        "341": [
+          708.03125,
+          918.875,
+          754.25,
+          973.5
+        ],
+        "345": [
+          683.84375,
+          925.0,
+          735.3125,
+          980.875
+        ],
+        "346": [
+          677.515625,
+          926.5,
+          721.5,
+          977.375
+        ],
+        "347": [
+          669.46875,
+          925.5625,
+          712.5625,
+          972.75
+        ]
+      },
+      "rect": [
+        619,
+        879,
+        811,
+        1015
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0000.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue player bends forward following the ball; local path remains visible.",
+      "board": "docs/measurements/identity-short-gap-review-1.jpg",
+      "row": 2,
+      "source_video_sha256": "4e8321ea9da98664437a9700cb5a5318fb9641b8957a3ebfab54485a74ade2e1"
+    },
+    {
+      "key": "night-3-motion-147-43",
+      "group": "night",
+      "segment": 3,
+      "event": {
+        "type": "motion",
+        "order": 147,
+        "track_id": 43,
+        "source_index": 7,
+        "proposal": [
+          765.0625,
+          838.0078125,
+          804.0625,
+          886.5546875
+        ],
+        "matched": true,
+        "previous_mean": [
+          794.5856208533977,
+          862.2846117857823,
+          0.7289219070246398,
+          46.26680746703739,
+          -4.26241925417007,
+          0.6298773718061059,
+          4.649952729157256e-08,
+          0.030286634596345063
+        ]
+      },
+      "orders": [
+        143,
+        144,
+        145,
+        147,
+        150,
+        151
+      ],
+      "boxes": {
+        "143": [
+          792.375,
+          839.75,
+          829.5,
+          881.0
+        ],
+        "144": [
+          787.875,
+          839.5,
+          821.125,
+          881.0
+        ],
+        "145": [
+          778.25,
+          837.640625,
+          817.25,
+          886.1875
+        ],
+        "147": [
+          763.625,
+          840.5,
+          795.75,
+          880.0
+        ],
+        "150": [
+          746.0,
+          838.125,
+          768.0,
+          882.8125
+        ],
+        "151": [
+          743.0,
+          841.25,
+          775.625,
+          880.75
+        ]
+      },
+      "rect": [
+        693,
+        801,
+        879,
+        921
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+      "assessment": "withhold_new_identity_claim",
+      "visual_basis": "Crowded same-kit transition needs caution: after local recovery the baseline switches from 43 to 26 and independent support from 61 to 31. Dense source inspection does not establish a safe new long identity; require a crowd veto rather than count this as success.",
+      "board": "docs/measurements/identity-short-gap-review-1.jpg",
+      "row": 3,
+      "source_video_sha256": "3e3bd50e00e8ca797fc53cce807eef60a92cb0aaf37f069553d567971243c066"
+    },
+    {
+      "key": "night-3-motion-282-7",
+      "group": "night",
+      "segment": 3,
+      "event": {
+        "type": "motion",
+        "order": 282,
+        "track_id": 7,
+        "source_index": 18,
+        "proposal": [
+          1557.25,
+          855.9375,
+          1618.25,
+          965.34375
+        ],
+        "matched": true,
+        "previous_mean": [
+          1616.3241312619266,
+          913.1477782887011,
+          0.6004652452013625,
+          112.66121968686802,
+          1.7824092384665953,
+          2.7616199987542664,
+          4.336409198023334e-07,
+          0.0
+        ]
+      },
+      "orders": [
+        276,
+        277,
+        278,
+        282,
+        284,
+        285
+      ],
+      "boxes": {
+        "276": [
+          1586.25,
+          847.3125,
+          1653.75,
+          957.5
+        ],
+        "277": [
+          1579.75,
+          847.65625,
+          1647.25,
+          958.875
+        ],
+        "278": [
+          1575.0,
+          848.96875,
+          1636.0,
+          958.375
+        ],
+        "282": [
+          1548.25,
+          857.0625,
+          1621.75,
+          961.75
+        ],
+        "284": [
+          1536.0,
+          855.28125,
+          1595.0,
+          958.75
+        ],
+        "285": [
+          1530.25,
+          855.46875,
+          1585.0,
+          962.375
+        ]
+      },
+      "rect": [
+        1480,
+        812,
+        1703,
+        997
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0003.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "White 21 walks in the open after turning; number is visible at the endpoint.",
+      "board": "docs/measurements/identity-short-gap-review-2.jpg",
+      "row": 0,
+      "source_video_sha256": "3e3bd50e00e8ca797fc53cce807eef60a92cb0aaf37f069553d567971243c066"
+    },
+    {
+      "key": "night-6-motion-119-20",
+      "group": "night",
+      "segment": 6,
+      "event": {
+        "type": "motion",
+        "order": 119,
+        "track_id": 20,
+        "source_index": 12,
+        "proposal": [
+          546.5,
+          1128.375,
+          605.0,
+          1211.125
+        ],
+        "matched": true,
+        "previous_mean": [
+          568.7872393769863,
+          1165.962409814081,
+          0.6653849420936123,
+          82.90642970581017,
+          -13.716504214658606,
+          2.591644331207786,
+          2.9031323134079205e-06,
+          -0.5781238415955923
+        ]
+      },
+      "orders": [
+        115,
+        116,
+        117,
+        119,
+        120,
+        121
+      ],
+      "boxes": {
+        "115": [
+          570.5,
+          1113.75,
+          624.5,
+          1200.25
+        ],
+        "116": [
+          561.5,
+          1119.0,
+          619.0,
+          1204.25
+        ],
+        "117": [
+          559.5,
+          1122.0,
+          618.0,
+          1204.75
+        ],
+        "119": [
+          554.0,
+          1118.0,
+          610.0,
+          1203.0
+        ],
+        "120": [
+          556.5,
+          1114.25,
+          608.0,
+          1198.75
+        ],
+        "121": [
+          556.0,
+          1111.25,
+          606.0,
+          1188.5
+        ]
+      },
+      "rect": [
+        499,
+        1076,
+        679,
+        1239
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0006.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "White player advances beside the ball; dark player stays separate above/right.",
+      "board": "docs/measurements/identity-short-gap-review-2.jpg",
+      "row": 1,
+      "source_video_sha256": "8dc05ebcd6bb42fade86c402eae24b394c7ff47251d60d9adc35efe5d2cbec9f"
+    },
+    {
+      "key": "night-6-motion-206-43",
+      "group": "night",
+      "segment": 6,
+      "event": {
+        "type": "motion",
+        "order": 206,
+        "track_id": 43,
+        "source_index": 11,
+        "proposal": [
+          734.921875,
+          1018.0,
+          784.046875,
+          1073.625
+        ],
+        "matched": true,
+        "previous_mean": [
+          757.8762941286041,
+          1046.5953731928398,
+          0.7323874129858188,
+          56.507273269209065,
+          2.278174062062125,
+          1.2948353407977125,
+          -3.351205518261941e-07,
+          0.0
+        ]
+      },
+      "orders": [
+        201,
+        202,
+        203,
+        206,
+        207,
+        208
+      ],
+      "boxes": {
+        "201": [
+          724.5,
+          1012.5,
+          767.0,
+          1070.75
+        ],
+        "202": [
+          727.0,
+          1010.5,
+          767.5,
+          1071.75
+        ],
+        "203": [
+          730.75,
+          1016.875,
+          779.875,
+          1072.5
+        ],
+        "206": [
+          734.0,
+          1021.625,
+          768.0,
+          1073.0
+        ],
+        "207": [
+          734.5,
+          1011.75,
+          767.5,
+          1067.75
+        ],
+        "208": [
+          736.0,
+          1007.625,
+          768.0,
+          1067.0
+        ]
+      },
+      "rect": [
+        662,
+        972,
+        842,
+        1108
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0006.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Fallen white player stays on the ground, then moves the legs; nearby standing blue players remain distinct.",
+      "board": "docs/measurements/identity-short-gap-review-2.jpg",
+      "row": 2,
+      "source_video_sha256": "8dc05ebcd6bb42fade86c402eae24b394c7ff47251d60d9adc35efe5d2cbec9f"
+    },
+    {
+      "key": "night-9-motion-367-3",
+      "group": "night",
+      "segment": 9,
+      "event": {
+        "type": "motion",
+        "order": 367,
+        "track_id": 3,
+        "source_index": 21,
+        "proposal": [
+          3035.4921875,
+          906.78125,
+          3080.9921875,
+          1006.71875
+        ],
+        "matched": true,
+        "previous_mean": [
+          3086.8782327433814,
+          961.3068275403881,
+          0.5206529438120177,
+          101.4573283833419,
+          -5.070085217170851,
+          1.6337256985816029,
+          -1.2060200643470984e-05,
+          1.4793520185311222
+        ]
+      },
+      "orders": [
+        363,
+        364,
+        365,
+        367,
+        369,
+        370
+      ],
+      "boxes": {
+        "363": [
+          3094.0,
+          910.75,
+          3139.0,
+          1004.0
+        ],
+        "364": [
+          3076.921875,
+          908.625,
+          3126.5625,
+          1008.5
+        ],
+        "365": [
+          3062.5,
+          908.4375,
+          3108.0,
+          1008.375
+        ],
+        "367": [
+          3022.25,
+          903.0,
+          3077.75,
+          996.625
+        ],
+        "369": [
+          2990.25,
+          901.125,
+          3043.5,
+          1002.0
+        ],
+        "370": [
+          2974.0,
+          893.875,
+          3029.5,
+          985.25
+        ]
+      },
+      "rect": [
+        2924,
+        858,
+        3189,
+        1043
+      ],
+      "video": "data\\tracking\\live\\990401\\seg_0009.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue player remains above/left of the lower white runner while both move.",
+      "board": "docs/measurements/identity-short-gap-review-2.jpg",
+      "row": 3,
+      "source_video_sha256": "5e0498e0cdc1b4cc113a3a7127916ba3d11d4bbab042f5f8515294c4c5950bc7"
+    },
+    {
+      "key": "night_extra-20-motion-125-33",
+      "group": "night_extra",
+      "segment": 20,
+      "event": {
+        "type": "motion",
+        "order": 125,
+        "track_id": 33,
+        "source_index": 17,
+        "proposal": [
+          646.75,
+          930.90625,
+          679.75,
+          985.71875
+        ],
+        "matched": true,
+        "previous_mean": [
+          650.127012947465,
+          961.5349252475593,
+          0.6123071808180459,
+          54.31376975020019,
+          8.168564089908003,
+          -3.6030199344856992,
+          -3.579375363251354e-08,
+          0.07048307522331182
+        ]
+      },
+      "orders": [
+        121,
+        122,
+        123,
+        125,
+        128,
+        129
+      ],
+      "boxes": {
+        "121": [
+          609.0,
+          945.125,
+          640.5,
+          996.0
+        ],
+        "122": [
+          618.0,
+          942.125,
+          647.0,
+          996.0
+        ],
+        "123": [
+          626.5,
+          937.8125,
+          659.5,
+          992.625
+        ],
+        "125": [
+          653.0,
+          920.25,
+          682.203125,
+          976.625
+        ],
+        "128": [
+          679.484375,
+          910.0,
+          722.25,
+          965.375
+        ],
+        "129": [
+          694.0,
+          905.0,
+          728.5,
+          957.375
+        ]
+      },
+      "rect": [
+        559,
+        870,
+        778,
+        1031
+      ],
+      "video": "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0020.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue runner moves diagonally right; white runner remains separately visible below/left.",
+      "board": "docs/measurements/identity-short-gap-review-3.jpg",
+      "row": 0,
+      "source_video_sha256": "fece86e7a119a50640eaed7ce485e833733446377f12c7f61af18e56b4905368"
+    },
+    {
+      "key": "night_extra-20-motion-363-27",
+      "group": "night_extra",
+      "segment": 20,
+      "event": {
+        "type": "motion",
+        "order": 363,
+        "track_id": 27,
+        "source_index": 4,
+        "proposal": [
+          933.25,
+          829.5,
+          972.75,
+          892.625
+        ],
+        "matched": true,
+        "previous_mean": [
+          941.2623657365261,
+          867.2938391658093,
+          0.5754357916972155,
+          63.366442789725646,
+          3.9203142150603867,
+          -1.6961978966228832,
+          -9.7056578684377e-06,
+          0.0
+        ]
+      },
+      "orders": [
+        357,
+        358,
+        359,
+        363,
+        365,
+        366
+      ],
+      "boxes": {
+        "357": [
+          900.5,
+          844.59375,
+          938.0,
+          910.0625
+        ],
+        "358": [
+          908.0,
+          842.28125,
+          941.75,
+          907.25
+        ],
+        "359": [
+          910.75,
+          840.0625,
+          950.25,
+          903.1875
+        ],
+        "363": [
+          934.5,
+          826.5,
+          976.5,
+          881.0
+        ],
+        "365": [
+          955.25,
+          823.5,
+          991.0,
+          880.25
+        ],
+        "366": [
+          959.0,
+          819.75,
+          1003.5,
+          880.5
+        ]
+      },
+      "rect": [
+        850,
+        784,
+        1053,
+        945
+      ],
+      "video": "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0020.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue 4 moves away from the goal with no overlap in the local strip.",
+      "board": "docs/measurements/identity-short-gap-review-3.jpg",
+      "row": 1,
+      "source_video_sha256": "fece86e7a119a50640eaed7ce485e833733446377f12c7f61af18e56b4905368"
+    },
+    {
+      "key": "night_extra-30-motion-51-18",
+      "group": "night_extra",
+      "segment": 30,
+      "event": {
+        "type": "motion",
+        "order": 51,
+        "track_id": 18,
+        "source_index": 19,
+        "proposal": [
+          3015.59375,
+          901.8125,
+          3067.59375,
+          987.75
+        ],
+        "matched": true,
+        "previous_mean": [
+          3075.3440675492197,
+          953.6540979977116,
+          0.5370183314435523,
+          89.98071333576694,
+          -14.990133431714309,
+          -2.9711804026467337,
+          -2.2092301766846967e-06,
+          0.12019661427051997
+        ]
+      },
+      "orders": [
+        47,
+        48,
+        49,
+        51,
+        52,
+        56
+      ],
+      "boxes": {
+        "47": [
+          3109.625,
+          922.9375,
+          3151.1875,
+          1015.0
+        ],
+        "48": [
+          3081.0,
+          916.5,
+          3135.625,
+          1014.75
+        ],
+        "49": [
+          3060.0,
+          909.5625,
+          3112.0,
+          995.5
+        ],
+        "51": [
+          3021.5,
+          899.5,
+          3071.0,
+          997.75
+        ],
+        "52": [
+          3001.5,
+          892.1875,
+          3049.0,
+          964.375
+        ],
+        "56": [
+          2911.0,
+          873.09375,
+          2968.5,
+          954.875
+        ]
+      },
+      "rect": [
+        2861,
+        838,
+        3201,
+        1050
+      ],
+      "video": "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0030.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue player runs left near the ball; following white opponent remains separate.",
+      "board": "docs/measurements/identity-short-gap-review-3.jpg",
+      "row": 2,
+      "source_video_sha256": "c23aa824839bd371b5aecbda10159662e62129c094ef0834380c9ca9a6493499"
+    },
+    {
+      "key": "night_extra-30-motion-201-41",
+      "group": "night_extra",
+      "segment": 30,
+      "event": {
+        "type": "motion",
+        "order": 201,
+        "track_id": 41,
+        "source_index": 19,
+        "proposal": [
+          3178.65625,
+          1013.59375,
+          3230.65625,
+          1125.21875
+        ],
+        "matched": true,
+        "previous_mean": [
+          3231.976635291687,
+          1072.7750521437629,
+          0.5065640312082464,
+          112.82223643035789,
+          -4.558574684311236,
+          1.2300536161228992,
+          -2.357222829703396e-06,
+          0.0
+        ]
+      },
+      "orders": [
+        196,
+        197,
+        198,
+        201,
+        202,
+        203
+      ],
+      "boxes": {
+        "196": [
+          3233.5,
+          1013.125,
+          3288.375,
+          1128.0
+        ],
+        "197": [
+          3223.5,
+          1016.5,
+          3276.75,
+          1125.25
+        ],
+        "198": [
+          3210.25,
+          1013.125,
+          3262.25,
+          1124.75
+        ],
+        "201": [
+          3158.0,
+          1005.75,
+          3226.625,
+          1098.25
+        ],
+        "202": [
+          3155.6875,
+          1002.75,
+          3217.75,
+          1098.75
+        ],
+        "203": [
+          3147.0,
+          1002.375,
+          3208.0,
+          1095.5
+        ]
+      },
+      "rect": [
+        3097,
+        967,
+        3338,
+        1163
+      ],
+      "video": "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0030.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Isolated blue player takes a step and turns in the same location.",
+      "board": "docs/measurements/identity-short-gap-review-3.jpg",
+      "row": 3,
+      "source_video_sha256": "c23aa824839bd371b5aecbda10159662e62129c094ef0834380c9ca9a6493499"
+    },
+    {
+      "key": "night_extra-30-motion-294-55",
+      "group": "night_extra",
+      "segment": 30,
+      "event": {
+        "type": "motion",
+        "order": 294,
+        "track_id": 55,
+        "source_index": 20,
+        "proposal": [
+          3110.9375,
+          1012.8125,
+          3171.125,
+          1106.1875
+        ],
+        "matched": true,
+        "previous_mean": [
+          3165.6820060954688,
+          1058.2950116164334,
+          0.6003938202277368,
+          93.74144199012385,
+          -8.070891396703468,
+          -0.21533971340681168,
+          -8.047992370677887e-07,
+          0.371989727792297
+        ]
+      },
+      "orders": [
+        290,
+        291,
+        292,
+        294
+      ],
+      "boxes": {
+        "290": [
+          3171.5,
+          1012.5,
+          3228.0,
+          1105.0
+        ],
+        "291": [
+          3157.5,
+          1012.5,
+          3214.0,
+          1105.5
+        ],
+        "292": [
+          3139.125,
+          1011.875,
+          3199.3125,
+          1105.25
+        ],
+        "294": [
+          3106.75,
+          1016.25,
+          3162.25,
+          1112.0
+        ]
+      },
+      "rect": [
+        3056,
+        976,
+        3278,
+        1147
+      ],
+      "video": "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0030.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Isolated blue runner continues to the right.",
+      "board": "docs/measurements/identity-short-gap-review-4.jpg",
+      "row": 0,
+      "source_video_sha256": "c23aa824839bd371b5aecbda10159662e62129c094ef0834380c9ca9a6493499"
+    },
+    {
+      "key": "night_old_control-40-motion-359-67",
+      "group": "night_old_control",
+      "segment": 40,
+      "event": {
+        "type": "motion",
+        "order": 359,
+        "track_id": 67,
+        "source_index": 10,
+        "proposal": [
+          3018.9375,
+          689.9375,
+          3044.4375,
+          727.4375
+        ],
+        "matched": true,
+        "previous_mean": [
+          3039.005002603416,
+          713.3719702250162,
+          0.6530577630262354,
+          37.47183708491061,
+          1.1239226533148674,
+          -0.05670763474314902,
+          -1.042342334498577e-06,
+          0.0
+        ]
+      },
+      "orders": [
+        354,
+        355,
+        356,
+        359,
+        360
+      ],
+      "boxes": {
+        "354": [
+          3026.0,
+          697.25,
+          3050.75,
+          734.75
+        ],
+        "355": [
+          3024.0,
+          696.25,
+          3049.5,
+          734.75
+        ],
+        "356": [
+          3022.5,
+          693.5,
+          3048.0,
+          731.0
+        ],
+        "359": [
+          3016.0,
+          688.75,
+          3043.0,
+          727.75
+        ],
+        "360": [
+          3011.5,
+          686.0,
+          3038.5,
+          726.0
+        ]
+      },
+      "rect": [
+        2941,
+        650,
+        3121,
+        770
+      ],
+      "video": "data\\tracking\\bench\\joint_identity_control\\source\\seg_0040.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "White player moves in front of the goal; dense frames 708-720 support the local continuation, but low resolution limits identity detail.",
+      "board": "docs/measurements/identity-short-gap-review-4.jpg",
+      "row": 1,
+      "source_video_sha256": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a"
+    },
+    {
+      "key": "night_old_control-50-motion-34-2",
+      "group": "night_old_control",
+      "segment": 50,
+      "event": {
+        "type": "motion",
+        "order": 34,
+        "track_id": 2,
+        "source_index": 3,
+        "proposal": [
+          1142.25,
+          738.75,
+          1178.75,
+          789.25
+        ],
+        "matched": true,
+        "previous_mean": [
+          1169.4499347896078,
+          760.5009857234999,
+          0.6861017456189914,
+          50.1425903998137,
+          -3.3525847459423694,
+          1.7346082150094824,
+          1.4444719814452698e-06,
+          -0.04077420739508229
+        ]
+      },
+      "orders": [
+        30,
+        31,
+        32,
+        34,
+        35,
+        37
+      ],
+      "boxes": {
+        "30": [
+          1165.5,
+          730.0,
+          1200.0,
+          775.5
+        ],
+        "31": [
+          1160.0,
+          731.75,
+          1197.5,
+          783.0
+        ],
+        "32": [
+          1152.5,
+          734.0,
+          1189.0,
+          784.5
+        ],
+        "34": [
+          1134.0,
+          733.25,
+          1174.5,
+          786.75
+        ],
+        "35": [
+          1126.5,
+          732.5,
+          1163.5,
+          786.0
+        ],
+        "37": [
+          1115.75,
+          745.0,
+          1153.25,
+          793.75
+        ]
+      },
+      "rect": [
+        1065,
+        695,
+        1250,
+        828
+      ],
+      "video": "data\\tracking\\bench\\joint_identity_control\\source\\seg_0050.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue runner turns ahead of the white player; local body path remains visible.",
+      "board": "docs/measurements/identity-short-gap-review-4.jpg",
+      "row": 2,
+      "source_video_sha256": "fef8c382ebad00fdfaefd0e214192decc91980e312b8f6e2d871b2eb5dc10604"
+    },
+    {
+      "key": "night_old_control-50-motion-212-1",
+      "group": "night_old_control",
+      "segment": 50,
+      "event": {
+        "type": "motion",
+        "order": 212,
+        "track_id": 1,
+        "source_index": 9,
+        "proposal": [
+          1868.5,
+          545.375,
+          1894.0,
+          582.75
+        ],
+        "matched": true,
+        "previous_mean": [
+          1892.0718886233003,
+          563.2045562359491,
+          0.6466623634351731,
+          37.77129123728555,
+          1.7024472972008273,
+          -0.45186326511532243,
+          1.708358167060726e-06,
+          0.0
+        ]
+      },
+      "orders": [
+        206,
+        207,
+        208,
+        212,
+        213,
+        214
+      ],
+      "boxes": {
+        "206": [
+          1875.0,
+          544.875,
+          1899.5,
+          584.375
+        ],
+        "207": [
+          1874.0,
+          545.875,
+          1899.5,
+          584.0
+        ],
+        "208": [
+          1872.5,
+          546.125,
+          1898.0,
+          583.5
+        ],
+        "212": [
+          1867.0,
+          545.0,
+          1890.0,
+          582.0
+        ],
+        "213": [
+          1865.5,
+          543.5,
+          1888.0,
+          581.0
+        ],
+        "214": [
+          1863.0,
+          542.625,
+          1887.0,
+          580.75
+        ]
+      },
+      "rect": [
+        1791,
+        503,
+        1971,
+        623
+      ],
+      "video": "data\\tracking\\bench\\joint_identity_control\\source\\seg_0050.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Far-side white player continues alone along the fence.",
+      "board": "docs/measurements/identity-short-gap-review-4.jpg",
+      "row": 3,
+      "source_video_sha256": "fef8c382ebad00fdfaefd0e214192decc91980e312b8f6e2d871b2eb5dc10604"
+    },
+    {
+      "key": "palette_day-64-motion-84-36",
+      "group": "palette_day",
+      "segment": 64,
+      "event": {
+        "type": "motion",
+        "order": 84,
+        "track_id": 36,
+        "source_index": 30,
+        "proposal": [
+          1679.75,
+          514.90625,
+          1729.75,
+          616.75
+        ],
+        "matched": true,
+        "previous_mean": [
+          1727.4385229080422,
+          561.3067269683951,
+          0.43884941682254097,
+          106.2378420933614,
+          -4.1878421693100245,
+          1.8052506660666439,
+          -3.211574884198508e-06,
+          0.0
+        ]
+      },
+      "orders": [
+        79,
+        80,
+        81,
+        84,
+        86,
+        90
+      ],
+      "boxes": {
+        "79": [
+          1725.875,
+          493.34375,
+          1774.0,
+          602.875
+        ],
+        "80": [
+          1718.875,
+          494.1875,
+          1759.75,
+          607.25
+        ],
+        "81": [
+          1708.625,
+          510.03125,
+          1758.625,
+          611.875
+        ],
+        "84": [
+          1682.875,
+          503.03125,
+          1734.375,
+          604.0
+        ],
+        "86": [
+          1667.0625,
+          515.28125,
+          1711.75,
+          619.875
+        ],
+        "90": [
+          1633.3125,
+          529.0625,
+          1672.875,
+          626.875
+        ]
+      },
+      "rect": [
+        1583,
+        458,
+        1824,
+        661
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Isolated blue player continues walking left on bright turf.",
+      "board": "docs/measurements/identity-short-gap-review-5.jpg",
+      "row": 0,
+      "source_video_sha256": "0c98e12ded003e8cd7a37680dd0bebf0d404a6f3dd81c6d0e8ac8c3292bf2c9c"
+    },
+    {
+      "key": "palette_night-84-motion-103-25",
+      "group": "palette_night",
+      "segment": 84,
+      "event": {
+        "type": "motion",
+        "order": 103,
+        "track_id": 25,
+        "source_index": 5,
+        "proposal": [
+          1256.5,
+          630.25,
+          1286.0,
+          674.5
+        ],
+        "matched": true,
+        "previous_mean": [
+          1264.5405611631209,
+          652.1028038921773,
+          0.65601710075953,
+          44.81905613900174,
+          -3.4444900954346243,
+          0.0980165881150581,
+          -2.477559610405999e-06,
+          0.0
+        ]
+      },
+      "orders": [
+        97,
+        98,
+        99,
+        103,
+        104,
+        105
+      ],
+      "boxes": {
+        "97": [
+          1263.0,
+          629.0,
+          1293.5,
+          674.25
+        ],
+        "98": [
+          1263.0,
+          629.5,
+          1292.0,
+          674.25
+        ],
+        "99": [
+          1261.5,
+          629.75,
+          1291.0,
+          674.0
+        ],
+        "103": [
+          1265.0,
+          628.125,
+          1294.0,
+          671.0
+        ],
+        "104": [
+          1266.0,
+          628.5,
+          1294.5,
+          671.0
+        ],
+        "105": [
+          1267.0,
+          627.25,
+          1297.0,
+          671.0
+        ]
+      },
+      "rect": [
+        1189,
+        590,
+        1369,
+        710
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0084.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "White runner below the bright background sign continues right; blue players remain separate.",
+      "board": "docs/measurements/identity-short-gap-review-5.jpg",
+      "row": 1,
+      "source_video_sha256": "f77272be2bda3224224753e2d20d47628ac48fbf6d7c5a8b04a848e180710cde"
+    },
+    {
+      "key": "palette_night-84-motion-193-16",
+      "group": "palette_night",
+      "segment": 84,
+      "event": {
+        "type": "motion",
+        "order": 193,
+        "track_id": 16,
+        "source_index": 9,
+        "proposal": [
+          1109.0,
+          736.0,
+          1140.5,
+          792.0
+        ],
+        "matched": true,
+        "previous_mean": [
+          1112.4243916775142,
+          769.7338326097378,
+          0.6231840620627749,
+          55.40416288943358,
+          0.34798563486251133,
+          -0.4521813782581744,
+          1.114406022360479e-05,
+          -0.003644346713367108
+        ]
+      },
+      "orders": [
+        189,
+        190,
+        191,
+        193,
+        195,
+        196
+      ],
+      "boxes": {
+        "189": [
+          1089.0,
+          744.25,
+          1121.5,
+          801.0
+        ],
+        "190": [
+          1092.5,
+          745.5,
+          1127.0,
+          799.5
+        ],
+        "191": [
+          1099.25,
+          740.75,
+          1130.75,
+          796.75
+        ],
+        "193": [
+          1114.25,
+          740.75,
+          1145.75,
+          793.0
+        ],
+        "195": [
+          1126.0,
+          737.25,
+          1158.0,
+          789.75
+        ],
+        "196": [
+          1129.0,
+          732.0,
+          1162.0,
+          786.75
+        ]
+      },
+      "rect": [
+        1035,
+        697,
+        1215,
+        836
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0084.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue ball carrier continues right through the missed detections; white player and official stay above/left.",
+      "board": "docs/measurements/identity-short-gap-review-5.jpg",
+      "row": 2,
+      "source_video_sha256": "f77272be2bda3224224753e2d20d47628ac48fbf6d7c5a8b04a848e180710cde"
+    },
+    {
+      "key": "palette_night-84-motion-311-39",
+      "group": "palette_night",
+      "segment": 84,
+      "event": {
+        "type": "motion",
+        "order": 311,
+        "track_id": 39,
+        "source_index": 11,
+        "proposal": [
+          1874.0,
+          546.34375,
+          1901.0,
+          583.96875
+        ],
+        "matched": true,
+        "previous_mean": [
+          1877.532947014415,
+          567.1485846353788,
+          0.6841642538391053,
+          37.575550354978965,
+          1.0038350554237745,
+          -0.40401928251690244,
+          9.404483424440607e-06,
+          0.0
+        ]
+      },
+      "orders": [
+        306,
+        307,
+        308,
+        311,
+        313,
+        314
+      ],
+      "boxes": {
+        "306": [
+          1858.0,
+          549.625,
+          1882.0,
+          587.875
+        ],
+        "307": [
+          1861.0,
+          550.5,
+          1887.0,
+          587.25
+        ],
+        "308": [
+          1863.5,
+          548.875,
+          1890.5,
+          586.5
+        ],
+        "311": [
+          1881.5,
+          545.875,
+          1907.0,
+          582.75
+        ],
+        "313": [
+          1889.5,
+          545.375,
+          1917.0,
+          585.875
+        ],
+        "314": [
+          1894.0,
+          542.625,
+          1924.0,
+          584.625
+        ]
+      },
+      "rect": [
+        1801,
+        505,
+        1981,
+        625
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0084.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Far-side white runner continues along the fence, separately from the other white player.",
+      "board": "docs/measurements/identity-short-gap-review-5.jpg",
+      "row": 3,
+      "source_video_sha256": "f77272be2bda3224224753e2d20d47628ac48fbf6d7c5a8b04a848e180710cde"
+    },
+    {
+      "key": "palette_night-84-partition-236-16",
+      "group": "palette_night",
+      "segment": 84,
+      "event": {
+        "type": "partition",
+        "continuity_id": 0,
+        "raw_id": 16,
+        "new_id": 74,
+        "first_order": 236,
+        "confirmed_order": 238,
+        "old_support": 16,
+        "new_support": 11,
+        "old_palette": 0,
+        "new_palette": 1
+      },
+      "orders": [
+        228,
+        229,
+        231,
+        236,
+        237,
+        238
+      ],
+      "boxes": {
+        "228": [
+          1302.0,
+          708.25,
+          1341.0,
+          765.5
+        ],
+        "229": [
+          1300.0,
+          710.75,
+          1338.5,
+          766.5
+        ],
+        "231": [
+          1296.0,
+          710.25,
+          1329.0,
+          763.75
+        ],
+        "236": [
+          1305.5,
+          707.25,
+          1346.0,
+          756.5
+        ],
+        "237": [
+          1297.0,
+          706.0,
+          1338.5,
+          755.25
+        ],
+        "238": [
+          1283.0,
+          707.5,
+          1329.0,
+          758.25
+        ]
+      },
+      "rect": [
+        1224,
+        671,
+        1404,
+        801
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0084.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue 2 follows the ball before overlap; after boxes follow the white opponent, while the blue body is visible separately to the left.",
+      "board": "docs/measurements/identity-short-gap-review-6.jpg",
+      "row": 0,
+      "source_video_sha256": "f77272be2bda3224224753e2d20d47628ac48fbf6d7c5a8b04a848e180710cde"
+    },
+    {
+      "key": "palette_night-84-partition-43-25",
+      "group": "palette_night",
+      "segment": 84,
+      "event": {
+        "type": "partition",
+        "continuity_id": 0,
+        "raw_id": 25,
+        "new_id": 75,
+        "first_order": 43,
+        "confirmed_order": 45,
+        "old_support": 29,
+        "new_support": 11,
+        "old_palette": 0,
+        "new_palette": 1
+      },
+      "orders": [
+        40,
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "boxes": {
+        "40": [
+          1568.5,
+          597.375,
+          1593.0,
+          641.25
+        ],
+        "41": [
+          1569.0,
+          600.0,
+          1594.25,
+          642.75
+        ],
+        "42": [
+          1567.5,
+          598.625,
+          1593.25,
+          643.875
+        ],
+        "43": [
+          1558.25,
+          600.375,
+          1589.75,
+          644.875
+        ],
+        "44": [
+          1560.25,
+          601.0,
+          1595.0,
+          646.75
+        ],
+        "45": [
+          1559.5,
+          599.625,
+          1593.25,
+          646.25
+        ]
+      },
+      "rect": [
+        1486,
+        562,
+        1666,
+        682
+      ],
+      "video": "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0084.mp4",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue player is approached by a white opponent; after boxes follow the turning white body and the blue remains behind.",
+      "board": "docs/measurements/identity-short-gap-review-6.jpg",
+      "row": 1,
+      "source_video_sha256": "f77272be2bda3224224753e2d20d47628ac48fbf6d7c5a8b04a848e180710cde"
+    }
+  ]
+}
