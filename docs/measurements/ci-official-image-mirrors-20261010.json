@@ -1,0 +1,41 @@
+{
+  "verified_utc": "2026-10-09T21:10:41.227435+00:00",
+  "reason": "Both Docker Hub image pulls failed with HTTP 429 on PR 282 attempts 1 and 2 before code execution.",
+  "source": "https://www.docker.com/blog/news-from-aws-reinvent-docker-official-images-on-amazon-ecr-public/",
+  "checks": [
+    {
+      "image": "public.ecr.aws/docker/library/python@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+      "original_tag": "python:3.11-slim",
+      "original_successful_job": "https://github.com/ahyazgan/tactic11/actions/runs/37985822503/job/114007424836",
+      "manifest_url": "https://public.ecr.aws/v2/docker/library/python/manifests/sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+      "manifest_sha256": "e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce",
+      "header_digest": null,
+      "linux_amd64": [
+        {
+          "digest": "sha256:e529028263dbe6910a2d96f7d2b8f5266385e917fd45d286ef166977c094a51e",
+          "platform": {
+            "architecture": "amd64",
+            "os": "linux"
+          }
+        }
+      ]
+    },
+    {
+      "image": "public.ecr.aws/docker/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d",
+      "original_tag": "postgres:16",
+      "original_successful_job": "https://github.com/ahyazgan/tactic11/actions/runs/37985822503/job/114007424822",
+      "manifest_url": "https://public.ecr.aws/v2/docker/library/postgres/manifests/sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d",
+      "manifest_sha256": "ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d",
+      "header_digest": null,
+      "linux_amd64": [
+        {
+          "digest": "sha256:75adc2a65806c96bc0e59030230bfe3f1c1b0d6d8f8181a8913e2b8b53bdc166",
+          "platform": {
+            "architecture": "amd64",
+            "os": "linux"
+          }
+        }
+      ]
+    }
+  ]
+}

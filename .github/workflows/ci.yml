@@ -98,7 +98,8 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        # Same official image as the last successful Hub pull; see docs/CI-CONTAINER-IMAJLARI.md.
+        image: public.ecr.aws/docker/library/postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
         env:
           POSTGRES_USER: identity_test
           POSTGRES_PASSWORD: identity_test
@@ -145,6 +146,8 @@ jobs:
           push: false
           load: true
           tags: tactic11:ci
+          build-args: |
+            PYTHON_BASE_IMAGE=public.ecr.aws/docker/library/python:3.11-slim@sha256:e88e9763f943ec1834f992a4b51e0f24500486803e8bc534e5767af9ea65f6ce
           # NOT: gha cache (type=gha) docker driver'da desteklenmez; reliability
           # için layer cache'ten feragat edildi (smoke build hızlı zaten).
       - name: smoke — image starts

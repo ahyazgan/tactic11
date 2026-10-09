@@ -1,5 +1,6 @@
-# syntax=docker/dockerfile:1.7
-FROM python:3.11-slim AS base
+# Standard syntax uses the bundled frontend; CI needs no Docker Hub frontend pull.
+ARG PYTHON_BASE_IMAGE=python:3.11-slim
+FROM ${PYTHON_BASE_IMAGE} AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
