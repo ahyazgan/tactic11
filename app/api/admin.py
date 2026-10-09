@@ -3698,21 +3698,21 @@ def decisions_recent_endpoint(
     ).scalars())
 
     # Global özet (sınırsız, sadece outcome bilinen kararlar üzerinden)
-    outcome_counts: dict[str | None, int] = dict(session.execute(  # type: ignore[arg-type]
+    outcome_counts: dict[str | None, int] = {key: count for key, count in session.execute(
         select(
             models.Decision.outcome, func.count(models.Decision.id),
         ).where(*where).group_by(models.Decision.outcome)
-    ).all())
-    type_counts: dict[str, int] = dict(session.execute(  # type: ignore[arg-type]
+    ).all()}
+    type_counts: dict[str, int] = {key: count for key, count in session.execute(
         select(
             models.Decision.decision_type, func.count(models.Decision.id),
         ).where(*where).group_by(models.Decision.decision_type)
-    ).all())
-    applied_counts: dict[bool | None, int] = dict(session.execute(  # type: ignore[arg-type]
+    ).all()}
+    applied_counts: dict[bool | None, int] = {key: count for key, count in session.execute(
         select(
             models.Decision.applied, func.count(models.Decision.id),
         ).where(*where).group_by(models.Decision.applied)
-    ).all())
+    ).all()}
 
     positive = int(outcome_counts.get("positive", 0))
     negative = int(outcome_counts.get("negative", 0))
@@ -3792,18 +3792,18 @@ def matches_with_events_endpoint(
         return cached
 
     # Match × EventRow.match_external_id JOIN sayım
-    event_counts: dict[int, int] = dict(session.execute(  # type: ignore[arg-type]
+    event_counts: dict[int, int] = {key: count for key, count in session.execute(
         select(
             models.EventRow.match_external_id,
             func.count(models.EventRow.id),
         ).where(
             models.EventRow.sport == sport,
         ).group_by(models.EventRow.match_external_id)
-    ).all())
+    ).all()}
     if not event_counts:
         return {"matches": [], "total": 0}
 
-    foul_counts: dict[int, int] = dict(session.execute(  # type: ignore[arg-type]
+    foul_counts: dict[int, int] = {key: count for key, count in session.execute(
         select(
             models.EventRow.match_external_id,
             func.count(models.EventRow.id),
@@ -3811,7 +3811,7 @@ def matches_with_events_endpoint(
             models.EventRow.sport == sport,
             models.EventRow.event_type == "foul",
         ).group_by(models.EventRow.match_external_id)
-    ).all())
+    ).all()}
 
     rows = session.execute(
         select(models.Match).where(

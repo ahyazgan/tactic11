@@ -9,6 +9,9 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+- [x] Codex devamı: GitHub ana dalını al, başka projelerin portlarını koruyarak gerçek API arayüzünü aç; video girişini ve eksik edinim kapısını doğrula.
+  Done when: 3100/8100 başlatıcısı, gerçek-mod giriş/401 görünürlüğü, 5 giriş tarayıcı testi, gerçek hesaptan 12 başarılı takip isteği ve 17 ham edinim testi. Sonuç: docs/CODEX-DEVAM-DURUMU-2026-10-09.md. Gece kontrolü bellek nedeniyle tamamlanmadı; palet adayı varsayılan yapılmadı.
+
 - [x] Codex kamera: sistemi gerçek dedektör/aktarım ile doğrula; bağımsız motor ve renk uzlaşısını geliştirmede ölçerek açık seçimle entegre et. (d25c7a0)
   Done when: 30 saniyelik gerçek RF-DETR/OSNet/top ROI çıktısı ve bellek DB aktarımı doğrulandı; 11 kesitte üretim/araştırma eşitliği, 22 eski çıktı ve 164.772 gözlem birebir korundu. Son kodda 83 CV + 4 kanıt zinciri testi, Ruff ve mypy geçti; tam uygulama koşusu 2.926 başarılı/51 atlanan test verdi. Gündüz etiketlerinde yalnız bir yanlış kişi birleşmesi düzeldi; forma doğruluğu korunur. Sonuç: docs/KIMLIK-UZLASISI-SONUCLARI.md. Deneysel consensus varsayılan değil; yeni kontrol ve gerçek zaman hedefi henüz geçilmedi.
 

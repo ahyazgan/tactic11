@@ -26,7 +26,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -58,4 +58,37 @@ jobs:
         with:
           name: playwright-report
           path: frontend/playwright-report/
+          retention-days: 7
+
+  live_auth:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Build the real API mode
+        env:
+          NEXT_PUBLIC_DEMO_MODE: "false"
+          NEXT_PUBLIC_BUILD_SHA: ${{ github.sha }}
+        run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Login and video authorization UI (mocked API)
+        env:
+          E2E_LIVE_API: "true"
+        run: |
+          npm run start &
+          npx wait-on http://localhost:3000 -t 30000
+          npx playwright test e2e/live_auth.spec.ts --workers=1
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: live-auth-report
+          path: frontend/test-results/
           retention-days: 7

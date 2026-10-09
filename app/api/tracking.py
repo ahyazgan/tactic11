@@ -13,6 +13,7 @@ hesaplanır — bu katman yalnız pozisyon servis eder.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any
 
@@ -161,7 +162,7 @@ def frames_in_window(
     """
     from app.domain.tracking import TrackingFrame
 
-    rows = session.execute(
+    rows: Sequence[models.TrackingFrameRow] = session.execute(
         _base_query(match_id)
         .where(
             models.TrackingFrameRow.minute >= max(0.0, from_minute),
@@ -322,7 +323,7 @@ def tracking_frames_between(
         raise HTTPException(status_code=422, detail="to_minute < from_minute")
     # Limit aşılırsa pencerenin SONU (en güncel kareler) korunur — overlay
     # "şu an"ı gösterir, geçmişi değil.
-    rows = session.execute(
+    rows: Sequence[models.TrackingFrameRow] = session.execute(
         _base_query(match_id)
         .where(
             models.TrackingFrameRow.minute >= from_minute,
@@ -356,7 +357,7 @@ def tracking_tracks(
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     match = _match_or_404(session, match_id)
-    rows = session.execute(_base_query(match_id).order_by(models.TrackingFrameRow.timestamp)).scalars().all()
+    rows: Sequence[models.TrackingFrameRow] = session.execute(_base_query(match_id).order_by(models.TrackingFrameRow.timestamp)).scalars().all()
     agg: dict[int, dict[str, Any]] = {}
     scope_frames: dict[tuple[str, int, int], int] = {}
     scope_ordinals: dict[tuple[str, int, int], int] = {}

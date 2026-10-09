@@ -1,5 +1,29 @@
 # tactic11 — başlatıcılar
 
+## Codex ile yerel çalışma (9 Ekim 2026)
+
+Bu bilgisayarda 3000/3001/8000 başka projeler tarafından kullanılıyor.
+**`CODEX.bat`** Manager'ı `http://127.0.0.1:3100` ve API'yi `8100` üzerinden
+açar. Başlatıcı portun bu kuruluma ait olduğunu doğrular; başka uygulamayı
+kapatmaz. Güncel olmayan arayüzü sınırlı sayıda derleme işçisiyle derler,
+gerçek API modunu kullanır ve mevcut `demo.db` dosyasını sıfırlamaz.
+
+```powershell
+.\launcher\CODEX.bat
+.\launcher\CODEX.bat -Action Status
+.\launcher\CODEX.bat -Action Stop
+```
+
+Portlar gerekirse `-WebPort 3102 -ApiPort 8102` ile birlikte seçilebilir.
+Derleme ve servis günlükleri `.cache/codex-*` dosyalarındadır. Video yükleme,
+kalibrasyon ve iş başlatma için mevcut hesabınızla giriş gerekir; salt okuma
+ekranlarının açılması bu yetkinin var olduğu anlamına gelmez.
+
+Önceki 3000/8000 başlatıcıları aşağıda belgelenmiştir; bu bilgisayarda Codex
+başlatıcısını kullanın. Mevcut otomatik açılış ayarları değiştirilmedi.
+
+## Önceki başlatıcılar
+
 Beş dosyaya çift tıklayarak siteyi yönetirsin.
 
 | Dosya | Ne yapar |

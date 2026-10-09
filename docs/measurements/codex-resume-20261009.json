@@ -1,0 +1,142 @@
+{
+  "date": "2026-10-09",
+  "baseline_commit": "3afc324e745d85c3c2861a7e53ce935877c4e964",
+  "upstream_prs_synchronized": [
+    274,
+    275,
+    276
+  ],
+  "runtime": {
+    "frontend": "http://127.0.0.1:3100",
+    "backend": "http://127.0.0.1:8100",
+    "demo_mode": false,
+    "database_quick_check": "ok",
+    "seed_or_reset": false,
+    "unrelated_processes_stopped": false
+  },
+  "verification": {
+    "demo_browser_passed": 11,
+    "demo_browser_skipped": 2,
+    "live_auth_mocked_api_passed": 5,
+    "acquisition_tests_passed": 17,
+    "authenticated_real_browser": {
+      "requests": [
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/jobs?limit=8",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/videos",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches/990100/shape?minute=95.00&window=1",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches/3773672/shape?minute=0.00&window=3",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches/3773672/shape?minute=95.00&window=3",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches/3773672/frames?from_minute=92&to_minute=95&limit=150",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches/3773672/frames?from_minute=0&to_minute=0&limit=150",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches/990100/frames?from_minute=94&to_minute=95&limit=150",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches/990100/frames?from_minute=0&to_minute=0.4134&limit=150",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches/990100/shape?minute=0.41&window=1",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3100/api/tracking/matches/990100/tracks",
+          "status": 200
+        }
+      ],
+      "javascript_errors": [],
+      "match_id": 990100,
+      "visible_frame_window": 150
+    }
+  },
+  "control": {
+    "status": "incomplete_not_scored",
+    "production_default": "supervision ByteTrack",
+    "candidate_promoted": false,
+    "frozen_files_changed": false,
+    "day_samples": {
+      "64": 375,
+      "66": 375
+    },
+    "day_start_boxes": 198,
+    "blind_labels_sealed": false,
+    "night_complete": false,
+    "night_failure": "OpenCV failed allocating 21957120 bytes after progress sample250/time20s; earlier attempts failed CUDA allocation or pinning. No valid raw completion manifest.",
+    "no_grad_runtime_parity": {
+      "freeze_sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea",
+      "cache_sha256": "9116348cf71a1a790b9dff77d79153f10808a02ed3810b96cc08ca81fb79d73d",
+      "grad_enabled": false,
+      "comparisons": [
+        {
+          "frame_idx": 0,
+          "source_observations": 50,
+          "exact": true
+        },
+        {
+          "frame_idx": 2,
+          "source_observations": 52,
+          "exact": true
+        }
+      ],
+      "limitations": "Two raw observation frames only; not accuracy or speed evidence. No tracker predictions or label frames inspected."
+    },
+    "runtime_adjustments": [
+      "OPENCV_FFMPEG_THREADS=1",
+      "torch.set_grad_enabled(False) for last attempt"
+    ],
+    "limits": "No accuracy or throughput claim. Two-frame raw observation parity is limited evidence; complete blind labels and three-arm control remain required."
+  },
+  "local_evidence_sha256": {
+    "docs/measurements/identity-palette-frozen-decision.json": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea",
+    "scripts/soccertrack_v2/consensus_palette_control.py": "ae819f5c84d25d97a10712f7a9e18e63b9b2c100f94dc8cbd4ab86e279938290",
+    "scripts/soccertrack_v2/candidates/identity_consensus_palette_v2.py": "af4aea241ab883279f33b6b5bdb1671311c377e57438b70b1df47aa640841a62",
+    "data/tracking/bench/consensus_palette_control_v1/day/raw/manifest.json": "f4cda96ef9b0f2fc9c2b1cd275cd7a838733a61c4064a9bf309be0ae1780bb9f",
+    "data/tracking/bench/consensus_palette_control_v1/night/source/manifest.json": "7587de917a29219f3206bcb7f9b2605fba4c050cae5ddffb717f16b9ed1285ac",
+    "data/tracking/bench/consensus_palette_control_v1/night/raw-failed-memory-20261009/seg_0078.json": "1872c6b7a59115585a7ddb004cb02f145b05d6548db5c671e7dbd1fe79c097a6",
+    ".cache/palette-control-night-capture-20261009.log": "1f3a3efe5bbca3e26e3e9598c70d97cbbea2c99c16f64cb6e5b880ecd820a3e3",
+    ".cache/palette-control-night-capture-20261009-retry.log": "f76b5458790cb9da13b283c1c42cd52deef9f583d09c16a81ae6cba57b10eec7",
+    ".cache/palette-control-night-capture-20261009-host.log": "5148f2dd8195b44f1ff3413b8d54deb3be510efffb0dbdc7c0785d236f689432",
+    ".cache/diagnose-frozen-cuda-20261009.log": "32d8e9620266b73c3b9aa415a9774dc4e549a38a59756b3ad4d382f61d032c28",
+    ".cache/diagnose-frozen-cuda-20261009-async.log": "a15843503af4e892376641acdcb1db44067cbe434fdd4e045b10d973c3683ac5",
+    ".cache/diagnose-frozen-cuda-20261009-nograd.log": "1f74656aae3cbb06c96b676ee88af2b539238c00f0b926d805dffc05e5c4eecd",
+    ".cache/palette-control-night-capture-20261009-nograd.log": "6cf7ba008536ede82f916b73dbc194c2ce3630631b810c61f091032bfe3ed33c",
+    ".cache/no-grad-detector-parity-20261009.json": "234d415f83ac414bb8e99dcda3bc5edba180e47adfa251a620b62c4333e085ce",
+    ".cache/palette-control-day64-draft-20261009.json": "89dc3dfb77e4468e46b407e1f22b15d061e09fa2d54f8da2a2afad25a5515402"
+  },
+  "reproduction_scripts": {
+    ".cache/diagnose_frozen_cuda_20261009.py": {
+      "sha256": "dc596660f44030a9c7bdc1ef41e365a6605177bfec86e949c89cf154d11641e8",
+      "source": "import json\nimport sys\nimport traceback\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1]))\nimport torch\nfrom app.tracking.detect import DetectorConfig, make_detector\n\ndecision = json.loads(Path('docs/measurements/identity-palette-frozen-decision.json').read_text())\ncfg = DetectorConfig(**decision['groups']['night']['config']['detector'])\nprint('torch', torch.__version__, 'cuda', torch.version.cuda, flush=True)\nprint('cuda_memory_start', torch.cuda.mem_get_info(), flush=True)\ndetector = make_detector(cfg)\nbatch = cfg.torch_batch_size(3840, 1906)\nprint('batch', batch, 'cuda_memory_loaded', torch.cuda.mem_get_info(), flush=True)\ntry:\n    detector.model.inference(dtype=torch.float16, batch_size=batch)\n    print('compile_ok', torch.cuda.mem_get_info(), flush=True)\nexcept Exception:\n    traceback.print_exc()\n    sys.exit(1)\n"
+    },
+    ".cache/verify_no_grad_detector_20261009.py": {
+      "sha256": "3fc86c65a7689c277fab66cfae6447182f84ce800ffb60a13ac6edf3f561431b",
+      "source": "import hashlib\nimport json\nimport sys\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parents[1]))\nimport cv2\nimport numpy as np\nimport torch\nfrom app.tracking.detect import DetectorConfig, make_detector\nfrom app.tracking.teams import kit_color\nfrom scripts.soccertrack_v2.consensus_palette_control import verify\n\ndecision = verify()\ncache_path = Path('data/tracking/bench/consensus_palette_control_v1/day/raw/seg_0064.json')\nraw = json.loads(cache_path.read_text())\ntorch.set_grad_enabled(False)\ndetector = make_detector(DetectorConfig(**raw['config']['detector']))\ncap = cv2.VideoCapture(raw['video'])\ncomparisons = []\ntry:\n    for frame_idx in range(3):\n        ok, bgr = cap.read()\n        assert ok, frame_idx\n        if frame_idx not in (0, 2):\n            continue\n        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)\n        persons, _ = detector.split(detector.detect(rgb))\n        actual = []\n        for box, confidence in zip(persons.xyxy, persons.confidence, strict=True):\n            color = kit_color(rgb, tuple(map(float, box)))\n            actual.append(dict(box=box.tolist(), confidence=float(confidence), color=None if color is None else color.tolist()))\n        expected = raw['detected_persons'][str(frame_idx // 2)]\n        equal = actual == expected\n        comparisons.append(dict(frame_idx=frame_idx, source_observations=len(expected), exact=equal))\n        print(comparisons[-1], flush=True)\n        assert equal, 'Raw detections/colors changed; do not continue control with this runtime'\nfinally:\n    cap.release()\nverify()\nresult = dict(freeze_sha256=hashlib.sha256(Path('docs/measurements/identity-palette-frozen-decision.json').read_bytes()).hexdigest(), cache_sha256=hashlib.sha256(cache_path.read_bytes()).hexdigest(), grad_enabled=False, comparisons=comparisons, limitations='Two raw observation frames only; not accuracy or speed evidence. No tracker predictions or label frames inspected.')\nwith Path('.cache/no-grad-detector-parity-20261009.json').open('x') as stream:\n    json.dump(result, stream, indent=2)\n"
+    }
+  }
+}

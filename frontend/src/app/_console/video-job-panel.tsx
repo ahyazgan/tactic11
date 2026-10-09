@@ -9,7 +9,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { apiFetch } from "@/lib/api";
+import { ApiError, apiFetch } from "@/lib/api";
+import { DEMO_MODE } from "@/lib/demo-mode";
 
 interface VideoItem { name: string; size_mb: number }
 interface CalibItem { name: string; points: number; reprojection_error_m: number | null; valid: boolean }
@@ -38,9 +39,9 @@ const ACTIVE = new Set(["queued", "running", "ingesting"]);
 const AUTO_ANCHOR = "__auto__";
 
 export function VideoJobPanel({ onDone }: { onDone: (matchId: number) => void }) {
-  const { data: videos, mutate: refreshVideos } = useSWR<{ videos: VideoItem[] }>("/tracking/videos", apiFetch, { revalidateOnFocus: false });
-  const { data: calibs } = useSWR<{ calibrations: CalibItem[] }>("/tracking/calibrations", apiFetch, { revalidateOnFocus: false });
-  const { data: jobs, mutate: refreshJobs } = useSWR<JobsList>("/tracking/jobs?limit=8", apiFetch, {
+  const { data: videos, error: videoError, mutate: refreshVideos } = useSWR<{ videos: VideoItem[] }>("/tracking/videos", apiFetch, { revalidateOnFocus: false });
+  const { data: calibs, error: calibError } = useSWR<{ calibrations: CalibItem[] }>("/tracking/calibrations", apiFetch, { revalidateOnFocus: false });
+  const { data: jobs, error: jobsError, mutate: refreshJobs } = useSWR<JobsList>("/tracking/jobs?limit=8", apiFetch, {
     revalidateOnFocus: false,
     refreshInterval: (d) => (d?.jobs?.some((j) => ACTIVE.has(j.state)) ? 3000 : 0),
   });
@@ -116,6 +117,20 @@ export function VideoJobPanel({ onDone }: { onDone: (matchId: number) => void })
       setBusy(false);
     }
   };
+
+  const loadError = videoError || calibError || jobsError;
+  if (loadError) {
+    const needsLogin = loadError instanceof ApiError && loadError.status === 401;
+    return (
+      <div className="rc">
+        <h3 style={{ margin: 0 }}>Video işle</h3>
+        <p role="alert" style={{ fontSize: 12, color: "var(--muted)" }}>
+          {needsLogin ? (DEMO_MODE ? "Video işlemek için gerçek veri modunda giriş yapın." : "Video işlemek için giriş yapmanız gerekiyor.") : "Video ve kalibrasyon listesi yüklenemedi. Bağlantınızı kontrol edip sayfayı yenileyin."}
+        </p>
+        {needsLogin && !DEMO_MODE && <Link href="/login?next=%2Fvideo-tracking">Giriş yap</Link>}
+      </div>
+    );
+  }
 
   return (
     <div className="rc">
