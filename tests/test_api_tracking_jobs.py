@@ -98,12 +98,13 @@ def test_calibration_list_rechecks_replaced_file_and_removes_deleted_file(client
     folder.mkdir()
     path = folder / "same.json"
     invalid = deepcopy(CALIB)
-    invalid["image_size"] = [0, 800]
+    invalid["image_size"] = [-300, 800]
     path.write_text(json.dumps(invalid))
     stamp = path.stat()
     assert client.get("/tracking/calibrations").json()["calibrations"][0]["valid"] is False
     path.write_text(json.dumps(CALIB))
     os.utime(path, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
+    assert path.stat().st_size == stamp.st_size
     assert client.get("/tracking/calibrations").json()["calibrations"][0]["valid"] is True
     path.unlink()
     assert client.get("/tracking/calibrations").json() == {"calibrations": [], "total": 0}
