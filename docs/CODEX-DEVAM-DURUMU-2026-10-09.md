@@ -1,7 +1,8 @@
 # Manager: Codex ile devam, 9 Ekim 2026
 
-GitHub ana dalı yeniden kontrol edildi: `fd0620b` / PR #279, 9 Ekim 2026;
-ana dal CI başarılıydı. Yeni kör etiketler `e3d9618` ile tahminler açılmadan
+Son çalışma başlangıcında GitHub ana dalı yeniden kontrol edildi:
+`eece9cd` / PR #280, 9 Ekim 2026; ana dal CI başarılıydı, açık PR yoktu.
+Yeni kör etiketler `e3d9618` ile tahminler açılmadan
 mühürlendi; tamamlanan kontrol sonuçları aşağıda. PR #274–276 ile
 birleşen Claude çalışmaları başlangıçta fast-forward ile alınmıştı.
 Kullanıcının tercihiyle geliştirme Codex üzerinden sürüyor;
@@ -202,3 +203,25 @@ Bu dört kesit artık tanı verisi. Sonraki geliştirme tam/kısmi kutu kopmalar
 kontrol açılmadan dondurulacak. Top/olay ve tam maç gerçek zaman hedefleri açık.
 Tam sayımlar, süreler, hashler ve kalan hatalar:
 [palet kontrol sonuçları](PALET-UZLASISI-KONTROL-SONUCLARI.md).
+
+## Kısa kopma araştırmasının devam noktası
+
+İlk 11 geliştirme ve son dört palet kesiti yeniden değerlendirildi. Kısa
+kaybolmada gözlenen hareketi kullanan aday, rakip yakınlığı ve gerçek eşleştirme
+maliyetinin tekilliğiyle sınırlandı. Palet/bağımsız takip birlikte değişince
+kimlik ayrılır; başlangıçtaki forma kararları kaynak kutularından taşınır.
+Bir eski kutu kaybolursa o kesitte hareket onarımından vazgeçilir.
+
+15 kesitte iki aynı-kişi bağlantısı ve bir yanlış birleşme düzeldi;
+114.602 başlangıç gözlemi eksilmedi, forma kararları değişmedi. 16 önerinin
+14'ü kullanıldı, üç kimlik ayrımı yapıldı. Seyrek etiketlerdeki doğrular korundu.
+42 yeni regresyon testi geçti. Tek iş parçacığı isteyen ortam değişkeninin
+fiilen 16 çözücü iş parçacığı açtığı görüldü; araştırma çözücüsü artık doğrudan
+1 iş parçacığıyla açılıp doğrulanıyor. Önceki bellek hatası kaydı korunuyor.
+
+Bu aday henüz canlı API/işçi seçeneği veya üretim varsayılanı değildir.
+Sonraki iş önceki uzlaşı kontrolünün 60/62 ve 80/82 kesitlerini de kapsamak,
+beyaz 6'nın yanlış bölünmesini reddederken altı eski doğru ayrımı korumak;
+ardından aynı iki-akış kanıtını canlı akışa bağlayıp yeni kontrol öncesi
+sabitlemektir. Yeni kör kontrol henüz açılmadı.
+[Ayrıntı ve makine kanıtı](KISA-KOPMA-GELISTIRME-SONUCLARI.md).

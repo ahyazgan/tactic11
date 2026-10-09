@@ -45,6 +45,14 @@ Ayrıntı: [görünüş, hareket ve kaynak tanısı](KIMLIK-GORUNUS-TANISI.md).
 
 ## Kalan işler, çalışma sırasıyla
 
+9 Ekim kısa kopma devamı: ilk 11 + son dört palet kesitinde iki aynı-kişi bağı
+ve bir yanlış birleşme düzeldi. 114.602 eski gözlem ve forma kararları korundu;
+42 yeni test geçti. 16 hareket önerisinin 14'ü sonuca alındı, üç ayrım yapıldı;
+tek kutu kaybı görülen kesitte hareket onarımı geri çekildi. Bu çevrimdışı
+araştırma adayı henüz canlı motor değildir. Önceki uzlaşı kontrolünün dört
+kesiti ve altı eski doğru ayrım da doğrulanmalıdır.
+[Kısa kopma ölçümü](KISA-KOPMA-GELISTIRME-SONUCLARI.md).
+
 1. **Örtüşmede kimlik hatası:** karışık gövde kutusunda hangi görünüş/noktanın
    hangi kişiye ait olduğunu ayırmak; yetersiz kanıtta otomatik kişi kararı
    üretmemek. Beyaz 6 düzeltmesi diğer altı doğru ayrımı bozmamalı; bütün eski

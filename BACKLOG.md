@@ -15,6 +15,12 @@
 - [x] Codex kamera: dondurulmuş palet adayının dört kesitteki kör kaynak etiketlerini tamamla, mühürle ve üç kolu bütün ayrımlarıyla karşılaştır. (etiket mührü e3d9618; sonuç raporu bu değişiklikte)
   Done when: 273 başlangıç, 282 bitiş kutusu ve 322 ilişki kaynak görüntüden incelendi; tahmin açılmadan hash ile mühürlendi. Dört kesitte 1.500 ham örnek ve 12 tekrar geçti; üç kolun 31.771 çıktı kişi gözlemi birebir aynı. Sonraki incelemede iki ters bitiş indeksi bulundu; mühürlü kayıt korunup açıkça tahmin sonrası düzeltme eklendi. Yeni/reddedilen sınır yok; olumlu kontrol düzeltmesi yok, üretime terfi yok. Tek AI ve aynı maçtan kontrol sınırları raporlu. Sonuç: docs/PALET-UZLASISI-KONTROL-SONUCLARI.md.
 
+- [x] Codex kamera: kısa kopma için hareket, tekil eşleşme, rakip yakınlığı ve palet/destek ayrımını 11 eski + 4 tüketilmiş palet kesitinde ölç.
+  Done when: iki aynı-kişi ilişkisi ve bir yanlış birleşme düzeldi; 114.602 eski gözlem ve forma kararları korundu. 16 öneriden 14'ü seçildi, 3 kimlik ayrımı; bir kayıp kutu tüm-kesit geri dönüşüyle korundu. 42 yeni test, kaynak/koşu hashleri, başarısız bellek koşusu ve 26 önerinin tek-AI görüntü incelemesi raporlu. Sonuç: docs/KISA-KOPMA-GELISTIRME-SONUCLARI.md. Canlı entegrasyon/varsayılan terfisi veya yeni kontrol başarısı değildir.
+
+- [ ] Codex kamera: kısa kopma adayını önceki dört uzlaşı kesitiyle toplam 19 bilinen kesitte genişlet; altı doğru ayrımı ve beyaz 6 korumasını doğrula, sonra canlı entegrasyonunu sabitle.
+  Done when: gündüz 60/62 ve gece 80/82 dahil kaynak bazında eski doğru ilişkiler/kapsam korunmuş, eski doğru ayrımlar kaybolmamış; iki akışın kimlik/forma kanıtı ve gecikmeli ayrım video/canlı yollarda eşit. Yeni kontrol açılmadan kod/model/parametre ve kabul koşulları dondurulur.
+
 - [ ] Codex kamera: tüketilen palet kontrolündeki tam/kısmi kutu kopmalarını, örtüşmede kimlik devrini ve gece forma hatalarını geliştirme senaryolarında ayır.
   Done when: etiket düzeltmesinden sonraki tanı sayımlarıyla 11 yanlış aynı-kişi ilişkisi, 1 yanlış farklı-kişi birleşmesi, 63 kapsam dışı ilişki ve gece forma/sahte kutu hataları kaynak/karar izine bağlı; düzeltme yalnız geliştirmede seçilmiş, eski doğru ayrımlar ve kutu/forma kapsamı korunmuş. Yeni aday başka kontrol açılmadan dondurulur; bu dört kesit yeniden bağımsız başarı sayılmaz.
 

@@ -1,0 +1,1462 @@
+{
+  "scope": "Development selection only; all sources already consumed. No blind labels or production promotion.",
+  "decision": "Keep 0.75-height clearance, unique actual association, per-observation teams and full baseline-coverage fallback for further development; withhold live integration/default promotion pending all 19 known clips, prior six true partitions/white6 guard and independent control.",
+  "selection_basis": "No clearance left an unresolved crowded same-kit transition; 1.0-height clearance withheld that transition but also lost the night84 repair; 0.75 was selected on these development examples and then replayed on all 15.",
+  "sparse_improvements": [
+    "day blue21 same-person pair",
+    "day blue9 versus white opponent separation",
+    "night84 ball-carrier same-person pair"
+  ],
+  "failed_full_replay": {
+    "status": "failed_not_a_completed_benchmark",
+    "completed_segments": 13,
+    "failed_at": "palette_night/78, source decoder read",
+    "error": "cv2 alloc.cpp: Failed to allocate 21957120 bytes",
+    "measured_decoder_threads": {
+      "environment_hint_only": 16,
+      "explicit_CAP_PROP_N_THREADS": 1
+    },
+    "log_sha256": "84e4f9c4cc4f72144e6b0f50dc27161ac96dcea88db6dc2a6a0e218c3f522b5c",
+    "source_snapshots_sha256": {
+      ".cache\\short-gap-verified-20261009-v2\\source-snapshot\\benchmark_short_gap_motion.py": "da3058cab99a334b8374824458099cb8dd6de6bf21c2e829e7a3e63b601c23d7",
+      ".cache\\short-gap-verified-20261009-v2\\source-snapshot\\palette_motion_partitions_v1.py": "a8dbe6ce1ff46c133008c80914578cebbc394d5a2f8d285dc53d54fa24ef79ec",
+      ".cache\\short-gap-verified-20261009-v2\\source-snapshot\\short_gap_motion_v1.py": "638e8dbc4d0919dd3057f038056bc7806a7f80a748b559d421aaaf7a15ee6337"
+    }
+  },
+  "decoder_completed_segment_parity": [
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\day\\secondary\\seg_0000.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\day\\secondary\\seg_0000.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\day\\secondary\\seg_0003.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\day\\secondary\\seg_0003.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\day\\secondary\\seg_0006.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\day\\secondary\\seg_0006.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\night\\secondary\\seg_0000.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\night\\secondary\\seg_0000.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\night\\secondary\\seg_0003.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\night\\secondary\\seg_0003.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\night\\secondary\\seg_0006.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\night\\secondary\\seg_0006.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\night\\secondary\\seg_0009.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\night\\secondary\\seg_0009.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\night_extra\\secondary\\seg_0020.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\night_extra\\secondary\\seg_0020.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\night_extra\\secondary\\seg_0030.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\night_extra\\secondary\\seg_0030.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\night_old_control\\secondary\\seg_0040.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\night_old_control\\secondary\\seg_0040.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\night_old_control\\secondary\\seg_0050.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\night_old_control\\secondary\\seg_0050.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\palette_day\\secondary\\seg_0064.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\palette_day\\secondary\\seg_0064.json",
+      "samples": 375,
+      "exact": true
+    },
+    {
+      "before": ".cache\\short-gap-verified-20261009-v2\\palette_day\\secondary\\seg_0066.json",
+      "after": ".cache\\short-gap-verified-20261009-v5\\palette_day\\secondary\\seg_0066.json",
+      "samples": 375,
+      "exact": true
+    }
+  ],
+  "ablations": {
+    "clearance_1_height": {
+      "report_sha256": "e42993bb82cb64773193f2766444f940d80d89b4d20e9a22ca52c75997f715df",
+      "results": {
+        "day": {
+          "candidate": {
+            "kit": {
+              "correct": 285,
+              "wrong": 28,
+              "unassigned": 2,
+              "kit_boxes_missing": 1,
+              "other_assigned": 27,
+              "not_person_remaining": 1,
+              "conflicting_track_labels": 6
+            },
+            "pairs": {
+              "identity-person-development-labels": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 39,
+                "covered_observations": 39,
+                "counts": {
+                  "same_pairs": 22,
+                  "same_correct": 15,
+                  "false_split": 7,
+                  "different_pairs": 7,
+                  "different_correct": 2,
+                  "false_join": 5,
+                  "uncertain_excluded": 4
+                },
+                "changed_outcomes": [
+                  {
+                    "before": {
+                      "left": "0-280-d15",
+                      "right": "0-310-d13",
+                      "relation": "different",
+                      "case": "tackle",
+                      "visual_basis": "Blue 9 and upright white opponent are separate people.",
+                      "linked": true,
+                      "passed": false
+                    },
+                    "after": {
+                      "left": "0-280-d15",
+                      "right": "0-310-d13",
+                      "relation": "different",
+                      "case": "tackle",
+                      "visual_basis": "Blue 9 and upright white opponent are separate people.",
+                      "linked": false,
+                      "passed": true
+                    }
+                  }
+                ]
+              },
+              "identity-link-audit-development-labels": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 20,
+                "covered_observations": 20,
+                "counts": {
+                  "different_pairs": 2,
+                  "different_correct": 2,
+                  "same_pairs": 5,
+                  "same_correct": 3,
+                  "uncertain_excluded": 3,
+                  "false_split": 2
+                },
+                "changed_outcomes": [
+                  {
+                    "before": {
+                      "left": "0-658-d32",
+                      "right": "0-688-d35",
+                      "relation": "same",
+                      "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                      "linked": false,
+                      "passed": false
+                    },
+                    "after": {
+                      "left": "0-658-d32",
+                      "right": "0-688-d35",
+                      "relation": "same",
+                      "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                      "linked": true,
+                      "passed": true
+                    }
+                  }
+                ]
+              },
+              "joint-identity-control-day-pairs": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 474,
+                "covered_observations": 255,
+                "counts": {
+                  "same_pairs": 134,
+                  "same_correct": 92,
+                  "same_uncovered": 38,
+                  "uncertain_excluded": 21,
+                  "false_split": 4,
+                  "different_pairs": 134,
+                  "different_correct": 84,
+                  "different_uncovered": 50
+                },
+                "changed_outcomes": []
+              }
+            },
+            "regressions": []
+          },
+          "events": {
+            "0": {
+              "motion": [
+                {
+                  "order": 127,
+                  "track_id": 109,
+                  "source_index": 17,
+                  "proposal": [
+                    881.296875,
+                    284.765625,
+                    907.234375,
+                    322.296875
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    899.4383809200193,
+                    301.79020634842004,
+                    0.620718171029718,
+                    37.9745679769678,
+                    2.113839783353677,
+                    -0.2872719321927456,
+                    3.727595364273688e-07,
+                    0.0
+                  ]
+                },
+                {
+                  "order": 331,
+                  "track_id": 173,
+                  "source_index": 27,
+                  "proposal": [
+                    2521.9375,
+                    483.0546875,
+                    2563.5625,
+                    611.9609375
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    2565.1404963948853,
+                    551.0093144309174,
+                    0.4635410620357117,
+                    131.16725509415485,
+                    -8.341372727659214,
+                    1.7931421892830197,
+                    -7.042698552499701e-07,
+                    2.699564273588479
+                  ]
+                }
+              ],
+              "boundaries": [
+                {
+                  "continuity_id": 0,
+                  "raw_id": 68,
+                  "new_id": 202,
+                  "first_order": 152,
+                  "confirmed_order": 154,
+                  "old_support": 10,
+                  "new_support": 37,
+                  "old_palette": 0,
+                  "new_palette": 1
+                }
+              ]
+            },
+            "3": {
+              "motion": [
+                {
+                  "order": 296,
+                  "track_id": 111,
+                  "source_index": 2,
+                  "proposal": [
+                    1362.5625,
+                    229.625,
+                    1382.0625,
+                    272.03125
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1367.3266776067567,
+                    249.1813142263526,
+                    0.47984010482972655,
+                    44.52682179210243,
+                    -0.659704367007828,
+                    0.22998792866039286,
+                    -1.5986909818735072e-06,
+                    -0.1752292192625
+                  ]
+                }
+              ],
+              "boundaries": []
+            },
+            "6": {
+              "motion": [],
+              "boundaries": []
+            }
+          }
+        },
+        "night": {
+          "candidate": {
+            "kit": {
+              "correct": 95,
+              "wrong": 13,
+              "unassigned": 15,
+              "kit_boxes_missing": 0,
+              "other_assigned": 4,
+              "not_person_remaining": 0,
+              "conflicting_track_labels": 3
+            },
+            "pairs": {},
+            "regressions": []
+          },
+          "events": {
+            "0": {
+              "motion": [
+                {
+                  "order": 345,
+                  "track_id": 16,
+                  "source_index": 18,
+                  "proposal": [
+                    698.78125,
+                    928.375,
+                    745.0,
+                    983.0
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    736.7578890195548,
+                    945.8271271442568,
+                    0.7175814255421556,
+                    53.72952618665002,
+                    0.6882347913887743,
+                    0.33460569621059727,
+                    3.396755522802324e-05,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": []
+            },
+            "3": {
+              "motion": [],
+              "boundaries": []
+            },
+            "6": {
+              "motion": [],
+              "boundaries": []
+            },
+            "9": {
+              "motion": [],
+              "boundaries": []
+            }
+          }
+        },
+        "night_extra": {
+          "candidate": {
+            "kit": {
+              "correct": 50,
+              "wrong": 12,
+              "unassigned": 5,
+              "kit_boxes_missing": 0,
+              "other_assigned": 3,
+              "not_person_remaining": 0,
+              "conflicting_track_labels": 2
+            },
+            "pairs": {},
+            "regressions": []
+          },
+          "events": {
+            "20": {
+              "motion": [
+                {
+                  "order": 363,
+                  "track_id": 27,
+                  "source_index": 4,
+                  "proposal": [
+                    933.25,
+                    829.5,
+                    972.75,
+                    892.625
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    941.2623657365261,
+                    867.2938391658093,
+                    0.5754357916972155,
+                    63.366442789725646,
+                    3.9203142150603867,
+                    -1.6961978966228832,
+                    -9.7056578684377e-06,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": []
+            },
+            "30": {
+              "motion": [
+                {
+                  "order": 51,
+                  "track_id": 18,
+                  "source_index": 19,
+                  "proposal": [
+                    3015.59375,
+                    901.8125,
+                    3067.59375,
+                    987.75
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    3075.3440675492197,
+                    953.6540979977116,
+                    0.5370183314435523,
+                    89.98071333576694,
+                    -14.990133431714309,
+                    -2.9711804026467337,
+                    -2.2092301766846967e-06,
+                    0.12019661427051997
+                  ]
+                },
+                {
+                  "order": 201,
+                  "track_id": 41,
+                  "source_index": 19,
+                  "proposal": [
+                    3178.65625,
+                    1013.59375,
+                    3230.65625,
+                    1125.21875
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    3231.976635291687,
+                    1072.7750521437629,
+                    0.5065640312082464,
+                    112.82223643035789,
+                    -4.558574684311236,
+                    1.2300536161228992,
+                    -2.357222829703396e-06,
+                    0.0
+                  ]
+                },
+                {
+                  "order": 294,
+                  "track_id": 55,
+                  "source_index": 20,
+                  "proposal": [
+                    3110.9375,
+                    1012.8125,
+                    3171.125,
+                    1106.1875
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    3165.6820060954688,
+                    1058.2950116164334,
+                    0.6003938202277368,
+                    93.74144199012385,
+                    -8.070891396703468,
+                    -0.21533971340681168,
+                    -8.047992370677887e-07,
+                    0.371989727792297
+                  ]
+                }
+              ],
+              "boundaries": []
+            }
+          }
+        },
+        "night_old_control": {
+          "candidate": {
+            "kit": {
+              "correct": 52,
+              "wrong": 9,
+              "unassigned": 4,
+              "kit_boxes_missing": 0,
+              "other_assigned": 1,
+              "not_person_remaining": 0,
+              "conflicting_track_labels": 1
+            },
+            "pairs": {
+              "joint-identity-control-night-pairs": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 138,
+                "covered_observations": 136,
+                "counts": {
+                  "same_pairs": 63,
+                  "same_correct": 59,
+                  "different_pairs": 63,
+                  "different_correct": 61,
+                  "false_split": 2,
+                  "same_uncovered": 2,
+                  "different_uncovered": 2,
+                  "uncertain_excluded": 8
+                },
+                "changed_outcomes": []
+              }
+            },
+            "regressions": []
+          },
+          "events": {
+            "40": {
+              "motion": [],
+              "boundaries": []
+            },
+            "50": {
+              "motion": [
+                {
+                  "order": 212,
+                  "track_id": 1,
+                  "source_index": 9,
+                  "proposal": [
+                    1868.5,
+                    545.375,
+                    1894.0,
+                    582.75
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1892.0718886233003,
+                    563.2045562359491,
+                    0.6466623634351731,
+                    37.77129123728555,
+                    1.7024472972008273,
+                    -0.45186326511532243,
+                    1.708358167060726e-06,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": []
+            }
+          }
+        },
+        "palette_day": {
+          "candidate": {
+            "kit": {
+              "correct": 77,
+              "wrong": 1,
+              "unassigned": 12,
+              "kit_boxes_missing": 9,
+              "other_assigned": 11,
+              "not_person_remaining": 0,
+              "conflicting_track_labels": 0
+            },
+            "pairs": {
+              "identity-palette-control-day-pairs": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 400,
+                "covered_observations": 204,
+                "counts": {
+                  "same_pairs": 108,
+                  "same_correct": 74,
+                  "same_uncovered": 24,
+                  "different_pairs": 108,
+                  "different_correct": 75,
+                  "different_uncovered": 32,
+                  "false_split": 10,
+                  "false_join": 1
+                },
+                "changed_outcomes": []
+              }
+            },
+            "regressions": []
+          },
+          "events": {
+            "64": {
+              "motion": [
+                {
+                  "order": 84,
+                  "track_id": 36,
+                  "source_index": 30,
+                  "proposal": [
+                    1679.75,
+                    514.90625,
+                    1729.75,
+                    616.75
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1727.4385229080422,
+                    561.3067269683951,
+                    0.43884941682254097,
+                    106.2378420933614,
+                    -4.1878421693100245,
+                    1.8052506660666439,
+                    -3.211574884198508e-06,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": []
+            },
+            "66": {
+              "motion": [],
+              "boundaries": []
+            }
+          }
+        },
+        "palette_night": {
+          "candidate": {
+            "kit": {
+              "correct": 35,
+              "wrong": 8,
+              "unassigned": 14,
+              "kit_boxes_missing": 2,
+              "other_assigned": 3,
+              "not_person_remaining": 1,
+              "conflicting_track_labels": 2
+            },
+            "pairs": {
+              "identity-palette-control-night-pairs": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 155,
+                "covered_observations": 137,
+                "counts": {
+                  "same_pairs": 53,
+                  "same_correct": 49,
+                  "different_pairs": 53,
+                  "different_correct": 49,
+                  "different_uncovered": 4,
+                  "false_split": 1,
+                  "same_uncovered": 3
+                },
+                "changed_outcomes": []
+              }
+            },
+            "regressions": []
+          },
+          "events": {
+            "78": {
+              "motion": [],
+              "boundaries": []
+            },
+            "84": {
+              "motion": [
+                {
+                  "order": 103,
+                  "track_id": 25,
+                  "source_index": 5,
+                  "proposal": [
+                    1256.5,
+                    630.25,
+                    1286.0,
+                    674.5
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1264.5405611631209,
+                    652.1028038921773,
+                    0.65601710075953,
+                    44.81905613900174,
+                    -3.4444900954346243,
+                    0.0980165881150581,
+                    -2.477559610405999e-06,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": [
+                {
+                  "continuity_id": 0,
+                  "raw_id": 25,
+                  "new_id": 77,
+                  "first_order": 43,
+                  "confirmed_order": 45,
+                  "old_support": 29,
+                  "new_support": 11,
+                  "old_palette": 0,
+                  "new_palette": 1
+                },
+                {
+                  "continuity_id": 0,
+                  "raw_id": 51,
+                  "new_id": 78,
+                  "first_order": 236,
+                  "confirmed_order": 238,
+                  "old_support": 16,
+                  "new_support": 11,
+                  "old_palette": 0,
+                  "new_palette": 1
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "clearance_075_height": {
+      "report_sha256": "7a72a1b3841439f0b9ce27006b1c2f73d94a7ee0849d8be96ff9ec57128d70a2",
+      "results": {
+        "day": {
+          "candidate": {
+            "kit": {
+              "correct": 285,
+              "wrong": 28,
+              "unassigned": 2,
+              "kit_boxes_missing": 1,
+              "other_assigned": 27,
+              "not_person_remaining": 1,
+              "conflicting_track_labels": 6
+            },
+            "pairs": {
+              "identity-person-development-labels": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 39,
+                "covered_observations": 39,
+                "counts": {
+                  "same_pairs": 22,
+                  "same_correct": 15,
+                  "false_split": 7,
+                  "different_pairs": 7,
+                  "different_correct": 2,
+                  "false_join": 5,
+                  "uncertain_excluded": 4
+                },
+                "changed_outcomes": [
+                  {
+                    "before": {
+                      "left": "0-280-d15",
+                      "right": "0-310-d13",
+                      "relation": "different",
+                      "case": "tackle",
+                      "visual_basis": "Blue 9 and upright white opponent are separate people.",
+                      "linked": true,
+                      "passed": false
+                    },
+                    "after": {
+                      "left": "0-280-d15",
+                      "right": "0-310-d13",
+                      "relation": "different",
+                      "case": "tackle",
+                      "visual_basis": "Blue 9 and upright white opponent are separate people.",
+                      "linked": false,
+                      "passed": true
+                    }
+                  }
+                ]
+              },
+              "identity-link-audit-development-labels": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 20,
+                "covered_observations": 20,
+                "counts": {
+                  "different_pairs": 2,
+                  "different_correct": 2,
+                  "same_pairs": 5,
+                  "same_correct": 3,
+                  "uncertain_excluded": 3,
+                  "false_split": 2
+                },
+                "changed_outcomes": [
+                  {
+                    "before": {
+                      "left": "0-658-d32",
+                      "right": "0-688-d35",
+                      "relation": "same",
+                      "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                      "linked": false,
+                      "passed": false
+                    },
+                    "after": {
+                      "left": "0-658-d32",
+                      "right": "0-688-d35",
+                      "relation": "same",
+                      "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                      "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                      "linked": true,
+                      "passed": true
+                    }
+                  }
+                ]
+              },
+              "joint-identity-control-day-pairs": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 474,
+                "covered_observations": 255,
+                "counts": {
+                  "same_pairs": 134,
+                  "same_correct": 92,
+                  "same_uncovered": 38,
+                  "uncertain_excluded": 21,
+                  "false_split": 4,
+                  "different_pairs": 134,
+                  "different_correct": 84,
+                  "different_uncovered": 50
+                },
+                "changed_outcomes": []
+              }
+            },
+            "regressions": []
+          },
+          "events": {
+            "0": {
+              "motion": [
+                {
+                  "order": 127,
+                  "track_id": 109,
+                  "source_index": 17,
+                  "proposal": [
+                    881.296875,
+                    284.765625,
+                    907.234375,
+                    322.296875
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    899.4383809200193,
+                    301.79020634842004,
+                    0.620718171029718,
+                    37.9745679769678,
+                    2.113839783353677,
+                    -0.2872719321927456,
+                    3.727595364273688e-07,
+                    0.0
+                  ]
+                },
+                {
+                  "order": 331,
+                  "track_id": 173,
+                  "source_index": 27,
+                  "proposal": [
+                    2521.9375,
+                    483.0546875,
+                    2563.5625,
+                    611.9609375
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    2565.1404963948853,
+                    551.0093144309174,
+                    0.4635410620357117,
+                    131.16725509415485,
+                    -8.341372727659214,
+                    1.7931421892830197,
+                    -7.042698552499701e-07,
+                    2.699564273588479
+                  ]
+                }
+              ],
+              "boundaries": [
+                {
+                  "continuity_id": 0,
+                  "raw_id": 68,
+                  "new_id": 202,
+                  "first_order": 152,
+                  "confirmed_order": 154,
+                  "old_support": 10,
+                  "new_support": 37,
+                  "old_palette": 0,
+                  "new_palette": 1
+                }
+              ]
+            },
+            "3": {
+              "motion": [
+                {
+                  "order": 296,
+                  "track_id": 111,
+                  "source_index": 2,
+                  "proposal": [
+                    1362.5625,
+                    229.625,
+                    1382.0625,
+                    272.03125
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1367.3266776067567,
+                    249.1813142263526,
+                    0.47984010482972655,
+                    44.52682179210243,
+                    -0.659704367007828,
+                    0.22998792866039286,
+                    -1.5986909818735072e-06,
+                    -0.1752292192625
+                  ]
+                }
+              ],
+              "boundaries": []
+            },
+            "6": {
+              "motion": [],
+              "boundaries": []
+            }
+          }
+        },
+        "night": {
+          "candidate": {
+            "kit": {
+              "correct": 95,
+              "wrong": 13,
+              "unassigned": 15,
+              "kit_boxes_missing": 0,
+              "other_assigned": 4,
+              "not_person_remaining": 0,
+              "conflicting_track_labels": 3
+            },
+            "pairs": {},
+            "regressions": []
+          },
+          "events": {
+            "0": {
+              "motion": [
+                {
+                  "order": 345,
+                  "track_id": 16,
+                  "source_index": 18,
+                  "proposal": [
+                    698.78125,
+                    928.375,
+                    745.0,
+                    983.0
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    736.7578890195548,
+                    945.8271271442568,
+                    0.7175814255421556,
+                    53.72952618665002,
+                    0.6882347913887743,
+                    0.33460569621059727,
+                    3.396755522802324e-05,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": []
+            },
+            "3": {
+              "motion": [],
+              "boundaries": []
+            },
+            "6": {
+              "motion": [
+                {
+                  "order": 119,
+                  "track_id": 20,
+                  "source_index": 12,
+                  "proposal": [
+                    546.5,
+                    1128.375,
+                    605.0,
+                    1211.125
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    568.7872393769863,
+                    1165.962409814081,
+                    0.6653849420936123,
+                    82.90642970581017,
+                    -13.716504214658606,
+                    2.591644331207786,
+                    2.9031323134079205e-06,
+                    -0.5781238415955923
+                  ]
+                },
+                {
+                  "order": 206,
+                  "track_id": 43,
+                  "source_index": 11,
+                  "proposal": [
+                    734.921875,
+                    1018.0,
+                    784.046875,
+                    1073.625
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    757.8762941286041,
+                    1046.5953731928398,
+                    0.7323874129858188,
+                    56.507273269209065,
+                    2.278174062062125,
+                    1.2948353407977125,
+                    -3.351205518261941e-07,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": []
+            },
+            "9": {
+              "motion": [],
+              "boundaries": []
+            }
+          }
+        },
+        "night_extra": {
+          "candidate": {
+            "kit": {
+              "correct": 50,
+              "wrong": 12,
+              "unassigned": 5,
+              "kit_boxes_missing": 0,
+              "other_assigned": 3,
+              "not_person_remaining": 0,
+              "conflicting_track_labels": 2
+            },
+            "pairs": {},
+            "regressions": []
+          },
+          "events": {
+            "20": {
+              "motion": [
+                {
+                  "order": 363,
+                  "track_id": 27,
+                  "source_index": 4,
+                  "proposal": [
+                    933.25,
+                    829.5,
+                    972.75,
+                    892.625
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    941.2623657365261,
+                    867.2938391658093,
+                    0.5754357916972155,
+                    63.366442789725646,
+                    3.9203142150603867,
+                    -1.6961978966228832,
+                    -9.7056578684377e-06,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": []
+            },
+            "30": {
+              "motion": [
+                {
+                  "order": 51,
+                  "track_id": 18,
+                  "source_index": 19,
+                  "proposal": [
+                    3015.59375,
+                    901.8125,
+                    3067.59375,
+                    987.75
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    3075.3440675492197,
+                    953.6540979977116,
+                    0.5370183314435523,
+                    89.98071333576694,
+                    -14.990133431714309,
+                    -2.9711804026467337,
+                    -2.2092301766846967e-06,
+                    0.12019661427051997
+                  ]
+                },
+                {
+                  "order": 201,
+                  "track_id": 41,
+                  "source_index": 19,
+                  "proposal": [
+                    3178.65625,
+                    1013.59375,
+                    3230.65625,
+                    1125.21875
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    3231.976635291687,
+                    1072.7750521437629,
+                    0.5065640312082464,
+                    112.82223643035789,
+                    -4.558574684311236,
+                    1.2300536161228992,
+                    -2.357222829703396e-06,
+                    0.0
+                  ]
+                },
+                {
+                  "order": 294,
+                  "track_id": 55,
+                  "source_index": 20,
+                  "proposal": [
+                    3110.9375,
+                    1012.8125,
+                    3171.125,
+                    1106.1875
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    3165.6820060954688,
+                    1058.2950116164334,
+                    0.6003938202277368,
+                    93.74144199012385,
+                    -8.070891396703468,
+                    -0.21533971340681168,
+                    -8.047992370677887e-07,
+                    0.371989727792297
+                  ]
+                }
+              ],
+              "boundaries": []
+            }
+          }
+        },
+        "night_old_control": {
+          "candidate": {
+            "kit": {
+              "correct": 52,
+              "wrong": 9,
+              "unassigned": 4,
+              "kit_boxes_missing": 0,
+              "other_assigned": 1,
+              "not_person_remaining": 0,
+              "conflicting_track_labels": 1
+            },
+            "pairs": {
+              "joint-identity-control-night-pairs": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 138,
+                "covered_observations": 136,
+                "counts": {
+                  "same_pairs": 63,
+                  "same_correct": 59,
+                  "different_pairs": 63,
+                  "different_correct": 61,
+                  "false_split": 2,
+                  "same_uncovered": 2,
+                  "different_uncovered": 2,
+                  "uncertain_excluded": 8
+                },
+                "changed_outcomes": []
+              }
+            },
+            "regressions": []
+          },
+          "events": {
+            "40": {
+              "motion": [],
+              "boundaries": []
+            },
+            "50": {
+              "motion": [
+                {
+                  "order": 34,
+                  "track_id": 2,
+                  "source_index": 3,
+                  "proposal": [
+                    1142.25,
+                    738.75,
+                    1178.75,
+                    789.25
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1169.4499347896078,
+                    760.5009857234999,
+                    0.6861017456189914,
+                    50.1425903998137,
+                    -3.3525847459423694,
+                    1.7346082150094824,
+                    1.4444719814452698e-06,
+                    -0.04077420739508229
+                  ]
+                },
+                {
+                  "order": 212,
+                  "track_id": 1,
+                  "source_index": 9,
+                  "proposal": [
+                    1868.5,
+                    545.375,
+                    1894.0,
+                    582.75
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1892.0718886233003,
+                    563.2045562359491,
+                    0.6466623634351731,
+                    37.77129123728555,
+                    1.7024472972008273,
+                    -0.45186326511532243,
+                    1.708358167060726e-06,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": []
+            }
+          }
+        },
+        "palette_day": {
+          "candidate": {
+            "kit": {
+              "correct": 77,
+              "wrong": 1,
+              "unassigned": 12,
+              "kit_boxes_missing": 9,
+              "other_assigned": 11,
+              "not_person_remaining": 0,
+              "conflicting_track_labels": 0
+            },
+            "pairs": {
+              "identity-palette-control-day-pairs": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 400,
+                "covered_observations": 204,
+                "counts": {
+                  "same_pairs": 108,
+                  "same_correct": 74,
+                  "same_uncovered": 24,
+                  "different_pairs": 108,
+                  "different_correct": 75,
+                  "different_uncovered": 32,
+                  "false_split": 10,
+                  "false_join": 1
+                },
+                "changed_outcomes": []
+              }
+            },
+            "regressions": []
+          },
+          "events": {
+            "64": {
+              "motion": [
+                {
+                  "order": 84,
+                  "track_id": 36,
+                  "source_index": 30,
+                  "proposal": [
+                    1679.75,
+                    514.90625,
+                    1729.75,
+                    616.75
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1727.4385229080422,
+                    561.3067269683951,
+                    0.43884941682254097,
+                    106.2378420933614,
+                    -4.1878421693100245,
+                    1.8052506660666439,
+                    -3.211574884198508e-06,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": []
+            },
+            "66": {
+              "motion": [],
+              "boundaries": []
+            }
+          }
+        },
+        "palette_night": {
+          "candidate": {
+            "kit": {
+              "correct": 35,
+              "wrong": 8,
+              "unassigned": 14,
+              "kit_boxes_missing": 2,
+              "other_assigned": 3,
+              "not_person_remaining": 1,
+              "conflicting_track_labels": 2
+            },
+            "pairs": {
+              "identity-palette-control-night-pairs": {
+                "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+                "source_unmatched_observations": [],
+                "observations": 155,
+                "covered_observations": 137,
+                "counts": {
+                  "same_pairs": 53,
+                  "same_correct": 50,
+                  "different_pairs": 53,
+                  "different_correct": 49,
+                  "different_uncovered": 4,
+                  "same_uncovered": 3
+                },
+                "changed_outcomes": [
+                  {
+                    "before": {
+                      "left": "84-374-d4",
+                      "right": "84-404-d11",
+                      "relation": "same",
+                      "visual_basis": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+                      "linked": false,
+                      "passed": false
+                    },
+                    "after": {
+                      "left": "84-374-d4",
+                      "right": "84-404-d11",
+                      "relation": "same",
+                      "visual_basis": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+                      "linked": true,
+                      "passed": true
+                    }
+                  }
+                ]
+              }
+            },
+            "regressions": []
+          },
+          "events": {
+            "78": {
+              "motion": [],
+              "boundaries": []
+            },
+            "84": {
+              "motion": [
+                {
+                  "order": 103,
+                  "track_id": 25,
+                  "source_index": 5,
+                  "proposal": [
+                    1256.5,
+                    630.25,
+                    1286.0,
+                    674.5
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1264.5405611631209,
+                    652.1028038921773,
+                    0.65601710075953,
+                    44.81905613900174,
+                    -3.4444900954346243,
+                    0.0980165881150581,
+                    -2.477559610405999e-06,
+                    0.0
+                  ]
+                },
+                {
+                  "order": 193,
+                  "track_id": 16,
+                  "source_index": 9,
+                  "proposal": [
+                    1109.0,
+                    736.0,
+                    1140.5,
+                    792.0
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1112.4243916775142,
+                    769.7338326097378,
+                    0.6231840620627749,
+                    55.40416288943358,
+                    0.34798563486251133,
+                    -0.4521813782581744,
+                    1.114406022360479e-05,
+                    -0.003644346713367108
+                  ]
+                },
+                {
+                  "order": 311,
+                  "track_id": 39,
+                  "source_index": 11,
+                  "proposal": [
+                    1874.0,
+                    546.34375,
+                    1901.0,
+                    583.96875
+                  ],
+                  "matched": true,
+                  "previous_mean": [
+                    1877.532947014415,
+                    567.1485846353788,
+                    0.6841642538391053,
+                    37.575550354978965,
+                    1.0038350554237745,
+                    -0.40401928251690244,
+                    9.404483424440607e-06,
+                    0.0
+                  ]
+                }
+              ],
+              "boundaries": [
+                {
+                  "continuity_id": 0,
+                  "raw_id": 16,
+                  "new_id": 74,
+                  "first_order": 236,
+                  "confirmed_order": 238,
+                  "old_support": 16,
+                  "new_support": 11,
+                  "old_palette": 0,
+                  "new_palette": 1
+                },
+                {
+                  "continuity_id": 0,
+                  "raw_id": 25,
+                  "new_id": 75,
+                  "first_order": 43,
+                  "confirmed_order": 45,
+                  "old_support": 29,
+                  "new_support": 11,
+                  "old_palette": 0,
+                  "new_palette": 1
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "final": {
+    "report": "docs/measurements/identity-short-gap-development-20261009.json",
+    "sha256": "372cb0b79fc89ee9a57823af3f8d68426cf4453e8566d6da57afceca48260b63",
+    "proposed_motion_events": 16,
+    "applied_motion_events": 14,
+    "partitions": 3,
+    "recovery_fallbacks": [
+      {
+        "group": "night_old_control",
+        "segment": "50",
+        "selected": "baseline",
+        "reason": "motion_lost_baseline_observations",
+        "missing_observations": [
+          {
+            "continuity_id": 0,
+            "frame_idx": 144,
+            "box": [
+              850.25,
+              846.75,
+              882.5,
+              880.75
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "secondary_evidence": {
+    "report": "docs/measurements/identity-short-gap-secondary-replay-20261009.json",
+    "sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411",
+    "scope": "All 15 secondary replays were completed from source pixels with explicit one-thread decoding. The final primary run reuses these hash-verified results; it is not a second model-inference run."
+  },
+  "source_review_sha256": "75696bcc20ba3661776ca9cf14a476eabd855aa22548c63fbf280072d702989d"
+}

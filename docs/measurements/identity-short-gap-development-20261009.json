@@ -1,0 +1,5245 @@
+{
+  "started_at_utc": "2026-10-09T20:05:12.943097+00:00",
+  "completed_at_utc": "2026-10-09T20:08:56.864262+00:00",
+  "scope": "All 15 clips are consumed development data, including disclosed posthoc palette-day errata. Single-AI sparse labels, not MOT ground truth. No fresh control; no production promotion.",
+  "input_code_sha256": {
+    "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\scripts\\soccertrack_v2\\benchmark_short_gap_motion.py": "c37fee37892884ea9c2a4d422975cb0d18d1ede6fce80a03b43c49978f1e0ce9",
+    "data\\tracking\\models\\osnet_ain_ms_d_c.pth.tar": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+    "app\\tracking\\anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app\\tracking\\calibration.py": "9cce58bcbc532635042a6fdca94ee6b12b7dbc51dba50763c494d2b9130fcbfe",
+    "app\\tracking\\camera.py": "0cec5fa5c9ddddb14cc3fc60cc2ff2dcdafd512bd67b8c74d3069ab9d7219f5f",
+    "app\\tracking\\deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app\\tracking\\detect.py": "266672b1eab57d56014e3b898cdba75a0d2c0426436a1fbde92f32a5bc879c2b",
+    "app\\tracking\\frames.py": "1cb411e85ee1a5f614b9fd1e9bf735ff278289334a358237ccf6338e4a6d3456",
+    "app\\tracking\\homography_fit.py": "274301cbcaa78636bed5104bbcb9f08e99810e6746800da4219a42e0898f9e6c",
+    "app\\tracking\\identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+    "app\\tracking\\identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app\\tracking\\identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app\\tracking\\identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app\\tracking\\kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app\\tracking\\passes.py": "3ab759ca3d0b417451f8f4527cca391e28010216ab92fd6545221ac196552265",
+    "app\\tracking\\person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app\\tracking\\person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app\\tracking\\pipeline.py": "5fd95b40cd71b56d35bd870b822441472d7334a12d25d5b8b05d2a413bd05a52",
+    "app\\tracking\\pitch_lines.py": "3283fe4e695004b683b5b63a5f6c5ad521a4e9d78d23b9b3673ad40e9245d654",
+    "app\\tracking\\pitch_model.py": "34a48302af97457d6c92006d094b0acb2457292aaea9ae13c06135fecc65ec8b",
+    "app\\tracking\\player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app\\tracking\\recoveries.py": "c7dc67427e907a58ffffe175fc606b43a442ee91acda1c43fdee21afb66df2d8",
+    "app\\tracking\\replay.py": "1f9cae4a47f2ac106433ac9be9ca1b938d0a271064db33f9833037272070e1fe",
+    "app\\tracking\\teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app\\tracking\\tracker_config.py": "d9f0497d2e60c25b0ab0f6a94e2b188f00b1926d57a286aeac48f8a36d5332e0",
+    "app\\tracking\\__init__.py": "84f594b074a83977eab56248889b1e963ee19fef277fd3eaef0f907847248eb5",
+    "app\\tracking\\_vendor\\__init__.py": "c658f47c20cf512966e93c8cc6448dc6ff119523fd5d60aa17564cea1d07f598",
+    "app\\tracking\\_vendor\\deepocsort\\association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app\\tracking\\_vendor\\deepocsort\\kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app\\tracking\\_vendor\\deepocsort\\ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app\\tracking\\_vendor\\deepocsort\\osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app\\tracking\\_vendor\\deepocsort\\__init__.py": "8402dfb550c4986abfc676f04b34fbfcc7bd73f25f12ba6d9c9e9725335083c1",
+    "scripts\\soccertrack_v2\\benchmark_daylight_kits.py": "659c16833287ce2e638825e0763a2ee705052459bb8b600b3d6a8449e998cc7c",
+    "scripts\\soccertrack_v2\\benchmark_deepocsort.py": "abca479a4355a89a7ddd7640e69276ef99c878b21c0a0ceb7b1b1c083ff90c2c",
+    "scripts\\soccertrack_v2\\benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+    "scripts\\soccertrack_v2\\benchmark_kit_colors.py": "11234e19108ff07876ab24771975633e6d8d0f84eeaef3c7ec2bdc27419723f6",
+    "scripts\\soccertrack_v2\\benchmark_local_kit_light.py": "a594d8cca82d7718a41502ffad75de669fc630d9bd94c63d749b252ee410714e",
+    "scripts\\soccertrack_v2\\benchmark_person_filter.py": "341d6fe37a8d94ab71c9988e5760310113841f3c9717909455a5916d775e5225",
+    "scripts\\soccertrack_v2\\benchmark_shadow_reassignment.py": "64f995420898ab47f09454d12b7c61818ca09414061aaf42f5c28d259a99c5d8",
+    "scripts\\soccertrack_v2\\benchmark_short_gap_motion.py": "c37fee37892884ea9c2a4d422975cb0d18d1ede6fce80a03b43c49978f1e0ce9",
+    "scripts\\soccertrack_v2\\benchmark_tracker_backends.py": "bbfc258162d7dcbecfeacd61097b2781bc8bfda6e713ce5e940c4e6cb18b91d9",
+    "scripts\\soccertrack_v2\\benchmark_track_buffer.py": "db6897bcde785b705abf63583fb751b9c18639f889618ff90a9aa17399f5c135",
+    "scripts\\soccertrack_v2\\candidates\\identity_consensus_palette_v2.py": "af4aea241ab883279f33b6b5bdb1671311c377e57438b70b1df47aa640841a62",
+    "scripts\\soccertrack_v2\\candidates\\palette_motion_partitions_v1.py": "8808e4f7f7172f5a7eda24483623404c2ab028da8445eff86659e4d1d0bebd9a",
+    "scripts\\soccertrack_v2\\candidates\\short_gap_motion_v1.py": "cb7cd4640585d5af6c9062458394c1aa98e5b9b1bdcf4493c111fd7d45ba4d46",
+    "scripts\\soccertrack_v2\\candidates\\__init__.py": "370f57b43658db7e12da094ff4ecc8ddbc0858d677abe14d13a2d467ca4c39fb",
+    "scripts\\soccertrack_v2\\short_gap_replay_cache.py": "f9ec41911af798f82e4b8ed9765deda88e154c2795b225e35431e098d407b0c1",
+    ".cache\\short-gap-verified-20261009-v3\\report.json": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0006.json": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9",
+    "docs\\measurements\\joint-identity-development-day-results.json": "348f1d10876a93b8617eebd1e108d4b258942582096eb07b2a7f0397d971588b",
+    "docs\\measurements\\daylight-117093-labels.json": "3ee2db96a0836730320d05b5e3edf120ae96871bf1776164ec7a6d7788e5f872",
+    "docs\\measurements\\perimeter-control-day-labels.json": "02aecfd791292dadf1a0cbe3ce1e62df47c6d7dbfb405910dac0231217c91fe8",
+    "docs\\measurements\\identity-kit-label-adjudication.json": "7fffdaa74d1bb6e99697a06714bd0f6f20d957b0d4e6eced7095117c50e8027f",
+    "docs\\measurements\\duplicate-part-development-labels.json": "acfc77f17e10f927b8cc96b9199e5762de6b4df457cbad05caa4536f9dc33467",
+    "docs\\measurements\\joint-identity-control-day-pairs.json": "976423bba72ee358e3dbfe23e469b3944f106b27a70670927d618869b5ea558b",
+    "docs\\measurements\\joint-identity-control-day-labels.json": "cf508f07022f5fc8389d21dc4042319a73ca4fa6a9a4f757120d513d7343dc0f",
+    "docs\\measurements\\identity-person-development-labels.json": "877b0f723cf94fa169759b39950bce374a1e8f5a5e90016e5db36ebb3ea0414e",
+    "docs\\measurements\\identity-link-audit-development-labels.json": "d4134cac9d33c7d2d75e7eda65d8423627a462d9701b7dfaa5a17fadc104b7e0",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4": "d3810e6d7d940bcd854d594a6c4a76998db9200874bf19e2b1b828611a6b6372",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0000.json": "d96e0195e861b6bb837dcedc11d839633b5e96e3ad568b24b75f768978f074e8",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0003.json": "fd180b240df279d1a04b5721315e94d8796fa0d22101a3c75fa2f976f781a86e",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0006.json": "3d7b85eb129dfbfb29e65143082f7a1851defcc775904727e5e369e6a17fc882",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0009.json": "518ca89f534436ff5f2a0d14aae56ea49adf7dba0448261de004b935d37b3a95",
+    "docs\\measurements\\joint-identity-development-night-results.json": "c18412dd8667bff0603da4ce568311e80011fba31d8ed0f43fb5b5b53cbe7b85",
+    "docs\\measurements\\kit-fixed-development-labels.json": "16f56ff5134169ff033c207eca89723856d5b57759c5e20a15c015ab3fd469a3",
+    "docs\\measurements\\kit-fixed-control-labels.json": "96802fbde9e75e063172dccfdbde37594566f5677d2282e6b1253fcc08091d5f",
+    "data\\tracking\\live\\990401\\seg_0000.mp4": "4e8321ea9da98664437a9700cb5a5318fb9641b8957a3ebfab54485a74ade2e1",
+    "data\\tracking\\live\\990401\\seg_0003.mp4": "3e3bd50e00e8ca797fc53cce807eef60a92cb0aaf37f069553d567971243c066",
+    "data\\tracking\\live\\990401\\seg_0006.mp4": "8dc05ebcd6bb42fade86c402eae24b394c7ff47251d60d9adc35efe5d2cbec9f",
+    "data\\tracking\\live\\990401\\seg_0009.mp4": "5e0498e0cdc1b4cc113a3a7127916ba3d11d4bbab042f5f8515294c4c5950bc7",
+    ".cache\\kit_joint_agent\\night_new_raw_v1\\seg_0020.json": "3b0b35d5888ff2722f2ca1e0b6691324202e198225a3acb89742b0cd3dd30795",
+    ".cache\\kit_joint_agent\\night_new_raw_v1\\seg_0030.json": "ecf11ca0769441ec7afcd1048523def07bd9b6590f9ec5778b24fdfc9360270d",
+    "docs\\measurements\\perimeter-control-night-labels.json": "8b2d85f9718f2a4c0035f96340a349ee66a9eb379e4dc4f2cba95716e355bb0d",
+    "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0020.mp4": "fece86e7a119a50640eaed7ce485e833733446377f12c7f61af18e56b4905368",
+    "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0030.mp4": "c23aa824839bd371b5aecbda10159662e62129c094ef0834380c9ca9a6493499",
+    "data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+    "data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0050.json": "8a4cb524a0b88949c0448a4e022b6415b55acf1eee093fca7dd117e08ebc1d43",
+    "docs\\measurements\\joint-identity-control-night-labels.json": "c33b9dc372e55d14e997dda593f2fe6790ab04597863ff635db6cb2dbdc9e529",
+    "docs\\measurements\\joint-identity-control-night-pairs.json": "2668d60cf95f419b70f2bf6e3bed99b27b79ba1c03963dbdd01a519cc025c0ef",
+    "data\\tracking\\bench\\joint_identity_control\\source\\seg_0040.mp4": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a",
+    "data\\tracking\\bench\\joint_identity_control\\source\\seg_0050.mp4": "fef8c382ebad00fdfaefd0e214192decc91980e312b8f6e2d871b2eb5dc10604",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0064.json": "9116348cf71a1a790b9dff77d79153f10808a02ed3810b96cc08ca81fb79d73d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0066.json": "9ea28f4ec1de868dde62780568a2c0c2ecc97b65d64adc1c6a061dcc032c6e6f",
+    "docs\\measurements\\identity-palette-control-day-labels.json": "03ea7533669bf10e3be44deaa219a61e4bb3f05fdb9623a974e7b3f6f1872b88",
+    "docs\\measurements\\identity-palette-control-day-pairs.json": "a46c2ce4d8f12c3bb7e0eff58a6a58f9c6856755a76934069e2199918287bba0",
+    "docs\\measurements\\identity-palette-control-label-errata-20261009.json": "c99ae54c39fff4d4bf7d587b43bc44c856fc8075e7e58f7fba7331536d84e237",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4": "0c98e12ded003e8cd7a37680dd0bebf0d404a6f3dd81c6d0e8ac8c3292bf2c9c",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4": "d112b1d93220971374c39563176d0335e9da431a38f98bf8eaf69b481a0e5765",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\raw\\seg_0078.json": "4426dc8344b11f20daf2820716293a6586e58debb052570e24058185a09a7efe",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\raw\\seg_0084.json": "4b65d1670284750017aca0208c3ba8c5e684dfa65e170bf5f025cbc07b203d27",
+    "docs\\measurements\\identity-palette-control-night-labels.json": "c334822b339b70d2a5a32b888ff65574e8dc00dd87ee66af7e8124cc547dbaf3",
+    "docs\\measurements\\identity-palette-control-night-pairs.json": "9b1c2cfd3b1571a2775d9b0f3572ca9c9f6da0ac3dbca2b1b3837f10fcc3e68b",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0078.mp4": "f14c828e07423d2510bac85586a8a7b029962b00e88b51b67224a274d74884fb",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0084.mp4": "f77272be2bda3224224753e2d20d47628ac48fbf6d7c5a8b04a848e180710cde"
+  },
+  "output_sha256": {
+    ".cache\\short-gap-verified-20261009-v5\\day\\baseline\\seg_0000.json": "814723c415455469350a883fec6504f48b7d49c05238a12d29ef7c8178184486",
+    ".cache\\short-gap-verified-20261009-v5\\day\\recovery_refit\\seg_0000.json": "f1e46d2fec832b3faee819f3d753fa533e80ce2a185a42a64a337e3f169e3bff",
+    ".cache\\short-gap-verified-20261009-v5\\day\\preserved\\seg_0000.json": "962784252c3ecb41ac07e9ca6db708750902312882b2da373dd96e07acb87c67",
+    ".cache\\short-gap-verified-20261009-v5\\day\\partitioned\\seg_0000.json": "323566f1a9b14f553c71a7c829ed6de9db92a33d7b473228b896fbeb5186b54d",
+    ".cache\\short-gap-verified-20261009-v5\\day\\secondary\\seg_0000.json": "a7a1c03967946e49a48c2d383591d8439f6bb8b22a42627fc00b7be4335dbdf6",
+    ".cache\\short-gap-verified-20261009-v5\\day\\baseline\\seg_0003.json": "5169a57b817abd59872bb078ccd46112284588254d134b41940ca7718948723a",
+    ".cache\\short-gap-verified-20261009-v5\\day\\recovery_refit\\seg_0003.json": "4a2af63597abf157227fad5adb4d9bdba5cb2b91177267e8f3685779a22c6394",
+    ".cache\\short-gap-verified-20261009-v5\\day\\preserved\\seg_0003.json": "9f96e13ba8ce5292955196f44ab04a252b55ddf6bdd61bef7e7336b354ca4d26",
+    ".cache\\short-gap-verified-20261009-v5\\day\\partitioned\\seg_0003.json": "9f96e13ba8ce5292955196f44ab04a252b55ddf6bdd61bef7e7336b354ca4d26",
+    ".cache\\short-gap-verified-20261009-v5\\day\\secondary\\seg_0003.json": "29fdd1cdd3a3cc425e974476f9539c84a93e263f9f7e8b0f584eeac022cc20ad",
+    ".cache\\short-gap-verified-20261009-v5\\day\\baseline\\seg_0006.json": "01de76f4033b3c07e4d6ecbe353383353b1f093754eb5ea6799d31147d3f1a84",
+    ".cache\\short-gap-verified-20261009-v5\\day\\recovery_refit\\seg_0006.json": "01de76f4033b3c07e4d6ecbe353383353b1f093754eb5ea6799d31147d3f1a84",
+    ".cache\\short-gap-verified-20261009-v5\\day\\preserved\\seg_0006.json": "379dc8229a3f2e11cd45d6741755c854bbeef6f184a60d0f716b04c6782c54b0",
+    ".cache\\short-gap-verified-20261009-v5\\day\\partitioned\\seg_0006.json": "379dc8229a3f2e11cd45d6741755c854bbeef6f184a60d0f716b04c6782c54b0",
+    ".cache\\short-gap-verified-20261009-v5\\day\\secondary\\seg_0006.json": "ade2e92e5c9e3c57d916b4bae8ee94e0f3876f64f55019434ed0a089ef7e3e65",
+    ".cache\\short-gap-verified-20261009-v5\\night\\baseline\\seg_0000.json": "9e98033919597ed68cbf321b2b7530d5217916b4d6e994cfccf5abef791b82c8",
+    ".cache\\short-gap-verified-20261009-v5\\night\\recovery_refit\\seg_0000.json": "a0b6d307aa41ed1f02d64f143011d40dfea907d61b87fab340db519fbb881511",
+    ".cache\\short-gap-verified-20261009-v5\\night\\preserved\\seg_0000.json": "eb4e71f3052565e28b6afcd447d95c9f6e5ce2d3218cb4e5542236662ab4f3ea",
+    ".cache\\short-gap-verified-20261009-v5\\night\\partitioned\\seg_0000.json": "eb4e71f3052565e28b6afcd447d95c9f6e5ce2d3218cb4e5542236662ab4f3ea",
+    ".cache\\short-gap-verified-20261009-v5\\night\\secondary\\seg_0000.json": "aa2fcf002343d4f20e94fb7c33829acd0e912b54cdeee5f5075169e2ef977968",
+    ".cache\\short-gap-verified-20261009-v5\\night\\baseline\\seg_0003.json": "815f5ed579cbf12c74f8e46ca25e411ee461f6abde03ffce4a6f90797926c4c5",
+    ".cache\\short-gap-verified-20261009-v5\\night\\recovery_refit\\seg_0003.json": "815f5ed579cbf12c74f8e46ca25e411ee461f6abde03ffce4a6f90797926c4c5",
+    ".cache\\short-gap-verified-20261009-v5\\night\\preserved\\seg_0003.json": "5697f03896946b03bf21d4ca1883fc67ebf50520c4b07b8f69d0b1154cf2f111",
+    ".cache\\short-gap-verified-20261009-v5\\night\\partitioned\\seg_0003.json": "5697f03896946b03bf21d4ca1883fc67ebf50520c4b07b8f69d0b1154cf2f111",
+    ".cache\\short-gap-verified-20261009-v5\\night\\secondary\\seg_0003.json": "63a5bd8c3c0229f15cff7088be2d6f1d35e381e9037c22fd02ac144912cbeb9a",
+    ".cache\\short-gap-verified-20261009-v5\\night\\baseline\\seg_0006.json": "b18784b7cb0b5958d52f77b961be07978a5865d47810067e8787bf60340225e5",
+    ".cache\\short-gap-verified-20261009-v5\\night\\recovery_refit\\seg_0006.json": "666d0092e84c69a3e887fd09008e595b78eb2e5538f73810f2f02a7ec83ddfbe",
+    ".cache\\short-gap-verified-20261009-v5\\night\\preserved\\seg_0006.json": "4ee5499590ac84f6856b21d175d55ad2187cf7ae26d237585d860010593cdbed",
+    ".cache\\short-gap-verified-20261009-v5\\night\\partitioned\\seg_0006.json": "4ee5499590ac84f6856b21d175d55ad2187cf7ae26d237585d860010593cdbed",
+    ".cache\\short-gap-verified-20261009-v5\\night\\secondary\\seg_0006.json": "e05d7c1aae1eafb7ddcadc1b53b16f1cec428c173dabf543ec5224d011c72851",
+    ".cache\\short-gap-verified-20261009-v5\\night\\baseline\\seg_0009.json": "f00dca6e71828d75787883b8d06da3be91f0ad0c2b12440707e7ca9acae2246a",
+    ".cache\\short-gap-verified-20261009-v5\\night\\recovery_refit\\seg_0009.json": "f00dca6e71828d75787883b8d06da3be91f0ad0c2b12440707e7ca9acae2246a",
+    ".cache\\short-gap-verified-20261009-v5\\night\\preserved\\seg_0009.json": "cda3ad071098a779995ebb271169cdeffd7690fb19c822f77549e8c3e1466561",
+    ".cache\\short-gap-verified-20261009-v5\\night\\partitioned\\seg_0009.json": "cda3ad071098a779995ebb271169cdeffd7690fb19c822f77549e8c3e1466561",
+    ".cache\\short-gap-verified-20261009-v5\\night\\secondary\\seg_0009.json": "1b8e1476b93e193e6552d0f9826b5c4416f4035fe6089aa0471ed82320e726f6",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\baseline\\seg_0020.json": "00c0975a1d2781060e47a87030e4382296a3aa029f07541fa1f1378e82d26b8e",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\recovery_refit\\seg_0020.json": "898115b963dfc43c523fb7aeb7d0153f64ae58d1c4a6e396c25b3646e2971ab4",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\preserved\\seg_0020.json": "760cff89f9769465210fa1930d2e3c8b36cbeadc14e5c37ee85d1df47c39526d",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\partitioned\\seg_0020.json": "760cff89f9769465210fa1930d2e3c8b36cbeadc14e5c37ee85d1df47c39526d",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\secondary\\seg_0020.json": "0166d47ca89814fc86e1a918fd9f3d50cda35c17b6fbdafac20adae90dccbbff",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\baseline\\seg_0030.json": "21a6b2b61417a5932ef861aaba15d121dd1eb4307e45a9755215d9e1105d4df6",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\recovery_refit\\seg_0030.json": "9e2778dab94cad077f22a0899ab6ad936c958308d560f6c109acf63daeeb46cc",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\preserved\\seg_0030.json": "7fa808feb3747ee7d0d6fcc20c5b3494f94e32011305baaa6b457b4a78c8cafb",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\partitioned\\seg_0030.json": "7fa808feb3747ee7d0d6fcc20c5b3494f94e32011305baaa6b457b4a78c8cafb",
+    ".cache\\short-gap-verified-20261009-v5\\night_extra\\secondary\\seg_0030.json": "1bf16bd2c1f70b502efb80a93b110cdc931abbad5e5f51acaef3929b8a3e73a6",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\baseline\\seg_0040.json": "923da8e309617254335cb27abceeee62c080f2990eb0b6c82e64e93b9c5dfee7",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\recovery_refit\\seg_0040.json": "923da8e309617254335cb27abceeee62c080f2990eb0b6c82e64e93b9c5dfee7",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\preserved\\seg_0040.json": "8fee7a46153707e65baa65b46c04cd730b691a7e04f0ed4cbb47dbd3cbe1d0f2",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\partitioned\\seg_0040.json": "8fee7a46153707e65baa65b46c04cd730b691a7e04f0ed4cbb47dbd3cbe1d0f2",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\secondary\\seg_0040.json": "4d302b6e16f246ed9382742378c015ef456f2f9fc69dc8d29f919cf0554c1a40",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\baseline\\seg_0050.json": "69736d6dcd524cd925782e217b92ec197c60e0fff606532071a8a4560c5cade7",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\recovery_refit\\seg_0050.json": "dbd57662b77d3eda156875edd2ee88531fcce54b92021ca92a9d28337ddd7ffc",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\preserved\\seg_0050.json": "780b24732f6f7cb4bbdbf1b361ddc383d5f1b26382dd7320141b493d0fa5ddac",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\partitioned\\seg_0050.json": "780b24732f6f7cb4bbdbf1b361ddc383d5f1b26382dd7320141b493d0fa5ddac",
+    ".cache\\short-gap-verified-20261009-v5\\night_old_control\\secondary\\seg_0050.json": "80b28f88d4b84464df491dcec6cf5147fc08625af05953732935428e1b771011",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\baseline\\seg_0064.json": "07686c4f65cd73156ae3ba7a52fa30ca4ec4fd9328163ee42ac2fa91f39ee0f1",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\recovery_refit\\seg_0064.json": "1f13bc1fa1c1695f2b96b7f8afa50f95192ed366f6166bc2e68d9b8e14d645e7",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\preserved\\seg_0064.json": "09a582768cd00a2ad3f1305bd19e88b83342d9a52e33793b2c9ff90931ca5407",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\partitioned\\seg_0064.json": "09a582768cd00a2ad3f1305bd19e88b83342d9a52e33793b2c9ff90931ca5407",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\secondary\\seg_0064.json": "354b572a86990fbbc52f2d617d004aa2bdbd359c379e6575642ad3a087d7ae1a",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\baseline\\seg_0066.json": "6e28e57e6cdfdb938eefad0fe0e0ff6372d585474bc054050b6e418095d8ea2e",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\recovery_refit\\seg_0066.json": "6e28e57e6cdfdb938eefad0fe0e0ff6372d585474bc054050b6e418095d8ea2e",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\preserved\\seg_0066.json": "bf3801a60096bf925f519de716892b8103127346f1d82843a4f41f9943c651df",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\partitioned\\seg_0066.json": "bf3801a60096bf925f519de716892b8103127346f1d82843a4f41f9943c651df",
+    ".cache\\short-gap-verified-20261009-v5\\palette_day\\secondary\\seg_0066.json": "ef492efc19e21f5d3cc98e7e83c6353b9739dab89106f9c2a409519c3c8bb994",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\baseline\\seg_0078.json": "db1aa0f271d19b92e32534530a6061281d1821ad1c693861f8a1e226e21f664b",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\recovery_refit\\seg_0078.json": "db1aa0f271d19b92e32534530a6061281d1821ad1c693861f8a1e226e21f664b",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\preserved\\seg_0078.json": "35fc6d1d7d913f127cceb8b1a89fe415fd871c464bc63d89878aceef4bde2eda",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\partitioned\\seg_0078.json": "35fc6d1d7d913f127cceb8b1a89fe415fd871c464bc63d89878aceef4bde2eda",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\secondary\\seg_0078.json": "5d923b60188234d7adbb0a5da43189993cca633c16bd17148dff1cdc8c2d9618",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\baseline\\seg_0084.json": "441a5aa1a5135f032d95c57236643f8ca6aeb752e8d223f22e9824b340d2f7bc",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\recovery_refit\\seg_0084.json": "ea929b8ebc535804646470e52796ec4a5e8ee6ce6b90f983221636fb05c7db98",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\preserved\\seg_0084.json": "4befa0e30b87d9e677389a4f6bec65fd64a7e6b9937235ebfbffd870efc9aa45",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\partitioned\\seg_0084.json": "93942eb6e5b0a3d537d954a025a279e83d3cb394ce630b92be2218b80ca290b6",
+    ".cache\\short-gap-verified-20261009-v5\\palette_night\\secondary\\seg_0084.json": "de662d47bca94efe375aecd3ae7f9f150a57184a99ed68b79a54675116bedb78"
+  },
+  "versions": {
+    "supervision": "0.30.2",
+    "trackers": "2.6.0",
+    "numpy": "2.3.5",
+    "scipy": "1.15.3",
+    "torch": "2.11.0+cu128",
+    "filterpy": "1.4.5"
+  },
+  "results": {
+    "day": {
+      "baseline": {
+        "kit": {
+          "correct": 285,
+          "wrong": 28,
+          "unassigned": 2,
+          "kit_boxes_missing": 1,
+          "other_assigned": 27,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 7
+        },
+        "pairs": {
+          "identity-person-development-labels": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 39,
+            "covered_observations": 39,
+            "counts": {
+              "same_pairs": 22,
+              "same_correct": 15,
+              "false_split": 7,
+              "different_pairs": 7,
+              "different_correct": 1,
+              "false_join": 6,
+              "uncertain_excluded": 4
+            },
+            "changed_outcomes": []
+          },
+          "identity-link-audit-development-labels": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 20,
+            "covered_observations": 20,
+            "counts": {
+              "different_pairs": 2,
+              "different_correct": 2,
+              "same_pairs": 5,
+              "same_correct": 2,
+              "false_split": 3,
+              "uncertain_excluded": 3
+            },
+            "changed_outcomes": []
+          },
+          "joint-identity-control-day-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 474,
+            "covered_observations": 255,
+            "counts": {
+              "same_pairs": 134,
+              "same_correct": 92,
+              "same_uncovered": 38,
+              "uncertain_excluded": 21,
+              "false_split": 4,
+              "different_pairs": 134,
+              "different_correct": 84,
+              "different_uncovered": 50
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "recovery_refit": {
+        "kit": {
+          "correct": 284,
+          "wrong": 28,
+          "unassigned": 3,
+          "kit_boxes_missing": 1,
+          "other_assigned": 27,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 7
+        },
+        "pairs": {
+          "identity-person-development-labels": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 39,
+            "covered_observations": 39,
+            "counts": {
+              "same_pairs": 22,
+              "same_correct": 15,
+              "false_split": 7,
+              "different_pairs": 7,
+              "different_correct": 1,
+              "false_join": 6,
+              "uncertain_excluded": 4
+            },
+            "changed_outcomes": []
+          },
+          "identity-link-audit-development-labels": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 20,
+            "covered_observations": 20,
+            "counts": {
+              "different_pairs": 2,
+              "different_correct": 2,
+              "same_pairs": 5,
+              "same_correct": 3,
+              "uncertain_excluded": 3,
+              "false_split": 2
+            },
+            "changed_outcomes": [
+              {
+                "before": {
+                  "left": "0-658-d32",
+                  "right": "0-688-d35",
+                  "relation": "same",
+                  "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                  "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                  "linked": false,
+                  "passed": false
+                },
+                "after": {
+                  "left": "0-658-d32",
+                  "right": "0-688-d35",
+                  "relation": "same",
+                  "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                  "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                  "linked": true,
+                  "passed": true
+                }
+              }
+            ]
+          },
+          "joint-identity-control-day-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 474,
+            "covered_observations": 255,
+            "counts": {
+              "same_pairs": 134,
+              "same_correct": 92,
+              "same_uncovered": 38,
+              "uncertain_excluded": 21,
+              "false_split": 4,
+              "different_pairs": 134,
+              "different_correct": 84,
+              "different_uncovered": 50
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": [
+          "kit.correct",
+          "kit.unassigned"
+        ]
+      },
+      "preserved": {
+        "kit": {
+          "correct": 285,
+          "wrong": 28,
+          "unassigned": 2,
+          "kit_boxes_missing": 1,
+          "other_assigned": 27,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 7
+        },
+        "pairs": {
+          "identity-person-development-labels": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 39,
+            "covered_observations": 39,
+            "counts": {
+              "same_pairs": 22,
+              "same_correct": 15,
+              "false_split": 7,
+              "different_pairs": 7,
+              "different_correct": 1,
+              "false_join": 6,
+              "uncertain_excluded": 4
+            },
+            "changed_outcomes": []
+          },
+          "identity-link-audit-development-labels": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 20,
+            "covered_observations": 20,
+            "counts": {
+              "different_pairs": 2,
+              "different_correct": 2,
+              "same_pairs": 5,
+              "same_correct": 3,
+              "uncertain_excluded": 3,
+              "false_split": 2
+            },
+            "changed_outcomes": [
+              {
+                "before": {
+                  "left": "0-658-d32",
+                  "right": "0-688-d35",
+                  "relation": "same",
+                  "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                  "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                  "linked": false,
+                  "passed": false
+                },
+                "after": {
+                  "left": "0-658-d32",
+                  "right": "0-688-d35",
+                  "relation": "same",
+                  "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                  "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                  "linked": true,
+                  "passed": true
+                }
+              }
+            ]
+          },
+          "joint-identity-control-day-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 474,
+            "covered_observations": 255,
+            "counts": {
+              "same_pairs": 134,
+              "same_correct": 92,
+              "same_uncovered": 38,
+              "uncertain_excluded": 21,
+              "false_split": 4,
+              "different_pairs": 134,
+              "different_correct": 84,
+              "different_uncovered": 50
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "partitioned": {
+        "kit": {
+          "correct": 285,
+          "wrong": 28,
+          "unassigned": 2,
+          "kit_boxes_missing": 1,
+          "other_assigned": 27,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 6
+        },
+        "pairs": {
+          "identity-person-development-labels": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 39,
+            "covered_observations": 39,
+            "counts": {
+              "same_pairs": 22,
+              "same_correct": 15,
+              "false_split": 7,
+              "different_pairs": 7,
+              "different_correct": 2,
+              "false_join": 5,
+              "uncertain_excluded": 4
+            },
+            "changed_outcomes": [
+              {
+                "before": {
+                  "left": "0-280-d15",
+                  "right": "0-310-d13",
+                  "relation": "different",
+                  "case": "tackle",
+                  "visual_basis": "Blue 9 and upright white opponent are separate people.",
+                  "linked": true,
+                  "passed": false
+                },
+                "after": {
+                  "left": "0-280-d15",
+                  "right": "0-310-d13",
+                  "relation": "different",
+                  "case": "tackle",
+                  "visual_basis": "Blue 9 and upright white opponent are separate people.",
+                  "linked": false,
+                  "passed": true
+                }
+              }
+            ]
+          },
+          "identity-link-audit-development-labels": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 20,
+            "covered_observations": 20,
+            "counts": {
+              "different_pairs": 2,
+              "different_correct": 2,
+              "same_pairs": 5,
+              "same_correct": 3,
+              "uncertain_excluded": 3,
+              "false_split": 2
+            },
+            "changed_outcomes": [
+              {
+                "before": {
+                  "left": "0-658-d32",
+                  "right": "0-688-d35",
+                  "relation": "same",
+                  "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                  "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                  "linked": false,
+                  "passed": false
+                },
+                "after": {
+                  "left": "0-658-d32",
+                  "right": "0-688-d35",
+                  "relation": "same",
+                  "visual_basis": "Isolated blue number21 walks left throughout. Original entry frame686 was not viewed; label uses frame688, where the same jersey number21 is clear.",
+                  "review_image": ".cache\\identity_eval_agent\\link-audit-v1\\edge-02-s0-154-174.jpg",
+                  "linked": true,
+                  "passed": true
+                }
+              }
+            ]
+          },
+          "joint-identity-control-day-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 474,
+            "covered_observations": 255,
+            "counts": {
+              "same_pairs": 134,
+              "same_correct": 92,
+              "same_uncovered": 38,
+              "uncertain_excluded": 21,
+              "false_split": 4,
+              "different_pairs": 134,
+              "different_correct": 84,
+              "different_uncovered": 50
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "segments": {
+        "0": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 10680,
+              "observations_removed": 1819,
+              "tracks_removed": 27,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 6
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 24
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 25
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 27
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 32
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 38
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 66
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 79
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 84
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 95
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 108
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 117
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 120
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 123
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 124
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 141
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 156
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 159
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 161
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 178
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 180
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 186
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 195
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 205
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 207
+                }
+              ]
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 11.47813680022955,
+              "p95": 17.710319906473163,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 8861,
+            "tracks": 94
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 10691,
+              "observations_removed": 1819,
+              "tracks_removed": 27,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 6
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 24
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 25
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 27
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 32
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 38
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 66
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 79
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 84
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 95
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 108
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 116
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 119
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 122
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 123
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 140
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 155
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 158
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 160
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 177
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 179
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 185
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 193
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 203
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 205
+                }
+              ]
+            },
+            "elapsed_seconds": 7.945427099941298,
+            "events": [
+              {
+                "order": 127,
+                "track_id": 109,
+                "source_index": 17,
+                "proposal": [
+                  881.296875,
+                  284.765625,
+                  907.234375,
+                  322.296875
+                ],
+                "matched": true,
+                "previous_mean": [
+                  899.4383809200193,
+                  301.79020634842004,
+                  0.620718171029718,
+                  37.9745679769678,
+                  2.113839783353677,
+                  -0.2872719321927456,
+                  3.727595364273688e-07,
+                  0.0
+                ]
+              },
+              {
+                "order": 331,
+                "track_id": 173,
+                "source_index": 27,
+                "proposal": [
+                  2521.9375,
+                  483.0546875,
+                  2563.5625,
+                  611.9609375
+                ],
+                "matched": true,
+                "previous_mean": [
+                  2565.1404963948853,
+                  551.0093144309174,
+                  0.4635410620357117,
+                  131.16725509415485,
+                  -8.341372727659214,
+                  1.7931421892830197,
+                  -7.042698552499701e-07,
+                  2.699564273588479
+                ]
+              }
+            ],
+            "tracking_update_ms": {
+              "mean": 15.017963202049334,
+              "p95": 21.718429843895137
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 11142,
+              "observations_removed": 1840,
+              "tracks_removed": 29,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 6
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 24
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 25
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 27
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 34
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 46
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 79
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 96
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 112
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 130
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 151
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 166
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 168
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 169
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 173
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 176
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 188
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 232
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 255
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 257
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 266
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 268
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 316
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 330
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 351
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 368
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 369
+                }
+              ]
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 112.87210319625835,
+              "p95": 131.225059973076,
+              "frames": 375
+            },
+            "observations": 9302,
+            "tracks": 91,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [
+            {
+              "continuity_id": 0,
+              "raw_id": 68,
+              "new_id": 202,
+              "first_order": 152,
+              "confirmed_order": 154,
+              "old_support": 10,
+              "new_support": 37,
+              "old_palette": 0,
+              "new_palette": 1
+            }
+          ],
+          "coverage": {
+            "baseline": 8861,
+            "candidate": 8872,
+            "removed": 0,
+            "added": 11,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 2
+        },
+        "3": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 11269,
+              "observations_removed": 2441,
+              "tracks_removed": 28,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 1
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 2
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 3
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 4
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 31
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 32
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 41
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 42
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 53
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 60
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 61
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 81
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 82
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 89
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 91
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 97
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 104
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 113
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 115
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 123
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 138
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 141
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 150
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 155
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 156
+                }
+              ]
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 10.241733605662981,
+              "p95": 15.534929907880725,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 8828,
+            "tracks": 85
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 11273,
+              "observations_removed": 2441,
+              "tracks_removed": 28,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 1
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 2
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 3
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 4
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 31
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 32
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 41
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 42
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 53
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 60
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 61
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 81
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 82
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 89
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 91
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 97
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 104
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 113
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 115
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 123
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 137
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 140
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 149
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 154
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 155
+                }
+              ]
+            },
+            "elapsed_seconds": 6.494972199900076,
+            "events": [
+              {
+                "order": 296,
+                "track_id": 111,
+                "source_index": 2,
+                "proposal": [
+                  1362.5625,
+                  229.625,
+                  1382.0625,
+                  272.03125
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1367.3266776067567,
+                  249.1813142263526,
+                  0.47984010482972655,
+                  44.52682179210243,
+                  -0.659704367007828,
+                  0.22998792866039286,
+                  -1.5986909818735072e-06,
+                  -0.1752292192625
+                ]
+              }
+            ],
+            "tracking_update_ms": {
+              "mean": 12.425210400794944,
+              "p95": 17.22404991742224
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 11443,
+              "observations_removed": 2445,
+              "tracks_removed": 30,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 1
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 2
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 3
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 4
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 31
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 32
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 42
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 44
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 55
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 72
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 98
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 104
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 110
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 134
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 135
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 142
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 152
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 167
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 170
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 188
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 196
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 214
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 215
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 224
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 226
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 227
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 229
+                }
+              ]
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 108.5158165320754,
+              "p95": 131.565250037238,
+              "frames": 375
+            },
+            "observations": 8998,
+            "tracks": 89,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 8828,
+            "candidate": 8832,
+            "removed": 0,
+            "added": 4,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 1
+        },
+        "6": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 10346,
+              "observations_removed": 2955,
+              "tracks_removed": 37,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 2
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 3
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 25
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 26
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 35
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 39
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 40
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 41
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 42
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 47
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 56
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 62
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 71
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 81
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 82
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 83
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 86
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 99
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 100
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 102
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 108
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 110
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 117
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 119
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 120
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 124
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 125
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 127
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 150
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 154
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 165
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 169
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 170
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 173
+                }
+              ]
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 9.51608426682651,
+              "p95": 14.019049890339376,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 7391,
+            "tracks": 78
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 10346,
+              "observations_removed": 2955,
+              "tracks_removed": 37,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 2
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 3
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 25
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 26
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 35
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 39
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 40
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 41
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 42
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 47
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 56
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 62
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 71
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 81
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 82
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 83
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 86
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 99
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 100
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 102
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 108
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 110
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 117
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 119
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 120
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 124
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 125
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 127
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 150
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 154
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 165
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 169
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 170
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 173
+                }
+              ]
+            },
+            "elapsed_seconds": 5.94485510000959,
+            "events": [],
+            "tracking_update_ms": {
+              "mean": 11.309706401079893,
+              "p95": 16.369089856743816
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 10426,
+              "observations_removed": 2960,
+              "tracks_removed": 39,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 2
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 3
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 25
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 26
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 37
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 39
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 40
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 41
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 42
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 49
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 68
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 78
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 91
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 107
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 109
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 110
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 113
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 136
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 137
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 141
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 148
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 154
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 167
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 168
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 169
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 170
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 182
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 183
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 186
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 191
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 203
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 208
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 221
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 222
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 225
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 230
+                }
+              ]
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 105.6057058578978,
+              "p95": 127.83282999880613,
+              "frames": 375
+            },
+            "observations": 7466,
+            "tracks": 80,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 7391,
+            "candidate": 7391,
+            "removed": 0,
+            "added": 0,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 0
+        }
+      }
+    },
+    "night": {
+      "baseline": {
+        "kit": {
+          "correct": 95,
+          "wrong": 13,
+          "unassigned": 15,
+          "kit_boxes_missing": 0,
+          "other_assigned": 4,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 3
+        },
+        "pairs": {},
+        "regressions": []
+      },
+      "recovery_refit": {
+        "kit": {
+          "correct": 94,
+          "wrong": 14,
+          "unassigned": 15,
+          "kit_boxes_missing": 0,
+          "other_assigned": 4,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 3
+        },
+        "pairs": {},
+        "regressions": [
+          "kit.correct",
+          "kit.wrong"
+        ]
+      },
+      "preserved": {
+        "kit": {
+          "correct": 95,
+          "wrong": 13,
+          "unassigned": 15,
+          "kit_boxes_missing": 0,
+          "other_assigned": 4,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 3
+        },
+        "pairs": {},
+        "regressions": []
+      },
+      "partitioned": {
+        "kit": {
+          "correct": 95,
+          "wrong": 13,
+          "unassigned": 15,
+          "kit_boxes_missing": 0,
+          "other_assigned": 4,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 3
+        },
+        "pairs": {},
+        "regressions": []
+      },
+      "segments": {
+        "0": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7066,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 6.643915735185146,
+              "p95": 9.673030092380941,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 7066,
+            "tracks": 58
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7067,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 5.02890650019981,
+            "events": [
+              {
+                "order": 345,
+                "track_id": 16,
+                "source_index": 18,
+                "proposal": [
+                  698.78125,
+                  928.375,
+                  745.0,
+                  983.0
+                ],
+                "matched": true,
+                "previous_mean": [
+                  736.7578890195548,
+                  945.8271271442568,
+                  0.7175814255421556,
+                  53.72952618665002,
+                  0.6882347913887743,
+                  0.33460569621059727,
+                  3.396755522802324e-05,
+                  0.0
+                ]
+              }
+            ],
+            "tracking_update_ms": {
+              "mean": 10.197913605719805,
+              "p95": 15.417300001718107
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7100,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 87.51018906508882,
+              "p95": 109.8662400385365,
+              "frames": 375
+            },
+            "observations": 7100,
+            "tracks": 55,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 7066,
+            "candidate": 7067,
+            "removed": 0,
+            "added": 1,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 1
+        },
+        "3": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 6397,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 7.944758941729864,
+              "p95": 12.4435598962009,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 6397,
+            "tracks": 68
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 6397,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 4.758945100009441,
+            "events": [],
+            "tracking_update_ms": {
+              "mean": 9.634099999442697,
+              "p95": 14.715089951641858
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 6478,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 87.47559173032641,
+              "p95": 106.810890045017,
+              "frames": 375
+            },
+            "observations": 6478,
+            "tracks": 64,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 6397,
+            "candidate": 6397,
+            "removed": 0,
+            "added": 0,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 0
+        },
+        "6": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7866,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 7.5763445273041725,
+              "p95": 11.575330002233388,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 7866,
+            "tracks": 51
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7868,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 5.190263000084087,
+            "events": [
+              {
+                "order": 119,
+                "track_id": 20,
+                "source_index": 12,
+                "proposal": [
+                  546.5,
+                  1128.375,
+                  605.0,
+                  1211.125
+                ],
+                "matched": true,
+                "previous_mean": [
+                  568.7872393769863,
+                  1165.962409814081,
+                  0.6653849420936123,
+                  82.90642970581017,
+                  -13.716504214658606,
+                  2.591644331207786,
+                  2.9031323134079205e-06,
+                  -0.5781238415955923
+                ]
+              },
+              {
+                "order": 206,
+                "track_id": 43,
+                "source_index": 11,
+                "proposal": [
+                  734.921875,
+                  1018.0,
+                  784.046875,
+                  1073.625
+                ],
+                "matched": true,
+                "previous_mean": [
+                  757.8762941286041,
+                  1046.5953731928398,
+                  0.7323874129858188,
+                  56.507273269209065,
+                  2.278174062062125,
+                  1.2948353407977125,
+                  -3.351205518261941e-07,
+                  0.0
+                ]
+              }
+            ],
+            "tracking_update_ms": {
+              "mean": 10.366491731256247,
+              "p95": 15.091000008396804
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7906,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 101.93576720853646,
+              "p95": 130.75056991074234,
+              "frames": 375
+            },
+            "observations": 7906,
+            "tracks": 51,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 7866,
+            "candidate": 7868,
+            "removed": 0,
+            "added": 2,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 2
+        },
+        "9": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7258,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 7.986949594691395,
+              "p95": 11.96859010960907,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 7258,
+            "tracks": 52
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7258,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 5.30261219991371,
+            "events": [],
+            "tracking_update_ms": {
+              "mean": 10.50632132962346,
+              "p95": 17.26674996316433
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7296,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 88.69265973816314,
+              "p95": 108.88674010057004,
+              "frames": 375
+            },
+            "observations": 7296,
+            "tracks": 50,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 7258,
+            "candidate": 7258,
+            "removed": 0,
+            "added": 0,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 0
+        }
+      }
+    },
+    "night_extra": {
+      "baseline": {
+        "kit": {
+          "correct": 50,
+          "wrong": 12,
+          "unassigned": 5,
+          "kit_boxes_missing": 0,
+          "other_assigned": 3,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "pairs": {},
+        "regressions": []
+      },
+      "recovery_refit": {
+        "kit": {
+          "correct": 51,
+          "wrong": 12,
+          "unassigned": 4,
+          "kit_boxes_missing": 0,
+          "other_assigned": 3,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "pairs": {},
+        "regressions": []
+      },
+      "preserved": {
+        "kit": {
+          "correct": 50,
+          "wrong": 12,
+          "unassigned": 5,
+          "kit_boxes_missing": 0,
+          "other_assigned": 3,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "pairs": {},
+        "regressions": []
+      },
+      "partitioned": {
+        "kit": {
+          "correct": 50,
+          "wrong": 12,
+          "unassigned": 5,
+          "kit_boxes_missing": 0,
+          "other_assigned": 3,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 2
+        },
+        "pairs": {},
+        "regressions": []
+      },
+      "segments": {
+        "20": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7364,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 8.08741199101011,
+              "p95": 11.926990142092109,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 7364,
+            "tracks": 56
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7366,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 5.341355900047347,
+            "events": [
+              {
+                "order": 363,
+                "track_id": 27,
+                "source_index": 4,
+                "proposal": [
+                  933.25,
+                  829.5,
+                  972.75,
+                  892.625
+                ],
+                "matched": true,
+                "previous_mean": [
+                  941.2623657365261,
+                  867.2938391658093,
+                  0.5754357916972155,
+                  63.366442789725646,
+                  3.9203142150603867,
+                  -1.6961978966228832,
+                  -9.7056578684377e-06,
+                  0.0
+                ]
+              }
+            ],
+            "tracking_update_ms": {
+              "mean": 10.760485063617427,
+              "p95": 16.10514994245023
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7400,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 91.58866400520006,
+              "p95": 122.0628798706457,
+              "frames": 375
+            },
+            "observations": 7400,
+            "tracks": 54,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 7364,
+            "candidate": 7366,
+            "removed": 0,
+            "added": 2,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 1
+        },
+        "30": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7598,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 7.791119470571479,
+              "p95": 10.927099944092333,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 7598,
+            "tracks": 63
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7605,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 5.2991320001892745,
+            "events": [
+              {
+                "order": 51,
+                "track_id": 18,
+                "source_index": 19,
+                "proposal": [
+                  3015.59375,
+                  901.8125,
+                  3067.59375,
+                  987.75
+                ],
+                "matched": true,
+                "previous_mean": [
+                  3075.3440675492197,
+                  953.6540979977116,
+                  0.5370183314435523,
+                  89.98071333576694,
+                  -14.990133431714309,
+                  -2.9711804026467337,
+                  -2.2092301766846967e-06,
+                  0.12019661427051997
+                ]
+              },
+              {
+                "order": 201,
+                "track_id": 41,
+                "source_index": 19,
+                "proposal": [
+                  3178.65625,
+                  1013.59375,
+                  3230.65625,
+                  1125.21875
+                ],
+                "matched": true,
+                "previous_mean": [
+                  3231.976635291687,
+                  1072.7750521437629,
+                  0.5065640312082464,
+                  112.82223643035789,
+                  -4.558574684311236,
+                  1.2300536161228992,
+                  -2.357222829703396e-06,
+                  0.0
+                ]
+              },
+              {
+                "order": 294,
+                "track_id": 55,
+                "source_index": 20,
+                "proposal": [
+                  3110.9375,
+                  1012.8125,
+                  3171.125,
+                  1106.1875
+                ],
+                "matched": true,
+                "previous_mean": [
+                  3165.6820060954688,
+                  1058.2950116164334,
+                  0.6003938202277368,
+                  93.74144199012385,
+                  -8.070891396703468,
+                  -0.21533971340681168,
+                  -8.047992370677887e-07,
+                  0.371989727792297
+                ]
+              }
+            ],
+            "tracking_update_ms": {
+              "mean": 10.656953599924842,
+              "p95": 16.998210060410205
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7654,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 94.82919600233436,
+              "p95": 124.75373991765082,
+              "frames": 375
+            },
+            "observations": 7654,
+            "tracks": 59,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 7598,
+            "candidate": 7605,
+            "removed": 0,
+            "added": 7,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 3
+        }
+      }
+    },
+    "night_old_control": {
+      "baseline": {
+        "kit": {
+          "correct": 52,
+          "wrong": 9,
+          "unassigned": 4,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "pairs": {
+          "joint-identity-control-night-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 138,
+            "covered_observations": 136,
+            "counts": {
+              "same_pairs": 63,
+              "same_correct": 59,
+              "different_pairs": 63,
+              "different_correct": 61,
+              "false_split": 2,
+              "same_uncovered": 2,
+              "different_uncovered": 2,
+              "uncertain_excluded": 8
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "recovery_refit": {
+        "kit": {
+          "correct": 54,
+          "wrong": 9,
+          "unassigned": 2,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "pairs": {
+          "joint-identity-control-night-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 138,
+            "covered_observations": 136,
+            "counts": {
+              "same_pairs": 63,
+              "same_correct": 59,
+              "different_pairs": 63,
+              "different_correct": 61,
+              "false_split": 2,
+              "same_uncovered": 2,
+              "different_uncovered": 2,
+              "uncertain_excluded": 8
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "preserved": {
+        "kit": {
+          "correct": 52,
+          "wrong": 9,
+          "unassigned": 4,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "pairs": {
+          "joint-identity-control-night-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 138,
+            "covered_observations": 136,
+            "counts": {
+              "same_pairs": 63,
+              "same_correct": 59,
+              "different_pairs": 63,
+              "different_correct": 61,
+              "false_split": 2,
+              "same_uncovered": 2,
+              "different_uncovered": 2,
+              "uncertain_excluded": 8
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "partitioned": {
+        "kit": {
+          "correct": 52,
+          "wrong": 9,
+          "unassigned": 4,
+          "kit_boxes_missing": 0,
+          "other_assigned": 1,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 1
+        },
+        "pairs": {
+          "joint-identity-control-night-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 138,
+            "covered_observations": 136,
+            "counts": {
+              "same_pairs": 63,
+              "same_correct": 59,
+              "different_pairs": 63,
+              "different_correct": 61,
+              "false_split": 2,
+              "same_uncovered": 2,
+              "different_uncovered": 2,
+              "uncertain_excluded": 8
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "segments": {
+        "40": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 6451,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 7.94305680009226,
+              "p95": 11.73244013916701,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 6451,
+            "tracks": 69
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 6451,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 4.567132000112906,
+            "events": [],
+            "tracking_update_ms": {
+              "mean": 9.305023474618793,
+              "p95": 15.013189986348154
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 6532,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 100.3541397297134,
+              "p95": 131.28686996642503,
+              "frames": 375
+            },
+            "observations": 6532,
+            "tracks": 60,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 6451,
+            "candidate": 6451,
+            "removed": 0,
+            "added": 0,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 0
+        },
+        "50": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7751,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 8.500300800427794,
+              "p95": 12.116829887963835,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 7751,
+            "tracks": 46
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7759,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 4.423841900192201,
+            "events": [
+              {
+                "order": 34,
+                "track_id": 2,
+                "source_index": 3,
+                "proposal": [
+                  1142.25,
+                  738.75,
+                  1178.75,
+                  789.25
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1169.4499347896078,
+                  760.5009857234999,
+                  0.6861017456189914,
+                  50.1425903998137,
+                  -3.3525847459423694,
+                  1.7346082150094824,
+                  1.4444719814452698e-06,
+                  -0.04077420739508229
+                ]
+              },
+              {
+                "order": 212,
+                "track_id": 1,
+                "source_index": 9,
+                "proposal": [
+                  1868.5,
+                  545.375,
+                  1894.0,
+                  582.75
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1892.0718886233003,
+                  563.2045562359491,
+                  0.6466623634351731,
+                  37.77129123728555,
+                  1.7024472972008273,
+                  -0.45186326511532243,
+                  1.708358167060726e-06,
+                  0.0
+                ]
+              }
+            ],
+            "tracking_update_ms": {
+              "mean": 8.897787474716703,
+              "p95": 12.302210088819265
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7776,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 99.7554853229473,
+              "p95": 126.42167988233268,
+              "frames": 375
+            },
+            "observations": 7776,
+            "tracks": 43,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 7751,
+            "candidate": 7751,
+            "removed": 0,
+            "added": 0,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "baseline",
+            "reason": "motion_lost_baseline_observations",
+            "missing_observations": [
+              {
+                "continuity_id": 0,
+                "frame_idx": 144,
+                "box": [
+                  850.25,
+                  846.75,
+                  882.5,
+                  880.75
+                ]
+              }
+            ]
+          },
+          "applied_motion_events": 0
+        }
+      }
+    },
+    "palette_day": {
+      "baseline": {
+        "kit": {
+          "correct": 77,
+          "wrong": 1,
+          "unassigned": 12,
+          "kit_boxes_missing": 9,
+          "other_assigned": 11,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 0
+        },
+        "pairs": {
+          "identity-palette-control-day-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 400,
+            "covered_observations": 204,
+            "counts": {
+              "same_pairs": 108,
+              "same_correct": 74,
+              "same_uncovered": 24,
+              "different_pairs": 108,
+              "different_correct": 75,
+              "different_uncovered": 32,
+              "false_split": 10,
+              "false_join": 1
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "recovery_refit": {
+        "kit": {
+          "correct": 77,
+          "wrong": 1,
+          "unassigned": 12,
+          "kit_boxes_missing": 9,
+          "other_assigned": 11,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 0
+        },
+        "pairs": {
+          "identity-palette-control-day-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 400,
+            "covered_observations": 204,
+            "counts": {
+              "same_pairs": 108,
+              "same_correct": 74,
+              "same_uncovered": 24,
+              "different_pairs": 108,
+              "different_correct": 75,
+              "different_uncovered": 32,
+              "false_split": 10,
+              "false_join": 1
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "preserved": {
+        "kit": {
+          "correct": 77,
+          "wrong": 1,
+          "unassigned": 12,
+          "kit_boxes_missing": 9,
+          "other_assigned": 11,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 0
+        },
+        "pairs": {
+          "identity-palette-control-day-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 400,
+            "covered_observations": 204,
+            "counts": {
+              "same_pairs": 108,
+              "same_correct": 74,
+              "same_uncovered": 24,
+              "different_pairs": 108,
+              "different_correct": 75,
+              "different_uncovered": 32,
+              "false_split": 10,
+              "false_join": 1
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "partitioned": {
+        "kit": {
+          "correct": 77,
+          "wrong": 1,
+          "unassigned": 12,
+          "kit_boxes_missing": 9,
+          "other_assigned": 11,
+          "not_person_remaining": 0,
+          "conflicting_track_labels": 0
+        },
+        "pairs": {
+          "identity-palette-control-day-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 400,
+            "covered_observations": 204,
+            "counts": {
+              "same_pairs": 108,
+              "same_correct": 74,
+              "same_uncovered": 24,
+              "different_pairs": 108,
+              "different_correct": 75,
+              "different_uncovered": 32,
+              "false_split": 10,
+              "false_join": 1
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "segments": {
+        "64": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 11637,
+              "observations_removed": 1963,
+              "tracks_removed": 29,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 6
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 31
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 33
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 34
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 35
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 51
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 53
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 58
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 60
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 62
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 68
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 79
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 92
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 105
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 108
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 118
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 120
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 167
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 168
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 177
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 178
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 200
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 201
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 213
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 215
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 224
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 226
+                }
+              ]
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 14.298289595792692,
+              "p95": 22.02506994362921,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 9674,
+            "tracks": 108
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 11650,
+              "observations_removed": 1963,
+              "tracks_removed": 29,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 6
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 31
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 33
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 34
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 35
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 51
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 53
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 58
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 60
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 62
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 68
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 77
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 90
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 103
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 106
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 116
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 118
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 165
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 166
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 175
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 176
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 198
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 199
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 211
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 213
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 222
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 224
+                }
+              ]
+            },
+            "elapsed_seconds": 9.330963299842551,
+            "events": [
+              {
+                "order": 84,
+                "track_id": 36,
+                "source_index": 30,
+                "proposal": [
+                  1679.75,
+                  514.90625,
+                  1729.75,
+                  616.75
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1727.4385229080422,
+                  561.3067269683951,
+                  0.43884941682254097,
+                  106.2378420933614,
+                  -4.1878421693100245,
+                  1.8052506660666439,
+                  -3.211574884198508e-06,
+                  0.0
+                ]
+              }
+            ],
+            "tracking_update_ms": {
+              "mean": 17.640517863755427,
+              "p95": 25.7725200150162
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 12015,
+              "observations_removed": 2113,
+              "tracks_removed": 37,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 6
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 31
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 33
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 34
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 35
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 59
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 60
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 63
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 74
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 80
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 81
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 93
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 107
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 112
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 134
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 179
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 183
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 195
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 197
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 198
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 201
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 270
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 273
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 278
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 290
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 299
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 314
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 327
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 335
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 344
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 354
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 356
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 364
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 366
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 368
+                }
+              ]
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 142.07490106113255,
+              "p95": 185.18334990367293,
+              "frames": 375
+            },
+            "observations": 9902,
+            "tracks": 115,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 9674,
+            "candidate": 9687,
+            "removed": 0,
+            "added": 13,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 1
+        },
+        "66": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 12138,
+              "observations_removed": 2498,
+              "tracks_removed": 44,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 32
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 33
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 34
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 35
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 36
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 49
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 55
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 73
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 76
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 77
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 87
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 97
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 100
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 106
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 110
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 111
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 113
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 119
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 124
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 126
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 136
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 140
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 141
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 144
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 147
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 159
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 161
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 171
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 173
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 180
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 182
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 185
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 186
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 190
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 195
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 197
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 200
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 206
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 207
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 213
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 219
+                }
+              ]
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 13.209339722370109,
+              "p95": 19.369630119763315,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 9640,
+            "tracks": 110
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 12138,
+              "observations_removed": 2498,
+              "tracks_removed": 44,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 32
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 33
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 34
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 35
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 36
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 49
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 55
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 73
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 76
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 77
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 87
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 97
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 100
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 106
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 110
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 111
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 113
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 119
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 124
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 126
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 136
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 140
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 141
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 144
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 147
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 159
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 161
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 171
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 173
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 180
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 182
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 185
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 186
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 190
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 195
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 197
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 200
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 206
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 207
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 213
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 219
+                }
+              ]
+            },
+            "elapsed_seconds": 8.939565000124276,
+            "events": [],
+            "tracking_update_ms": {
+              "mean": 17.23624560361107,
+              "p95": 26.7741100396961
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": true,
+              "skip_reason": null,
+              "observations_before": 12374,
+              "observations_removed": 2485,
+              "tracks_removed": 45,
+              "min_field_observations": 2,
+              "tolerance_px": 2.16,
+              "rejected_tracks": [
+                {
+                  "continuity_id": 0,
+                  "track_id": 28
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 29
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 30
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 32
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 33
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 34
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 36
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 54
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 56
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 59
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 70
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 74
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 90
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 93
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 96
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 98
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 112
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 118
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 128
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 135
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 139
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 140
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 142
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 145
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 149
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 157
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 163
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 176
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 178
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 188
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 190
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 203
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 208
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 222
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 237
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 239
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 240
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 241
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 251
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 259
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 264
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 269
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 271
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 280
+                },
+                {
+                  "continuity_id": 0,
+                  "track_id": 285
+                }
+              ]
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 144.4061040095985,
+              "p95": 206.78733999375254,
+              "frames": 375
+            },
+            "observations": 9889,
+            "tracks": 101,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 9640,
+            "candidate": 9640,
+            "removed": 0,
+            "added": 0,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 0
+        }
+      }
+    },
+    "palette_night": {
+      "baseline": {
+        "kit": {
+          "correct": 35,
+          "wrong": 8,
+          "unassigned": 14,
+          "kit_boxes_missing": 2,
+          "other_assigned": 3,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 2
+        },
+        "pairs": {
+          "identity-palette-control-night-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 155,
+            "covered_observations": 137,
+            "counts": {
+              "same_pairs": 53,
+              "same_correct": 49,
+              "different_pairs": 53,
+              "different_correct": 49,
+              "different_uncovered": 4,
+              "false_split": 1,
+              "same_uncovered": 3
+            },
+            "changed_outcomes": []
+          }
+        },
+        "regressions": []
+      },
+      "recovery_refit": {
+        "kit": {
+          "correct": 34,
+          "wrong": 9,
+          "unassigned": 14,
+          "kit_boxes_missing": 2,
+          "other_assigned": 4,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 3
+        },
+        "pairs": {
+          "identity-palette-control-night-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 155,
+            "covered_observations": 137,
+            "counts": {
+              "same_pairs": 53,
+              "same_correct": 50,
+              "different_pairs": 53,
+              "different_correct": 49,
+              "different_uncovered": 4,
+              "same_uncovered": 3
+            },
+            "changed_outcomes": [
+              {
+                "before": {
+                  "left": "84-374-d4",
+                  "right": "84-404-d11",
+                  "relation": "same",
+                  "visual_basis": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+                  "linked": false,
+                  "passed": false
+                },
+                "after": {
+                  "left": "84-374-d4",
+                  "right": "84-404-d11",
+                  "relation": "same",
+                  "visual_basis": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+                  "linked": true,
+                  "passed": true
+                }
+              }
+            ]
+          }
+        },
+        "regressions": [
+          "kit.correct",
+          "kit.wrong",
+          "kit.other_assigned",
+          "kit.conflicting_track_labels"
+        ]
+      },
+      "preserved": {
+        "kit": {
+          "correct": 35,
+          "wrong": 8,
+          "unassigned": 14,
+          "kit_boxes_missing": 2,
+          "other_assigned": 3,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 3
+        },
+        "pairs": {
+          "identity-palette-control-night-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 155,
+            "covered_observations": 137,
+            "counts": {
+              "same_pairs": 53,
+              "same_correct": 50,
+              "different_pairs": 53,
+              "different_correct": 49,
+              "different_uncovered": 4,
+              "same_uncovered": 3
+            },
+            "changed_outcomes": [
+              {
+                "before": {
+                  "left": "84-374-d4",
+                  "right": "84-404-d11",
+                  "relation": "same",
+                  "visual_basis": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+                  "linked": false,
+                  "passed": false
+                },
+                "after": {
+                  "left": "84-374-d4",
+                  "right": "84-404-d11",
+                  "relation": "same",
+                  "visual_basis": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+                  "linked": true,
+                  "passed": true
+                }
+              }
+            ]
+          }
+        },
+        "regressions": [
+          "kit.conflicting_track_labels"
+        ]
+      },
+      "partitioned": {
+        "kit": {
+          "correct": 35,
+          "wrong": 8,
+          "unassigned": 14,
+          "kit_boxes_missing": 2,
+          "other_assigned": 3,
+          "not_person_remaining": 1,
+          "conflicting_track_labels": 2
+        },
+        "pairs": {
+          "identity-palette-control-night-pairs": {
+            "metric_scope": "Sparse visual pairs, not full-video MOT/IDF1",
+            "source_unmatched_observations": [],
+            "observations": 155,
+            "covered_observations": 137,
+            "counts": {
+              "same_pairs": 53,
+              "same_correct": 50,
+              "different_pairs": 53,
+              "different_correct": 49,
+              "different_uncovered": 4,
+              "same_uncovered": 3
+            },
+            "changed_outcomes": [
+              {
+                "before": {
+                  "left": "84-374-d4",
+                  "right": "84-404-d11",
+                  "relation": "same",
+                  "visual_basis": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+                  "linked": false,
+                  "passed": false
+                },
+                "after": {
+                  "left": "84-374-d4",
+                  "right": "84-404-d11",
+                  "relation": "same",
+                  "visual_basis": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+                  "linked": true,
+                  "passed": true
+                }
+              }
+            ]
+          }
+        },
+        "regressions": []
+      },
+      "segments": {
+        "78": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 5370,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 5.8008794616907835,
+              "p95": 8.226520009338856,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 5370,
+            "tracks": 51
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 5370,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 4.102100499905646,
+            "events": [],
+            "tracking_update_ms": {
+              "mean": 8.421562406544883,
+              "p95": 13.151819957420232
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 5387,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 93.38991519995034,
+              "p95": 122.04419006593527,
+              "frames": 375
+            },
+            "observations": 5387,
+            "tracks": 53,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [],
+          "coverage": {
+            "baseline": 5370,
+            "candidate": 5370,
+            "removed": 0,
+            "added": 0,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 0
+        },
+        "84": {
+          "baseline": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7087,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "settings": {
+              "track_activation_threshold": 0.25,
+              "lost_track_buffer": 18,
+              "frame_rate": 12,
+              "minimum_matching_threshold": 0.8,
+              "minimum_consecutive_frames": 1
+            },
+            "constructor_defaults": {
+              "track_activation_threshold": "0.25",
+              "lost_track_buffer": "30",
+              "minimum_matching_threshold": "0.8",
+              "frame_rate": "30",
+              "minimum_consecutive_frames": "1"
+            },
+            "baseline_exact": true,
+            "tracking_update_ms": {
+              "mean": 7.464311201125383,
+              "p95": 11.91196998115629,
+              "frames": 375
+            },
+            "unconfirmed_observations_excluded": 0,
+            "observations": 7087,
+            "tracks": 57
+          },
+          "recovery": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7098,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "elapsed_seconds": 4.747685299953446,
+            "events": [
+              {
+                "order": 103,
+                "track_id": 25,
+                "source_index": 5,
+                "proposal": [
+                  1256.5,
+                  630.25,
+                  1286.0,
+                  674.5
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1264.5405611631209,
+                  652.1028038921773,
+                  0.65601710075953,
+                  44.81905613900174,
+                  -3.4444900954346243,
+                  0.0980165881150581,
+                  -2.477559610405999e-06,
+                  0.0
+                ]
+              },
+              {
+                "order": 193,
+                "track_id": 16,
+                "source_index": 9,
+                "proposal": [
+                  1109.0,
+                  736.0,
+                  1140.5,
+                  792.0
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1112.4243916775142,
+                  769.7338326097378,
+                  0.6231840620627749,
+                  55.40416288943358,
+                  0.34798563486251133,
+                  -0.4521813782581744,
+                  1.114406022360479e-05,
+                  -0.003644346713367108
+                ]
+              },
+              {
+                "order": 311,
+                "track_id": 39,
+                "source_index": 11,
+                "proposal": [
+                  1874.0,
+                  546.34375,
+                  1901.0,
+                  583.96875
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1877.532947014415,
+                  567.1485846353788,
+                  0.6841642538391053,
+                  37.575550354978965,
+                  1.0038350554237745,
+                  -0.40401928251690244,
+                  9.404483424440607e-06,
+                  0.0
+                ]
+              }
+            ],
+            "tracking_update_ms": {
+              "mean": 9.552512805288037,
+              "p95": 14.920750004239382
+            }
+          },
+          "secondary": {
+            "lost_frames": 7,
+            "lost_seconds": 0.56,
+            "person_filter": {
+              "method": "annotated_perimeter_track_v1",
+              "applied": false,
+              "skip_reason": "disabled",
+              "observations_before": 7143,
+              "observations_removed": 0,
+              "tracks_removed": 0,
+              "min_field_observations": 2
+            },
+            "profile": "deepocsort-osnet-fixed-v1",
+            "appearance": true,
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "settings": {
+              "threshold": 0.25,
+              "lost_frames": 7,
+              "min_hits": 1,
+              "iou": 0.3,
+              "delta_t": 3,
+              "inertia": 0.2,
+              "weight": 0.75,
+              "alpha": 0.95,
+              "aw": 0.5,
+              "cmc": false,
+              "grid": false,
+              "new_kf": false,
+              "adaptive_appearance": true
+            },
+            "tracking_update_ms": {
+              "mean": 116.47748293541372,
+              "p95": 141.19477013591677,
+              "frames": 375
+            },
+            "observations": 7143,
+            "tracks": 55,
+            "decoder_threads": 1,
+            "reused_from_report": ".cache\\short-gap-verified-20261009-v3\\report.json",
+            "reused_report_sha256": "7bff564517cfd14cbbf223bdae6c543e8a0ea559a3e61433dd07c6276290f411"
+          },
+          "boundaries": [
+            {
+              "continuity_id": 0,
+              "raw_id": 16,
+              "new_id": 74,
+              "first_order": 236,
+              "confirmed_order": 238,
+              "old_support": 16,
+              "new_support": 11,
+              "old_palette": 0,
+              "new_palette": 1
+            },
+            {
+              "continuity_id": 0,
+              "raw_id": 25,
+              "new_id": 75,
+              "first_order": 43,
+              "confirmed_order": 45,
+              "old_support": 29,
+              "new_support": 11,
+              "old_palette": 0,
+              "new_palette": 1
+            }
+          ],
+          "coverage": {
+            "baseline": 7087,
+            "candidate": 7098,
+            "removed": 0,
+            "added": 11,
+            "changed_teams": 0
+          },
+          "recovery_selection": {
+            "selected": "motion",
+            "reason": "baseline_coverage_preserved"
+          },
+          "applied_motion_events": 3
+        }
+      }
+    }
+  }
+}
