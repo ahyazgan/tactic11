@@ -89,7 +89,7 @@ Makine kayıtları ve sınırlı eşitlik kanıtı:
 3.006 uygulama testi geçti, 60 koşullu test atlandı; demo ve gerçek giriş modu
 tarayıcı işleri, iki veritabanı göç kontrolü, takip motorları ve Docker derlemesi
 geçti. CI'ın kurduğu SQLAlchemy 2.1.4, yerel 2.0.50 ortamında görünmeyen sekiz
-tip denetimi hatası ortaya çıkardı. Takip sorgusunun dönüş tipi açıklandı,
+tip denetimi hatası ortaya çıkardı. Takip sorgularının sonuç satırı tipleri açıklandı,
 beş özet sorgusunun satırları açık anahtar/değer açılımıyla sözlüğe dönüştürüldü.
 Sorgu filtreleri ve sonuç davranışı korunur; bu uyumluluk düzeltmesi de PR'dadır.
 
