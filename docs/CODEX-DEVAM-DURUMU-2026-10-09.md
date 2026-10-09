@@ -1,7 +1,8 @@
 # Manager: Codex ile devam, 9 Ekim 2026
 
-GitHub ana dalı yeniden kontrol edildi: `dd49e6c` / PR #278, 9 Ekim 2026;
-yerel `codex-work` aynı commit'te ve ana dal CI başarılıydı. PR #274–276 ile
+GitHub ana dalı yeniden kontrol edildi: `fd0620b` / PR #279, 9 Ekim 2026;
+ana dal CI başarılıydı. Yeni kör etiketler `e3d9618` ile tahminler açılmadan
+mühürlendi; tamamlanan kontrol sonuçları aşağıda. PR #274–276 ile
 birleşen Claude çalışmaları başlangıçta fast-forward ile alınmıştı.
 Kullanıcının tercihiyle geliştirme Codex üzerinden sürüyor;
 eski Claude çalışma alanı korunuyor.
@@ -79,8 +80,8 @@ bu kapıdan geçti. Gece verisi eksik kaldığı için değerlendirmeye alınama
 ```
 
 İlk denemelerden sonraki iş gece edinimini tamamlamaktı. Bu adım aşağıdaki
-ölçümlü koşuda geçti. Bütün kör etiketleri mühürlemek ve üç takip kolunu
-karşılaştırmak hâlâ açık; kaynak incelemesi tamamlanmadan aday puanlanmayacak.
+ölçümlü koşuda geçti. Bütün kör etiketler daha sonra mühürlendi ve üç takip
+kolu karşılaştırıldı; son sonuç bu belgenin sonunda bulunur.
 Gerçek kişi/kadro eşlemesi, top/pas doğruluğu ve tam maç gerçek zaman hedefleri
 açık kalıyor.
 
@@ -128,7 +129,7 @@ Kaynak hashleri ve ölçüm: [kalibrasyon kaydı](measurements/calibration-api-c
 PR #278 normal merge ile `dd49e6c` olarak birleşti; son PR başının ve ana dalın
 CI/Vercel kontrolleri başarılı. CI'da 3.010 test geçti, 60 koşullu test atlandı.
 
-## Gece edinimi tamamlandı; kör etiketleme sürüyor
+## Gece edinimi ve ilk kör etiketleme aşaması
 
 9 Ekim 13:56–13:59 UTC koşusu aynı dondurulmuş edinim betiğini,
 `torch.set_grad_enabled(False)` ve `OPENCV_FFMPEG_THREADS=1` ile çalıştırdı.
@@ -162,10 +163,9 @@ bağ da yazıldı. Bunlar **kaynak etiketleri**, takip başarısı puanı değil
 Kısmi bacak/gövde kutuları, örtüşen kişiler ve mükerrer kutular ayrı gerekçelerle
 ele alındı. İnceleyici tek AI'dır; insan hakem doğrulaması yapılmadı.
 
-Gündüz 66'nın 95 ve gecenin 75 başlangıcı, toplam **170 kutu** hâlâ açık.
-Hiçbir grup etiketi mühürlenmedi; üç kolun tahmin tekrarı/puanlaması açılmadı.
-Üretim varsayılanı ByteTrack olarak kalıyor. Kimlik, olay doğruluğu ve canlı
-performans hedefleri tamamlanmış sayılmıyor.
+Bu edinim aşamasında kalan gündüz 66'nın 95 ve gecenin 75 başlangıcı,
+toplam **170 kutu**, sonraki kör incelemede tamamlandı. Önceki edinim ve
+kısmi etiket kanıtları değiştirilmedi; birleşik etiketler ayrı mühürlendi.
 
 Edinim bütünlüğü, kör seçim, dondurma korumaları ve palet adayı için mevcut
 40 test geçti. İlk koşuda Windows sandbox geçici dizini oluşturulamadığından
@@ -173,3 +173,29 @@ sekiz test kurulamadı; çalışma alanındaki yeni, ayrı geçici dizinle tamam
 
 Kanıt: [edinim ve bellek ölçümü](measurements/identity-palette-acquisition-20261009.json),
 [103 kutunun kaynak incelemesi](measurements/identity-palette-control-day64-source-review.json).
+
+## Palet kontrolü tamamlandı; aday üretime alınmadı
+
+273 başlangıç ve 282 bitiş kutusunun tamamı, 161 aynı ve 161 farklı kişi
+ilişkisiyle birlikte tahminler açılmadan `e3d9618` commit'inde mühürlendi.
+35 belirsiz, 10 görünür fakat ayrı bitiş kutusu olmayan ve 67 kişi olmayan
+başlangıç ayrıca kaydedildi. İnceleyici tek AI; bağımsız insan hakem yok.
+
+İki grubun edinim/hash kapıları ve on iki üretim tekrarı tamamlandı.
+Supervision ByteTrack, önceki consensus ve palet adayı toplam 31.771 çıktı
+kişi gözleminde kimlikler dahil birebir aynı. Yeni veya reddedilen önceki
+sınır yok. Gerileme görülmediği gibi olumlu kontrol düzeltmesi de yok;
+üretim varsayılanı ByteTrack olarak kalıyor.
+
+Gündüz aynı-kişi doğrusu 72/108, gecede 49/53; toplam 13 yanlış bölünme
+ilişkisi ve 27 kapsanmayan aynı-kişi ilişkisi var. Farklı-kişi doğrusu
+gündüz 75/108, gecede 49/53; 1 yanlış birleşme, 36 kapsanmayan ilişki var.
+Kısmi/mükerrer kutular bulunduğundan bunlar benzersiz oyuncu sayıları değildir.
+Gece forma ölçümü 35 doğru, 8 yanlış, 14 atanamayan; 1 kişi olmayan kutu
+takipte kaldı ve 2 kimlikte kaynak forma çelişkisi var.
+
+Bu dört kesit artık tanı verisi. Sonraki geliştirme tam/kısmi kutu kopmaları,
+örtüşmede kişi devri ve gece forma hatalarını ayıracak; yeni aday ayrı bir
+kontrol açılmadan dondurulacak. Top/olay ve tam maç gerçek zaman hedefleri açık.
+Tam sayımlar, süreler, hashler ve kalan hatalar:
+[palet kontrol sonuçları](PALET-UZLASISI-KONTROL-SONUCLARI.md).

@@ -2,9 +2,10 @@
 
 **9 Ekim güncellemesi:** GitHub'daki son Claude değişiklikleri Codex dalına
 alındı; yerel gerçek API erişimi ve giriş akışı onarıldı. Palet adayı kontrolü
-tamamlanmadı: gündüz/gece dört kesitin ham edinimi bütünlük kapısından geçti.
-273 başlangıç kutusunun 103'ü kaynak görüntüden incelendi; kalan 170 kutu,
-etiket mührü ve üç kol karşılaştırması açık. Ayrıntı ve devam noktası:
+tamamlandı: dört kesitte 273 başlangıç, 282 bitiş kutusu ve 322 ilişki kör
+etiketlenip mühürlendi. On iki tekrarda üç yöntemin çıktıları birebir aynı;
+olumlu kontrol düzeltmesi yok, üretime terfi yok. Sonuç ve kalan hatalar:
+[palet kontrolü](PALET-UZLASISI-KONTROL-SONUCLARI.md). Ayrıntı ve devam noktası:
 [Codex devam durumu](CODEX-DEVAM-DURUMU-2026-10-09.md).
 Üretim takip varsayılanı değişmedi.
 
@@ -34,8 +35,10 @@ GTA-Link'in sabit resmi kaynak sürümü ve spor OSNet ağırlıkları incelendi
 Yedi eski geçişte genel OSNet/spor OSNet, OpenCV/PIL önişlemesi, kısa parça
 bağlama, kaynak hareketi ve nokta rengi karşılaştırıldı. Bu tanılardan sonra mevcut RGB takım paletine dayanan ek
 koşul, 15 eski kesitte beyaz 6 yanlış bölünmesini reddedip altı doğru ayrımı
-korudu. Bu geliştirme adayı henüz gerçek akış/yeni bağımsız kontrol geçmedi. Tam GTA
-kıyaslaması veya HOTA/IDF1 başarısı olarak sunulmaz.
+korudu. Adayın sonraki dört kontrol kesitindeki üretim tekrarları tamamlandı;
+üç kol aynı çıktıları verdiği için olumlu kontrol düzeltmesi doğrulanmadı ve
+aday üretime alınmadı. Bu kontrol aynı iki maçtan zamansal kesitler kullanır;
+bağımsız maç, tam GTA kıyaslaması veya HOTA/IDF1 başarısı olarak sunulmaz.
 Ayrıntı: [görünüş, hareket ve kaynak tanısı](KIMLIK-GORUNUS-TANISI.md).
 
 ## Kalan işler, çalışma sırasıyla
