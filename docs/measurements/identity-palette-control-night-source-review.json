@@ -1,0 +1,983 @@
+{
+  "status": "group_source_review_complete_not_sealed",
+  "predictions_visible": false,
+  "reviewer": "Codex single AI source-image reviewer; no human adjudication",
+  "starts": {
+    "78-374-d0": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Floodlight and lens glare; no person in this source box."
+    },
+    "78-374-d1": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Floodlight and lens glare; no person in this source box."
+    },
+    "78-686-d0": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Floodlight and lens glare; no person in this source box."
+    },
+    "78-686-d1": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Floodlight and lens glare; no person in this source box."
+    },
+    "78-374-d16": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Circular camera-side equipment/loop; no person visible."
+    },
+    "78-374-d2": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated white player left of the right-hand group remains separate and moves slightly left.",
+      "right": "78-404-d4"
+    },
+    "78-374-d3": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Left blue player in the right-hand group converges with the other blue player; endpoint d3 contains both bodies, so the relation is withheld."
+    },
+    "78-374-d4": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Rightmost isolated blue player remains separate throughout the strip.",
+      "right": "78-404-d6"
+    },
+    "78-374-d5": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Front blue player in the right-hand group converges with start d3; endpoint d3 contains both blue bodies and is not a definite single-person endpoint."
+    },
+    "78-374-d6": {
+      "kit": "uncertain",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "White foreground player and dark blue body overlap inside the start box; no one-person relation is assigned."
+    },
+    "78-374-d7": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Right/back white player approaches a blue player; endpoint d2 contains both overlapping bodies and is withheld."
+    },
+    "78-374-d8": {
+      "kit": "uncertain",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "White player in the left group overlaps a dark body in the start crop and endpoint d9; no definite one-person relation is assigned."
+    },
+    "78-374-d9": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player behind the left edge of the right-hand group stays behind the two blue players and remains visible at endpoint d5.",
+      "right": "78-404-d5"
+    },
+    "78-374-d10": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Bent white player near the left goal remains bent and separate behind the moving foreground players.",
+      "right": "78-404-d11"
+    },
+    "78-374-d11": {
+      "kit": "blue",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "Two overlapping blue players are enclosed together; the start cannot identify one physical person."
+    },
+    "78-374-d12": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Foreground white player near the center circle stays in place, separate from the white player behind him.",
+      "right": "78-404-d14"
+    },
+    "78-374-d13": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated white player left of the two central white players steps slowly without a crossing.",
+      "right": "78-404-d15"
+    },
+    "78-374-d14": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Rear white player above the foreground white player stays at that position throughout the strip.",
+      "right": "78-404-d13"
+    },
+    "78-374-d15": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated red-clothed person remains separate and turns toward the camera.",
+      "right": "78-404-d16"
+    },
+    "78-686-d2": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player between the left and right groups remains separate with a raised arm.",
+      "right": "78-716-d1"
+    },
+    "78-686-d3": {
+      "kit": "uncertain",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "White and blue players overlap almost completely inside the start and endpoint boxes."
+    },
+    "78-686-d4": {
+      "kit": "uncertain",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "Multiple white/blue bodies share the start box; no single-person relation can be assigned."
+    },
+    "78-686-d5": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Rightmost blue player remains isolated while the nearby group moves slightly left.",
+      "right": "78-716-d4"
+    },
+    "78-686-d6": {
+      "kit": "white",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "Two white players overlap inside the start box and separate later; the start is not one physical person."
+    },
+    "78-686-d7": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player between the isolated white player and overlapping right group remains distinct.",
+      "right": "78-716-d6"
+    },
+    "78-686-d8": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Foreground white player at the center-circle edge remains separate throughout the strip.",
+      "right": "78-716-d11"
+    },
+    "78-686-d9": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Rear/right white player of the central trio remains distinct with no crossing.",
+      "right": "78-716-d12"
+    },
+    "78-686-d10": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Left white player of the central trio remains isolated with no crossing.",
+      "right": "78-716-d13"
+    },
+    "78-686-d11": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated red-clothed person remains stationary and separate.",
+      "right": "78-716-d14"
+    },
+    "78-686-d12": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "visible_person_without_source_box",
+      "reason": "Dark-clothed person in front of the left goal remains visible at frame 716 but has no detector box there."
+    },
+    "84-374-d0": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Floodlight/lens glare, no visible person."
+    },
+    "84-686-d0": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Floodlight/lens glare, no visible person."
+    },
+    "84-374-d1": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player in front of the right-side blue player takes small steps forward without crossing.",
+      "right": "84-404-d15"
+    },
+    "84-374-d2": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player immediately right of the left blue player moves forward while the blue neighbor remains left.",
+      "right": "84-404-d6"
+    },
+    "84-374-d3": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player left of start white d2 moves slowly without exchanging positions.",
+      "right": "84-404-d8"
+    },
+    "84-374-d4": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player with the ball advances right in front of the midfield group and remains distinct.",
+      "right": "84-404-d11"
+    },
+    "84-374-d5": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player in front of the left/back blue player remains visible in the same relative position.",
+      "right": "84-404-d3"
+    },
+    "84-374-d6": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player behind start white d5 stays behind him with no crossing.",
+      "right": "84-404-d10"
+    },
+    "84-374-d8": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player left of the bent white player stays to the left while the ball carrier passes in front.",
+      "right": "84-404-d4"
+    },
+    "84-374-d9": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Bent white player in the left group straightens and moves slowly, staying between the blue players.",
+      "right": "84-404-d2"
+    },
+    "84-374-d10": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Near-side white player just left of the dark-clothed field person stays distinct throughout.",
+      "right": "84-404-d12"
+    },
+    "84-374-d11": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Foreground white player of the central trio runs right, staying in front of the other white player.",
+      "right": "84-404-d14"
+    },
+    "84-374-d12": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player left of the central two white players runs right without passing either white player.",
+      "right": "84-404-d13"
+    },
+    "84-374-d13": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Rear white player of the central trio moves right, remaining behind the foreground white player.",
+      "right": "84-404-d16"
+    },
+    "84-374-d14": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player behind start white d1 remains separate while both take small steps.",
+      "right": "84-404-d17"
+    },
+    "84-374-d15": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player in front of the farthest right-side blue player remains separately visible.",
+      "right": "84-404-d18"
+    },
+    "84-374-d16": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated far-side white player accelerates right with no nearby crossing.",
+      "right": "84-404-d19"
+    },
+    "84-374-d17": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Farthest right-side blue player remains behind the white player in front, with a separate visible body.",
+      "right": "84-404-d20"
+    },
+    "84-374-d18": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-clothed field person near the center-circle edge walks slowly, separately from nearby white players.",
+      "right": "84-404-d21"
+    },
+    "84-374-d19": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated red-clothed person remains separate and takes small steps.",
+      "right": "84-404-d22"
+    },
+    "84-374-d7": {
+      "kit": "blue",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "Two blue players overlap inside the start box; cannot assign this mixed box to one person."
+    },
+    "84-374-d20": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "White player near the left goal crosses the blue player; endpoint d9 encloses both bodies, so the relation is withheld."
+    },
+    "84-374-d21": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Blue player near the left goal is crossed by the white player; endpoint d9 contains both bodies and is withheld."
+    },
+    "84-686-d1": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player beside the near-side blue runner moves right while remaining behind/left of him.",
+      "right": "84-716-d2"
+    },
+    "84-686-d2": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue runner beside start white d1 moves ahead/right and stays separate.",
+      "right": "84-716-d4"
+    },
+    "84-686-d3": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated white runner crosses the center-circle edge to the right, in front of the dark field person; the overview confirms his endpoint beyond the fixed crop edge.",
+      "right": "84-716-d5"
+    },
+    "84-686-d4": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Far-side white player walks right while the blue runner approaches from the left; separate endpoint body remains visible.",
+      "right": "84-716-d6"
+    },
+    "84-686-d5": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player behind the dark field person runs right, is briefly obscured, then emerges to his right at the endpoint.",
+      "right": "84-716-d3"
+    },
+    "84-686-d6": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White runner crosses the bright central turf toward the right, remaining ahead of the following blue player.",
+      "right": "84-716-d16"
+    },
+    "84-686-d7": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Far-side blue player moves right with the white player approaching from the left, retaining a separate body.",
+      "right": "84-716-d12"
+    },
+    "84-686-d8": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Far-side white runner approaches the blue player to his right but remains separately visible at the endpoint.",
+      "right": "84-716-d9"
+    },
+    "84-686-d9": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Far-side blue player initially beside the white runner remains behind/left as the white runner advances right.",
+      "right": "84-716-d10"
+    },
+    "84-686-d10": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Far-side white runner moves right away from the neighboring blue player and stays separately visible.",
+      "right": "84-716-d8"
+    },
+    "84-686-d12": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Far-left blue player approaches the white player on his right; endpoint still shows the blue body separately.",
+      "right": "84-716-d11"
+    },
+    "84-686-d13": {
+      "kit": "blue",
+      "box_scope": "partial_person",
+      "status": "same_labeled",
+      "reason": "Narrow partial box of the far-side blue player; source strip follows this same blue runner to the right.",
+      "right": "84-716-d15"
+    },
+    "84-686-d14": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated blue runner with visible 2 on the back advances right below the other players.",
+      "right": "84-716-d13"
+    },
+    "84-686-d15": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Near-right white runner continues right ahead of blue 2; the full endpoint overview confirms his box beyond the fixed strip edge.",
+      "right": "84-716-d20"
+    },
+    "84-686-d16": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White runner ahead of the central group approaches the blue ball carrier near the right side.",
+      "right": "84-716-d14"
+    },
+    "84-686-d17": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Right/lower white player of the far-side white pair runs right without crossing his teammate.",
+      "right": "84-716-d17"
+    },
+    "84-686-d18": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Left/upper white player of the far-side pair runs right, staying behind his teammate.",
+      "right": "84-716-d19"
+    },
+    "84-686-d19": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue runner above the bright central turf moves right, staying behind the leading white runner.",
+      "right": "84-716-d18"
+    },
+    "84-686-d21": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated near-side blue player with visible 35 moves right without another player crossing.",
+      "right": "84-716-d7"
+    },
+    "84-686-d22": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-clothed near-touchline runner moves right along the line, separately from the stationary sideline person.",
+      "right": "84-716-d21"
+    },
+    "84-686-d11": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "visible_person_without_source_box",
+      "reason": "Dark-clothed field person remains visible near the circle at frame 716, left of the blue runner, but has no source box there."
+    },
+    "84-686-d20": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "visible_person_without_source_box",
+      "reason": "Right-side blue ball carrier remains visible behind the approaching white player at frame 716; no separate source detector box covers him."
+    }
+  },
+  "ends": {
+    "78-404-d0": {
+      "status": "not_person",
+      "reason": "Floodlight/glare."
+    },
+    "78-404-d1": {
+      "status": "not_person",
+      "reason": "Floodlight/glare."
+    },
+    "78-404-d17": {
+      "status": "not_person",
+      "reason": "Circular camera-side equipment/loop."
+    },
+    "78-404-d2": {
+      "status": "uncertain",
+      "reason": "White and blue bodies overlap inside the endpoint box."
+    },
+    "78-404-d3": {
+      "status": "uncertain",
+      "reason": "Two blue players share the endpoint box."
+    },
+    "78-404-d9": {
+      "status": "uncertain",
+      "reason": "White and dark bodies overlap inside the endpoint box."
+    },
+    "78-404-d4": {
+      "status": "person",
+      "reason": "Isolated white player left of the right-hand group.",
+      "person": "78-404-person-4"
+    },
+    "78-404-d5": {
+      "status": "person",
+      "reason": "White player behind the two blue players in the right-hand group.",
+      "person": "78-404-person-5"
+    },
+    "78-404-d6": {
+      "status": "person",
+      "reason": "Isolated rightmost blue player.",
+      "person": "78-404-person-6"
+    },
+    "78-404-d7": {
+      "status": "person",
+      "reason": "Blue player at the left edge of the near-goal group.",
+      "person": "78-404-person-7"
+    },
+    "78-404-d8": {
+      "status": "person",
+      "reason": "Foreground white player in the right-hand group.",
+      "person": "78-404-person-8"
+    },
+    "78-404-d10": {
+      "status": "person",
+      "reason": "Blue player right of the bent white player.",
+      "person": "78-404-person-10"
+    },
+    "78-404-d11": {
+      "status": "person",
+      "reason": "Bent white player behind the left group.",
+      "person": "78-404-person-11"
+    },
+    "78-404-d12": {
+      "status": "person",
+      "reason": "Separate dark blue player immediately left of the isolated white player.",
+      "person": "78-404-person-12"
+    },
+    "78-404-d13": {
+      "status": "person",
+      "reason": "Rear central white player.",
+      "person": "78-404-person-13"
+    },
+    "78-404-d14": {
+      "status": "person",
+      "reason": "Foreground central white player.",
+      "person": "78-404-person-14"
+    },
+    "78-404-d15": {
+      "status": "person",
+      "reason": "Isolated white player left of the central pair.",
+      "person": "78-404-person-15"
+    },
+    "78-404-d16": {
+      "status": "person",
+      "reason": "Isolated red-clothed person.",
+      "person": "78-404-person-16"
+    },
+    "78-716-d0": {
+      "status": "not_person",
+      "reason": "Floodlight glare."
+    },
+    "78-716-d15": {
+      "status": "not_person",
+      "reason": "Circular camera-side equipment/loop."
+    },
+    "78-716-d2": {
+      "status": "uncertain",
+      "reason": "White and blue bodies overlap in one endpoint box."
+    },
+    "78-716-d5": {
+      "status": "uncertain",
+      "reason": "White and blue players overlap in the endpoint box."
+    },
+    "78-716-d9": {
+      "status": "uncertain",
+      "reason": "Two dark blue bodies are enclosed together."
+    },
+    "78-716-d10": {
+      "status": "uncertain",
+      "reason": "Blue body overlaps foreground white body parts; endpoint is withheld."
+    },
+    "78-716-d1": {
+      "status": "person",
+      "reason": "Isolated white player with raised arm.",
+      "person": "78-716-person-1"
+    },
+    "78-716-d3": {
+      "status": "person",
+      "reason": "Foreground white player now separated from the white player behind.",
+      "person": "78-716-person-3"
+    },
+    "78-716-d4": {
+      "status": "person",
+      "reason": "Isolated rightmost blue player.",
+      "person": "78-716-person-4"
+    },
+    "78-716-d6": {
+      "status": "person",
+      "reason": "Blue player between isolated white player and right group.",
+      "person": "78-716-person-6"
+    },
+    "78-716-d7": {
+      "status": "person",
+      "reason": "Separate blue player right of the overlapping white/blue group.",
+      "person": "78-716-person-7"
+    },
+    "78-716-d8": {
+      "status": "person",
+      "reason": "Rear white player now separated from the foreground white player.",
+      "person": "78-716-person-8"
+    },
+    "78-716-d11": {
+      "status": "person",
+      "reason": "Foreground central white player.",
+      "person": "78-716-person-11"
+    },
+    "78-716-d12": {
+      "status": "person",
+      "reason": "Rear/right central white player.",
+      "person": "78-716-person-12"
+    },
+    "78-716-d13": {
+      "status": "person",
+      "reason": "Left central white player.",
+      "person": "78-716-person-13"
+    },
+    "78-716-d14": {
+      "status": "person",
+      "reason": "Isolated red-clothed person.",
+      "person": "78-716-person-14"
+    },
+    "84-404-d0": {
+      "status": "not_person",
+      "reason": "Floodlight/lens glare, no person."
+    },
+    "84-404-d1": {
+      "status": "not_person",
+      "reason": "Floodlight/lens glare, no person."
+    },
+    "84-404-d9": {
+      "status": "uncertain",
+      "reason": "Crossing white and blue players share one endpoint box."
+    },
+    "84-404-d2": {
+      "status": "person",
+      "reason": "White player between left-side blue players; distinct body visible in crops and source strips.",
+      "person": "84-404-person-2"
+    },
+    "84-404-d3": {
+      "status": "person",
+      "reason": "White player in front of the left/back blue player; distinct body visible in crops and source strips.",
+      "person": "84-404-person-3"
+    },
+    "84-404-d4": {
+      "status": "person",
+      "reason": "Blue player at the left edge of the midfield group; distinct body visible in crops and source strips.",
+      "person": "84-404-person-4"
+    },
+    "84-404-d5": {
+      "status": "person",
+      "reason": "Blue player at the right of the close midfield blue pair; distinct body visible in crops and source strips.",
+      "person": "84-404-person-5"
+    },
+    "84-404-d6": {
+      "status": "person",
+      "reason": "White player right of the blue player on the far side; distinct body visible in crops and source strips.",
+      "person": "84-404-person-6"
+    },
+    "84-404-d7": {
+      "status": "person",
+      "reason": "Blue player at the left of the close midfield blue pair; distinct body visible in crops and source strips.",
+      "person": "84-404-person-7"
+    },
+    "84-404-d8": {
+      "status": "person",
+      "reason": "Far-side blue player left of white d6; distinct body visible in crops and source strips.",
+      "person": "84-404-person-8"
+    },
+    "84-404-d10": {
+      "status": "person",
+      "reason": "Blue player behind white d3; distinct body visible in crops and source strips.",
+      "person": "84-404-person-10"
+    },
+    "84-404-d11": {
+      "status": "person",
+      "reason": "Foreground blue ball carrier; distinct body visible in crops and source strips.",
+      "person": "84-404-person-11"
+    },
+    "84-404-d12": {
+      "status": "person",
+      "reason": "Near-side white player left of dark-clothed field person; distinct body visible in crops and source strips.",
+      "person": "84-404-person-12"
+    },
+    "84-404-d13": {
+      "status": "person",
+      "reason": "Blue player left of the central white pair; distinct body visible in crops and source strips.",
+      "person": "84-404-person-13"
+    },
+    "84-404-d14": {
+      "status": "person",
+      "reason": "Foreground central white runner; distinct body visible in crops and source strips.",
+      "person": "84-404-person-14"
+    },
+    "84-404-d15": {
+      "status": "person",
+      "reason": "White player in front of right-side blue player; distinct body visible in crops and source strips.",
+      "person": "84-404-person-15"
+    },
+    "84-404-d16": {
+      "status": "person",
+      "reason": "Rear central white runner; distinct body visible in crops and source strips.",
+      "person": "84-404-person-16"
+    },
+    "84-404-d17": {
+      "status": "person",
+      "reason": "Blue player behind white d15; distinct body visible in crops and source strips.",
+      "person": "84-404-person-17"
+    },
+    "84-404-d18": {
+      "status": "person",
+      "reason": "White player in front of farthest right blue player; distinct body visible in crops and source strips.",
+      "person": "84-404-person-18"
+    },
+    "84-404-d19": {
+      "status": "person",
+      "reason": "Isolated far-side white runner; distinct body visible in crops and source strips.",
+      "person": "84-404-person-19"
+    },
+    "84-404-d20": {
+      "status": "person",
+      "reason": "Farthest right blue player behind white d18; distinct body visible in crops and source strips.",
+      "person": "84-404-person-20"
+    },
+    "84-404-d21": {
+      "status": "person",
+      "reason": "Dark-clothed field person near circle; distinct body visible in crops and source strips.",
+      "person": "84-404-person-21"
+    },
+    "84-404-d22": {
+      "status": "person",
+      "reason": "Isolated red-clothed person; distinct body visible in crops and source strips.",
+      "person": "84-404-person-22"
+    },
+    "84-716-d0": {
+      "status": "not_person",
+      "reason": "Floodlight/lens glare, no person."
+    },
+    "84-716-d1": {
+      "status": "not_person",
+      "reason": "Floodlight/lens glare, no person."
+    },
+    "84-716-d2": {
+      "status": "person",
+      "reason": "Near-left white runner; separate body visible in source crops/context.",
+      "person": "84-716-person-2"
+    },
+    "84-716-d3": {
+      "status": "person",
+      "reason": "Blue runner right of the unboxed dark field person; separate body visible in source crops/context.",
+      "person": "84-716-person-3"
+    },
+    "84-716-d4": {
+      "status": "person",
+      "reason": "Near-left blue runner ahead of white d2; separate body visible in source crops/context.",
+      "person": "84-716-person-4"
+    },
+    "84-716-d5": {
+      "status": "person",
+      "reason": "White runner crossing the center circle; separate body visible in source crops/context.",
+      "person": "84-716-person-5"
+    },
+    "84-716-d6": {
+      "status": "person",
+      "reason": "Far-left white player; separate body visible in source crops/context.",
+      "person": "84-716-person-6"
+    },
+    "84-716-d7": {
+      "status": "person",
+      "reason": "Isolated near-side blue 35; separate body visible in source crops/context.",
+      "person": "84-716-person-7"
+    },
+    "84-716-d8": {
+      "status": "person",
+      "reason": "Far-side white runner right of blue d10; separate body visible in source crops/context.",
+      "person": "84-716-person-8"
+    },
+    "84-716-d9": {
+      "status": "person",
+      "reason": "Far-side white runner left of blue d12; separate body visible in source crops/context.",
+      "person": "84-716-person-9"
+    },
+    "84-716-d10": {
+      "status": "person",
+      "reason": "Far-side blue player left of white d8; separate body visible in source crops/context.",
+      "person": "84-716-person-10"
+    },
+    "84-716-d11": {
+      "status": "person",
+      "reason": "Far-left blue runner behind white d6; separate body visible in source crops/context.",
+      "person": "84-716-person-11"
+    },
+    "84-716-d12": {
+      "status": "person",
+      "reason": "Far-side blue player right of white d9; separate body visible in source crops/context.",
+      "person": "84-716-person-12"
+    },
+    "84-716-d13": {
+      "status": "person",
+      "reason": "Near-right blue 2; separate body visible in source crops/context.",
+      "person": "84-716-person-13"
+    },
+    "84-716-d14": {
+      "status": "person",
+      "reason": "White runner approaching the unboxed blue ball carrier; separate body visible in source crops/context.",
+      "person": "84-716-person-14"
+    },
+    "84-716-d15": {
+      "status": "person",
+      "reason": "Far-side blue runner behind the white pair; separate body visible in source crops/context.",
+      "person": "84-716-person-15"
+    },
+    "84-716-d16": {
+      "status": "person",
+      "reason": "White runner on bright central turf; separate body visible in source crops/context.",
+      "person": "84-716-person-16"
+    },
+    "84-716-d17": {
+      "status": "person",
+      "reason": "Right/lower white runner of the far-side pair; separate body visible in source crops/context.",
+      "person": "84-716-person-17"
+    },
+    "84-716-d18": {
+      "status": "person",
+      "reason": "Blue runner above bright turf behind white d16; separate body visible in source crops/context.",
+      "person": "84-716-person-18"
+    },
+    "84-716-d19": {
+      "status": "person",
+      "reason": "Left/upper white runner of the far-side pair; separate body visible in source crops/context.",
+      "person": "84-716-person-19"
+    },
+    "84-716-d20": {
+      "status": "person",
+      "reason": "Near-right white runner ahead of blue 2; separate body visible in source crops/context.",
+      "person": "84-716-person-20"
+    },
+    "84-716-d21": {
+      "status": "person",
+      "reason": "Dark near-touchline runner; separate body visible in source crops/context.",
+      "person": "84-716-person-21"
+    },
+    "84-716-d22": {
+      "status": "person",
+      "reason": "Separate dark-clothed sideline person by the right railing; separate body visible in source crops/context.",
+      "person": "84-716-person-22"
+    }
+  },
+  "reviewed_assets": [
+    "s0078-f0374-page01.jpg",
+    "s0078-f0404-page01.jpg",
+    "s0078-f0686-page01.jpg",
+    "s0078-f0716-page01.jpg",
+    "association-78-374-d2.jpg",
+    "association-78-374-d3.jpg",
+    "association-78-374-d4.jpg",
+    "association-78-374-d5.jpg",
+    "association-78-374-d6.jpg",
+    "association-78-374-d7.jpg",
+    "association-78-374-d8.jpg",
+    "association-78-374-d9.jpg",
+    "association-78-374-d10.jpg",
+    "association-78-374-d11.jpg",
+    "association-78-374-d12.jpg",
+    "association-78-374-d13.jpg",
+    "association-78-374-d14.jpg",
+    "association-78-374-d15.jpg",
+    "association-78-686-d2.jpg",
+    "association-78-686-d3.jpg",
+    "association-78-686-d4.jpg",
+    "association-78-686-d5.jpg",
+    "association-78-686-d6.jpg",
+    "association-78-686-d7.jpg",
+    "association-78-686-d8.jpg",
+    "association-78-686-d9.jpg",
+    "association-78-686-d10.jpg",
+    "association-78-686-d11.jpg",
+    "association-78-686-d12.jpg",
+    "s0084-f0374-page01.jpg",
+    "s0084-f0404-page01.jpg",
+    "s0084-f0686-page01.jpg",
+    "s0084-f0716-page01.jpg",
+    "s0084-f0716-overview.jpg",
+    "association-84-374-d1.jpg",
+    "association-84-374-d2.jpg",
+    "association-84-374-d3.jpg",
+    "association-84-374-d4.jpg",
+    "association-84-374-d5.jpg",
+    "association-84-374-d6.jpg",
+    "association-84-374-d7.jpg",
+    "association-84-374-d8.jpg",
+    "association-84-374-d9.jpg",
+    "association-84-374-d10.jpg",
+    "association-84-374-d11.jpg",
+    "association-84-374-d12.jpg",
+    "association-84-374-d13.jpg",
+    "association-84-374-d14.jpg",
+    "association-84-374-d15.jpg",
+    "association-84-374-d16.jpg",
+    "association-84-374-d17.jpg",
+    "association-84-374-d18.jpg",
+    "association-84-374-d19.jpg",
+    "association-84-374-d20.jpg",
+    "association-84-374-d21.jpg",
+    "association-84-686-d1.jpg",
+    "association-84-686-d2.jpg",
+    "association-84-686-d3.jpg",
+    "association-84-686-d4.jpg",
+    "association-84-686-d5.jpg",
+    "association-84-686-d6.jpg",
+    "association-84-686-d7.jpg",
+    "association-84-686-d8.jpg",
+    "association-84-686-d9.jpg",
+    "association-84-686-d10.jpg",
+    "association-84-686-d11.jpg",
+    "association-84-686-d12.jpg",
+    "association-84-686-d13.jpg",
+    "association-84-686-d14.jpg",
+    "association-84-686-d15.jpg",
+    "association-84-686-d16.jpg",
+    "association-84-686-d17.jpg",
+    "association-84-686-d18.jpg",
+    "association-84-686-d19.jpg",
+    "association-84-686-d20.jpg",
+    "association-84-686-d21.jpg",
+    "association-84-686-d22.jpg"
+  ],
+  "completed_segments": [
+    78,
+    84
+  ],
+  "pending_segments": [],
+  "previous_draft": {
+    "path": ".cache/palette-control-night-draft-20261009-v1.json",
+    "sha256": "edff7aa63e8793a69856fb5ca154fc17a8ef4425ba9b91d880952cedd11972f7"
+  }
+}
