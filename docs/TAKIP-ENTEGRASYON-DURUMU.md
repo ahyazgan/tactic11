@@ -1,5 +1,11 @@
 # Takip entegrasyonlarının durumu
 
+**9 Ekim güncellemesi:** GitHub'daki son Claude değişiklikleri Codex dalına
+alındı; yerel gerçek API erişimi ve giriş akışı onarıldı. Palet adayı kontrolü
+tamamlanmadı: gündüz edinimi geçerli, gece edinimi bellek yetersizliğiyle
+yarım. Ayrıntı ve devam noktası: [Codex devam durumu](CODEX-DEVAM-DURUMU-2026-10-09.md).
+Üretim takip varsayılanı değişmedi.
+
 19 Eylül 2026. Sistem gerçek görüntü üzerinde çalıştırıldı, kaynak kutularından
 video çıktısına ve bellek veritabanı aktarımına kadar doğrulandı. **Çalışması,
 oyuncu kimliği ve maç olaylarının yeterince doğru olduğu anlamına gelmiyor.**
