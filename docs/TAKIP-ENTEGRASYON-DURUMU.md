@@ -2,8 +2,10 @@
 
 **9 Ekim güncellemesi:** GitHub'daki son Claude değişiklikleri Codex dalına
 alındı; yerel gerçek API erişimi ve giriş akışı onarıldı. Palet adayı kontrolü
-tamamlanmadı: gündüz edinimi geçerli, gece edinimi bellek yetersizliğiyle
-yarım. Ayrıntı ve devam noktası: [Codex devam durumu](CODEX-DEVAM-DURUMU-2026-10-09.md).
+tamamlanmadı: gündüz/gece dört kesitin ham edinimi bütünlük kapısından geçti.
+273 başlangıç kutusunun 103'ü kaynak görüntüden incelendi; kalan 170 kutu,
+etiket mührü ve üç kol karşılaştırması açık. Ayrıntı ve devam noktası:
+[Codex devam durumu](CODEX-DEVAM-DURUMU-2026-10-09.md).
 Üretim takip varsayılanı değişmedi.
 
 19 Eylül 2026. Sistem gerçek görüntü üzerinde çalıştırıldı, kaynak kutularından

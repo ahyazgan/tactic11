@@ -1,0 +1,555 @@
+{
+  "created_utc": "2026-10-09T14:18:27.659362+00:00",
+  "baseline_commit": "dd49e6c29ad5a76e623730f067947ac246d8a6e8",
+  "freeze": {
+    "path": "docs/measurements/identity-palette-frozen-decision.json",
+    "bytes": 40266,
+    "sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea"
+  },
+  "status": "all_four_clips_acquired_partial_blind_labels_no_seal_no_replay",
+  "acquisition_gates": {
+    "day": {
+      "group": "day",
+      "complete": true,
+      "samples": {
+        "64": 375,
+        "66": 375
+      },
+      "freeze_sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea"
+    },
+    "night": {
+      "group": "night",
+      "complete": true,
+      "samples": {
+        "78": 375,
+        "84": 375
+      },
+      "freeze_sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea"
+    }
+  },
+  "raw_manifests": {
+    "day": {
+      "evidence": {
+        "path": "data/tracking/bench/consensus_palette_control_v1/day/raw/manifest.json",
+        "bytes": 762,
+        "sha256": "f4cda96ef9b0f2fc9c2b1cd275cd7a838733a61c4064a9bf309be0ae1780bb9f"
+      },
+      "content": {
+        "freeze_sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea",
+        "video_sha256": {
+          "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4": "0c98e12ded003e8cd7a37680dd0bebf0d404a6f3dd81c6d0e8ac8c3292bf2c9c",
+          "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4": "d112b1d93220971374c39563176d0335e9da431a38f98bf8eaf69b481a0e5765"
+        },
+        "output_sha256": {
+          "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0064.json": "9116348cf71a1a790b9dff77d79153f10808a02ed3810b96cc08ca81fb79d73d",
+          "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0066.json": "9ea28f4ec1de868dde62780568a2c0c2ecc97b65d64adc1c6a061dcc032c6e6f"
+        }
+      }
+    },
+    "night": {
+      "evidence": {
+        "path": "data/tracking/bench/consensus_palette_control_v1/night/raw/manifest.json",
+        "bytes": 770,
+        "sha256": "506d4238b60ca794e5ce0f076d822585500796a3957254509f320171bb1f8238"
+      },
+      "content": {
+        "freeze_sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea",
+        "video_sha256": {
+          "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0078.mp4": "f14c828e07423d2510bac85586a8a7b029962b00e88b51b67224a274d74884fb",
+          "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0084.mp4": "f77272be2bda3224224753e2d20d47628ac48fbf6d7c5a8b04a848e180710cde"
+        },
+        "output_sha256": {
+          "data\\tracking\\bench\\consensus_palette_control_v1\\night\\raw\\seg_0078.json": "4426dc8344b11f20daf2820716293a6586e58debb052570e24058185a09a7efe",
+          "data\\tracking\\bench\\consensus_palette_control_v1\\night\\raw\\seg_0084.json": "4b65d1670284750017aca0208c3ba8c5e684dfa65e170bf5f025cbc07b203d27"
+        }
+      }
+    }
+  },
+  "night_capture": {
+    "entrypoint": "scripts.soccertrack_v2.consensus_palette_control.main capture --group night",
+    "runtime_adjustments": {
+      "grad_enabled": false,
+      "OPENCV_FFMPEG_THREADS": "1"
+    },
+    "frozen_candidate_model_threshold_calibration_source_intervals_changed": false,
+    "exit_code": 0,
+    "wrapper": {
+      "path": ".cache/capture_night_memory_20261009.py",
+      "bytes": 2278,
+      "sha256": "3408fe098f34b8cfee09f410af4cfc7e6ce0e089c585823f2f836e405342e3c0"
+    },
+    "log": {
+      "path": ".cache/palette-control-night-capture-20261009-monitored.log",
+      "bytes": 8685,
+      "sha256": "b943c56f49af0aa758999bf254f014d6f7bb3e8e09268c9b7adaf1feda111b73"
+    },
+    "telemetry": {
+      "path": ".cache/palette-night-memory-20261009-v1.jsonl",
+      "bytes": 8326,
+      "sha256": "a79956f490a01594d895b0efe22b506250480d499c4a91d406998c66a42981bb"
+    },
+    "elapsed_seconds": 221.453,
+    "elapsed_scope": "imports, verification, model preparation and both 30-second clips; not steady-state FPS",
+    "sample_interval_seconds": 10,
+    "sampled_peak_private_bytes": 5620690944,
+    "peak_pagefile_bytes": 5626064896,
+    "minimum_commit_available_bytes": 5806329856,
+    "memory_samples": [
+      {
+        "event": "start",
+        "utc": "2026-10-09T13:56:01.764593+00:00",
+        "elapsed_s": 0.0,
+        "pid": 48760,
+        "rss_bytes": 20111360,
+        "private_bytes": 10907648,
+        "peak_pagefile_bytes": 10907648,
+        "physical_available_bytes": 3921371136,
+        "commit_available_bytes": 11452264448,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 886796288,
+        "threads": 4
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:56:11.780206+00:00",
+        "elapsed_s": 10.016,
+        "pid": 48760,
+        "rss_bytes": 513122304,
+        "private_bytes": 1582538752,
+        "peak_pagefile_bytes": 1582538752,
+        "physical_available_bytes": 3586854912,
+        "commit_available_bytes": 9905446912,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 886874112,
+        "threads": 27
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:56:21.798369+00:00",
+        "elapsed_s": 20.031,
+        "pid": 48760,
+        "rss_bytes": 695341056,
+        "private_bytes": 2388955136,
+        "peak_pagefile_bytes": 2388955136,
+        "physical_available_bytes": 3565236224,
+        "commit_available_bytes": 9099894784,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 886882304,
+        "threads": 47
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:56:31.811793+00:00",
+        "elapsed_s": 30.047,
+        "pid": 48760,
+        "rss_bytes": 2804301824,
+        "private_bytes": 5560651776,
+        "peak_pagefile_bytes": 5579886592,
+        "physical_available_bytes": 2568327168,
+        "commit_available_bytes": 5964115968,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 884404224,
+        "threads": 121
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:56:41.829483+00:00",
+        "elapsed_s": 40.062,
+        "pid": 48760,
+        "rss_bytes": 2859708416,
+        "private_bytes": 5593038848,
+        "peak_pagefile_bytes": 5622259712,
+        "physical_available_bytes": 2519105536,
+        "commit_available_bytes": 5979922432,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 884203520,
+        "threads": 121
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:56:51.838526+00:00",
+        "elapsed_s": 50.078,
+        "pid": 48760,
+        "rss_bytes": 2863423488,
+        "private_bytes": 5596758016,
+        "peak_pagefile_bytes": 5625462784,
+        "physical_available_bytes": 2542141440,
+        "commit_available_bytes": 6005026816,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 884203520,
+        "threads": 121
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:57:01.850964+00:00",
+        "elapsed_s": 60.078,
+        "pid": 48760,
+        "rss_bytes": 2867863552,
+        "private_bytes": 5620690944,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2489696256,
+        "commit_available_bytes": 5930418176,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 883900416,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:57:11.872702+00:00",
+        "elapsed_s": 70.109,
+        "pid": 48760,
+        "rss_bytes": 2852823040,
+        "private_bytes": 5586022400,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2371964928,
+        "commit_available_bytes": 5869674496,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 880168960,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:57:21.886719+00:00",
+        "elapsed_s": 80.125,
+        "pid": 48760,
+        "rss_bytes": 2862043136,
+        "private_bytes": 5595660288,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2383462400,
+        "commit_available_bytes": 5859164160,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 877146112,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:57:31.904744+00:00",
+        "elapsed_s": 90.141,
+        "pid": 48760,
+        "rss_bytes": 2821521408,
+        "private_bytes": 5539344384,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2409099264,
+        "commit_available_bytes": 5864030208,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 877146112,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:57:41.916723+00:00",
+        "elapsed_s": 100.156,
+        "pid": 48760,
+        "rss_bytes": 2814668800,
+        "private_bytes": 5545910272,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2394599424,
+        "commit_available_bytes": 5890576384,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 870817792,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:57:51.937926+00:00",
+        "elapsed_s": 110.172,
+        "pid": 48760,
+        "rss_bytes": 2823704576,
+        "private_bytes": 5541523456,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2398969856,
+        "commit_available_bytes": 5908295680,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 870817792,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:58:01.956577+00:00",
+        "elapsed_s": 120.187,
+        "pid": 48760,
+        "rss_bytes": 2786603008,
+        "private_bytes": 5505908736,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2553196544,
+        "commit_available_bytes": 6021648384,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 867659776,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:58:11.977872+00:00",
+        "elapsed_s": 130.219,
+        "pid": 48760,
+        "rss_bytes": 2842996736,
+        "private_bytes": 5577936896,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2357264384,
+        "commit_available_bytes": 5863084032,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 876122112,
+        "threads": 117
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:58:21.999602+00:00",
+        "elapsed_s": 140.234,
+        "pid": 48760,
+        "rss_bytes": 2815475712,
+        "private_bytes": 5534212096,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2401751040,
+        "commit_available_bytes": 5902073856,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 870965248,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:58:32.014514+00:00",
+        "elapsed_s": 150.25,
+        "pid": 48760,
+        "rss_bytes": 2829828096,
+        "private_bytes": 5548892160,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2821398528,
+        "commit_available_bytes": 5822398464,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 869761024,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:58:42.030740+00:00",
+        "elapsed_s": 160.266,
+        "pid": 48760,
+        "rss_bytes": 2834169856,
+        "private_bytes": 5552934912,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2840330240,
+        "commit_available_bytes": 5881405440,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 869826560,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:58:52.048804+00:00",
+        "elapsed_s": 170.281,
+        "pid": 48760,
+        "rss_bytes": 2834436096,
+        "private_bytes": 5553098752,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2814558208,
+        "commit_available_bytes": 5889810432,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 865284096,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:59:02.065387+00:00",
+        "elapsed_s": 180.297,
+        "pid": 48760,
+        "rss_bytes": 2834534400,
+        "private_bytes": 5553098752,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2766757888,
+        "commit_available_bytes": 5806329856,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 865464320,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:59:12.082133+00:00",
+        "elapsed_s": 190.312,
+        "pid": 48760,
+        "rss_bytes": 2830422016,
+        "private_bytes": 5549797376,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2807087104,
+        "commit_available_bytes": 5884272640,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 865464320,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:59:22.100209+00:00",
+        "elapsed_s": 200.328,
+        "pid": 48760,
+        "rss_bytes": 2834534400,
+        "private_bytes": 5553098752,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2792452096,
+        "commit_available_bytes": 5857509376,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 867209216,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:59:32.121792+00:00",
+        "elapsed_s": 210.359,
+        "pid": 48760,
+        "rss_bytes": 2835275776,
+        "private_bytes": 5553102848,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 2871111680,
+        "commit_available_bytes": 5947228160,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 866693120,
+        "threads": 118
+      },
+      {
+        "event": "sample",
+        "utc": "2026-10-09T13:59:42.132531+00:00",
+        "elapsed_s": 220.359,
+        "pid": 48760,
+        "rss_bytes": 2325426176,
+        "private_bytes": 5038678016,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 3573391360,
+        "commit_available_bytes": 6539341824,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 862527488,
+        "threads": 83
+      },
+      {
+        "event": "complete",
+        "utc": "2026-10-09T13:59:43.223030+00:00",
+        "elapsed_s": 221.453,
+        "pid": 48760,
+        "rss_bytes": 2325422080,
+        "private_bytes": 5038661632,
+        "peak_pagefile_bytes": 5626064896,
+        "physical_available_bytes": 3592302592,
+        "commit_available_bytes": 6534250496,
+        "commit_limit_bytes": 67989131264,
+        "disk_free_bytes": 862523392,
+        "threads": 82
+      }
+    ],
+    "interpretation": "This successful run does not establish the exact root cause of prior allocation failures. Host memory and disk remain constrained. Prior failed capture artifacts are preserved."
+  },
+  "runtime_raw_detection_parity": {
+    "evidence": {
+      "path": ".cache/no-grad-full-day64-parity-20261009.json",
+      "bytes": 1268,
+      "sha256": "7e331fd400cc74a85046fe75a2387a569e506cc4ddfa702d249edacf29e65c6b"
+    },
+    "log": {
+      "path": ".cache/no-grad-full-day64-parity-20261009.log",
+      "bytes": 9366,
+      "sha256": "04253be5f165916a46ba8c8c21973eeb234835badff84e7a05c00b8a26cc554f"
+    },
+    "result": {
+      "created_utc": "2026-10-09T14:11:22.441376+00:00",
+      "freeze_sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea",
+      "runtime_adjustments": {
+        "grad_enabled": false,
+        "OPENCV_FFMPEG_THREADS": "1"
+      },
+      "script_sha256": "c2ef53165610c5a16230153d7e9750d0bc74dcbf215524a1e8d02c0e45defa83",
+      "raw_path": "data/tracking/bench/consensus_palette_control_v1/day/raw/seg_0064.json",
+      "raw_sha256": "9116348cf71a1a790b9dff77d79153f10808a02ed3810b96cc08ca81fb79d73d",
+      "video_path": "data/tracking/bench/consensus_palette_control_v1/day/source/seg_0064.mp4",
+      "video_sha256": "0c98e12ded003e8cd7a37680dd0bebf0d404a6f3dd81c6d0e8ac8c3292bf2c9c",
+      "source_unchanged": true,
+      "sample_count": 375,
+      "raw_person_observations": 17434,
+      "timing_equal": true,
+      "mismatch_sample_count": 0,
+      "baseline_raw_detection_sha256": "c1c37d9ba72ffb5f7b264bf9659b03233218a8a9c3f6a7b398f9932d29180f59",
+      "observed_raw_detection_sha256": "c1c37d9ba72ffb5f7b264bf9659b03233218a8a9c3f6a7b398f9932d29180f59",
+      "elapsed_seconds": 180.375,
+      "limitations": "Raw person boxes/confidences/RGB colors and sample timing only; no team/tracker predictions opened or scored. One previously captured day control clip, not full-match accuracy."
+    }
+  },
+  "blind_review": {
+    "manifests": {
+      "day/review64": {
+        "path": "data/tracking/bench/consensus_palette_control_v1/day/review64/manifest.json",
+        "bytes": 14170,
+        "sha256": "f8427714aefcafbc8d12d707630c6e7e97bdb7d433303b9192309bade4c5a7e1",
+        "start_boxes": 103,
+        "source_assets": 118
+      },
+      "day/review66": {
+        "path": "data/tracking/bench/consensus_palette_control_v1/day/review66/manifest.json",
+        "bytes": 13107,
+        "sha256": "3d5e9de76ecd9dd7c0d2aaf871e720ac0933b9febdf2fb7eda336e58985a0172",
+        "start_boxes": 95,
+        "source_assets": 108
+      },
+      "night/review": {
+        "path": "data/tracking/bench/consensus_palette_control_v1/night/review/manifest.json",
+        "bytes": 12410,
+        "sha256": "03baa1a3ab6b571df080dd9047afe2ae84f0a77b619bc0a827869a23fd68a1ee",
+        "start_boxes": 75,
+        "source_assets": 91
+      }
+    },
+    "total_start_boxes": 273,
+    "reviewed_start_boxes": 103,
+    "reviewed_endpoint_boxes": 103,
+    "remaining_start_boxes": 170,
+    "source_draft": {
+      "path": "docs/measurements/identity-palette-control-day64-source-review.json",
+      "bytes": 46498,
+      "sha256": "9a1ef0fd6c0f66a137be84518bdfd20a26340d69ea88be751493198081b4de7d"
+    },
+    "start_status_counts": {
+      "same_labeled": 53,
+      "uncertain": 13,
+      "visible_person_without_source_box": 6,
+      "not_person": 31
+    },
+    "kit_counts": {
+      "white": 24,
+      "blue": 19,
+      "other": 20,
+      "uncertain": 9,
+      "not_person": 31
+    },
+    "endpoint_status_counts": {
+      "person": 69,
+      "not_person": 29,
+      "uncertain": 5
+    },
+    "serialized_files": [
+      {
+        "path": "data/tracking/bench/consensus_palette_control_v1/day/source-labels64-v1/labels.json",
+        "bytes": 102611,
+        "sha256": "f48161cf24b8bcb23cf457b4b6d80694bfd240f55ae7d68239f96a54278f5e10"
+      },
+      {
+        "path": "data/tracking/bench/consensus_palette_control_v1/day/source-labels64-v1/pairs.json",
+        "bytes": 137052,
+        "sha256": "33c23300e13aa02b5a202d4abcafb4d475d1333791d2f1bf5371967b358e4eba"
+      }
+    ],
+    "pair_counts": {
+      "same": 53,
+      "different": 53
+    },
+    "writer": {
+      "path": ".cache/palette_control_label_writer_v1.py",
+      "bytes": 5148,
+      "sha256": "f2d7c5e229faf03fde07a3801bf500b9bc06f8bb740c58c6c7d15755b7e7b2f5"
+    },
+    "reviewer": "Codex single AI source-image reviewer",
+    "independently_adjudicated": false,
+    "predictions_visible_during_labeling": false,
+    "groups_sealed": [],
+    "three_arm_replay_performed": false
+  },
+  "limitations": [
+    "Source annotations are not tracker scores. Mixed or unclear observations are explicitly withheld.",
+    "Same-match sparse temporal controls, not independent matches or full-video HOTA/IDF1.",
+    "Raw parity covers one complete 375-sample day clip and does not establish identity accuracy or universal parity.",
+    "No production promotion or change to the ByteTrack default; roster identity, event accuracy and live performance remain open."
+  ]
+}

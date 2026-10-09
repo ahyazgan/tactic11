@@ -1,8 +1,9 @@
 # Manager: Codex ile devam, 9 Ekim 2026
 
-GitHub ana dalı kontrol edildi: son birleşme `3afc324` / PR #276,
-19 Eylül 2026. PR #274–276 yerel `codex-work` dalına fast-forward ile alındı.
-Açık PR yoktu. Kullanıcının tercihiyle geliştirme Codex üzerinden sürüyor;
+GitHub ana dalı yeniden kontrol edildi: `dd49e6c` / PR #278, 9 Ekim 2026;
+yerel `codex-work` aynı commit'te ve ana dal CI başarılıydı. PR #274–276 ile
+birleşen Claude çalışmaları başlangıçta fast-forward ile alınmıştı.
+Kullanıcının tercihiyle geliştirme Codex üzerinden sürüyor;
 eski Claude çalışma alanı korunuyor.
 
 ## Yerel uygulama
@@ -36,7 +37,10 @@ Doğrulamalar:
 - Veritabanı salt okunur `quick_check`: `ok`. Veri sıfırlama/seed yapılmadı.
 - Başlatıcı başka projenin 3000 portunu reddetti; süreç kapatmadı.
 
-## Yarım kalan kimlik kontrolü
+## Kimlik kontrolünün ilk edinim denemeleri
+
+Bu bölüm önceki başarısız koşuları korur. Daha sonraki ölçümlü koşuda gece
+edinimi tamamlandı; güncel devam noktası aşağıdaki bölümde bulunur.
 
 19 Eylül'de sabitlenmiş palet adayının kod/model/girdi/sürüm kontrolü geçti.
 Model, karar eşikleri, kalibrasyon ve seçilmiş dört kesit değiştirilmedi.
@@ -74,9 +78,9 @@ bu kapıdan geçti. Gece verisi eksik kaldığı için değerlendirmeye alınama
 .\venv\Scripts\python.exe -m scripts.soccertrack_v2.validate_palette_acquisition --group night
 ```
 
-Sonraki adım: gece edinimi için yeterli sistem belleği/disk alanıyla sabit
-kontrolü tamamlamak; bütün kör etiketleri mühürlemek; üç takip kolunu
-karşılaştırmak. Kaynak incelemesi tamamlanmadan aday puanlanmayacak.
+İlk denemelerden sonraki iş gece edinimini tamamlamaktı. Bu adım aşağıdaki
+ölçümlü koşuda geçti. Bütün kör etiketleri mühürlemek ve üç takip kolunu
+karşılaştırmak hâlâ açık; kaynak incelemesi tamamlanmadan aday puanlanmayacak.
 Gerçek kişi/kadro eşlemesi, top/pas doğruluğu ve tam maç gerçek zaman hedefleri
 açık kalıyor.
 
@@ -120,3 +124,52 @@ ikisi de HTTP 200. Beş kalibrasyonun tüm yanıt alanları eski API ile birebir
 aynı. Bunlar tek yerel ölçümlerdir; genel kapasite veya takip doğruluğu
 iddiası değildir. 12 video/kalibrasyon API testi, Ruff ve mypy geçti.
 Kaynak hashleri ve ölçüm: [kalibrasyon kaydı](measurements/calibration-api-cache-20261009.json).
+
+PR #278 normal merge ile `dd49e6c` olarak birleşti; son PR başının ve ana dalın
+CI/Vercel kontrolleri başarılı. CI'da 3.010 test geçti, 60 koşullu test atlandı.
+
+## Gece edinimi tamamlandı; kör etiketleme sürüyor
+
+9 Ekim 13:56–13:59 UTC koşusu aynı dondurulmuş edinim betiğini,
+`torch.set_grad_enabled(False)` ve `OPENCV_FFMPEG_THREADS=1` ile çalıştırdı.
+Aday kodu, model, eşik, kalibrasyon veya kontrol aralıkları değiştirilmedi.
+Başlangıçta kullanılabilir fiziksel bellek 3,65 GiB, kullanılabilir sistem
+commit belleği 10,67 GiB idi. İşlem belleği on saniyede bir ölçüldü.
+
+Gece 78 ve 84'ün her biri **375 örnekle** tamamlandı. Toplam koşu, doğrulama
+ve model hazırlığı dahil **221,453 saniye** sürdü. On saniyelik ölçümlerde
+en yüksek private bellek 5,235 GiB, en düşük kullanılabilir sistem commit
+belleği 5,408 GiB oldu. Bu koşu sürekli büyüyen bir birikim göstermedi;
+önceki bellek hatasının kesin kök nedeni tek başarılı koşudan çıkarılamaz.
+Diskte yaklaşık 0,8 GiB boş alan kalması genel kaynak kısıtının sürdüğünü gösterir.
+
+Gündüz ve gece salt okunur edinim kapısından geçti: **dört kesit, 1.500 örnek**.
+Kaynak/model/kod hashleri aynı, başarısız eski edinim kanıtları korunuyor.
+Gece için 91 kör inceleme görseli üretildi; iki kesitte toplam 75 başlangıç
+kutusu var. Gündüzde 198 başlangıç kutusu bulunuyor.
+
+Bellek için kullanılan yürütme biçimi, gündüz 64'ün önceki ham kaydıyla
+kesitin tamamında karşılaştırıldı: **375 örnek ve 17.434 kişi gözleminde**
+kutu, güven, RGB renk ve örnek zamanı birebir aynı; farklı örnek sayısı sıfır.
+Kaynak ve ham kayıt hashleri değişmedi. Bu sonuç bir kesitte ham veri eşitliğini
+gösterir; takip kimliği doğruluğu veya tam maç gerçek zaman kanıtı değildir.
+
+Gündüz 64'ün her iki sabit karesi kaynak görüntülerden incelendi:
+103 başlangıç ve 103 bitiş kutusu. 53 açık aynı-kişi bağı, 13 belirsiz ilişki,
+6 görünür fakat ayrı bitiş kutusu olmayan kişi gözlemi ve 31 kişi olmayan
+başlangıç kutusu kaydedildi. En yakın açık farklı kişi kuralıyla 53 negatif
+bağ da yazıldı. Bunlar **kaynak etiketleri**, takip başarısı puanı değildir.
+Kısmi bacak/gövde kutuları, örtüşen kişiler ve mükerrer kutular ayrı gerekçelerle
+ele alındı. İnceleyici tek AI'dır; insan hakem doğrulaması yapılmadı.
+
+Gündüz 66'nın 95 ve gecenin 75 başlangıcı, toplam **170 kutu** hâlâ açık.
+Hiçbir grup etiketi mühürlenmedi; üç kolun tahmin tekrarı/puanlaması açılmadı.
+Üretim varsayılanı ByteTrack olarak kalıyor. Kimlik, olay doğruluğu ve canlı
+performans hedefleri tamamlanmış sayılmıyor.
+
+Edinim bütünlüğü, kör seçim, dondurma korumaları ve palet adayı için mevcut
+40 test geçti. İlk koşuda Windows sandbox geçici dizini oluşturulamadığından
+sekiz test kurulamadı; çalışma alanındaki yeni, ayrı geçici dizinle tamamı geçti.
+
+Kanıt: [edinim ve bellek ölçümü](measurements/identity-palette-acquisition-20261009.json),
+[103 kutunun kaynak incelemesi](measurements/identity-palette-control-day64-source-review.json).

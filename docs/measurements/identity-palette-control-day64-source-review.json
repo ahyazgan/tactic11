@@ -1,0 +1,1257 @@
+{
+  "status": "segment_source_review_complete_group_not_sealed",
+  "predictions_visible": false,
+  "starts": {
+    "64-374-d0": {
+      "kit": "white",
+      "box_scope": "partial_person",
+      "status": "same_labeled",
+      "right": "64-404-d23",
+      "reason": "The light-shirted player stays to the right of the blue player near the arc throughout the fixed source strip. Start d0 is his upper-body duplicate of d28; end d23 is the full box, with upper-body duplicate d1."
+    },
+    "64-374-d1": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "right": "64-404-d2",
+      "reason": "Blue field player directly in front of the sideline group moves slightly left and down without crossing another field player in the fixed source strip."
+    },
+    "64-374-d2": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "right": "64-404-d6",
+      "reason": "Dark-clothed sideline person immediately behind/right of the blue field player remains at the same railing position throughout the fixed strip."
+    },
+    "64-374-d3": {
+      "kit": "uncertain",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "A sideline person is visible, but the small shaded upper garment does not permit a reliable blue/white/other kit judgment; no scored association is forced."
+    },
+    "64-374-d4": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "visible_person_without_source_box",
+      "reason": "The light-clothed sideline person walks left behind the adjacent blue person. At the endpoint he is partly occluded among the railing-side people and lacks a clearly separate source box."
+    },
+    "64-374-d5": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "right": "64-404-d4",
+      "reason": "The blue sideline person stays near the same railing post while the adjacent light-clothed person walks behind him to the left."
+    },
+    "64-374-d6": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-top sideline person holds the same railing position through the fixed strip; the person walking left is separate.",
+      "right": "64-404-d3"
+    },
+    "64-374-d7": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "visible_person_without_source_box",
+      "reason": "Dark-clothed person remains in the sideline gap between the two groups, visible at the endpoint without a separate source box."
+    },
+    "64-374-d8": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "visible_person_without_source_box",
+      "reason": "Dark-clothed person remains by the left railing group while another dark person walks past; the endpoint person has no separate source box."
+    },
+    "64-374-d9": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "visible_person_without_source_box",
+      "reason": "Right-hand dark-clothed person of the leftmost sideline pair remains visible throughout; neither that person nor the neighbor has a separate box at the endpoint."
+    },
+    "64-374-d10": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "visible_person_without_source_box",
+      "reason": "Dark-clothed person walks left past the stationary railing person and remains visible among the unboxed sideline group at the endpoint."
+    },
+    "64-374-d11": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-top person with light shorts stays at the same railing post immediately left of the blue sideline person.",
+      "right": "64-404-d7"
+    },
+    "64-374-d12": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue field player stays behind the white field player while the dark-clothed person separates left; endpoint d10 is the full box and d30 its lower-body duplicate.",
+      "right": "64-404-d10"
+    },
+    "64-374-d13": {
+      "kit": "uncertain",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Standing sideline person is visible, but shade and the small upper garment do not support a reliable blue/white/other judgment."
+    },
+    "64-374-d14": {
+      "kit": "uncertain",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Seated sideline person is visible, but the tiny shaded garment and railing overlap prevent a reliable kit judgment."
+    },
+    "64-374-d15": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player in front of the blue player near halfway walks right/down and becomes clearly separate; continuous source motion leads to endpoint d13.",
+      "right": "64-404-d13"
+    },
+    "64-374-d16": {
+      "kit": "uncertain",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "The source box covers the blue player and a substantial portion of the overlapping white player. A single kit or scored identity is not forced."
+    },
+    "64-374-d17": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player nearest the halfway line jogs right/down across it, distinct from the more distant white/blue pair throughout.",
+      "right": "64-404-d14"
+    },
+    "64-374-d18": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-clothed seated person at the right of the bleachers keeps the same seat and posture throughout the fixed strip.",
+      "right": "64-404-d15"
+    },
+    "64-374-d19": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-clothed seated person at the left bleacher group remains in the same seat throughout.",
+      "right": "64-404-d16"
+    },
+    "64-374-d20": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "The isolated red-clothed person remains in the right penalty area throughout; no other person crosses this source trajectory.",
+      "right": "64-404-d17"
+    },
+    "64-374-d21": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player to the left of the white player in the left penalty area moves right/down with a visible gap; remains the left-hand player at the endpoint.",
+      "right": "64-404-d19"
+    },
+    "64-374-d22": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "The back white player near the yellow person moves down/right behind the other white player without swapping positions; endpoint d21 is the back person, distinct from d18.",
+      "right": "64-404-d21"
+    },
+    "64-374-d23": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "The front white player near the penalty-area line moves down/right while remaining in front of the other white player; endpoint d18 is distinct from the back person d21.",
+      "right": "64-404-d18"
+    },
+    "64-374-d24": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "visible_person_without_source_box",
+      "reason": "Yellow-clothed person remains clearly visible by the goal at frame 404, but the endpoint has no source person box."
+    },
+    "64-374-d25": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "The more distant blue player left of the arc moves slightly right/down without approaching another player; endpoint d0 is the same person.",
+      "right": "64-404-d0"
+    },
+    "64-374-d26": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player nearest the arc remains to the left of the white player and moves down without a crossing.",
+      "right": "64-404-d24"
+    },
+    "64-374-d27": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player in the left penalty area stays to the right of the blue player throughout the fixed strip and moves down/right.",
+      "right": "64-404-d25"
+    },
+    "64-374-d28": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Full box of the white player right of the arc remains separate from the blue neighbor; start d0 is the upper duplicate and endpoint d23 the full box.",
+      "right": "64-404-d23"
+    },
+    "64-374-d29": {
+      "kit": "uncertain",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "The start box includes the white player and the dark-clothed person directly behind him, whose head and body overlap before separating left; no single-person scored label is forced."
+    },
+    "64-374-d30": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player below the center circle runs left/down ahead of the adjacent white player; continuous fixed context leads to endpoint d31.",
+      "right": "64-404-d31"
+    },
+    "64-374-d31": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White runner follows the blue runner left/down through the strip. Only the blue head touches the lower edge of the start box; the white body is distinct. Endpoint d28 is the white upper-body box.",
+      "right": "64-404-d28"
+    },
+    "64-374-d32": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player below the center circle follows the blue player left/down, separate from the faster white/blue pair below them.",
+      "right": "64-404-d32"
+    },
+    "64-374-d34": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player near the scoreboard moves right along the penalty-area edge without a crossing; endpoint d20 follows the same continuous motion.",
+      "right": "64-404-d20"
+    },
+    "64-374-d35": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player with a visible light back number moves right/down, apart from the scoreboard-side blue player; endpoint d34 is the full box and d22 its upper duplicate.",
+      "right": "64-404-d34"
+    },
+    "64-374-d38": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player with visible back number 6 turns and runs right in isolation through the fixed strip; endpoint d26 is his upper-body box.",
+      "right": "64-404-d26"
+    },
+    "64-374-d33": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Canopy roof corner; no person is present in the source box."
+    },
+    "64-374-d36": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Blue bottle-shaped object lying beside the pitch line, not a person."
+    },
+    "64-374-d37": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "White painted marking on the ground, not a person."
+    },
+    "64-374-d39": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "White painted marking on the ground, not a person."
+    },
+    "64-374-d40": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Small pale object on the paved sideline, not a person."
+    },
+    "64-374-d41": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Small blue and white object on the grass, not a person."
+    },
+    "64-374-d42": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Round football on the ground, not a person."
+    },
+    "64-374-d43": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Small pale bottle-shaped object at the pitch edge, not a person."
+    },
+    "64-374-d44": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Red bottle-shaped object on the paved sideline, not a person."
+    },
+    "64-374-d45": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Round pale ball on the grass, not a person."
+    },
+    "64-374-d46": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Footwear on the paved sideline, not a person."
+    },
+    "64-374-d47": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Loose clothing on the paved sideline, not a person."
+    },
+    "64-374-d48": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Hanging blue fabric with no human body, not a person."
+    },
+    "64-686-d0": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-clothed person by the far corner flag stays at the same isolated location.",
+      "right": "64-716-d0"
+    },
+    "64-686-d1": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Isolated blue player near the far left touchline moves left without crossing another player.",
+      "right": "64-716-d1"
+    },
+    "64-686-d2": {
+      "kit": "uncertain",
+      "box_scope": "mixed_people",
+      "status": "uncertain",
+      "reason": "The source box contains overlapping blue and white players who later separate. It has no unique kit or single-person interpretation."
+    },
+    "64-686-d3": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Blue sideline person remains visible, but at the endpoint a dark-clothed person overlaps him inside source box d3; no unique endpoint is forced."
+    },
+    "64-686-d4": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-clothed person between the railing groups remains by the same post, separate from the people to the left.",
+      "right": "64-716-d4"
+    },
+    "64-686-d5": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-top light-shorts person at the railing remains to the left of the blue sideline person.",
+      "right": "64-716-d5"
+    },
+    "64-686-d6": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-clothed person in the right railing gap remains at the same location.",
+      "right": "64-716-d6"
+    },
+    "64-686-d7": {
+      "kit": "uncertain",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Small shaded sideline garment and bent posture do not allow a reliable blue/white/other kit judgment."
+    },
+    "64-686-d8": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Dark-clothed sideline person walks left across the blue person; both overlap inside endpoint d3, so a unique endpoint is not assigned."
+    },
+    "64-686-d9": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Light-top person walks slowly right beside the canopy and remains separate from the seated people.",
+      "right": "64-716-d9"
+    },
+    "64-686-d10": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue field player nearest the far touchline moves right, clearly separate from the central blue player.",
+      "right": "64-716-d8"
+    },
+    "64-686-d11": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player near the center-circle edge remains isolated above/right of the white player.",
+      "right": "64-716-d7"
+    },
+    "64-686-d12": {
+      "kit": "uncertain",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Person at the right railing group is small and partly hidden by the rail; clothing cannot be assigned reliably."
+    },
+    "64-686-d13": {
+      "kit": "uncertain",
+      "box_scope": "uncertain",
+      "status": "uncertain",
+      "reason": "The tiny box covers rail/bench and possible partly occluded body fragments. Neither person scope nor kit is reliable."
+    },
+    "64-686-d14": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "Blue player near halfway remains identifiable in motion, but the white player overlaps the endpoint boxes d13/d14. No unique single-person endpoint is forced."
+    },
+    "64-686-d15": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "uncertain",
+      "reason": "White player near halfway approaches the blue player; endpoint boxes d13/d14 include their overlapping bodies, so association is withheld."
+    },
+    "64-686-d16": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player on the halfway line stays separate below the overlapping pair; source d31 is his lower-body duplicate.",
+      "right": "64-716-d12"
+    },
+    "64-686-d17": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-clothed seated person at the bleachers remains at the same seat.",
+      "right": "64-716-d15"
+    },
+    "64-686-d18": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Dark-clothed sideline person at the left of the exercise group stays by the same bench position; endpoint d19.",
+      "right": "64-716-d19"
+    },
+    "64-686-d19": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Red-clothed person remains isolated in the right penalty area.",
+      "right": "64-716-d23"
+    },
+    "64-686-d20": {
+      "kit": "other",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Yellow-clothed person moves right in front of the left goal, without another person crossing.",
+      "right": "64-716-d24"
+    },
+    "64-686-d21": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player at the penalty-area line moves right, staying below/left of the yellow person.",
+      "right": "64-716-d25"
+    },
+    "64-686-d22": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player in front of the left goal moves right in isolation as the ball rolls behind.",
+      "right": "64-716-d26"
+    },
+    "64-686-d23": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player with visible back number 36 crosses behind the white 12 and emerges on his right; the entire crossing is visible in the fixed strip.",
+      "right": "64-716-d32"
+    },
+    "64-686-d24": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player nearest the arc turns and moves right, remaining apart from the crossing blue/white pair.",
+      "right": "64-716-d27"
+    },
+    "64-686-d25": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player with visible 12 remains in front while blue 36 passes behind to his right; endpoint d31 preserves the white trajectory.",
+      "right": "64-716-d31"
+    },
+    "64-686-d26": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White field player below the initially overlapping pair moves up/right toward them, remaining below the other white player at the endpoint.",
+      "right": "64-716-d30"
+    },
+    "64-686-d27": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player above the crossing pair remains apart and moves slightly right.",
+      "right": "64-716-d28"
+    },
+    "64-686-d28": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player with visible 8 stands by the center-circle edge, separate from the blue and dark-clothed people.",
+      "right": "64-716-d10"
+    },
+    "64-686-d29": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player with visible 6 below the center circle remains isolated throughout.",
+      "right": "64-716-d33"
+    },
+    "64-686-d30": {
+      "kit": "white",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "White player with visible 29 stays on the halfway line below the circle; endpoint d35 is the partial body box of this same person.",
+      "right": "64-716-d35"
+    },
+    "64-686-d31": {
+      "kit": "white",
+      "box_scope": "partial_person",
+      "status": "same_labeled",
+      "reason": "Lower legs belong to the white player in source d16, continuously attached in the fixed context; endpoint full box is d12.",
+      "right": "64-716-d12"
+    },
+    "64-686-d32": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player with visible 9 below the circle remains separate from both white players.",
+      "right": "64-716-d34"
+    },
+    "64-686-d39": {
+      "kit": "blue",
+      "box_scope": "single_person",
+      "status": "same_labeled",
+      "reason": "Blue player with visible 21 near the near touchline moves right and bends, with no nearby crossing.",
+      "right": "64-716-d41"
+    },
+    "64-686-d40": {
+      "kit": "white",
+      "box_scope": "partial_person",
+      "status": "same_labeled",
+      "reason": "Lower-leg fragment belongs to white 6 in source d29, continuously attached to his body in the strip.",
+      "right": "64-716-d33"
+    },
+    "64-686-d41": {
+      "kit": "white",
+      "box_scope": "partial_person",
+      "status": "same_labeled",
+      "reason": "Other lower-leg fragment of the same white 6 in source d29; endpoint d33 is the full body.",
+      "right": "64-716-d33"
+    },
+    "64-686-d33": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Blue equipment behind the goal net. No human body in this source box."
+    },
+    "64-686-d34": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Blue equipment behind the goal net. No human body in this source box."
+    },
+    "64-686-d35": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Duplicate detection of blue equipment behind the goal net. No human body in this source box."
+    },
+    "64-686-d36": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Blue bottle lying on grass. No human body in this source box."
+    },
+    "64-686-d37": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "White ground paint. No human body in this source box."
+    },
+    "64-686-d38": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Duplicate white ground paint. No human body in this source box."
+    },
+    "64-686-d42": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "White ground paint. No human body in this source box."
+    },
+    "64-686-d43": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Small stationary blue object on grass, isolated from every person in the temporal strip. No human body in this source box."
+    },
+    "64-686-d44": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Small pale object on pavement. No human body in this source box."
+    },
+    "64-686-d45": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Partial detection of footwear on pavement. No human body in this source box."
+    },
+    "64-686-d46": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Blue/white object on grass. No human body in this source box."
+    },
+    "64-686-d47": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Football on grass. No human body in this source box."
+    },
+    "64-686-d48": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Pale bottle-shaped object. No human body in this source box."
+    },
+    "64-686-d49": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Red bottle-shaped object. No human body in this source box."
+    },
+    "64-686-d50": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Pale ball. No human body in this source box."
+    },
+    "64-686-d51": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Footwear on pavement. No human body in this source box."
+    },
+    "64-686-d52": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Loose clothing on pavement. No human body in this source box."
+    },
+    "64-686-d53": {
+      "kit": "not_person",
+      "box_scope": "not_person",
+      "status": "not_person",
+      "reason": "Hanging blue fabric. No human body in this source box."
+    }
+  },
+  "ends": {
+    "64-404-d0": {
+      "status": "person",
+      "person": "64-404-person-d0",
+      "reason": "Isolated blue field player far left of the arc."
+    },
+    "64-404-d1": {
+      "status": "person",
+      "person": "64-404-person-d23",
+      "reason": "Upper-body duplicate of the white field player in full box d23."
+    },
+    "64-404-d2": {
+      "status": "person",
+      "person": "64-404-person-d2",
+      "reason": "Blue field player directly in front of the railing group."
+    },
+    "64-404-d3": {
+      "status": "person",
+      "person": "64-404-person-d3",
+      "reason": "Dark-top person in the left/central railing group."
+    },
+    "64-404-d4": {
+      "status": "person",
+      "person": "64-404-person-d4",
+      "reason": "Blue-clothed person at the railing, separate from the field player."
+    },
+    "64-404-d5": {
+      "status": "person",
+      "person": "64-404-person-d5",
+      "reason": "Standing person at the railing, to the right of the field-player group."
+    },
+    "64-404-d6": {
+      "status": "person",
+      "person": "64-404-person-d6",
+      "reason": "Dark-clothed person behind/right of the blue field player."
+    },
+    "64-404-d7": {
+      "status": "person",
+      "person": "64-404-person-d7",
+      "reason": "Dark-top light-shorts person at the railing left of d4."
+    },
+    "64-404-d8": {
+      "status": "person",
+      "person": "64-404-person-d8",
+      "reason": "Blue field player near halfway, to the left of the white player."
+    },
+    "64-404-d9": {
+      "status": "person",
+      "person": "64-404-person-d9",
+      "reason": "Standing person at the right-hand railing group."
+    },
+    "64-404-d10": {
+      "status": "person",
+      "person": "64-404-person-d10",
+      "reason": "Full blue field player box, with lower-body duplicate d30."
+    },
+    "64-404-d11": {
+      "status": "person",
+      "person": "64-404-person-d11",
+      "reason": "Seated person at the right-hand railing group."
+    },
+    "64-404-d12": {
+      "status": "person",
+      "person": "64-404-person-d12",
+      "reason": "Dark-clothed field person who separated left from the white player."
+    },
+    "64-404-d13": {
+      "status": "person",
+      "person": "64-404-person-d13",
+      "reason": "White field player near halfway behind the nearer white player."
+    },
+    "64-404-d14": {
+      "status": "person",
+      "person": "64-404-person-d14",
+      "reason": "White field player crossing halfway toward the foreground."
+    },
+    "64-404-d15": {
+      "status": "person",
+      "person": "64-404-person-d15",
+      "reason": "Dark-clothed seated person at the right bleacher group."
+    },
+    "64-404-d16": {
+      "status": "person",
+      "person": "64-404-person-d16",
+      "reason": "Dark-clothed seated person at the left bleacher group."
+    },
+    "64-404-d17": {
+      "status": "person",
+      "person": "64-404-person-d17",
+      "reason": "Isolated red-clothed field person."
+    },
+    "64-404-d18": {
+      "status": "person",
+      "person": "64-404-person-d18",
+      "reason": "Front white player near the left penalty-area line, distinct from rear d21."
+    },
+    "64-404-d19": {
+      "status": "person",
+      "person": "64-404-person-d19",
+      "reason": "Blue player on the left of the white player in the penalty area."
+    },
+    "64-404-d20": {
+      "status": "person",
+      "person": "64-404-person-d20",
+      "reason": "Blue field player who moved from near the scoreboard."
+    },
+    "64-404-d21": {
+      "status": "person",
+      "person": "64-404-person-d21",
+      "reason": "Rear white player partly behind d18; distinct continuous body/trajectory."
+    },
+    "64-404-d22": {
+      "status": "person",
+      "person": "64-404-person-d34",
+      "reason": "Upper-body duplicate of the blue player in full box d34."
+    },
+    "64-404-d23": {
+      "status": "person",
+      "person": "64-404-person-d23",
+      "reason": "Full white player box right of the arc, upper duplicate d1."
+    },
+    "64-404-d24": {
+      "status": "person",
+      "person": "64-404-person-d24",
+      "reason": "Blue player immediately left of the white player near the arc."
+    },
+    "64-404-d25": {
+      "status": "person",
+      "person": "64-404-person-d25",
+      "reason": "White player immediately right of blue player d19."
+    },
+    "64-404-d26": {
+      "status": "person",
+      "person": "64-404-person-d26",
+      "reason": "Partial white player moving right, formerly visible back number 6."
+    },
+    "64-404-d27": {
+      "status": "person",
+      "person": "64-404-person-d27",
+      "reason": "White player in front of blue d10 after the dark person separates left."
+    },
+    "64-404-d28": {
+      "status": "person",
+      "person": "64-404-person-d28",
+      "reason": "Partial white runner following the blue runner, distinct from white d26."
+    },
+    "64-404-d29": {
+      "status": "person",
+      "person": "64-404-person-d37",
+      "reason": "Upper-body duplicate of the blue runner in full box d37."
+    },
+    "64-404-d30": {
+      "status": "person",
+      "person": "64-404-person-d10",
+      "reason": "Lower-body duplicate of the blue field player in full box d10."
+    },
+    "64-404-d31": {
+      "status": "person",
+      "person": "64-404-person-d31",
+      "reason": "Blue runner below the center circle, ahead of white d32."
+    },
+    "64-404-d32": {
+      "status": "person",
+      "person": "64-404-person-d32",
+      "reason": "White runner below the center circle, following blue d31."
+    },
+    "64-404-d34": {
+      "status": "person",
+      "person": "64-404-person-d34",
+      "reason": "Full blue box, with upper-body duplicate d22."
+    },
+    "64-404-d37": {
+      "status": "person",
+      "person": "64-404-person-d37",
+      "reason": "Full blue runner box, with upper-body duplicate d29."
+    },
+    "64-404-d33": {
+      "status": "not_person",
+      "reason": "Canopy corner. No human body in the source box."
+    },
+    "64-404-d35": {
+      "status": "not_person",
+      "reason": "Blue bottle on ground. No human body in the source box."
+    },
+    "64-404-d36": {
+      "status": "not_person",
+      "reason": "Ground paint. No human body in the source box."
+    },
+    "64-404-d38": {
+      "status": "not_person",
+      "reason": "Ground paint. No human body in the source box."
+    },
+    "64-404-d39": {
+      "status": "not_person",
+      "reason": "Pale object on pavement. No human body in the source box."
+    },
+    "64-404-d40": {
+      "status": "not_person",
+      "reason": "Blue/white object on grass. No human body in the source box."
+    },
+    "64-404-d41": {
+      "status": "not_person",
+      "reason": "Football. No human body in the source box."
+    },
+    "64-404-d42": {
+      "status": "not_person",
+      "reason": "Pale bottle-shaped object. No human body in the source box."
+    },
+    "64-404-d43": {
+      "status": "not_person",
+      "reason": "Red bottle-shaped object. No human body in the source box."
+    },
+    "64-404-d44": {
+      "status": "not_person",
+      "reason": "Pale ball. No human body in the source box."
+    },
+    "64-404-d45": {
+      "status": "not_person",
+      "reason": "Footwear. No human body in the source box."
+    },
+    "64-404-d46": {
+      "status": "not_person",
+      "reason": "Loose clothing. No human body in the source box."
+    },
+    "64-404-d47": {
+      "status": "not_person",
+      "reason": "Hanging blue fabric. No human body in the source box."
+    },
+    "64-716-d0": {
+      "status": "person",
+      "person": "64-716-person-d0",
+      "reason": "Dark-clothed person by the corner flag."
+    },
+    "64-716-d1": {
+      "status": "person",
+      "person": "64-716-person-d1",
+      "reason": "Isolated blue player near far touchline."
+    },
+    "64-716-d2": {
+      "status": "person",
+      "person": "64-716-person-d2",
+      "reason": "White field player who separated from the initial mixed box."
+    },
+    "64-716-d4": {
+      "status": "person",
+      "person": "64-716-person-d4",
+      "reason": "Dark person in the railing gap."
+    },
+    "64-716-d5": {
+      "status": "person",
+      "person": "64-716-person-d5",
+      "reason": "Dark-top light-shorts person left of the mixed pair."
+    },
+    "64-716-d6": {
+      "status": "person",
+      "person": "64-716-person-d6",
+      "reason": "Dark person in the right railing gap."
+    },
+    "64-716-d7": {
+      "status": "person",
+      "person": "64-716-person-d7",
+      "reason": "Blue player near the center-circle edge."
+    },
+    "64-716-d8": {
+      "status": "person",
+      "person": "64-716-person-d8",
+      "reason": "Blue player closer to the far touchline."
+    },
+    "64-716-d9": {
+      "status": "person",
+      "person": "64-716-person-d9",
+      "reason": "White-top person by the canopy."
+    },
+    "64-716-d10": {
+      "status": "person",
+      "person": "64-716-person-d10",
+      "reason": "White player with visible 8 at the circle edge."
+    },
+    "64-716-d11": {
+      "status": "person",
+      "person": "64-716-person-d11",
+      "reason": "Bent sideline person at the right railing group."
+    },
+    "64-716-d12": {
+      "status": "person",
+      "person": "64-716-person-d12",
+      "reason": "White player on halfway below the overlapping pair."
+    },
+    "64-716-d15": {
+      "status": "person",
+      "person": "64-716-person-d15",
+      "reason": "Seated person at right bleachers."
+    },
+    "64-716-d16": {
+      "status": "person",
+      "person": "64-716-person-d16",
+      "reason": "Seated person at left bleachers."
+    },
+    "64-716-d18": {
+      "status": "person",
+      "person": "64-716-person-d18",
+      "reason": "Standing sideline person left of the leaning person."
+    },
+    "64-716-d19": {
+      "status": "person",
+      "person": "64-716-person-d19",
+      "reason": "Dark sideline person left of the exercise group."
+    },
+    "64-716-d20": {
+      "status": "person",
+      "person": "64-716-person-d20",
+      "reason": "Dark sideline person right of the blue person."
+    },
+    "64-716-d21": {
+      "status": "person",
+      "person": "64-716-person-d21",
+      "reason": "Dark sideline person at the right edge of the group."
+    },
+    "64-716-d22": {
+      "status": "person",
+      "person": "64-716-person-d22",
+      "reason": "Leaning dark sideline person left of the blue person."
+    },
+    "64-716-d23": {
+      "status": "person",
+      "person": "64-716-person-d23",
+      "reason": "Isolated red field person."
+    },
+    "64-716-d24": {
+      "status": "person",
+      "person": "64-716-person-d24",
+      "reason": "Yellow field person in front of goal."
+    },
+    "64-716-d25": {
+      "status": "person",
+      "person": "64-716-person-d25",
+      "reason": "Blue player along penalty-area line."
+    },
+    "64-716-d26": {
+      "status": "person",
+      "person": "64-716-person-d26",
+      "reason": "White player in front of goal."
+    },
+    "64-716-d27": {
+      "status": "person",
+      "person": "64-716-person-d27",
+      "reason": "White player near the arc."
+    },
+    "64-716-d28": {
+      "status": "person",
+      "person": "64-716-person-d28",
+      "reason": "Blue player above the crossing blue/white pair."
+    },
+    "64-716-d29": {
+      "status": "person",
+      "person": "64-716-person-d29",
+      "reason": "Blue player who separated from the initial mixed box."
+    },
+    "64-716-d30": {
+      "status": "person",
+      "person": "64-716-person-d30",
+      "reason": "White player below the other white player d2."
+    },
+    "64-716-d31": {
+      "status": "person",
+      "person": "64-716-person-d31",
+      "reason": "White 12 after blue 36 passes behind."
+    },
+    "64-716-d32": {
+      "status": "person",
+      "person": "64-716-person-d32",
+      "reason": "Blue 36 after passing behind white 12."
+    },
+    "64-716-d33": {
+      "status": "person",
+      "person": "64-716-person-d33",
+      "reason": "Full white 6 below the center circle."
+    },
+    "64-716-d34": {
+      "status": "person",
+      "person": "64-716-person-d34",
+      "reason": "Blue 9 below the center circle."
+    },
+    "64-716-d35": {
+      "status": "person",
+      "person": "64-716-person-d35",
+      "reason": "Partial white 29 on halfway below the circle."
+    },
+    "64-716-d41": {
+      "status": "person",
+      "person": "64-716-person-d41",
+      "reason": "Blue 21 near the near touchline."
+    },
+    "64-716-d42": {
+      "status": "person",
+      "person": "64-716-person-d42",
+      "reason": "Foot/lower-leg fragment attached to the otherwise unboxed dark-clothed person at the near touchline, distinct from all field players in the overview."
+    },
+    "64-716-d3": {
+      "status": "uncertain",
+      "reason": "Blue and dark sideline people overlap inside the same endpoint box."
+    },
+    "64-716-d13": {
+      "status": "uncertain",
+      "reason": "Overlapping white and blue field bodies near halfway prevent a unique single-person endpoint label."
+    },
+    "64-716-d14": {
+      "status": "uncertain",
+      "reason": "Overlapping blue and white field bodies near halfway prevent a unique single-person endpoint label."
+    },
+    "64-716-d17": {
+      "status": "uncertain",
+      "reason": "Blue sideline person and neighboring dark body overlap inside this small box."
+    },
+    "64-716-d36": {
+      "status": "uncertain",
+      "reason": "Very small distant box behind the right goal contains overlapping people; no unique identity label is forced."
+    },
+    "64-716-d37": {
+      "status": "not_person",
+      "reason": "Blue equipment behind goal net. No human body in the source box."
+    },
+    "64-716-d38": {
+      "status": "not_person",
+      "reason": "Blue bottle. No human body in the source box."
+    },
+    "64-716-d39": {
+      "status": "not_person",
+      "reason": "Ground paint. No human body in the source box."
+    },
+    "64-716-d40": {
+      "status": "not_person",
+      "reason": "Ground paint. No human body in the source box."
+    },
+    "64-716-d43": {
+      "status": "not_person",
+      "reason": "Ground paint. No human body in the source box."
+    },
+    "64-716-d44": {
+      "status": "not_person",
+      "reason": "Stationary blue object on grass. No human body in the source box."
+    },
+    "64-716-d45": {
+      "status": "not_person",
+      "reason": "Pale object on pavement. No human body in the source box."
+    },
+    "64-716-d46": {
+      "status": "not_person",
+      "reason": "Partial footwear detection. No human body in the source box."
+    },
+    "64-716-d47": {
+      "status": "not_person",
+      "reason": "Blue/white object. No human body in the source box."
+    },
+    "64-716-d48": {
+      "status": "not_person",
+      "reason": "Football. No human body in the source box."
+    },
+    "64-716-d49": {
+      "status": "not_person",
+      "reason": "Pale bottle-shaped object. No human body in the source box."
+    },
+    "64-716-d50": {
+      "status": "not_person",
+      "reason": "Red bottle-shaped object. No human body in the source box."
+    },
+    "64-716-d51": {
+      "status": "not_person",
+      "reason": "Pale ball. No human body in the source box."
+    },
+    "64-716-d52": {
+      "status": "not_person",
+      "reason": "Footwear. No human body in the source box."
+    },
+    "64-716-d53": {
+      "status": "not_person",
+      "reason": "Loose clothing. No human body in the source box."
+    },
+    "64-716-d54": {
+      "status": "not_person",
+      "reason": "Hanging blue fabric. No human body in the source box."
+    }
+  },
+  "reviewed_assets": [
+    "s0064-f0404-page01.jpg",
+    "s0064-f0404-page02.jpg",
+    "association-64-374-d0.jpg",
+    "association-64-374-d1.jpg",
+    "association-64-374-d2.jpg",
+    "association-64-374-d3.jpg",
+    "association-64-374-d4.jpg",
+    "association-64-374-d5.jpg",
+    "association-64-374-d6.jpg",
+    "association-64-374-d7.jpg",
+    "association-64-374-d8.jpg",
+    "association-64-374-d9.jpg",
+    "association-64-374-d10.jpg",
+    "association-64-374-d11.jpg",
+    "association-64-374-d12.jpg",
+    "association-64-374-d13.jpg",
+    "association-64-374-d14.jpg",
+    "association-64-374-d15.jpg",
+    "association-64-374-d16.jpg",
+    "association-64-374-d17.jpg",
+    "association-64-374-d18.jpg",
+    "association-64-374-d19.jpg",
+    "association-64-374-d20.jpg",
+    "association-64-374-d21.jpg",
+    "association-64-374-d22.jpg",
+    "association-64-374-d23.jpg",
+    "association-64-374-d24.jpg",
+    "association-64-374-d25.jpg",
+    "association-64-374-d26.jpg",
+    "association-64-374-d27.jpg",
+    "association-64-374-d28.jpg",
+    "association-64-374-d29.jpg",
+    "association-64-374-d30.jpg",
+    "association-64-374-d31.jpg",
+    "association-64-374-d32.jpg",
+    "association-64-374-d34.jpg",
+    "association-64-374-d35.jpg",
+    "association-64-374-d38.jpg",
+    "s0064-f0374-page01.jpg",
+    "s0064-f0374-page02.jpg",
+    "s0064-f0374-page03.jpg",
+    "association-64-686-d0.jpg",
+    "association-64-686-d1.jpg",
+    "association-64-686-d2.jpg",
+    "association-64-686-d3.jpg",
+    "association-64-686-d4.jpg",
+    "association-64-686-d5.jpg",
+    "association-64-686-d6.jpg",
+    "association-64-686-d7.jpg",
+    "association-64-686-d8.jpg",
+    "association-64-686-d9.jpg",
+    "association-64-686-d10.jpg",
+    "association-64-686-d11.jpg",
+    "association-64-686-d12.jpg",
+    "association-64-686-d13.jpg",
+    "association-64-686-d14.jpg",
+    "association-64-686-d15.jpg",
+    "association-64-686-d16.jpg",
+    "association-64-686-d17.jpg",
+    "association-64-686-d18.jpg",
+    "association-64-686-d19.jpg",
+    "association-64-686-d20.jpg",
+    "association-64-686-d21.jpg",
+    "association-64-686-d22.jpg",
+    "association-64-686-d23.jpg",
+    "association-64-686-d24.jpg",
+    "association-64-686-d25.jpg",
+    "association-64-686-d26.jpg",
+    "association-64-686-d27.jpg",
+    "association-64-686-d28.jpg",
+    "association-64-686-d29.jpg",
+    "association-64-686-d30.jpg",
+    "association-64-686-d31.jpg",
+    "association-64-686-d32.jpg",
+    "association-64-686-d39.jpg",
+    "association-64-686-d40.jpg",
+    "association-64-686-d41.jpg",
+    "association-64-686-d43.jpg",
+    "s0064-f0686-page01.jpg",
+    "s0064-f0686-page02.jpg",
+    "s0064-f0686-page03.jpg",
+    "s0064-f0716-page01.jpg",
+    "s0064-f0716-page02.jpg",
+    "s0064-f0716-page03.jpg",
+    "s0064-f0716-overview.jpg"
+  ],
+  "previous_draft": {
+    "path": ".cache\\palette-control-day64-draft-20261009-v2.json",
+    "sha256": "b955b2173f54aecf714ce754784e88cd3b523a78bebf1b83f5379982a7c85f8c"
+  },
+  "reviewer": "Codex single AI source-image reviewer; no human adjudication",
+  "completed_start_frames": [
+    374,
+    686
+  ],
+  "pending_start_frames": []
+}
