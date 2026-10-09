@@ -33,13 +33,16 @@ import sys
 import threading
 import time
 import uuid
+from copy import deepcopy
 from datetime import UTC, datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
+from threadpoolctl import threadpool_limits
 
 from app.api.auth import get_current_user
 from app.core.logging import get_logger
@@ -54,6 +57,7 @@ SAFE_NAME = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".avi", ".m4v"}
 LOG_TAIL_LINES = 30
 _jobs_lock = threading.Lock()
+_calibration_summary_lock = threading.Lock()
 
 # İşler TEK işçiyle SIRAYLA koşar. Her iş kendi iş parçacığında başlatılıyordu:
 # iki iş aynı anda GPU'ya biner, bellek dolar (8 GB kartta tek eğitim 7.8 GB
@@ -158,6 +162,22 @@ class CalibrationIn(BaseModel):
 
 
 def _calib_summary(name: str, d: dict[str, Any]) -> dict[str, Any]:
+    # Content, not path/mtime: edits, replacements and repairs must invalidate
+    # the expensive TPS leave-one-out result, even with identical file stats.
+    payload = json.dumps(d, sort_keys=True, separators=(",", ":"))
+    # Serialize cold requests: lru_cache alone allows duplicate calculations,
+    # and overlapping BLAS contexts would restore process limits out of order.
+    with _calibration_summary_lock:
+        return deepcopy(_cached_calib_summary(name, payload))
+
+
+@lru_cache(maxsize=64)
+def _cached_calib_summary(name: str, payload: str) -> dict[str, Any]:
+    with threadpool_limits(limits=1, user_api="blas"):
+        return _calculate_calib_summary(name, json.loads(payload))
+
+
+def _calculate_calib_summary(name: str, d: dict[str, Any]) -> dict[str, Any]:
     try:
         c = PitchCalibration.from_dict(d)
         err = round(c.reprojection_error_m, 3)
