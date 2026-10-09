@@ -15,6 +15,8 @@ EXPERIMENT_FILES = {
     Path("scripts/soccertrack_v2/short_gap_replay_cache.py").resolve(),
     Path("scripts/soccertrack_v2/candidates/short_gap_motion_v1.py").resolve(),
     Path("scripts/soccertrack_v2/candidates/palette_motion_partitions_v1.py").resolve(),
+    Path("scripts/soccertrack_v2/benchmark_guarded_identity.py").resolve(),
+    Path("scripts/soccertrack_v2/candidates/guarded_identity_v2.py").resolve(),
 }
 
 

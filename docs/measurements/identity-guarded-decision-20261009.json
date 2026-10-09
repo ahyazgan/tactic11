@@ -1,0 +1,704 @@
+{
+  "scope": "Nineteen already-consumed clips; sparse single-AI labels and source review, not independent control or live integration.",
+  "counts": {
+    "samples": 7125,
+    "clips": 19,
+    "baseline_observations": 144623,
+    "final_observations": 144686,
+    "added_observations": 63,
+    "removed_observations": 0,
+    "changed_teams": 0,
+    "proposed_motion_events": 18,
+    "applied_motion_events": 16,
+    "identity_partitions": 8
+  },
+  "old_boundary_witnesses": {
+    "legacy_palette": [
+      {
+        "group": "day",
+        "segment": 0,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 68,
+          "new_id": 204,
+          "first_order": 152,
+          "confirmed_order": 154,
+          "prior_motion_id": 10,
+          "new_motion_id": 37
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          68
+        ],
+        "right_ids": [
+          204
+        ],
+        "preserved": true
+      },
+      {
+        "group": "day",
+        "segment": 0,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 72,
+          "new_id": 205,
+          "first_order": 212,
+          "confirmed_order": 214,
+          "prior_motion_id": 81,
+          "new_motion_id": 3
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          72
+        ],
+        "right_ids": [
+          205
+        ],
+        "preserved": true
+      },
+      {
+        "group": "day",
+        "segment": 3,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 8,
+          "new_id": 162,
+          "first_order": 262,
+          "confirmed_order": 264,
+          "prior_motion_id": 154,
+          "new_motion_id": 156
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          8
+        ],
+        "right_ids": [
+          162
+        ],
+        "preserved": true
+      },
+      {
+        "group": "consensus_day",
+        "segment": 60,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 13,
+          "new_id": 220,
+          "first_order": 5,
+          "confirmed_order": 7,
+          "prior_motion_id": 13,
+          "new_motion_id": 14
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          13
+        ],
+        "right_ids": [
+          220
+        ],
+        "preserved": true
+      },
+      {
+        "group": "consensus_day",
+        "segment": 60,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 186,
+          "new_id": 221,
+          "first_order": 318,
+          "confirmed_order": 320,
+          "prior_motion_id": 329,
+          "new_motion_id": 310
+        },
+        "expected_split": false,
+        "complete": true,
+        "left_ids": [
+          186
+        ],
+        "right_ids": [
+          186
+        ],
+        "preserved": true
+      },
+      {
+        "group": "consensus_day",
+        "segment": 62,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 73,
+          "new_id": 197,
+          "first_order": 112,
+          "confirmed_order": 114,
+          "prior_motion_id": 83,
+          "new_motion_id": 33
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          73
+        ],
+        "right_ids": [
+          197
+        ],
+        "preserved": true
+      },
+      {
+        "group": "consensus_day",
+        "segment": 62,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 86,
+          "new_id": 198,
+          "first_order": 137,
+          "confirmed_order": 139,
+          "prior_motion_id": 15,
+          "new_motion_id": 131
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          86
+        ],
+        "right_ids": [
+          198
+        ],
+        "preserved": true
+      }
+    ],
+    "short_gap_v1": [
+      {
+        "group": "day",
+        "segment": 0,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 68,
+          "new_id": 204,
+          "first_order": 152,
+          "confirmed_order": 154,
+          "prior_motion_id": 10,
+          "new_motion_id": 37
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          68
+        ],
+        "right_ids": [
+          202
+        ],
+        "preserved": true
+      },
+      {
+        "group": "day",
+        "segment": 0,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 72,
+          "new_id": 205,
+          "first_order": 212,
+          "confirmed_order": 214,
+          "prior_motion_id": 81,
+          "new_motion_id": 3
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          72
+        ],
+        "right_ids": [
+          72
+        ],
+        "preserved": false
+      },
+      {
+        "group": "day",
+        "segment": 3,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 8,
+          "new_id": 162,
+          "first_order": 262,
+          "confirmed_order": 264,
+          "prior_motion_id": 154,
+          "new_motion_id": 156
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          8
+        ],
+        "right_ids": [
+          8
+        ],
+        "preserved": false
+      },
+      {
+        "group": "consensus_day",
+        "segment": 60,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 13,
+          "new_id": 220,
+          "first_order": 5,
+          "confirmed_order": 7,
+          "prior_motion_id": 13,
+          "new_motion_id": 14
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          13
+        ],
+        "right_ids": [
+          13
+        ],
+        "preserved": false
+      },
+      {
+        "group": "consensus_day",
+        "segment": 60,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 186,
+          "new_id": 221,
+          "first_order": 318,
+          "confirmed_order": 320,
+          "prior_motion_id": 329,
+          "new_motion_id": 310
+        },
+        "expected_split": false,
+        "complete": true,
+        "left_ids": [
+          183
+        ],
+        "right_ids": [
+          183
+        ],
+        "preserved": true
+      },
+      {
+        "group": "consensus_day",
+        "segment": 62,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 73,
+          "new_id": 197,
+          "first_order": 112,
+          "confirmed_order": 114,
+          "prior_motion_id": 83,
+          "new_motion_id": 33
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          73
+        ],
+        "right_ids": [
+          73
+        ],
+        "preserved": false
+      },
+      {
+        "group": "consensus_day",
+        "segment": 62,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 86,
+          "new_id": 198,
+          "first_order": 137,
+          "confirmed_order": 139,
+          "prior_motion_id": 15,
+          "new_motion_id": 131
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          86
+        ],
+        "right_ids": [
+          86
+        ],
+        "preserved": false
+      }
+    ],
+    "combined": [
+      {
+        "group": "day",
+        "segment": 0,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 68,
+          "new_id": 204,
+          "first_order": 152,
+          "confirmed_order": 154,
+          "prior_motion_id": 10,
+          "new_motion_id": 37
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          68
+        ],
+        "right_ids": [
+          202
+        ],
+        "preserved": true
+      },
+      {
+        "group": "day",
+        "segment": 0,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 72,
+          "new_id": 205,
+          "first_order": 212,
+          "confirmed_order": 214,
+          "prior_motion_id": 81,
+          "new_motion_id": 3
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          72
+        ],
+        "right_ids": [
+          203
+        ],
+        "preserved": true
+      },
+      {
+        "group": "day",
+        "segment": 3,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 8,
+          "new_id": 162,
+          "first_order": 262,
+          "confirmed_order": 264,
+          "prior_motion_id": 154,
+          "new_motion_id": 156
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          8
+        ],
+        "right_ids": [
+          161
+        ],
+        "preserved": true
+      },
+      {
+        "group": "consensus_day",
+        "segment": 60,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 13,
+          "new_id": 220,
+          "first_order": 5,
+          "confirmed_order": 7,
+          "prior_motion_id": 13,
+          "new_motion_id": 14
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          13
+        ],
+        "right_ids": [
+          217
+        ],
+        "preserved": true
+      },
+      {
+        "group": "consensus_day",
+        "segment": 60,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 186,
+          "new_id": 221,
+          "first_order": 318,
+          "confirmed_order": 320,
+          "prior_motion_id": 329,
+          "new_motion_id": 310
+        },
+        "expected_split": false,
+        "complete": true,
+        "left_ids": [
+          183
+        ],
+        "right_ids": [
+          183
+        ],
+        "preserved": true
+      },
+      {
+        "group": "consensus_day",
+        "segment": 62,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 73,
+          "new_id": 197,
+          "first_order": 112,
+          "confirmed_order": 114,
+          "prior_motion_id": 83,
+          "new_motion_id": 33
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          73
+        ],
+        "right_ids": [
+          197
+        ],
+        "preserved": true
+      },
+      {
+        "group": "consensus_day",
+        "segment": 62,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 86,
+          "new_id": 198,
+          "first_order": 137,
+          "confirmed_order": 139,
+          "prior_motion_id": 15,
+          "new_motion_id": 131
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          86
+        ],
+        "right_ids": [
+          198
+        ],
+        "preserved": true
+      }
+    ]
+  },
+  "legacy_full_output_parity": [
+    {
+      "group": "day",
+      "segment": 0,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\day\\seg_0000.json",
+      "historical_sha256": "8009f045500867eb95bad6363c5f2f771dde7ecb86db991a3e38a279b201d0a9",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\day\\legacy_palette\\seg_0000.json",
+      "current_sha256": "4450159c2a2e96465a5c21e7bc64a9bcf59df0edfbd774a3a5641c4c1d3ac328",
+      "observations": 8861,
+      "exact": true
+    },
+    {
+      "group": "day",
+      "segment": 3,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\day\\seg_0003.json",
+      "historical_sha256": "6f501870a33535d90d1def5bdb9e2a7d78872958071d24f45d6e8a4d2ad87623",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\day\\legacy_palette\\seg_0003.json",
+      "current_sha256": "2afdfb07ddeb35ba5bd9185685cddf82ea117f2b09cc8489800aa486d0efb007",
+      "observations": 8828,
+      "exact": true
+    },
+    {
+      "group": "day",
+      "segment": 6,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\day\\seg_0006.json",
+      "historical_sha256": "ca7eabb68ddd025fb6d664e2d433555a953eefa4ec5f2c5c4652bf56ac18f316",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\day\\legacy_palette\\seg_0006.json",
+      "current_sha256": "379dc8229a3f2e11cd45d6741755c854bbeef6f184a60d0f716b04c6782c54b0",
+      "observations": 7391,
+      "exact": true
+    },
+    {
+      "group": "night",
+      "segment": 0,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\night\\seg_0000.json",
+      "historical_sha256": "361eca3a9c52fe0274e351ce010d23fa5715434cea355e9301c22cc00892e03f",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\night\\legacy_palette\\seg_0000.json",
+      "current_sha256": "7d3cfb6fe7266a2f7061cb5e80ccffa37fe7dcc52c8c071856019f9638ef8e5f",
+      "observations": 7066,
+      "exact": true
+    },
+    {
+      "group": "night",
+      "segment": 3,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\night\\seg_0003.json",
+      "historical_sha256": "5ee091a98b884125994da089970f1b6eeb52b289fa5b58d63d57c021e54ab002",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\night\\legacy_palette\\seg_0003.json",
+      "current_sha256": "5697f03896946b03bf21d4ca1883fc67ebf50520c4b07b8f69d0b1154cf2f111",
+      "observations": 6397,
+      "exact": true
+    },
+    {
+      "group": "night",
+      "segment": 6,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\night\\seg_0006.json",
+      "historical_sha256": "8cc12b47ba4c2a781e9e9d67a1cb6024877d76b2ef6f5ca299cb5a1de72de384",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\night\\legacy_palette\\seg_0006.json",
+      "current_sha256": "375375aed6600a7904a28f0218ee7456b20b2642ab3e77da3c628bdf23e2aee2",
+      "observations": 7866,
+      "exact": true
+    },
+    {
+      "group": "night",
+      "segment": 9,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\night\\seg_0009.json",
+      "historical_sha256": "e503797186ffc340ce340429ab1386a035386bd399104f0814079d1230b33b1b",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\night\\legacy_palette\\seg_0009.json",
+      "current_sha256": "cda3ad071098a779995ebb271169cdeffd7690fb19c822f77549e8c3e1466561",
+      "observations": 7258,
+      "exact": true
+    },
+    {
+      "group": "night_extra",
+      "segment": 20,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\night_extra\\seg_0020.json",
+      "historical_sha256": "cb23cf823e046c7e1d6161a56fa43bd114387b7aa70085eed7e3e59e03863c75",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\night_extra\\legacy_palette\\seg_0020.json",
+      "current_sha256": "e156b87c221a963602bf54db41cf0fd81b266ed70e55945db57b023c9ca77a6c",
+      "observations": 7364,
+      "exact": true
+    },
+    {
+      "group": "night_extra",
+      "segment": 30,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\night_extra\\seg_0030.json",
+      "historical_sha256": "728923ce224837b5a2dd2c518f1fd7ca96c2fe5da3832a46fc466452cb15cbe7",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\night_extra\\legacy_palette\\seg_0030.json",
+      "current_sha256": "4b3f1615830185ff2ab36ea2a2faa9fd4756aa243b3187110ee9f742ac2ec3ab",
+      "observations": 7598,
+      "exact": true
+    },
+    {
+      "group": "night_old_control",
+      "segment": 40,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\night_old_control\\seg_0040.json",
+      "historical_sha256": "ad8b6d2b6a19254d7ac9b9842f1157b41b833bf05a28334b2a6b0f2eec9d8fa2",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\night_old_control\\legacy_palette\\seg_0040.json",
+      "current_sha256": "8fee7a46153707e65baa65b46c04cd730b691a7e04f0ed4cbb47dbd3cbe1d0f2",
+      "observations": 6451,
+      "exact": true
+    },
+    {
+      "group": "night_old_control",
+      "segment": 50,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\night_old_control\\seg_0050.json",
+      "historical_sha256": "75fcc619396c66e8cefa08a85c1d196a1bc3e88550e2a5b400e64f44b458d24b",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\night_old_control\\legacy_palette\\seg_0050.json",
+      "current_sha256": "947ab2027d9e1a20697ab55d6c18341d93330fc03b5ee90c09fbe7e633a43883",
+      "observations": 7751,
+      "exact": true
+    },
+    {
+      "group": "consensus_day",
+      "segment": 60,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\closed_day\\seg_0060.json",
+      "historical_sha256": "0977bf0bb52bb8af712a143b29a411972951c4dfde978504faf1b565c8b7adc3",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\consensus_day\\legacy_palette\\seg_0060.json",
+      "current_sha256": "b80acee8a9c4148c3eb01051b137a0523e57569cacd2646166de750d3d4458fb",
+      "observations": 8507,
+      "exact": true
+    },
+    {
+      "group": "consensus_day",
+      "segment": 62,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\closed_day\\seg_0062.json",
+      "historical_sha256": "2936774a7f17e915055c51d1a300fcf8b8047493695c3731b783a2e14c8f6b27",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\consensus_day\\legacy_palette\\seg_0062.json",
+      "current_sha256": "b6ccf32ceeb6cc8c88880b9e157bd9bbd0bafb81b270a4abfd765a72e463db7d",
+      "observations": 9279,
+      "exact": true
+    },
+    {
+      "group": "consensus_night",
+      "segment": 80,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\closed_night\\seg_0080.json",
+      "historical_sha256": "35df3da30576908662b90ec6a2f9ca20d08330a260aa33bfe37ed4972714e998",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\consensus_night\\legacy_palette\\seg_0080.json",
+      "current_sha256": "36dc30c9aa4d2e28b1c6fe1ac84fcbfd280a240fe04e3c9304aee8ea184ac6bb",
+      "observations": 7613,
+      "exact": true
+    },
+    {
+      "group": "consensus_night",
+      "segment": 82,
+      "historical": ".cache\\consensus-palette-gate-development-v1\\closed_night\\seg_0082.json",
+      "historical_sha256": "8f8a0d3be53016747fa0eed101a659a0ead1583cff51e32b7e347a584c5a02a1",
+      "current": ".cache\\guarded-identity-19-20261009-v2\\consensus_night\\legacy_palette\\seg_0082.json",
+      "current_sha256": "741b80e6da4041e13feb17c92c2e6306e62d04c441fa38006278570fdef8f717",
+      "observations": 4622,
+      "exact": true
+    }
+  ],
+  "initial_rejected_run": {
+    "report_sha256": "1104a2892dff8ebea35345de12625ef04e8043b79906a25db69e704ea3d28e79",
+    "lost_boundaries": [
+      {
+        "group": "consensus_day",
+        "segment": 62,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 73,
+          "new_id": 197,
+          "first_order": 112,
+          "confirmed_order": 114,
+          "prior_motion_id": 83,
+          "new_motion_id": 33
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          73
+        ],
+        "right_ids": [
+          73
+        ],
+        "preserved": false
+      },
+      {
+        "group": "consensus_day",
+        "segment": 62,
+        "boundary": {
+          "continuity_id": 0,
+          "raw_id": 86,
+          "new_id": 198,
+          "first_order": 137,
+          "confirmed_order": 139,
+          "prior_motion_id": 15,
+          "new_motion_id": 131
+        },
+        "expected_split": true,
+        "complete": true,
+        "left_ids": [
+          86
+        ],
+        "right_ids": [
+          86
+        ],
+        "preserved": false
+      }
+    ],
+    "cause": "The appearance-consensus branch received fixed palette anchors instead of the original baseline-fitted centers. Sparse aggregate gates alone missed these two lost true boundaries.",
+    "source_snapshots_sha256": {
+      ".cache\\guarded-identity-19-20261009-v1\\source-snapshot\\benchmark_guarded_identity.py": "d6f00aad7b552610b84f044bf3c55d2969b98435779df2a758c00800179dbd45",
+      ".cache\\guarded-identity-19-20261009-v1\\source-snapshot\\guarded_identity_v2.py": "6fe904989c7516f6d128fa7788fb35f0db324af96a8ca7a2af3af28a754beb55",
+      ".cache\\guarded-identity-19-20261009-v1\\source-snapshot\\short_gap_replay_cache.py": "156b607b668e54ccb92ec9eb67f531448b01344a4cabc4849b9ffade1daee850"
+    }
+  },
+  "correction": "Separate required baseline_centers from fixed palette_anchors; derive the former only from unchanged baseline color history and eligible tracks, verifying every baseline team assignment. Never refit after motion or partition.",
+  "secondary_provenance": {
+    "first_15": "Hash-verified reuse of short-gap v3 source replay; original report remains committed.",
+    "added_four": "Fresh OSNet/source-video replay in the initial 19-clip run. Final run reuses its registered outputs; no new model inference is claimed.",
+    "completed_19_report_sha256": "1104a2892dff8ebea35345de12625ef04e8043b79906a25db69e704ea3d28e79"
+  },
+  "final_report_sha256": "f69c61bac7607bc2df062cd0d65bf8d4149789346e7bbdbb2404b70b038c5954",
+  "limitations": [
+    "All 19 clips are development data.",
+    "New motion/partition source review is separate from sparse labels.",
+    "No production defaults changed; video/live parity, integration freeze and independent control remain."
+  ]
+}

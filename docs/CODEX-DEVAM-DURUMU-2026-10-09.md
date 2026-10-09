@@ -225,3 +225,24 @@ beyaz 6'nın yanlış bölünmesini reddederken altı eski doğru ayrımı korum
 ardından aynı iki-akış kanıtını canlı akışa bağlayıp yeni kontrol öncesi
 sabitlemektir. Yeni kör kontrol henüz açılmadı.
 [Ayrıntı ve makine kanıtı](KISA-KOPMA-GELISTIRME-SONUCLARI.md).
+
+## Birleşik aday 19 bilinen kesitte doğrulandı
+
+Önceki dört uzlaşı kesiti eklendi. Kısa kopma adayı tek başına eski altı
+doğru ayrımın yalnız birini koruyordu; eski görünüş/palet koşuluyla birleşimi
+altısını da korudu, beyaz 6'yı yanlış bölmedi. İlk birleşik koşudaki iki kayıp
+ayrım, kesitte hesaplanan başlangıç merkezleri yerine sabit renk çapalarının
+verilmesinden kaynaklandı. Bu iki veri artık ayrı zorunlu girdiler; ilk
+başarısız sonuç ve kaynakları korunuyor.
+
+19 kesitte 144.623 eski gözlem ve forma kararı eksiksiz korundu, 63 ek kaynak
+tespiti çıktıya girdi. 18 hareket önerisinin 16'sı kullanıldı; sekiz kimlik
+ayrımı var. Bütün seyrek gerileme ve yedi eski sınır koşulu geçti. Eski palet
+yolunun 15 kesit / 112.852 gözlemi kimlikler dahil birebir yeniden üretildi.
+58 ilgili test, Ruff ve mypy geçti. Canlı motor varsayılanı değişmedi.
+
+Devam noktası artık 19 kesit seçimi değil, bu kanıt akışının gerçek video ve
+canlı segment yollarına eşit biçimde bağlanmasıdır. Başlangıç kutu/forma
+kararları korunmalı; gecikmeli ayrım ve kapsam geri dönüşü çıktı/DB yolunda
+doğrulanmalı. Sonra yeni kontrol öncesi dondurma yapılacak.
+[Sonuçlar ve yeniden çalıştırma](BIRLESIK-KIMLIK-19-KESIT-SONUCLARI.md).

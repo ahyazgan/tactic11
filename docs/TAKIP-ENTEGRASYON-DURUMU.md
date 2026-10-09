@@ -77,3 +77,12 @@ gözlemi birebir korundu. Bunlar gerçek oyuncu doğruluğu yüzdesi değildir.
 
 Görev kapsamı kamera/takiptir. Diğer çalışma alanındaki karne/karar değişiklikleri
 korunur; PDF, e-posta ve i18n bu kamera işinin tamamlanma koşulu değildir.
+## 19 kesitlik birleşik aday güncellemesi — 9 Ekim 2026
+
+Kısa kopma ve eski görünüş/palet ayrımı birlikte 19 tüketilmiş kesitte
+doğrulandı: 144.623 eski gözlem/takım kararı korundu, 63 kaynak tespiti eklendi;
+altı eski doğru ayrım ve beyaz 6 koruması geçti. 15 eski kesitte 112.852
+gözlemin eski palet çıktılarıyla birebir eşitliği ayrıca doğrulandı.
+58 ilgili test, Ruff ve mypy geçti. Bu araştırma bileşeninin video/canlı
+entegrasyonu, dondurulması ve yeni bağımsız kontrolü henüz tamamlanmadı.
+[Ayrıntı ve başarısız ilk ölçüm](BIRLESIK-KIMLIK-19-KESIT-SONUCLARI.md).

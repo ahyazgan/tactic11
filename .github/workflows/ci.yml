@@ -68,6 +68,7 @@ jobs:
           pytest --noconftest -q tests/test_detector_roi_batch.py tests/test_roi_control.py
           pytest --noconftest -q tests/test_consensus_palette_candidate.py tests/test_consensus_palette_control.py
           pytest --noconftest -q tests/test_short_gap_motion.py tests/test_short_gap_replay_cache.py
+          pytest --noconftest -q tests/test_guarded_identity.py
 
   migrations:
     runs-on: ubuntu-latest
