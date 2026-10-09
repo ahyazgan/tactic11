@@ -93,7 +93,11 @@ tip denetimi hatası ortaya çıkardı. Takip sorgularının sonuç satırı tip
 beş özet sorgusunun satırları açık anahtar/değer açılımıyla sözlüğe dönüştürüldü.
 Sorgu filtreleri ve sonuç davranışı korunur; bu uyumluluk düzeltmesi de PR'dadır.
 
-İlk Vercel önizlemesi başarısız oldu. Derleme günlüğünü okuyan CLI mevcut
-oturumu geçersiz buldu, tarayıcı da giriş istedi. Başarısızlığın asıl sebebi
-henüz doğrulanamadı. Vercel kontrolü çözülmeden PR birleştirilmeyecek; normal
-hesap oturumunun yenilenmesi gerekiyor.
+İlk Vercel önizlemeleri başarısız oldu. Derleme günlüğünü okuyan CLI mevcut
+oturumu geçersiz buldu, tarayıcı da giriş istedi. Ardından bağımsız bir
+dağıtım uyumsuzluğu doğrulandı: proje `engines.node=20.x` istiyordu;
+[Vercel'in 1 Ekim 2026 kapanışı](https://vercel.com/changelog/node-js-20-is-being-deprecated)
+bu sürümle yeni dağıtımları engelliyor. Paket/lock dosyası ve iki tarayıcı CI
+işi Node.js 24'e geçirildi; yerel derleme zaten 24.13.0 ile çalışıyordu.
+Bu düzeltmenin önizleme sonucu ayrıca kontrol edilecek; başarısız bir
+kontrol atlanarak birleştirme yapılmayacak.
