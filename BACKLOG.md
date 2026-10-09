@@ -20,6 +20,7 @@
 
 - [ ] Codex kamera: kısa kopma adayını önceki dört uzlaşı kesitiyle toplam 19 bilinen kesitte genişlet; altı doğru ayrımı ve beyaz 6 korumasını doğrula, sonra canlı entegrasyonunu sabitle.
   Done when: gündüz 60/62 ve gece 80/82 dahil kaynak bazında eski doğru ilişkiler/kapsam korunmuş, eski doğru ayrımlar kaybolmamış; iki akışın kimlik/forma kanıtı ve gecikmeli ayrım video/canlı yollarda eşit. Yeni kontrol açılmadan kod/model/parametre ve kabul koşulları dondurulur.
+  İlerleme: 19 kesit / 7.125 örnek tamamlandı; 144.623 eski gözlem ve forma kararı korundu. Birleşik aday altı doğru ayrımı ve beyaz 6 korumasını geçti; eski yöntemin 15 kesit / 112.852 gözlemi birebir üretildi. İki palet kaynağının karıştırılmasıyla oluşan ilk gerileme kaydedilip düzeltildi; 58 ilgili test geçti. Canlı/video entegrasyonu, dondurma ve yeni kontrol hâlâ açık. Kanıt: docs/BIRLESIK-KIMLIK-19-KESIT-SONUCLARI.md.
 
 - [ ] Codex kamera: tüketilen palet kontrolündeki tam/kısmi kutu kopmalarını, örtüşmede kimlik devrini ve gece forma hatalarını geliştirme senaryolarında ayır.
   Done when: etiket düzeltmesinden sonraki tanı sayımlarıyla 11 yanlış aynı-kişi ilişkisi, 1 yanlış farklı-kişi birleşmesi, 63 kapsam dışı ilişki ve gece forma/sahte kutu hataları kaynak/karar izine bağlı; düzeltme yalnız geliştirmede seçilmiş, eski doğru ayrımlar ve kutu/forma kapsamı korunmuş. Yeni aday başka kontrol açılmadan dondurulur; bu dört kesit yeniden bağımsız başarı sayılmaz.

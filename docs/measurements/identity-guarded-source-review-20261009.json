@@ -1,0 +1,424 @@
+{
+  "report_sha256": "f69c61bac7607bc2df062cd0d65bf8d4149789346e7bbdbb2404b70b038c5954",
+  "records": [
+    {
+      "key": "consensus_day-60-partition-5-13",
+      "group": "consensus_day",
+      "segment": 60,
+      "event": {
+        "type": "partition",
+        "continuity_id": 0,
+        "raw_id": 13,
+        "first_order": 5,
+        "confirmed_order": 7,
+        "old_support": 13,
+        "new_support": 14,
+        "evidence": [
+          "appearance_consensus"
+        ],
+        "new_id": 217
+      },
+      "orders": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "boxes": {
+        "2": [
+          1161.25,
+          315.0625,
+          1186.5,
+          376.75
+        ],
+        "3": [
+          1168.84375,
+          313.5,
+          1193.8125,
+          377.5
+        ],
+        "4": [
+          1172.859375,
+          310.8125,
+          1203.15625,
+          375.25
+        ],
+        "5": [
+          1186.5,
+          311.875,
+          1215.5,
+          374.0
+        ],
+        "6": [
+          1199.4375,
+          312.9375,
+          1222.65625,
+          372.75
+        ],
+        "7": [
+          1202.25,
+          312.25,
+          1228.5,
+          373.875
+        ]
+      },
+      "rect": [
+        1089,
+        265,
+        1299,
+        422
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\day\\source\\seg_0060.mp4",
+      "source_video_sha256": "bfa25642925051de9e13596d597ce8a1c88889eac52f8277b8577cd323013a29",
+      "raw_sha256": "7706280dd88f73b4f44b35cde080a1e7a29cb00d693ab7b290c5b4dac2aa7847",
+      "output_sha256": "3ad924d768e54df18e042473fae1ac2c6fe9097ad0dbafe147230bf594b99f83",
+      "board": "docs/measurements/identity-guarded-review-0.jpg",
+      "row": 0,
+      "board_sha256": "622563a377d6a8eed2a3016fda418bb05793583451b2caacee165b0643b33fa3",
+      "assessment": "local_source_support",
+      "visual_basis": "Two overlapping players are visible. The earlier box follows the blue player; the later box follows the crossing white player. Local identity transfer is supported; the overlap does not establish a perfect frame-exact boundary."
+    },
+    {
+      "key": "consensus_day-60-motion-197-87",
+      "group": "consensus_day",
+      "segment": 60,
+      "event": {
+        "type": "motion",
+        "order": 197,
+        "track_id": 87,
+        "source_index": 26,
+        "proposal": [
+          1624.9375,
+          536.21875,
+          1671.0625,
+          646.28125
+        ],
+        "matched": true,
+        "previous_mean": [
+          1665.4596797759314,
+          588.167412688628,
+          0.4069431577655631,
+          112.286891028168,
+          -1.5250852828886132,
+          1.629931094300079,
+          8.06670011773621e-07,
+          0.0
+        ]
+      },
+      "orders": [
+        191,
+        192,
+        193,
+        197,
+        199,
+        200
+      ],
+      "boxes": {
+        "191": [
+          1658.3125,
+          522.15625,
+          1697.875,
+          638.5
+        ],
+        "192": [
+          1651.3125,
+          524.125,
+          1693.25,
+          635.375
+        ],
+        "193": [
+          1645.0,
+          528.9375,
+          1691.125,
+          639.0
+        ],
+        "197": [
+          1617.1875,
+          537.375,
+          1662.625,
+          647.5
+        ],
+        "199": [
+          1597.15625,
+          535.125,
+          1649.0,
+          658.0
+        ],
+        "200": [
+          1586.46875,
+          539.625,
+          1648.75,
+          654.875
+        ]
+      },
+      "rect": [
+        1526,
+        477,
+        1757,
+        703
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\day\\source\\seg_0060.mp4",
+      "source_video_sha256": "bfa25642925051de9e13596d597ce8a1c88889eac52f8277b8577cd323013a29",
+      "raw_sha256": "7706280dd88f73b4f44b35cde080a1e7a29cb00d693ab7b290c5b4dac2aa7847",
+      "output_sha256": "3ad924d768e54df18e042473fae1ac2c6fe9097ad0dbafe147230bf594b99f83",
+      "board": "docs/measurements/identity-guarded-review-0.jpg",
+      "row": 1,
+      "board_sha256": "622563a377d6a8eed2a3016fda418bb05793583451b2caacee165b0643b33fa3",
+      "assessment": "local_source_support",
+      "visual_basis": "An isolated blue player continues stepping left across frames 382-400. The sampled boxes before and after the short gap cover the same visible body; no competing player is in the crop."
+    },
+    {
+      "key": "consensus_day-62-partition-112-73",
+      "group": "consensus_day",
+      "segment": 62,
+      "event": {
+        "type": "partition",
+        "continuity_id": 0,
+        "raw_id": 73,
+        "first_order": 112,
+        "confirmed_order": 114,
+        "old_support": 83,
+        "new_support": 33,
+        "evidence": [
+          "appearance_consensus"
+        ],
+        "new_id": 197
+      },
+      "orders": [
+        108,
+        109,
+        110,
+        112,
+        113,
+        114
+      ],
+      "boxes": {
+        "108": [
+          1362.25,
+          365.5,
+          1400.0,
+          426.375
+        ],
+        "109": [
+          1353.125,
+          369.75,
+          1395.375,
+          428.75
+        ],
+        "110": [
+          1340.125,
+          368.25,
+          1382.125,
+          429.0
+        ],
+        "112": [
+          1345.0,
+          374.875,
+          1393.0,
+          434.0
+        ],
+        "113": [
+          1329.125,
+          374.625,
+          1368.375,
+          436.375
+        ],
+        "114": [
+          1313.75,
+          376.375,
+          1359.125,
+          440.125
+        ]
+      },
+      "rect": [
+        1251,
+        320,
+        1461,
+        485
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\day\\source\\seg_0062.mp4",
+      "source_video_sha256": "c7b1977629be9ac0c6f8a8f6a9721ea8561fc2b767644e8415b69f84f7354eb6",
+      "raw_sha256": "d248e3395d3830bcb0ea1e609e8ad44404c17e2fd7fea296a6054038ddc2e1b9",
+      "output_sha256": "b6ccf32ceeb6cc8c88880b9e157bd9bbd0bafb81b270a4abfd765a72e463db7d",
+      "board": "docs/measurements/identity-guarded-review-0.jpg",
+      "row": 2,
+      "board_sha256": "622563a377d6a8eed2a3016fda418bb05793583451b2caacee165b0643b33fa3",
+      "assessment": "local_source_support",
+      "visual_basis": "Blue and white opponents run together. The before box follows the blue player; the after box follows the separate white body beside him. Supports the previously reviewed transfer."
+    },
+    {
+      "key": "consensus_day-62-partition-137-86",
+      "group": "consensus_day",
+      "segment": 62,
+      "event": {
+        "type": "partition",
+        "continuity_id": 0,
+        "raw_id": 86,
+        "first_order": 137,
+        "confirmed_order": 139,
+        "old_support": 15,
+        "new_support": 131,
+        "evidence": [
+          "appearance_consensus"
+        ],
+        "new_id": 198
+      },
+      "orders": [
+        134,
+        135,
+        136,
+        137,
+        138,
+        139
+      ],
+      "boxes": {
+        "134": [
+          1235.0625,
+          394.0,
+          1279.625,
+          470.5
+        ],
+        "135": [
+          1248.1875,
+          396.625,
+          1282.0625,
+          452.75
+        ],
+        "136": [
+          1260.4375,
+          393.125,
+          1292.375,
+          473.0
+        ],
+        "137": [
+          1251.3125,
+          396.625,
+          1296.75,
+          485.0
+        ],
+        "138": [
+          1275.3125,
+          406.625,
+          1306.375,
+          469.375
+        ],
+        "139": [
+          1291.75,
+          398.5,
+          1323.5,
+          469.625
+        ]
+      },
+      "rect": [
+        1174,
+        348,
+        1384,
+        530
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\day\\source\\seg_0062.mp4",
+      "source_video_sha256": "c7b1977629be9ac0c6f8a8f6a9721ea8561fc2b767644e8415b69f84f7354eb6",
+      "raw_sha256": "d248e3395d3830bcb0ea1e609e8ad44404c17e2fd7fea296a6054038ddc2e1b9",
+      "output_sha256": "b6ccf32ceeb6cc8c88880b9e157bd9bbd0bafb81b270a4abfd765a72e463db7d",
+      "board": "docs/measurements/identity-guarded-review-1.jpg",
+      "row": 0,
+      "board_sha256": "b3f2db097d28294d069b0da546001987befcceab536955ff293943651bf2cb7d",
+      "assessment": "local_source_support",
+      "visual_basis": "The earlier box follows white number 29; the later box follows the blue number 9 moving alongside. Both bodies remain visible; supports the previous transfer."
+    },
+    {
+      "key": "consensus_night-80-motion-84-19",
+      "group": "consensus_night",
+      "segment": 80,
+      "event": {
+        "type": "motion",
+        "order": 84,
+        "track_id": 19,
+        "source_index": 17,
+        "proposal": [
+          2946.5,
+          695.0,
+          2978.0,
+          747.0
+        ],
+        "matched": true,
+        "previous_mean": [
+          2974.4056254655015,
+          726.0034915984362,
+          0.5933385433421171,
+          51.854985680854725,
+          0.8694691048785683,
+          -0.05424026202074321,
+          -1.680603657737371e-06,
+          0.0
+        ]
+      },
+      "orders": [
+        78,
+        79,
+        80,
+        84,
+        86,
+        88
+      ],
+      "boxes": {
+        "78": [
+          2958.0,
+          700.75,
+          2990.5,
+          755.25
+        ],
+        "79": [
+          2956.0,
+          699.75,
+          2988.5,
+          752.25
+        ],
+        "80": [
+          2954.25,
+          699.75,
+          2985.75,
+          751.75
+        ],
+        "84": [
+          2932.0,
+          694.25,
+          2978.5,
+          750.0
+        ],
+        "86": [
+          2935.25,
+          689.5,
+          2973.5,
+          745.25
+        ],
+        "88": [
+          2928.75,
+          685.75,
+          2968.0,
+          744.25
+        ]
+      },
+      "rect": [
+        2854,
+        640,
+        3064,
+        800
+      ],
+      "video": "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4",
+      "source_video_sha256": "35bdaaa351824798c33da9bb669fd1366b37e4a14976600f9a2c12b4996aab54",
+      "raw_sha256": "6a79fa2f84bd3fa40c56ddff937321221d7a8d9f4612afe471919016c6335eb4",
+      "output_sha256": "719bf74fc54490a2a4f06739985bac46e488ca6a8af8b8ede5975e69cb77564c",
+      "board": "docs/measurements/identity-guarded-review-1.jpg",
+      "row": 1,
+      "board_sha256": "b3f2db097d28294d069b0da546001987befcceab536955ff293943651bf2cb7d",
+      "assessment": "local_source_support",
+      "visual_basis": "The isolated red-clad goalkeeper approaches and kicks the ball across frames 156-176. The before/after boxes follow that same visible body. Low night resolution limits this to local continuity evidence."
+    }
+  ],
+  "reviewer": "Single Codex visual review after predictions; not blinded or independently human-adjudicated.",
+  "scope": "Every selected motion proposal and partition in the four added consensus clips. Three partitions were already source-reviewed historically; both motion proposals are reviewed here. No new labels or full-match identity accuracy claim.",
+  "existing_15_review": "docs/measurements/identity-short-gap-source-review-20261009.json",
+  "existing_15_review_sha256": "75696bcc20ba3661776ca9cf14a476eabd855aa22548c63fbf280072d702989d"
+}
