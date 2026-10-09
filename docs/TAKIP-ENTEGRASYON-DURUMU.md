@@ -7,6 +7,8 @@ etiketlenip mühürlendi. On iki tekrarda üç yöntemin çıktıları birebir a
 olumlu kontrol düzeltmesi yok, üretime terfi yok. Sonuç ve kalan hatalar:
 [palet kontrolü](PALET-UZLASISI-KONTROL-SONUCLARI.md). Ayrıntı ve devam noktası:
 [Codex devam durumu](CODEX-DEVAM-DURUMU-2026-10-09.md).
+Son kaynak incelemesinde iki ters bitiş etiketi bulundu; ilk kayıtlar korunarak
+tahmin sonrası düzeltme eklendi. Bu düzeltme kör doğruluk kanıtı sayılmaz.
 Üretim takip varsayılanı değişmedi.
 
 19 Eylül 2026. Sistem gerçek görüntü üzerinde çalıştırıldı, kaynak kutularından

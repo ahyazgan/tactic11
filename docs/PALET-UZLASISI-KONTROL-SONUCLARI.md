@@ -6,6 +6,10 @@ aynı örnek çıktılarını ve aynı puanları verdi. Gerileme görülmedi; ye
 olumlu kimlik düzeltmesi de doğrulanmadı. Önceden yazılan kabul koşulu yalnız
 değişmeyen çıktı ile geçilmiş sayılmaz. Üretim varsayılanı ByteTrack'tir.
 
+**Etiket düzeltmesi:** Son incelemede iki bitiş kutusu numarasının ters
+yazıldığı bulundu. İlk mühürlü etiket ve puanlar aynen korunur; aşağıdaki
+düzeltme tahminler açıldıktan sonra yapılmıştır ve yeni kör kontrol sayılmaz.
+
 ## Kaynak etiketleri ve bütünlük
 
 117093 gündüz maçının 64/66, 117092 gece maçının 78/84 kesitleri kullanıldı.
@@ -23,7 +27,7 @@ Etiketler `e3d9618` commit'inde tahminler açılmadan mühürlendi. Bütün kutu
 örnek zamanları, başlangıç/bitiş kapsamı, mükerrer kişileri dışlayan negatif
 seçim kuralı ve mühür hashleri ayrıca denetlendi. [Etiket denetimi](measurements/identity-palette-control-label-audit-20261009.json).
 
-## Üç yöntemin aynı çıkan puanları
+## Üç yöntemin ilk mühürlü etiketlerle aynı çıkan puanları
 
 Forma tablosu mavi/beyaz kaynak kutularını sayar; kısmi ve mükerrer kutular
 bağımsız oyuncu sayısı değildir. Eksik kutular, atanamayan toplamına dahildir.
@@ -41,6 +45,10 @@ Diğer giysili kişinin takıma atanması ayrıca gösterilir.
 | Gece, aynı kişi | 53 | 49 | 1 | 3 |
 | Gece, farklı kişi | 53 | 49 | 0 | 4 |
 
+Bu ilişki tablosu ilk mühürlü puanlamadır; gündüz aynı-kişi satırındaki iki
+yanlış, aşağıda açıklanan etiket hatalarından gelir. Doğrulanmış takip hatası
+sayısı olarak kullanılmamalıdır.
+
 Her iki grupta da iki referansa göre gerileme listeleri boş. Gündüzde etiketli
 kişi olmayan kutulardan takipte kalan ve çelişkili forma etiketi taşıyan kimlik
 sayısı sıfır. Gece ise 1 kişi olmayan kutu takipte kaldı; 2 takip kimliğinde
@@ -57,12 +65,31 @@ yeni sınır 0, adayın reddettiği önceki sınır 0, incelemesi bekleyen sın�
 Dolayısıyla genel başarı için gereken olumlu kontrol düzeltmesi yoktur.
 Geliştirmedeki beyaz 6 düzeltmesi bu eksik kontrol kanıtının yerine geçmez.
 
-Gündüzdeki 12 yanlış aynı-kişi ilişkisinin 6'sı kısmi gövde/bacak,
-6'sı tek kişi kapsamındaki başlangıç kutusudur; ayrıca 1 yanlış farklı-kişi
-birleşmesi vardır. Kısmi kutuların hataları doğrudan benzersiz oyuncu kimlik
-değişimi sayısı olarak okunmamalı. Gecede ayrıca tek kişi kapsamındaki bir
-başlangıç için yanlış bölünme var. Bütün yanlış ve kapsanmayan ilişkiler,
-kutunun kapsamı ve kaynak gerekçesiyle [karar kaydında](measurements/identity-palette-control-decision-20261009.json) listelendi.
+İlk puanlamanın bütün yanlış ve kapsanmayan ilişkileri, kutunun kapsamı ve
+kaynak gerekçesiyle [ilk karar kaydında](measurements/identity-palette-control-decision-20261009.json) listelendi.
+
+## Tahminler açıldıktan sonraki etiket düzeltmesi
+
+Yanlış çıkan 14 ilişkinin kaynak şeritleri yeniden okundu. `66-374-d13`
+merkez daire yanındaki beyaz oyuncuyu `66-404-d16` kutusuna bağlamalı;
+`66-374-d15` sağdaki öndeki beyaz koşucuyu `66-404-d18` kutusuna bağlamalı.
+İlk etiketler bu iki bitiş indeksini ters yazmış. Bitiş `d34`, sağdaki `d18`
+oyuncusunun bacak parçasıdır; bu fiziksel kişi grubu değişmedi. İki negatif
+ilişki doğru kişi dışlama kuralıyla yeniden hesaplandı ve değişmedi.
+
+Özgün görüntü şeritleri, bitiş kutu sayfaları ve tüm saha görünümü düzeltmeyi
+destekliyor. İnceleme yine aynı AI tarafından, tahminler görüldükten sonra
+yapıldı. İlk 14 yanlış ilişkiden ikisi etiket hatası; diğer 12 ilişkinin kaynak
+eşlemesi tekrar desteklendi. Diğer doğru/kapsanmayan etiketler bu aşamada
+bağımsız bir ikinci incelemeden geçmedi.
+
+Düzeltme sonrası **tanı puanı**: gündüz aynı kişi 74 doğru / 10 yanlış / 24
+kapsanmayan; diğer satırlar aynı. Toplam 322 ilişkide 247 doğru, 12 yanlış,
+63 kapsanmayan bulunuyor. Üç yöntemin puanı yine aynı; aday kazanımı yok.
+Gündüz kalan 10 yanlış aynı-kişi ilişkisinin 6'sı kısmi, 4'ü tek kişi kutusunda;
+gecede 1 yanlış aynı-kişi ilişkisi ve gündüzde 1 yanlış farklı-kişi birleşmesi
+var. Bunlar benzersiz oyuncu sayıları veya yeni kör kontrol başarısı değildir.
+Özgün etiketler/raporlar değiştirilmedi: [ek düzeltme, kaynak hashleri ve yeniden puanlama](measurements/identity-palette-control-label-errata-20261009.json).
 
 ## Yürütme ve sonraki çalışma
 

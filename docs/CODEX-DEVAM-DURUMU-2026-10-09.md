@@ -187,8 +187,11 @@ kişi gözleminde kimlikler dahil birebir aynı. Yeni veya reddedilen önceki
 sınır yok. Gerileme görülmediği gibi olumlu kontrol düzeltmesi de yok;
 üretim varsayılanı ByteTrack olarak kalıyor.
 
-Gündüz aynı-kişi doğrusu 72/108, gecede 49/53; toplam 13 yanlış bölünme
-ilişkisi ve 27 kapsanmayan aynı-kişi ilişkisi var. Farklı-kişi doğrusu
+İlk mühürlü puanlamada gündüz aynı-kişi doğrusu 72/108 çıktı. Kaynak tekrar
+incelemesi iki ters bitiş indeksi ortaya çıkardı; etiket hataları ayrı kaydedildi,
+özgün mühür ve rapor değiştirilmedi. Tahmin sonrası tanı puanı gündüz 74/108,
+gecede 49/53; toplam 11 yanlış ve 27 kapsanmayan aynı-kişi ilişkisi var.
+Bu düzeltme yeni kör kontrol veya bağımsız hakem doğrulaması değildir. Farklı-kişi doğrusu
 gündüz 75/108, gecede 49/53; 1 yanlış birleşme, 36 kapsanmayan ilişki var.
 Kısmi/mükerrer kutular bulunduğundan bunlar benzersiz oyuncu sayıları değildir.
 Gece forma ölçümü 35 doğru, 8 yanlış, 14 atanamayan; 1 kişi olmayan kutu
