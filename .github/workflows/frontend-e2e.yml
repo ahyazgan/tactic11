@@ -75,6 +75,7 @@ jobs:
       - run: npm ci
       - name: Build the real API mode
         env:
+          API_BASE_URL: "http://127.0.0.1:8000"
           NEXT_PUBLIC_DEMO_MODE: "false"
           NEXT_PUBLIC_BUILD_SHA: ${{ github.sha }}
         run: npm run build
@@ -86,6 +87,33 @@ jobs:
           npm run start &
           npx wait-on http://localhost:3000 -t 30000
           npx playwright test e2e/live_auth.spec.ts --workers=1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - name: Install review API dependencies
+        working-directory: .
+        run: pip install --disable-pip-version-check -r requirements-dev.txt
+      - name: Real video, approval, PDF, clips and private browser cache
+        working-directory: .
+        env:
+          DATABASE_URL: "sqlite:///./.cache/review-e2e-ci.db"
+          REVIEW_DATA_DIR: ".cache/review-e2e-media"
+          E2E_REVIEW_BACKEND: "true"
+          E2E_REVIEW_VIDEO: "${{ github.workspace }}/.cache/review-e2e-source.mp4"
+        run: |
+          mkdir -p .cache
+          python -m alembic upgrade head
+          python -m scripts.review_e2e_setup --video "$E2E_REVIEW_VIDEO"
+          uvicorn app.api.main:app --host 127.0.0.1 --port 8000 --no-access-log > .cache/review-api.log 2>&1 &
+          api_pid=$!
+          trap 'kill "$api_pid" || true' EXIT
+          cd frontend
+          npx wait-on http://127.0.0.1:8000/health -t 30000
+          npx playwright test e2e/match_reports.spec.ts --workers=1
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

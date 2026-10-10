@@ -83,10 +83,13 @@ def main() -> int:
     if args.dry_run:
         return 0
 
-    src = LocalStatsBomb(args.events_dir)
     added = skipped = 0
     events = 0
     with SessionLocal() as s:
+        if s.get(models.Tenant, args.tenant) is None:
+            print(f"Kulüp kaydı bulunamadı: {args.tenant}. Veri yüklemeden önce tenant kaydını oluşturun.", file=sys.stderr)
+            return 2
+        src = LocalStatsBomb(args.events_dir)
         s.info["tenant_id"] = args.tenant
         for m in have:
             mid = int(m["match_id"])

@@ -36,6 +36,8 @@ from app.api.errors import register_exception_handlers
 from app.api.html_views import router as html_views_router
 from app.api.live import router as live_router
 from app.api.live_vaep import router as live_vaep_router
+from app.api.match_reports import playback_router as review_playback_router
+from app.api.match_reports import router as match_reports_router
 from app.api.match_squad import router as match_squad_router
 from app.api.notes import router as notes_router
 from app.api.notifications import router as notifications_router
@@ -91,8 +93,8 @@ get_settings().validate_for_production()
 
 if not get_settings().api_auth_key:
     get_logger(__name__).warning(
-        "API_AUTH_KEY boş — auth DEVRE DIŞI. Production'da bu değeri set edin "
-        "(env-var typosu? .env yüklendi mi?). /health dışında her uç açık."
+        "API_AUTH_KEY boş — eski API-key korumalı uçlar geliştirme modunda açık. "
+        "Production'da bu değeri set edin. JWT gerektiren uçların kontrolü sürer."
     )
 
 APP_VERSION = "0.4.0"  # production hardening turunda bumped
@@ -276,6 +278,9 @@ async def observability_middleware(request: Request, call_next):
             duration_seconds=duration,
         )
         response.headers["X-Request-ID"] = rid
+        if path == "/match-reports" or path.startswith(("/match-reports/", "/review-media/")):
+            response.headers["Cache-Control"] = "private, no-store"
+            response.headers["Referrer-Policy"] = "no-referrer"
         _apply_security_headers(response)
         return response
     finally:
@@ -1683,6 +1688,7 @@ protected.include_router(live_vaep_router)
 protected.include_router(notifications_router)
 protected.include_router(notes_router)
 protected.include_router(reports_router)
+protected.include_router(match_reports_router)
 protected.include_router(physical_tests_router)
 protected.include_router(sportmonks_router)
 protected.include_router(tracking_router)
@@ -1698,3 +1704,4 @@ app.include_router(live_router)
 app.include_router(html_views_router)
 # Public share endpoint — auth'suz, imzalı token ile PDF açar (Faz 5 #40).
 app.include_router(shared_router)
+app.include_router(review_playback_router)

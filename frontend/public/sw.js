@@ -1,11 +1,11 @@
-// tactic11 PWA service worker — v3
+// tactic11 PWA service worker — v4
 // Strateji:
 //   - App shell (HTML/JS/CSS/font): cache-first, network ile arka plan refresh
 //   - JSON API (/admin/*, /matches/*): stale-while-revalidate (offline'da
 //     son snapshot okunur)
 //   - Navigasyon (HTML doc): network-first, offline'da /offline-shell.html fallback
 //   - Diğer GET: network-first cache fallback (eski davranış)
-const CACHE = "tactic11-v3";
+const CACHE = "tactic11-v4";
 const OFFLINE_URL = "/offline-shell.html";
 
 // İlk kurulumda app shell'i precache
@@ -106,6 +106,15 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   // Sadece same-origin
   if (url.origin !== self.location.origin) return;
+
+  // Private club responses and signed media must never survive in a shared
+  // browser cache. Cache API ignores HTTP no-store unless we enforce it here.
+  // v4 activation also removes any private responses cached by older workers.
+  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/review-media/")
+      || e.request.headers.has("Authorization")) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
 
   if (isApiRequest(url)) {
     e.respondWith(staleWhileRevalidate(e.request));

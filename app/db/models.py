@@ -22,6 +22,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -956,5 +957,53 @@ class PlayerMatchRating(Base):
     flags_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     note: Mapped[str | None] = mapped_column(String(512), nullable=True)
     by_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ReviewVideo(Base):
+    """Private source footage for an analyst-reviewed report (never shared by filename)."""
+
+    __tablename__ = "review_videos"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), index=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    sha256: Mapped[str] = mapped_column(String(64))
+    size_bytes: Mapped[int] = mapped_column(BigInteger)
+    duration_seconds: Mapped[float] = mapped_column(Float)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class MatchReviewReport(Base):
+    """Versioned analyst document; editing invalidates the previous approval."""
+
+    __tablename__ = "match_review_reports"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), index=True)
+    video_id: Mapped[str] = mapped_column(String(36), ForeignKey("review_videos.id"))
+    title: Mapped[str] = mapped_column(String(180))
+    document_json: Mapped[str] = mapped_column(Text)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    reviewed_by: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class ReviewExport(Base):
+    """Bounded background export of an immutable approved report snapshot."""
+
+    __tablename__ = "review_exports"
+    __table_args__ = (Index(
+        "uq_review_exports_active_tenant", "tenant_id", unique=True,
+        sqlite_where=text("state IN ('queued', 'running')"),
+        postgresql_where=text("state IN ('queued', 'running')"),
+    ),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(String(36), ForeignKey("tenants.id", ondelete="CASCADE"), index=True)
+    report_id: Mapped[str] = mapped_column(String(36), ForeignKey("match_review_reports.id"))
+    report_version: Mapped[int] = mapped_column(Integer)
+    state: Mapped[str] = mapped_column(String(16), default="queued")
+    error: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
