@@ -86,6 +86,14 @@ uygulama modüllerinin tamamına yönelik bir güvenlik denetimi anlamına gelme
 - `REVIEW_DATA_DIR` varsayılanı `data/reviews`; kullanıcı videoları ve paketler
   burada tutulur. Docker/uzak sunucuda kalıcı, API tarafından yazılabilir disk
   gerekir. SQL veritabanıyla bu dizin birlikte yedeklenir.
+- Docker Compose, `reviewdata` adlı kalıcı volume'ü `/app/data/reviews` yoluna
+  bağlar. İmaj dizini uygulamanın normal kullanıcısına ait oluşturur; root ile
+  çalıştırmak gerekmez. Konteyner yenilenmesi dosyaları korur; volume silme
+  (`docker compose down -v`) yedeğin yerine geçmez ve dosyaları kaldırır.
+  Eski konteynerin kendi dosya sisteminde kayıt varsa, yeniden oluşturmadan
+  önce `/app/data/reviews` içeriğini yedekleyip yeni volume'e taşıyın.
+  Depodaki `render.yaml` hâlâ demo kurulumu tarif eder ve medya diski tanımlamaz;
+  müşteri videosunu oraya taşımadan kalıcı disk ve yedekleme yapılandırılmalıdır.
 - `REVIEW_MAX_UPLOAD_BYTES` varsayılanı 2 GiB. Kabul edilen video süresi
   0,5 saniye–3 saat; rapor başına 12 pozisyon, pozisyon başına 0,5–120 saniye.
 - Bir API sürecinde bir paket işçisi ve dört işlik kapasite vardır. Kulüp başına

@@ -42,9 +42,13 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-tactic11}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-tactic11}"
+      REVIEW_DATA_DIR: "/app/data/reviews"
+    volumes:
+      - reviewdata:/app/data/reviews
     ports:
       - "8000:8000"
     restart: unless-stopped
 
 volumes:
   pgdata:
+  reviewdata:
