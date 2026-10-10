@@ -7,9 +7,9 @@
     "seconds": 141.13
   },
   "latest_scoped_tests": {
-    "report_api_media_pdf_queue": 25,
+    "report_api_media_pdf_queue": 27,
     "import_tenant_boundary": 2,
-    "chromium": 6,
+    "chromium": 7,
     "ruff": "passed",
     "mypy": {"files": 577, "result": "passed"},
     "frontend_typecheck": "passed",
@@ -20,7 +20,7 @@
     "source_sha256": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
     "source_seconds": 30,
     "clips": [{"start": 1, "end": 4, "seconds": 3}, {"start": 5, "end": 8, "seconds": 3}],
-    "checks": ["authenticated upload", "source playback", "approval", "PDF download", "ZIP download", "manifest hashes", "offline HTML video playback", "portrait-phone PDF download"],
+    "checks": ["authenticated upload", "source playback", "approval", "approved follow-up search", "PDF download", "native ZIP download without JavaScript blob buffering", "manifest hashes", "offline HTML video playback", "portrait-phone PDF download", "signed media overrides development default tenant only after verification"],
     "content_is_expert_football_assessment": false
   },
   "synthetic_checks": ["exact selected color segment at clip start", "90-minute video metadata and final-minute seek", "invalid and browser-incompatible media rejected", "maximum-length Turkish report renders"],

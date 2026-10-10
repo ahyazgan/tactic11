@@ -42,6 +42,24 @@ def _playback_secret() -> str:
     return hashlib.sha256(("review-playback:" + secret).encode()).hexdigest()
 
 
+def _delivery_secret() -> str:
+    secret = get_settings().jwt_secret_key or _dev_playback_secret
+    return hashlib.sha256(("review-delivery:" + secret).encode()).hexdigest()
+
+
+def _media_user(claims: dict[str, Any], session: Session) -> models.User:
+    user = session.get(models.User, claims["sub"])
+    if not user or not user.active or user.tenant_id != claims["tenant"]:
+        raise HTTPException(401, "Dosya erişimi geçersiz.")
+    tenant = session.get(models.Tenant, user.tenant_id)
+    if not tenant or not tenant.active:
+        raise HTTPException(401, "Kulüp erişimi kapalı.")
+    # Signed media requests have no bearer header. Override the local development
+    # default only after validating the signature, account and club.
+    session.info["tenant_id"] = user.tenant_id
+    return user
+
+
 class ReportCreate(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
     video_id: uuid.UUID
@@ -185,13 +203,9 @@ def play_video(video_id: uuid.UUID, access: str = Query(min_length=1, max_length
                             options={"require": ["exp", "iat", "sub", "video", "tenant"]})
     except jwt.PyJWTError as exc:
         raise HTTPException(401, "Video erişiminin süresi doldu; raporu yeniden açın.") from exc
-    user = session.get(models.User, claims["sub"])
-    if (not user or not user.active or user.tenant_id != claims["tenant"]
-            or claims["video"] != str(video_id)):
+    if claims["video"] != str(video_id):
         raise HTTPException(401, "Video erişimi geçersiz.")
-    tenant = session.get(models.Tenant, user.tenant_id)
-    if not tenant or not tenant.active:
-        raise HTTPException(401, "Kulüp erişimi kapalı.")
+    user = _media_user(claims, session)
     return video_content(video_id, user, session)
 
 
@@ -346,3 +360,29 @@ def export_download(report_id: uuid.UUID, export_id: uuid.UUID, user: models.Use
         raise HTTPException(409, "Teslim paketi henüz hazır değil.")
     return FileResponse(path, media_type="application/zip", filename=f"match-report-v{job.report_version}.zip",
                         headers=PRIVATE_HEADERS)
+
+
+@router.post("/{report_id}/exports/{export_id}/download-link")
+def export_download_link(report_id: uuid.UUID, export_id: uuid.UUID, user: models.User = Depends(get_current_user),
+                         session: Session = Depends(get_session)):
+    # Check readiness and ownership before issuing a narrowly scoped capability.
+    export_download(report_id, export_id, user, session)
+    now = datetime.now(UTC)
+    token = jwt.encode({"sub": user.id, "tenant": user.tenant_id, "report": str(report_id),
+                        "export": str(export_id), "aud": "review-delivery", "iat": now,
+                        "exp": now + timedelta(minutes=2)}, _delivery_secret(), algorithm="HS256")
+    return {"path": f"/review-media/exports/{export_id}?access={token}"}
+
+
+@playback_router.get("/review-media/exports/{export_id}")
+def download_delivery(export_id: uuid.UUID, access: str = Query(min_length=1, max_length=2048),
+                      session: Session = Depends(get_session)):
+    try:
+        claims = jwt.decode(access, _delivery_secret(), algorithms=["HS256"], audience="review-delivery",
+                            options={"require": ["exp", "iat", "sub", "tenant", "report", "export"]})
+    except jwt.PyJWTError as exc:
+        raise HTTPException(401, "İndirme erişiminin süresi doldu; ZIP indir düğmesine yeniden basın.") from exc
+    if claims["export"] != str(export_id):
+        raise HTTPException(401, "İndirme erişimi geçersiz.")
+    user = _media_user(claims, session)
+    return export_download(uuid.UUID(claims["report"]), export_id, user, session)

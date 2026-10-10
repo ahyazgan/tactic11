@@ -61,6 +61,12 @@ Kaynak video korunur. PDF'deki zamanlar yayın saati veya maç dakikası değild
 - Oynatma bağlantısı dört saatlik, kullanıcı/kulüp/video kapsamlı bir erişim
   belirteci taşır. Genel paylaşım bağlantısı değildir. Süresi dolarsa raporu
   yeniden aç veya **Videoyu yeniden bağla** düğmesini kullan.
+- ZIP indirme tarayıcının indirme yöneticisine aktarılır; uygulama paketin
+  tamamını JavaScript belleğinde biriktirmez. Her tıklamada iki dakikalık,
+  kullanıcı/kulüp/rapor/paket kapsamlı bir indirme bağlantısı üretilir. Bu süre
+  indirmeyi başlatmak içindir; devam eden aktarım iki dakikada kesilmez.
+  Süresi dolmuş bir indirmeyi yeniden başlatmak için **ZIP indir** düğmesine
+  tekrar basılır. Bağlantı hesap girişi veya farklı dosyalara erişim sağlamaz.
 - Paket onaylı sürümün sabit kopyasından üretilir. Daha sonra raporu değiştirmek,
   önceden oluşturulmuş sürümlü paketi değiştirmez. İndirmeden önce sürümü kontrol et.
 - İşçi işlem boyunca 20 saniyede bir yaşam sinyali yazar. Sinyal 120 saniye

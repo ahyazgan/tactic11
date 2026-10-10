@@ -188,11 +188,13 @@ def test_duplicate_findings_and_unknown_fields_rejected(environment, monkeypatch
     assert save(client, report, content).status_code == 422
 
 
-def test_playback_token_scoped_expiring_and_revoked_with_user(environment, monkeypatch):
+def test_playback_token_scoped_expiring_and_revoked_with_user(environment, monkeypatch, session):
     client, users, _ = environment
     video = upload(client, monkeypatch)
     other = upload(client, monkeypatch, "beta")
     path = client.post(f"/match-reports/videos/{video['id']}/playback", headers=headers()).json()["path"]
+    # The local launcher supplies a default club; signed media must use its verified owner.
+    session.info["tenant_id"] = "beta"
     assert client.get(path).content == b"original-source"
     assert client.get(path.replace(video["id"], other["id"])).status_code == 401
     token = path.split("access=", 1)[1]
@@ -252,6 +254,62 @@ def test_export_detects_replaced_source_and_records_failure(environment, monkeyp
     response = client.get(f"/match-reports/{report['id']}/exports/{job['id']}", headers=headers()).json()
     assert response["state"] == "failed" and "değişti" in response["error"]
     assert not review_media.asset_path("alpha", job["id"], ".zip").exists()
+
+
+def test_native_delivery_download_is_scoped_expiring_and_revocable(environment, monkeypatch, session):
+    client, users, _ = environment
+    video = upload(client, monkeypatch)
+    report = approve(client, save(client, create(client, video)).json())
+    now = datetime.now(UTC)
+    job = models.ReviewExport(id=str(uuid.uuid4()), tenant_id="alpha", report_id=report["id"],
+                              report_version=report["version"], state="done", created_at=now, updated_at=now)
+    session.add(job)
+    session.commit()
+    review_media.asset_path("alpha", job.id, ".zip").write_bytes(b"PK-test-delivery")
+    endpoint = f"/match-reports/{report['id']}/exports/{job.id}/download-link"
+    assert client.post(endpoint).status_code == 401
+    assert client.post(endpoint, headers=headers("beta")).status_code == 404
+    response = client.post(endpoint, headers=headers(role="viewer"))
+    assert response.status_code == 200 and response.headers["cache-control"] == "private, no-store"
+    path = response.json()["path"]
+    session.info["tenant_id"] = "beta"
+    delivered = client.get(path)
+    assert delivered.content == b"PK-test-delivery"
+    assert delivered.headers["content-disposition"].startswith("attachment;")
+    assert delivered.headers["cache-control"] == "private, no-store"
+    assert delivered.headers["referrer-policy"] == "no-referrer"
+    partial = client.get(path, headers={"Range": "bytes=0-3"})
+    assert partial.status_code == 206 and partial.content == b"PK-t"
+    token = path.split("access=", 1)[1]
+    claims = jwt.decode(token, match_reports._delivery_secret(), algorithms=["HS256"], audience="review-delivery")
+    assert claims["exp"] - claims["iat"] == 120
+    assert client.get(path.replace(job.id, str(uuid.uuid4()))).status_code == 401
+    assert client.get("/match-reports", headers={"Authorization": f"Bearer {token}"}).status_code == 401
+    assert client.get(f"/review-media/{video['id']}?access={token}").status_code == 401
+    playback = client.post(f"/match-reports/videos/{video['id']}/playback", headers=headers()).json()["path"]
+    assert client.get(path.split("access=", 1)[0] + "access=" + playback.split("access=", 1)[1]).status_code == 401
+    claims["exp"] = datetime.now(UTC) - timedelta(seconds=1)
+    expired = jwt.encode(claims, match_reports._delivery_secret(), algorithm="HS256")
+    assert client.get(path.split("access=", 1)[0] + "access=" + expired).status_code == 401
+    users[("alpha", "viewer")].active = False
+    session.commit()
+    assert client.get(path).status_code == 401
+    users[("alpha", "viewer")].active = True
+    session.get(models.Tenant, "alpha").active = False
+    session.commit()
+    assert client.get(path).status_code == 401
+
+
+def test_native_delivery_requires_completed_file(environment, monkeypatch, session):
+    client, _, _ = environment
+    report = approve(client, save(client, create(client, upload(client, monkeypatch))).json())
+    monkeypatch.setattr(review_export, "enqueue_export", lambda *args: True)
+    base = f"/match-reports/{report['id']}/exports"
+    job_id = client.post(base, headers=headers(), json={"version": report["version"]}).json()["id"]
+    assert client.post(f"{base}/{job_id}/download-link", headers=headers()).status_code == 409
+    session.get(models.ReviewExport, job_id).state = "done"
+    session.commit()
+    assert client.post(f"{base}/{job_id}/download-link", headers=headers()).status_code == 409
 
 
 def test_real_ffmpeg_probe_clip_and_corrupt_input(tmp_path):
