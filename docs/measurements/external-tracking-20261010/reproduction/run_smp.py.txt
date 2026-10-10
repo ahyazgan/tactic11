@@ -1,0 +1,153 @@
+"""SMP/SAM2-L on the exact Manager baseline with real assignment margins."""
+import argparse
+import inspect
+import json
+import sys
+import textwrap
+import time
+import traceback
+import types
+from dataclasses import asdict
+from pathlib import Path
+from unittest.mock import patch
+ROOT=Path(__file__).resolve().parent
+PROJECT=ROOT.parent.parent
+SMP=ROOT/'sources/holma91__selective-mask-propagation'
+sys.path[:0]=[str(ROOT/'site'),str(PROJECT),str(SMP),str(SMP/'vendor/sam2')]
+import cv2
+import numpy as np
+import torch
+import supervision as sv
+from compat import patch_sam_frames
+from scripts.soccertrack_v2.benchmark_tracker_backends import groups,backend_settings,load,digest
+from scripts.soccertrack_v2.benchmark_track_buffer import retrack
+from scripts.soccertrack_v2.benchmark_deepocsort import VIDEO_DIRS
+
+
+def make_tracker(data):
+    tracker=sv.ByteTrack(**backend_settings(data,'supervision'))
+    original=type(tracker).update_with_tensors
+    source=textwrap.dedent(inspect.getsource(original))
+    marker='    for itracked, idet in matches:'
+    sections=source.split(marker)
+    if len(sections)!=4: raise ValueError('Unexpected pinned baseline implementation')
+    def record(pool,cost,matches):
+        for row,col in matches:
+            values=np.sort(cost[:,col])
+            pool[row]._study_margin=float(values[1]-values[0]) if len(values)>1 else float('inf')
+    source=sections[0]
+    for pool,section in zip(('strack_pool','r_tracked_stracks','unconfirmed'),sections[1:],strict=True):
+        source+=f'    _study_record({pool}, dists, matches)\n'+marker+section
+    namespace=dict(original.__globals__,_study_record=record)
+    exec(compile(source,'<read-only instrumented Supervision update>','exec'),namespace)
+    tracker.update_with_tensors=types.MethodType(namespace['update_with_tensors'],tracker)
+    margins={}
+    class Wrapper:
+        max_time_lost=tracker.max_time_lost
+        def update_with_detections(self,detections):
+            result=tracker.update_with_detections(detections)
+            by_id={t.external_track_id:float(getattr(t,'_study_margin',float('inf')))
+                   for t in tracker.tracked_tracks}
+            margins[len(margins)]={int(tid):by_id[int(tid)] for tid in result.tracker_id}
+            return result
+    return Wrapper(),margins,source
+
+
+def execute(args):
+    out=ROOT/'runs'/args.name
+    out.mkdir(parents=True,exist_ok=False)
+    cfg=groups()[args.group]
+    raw=PROJECT/cfg['cache']/f'seg_{args.segment:04d}.json'
+    video=PROJECT/VIDEO_DIRS[args.group]/f'seg_{args.segment:04d}.mp4'
+    data=load(raw)
+    hashes={str(p):digest(p) for p in (raw,video,Path(__file__),ROOT/'compat.py')}
+    tracker,margins,instrumentation=make_tracker(data)
+    with patch.object(sv,'ByteTrack',return_value=tracker):
+        base_samples,teams,base_stats=retrack(data,correct_buffer=False)
+    if [[list(p) for p in s.persons] for s in base_samples] != [s['persons'] for s in data['samples']]:
+        raise ValueError('Instrumentation changed baseline observations')
+    if {str(t):[c.tolist() for c in cs] for t,cs in teams._obs.items()}!=data['colors']:
+        raise ValueError('Instrumentation changed baseline colour history')
+    tracks={i:{int(p[0]):np.array(p[1:5],dtype=float) for p in s.persons} for i,s in enumerate(base_samples)}
+    margins={i:{tid:margins[i][tid] for tid in rows} for i,rows in tracks.items()}
+    (out/'baseline_instrumentation.py').write_text(instrumentation)
+    (out/'baseline_margins.json').write_text(json.dumps(margins))
+    from selective_mask_propagation.core.sam2 import find_windows,step_sam
+    specs=find_windows(tracks,margins)
+    (out/'window_candidates.json').write_text(json.dumps([asdict(s) for s in specs],indent=2))
+    manifest=dict(source_sha256=hashes,baseline_observations_exact=True,baseline_colours_exact=True,
+        upstream_commit='6472b52e79c47a7793cd4c6cabd64e812a8e5852',group=args.group,segment=args.segment,
+        margin='second-smallest minus smallest cost in matched detection column, each real association stage',
+        model='SAM2.1 Hiera Large',model_sha256=digest(ROOT/'models/sam2.1_hiera_large.pt'),
+        adaptations=['Sampled original video frame loader','SAM state/video CPU offload',
+                     'upstream optional CUDA hole-filling extension unavailable; official fallback'],
+        mode='benchmark: source boxes preserved; identity correction only',new_control_opened=False)
+    (out/'manifest.json').write_text(json.dumps(manifest,indent=2))
+    if args.prepare_only:
+        print('PREPARED',args.name,'windows',len(specs),flush=True)
+        return
+    torch.set_num_threads(4); cv2.setNumThreads(2); torch.manual_seed(0); np.random.seed(0)
+    restore=patch_sam_frames(video,[s['frame_idx'] for s in data['samples']])
+    from sam2.build_sam import build_sam2_video_predictor
+    predictor=build_sam2_video_predictor('configs/sam2.1/sam2.1_hiera_l.yaml',str(ROOT/'models/sam2.1_hiera_large.pt'))
+    from selective_mask_propagation.core.merge import step_merge,extract_bboxes
+    try:
+        start=time.perf_counter()
+        with torch.inference_mode(),torch.autocast('cuda',dtype=torch.bfloat16):
+            masks,windows,renames,matches=step_sam(predictor,tracks,margins,str(out/'virtual'))
+            merged,_,rename_map=step_merge(tracks,masks,windows,margins,renames)
+            corrected=extract_bboxes(merged,tracks,rename_map,matches,windows)
+        torch.cuda.synchronize()
+        elapsed=time.perf_counter()-start
+        mapping=[]
+        invalid_source_boxes=[]
+        (out/'raw_corrected_boxes.json').write_text(json.dumps({int(f):{int(t):np.asarray(b).tolist() for t,b in rows.items()} for f,rows in corrected.items()}))
+        for i,sample in enumerate(data['samples']):
+            raw_rows=data['detected_persons'][str(sample['order'])]
+            boxes=np.asarray([r['box'] for r in raw_rows],dtype=float).reshape(-1,4)
+            row={}
+            for tid,box in corrected.get(i,{}).items():
+                indices=np.flatnonzero(np.all(np.isclose(boxes,box,atol=1e-7,rtol=0),axis=1))
+                if len(indices)!=1:
+                    invalid_source_boxes.append(dict(sample_order=i,source_frame=sample['frame_idx'],track_id=int(tid),box=np.asarray(box).tolist(),source_matches=len(indices)))
+                    continue  # Do not count mask-derived boxes as detector evidence.
+                index=int(indices[0])
+                if index in row: raise ValueError('Duplicate source detection after SMP')
+                row[index]=int(tid)
+            if len(set(row.values()))!=len(row): raise ValueError('Duplicate identity after SMP')
+            mapping.append(row)
+        class Replay:
+            cursor=0
+            max_time_lost=tracker.max_time_lost
+            def update_with_detections(self,detections):
+                row=mapping[self.cursor]; self.cursor+=1
+                keep=np.array([k for k,j in enumerate(detections.data['raw_index']) if int(j) in row],dtype=int)
+                result=detections[keep]
+                result.tracker_id=np.array([row[int(j)] for j in result.data['raw_index']],dtype=int)
+                return result
+        with patch.object(sv,'ByteTrack',return_value=Replay()):
+            samples,teams,stats=retrack(data,correct_buffer=False)
+        anchors=np.asarray(load(PROJECT/'docs/measurements'/f"{cfg['anchor']}.json")['anchors']['before'])
+        assignment=teams.fit(anchors,eligible_tracks={p[0] for s in samples for p in s.persons})
+        for sample in samples:
+            sample.person_teams={str(p[0]):assignment.team_by_track.get(p[0]) for p in sample.persons}
+        if hashes!={str(p):digest(Path(p)) for p in hashes}: raise ValueError('Input changed during run')
+        (out/'predictions.json').write_text(json.dumps({'samples':[asdict(s) for s in samples]}))
+        (out/'result.json').write_text(json.dumps(dict(status='completed',manifest=manifest,seconds=elapsed,
+            windows=[dict(asdict(w),outcome=w.outcome.value) for w in windows],renames=renames,stats=stats,
+            invalid_source_boxes_excluded=invalid_source_boxes,promotion_blocked=bool(invalid_source_boxes),
+            output_scope='Only uniquely matched original detector boxes; upstream mask-derived fallback boxes excluded and recorded; any such fallback blocks promotion'),indent=2))
+        print('COMPLETE',args.name,len(windows),len(renames),round(elapsed,2),flush=True)
+    finally:
+        restore()
+
+
+if __name__=='__main__':
+    p=argparse.ArgumentParser()
+    p.add_argument('--group',required=True);p.add_argument('--segment',type=int,required=True)
+    p.add_argument('--name',required=True);p.add_argument('--prepare-only',action='store_true')
+    args=p.parse_args()
+    try: execute(args)
+    except Exception:
+        (ROOT/'runs'/args.name/'error.txt').write_text(traceback.format_exc())
+        raise

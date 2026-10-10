@@ -1,0 +1,50 @@
+import importlib.util
+import json
+import sys
+import hashlib
+from pathlib import Path
+ROOT=Path(__file__).resolve().parent
+sys.path.insert(0,str(ROOT/'site'))
+import cv2
+import numpy as np
+import torch
+import yaml
+
+torch.set_num_threads(2)
+source=ROOT/'sources/lukaszgrad__uncertainty-jnr'
+spec=importlib.util.spec_from_file_location('study_jersey_model',source/'src/uncertainty_jnr/model.py')
+module=importlib.util.module_from_spec(spec)
+sys.modules[spec.name]=module
+spec.loader.exec_module(module)
+cfg=yaml.safe_load((source/'configs/small16_reid.yaml').read_text())['model']
+model=module.TimmOCRModel(model_name=cfg['model_name'],pretrained=False,
+    classifier_type=cfg['classifier_type'],embedding_type=cfg['embedding_type'],
+    per_digit_bias=cfg['per_digit_bias'],uncertainty_head=cfg['uncertainty_head'])
+checkpoint=ROOT/'models/uncertainty_vit_small.pth'
+loaded=torch.load(checkpoint,map_location='cpu',weights_only=True)
+state={k.replace('._orig_mod.','.').removeprefix('_orig_mod.'):v for k,v in loaded['model_state_dict'].items()}
+model.load_state_dict(state,strict=True)
+model.eval()
+manifest=json.loads((ROOT/'jersey_crops/manifest.json').read_text())
+rows=[]
+with torch.inference_mode():
+    for row in manifest['records']:
+        rgb=cv2.cvtColor(cv2.imread(str(ROOT/'jersey_crops'/row['id'])),cv2.COLOR_BGR2RGB)
+        h,w=rgb.shape[:2]
+        torso=rgb[h//6:h-h//3,:]
+        image=cv2.resize(torso,(224,224),interpolation=cv2.INTER_CUBIC)
+        tensor=torch.from_numpy(image.transpose(2,0,1).copy()).float().div(127.5).sub(1).unsqueeze(0)
+        out=model(tensor)
+        score,number=out.number_probs[0].max(0)
+        absent=float(torch.softmax(out.all_logits.float(),dim=-1)[0,100])
+        result=dict(row,predicted_number=int(number),number_probability=float(score),
+                    uncertainty=float(out.uncertainty.reshape(-1)[0]),absent_softmax=absent,
+                    native_size=[w,h])
+        rows.append(result)
+        print(row['id'],int(number),round(float(score),4),round(result['uncertainty'],4),flush=True)
+with checkpoint.open('rb') as stream: sha=hashlib.file_digest(stream,'sha256').hexdigest()
+result=dict(status='completed',model_sha256=sha,strict_state_loading=True,device='cpu',dtype='float32',
+    preprocessing='Upstream JerseyCrop integer bounds; cubic resize 224x224; RGB/127.5-1',
+    upstream_commit='f19d9cb90e1a67d5ffe44acbf69fb348fe6525e7',
+    scope='24 diagnostic crops from existing development clips, not representative accuracy benchmark',records=rows)
+(ROOT/'jersey_result.json').write_text(json.dumps(result,indent=2))

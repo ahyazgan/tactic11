@@ -1,0 +1,90 @@
+"""Copy small audit artifacts, not external code, models or source footage."""
+import hashlib
+import json
+import shutil
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+PROJECT = ROOT.parent.parent
+OUT = PROJECT/'docs/measurements/external-tracking-20261010'
+OUT.mkdir(parents=True, exist_ok=True)
+def load(path):
+    return json.loads(path.read_text(encoding='utf-8-sig'))
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+def write(name, value):
+    (OUT/name).write_text(json.dumps(value, indent=2, ensure_ascii=False)+'\n', encoding='utf-8')
+
+source = load(ROOT/'source_access.json')
+repositories = []
+for item in source:
+    row = {k:v for k,v in item.items() if k != 'files'}
+    row['source_files'] = len(item['files'])
+    row['manifest_sha256'] = sha(ROOT/'sources'/item['repo'].replace('/','__')/'SOURCE_MANIFEST.json')
+    repositories.append(row)
+write('repositories.json', repositories)
+for source_name, name in [
+    ('model_access.json','model-access.json'), ('runtime_versions.json','runtime-versions.json'),
+    ('evidence_checks.json','evidence-checks.json'), ('jersey_result.json','jersey-results.json'),
+    ('jersey_visual_notes.json','jersey-original-visual-notes.json'),
+    ('calibration_result.json','calibration-results.json'), ('comparison_scores.json','comparison-scores.json')]:
+    write(name, load(ROOT/source_name))
+models=load(ROOT/'model_downloads.json')
+models.append(dict(name='uncertainty_vit_small.pth',size=(ROOT/'models/uncertainty_vit_small.pth').stat().st_size,
+    sha256=load(ROOT/'jersey_result.json')['model_sha256'],status='downloaded',
+    url='https://drive.google.com/file/d/1oc8VdEHHxXQfhNZTvbHbm6gfLRkwGl2o/view',
+    source='Official uncertainty-jnr README ViT-Small link; downloaded with gdown'))
+write('model-downloads.json',models)
+
+trials = []
+for directory in sorted((ROOT/'runs').iterdir()):
+    row = dict(name=directory.name)
+    if directory.name.startswith('mcbyte_'):
+        row['execution_mode'] = 'mask_disabled_ablation' if '_nomask_' in directory.name else 'mask_plus_reid'
+    for name in ('manifest.json','result.json','progress.json','abort.json'):
+        if (directory/name).exists():
+            row[name.removesuffix('.json')] = load(directory/name)
+    if (directory/'error.txt').exists():
+        row['error'] = (directory/'error.txt').read_text()
+    if (directory/'predictions.json').exists():
+        row['predictions_sha256'] = sha(directory/'predictions.json')
+    if (directory/'raw_corrected_boxes.json').exists():
+        row['raw_corrected_boxes_sha256'] = sha(directory/'raw_corrected_boxes.json')
+    if (directory/'window_candidates.json').exists():
+        row['window_candidates'] = load(directory/'window_candidates.json')
+    trials.append(row)
+write('trial-records.json', trials)
+scores=load(ROOT/'comparison_scores.json')
+blend_names=['blend_day3_v2','blend_night_old_control40_v2']
+blend_pass=all(name in scores and not scores[name]['regressions'] for name in blend_names) and any(scores.get(name,{}).get('person_improvement',False) for name in blend_names)
+write('selection.json', dict(selected_new_production_backend=None,keep_current_baseline=True,
+    selected_development_candidate='baseline-team-gated-mcbyte-no-mask' if blend_pass else None,
+    joint_two_clip_development_pass=blend_pass,post_hoc=True,independent_validation=False,promotion_allowed=False,
+    completed_scored_trials={name:dict(local_development_pass=row['local_development_pass'],
+        regressions=row['regressions'],person_improvement=row['person_improvement']) for name,row in scores.items()},
+    decision_basis='The post-hoc team-gated blend preserves baseline boxes and team outputs, has no measured regression on these two clips and improves night same-person relations. Standalone candidates regress or are incomplete. This does not establish superiority to the existing guarded candidate or to all unrun projects.',
+    existing_guarded_identity_candidate='Separate frozen control pending; this research does not promote or change it.',
+    next_layers={'identity':'Constrained association on the existing detector/tracker; preserve real observations.',
+                 'jersey':'Multiple legible frames and contradiction rejection required.',
+                 'ball':'SAM3 only after official model access and local comparison.',
+                 'events':'PathCRF/ELASTIC only after stable metric trajectories and event inputs.'}))
+
+drivers = OUT/'reproduction'
+drivers.mkdir(exist_ok=True)
+for name in ('acquire_sources.py','download_models.py','model_access.py','compat.py',
+             'prepare_crops.py','run_jersey.py','run_calibration.py','run_mcbyte.py',
+             'run_smp.py','score_runs.py','check_evidence.py','bundle_evidence.py','runtime_versions.py','blend_identity.py','verify_bundle.py'):
+    shutil.copyfile(ROOT/name, drivers/(name+'.txt'))
+write('repositories-input.json',load(ROOT/'repos.json'))
+write('scope.json', dict(date='2026-10-10',
+    production_changed=False, new_control_pixels_opened=False,
+    sampling='previously seen day segment 3 and night_old_control segment 40 only',
+    jersey_note_amendment='day_05 initial 16 visual note is ambiguous 15/16; excluded from correctness claims. night_18 visually 6, model 15. This is a diagnostic, not an accuracy estimate.',
+    score_scope='Only completed full-clip predictions scored; sparse source-box labels, no IDF1/HOTA claims.',
+    dependency_install='pip --target .cache/external-study-20261010/site --no-deps --no-cache-dir; production environments unchanged',
+    calibration_failed_attempt='Initial concurrent memory failure excluded; calibration-results.json is the completed serial 12-frame run.',
+    sam_native_extension='Optional CUDA hole filling extension absent; upstream official fallback used.',
+    exclusions='No upstream source, model weights, source footage, private data or account credentials committed.'))
+files = {p.relative_to(OUT).as_posix():sha(p) for p in OUT.rglob('*') if p.is_file() and p.name != 'artifact-sha256.json'}
+write('artifact-sha256.json',files)
+print('BUNDLED',len(files),'files',sum(p.stat().st_size for p in OUT.rglob('*') if p.is_file()),'bytes')

@@ -1,0 +1,61 @@
+[
+  {
+    "repo": "facebook/sam3",
+    "file": "sam3.pt",
+    "status": "GatedRepoError",
+    "message": "401 Client Error. (Request ID: Root=1-6aca1f97-3c4e4b156732a9395f30a07c;a5b4e9e1-b9bb-46b9-8278-bf1c318f97a7)"
+  },
+  {
+    "repo": "facebook/sam2.1-hiera-large",
+    "file": "sam2.1_hiera_large.pt",
+    "revision": "665f8e2ad61cf5f53d65644ff27c8ee525124610",
+    "size": 898083611,
+    "etag": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318",
+    "status": "accessible"
+  },
+  {
+    "repo": "facebook/sam2.1-hiera-tiny",
+    "file": "sam2.1_hiera_tiny.pt",
+    "revision": "de431c4043854a71d8101e17995dfe596bf101a5",
+    "size": 156008466,
+    "etag": "7402e0d864fa82708a20fbd15bc84245c2f26dff0eb43a4b5b93452deb34be69",
+    "status": "accessible"
+  },
+  {
+    "repo": "xleprime/SoccerMaster",
+    "file": "backbone.pt",
+    "revision": "0d94573662dbd678df22aa5c61ae77f474b939c9",
+    "size": 1435246749,
+    "etag": "d8a8932d844cc2756277ec485e36615b1196f1ad747240edb46b77e870fd9660",
+    "status": "accessible"
+  },
+  {
+    "repo": "google/siglip-base-patch16-224",
+    "file": "model.safetensors",
+    "revision": "7fd15f0689c79d79e38b1c2e2e2370a7bf2761ed",
+    "size": 812672320,
+    "etag": "2c63cb7d1f2e95ba501893cbb8faeb4ea9a3af295498d35097126228659c2af8",
+    "status": "accessible"
+  },
+  {
+    "model": "EdgeTAM",
+    "url": "https://raw.githubusercontent.com/facebookresearch/EdgeTAM/main/checkpoints/edgetam.pt",
+    "status": "accessible",
+    "http_status": 200,
+    "size": "56116523"
+  },
+  {
+    "model": "PnLCalib-keypoints",
+    "url": "https://github.com/mguti97/PnLCalib/releases/download/v1.0.0/SV_kp",
+    "status": "accessible",
+    "http_status": 200,
+    "size": "264964645"
+  },
+  {
+    "model": "PnLCalib-lines",
+    "url": "https://github.com/mguti97/PnLCalib/releases/download/v1.0.0/SV_lines",
+    "status": "accessible",
+    "http_status": 200,
+    "size": "264857893"
+  }
+]

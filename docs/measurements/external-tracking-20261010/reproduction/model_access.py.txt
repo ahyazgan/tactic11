@@ -1,0 +1,34 @@
+import json
+import urllib.request
+from pathlib import Path
+from huggingface_hub import HfApi, get_hf_file_metadata, hf_hub_url
+
+root = Path(__file__).resolve().parent
+rows = []
+for repo, filename in [('facebook/sam3', 'sam3.pt'),
+                       ('facebook/sam2.1-hiera-large', 'sam2.1_hiera_large.pt'),
+                       ('facebook/sam2.1-hiera-tiny', 'sam2.1_hiera_tiny.pt'),
+                       ('xleprime/SoccerMaster', 'backbone.pt'),
+                       ('google/siglip-base-patch16-224', 'model.safetensors')]:
+    try:
+        info = HfApi().model_info(repo)
+        meta = get_hf_file_metadata(hf_hub_url(repo, filename, revision=info.sha))
+        row = dict(repo=repo, file=filename, revision=info.sha, size=meta.size,
+                   etag=meta.etag, status='accessible')
+    except Exception as exc:
+        row = dict(repo=repo, file=filename, status=type(exc).__name__,
+                   message=str(exc).splitlines()[0])
+    rows.append(row)
+    print(json.dumps(row), flush=True)
+for label, url in [('EdgeTAM', 'https://raw.githubusercontent.com/facebookresearch/EdgeTAM/main/checkpoints/edgetam.pt'),
+                   ('PnLCalib-keypoints', 'https://github.com/mguti97/PnLCalib/releases/download/v1.0.0/SV_kp'),
+                   ('PnLCalib-lines', 'https://github.com/mguti97/PnLCalib/releases/download/v1.0.0/SV_lines')]:
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, method='HEAD'), timeout=40) as res:
+            row = dict(model=label, url=url, status='accessible', http_status=res.status,
+                       size=res.headers.get('Content-Length'))
+    except Exception as exc:
+        row = dict(model=label, url=url, status=type(exc).__name__, message=str(exc).splitlines()[0])
+    rows.append(row)
+    print(json.dumps(row), flush=True)
+(root / 'model_access.json').write_text(json.dumps(rows, indent=2) + '\n', encoding='utf-8')

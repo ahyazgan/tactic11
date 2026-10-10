@@ -1,0 +1,103 @@
+"""Explicit research adapters; no edits to pinned upstream or production sources."""
+import sys
+import types
+from collections import OrderedDict
+from pathlib import Path
+import numpy as np
+
+
+def install_bbox_compat():
+    # cython_bbox 0.1.5 uses inclusive (+1) pixel endpoints. A NumPy CPU
+    # implementation avoids installing a system-wide C++ compiler on Windows.
+    def bbox_overlaps(boxes, queries):
+        boxes, queries = np.asarray(boxes, dtype=np.float64), np.asarray(queries, dtype=np.float64)
+        lo = np.maximum(boxes[:, None, :2], queries[None, :, :2])
+        hi = np.minimum(boxes[:, None, 2:], queries[None, :, 2:])
+        intersection = np.maximum(hi - lo + 1, 0).prod(axis=2)
+        a = (boxes[:, 2:] - boxes[:, :2] + 1).prod(axis=1)
+        b = (queries[:, 2:] - queries[:, :2] + 1).prod(axis=1)
+        return intersection / (a[:, None] + b[None, :] - intersection)
+    module = types.ModuleType('cython_bbox')
+    module.bbox_overlaps = bbox_overlaps
+    sys.modules['cython_bbox'] = module
+    return bbox_overlaps
+
+
+class SampledFrames:
+    """Original video pixels, normalized with SAM's PIL resize; bounded CPU cache."""
+    def __init__(self, video, source_indices, image_size, image_mean, image_std):
+        import cv2
+        import torch
+        self.cap = cv2.VideoCapture(str(video))
+        if not self.cap.isOpened():
+            raise ValueError(f'Cannot decode {video}')
+        self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        self.indices = source_indices
+        self.image_size = image_size
+        self.mean = torch.tensor(image_mean).reshape(3, 1, 1)
+        self.std = torch.tensor(image_std).reshape(3, 1, 1)
+        self.cache = OrderedDict()
+        self.current = -1
+
+    def __len__(self):
+        return len(self.indices)
+
+    def __getitem__(self, index):
+        import cv2
+        import torch
+        from PIL import Image
+        if index in self.cache:
+            self.cache.move_to_end(index)
+            return self.cache[index]
+        wanted = self.indices[index]
+        if wanted <= self.current or wanted - self.current > 30:
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, wanted)
+            self.current = wanted - 1
+        while self.current < wanted:
+            ok, bgr = self.cap.read()
+            if not ok:
+                raise ValueError(f'Video ends before source frame {wanted}')
+            self.current += 1
+        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        resized = np.array(Image.fromarray(rgb).resize((self.image_size, self.image_size)))
+        tensor = torch.from_numpy(resized).permute(2, 0, 1).float().div(255)
+        tensor = (tensor - self.mean) / self.std
+        self.cache[index] = tensor
+        while len(self.cache) > 8:
+            self.cache.popitem(last=False)
+        return tensor
+
+    def close(self):
+        self.cap.release()
+        self.cache.clear()
+
+
+def patch_sam_frames(video, source_indices):
+    import sam2.sam2_video_predictor as module
+    loaded = []
+
+    def load_video_frames(video_path, image_size, offload_video_to_cpu=True,
+                          image_mean=(0.485, 0.456, 0.406),
+                          image_std=(0.229, 0.224, 0.225), **kwargs):
+        frames = SampledFrames(video, source_indices, image_size, image_mean, image_std)
+        loaded.append(frames)
+        return frames, frames.height, frames.width
+
+    original_loader = module.load_video_frames
+    original_init = module.SAM2VideoPredictor.init_state
+    module.load_video_frames = load_video_frames
+
+    def init_state(self, *args, **kwargs):
+        kwargs['offload_video_to_cpu'] = True
+        kwargs['offload_state_to_cpu'] = True
+        return original_init(self, *args, **kwargs)
+
+    module.SAM2VideoPredictor.init_state = init_state
+
+    def restore():
+        module.load_video_frames = original_loader
+        module.SAM2VideoPredictor.init_state = original_init
+        for frames in loaded:
+            frames.close()
+    return restore

@@ -1,0 +1,4776 @@
+[
+  {
+    "name": "blend_day3_v1"
+  },
+  {
+    "name": "blend_day3_v2",
+    "manifest": {
+      "group": "day",
+      "segment": 3,
+      "frames": 375,
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\runs\\mcbyte_day3_nomask_v1\\predictions.json": "d696cb6d71b64be26a465f9895eccad25da50faa10067d8f73ef114a044ec045",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\blend_identity.py": "cc740ac4be30cfa918ffe6f0896d19f6d05dd3cc0c5d9e97d341f0759e6b4886"
+      },
+      "method": "Use McByte no-mask export ID only on the identical baseline source observation with a known baseline team; namespace by team. Unknown/missing/ambiguous observations retain baseline track namespace.",
+      "post_hoc": true,
+      "control_opened": false,
+      "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+      "adaptations": [
+        "No new observations or box changes",
+        "Baseline per-observation team values exactly preserved",
+        "External identities partitioned by baseline team"
+      ],
+      "limitation": "Developed after observing component results on these two clips; not independent validation, not production ready. Sparse labels cannot establish full-video identity accuracy."
+    },
+    "result": {
+      "status": "completed",
+      "manifest": {
+        "group": "day",
+        "segment": 3,
+        "frames": 375,
+        "source_sha256": {
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\runs\\mcbyte_day3_nomask_v1\\predictions.json": "d696cb6d71b64be26a465f9895eccad25da50faa10067d8f73ef114a044ec045",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\blend_identity.py": "cc740ac4be30cfa918ffe6f0896d19f6d05dd3cc0c5d9e97d341f0759e6b4886"
+        },
+        "method": "Use McByte no-mask export ID only on the identical baseline source observation with a known baseline team; namespace by team. Unknown/missing/ambiguous observations retain baseline track namespace.",
+        "post_hoc": true,
+        "control_opened": false,
+        "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+        "adaptations": [
+          "No new observations or box changes",
+          "Baseline per-observation team values exactly preserved",
+          "External identities partitioned by baseline team"
+        ],
+        "limitation": "Developed after observing component results on these two clips; not independent validation, not production ready. Sparse labels cannot establish full-video identity accuracy."
+      },
+      "stats": {
+        "observations": 8828,
+        "external_identity_used": 8001,
+        "baseline_fallback": 827,
+        "ambiguous_source": 0
+      },
+      "source_observations_exact": true,
+      "source_teams_exact": true
+    },
+    "predictions_sha256": "779076dbdfa2b808dda4e52607fe80d6195f4f27bd5e4d4e3d22ba405e5a6fa9"
+  },
+  {
+    "name": "blend_night_old_control40_v2",
+    "manifest": {
+      "group": "night_old_control",
+      "segment": 40,
+      "frames": 375,
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\runs\\mcbyte_night40_nomask_v1\\predictions.json": "438070472507fdce22c6550c18157b8d189433429bb1f651af03a8186ec42bcc",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\blend_identity.py": "cc740ac4be30cfa918ffe6f0896d19f6d05dd3cc0c5d9e97d341f0759e6b4886"
+      },
+      "method": "Use McByte no-mask export ID only on the identical baseline source observation with a known baseline team; namespace by team. Unknown/missing/ambiguous observations retain baseline track namespace.",
+      "post_hoc": true,
+      "control_opened": false,
+      "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+      "adaptations": [
+        "No new observations or box changes",
+        "Baseline per-observation team values exactly preserved",
+        "External identities partitioned by baseline team"
+      ],
+      "limitation": "Developed after observing component results on these two clips; not independent validation, not production ready. Sparse labels cannot establish full-video identity accuracy."
+    },
+    "result": {
+      "status": "completed",
+      "manifest": {
+        "group": "night_old_control",
+        "segment": 40,
+        "frames": 375,
+        "source_sha256": {
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\runs\\mcbyte_night40_nomask_v1\\predictions.json": "438070472507fdce22c6550c18157b8d189433429bb1f651af03a8186ec42bcc",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\blend_identity.py": "cc740ac4be30cfa918ffe6f0896d19f6d05dd3cc0c5d9e97d341f0759e6b4886"
+        },
+        "method": "Use McByte no-mask export ID only on the identical baseline source observation with a known baseline team; namespace by team. Unknown/missing/ambiguous observations retain baseline track namespace.",
+        "post_hoc": true,
+        "control_opened": false,
+        "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+        "adaptations": [
+          "No new observations or box changes",
+          "Baseline per-observation team values exactly preserved",
+          "External identities partitioned by baseline team"
+        ],
+        "limitation": "Developed after observing component results on these two clips; not independent validation, not production ready. Sparse labels cannot establish full-video identity accuracy."
+      },
+      "stats": {
+        "observations": 6451,
+        "external_identity_used": 5824,
+        "baseline_fallback": 627,
+        "ambiguous_source": 0
+      },
+      "source_observations_exact": true,
+      "source_teams_exact": true
+    },
+    "predictions_sha256": "10e8ba8fda5b83859ca24d6f2c5450d011ceec990a7fafc7ef404e0c9bc8c8bd"
+  },
+  {
+    "name": "mcbyte_day3_full_v1",
+    "execution_mode": "mask_plus_reid",
+    "manifest": {
+      "group": "day",
+      "segment": 3,
+      "frames": 375,
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py": "33415bca297a101e19cdb3e49374b0b53ed46d19e536f45f98c6c96289a9ad45",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "parameters": {
+        "track_thresh": 0.25,
+        "track_buffer": 7,
+        "cmc_method": "none",
+        "cmc_downscale": 4,
+        "cmc_interval": 1,
+        "reid_model_path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\upstream-gta-link-e4d5cc4\\sports_model.pth.tar-60",
+        "reid_device": "cuda",
+        "reid_min_det_score": 0.6,
+        "reid_min_box_area": 1024,
+        "reid_min_frame_gap": 5,
+        "reid_sim_thresh": 0.8,
+        "with_mask_removal": false,
+        "with_mask_update": false,
+        "mask_update_every_k_frames": 1
+      },
+      "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+      "adaptations": [
+        "NumPy inclusive bbox IoU compatibility",
+        "sampled original video frame loader",
+        "SAM video/state CPU offload",
+        "source detection boxes restored",
+        "common confidence/lifetime; fixed-camera CMC disabled",
+        "upstream optional CUDA hole-filling extension unavailable; official fallback"
+      ],
+      "control_opened": false,
+      "model_sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df",
+      "reid_sha256": "8d5b2fd8763db34c2aad69810466adf413f0426d9f8119d322227e0e639c5fbd"
+    },
+    "progress": {
+      "frame": 26,
+      "seconds": 127.61083200038411
+    },
+    "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py\", line 165, in <module>\n    execute(args)\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py\", line 93, in execute\n    prediction, mask_ids = manager.get_updated_masks(i+1, last_boxes, last_ids, new, removed)\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\tstanczyk95__McBytePlusPlus\\mask_propagation\\mask_manager__edgetam.py\", line 50, in get_updated_masks\n    self.update_masks(frame_id, online_tlwhs, online_ids, new_tracks, removed_tracks_ids)\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\tstanczyk95__McBytePlusPlus\\mask_propagation\\mask_manager__edgetam.py\", line 277, in update_masks\n    self.reseed_at_frame(frame_id-2, existing_masks_at_f, image_boxes_list, new_tracks_id)\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\tstanczyk95__McBytePlusPlus\\mask_propagation\\mask_manager__edgetam.py\", line 127, in reseed_at_frame\n    m = m.astype(np.float32)  # EdgeTAM expects float mask\n        ^^^^^^^^^^^^^^^^^^^^\nnumpy._core._exceptions._ArrayMemoryError: Unable to allocate 16.9 MiB for an array with shape (1080, 4096) and data type float32\n"
+  },
+  {
+    "name": "mcbyte_day3_full_v2",
+    "execution_mode": "mask_plus_reid",
+    "manifest": {
+      "group": "day",
+      "segment": 3,
+      "frames": 375,
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py": "33415bca297a101e19cdb3e49374b0b53ed46d19e536f45f98c6c96289a9ad45",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "parameters": {
+        "track_thresh": 0.25,
+        "track_buffer": 7,
+        "cmc_method": "none",
+        "cmc_downscale": 4,
+        "cmc_interval": 1,
+        "reid_model_path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\upstream-gta-link-e4d5cc4\\sports_model.pth.tar-60",
+        "reid_device": "cuda",
+        "reid_min_det_score": 0.6,
+        "reid_min_box_area": 1024,
+        "reid_min_frame_gap": 5,
+        "reid_sim_thresh": 0.8,
+        "with_mask_removal": false,
+        "with_mask_update": false,
+        "mask_update_every_k_frames": 1
+      },
+      "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+      "adaptations": [
+        "NumPy inclusive bbox IoU compatibility",
+        "sampled original video frame loader",
+        "SAM video/state CPU offload",
+        "source detection boxes restored",
+        "common confidence/lifetime; fixed-camera CMC disabled",
+        "upstream optional CUDA hole-filling extension unavailable; official fallback"
+      ],
+      "control_opened": false,
+      "model_sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df",
+      "reid_sha256": "8d5b2fd8763db34c2aad69810466adf413f0426d9f8119d322227e0e639c5fbd"
+    },
+    "progress": {
+      "frame": 26,
+      "seconds": 83.3194901002571
+    },
+    "abort": {
+      "status": "aborted_resource_pressure",
+      "completed_frames_at_least": 26,
+      "reason": "Full-resolution mask run caused Windows allocation failures in concurrent diagnostics and severe slowdown. Stopped owned trial processes; no full-clip accuracy result claimed. Root cause not isolated to one hardware capacity or one upstream component."
+    }
+  },
+  {
+    "name": "mcbyte_day3_nomask_v1",
+    "execution_mode": "mask_disabled_ablation",
+    "manifest": {
+      "group": "day",
+      "segment": 3,
+      "frames": 375,
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py": "33415bca297a101e19cdb3e49374b0b53ed46d19e536f45f98c6c96289a9ad45",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "parameters": {
+        "track_thresh": 0.25,
+        "track_buffer": 7,
+        "cmc_method": "none",
+        "cmc_downscale": 4,
+        "cmc_interval": 1,
+        "reid_model_path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\upstream-gta-link-e4d5cc4\\sports_model.pth.tar-60",
+        "reid_device": "cuda",
+        "reid_min_det_score": 0.6,
+        "reid_min_box_area": 1024,
+        "reid_min_frame_gap": 5,
+        "reid_sim_thresh": 0.8,
+        "with_mask_removal": false,
+        "with_mask_update": false,
+        "mask_update_every_k_frames": 1
+      },
+      "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+      "adaptations": [
+        "NumPy inclusive bbox IoU compatibility",
+        "sampled original video frame loader",
+        "SAM video/state CPU offload",
+        "source detection boxes restored",
+        "common confidence/lifetime; fixed-camera CMC disabled",
+        "upstream optional CUDA hole-filling extension unavailable; official fallback"
+      ],
+      "control_opened": false,
+      "model_sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df",
+      "reid_sha256": "8d5b2fd8763db34c2aad69810466adf413f0426d9f8119d322227e0e639c5fbd"
+    },
+    "result": {
+      "status": "completed",
+      "manifest": {
+        "group": "day",
+        "segment": 3,
+        "frames": 375,
+        "source_sha256": {
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py": "33415bca297a101e19cdb3e49374b0b53ed46d19e536f45f98c6c96289a9ad45",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+        },
+        "parameters": {
+          "track_thresh": 0.25,
+          "track_buffer": 7,
+          "cmc_method": "none",
+          "cmc_downscale": 4,
+          "cmc_interval": 1,
+          "reid_model_path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\upstream-gta-link-e4d5cc4\\sports_model.pth.tar-60",
+          "reid_device": "cuda",
+          "reid_min_det_score": 0.6,
+          "reid_min_box_area": 1024,
+          "reid_min_frame_gap": 5,
+          "reid_sim_thresh": 0.8,
+          "with_mask_removal": false,
+          "with_mask_update": false,
+          "mask_update_every_k_frames": 1
+        },
+        "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+        "adaptations": [
+          "NumPy inclusive bbox IoU compatibility",
+          "sampled original video frame loader",
+          "SAM video/state CPU offload",
+          "source detection boxes restored",
+          "common confidence/lifetime; fixed-camera CMC disabled",
+          "upstream optional CUDA hole-filling extension unavailable; official fallback"
+        ],
+        "control_opened": false,
+        "model_sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df",
+        "reid_sha256": "8d5b2fd8763db34c2aad69810466adf413f0426d9f8119d322227e0e639c5fbd"
+      },
+      "stats": {
+        "lost_frames": 7,
+        "lost_seconds": 0.56,
+        "person_filter": {
+          "method": "annotated_perimeter_track_v1",
+          "applied": true,
+          "skip_reason": null,
+          "observations_before": 11390,
+          "observations_removed": 2443,
+          "tracks_removed": 29,
+          "min_field_observations": 2,
+          "tolerance_px": 2.16,
+          "rejected_tracks": [
+            {
+              "continuity_id": 0,
+              "track_id": 1
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 2
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 3
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 4
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 28
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 29
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 30
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 31
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 32
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 43
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 45
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 73
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 96
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 104
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 140
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 147
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 178
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 180
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 187
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 199
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 221
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 224
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 241
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 263
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 276
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 279
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 291
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 297
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 300
+            }
+          ]
+        },
+        "tracking_mask_reid_seconds": 12.876527295680717,
+        "frame_times": [
+          0.8868606998585165,
+          0.014219900127500296,
+          0.006972100120037794,
+          0.007262700004503131,
+          0.007021100027486682,
+          0.09874740010127425,
+          0.007000799989327788,
+          0.007369099883362651,
+          0.006924200104549527,
+          0.007455699844285846,
+          0.1412421998102218,
+          0.0071893001440912485,
+          0.008480099961161613,
+          0.008021199842914939,
+          0.008084499975666404,
+          0.14428060012869537,
+          0.006330200005322695,
+          0.006868999917060137,
+          0.0075177999678999186,
+          0.007531899958848953,
+          0.1526009999215603,
+          0.007350200088694692,
+          0.007914500078186393,
+          0.007865000050514936,
+          0.0069811001885682344,
+          0.04890700010582805,
+          0.008674600161612034,
+          0.0048883999697864056,
+          0.004416200099512935,
+          0.007847500033676624,
+          0.04515910008922219,
+          0.0071535001043230295,
+          0.006686100037768483,
+          0.006956299999728799,
+          0.0070015001110732555,
+          0.05920489993877709,
+          0.05902249994687736,
+          0.007756599923595786,
+          0.004997799871489406,
+          0.10053400020115077,
+          0.10874659987166524,
+          0.007259499980136752,
+          0.007680099923163652,
+          0.05606259987689555,
+          0.05285859992727637,
+          0.09737390000373125,
+          0.050969700096175075,
+          0.007523699896410108,
+          0.05319070001132786,
+          0.05177619983442128,
+          0.09893379989080131,
+          0.007495699916034937,
+          0.0071199999656528234,
+          0.007649699924513698,
+          0.15059460001066327,
+          0.10241089994087815,
+          0.007976199965924025,
+          0.05414390005171299,
+          0.0072553998325020075,
+          0.09708289988338947,
+          0.09236780018545687,
+          0.0072154998779296875,
+          0.05127649987116456,
+          0.0062899000477045774,
+          0.09463549987412989,
+          0.0958795000333339,
+          0.006884600035846233,
+          0.008128499845042825,
+          0.008056600112468004,
+          0.05007060011848807,
+          0.09702030010521412,
+          0.054617400048300624,
+          0.051751399878412485,
+          0.008447400061413646,
+          0.007596499985083938,
+          0.05510060000233352,
+          0.049477400025352836,
+          0.054120699875056744,
+          0.007732599973678589,
+          0.05563499988056719,
+          0.05833759997040033,
+          0.05766470008529723,
+          0.057264299830421805,
+          0.057703299913555384,
+          0.007587599800899625,
+          0.15041889995336533,
+          0.007907800143584609,
+          0.06070879986509681,
+          0.008040399989113212,
+          0.010477000148966908,
+          0.13754849997349083,
+          0.008684499887749553,
+          0.05738679994828999,
+          0.008882699999958277,
+          0.008217900060117245,
+          0.09434449998661876,
+          0.00780189991928637,
+          0.007818700047209859,
+          0.04949719994328916,
+          0.007567900000140071,
+          0.051833099918439984,
+          0.09501020004972816,
+          0.007486100075766444,
+          0.0080657999496907,
+          0.006263999966904521,
+          0.0987674999050796,
+          0.04895419999957085,
+          0.05796759994700551,
+          0.00848339986987412,
+          0.0549753000959754,
+          0.09287910000421107,
+          0.05377479991875589,
+          0.008157700067386031,
+          0.008552100043743849,
+          0.04879929986782372,
+          0.05243850010447204,
+          0.008032399928197265,
+          0.055112099973484874,
+          0.007704300107434392,
+          0.09841460012830794,
+          0.05264470004476607,
+          0.04905959987081587,
+          0.05118550010956824,
+          0.008484399877488613,
+          0.051515799947082996,
+          0.05936400010250509,
+          0.007904999889433384,
+          0.0044172999914735556,
+          0.05847280006855726,
+          0.059731399873271585,
+          0.10374299995601177,
+          0.10200310009531677,
+          0.007561599835753441,
+          0.005171700147911906,
+          0.06077270000241697,
+          0.10832199989818037,
+          0.0073068998754024506,
+          0.10228110011667013,
+          0.007678100140765309,
+          0.05853169993497431,
+          0.0074495000299066305,
+          0.05275459983386099,
+          0.006891800090670586,
+          0.04718309990130365,
+          0.08854110003449023,
+          0.007217899896204472,
+          0.09451640001498163,
+          0.007591600064188242,
+          0.05347399995662272,
+          0.0910488001536578,
+          0.0067847000900655985,
+          0.006734600057825446,
+          0.007103699957951903,
+          0.1393289000261575,
+          0.05194110004231334,
+          0.007342000026255846,
+          0.007631100015714765,
+          0.007361599942669272,
+          0.05363260000012815,
+          0.08950080000795424,
+          0.04968379996716976,
+          0.006690000183880329,
+          0.007062399992719293,
+          0.04802259989082813,
+          0.05026339995674789,
+          0.00680319988168776,
+          0.006946200039237738,
+          0.004316899925470352,
+          0.00455109984613955,
+          0.05527439992874861,
+          0.05005729990079999,
+          0.007394199958071113,
+          0.007585400016978383,
+          0.006851400015875697,
+          0.05023659998551011,
+          0.05095389997586608,
+          0.052442000014707446,
+          0.007330700056627393,
+          0.008183600148186088,
+          0.007657299982383847,
+          0.0073553998954594135,
+          0.052830399945378304,
+          0.05119319981895387,
+          0.006915800040587783,
+          0.007069899933412671,
+          0.007570100016891956,
+          0.051067099906504154,
+          0.05093799997121096,
+          0.006935700075700879,
+          0.0074102000799030066,
+          0.006992100039497018,
+          0.00513189984485507,
+          0.04959780001081526,
+          0.05029699997976422,
+          0.0068147999700158834,
+          0.04927810002118349,
+          0.006674099946394563,
+          0.006509000202640891,
+          0.006607000017538667,
+          0.006477999966591597,
+          0.006522000068798661,
+          0.006451699882745743,
+          0.006235599983483553,
+          0.00644639995880425,
+          0.006321399938315153,
+          0.0068882000632584095,
+          0.05552339996211231,
+          0.00686699990183115,
+          0.00714620016515255,
+          0.006449299864470959,
+          0.007233999902382493,
+          0.0500276000238955,
+          0.006705800071358681,
+          0.007471600081771612,
+          0.05139999999664724,
+          0.006870199926197529,
+          0.05688649998046458,
+          0.006890999851748347,
+          0.007235700031742454,
+          0.05035859998315573,
+          0.007197999861091375,
+          0.0073055000975728035,
+          0.009064099984243512,
+          0.00759040005505085,
+          0.0479694998357445,
+          0.007303900085389614,
+          0.007412699982523918,
+          0.007254099939018488,
+          0.007544999942183495,
+          0.007421499816700816,
+          0.007193800061941147,
+          0.008066600188612938,
+          0.007038400042802095,
+          0.007002600003033876,
+          0.0070408000610768795,
+          0.007143900031223893,
+          0.007575199939310551,
+          0.007255500182509422,
+          0.0075362001080065966,
+          0.007463500136509538,
+          0.008586499840021133,
+          0.007356900023296475,
+          0.007175799924880266,
+          0.007054999936372042,
+          0.05471199983730912,
+          0.007708399789407849,
+          0.008176800096407533,
+          0.006898700026795268,
+          0.005423499969765544,
+          0.007291599875316024,
+          0.007939100032672286,
+          0.007364100078120828,
+          0.007040400058031082,
+          0.007222400046885014,
+          0.007544599939137697,
+          0.007547599961981177,
+          0.008582899812608957,
+          0.058085399912670255,
+          0.05235430016182363,
+          0.007278699893504381,
+          0.0070269000716507435,
+          0.006642000051215291,
+          0.007055100053548813,
+          0.007118700072169304,
+          0.005370799917727709,
+          0.006579299923032522,
+          0.00826129992492497,
+          0.007202800130471587,
+          0.005749499890953302,
+          0.005200099898502231,
+          0.0071876998990774155,
+          0.04061580006964505,
+          0.007131899939849973,
+          0.05121019994840026,
+          0.00854699988849461,
+          0.009123300202190876,
+          0.00751729984767735,
+          0.05271580000407994,
+          0.0072292000986635685,
+          0.007469499949365854,
+          0.00742419995367527,
+          0.051366299856454134,
+          0.006941800005733967,
+          0.03804709995165467,
+          0.050243600038811564,
+          0.04206470004282892,
+          0.04227139987051487,
+          0.007104800082743168,
+          0.007204600144177675,
+          0.048007800010964274,
+          0.04861860000528395,
+          0.004830700112506747,
+          0.09268819983117282,
+          0.0525193999055773,
+          0.09854650008492172,
+          0.007304100086912513,
+          0.05456189997494221,
+          0.05441480013541877,
+          0.0426509000826627,
+          0.0552753999363631,
+          0.007810699986293912,
+          0.007198299979791045,
+          0.05698509979993105,
+          0.09546369989402592,
+          0.006503100041300058,
+          0.007282899925485253,
+          0.05610079993493855,
+          0.04928120016120374,
+          0.04680179990828037,
+          0.007980699883773923,
+          0.009436399908736348,
+          0.12842760002240539,
+          0.052368600154295564,
+          0.04999119997955859,
+          0.05492329993285239,
+          0.00960949994623661,
+          0.006652700016275048,
+          0.05226369993761182,
+          0.007790599949657917,
+          0.007457900093868375,
+          0.05838460009545088,
+          0.010552600026130676,
+          0.1968596000224352,
+          0.006431599846109748,
+          0.006128899985924363,
+          0.11193120013922453,
+          0.00764690013602376,
+          0.08624319988302886,
+          0.025863299844786525,
+          0.012601800030097365,
+          0.12445880006998777,
+          0.06730799982324243,
+          0.05469949985854328,
+          0.007709000026807189,
+          0.007540100021287799,
+          0.10143629997037351,
+          0.008401199942454696,
+          0.06269699987024069,
+          0.006855500163510442,
+          0.007412699982523918,
+          0.05045749992132187,
+          0.052778099896386266,
+          0.05539600015617907,
+          0.054088199976831675,
+          0.00714259990490973,
+          0.007072399836033583,
+          0.007304100086912513,
+          0.04870279994793236,
+          0.007597600109875202,
+          0.007091699866577983,
+          0.00808970001526177,
+          0.007458599982783198,
+          0.007238099817186594,
+          0.05264919996261597,
+          0.007101000053808093,
+          0.007269799942150712,
+          0.0071396001148968935,
+          0.007255500182509422,
+          0.007425899850204587,
+          0.05724649992771447,
+          0.007608899846673012,
+          0.007246799999848008,
+          0.05096379993483424,
+          0.05223989998921752,
+          0.05638929991982877,
+          0.008246300043538213,
+          0.05219700001180172,
+          0.05456079985015094,
+          0.051287699956446886,
+          0.006268700119107962,
+          0.008010599995031953,
+          0.05151259992271662,
+          0.05023210006766021,
+          0.00779920001514256,
+          0.008873300161212683
+        ],
+        "tracked_observations": 8947,
+        "reid_feature_updates": 402,
+        "reid_joined_tracklets": 3,
+        "max_cuda_allocated": 30881280
+      }
+    },
+    "progress": {
+      "frame": 351,
+      "seconds": 12.242306096013635
+    },
+    "predictions_sha256": "d696cb6d71b64be26a465f9895eccad25da50faa10067d8f73ef114a044ec045"
+  },
+  {
+    "name": "mcbyte_day3_smoke_v3",
+    "execution_mode": "mask_plus_reid",
+    "manifest": {
+      "group": "day",
+      "segment": 3,
+      "frames": 5,
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py": "98c78e877526cfa2ae6c92dd7effb907c6ba01f6e22454b9a2d3140258b289cd",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "parameters": {
+        "track_thresh": 0.25,
+        "track_buffer": 7,
+        "cmc_method": "none",
+        "cmc_downscale": 4,
+        "cmc_interval": 1,
+        "reid_model_path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\upstream-gta-link-e4d5cc4\\sports_model.pth.tar-60",
+        "reid_device": "cuda",
+        "reid_min_det_score": 0.6,
+        "reid_min_box_area": 1024,
+        "reid_min_frame_gap": 5,
+        "reid_sim_thresh": 0.8,
+        "with_mask_removal": false,
+        "with_mask_update": false,
+        "mask_update_every_k_frames": 1
+      },
+      "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+      "adaptations": [
+        "NumPy inclusive bbox IoU compatibility",
+        "sampled original video frame loader",
+        "SAM video/state CPU offload",
+        "source detection boxes restored",
+        "common confidence/lifetime; fixed-camera CMC disabled"
+      ],
+      "control_opened": false,
+      "model_sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df",
+      "reid_sha256": "8d5b2fd8763db34c2aad69810466adf413f0426d9f8119d322227e0e639c5fbd"
+    },
+    "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py\", line 163, in <module>\n    execute(args)\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py\", line 92, in execute\n    active, removed, new, _, _ = tracker.update(det.copy(), bgr.shape[:2], bgr.shape[:2],\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\tstanczyk95__McBytePlusPlus\\yolox\\tracker\\mcbyteplusplus_tracker__with_reid.py\", line 1186, in update\n    self._update_reid_features_for_tracks(frame_img=frame_img)\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\tstanczyk95__McBytePlusPlus\\yolox\\tracker\\mcbyteplusplus_tracker__with_reid.py\", line 784, in _update_reid_features_for_tracks\n    feat = self.reid_manager.compute_feature_from_tlwh(frame_img, tlwh)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\tstanczyk95__McBytePlusPlus\\yolox\\tracker\\mcbyteplusplus_tracker__with_reid.py\", line 421, in compute_feature_from_tlwh\n    feats_np = feats.cpu().detach().numpy().reshape(-1)  # (D,)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: Got unsupported ScalarType BFloat16\n"
+  },
+  {
+    "name": "mcbyte_day3_smoke_v4",
+    "execution_mode": "mask_plus_reid",
+    "manifest": {
+      "group": "day",
+      "segment": 3,
+      "frames": 5,
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py": "921ab0e0fc7bb0abf6939688834e5f68f3c417cd7842f606327e4a9384724b9c",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "parameters": {
+        "track_thresh": 0.25,
+        "track_buffer": 7,
+        "cmc_method": "none",
+        "cmc_downscale": 4,
+        "cmc_interval": 1,
+        "reid_model_path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\upstream-gta-link-e4d5cc4\\sports_model.pth.tar-60",
+        "reid_device": "cuda",
+        "reid_min_det_score": 0.6,
+        "reid_min_box_area": 1024,
+        "reid_min_frame_gap": 5,
+        "reid_sim_thresh": 0.8,
+        "with_mask_removal": false,
+        "with_mask_update": false,
+        "mask_update_every_k_frames": 1
+      },
+      "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+      "adaptations": [
+        "NumPy inclusive bbox IoU compatibility",
+        "sampled original video frame loader",
+        "SAM video/state CPU offload",
+        "source detection boxes restored",
+        "common confidence/lifetime; fixed-camera CMC disabled"
+      ],
+      "control_opened": false,
+      "model_sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df",
+      "reid_sha256": "8d5b2fd8763db34c2aad69810466adf413f0426d9f8119d322227e0e639c5fbd"
+    },
+    "result": {
+      "status": "completed",
+      "manifest": {
+        "group": "day",
+        "segment": 3,
+        "frames": 5,
+        "source_sha256": {
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py": "921ab0e0fc7bb0abf6939688834e5f68f3c417cd7842f606327e4a9384724b9c",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+        },
+        "parameters": {
+          "track_thresh": 0.25,
+          "track_buffer": 7,
+          "cmc_method": "none",
+          "cmc_downscale": 4,
+          "cmc_interval": 1,
+          "reid_model_path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\upstream-gta-link-e4d5cc4\\sports_model.pth.tar-60",
+          "reid_device": "cuda",
+          "reid_min_det_score": 0.6,
+          "reid_min_box_area": 1024,
+          "reid_min_frame_gap": 5,
+          "reid_sim_thresh": 0.8,
+          "with_mask_removal": false,
+          "with_mask_update": false,
+          "mask_update_every_k_frames": 1
+        },
+        "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+        "adaptations": [
+          "NumPy inclusive bbox IoU compatibility",
+          "sampled original video frame loader",
+          "SAM video/state CPU offload",
+          "source detection boxes restored",
+          "common confidence/lifetime; fixed-camera CMC disabled"
+        ],
+        "control_opened": false,
+        "model_sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df",
+        "reid_sha256": "8d5b2fd8763db34c2aad69810466adf413f0426d9f8119d322227e0e639c5fbd"
+      },
+      "stats": {
+        "lost_frames": 7,
+        "lost_seconds": 0.56,
+        "person_filter": {
+          "method": "annotated_perimeter_track_v1",
+          "applied": true,
+          "skip_reason": null,
+          "observations_before": 145,
+          "observations_removed": 45,
+          "tracks_removed": 9,
+          "min_field_observations": 2,
+          "tolerance_px": 2.16,
+          "rejected_tracks": [
+            {
+              "continuity_id": 0,
+              "track_id": 1
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 2
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 3
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 4
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 28
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 29
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 30
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 31
+            },
+            {
+              "continuity_id": 0,
+              "track_id": 32
+            }
+          ]
+        },
+        "tracking_mask_reid_seconds": 21.983162899734452,
+        "frame_times": [
+          0.40436799987219274,
+          12.363895500078797,
+          0.5047937999479473,
+          0.49661719985306263,
+          8.213488399982452
+        ],
+        "tracked_observations": 100,
+        "reid_feature_updates": 6,
+        "reid_joined_tracklets": 0,
+        "max_cuda_allocated": 2962909184
+      }
+    },
+    "progress": {
+      "frame": 1,
+      "seconds": 0.40436799987219274
+    },
+    "predictions_sha256": "9079274f22f316a17015ad4f8fb26b15d6723dcbb57d3c5d126646fdeb41f706"
+  },
+  {
+    "name": "mcbyte_night40_nomask_v1",
+    "execution_mode": "mask_disabled_ablation",
+    "manifest": {
+      "group": "night_old_control",
+      "segment": 40,
+      "frames": 375,
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\joint_identity_control\\source\\seg_0040.mp4": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py": "33415bca297a101e19cdb3e49374b0b53ed46d19e536f45f98c6c96289a9ad45",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "parameters": {
+        "track_thresh": 0.25,
+        "track_buffer": 7,
+        "cmc_method": "none",
+        "cmc_downscale": 4,
+        "cmc_interval": 1,
+        "reid_model_path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\upstream-gta-link-e4d5cc4\\sports_model.pth.tar-60",
+        "reid_device": "cuda",
+        "reid_min_det_score": 0.6,
+        "reid_min_box_area": 1024,
+        "reid_min_frame_gap": 5,
+        "reid_sim_thresh": 0.8,
+        "with_mask_removal": false,
+        "with_mask_update": false,
+        "mask_update_every_k_frames": 1
+      },
+      "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+      "adaptations": [
+        "NumPy inclusive bbox IoU compatibility",
+        "sampled original video frame loader",
+        "SAM video/state CPU offload",
+        "source detection boxes restored",
+        "common confidence/lifetime; fixed-camera CMC disabled",
+        "upstream optional CUDA hole-filling extension unavailable; official fallback"
+      ],
+      "control_opened": false,
+      "model_sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df",
+      "reid_sha256": "8d5b2fd8763db34c2aad69810466adf413f0426d9f8119d322227e0e639c5fbd"
+    },
+    "result": {
+      "status": "completed",
+      "manifest": {
+        "group": "night_old_control",
+        "segment": 40,
+        "frames": 375,
+        "source_sha256": {
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\joint_identity_control\\source\\seg_0040.mp4": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_mcbyte.py": "33415bca297a101e19cdb3e49374b0b53ed46d19e536f45f98c6c96289a9ad45",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+        },
+        "parameters": {
+          "track_thresh": 0.25,
+          "track_buffer": 7,
+          "cmc_method": "none",
+          "cmc_downscale": 4,
+          "cmc_interval": 1,
+          "reid_model_path": "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\upstream-gta-link-e4d5cc4\\sports_model.pth.tar-60",
+          "reid_device": "cuda",
+          "reid_min_det_score": 0.6,
+          "reid_min_box_area": 1024,
+          "reid_min_frame_gap": 5,
+          "reid_sim_thresh": 0.8,
+          "with_mask_removal": false,
+          "with_mask_update": false,
+          "mask_update_every_k_frames": 1
+        },
+        "upstream_commit": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+        "adaptations": [
+          "NumPy inclusive bbox IoU compatibility",
+          "sampled original video frame loader",
+          "SAM video/state CPU offload",
+          "source detection boxes restored",
+          "common confidence/lifetime; fixed-camera CMC disabled",
+          "upstream optional CUDA hole-filling extension unavailable; official fallback"
+        ],
+        "control_opened": false,
+        "model_sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df",
+        "reid_sha256": "8d5b2fd8763db34c2aad69810466adf413f0426d9f8119d322227e0e639c5fbd"
+      },
+      "stats": {
+        "lost_frames": 7,
+        "lost_seconds": 0.56,
+        "person_filter": {
+          "method": "annotated_perimeter_track_v1",
+          "applied": false,
+          "skip_reason": "disabled",
+          "observations_before": 6519,
+          "observations_removed": 0,
+          "tracks_removed": 0,
+          "min_field_observations": 2
+        },
+        "tracking_mask_reid_seconds": 32.16054959851317,
+        "frame_times": [
+          0.8217140000779182,
+          0.05212750006467104,
+          0.05070589995011687,
+          0.004172799875959754,
+          0.04855079995468259,
+          0.2308249999769032,
+          0.04946050001308322,
+          0.05263429996557534,
+          0.003912999993190169,
+          0.05836159992031753,
+          0.2367944000288844,
+          0.0503042999189347,
+          0.004156599985435605,
+          0.051648999797180295,
+          0.004054900025948882,
+          0.24266039999201894,
+          0.04674060014076531,
+          0.12768139992840588,
+          0.05108110001310706,
+          0.004205300007015467,
+          0.1787060999777168,
+          0.09664829983375967,
+          0.09676530002616346,
+          0.00447099981829524,
+          0.09122579987160861,
+          0.1940298001281917,
+          0.05502179986797273,
+          0.09453710005618632,
+          0.004547199932858348,
+          0.19048629980534315,
+          0.19808689993806183,
+          0.0462050000205636,
+          0.13088690000586212,
+          0.009262800216674805,
+          0.05555569985881448,
+          0.285244100028649,
+          0.003923699958249927,
+          0.19245989993214607,
+          0.004616300109773874,
+          0.04755620006471872,
+          0.22910119988955557,
+          0.004830399993807077,
+          0.21900629997253418,
+          0.09225490014068782,
+          0.004884000169113278,
+          0.1816742999944836,
+          0.18027859996072948,
+          0.13731819996610284,
+          0.05159189994446933,
+          0.05130270007066429,
+          0.1824845999944955,
+          0.13422670005820692,
+          0.13914020010270178,
+          0.005267000058665872,
+          0.09408039995469153,
+          0.18407820002175868,
+          0.09464850020594895,
+          0.09315990004688501,
+          0.052024199860170484,
+          0.00498989992775023,
+          0.1803241998422891,
+          0.094727500109002,
+          0.13539969990961254,
+          0.048000300070270896,
+          0.004702600184828043,
+          0.18121560011059046,
+          0.05149039998650551,
+          0.094150299904868,
+          0.004729700041934848,
+          0.004804899916052818,
+          0.2282755000051111,
+          0.09369480004534125,
+          0.09618650004267693,
+          0.005092500010505319,
+          0.004758100025355816,
+          0.13334020017646253,
+          0.13888119999319315,
+          0.09349370002746582,
+          0.004442299949005246,
+          0.004762199940159917,
+          0.09867689991369843,
+          0.13928509992547333,
+          0.09633970004506409,
+          0.0045455999206751585,
+          0.0044281999580562115,
+          0.09690040000714362,
+          0.14210069994442165,
+          0.0930761001072824,
+          0.05684530013240874,
+          0.006168300053104758,
+          0.09537019999697804,
+          0.052744099870324135,
+          0.14832060015760362,
+          0.09672339982353151,
+          0.00476779998280108,
+          0.09808650007471442,
+          0.09573699999600649,
+          0.1409703998360783,
+          0.004458399955183268,
+          0.05665759998373687,
+          0.1009400999173522,
+          0.09440910001285374,
+          0.09679940016940236,
+          0.004425100050866604,
+          0.004224899923428893,
+          0.047506799921393394,
+          0.0946500999853015,
+          0.14308020006865263,
+          0.05052819987758994,
+          0.05104089993983507,
+          0.05294630001299083,
+          0.09594979998655617,
+          0.1380458001513034,
+          0.09371679998002946,
+          0.051258299965411425,
+          0.004563499940559268,
+          0.13625429989770055,
+          0.13613469991832972,
+          0.13870890019461513,
+          0.052408300107344985,
+          0.004450400127097964,
+          0.08678270014934242,
+          0.14482159982435405,
+          0.09407859994098544,
+          0.09429649985395372,
+          0.05206170002929866,
+          0.049174000043421984,
+          0.21527209994383156,
+          0.13859540014527738,
+          0.08065950009040534,
+          0.04759710002690554,
+          0.06942240009084344,
+          0.12142509990371764,
+          0.2105825999751687,
+          0.047913100104779005,
+          0.1454702999908477,
+          0.10622379998676479,
+          0.17171129980124533,
+          0.15974869998171926,
+          0.09260029997676611,
+          0.004719299962744117,
+          0.18176560010761023,
+          0.2050262000411749,
+          0.052076200023293495,
+          0.042066399939358234,
+          0.004708899883553386,
+          0.09163059992715716,
+          0.18847139994613826,
+          0.08621709980070591,
+          0.10030100005678833,
+          0.08267459995113313,
+          0.05620200000703335,
+          0.08248839993029833,
+          0.08782689995132387,
+          0.048912799917161465,
+          0.09561410010792315,
+          0.05202339985407889,
+          0.20753599982708693,
+          0.09082720009610057,
+          0.0505150998942554,
+          0.08260180009528995,
+          0.045537800062447786,
+          0.09484299994073808,
+          0.004568399861454964,
+          0.09771320014260709,
+          0.05070799984969199,
+          0.0960886999964714,
+          0.13764289999380708,
+          0.07693760003894567,
+          0.09181559993885458,
+          0.004508299985900521,
+          0.08509740000590682,
+          0.09580849995836616,
+          0.05092009995132685,
+          0.05060620000585914,
+          0.09412820008583367,
+          0.15180530003271997,
+          0.08194490009918809,
+          0.004433700116351247,
+          0.047844700049608946,
+          0.04732499993406236,
+          0.1379990999121219,
+          0.04782740003429353,
+          0.0045276000164449215,
+          0.05142390006221831,
+          0.09575770003721118,
+          0.13882819982245564,
+          0.05098400008864701,
+          0.0029980000108480453,
+          0.05430119996890426,
+          0.04649640014395118,
+          0.09642830002121627,
+          0.05054090009070933,
+          0.13667030003853142,
+          0.050276099937036633,
+          0.051093900110572577,
+          0.09462660015560687,
+          0.04980090004391968,
+          0.051661500008776784,
+          0.09532109997235239,
+          0.09600769984535873,
+          0.05047460016794503,
+          0.0931765001732856,
+          0.09465250000357628,
+          0.00478710001334548,
+          0.13764079986140132,
+          0.04948600009083748,
+          0.127531599951908,
+          0.13716150005348027,
+          0.004660699982196093,
+          0.09333479986526072,
+          0.04983449983410537,
+          0.0976156999822706,
+          0.13596500013954937,
+          0.05151059990748763,
+          0.0932320998981595,
+          0.050481699872761965,
+          0.09394040005281568,
+          0.13772840006276965,
+          0.004844199866056442,
+          0.05170599999837577,
+          0.050258300034329295,
+          0.09632149990648031,
+          0.18982310011051595,
+          0.05113869998604059,
+          0.09219249989837408,
+          0.049791800091043115,
+          0.05245169997215271,
+          0.13566010002978146,
+          0.05081510008312762,
+          0.09634819999337196,
+          0.13879400002770126,
+          0.049793099984526634,
+          0.13645939994603395,
+          0.004310299875214696,
+          0.13499399996362627,
+          0.004525399999693036,
+          0.05018390016630292,
+          0.09436480002477765,
+          0.004165400052443147,
+          0.04981309990398586,
+          0.0038914999458938837,
+          0.04944619978778064,
+          0.18383759981952608,
+          0.003972500097006559,
+          0.05248329997994006,
+          0.04937910009175539,
+          0.13939860020764172,
+          0.13768969988450408,
+          0.004264000104740262,
+          0.049831599928438663,
+          0.04992809984833002,
+          0.1420174001250416,
+          0.09114790009334683,
+          0.0029545999132096767,
+          0.09568360005505383,
+          0.004036700120195746,
+          0.09518659999594092,
+          0.1292029998730868,
+          0.00442969985306263,
+          0.09335049986839294,
+          0.05101029993966222,
+          0.13595739984884858,
+          0.19420980010181665,
+          0.004438400035724044,
+          0.15781680005602539,
+          0.0042692001443356276,
+          0.19266160018742085,
+          0.26226860005408525,
+          0.004404999781399965,
+          0.15650560008361936,
+          0.005040100077167153,
+          0.20391990011557937,
+          0.23461139993742108,
+          0.0044080999214202166,
+          0.22039210004732013,
+          0.004196699941530824,
+          0.16460009990260005,
+          0.17148600006476045,
+          0.004178300034254789,
+          0.17530009988695383,
+          0.05135810002684593,
+          0.051493699895218015,
+          0.23122680000960827,
+          0.04934909986332059,
+          0.13535859994590282,
+          0.09449049993418157,
+          0.05027969996444881,
+          0.13248030003160238,
+          0.04825219977647066,
+          0.12751360004767776,
+          0.048437200020998716,
+          0.049172700149938464,
+          0.17593439994379878,
+          0.004454500041902065,
+          0.17279780004173517,
+          0.08212479995563626,
+          0.049797700019553304,
+          0.17147199995815754,
+          0.004353000083938241,
+          0.1333902000915259,
+          0.08997709979303181,
+          0.04970750003121793,
+          0.17313629994168878,
+          0.003961300011724234,
+          0.08973250002600253,
+          0.0878379000350833,
+          0.05016850004903972,
+          0.2180168000049889,
+          0.004701100056990981,
+          0.04009310016408563,
+          0.13220099988393486,
+          0.04777300008572638,
+          0.1724821999669075,
+          0.004312499891966581,
+          0.048918999964371324,
+          0.17609179997816682,
+          0.050486099906265736,
+          0.21226719999685884,
+          0.004495400004088879,
+          0.049872899893671274,
+          0.13355779997073114,
+          0.09118270012550056,
+          0.17012120014987886,
+          0.004350000061094761,
+          0.003070400096476078,
+          0.16999619989655912,
+          0.050422600004822016,
+          0.18239159998483956,
+          0.00447589997202158,
+          0.002827499993145466,
+          0.1642308000009507,
+          0.04724869993515313,
+          0.14227890013717115,
+          0.047489400021731853,
+          0.004177900031208992,
+          0.1250430999789387,
+          0.04676760011352599,
+          0.12980780005455017,
+          0.05067679984495044,
+          0.04718129988759756,
+          0.14140189997851849,
+          0.0035538000520318747,
+          0.1823341001290828,
+          0.004437099909409881,
+          0.092027299804613,
+          0.09057860006578267,
+          0.0041826998349279165,
+          0.1636935998685658,
+          0.04849419998936355,
+          0.08854059991426766,
+          0.08908860012888908,
+          0.003744299989193678,
+          0.12592300004325807,
+          0.13517020014114678,
+          0.0023696001153439283,
+          0.09215639997273684,
+          0.0036120000295341015,
+          0.08856189996004105,
+          0.00405970006249845,
+          0.13115520006977022,
+          0.1240431999322027,
+          0.002601600019261241,
+          0.04664790001697838,
+          0.0038489000871777534,
+          0.0462907999753952,
+          0.17462050006724894,
+          0.0038612000644207,
+          0.049038799945265055,
+          0.0038642999716103077,
+          0.04780509998090565,
+          0.22273429995402694,
+          0.0038705000188201666,
+          0.047459099907428026,
+          0.0041553000919520855
+        ],
+        "tracked_observations": 6519,
+        "reid_feature_updates": 1296,
+        "reid_joined_tracklets": 13,
+        "max_cuda_allocated": 30881280
+      }
+    },
+    "progress": {
+      "frame": 351,
+      "seconds": 30.703867197968066
+    },
+    "predictions_sha256": "438070472507fdce22c6550c18157b8d189433429bb1f651af03a8186ec42bcc"
+  },
+  {
+    "name": "smp_day3_full_v1",
+    "manifest": {
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py": "a0446e2c6a6d7b3a3ce95e74c3c7b17d13f0018e7b8ffc8729049e7be3732511",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "baseline_observations_exact": true,
+      "baseline_colours_exact": true,
+      "upstream_commit": "6472b52e79c47a7793cd4c6cabd64e812a8e5852",
+      "group": "day",
+      "segment": 3,
+      "margin": "second-smallest minus smallest cost in matched detection column, each real association stage",
+      "model": "SAM2.1 Hiera Large",
+      "model_sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318",
+      "adaptations": [
+        "Sampled original video frame loader",
+        "SAM state/video CPU offload",
+        "upstream optional CUDA hole-filling extension unavailable; official fallback"
+      ],
+      "mode": "benchmark: source boxes preserved; identity correction only",
+      "new_control_opened": false
+    },
+    "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\site\\hydra\\_internal\\utils.py\", line 644, in _locate\n    obj = getattr(obj, part)\n          ^^^^^^^^^^^^^^^^^^\nAttributeError: module 'sam2.modeling.backbones' has no attribute 'hieradet'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\site\\hydra\\_internal\\utils.py\", line 650, in _locate\n    obj = import_module(mod)\n          ^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\AppData\\Local\\Python\\pythoncore-3.12-64\\Lib\\importlib\\__init__.py\", line 90, in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen importlib._bootstrap>\", line 1387, in _gcd_import\n  File \"<frozen importlib._bootstrap>\", line 1360, in _find_and_load\n  File \"<frozen importlib._bootstrap>\", line 1331, in _find_and_load_unlocked\n  File \"<frozen importlib._bootstrap>\", line 935, in _load_unlocked\n  File \"<frozen importlib._bootstrap_external>\", line 999, in exec_module\n  File \"<frozen importlib._bootstrap>\", line 488, in _call_with_frames_removed\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\holma91__selective-mask-propagation\\vendor\\sam2\\sam2\\modeling\\backbones\\hieradet.py\", line 14, in <module>\n    from iopath.common.file_io import g_pathmgr\nModuleNotFoundError: No module named 'iopath'\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\site\\hydra\\_internal\\instantiate\\_instantiate2.py\", line 134, in _resolve_target\n    target = _locate(target)\n             ^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\site\\hydra\\_internal\\utils.py\", line 653, in _locate\n    raise ImportError(\nImportError: Error loading 'sam2.modeling.backbones.hieradet.Hiera':\nModuleNotFoundError(\"No module named 'iopath'\")\nAre you sure that 'hieradet' is importable from module 'sam2.modeling.backbones'?\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py\", line 144, in <module>\n    try: execute(args)\n         ^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py\", line 92, in execute\n    predictor=build_sam2_video_predictor('configs/sam2.1/sam2.1_hiera_l.yaml',str(ROOT/'models/sam2.1_hiera_large.pt'))\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\holma91__selective-mask-propagation\\vendor\\sam2\\sam2\\build_sam.py\", line 136, in build_sam2_video_predictor\n    model = instantiate(cfg.model, _recursive_=True)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\site\\hydra\\_internal\\instantiate\\_instantiate2.py\", line 226, in instantiate\n    return instantiate_node(\n           ^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\site\\hydra\\_internal\\instantiate\\_instantiate2.py\", line 342, in instantiate_node\n    value = instantiate_node(\n            ^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\site\\hydra\\_internal\\instantiate\\_instantiate2.py\", line 342, in instantiate_node\n    value = instantiate_node(\n            ^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\site\\hydra\\_internal\\instantiate\\_instantiate2.py\", line 333, in instantiate_node\n    _target_ = _resolve_target(node.get(_Keys.TARGET), full_key)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\site\\hydra\\_internal\\instantiate\\_instantiate2.py\", line 139, in _resolve_target\n    raise InstantiationException(msg) from e\nhydra.errors.InstantiationException: Error locating target 'sam2.modeling.backbones.hieradet.Hiera', set env var HYDRA_FULL_ERROR=1 to see chained exception.\nfull_key: model.image_encoder.trunk\n",
+    "window_candidates": [
+      {
+        "raw_id": 7,
+        "seed_frame": 84,
+        "entry_frame": 96,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 9,
+        "seed_frame": 348,
+        "entry_frame": 355,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 14,
+        "seed_frame": 107,
+        "entry_frame": 114,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 185,
+        "entry_frame": 191,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 287,
+        "entry_frame": 293,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 23,
+        "seed_frame": 349,
+        "entry_frame": 356,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 27,
+        "seed_frame": 42,
+        "entry_frame": 49,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 24,
+        "entry_frame": 29,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 348,
+        "entry_frame": 356,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 35,
+        "seed_frame": 12,
+        "entry_frame": 17,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 178,
+        "entry_frame": 186,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 208,
+        "entry_frame": 217,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 96,
+        "entry_frame": 101,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 311,
+        "entry_frame": 318,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 74,
+        "seed_frame": 157,
+        "entry_frame": 162,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 74,
+        "seed_frame": 251,
+        "entry_frame": 260,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 85,
+        "seed_frame": 278,
+        "entry_frame": 283,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 310,
+        "entry_frame": 316,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 95,
+        "seed_frame": 199,
+        "entry_frame": 205,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 101,
+        "seed_frame": 278,
+        "entry_frame": 286,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 107,
+        "seed_frame": 283,
+        "entry_frame": 289,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 321,
+        "entry_frame": 327,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 8,
+        "seed_frame": 248,
+        "entry_frame": 253,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 22,
+        "seed_frame": 12,
+        "entry_frame": 46,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 40,
+        "seed_frame": 73,
+        "entry_frame": 84,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 44,
+        "seed_frame": 126,
+        "entry_frame": 131,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 62,
+        "seed_frame": 93,
+        "entry_frame": 98,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 77,
+        "seed_frame": 221,
+        "entry_frame": 226,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 86,
+        "seed_frame": 152,
+        "entry_frame": 161,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 87,
+        "seed_frame": 275,
+        "entry_frame": 281,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 88,
+        "seed_frame": 207,
+        "entry_frame": 212,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 317,
+        "entry_frame": 322,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 135,
+        "seed_frame": 324,
+        "entry_frame": 342,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 349,
+        "entry_frame": 355,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 109,
+        "entry_frame": 114,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 88,
+        "seed_frame": 186,
+        "entry_frame": 191,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 90,
+        "seed_frame": 288,
+        "entry_frame": 293,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 349,
+        "entry_frame": 356,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 344,
+        "entry_frame": 356,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 90,
+        "seed_frame": 181,
+        "entry_frame": 186,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 313,
+        "entry_frame": 318,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 16,
+        "seed_frame": 153,
+        "entry_frame": 162,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 247,
+        "entry_frame": 260,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 272,
+        "entry_frame": 283,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 311,
+        "entry_frame": 316,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 263,
+        "entry_frame": 289,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 23,
+        "seed_frame": 284,
+        "entry_frame": 289,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 247,
+        "entry_frame": 253,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 25,
+        "seed_frame": 16,
+        "entry_frame": 46,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 17,
+        "seed_frame": 79,
+        "entry_frame": 84,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 79,
+        "entry_frame": 84,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 156,
+        "entry_frame": 161,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 107,
+        "seed_frame": 311,
+        "entry_frame": 322,
+        "trigger": "witness"
+      }
+    ]
+  },
+  {
+    "name": "smp_day3_full_v2",
+    "manifest": {
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py": "a0446e2c6a6d7b3a3ce95e74c3c7b17d13f0018e7b8ffc8729049e7be3732511",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "baseline_observations_exact": true,
+      "baseline_colours_exact": true,
+      "upstream_commit": "6472b52e79c47a7793cd4c6cabd64e812a8e5852",
+      "group": "day",
+      "segment": 3,
+      "margin": "second-smallest minus smallest cost in matched detection column, each real association stage",
+      "model": "SAM2.1 Hiera Large",
+      "model_sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318",
+      "adaptations": [
+        "Sampled original video frame loader",
+        "SAM state/video CPU offload",
+        "upstream optional CUDA hole-filling extension unavailable; official fallback"
+      ],
+      "mode": "benchmark: source boxes preserved; identity correction only",
+      "new_control_opened": false
+    },
+    "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py\", line 144, in <module>\n    try: execute(args)\n         ^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py\", line 109, in execute\n    if len(indices)!=1: raise ValueError('Corrected box not uniquely present in source detections')\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: Corrected box not uniquely present in source detections\n",
+    "window_candidates": [
+      {
+        "raw_id": 7,
+        "seed_frame": 84,
+        "entry_frame": 96,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 9,
+        "seed_frame": 348,
+        "entry_frame": 355,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 14,
+        "seed_frame": 107,
+        "entry_frame": 114,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 185,
+        "entry_frame": 191,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 287,
+        "entry_frame": 293,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 23,
+        "seed_frame": 349,
+        "entry_frame": 356,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 27,
+        "seed_frame": 42,
+        "entry_frame": 49,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 24,
+        "entry_frame": 29,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 348,
+        "entry_frame": 356,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 35,
+        "seed_frame": 12,
+        "entry_frame": 17,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 178,
+        "entry_frame": 186,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 208,
+        "entry_frame": 217,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 96,
+        "entry_frame": 101,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 311,
+        "entry_frame": 318,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 74,
+        "seed_frame": 157,
+        "entry_frame": 162,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 74,
+        "seed_frame": 251,
+        "entry_frame": 260,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 85,
+        "seed_frame": 278,
+        "entry_frame": 283,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 310,
+        "entry_frame": 316,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 95,
+        "seed_frame": 199,
+        "entry_frame": 205,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 101,
+        "seed_frame": 278,
+        "entry_frame": 286,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 107,
+        "seed_frame": 283,
+        "entry_frame": 289,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 321,
+        "entry_frame": 327,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 8,
+        "seed_frame": 248,
+        "entry_frame": 253,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 22,
+        "seed_frame": 12,
+        "entry_frame": 46,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 40,
+        "seed_frame": 73,
+        "entry_frame": 84,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 44,
+        "seed_frame": 126,
+        "entry_frame": 131,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 62,
+        "seed_frame": 93,
+        "entry_frame": 98,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 77,
+        "seed_frame": 221,
+        "entry_frame": 226,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 86,
+        "seed_frame": 152,
+        "entry_frame": 161,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 87,
+        "seed_frame": 275,
+        "entry_frame": 281,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 88,
+        "seed_frame": 207,
+        "entry_frame": 212,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 317,
+        "entry_frame": 322,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 135,
+        "seed_frame": 324,
+        "entry_frame": 342,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 349,
+        "entry_frame": 355,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 109,
+        "entry_frame": 114,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 88,
+        "seed_frame": 186,
+        "entry_frame": 191,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 90,
+        "seed_frame": 288,
+        "entry_frame": 293,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 349,
+        "entry_frame": 356,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 344,
+        "entry_frame": 356,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 90,
+        "seed_frame": 181,
+        "entry_frame": 186,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 313,
+        "entry_frame": 318,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 16,
+        "seed_frame": 153,
+        "entry_frame": 162,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 247,
+        "entry_frame": 260,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 272,
+        "entry_frame": 283,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 311,
+        "entry_frame": 316,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 263,
+        "entry_frame": 289,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 23,
+        "seed_frame": 284,
+        "entry_frame": 289,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 247,
+        "entry_frame": 253,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 25,
+        "seed_frame": 16,
+        "entry_frame": 46,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 17,
+        "seed_frame": 79,
+        "entry_frame": 84,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 79,
+        "entry_frame": 84,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 156,
+        "entry_frame": 161,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 107,
+        "seed_frame": 311,
+        "entry_frame": 322,
+        "trigger": "witness"
+      }
+    ]
+  },
+  {
+    "name": "smp_day3_full_v3",
+    "manifest": {
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py": "edc99251a9766026666417c3333e72fa71ee27d1c6d612fd70ac17cb96e8a2fd",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "baseline_observations_exact": true,
+      "baseline_colours_exact": true,
+      "upstream_commit": "6472b52e79c47a7793cd4c6cabd64e812a8e5852",
+      "group": "day",
+      "segment": 3,
+      "margin": "second-smallest minus smallest cost in matched detection column, each real association stage",
+      "model": "SAM2.1 Hiera Large",
+      "model_sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318",
+      "adaptations": [
+        "Sampled original video frame loader",
+        "SAM state/video CPU offload",
+        "upstream optional CUDA hole-filling extension unavailable; official fallback"
+      ],
+      "mode": "benchmark: source boxes preserved; identity correction only",
+      "new_control_opened": false
+    },
+    "result": {
+      "status": "completed",
+      "manifest": {
+        "source_sha256": {
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py": "edc99251a9766026666417c3333e72fa71ee27d1c6d612fd70ac17cb96e8a2fd",
+          "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+        },
+        "baseline_observations_exact": true,
+        "baseline_colours_exact": true,
+        "upstream_commit": "6472b52e79c47a7793cd4c6cabd64e812a8e5852",
+        "group": "day",
+        "segment": 3,
+        "margin": "second-smallest minus smallest cost in matched detection column, each real association stage",
+        "model": "SAM2.1 Hiera Large",
+        "model_sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318",
+        "adaptations": [
+          "Sampled original video frame loader",
+          "SAM state/video CPU offload",
+          "upstream optional CUDA hole-filling extension unavailable; official fallback"
+        ],
+        "mode": "benchmark: source boxes preserved; identity correction only",
+        "new_control_opened": false
+      },
+      "seconds": 226.13245190004818,
+      "windows": [
+        {
+          "before_id": 35,
+          "canonical_id": 35,
+          "seed_frame": 12,
+          "entry_frame": 17,
+          "exit_frame": 17,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 34,
+          "canonical_id": 34,
+          "seed_frame": 24,
+          "entry_frame": 29,
+          "exit_frame": 29,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 27,
+          "canonical_id": 27,
+          "seed_frame": 42,
+          "entry_frame": 49,
+          "exit_frame": 49,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 40,
+          "canonical_id": 40,
+          "seed_frame": 73,
+          "entry_frame": 84,
+          "exit_frame": 84,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 20,
+          "canonical_id": 20,
+          "seed_frame": 79,
+          "entry_frame": 84,
+          "exit_frame": 88,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 17,
+          "canonical_id": 17,
+          "seed_frame": 79,
+          "entry_frame": 84,
+          "exit_frame": 89,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 7,
+          "canonical_id": 7,
+          "seed_frame": 84,
+          "entry_frame": 96,
+          "exit_frame": 96,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 69,
+          "canonical_id": 69,
+          "seed_frame": 96,
+          "entry_frame": 101,
+          "exit_frame": 108,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 62,
+          "canonical_id": 62,
+          "seed_frame": 93,
+          "entry_frame": 98,
+          "exit_frame": 109,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 14,
+          "canonical_id": 14,
+          "seed_frame": 107,
+          "entry_frame": 114,
+          "exit_frame": 114,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 69,
+          "canonical_id": 69,
+          "seed_frame": 109,
+          "entry_frame": 114,
+          "exit_frame": 128,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 25,
+          "canonical_id": 25,
+          "seed_frame": 16,
+          "entry_frame": 46,
+          "exit_frame": 136,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 34,
+          "canonical_id": 34,
+          "seed_frame": 156,
+          "entry_frame": 161,
+          "exit_frame": 165,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 74,
+          "canonical_id": 74,
+          "seed_frame": 157,
+          "entry_frame": 162,
+          "exit_frame": 168,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 22,
+          "canonical_id": 22,
+          "seed_frame": 12,
+          "entry_frame": 46,
+          "exit_frame": 172,
+          "outcome": "swap",
+          "after_id": 14,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 45,
+          "canonical_id": 45,
+          "seed_frame": 178,
+          "entry_frame": 186,
+          "exit_frame": 186,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 20,
+          "canonical_id": 20,
+          "seed_frame": 185,
+          "entry_frame": 191,
+          "exit_frame": 191,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 88,
+          "canonical_id": 88,
+          "seed_frame": 186,
+          "entry_frame": 191,
+          "exit_frame": 191,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 90,
+          "canonical_id": 90,
+          "seed_frame": 181,
+          "entry_frame": 186,
+          "exit_frame": 192,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 88,
+          "canonical_id": 88,
+          "seed_frame": 207,
+          "entry_frame": 212,
+          "exit_frame": 212,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 16,
+          "canonical_id": 16,
+          "seed_frame": 153,
+          "entry_frame": 162,
+          "exit_frame": 215,
+          "outcome": "swap",
+          "after_id": 94,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 45,
+          "canonical_id": 45,
+          "seed_frame": 208,
+          "entry_frame": 217,
+          "exit_frame": 246,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 74,
+          "canonical_id": 74,
+          "seed_frame": 251,
+          "entry_frame": 260,
+          "exit_frame": 260,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 87,
+          "canonical_id": 87,
+          "seed_frame": 275,
+          "entry_frame": 281,
+          "exit_frame": 281,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 85,
+          "canonical_id": 85,
+          "seed_frame": 278,
+          "entry_frame": 283,
+          "exit_frame": 283,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 94,
+          "canonical_id": 16,
+          "seed_frame": 247,
+          "entry_frame": 260,
+          "exit_frame": 286,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 45,
+          "canonical_id": 45,
+          "seed_frame": 263,
+          "entry_frame": 289,
+          "exit_frame": 289,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 23,
+          "canonical_id": 23,
+          "seed_frame": 284,
+          "entry_frame": 289,
+          "exit_frame": 293,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 20,
+          "canonical_id": 20,
+          "seed_frame": 287,
+          "entry_frame": 293,
+          "exit_frame": 293,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 8,
+          "canonical_id": 8,
+          "seed_frame": 248,
+          "entry_frame": 253,
+          "exit_frame": 294,
+          "outcome": "swap",
+          "after_id": 74,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 86,
+          "canonical_id": 86,
+          "seed_frame": 152,
+          "entry_frame": 161,
+          "exit_frame": 296,
+          "outcome": "swap",
+          "after_id": 121,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 90,
+          "canonical_id": 90,
+          "seed_frame": 288,
+          "entry_frame": 293,
+          "exit_frame": 300,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 69,
+          "canonical_id": 69,
+          "seed_frame": 272,
+          "entry_frame": 283,
+          "exit_frame": 302,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 101,
+          "canonical_id": 101,
+          "seed_frame": 278,
+          "entry_frame": 286,
+          "exit_frame": 302,
+          "outcome": "swap",
+          "after_id": 93,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 69,
+          "canonical_id": 69,
+          "seed_frame": 311,
+          "entry_frame": 318,
+          "exit_frame": 318,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 134,
+          "canonical_id": 134,
+          "seed_frame": 313,
+          "entry_frame": 318,
+          "exit_frame": 318,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 134,
+          "canonical_id": 134,
+          "seed_frame": 321,
+          "entry_frame": 327,
+          "exit_frame": 327,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 44,
+          "canonical_id": 44,
+          "seed_frame": 126,
+          "entry_frame": 131,
+          "exit_frame": 328,
+          "outcome": "degraded",
+          "after_id": null,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 135,
+          "canonical_id": 135,
+          "seed_frame": 324,
+          "entry_frame": 342,
+          "exit_frame": 328,
+          "outcome": "degraded",
+          "after_id": null,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 94,
+          "canonical_id": 16,
+          "seed_frame": 310,
+          "entry_frame": 316,
+          "exit_frame": 329,
+          "outcome": "swap",
+          "after_id": 107,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 9,
+          "canonical_id": 9,
+          "seed_frame": 348,
+          "entry_frame": 355,
+          "exit_frame": 355,
+          "outcome": "stale",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 34,
+          "canonical_id": 34,
+          "seed_frame": 348,
+          "entry_frame": 356,
+          "exit_frame": 364,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 45,
+          "canonical_id": 45,
+          "seed_frame": 349,
+          "entry_frame": 355,
+          "exit_frame": 364,
+          "outcome": "clean",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 107,
+          "canonical_id": 107,
+          "seed_frame": 283,
+          "entry_frame": 289,
+          "exit_frame": 370,
+          "outcome": "degraded",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 127,
+          "canonical_id": 127,
+          "seed_frame": 311,
+          "entry_frame": 316,
+          "exit_frame": 370,
+          "outcome": "degraded",
+          "after_id": null,
+          "trigger": "witness"
+        },
+        {
+          "before_id": 95,
+          "canonical_id": 95,
+          "seed_frame": 199,
+          "entry_frame": 205,
+          "exit_frame": 374,
+          "outcome": "end",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 77,
+          "canonical_id": 77,
+          "seed_frame": 221,
+          "entry_frame": 226,
+          "exit_frame": 374,
+          "outcome": "end",
+          "after_id": null,
+          "trigger": "gap"
+        },
+        {
+          "before_id": 23,
+          "canonical_id": 23,
+          "seed_frame": 349,
+          "entry_frame": 356,
+          "exit_frame": 374,
+          "outcome": "end",
+          "after_id": null,
+          "trigger": "margin"
+        },
+        {
+          "before_id": 134,
+          "canonical_id": 134,
+          "seed_frame": 349,
+          "entry_frame": 356,
+          "exit_frame": 374,
+          "outcome": "end",
+          "after_id": null,
+          "trigger": "witness"
+        }
+      ],
+      "renames": [
+        [
+          14,
+          22,
+          168
+        ],
+        [
+          22,
+          162,
+          168
+        ],
+        [
+          94,
+          16,
+          210
+        ],
+        [
+          16,
+          163,
+          210
+        ],
+        [
+          74,
+          8,
+          290
+        ],
+        [
+          8,
+          164,
+          290
+        ],
+        [
+          121,
+          86,
+          292
+        ],
+        [
+          86,
+          165,
+          292
+        ],
+        [
+          93,
+          101,
+          298
+        ],
+        [
+          101,
+          166,
+          298
+        ],
+        [
+          94,
+          94,
+          325
+        ],
+        [
+          107,
+          16,
+          325
+        ]
+      ],
+      "stats": {
+        "lost_frames": 7,
+        "lost_seconds": 0.56,
+        "person_filter": {
+          "method": "annotated_perimeter_track_v1",
+          "applied": true,
+          "skip_reason": null,
+          "observations_before": 8825,
+          "observations_removed": 0,
+          "tracks_removed": 0,
+          "min_field_observations": 2,
+          "tolerance_px": 2.16,
+          "rejected_tracks": []
+        }
+      },
+      "invalid_source_boxes_excluded": [
+        {
+          "sample_order": 119,
+          "source_frame": 238,
+          "track_id": 22,
+          "box": [
+            3146.0,
+            257.0,
+            3166.0,
+            272.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 120,
+          "source_frame": 240,
+          "track_id": 22,
+          "box": [
+            3144.0,
+            258.0,
+            3169.0,
+            272.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 127,
+          "source_frame": 254,
+          "track_id": 22,
+          "box": [
+            3136.0,
+            256.0,
+            3169.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 130,
+          "source_frame": 260,
+          "track_id": 22,
+          "box": [
+            3139.0,
+            258.0,
+            3166.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 131,
+          "source_frame": 262,
+          "track_id": 22,
+          "box": [
+            3140.0,
+            258.0,
+            3166.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 132,
+          "source_frame": 264,
+          "track_id": 22,
+          "box": [
+            3139.0,
+            258.0,
+            3167.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 133,
+          "source_frame": 266,
+          "track_id": 22,
+          "box": [
+            3139.0,
+            258.0,
+            3168.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 134,
+          "source_frame": 268,
+          "track_id": 22,
+          "box": [
+            3139.0,
+            258.0,
+            3168.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 135,
+          "source_frame": 270,
+          "track_id": 22,
+          "box": [
+            3138.0,
+            257.0,
+            3168.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 136,
+          "source_frame": 272,
+          "track_id": 22,
+          "box": [
+            3139.0,
+            258.0,
+            3167.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 139,
+          "source_frame": 278,
+          "track_id": 22,
+          "box": [
+            3139.0,
+            258.0,
+            3167.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 140,
+          "source_frame": 280,
+          "track_id": 22,
+          "box": [
+            3139.0,
+            258.0,
+            3168.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 142,
+          "source_frame": 284,
+          "track_id": 22,
+          "box": [
+            3139.0,
+            257.0,
+            3167.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 143,
+          "source_frame": 286,
+          "track_id": 22,
+          "box": [
+            3139.0,
+            258.0,
+            3168.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 144,
+          "source_frame": 288,
+          "track_id": 22,
+          "box": [
+            3138.0,
+            257.0,
+            3169.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 145,
+          "source_frame": 290,
+          "track_id": 22,
+          "box": [
+            3138.0,
+            257.0,
+            3169.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 152,
+          "source_frame": 304,
+          "track_id": 22,
+          "box": [
+            3126.0,
+            255.0,
+            3169.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 153,
+          "source_frame": 306,
+          "track_id": 22,
+          "box": [
+            3126.0,
+            255.0,
+            3169.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 154,
+          "source_frame": 308,
+          "track_id": 22,
+          "box": [
+            3125.0,
+            255.0,
+            3168.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 155,
+          "source_frame": 310,
+          "track_id": 22,
+          "box": [
+            3126.0,
+            255.0,
+            3169.0,
+            265.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 156,
+          "source_frame": 312,
+          "track_id": 22,
+          "box": [
+            3125.0,
+            254.0,
+            3191.0,
+            272.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 157,
+          "source_frame": 314,
+          "track_id": 22,
+          "box": [
+            3125.0,
+            254.0,
+            3193.0,
+            272.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 158,
+          "source_frame": 316,
+          "track_id": 22,
+          "box": [
+            3126.0,
+            255.0,
+            3176.0,
+            268.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 160,
+          "source_frame": 320,
+          "track_id": 22,
+          "box": [
+            3127.0,
+            253.0,
+            3192.0,
+            272.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 161,
+          "source_frame": 322,
+          "track_id": 22,
+          "box": [
+            3126.0,
+            253.0,
+            3193.0,
+            272.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 212,
+          "source_frame": 424,
+          "track_id": 86,
+          "box": [
+            2618.0,
+            204.0,
+            2636.0,
+            250.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 213,
+          "source_frame": 426,
+          "track_id": 86,
+          "box": [
+            2621.0,
+            204.0,
+            2638.0,
+            251.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 214,
+          "source_frame": 428,
+          "track_id": 86,
+          "box": [
+            2622.0,
+            205.0,
+            2639.0,
+            250.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 215,
+          "source_frame": 430,
+          "track_id": 86,
+          "box": [
+            2624.0,
+            205.0,
+            2642.0,
+            250.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 216,
+          "source_frame": 432,
+          "track_id": 86,
+          "box": [
+            2626.0,
+            205.0,
+            2643.0,
+            250.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 217,
+          "source_frame": 434,
+          "track_id": 86,
+          "box": [
+            2628.0,
+            206.0,
+            2647.0,
+            250.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 218,
+          "source_frame": 436,
+          "track_id": 86,
+          "box": [
+            2629.0,
+            205.0,
+            2647.0,
+            250.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 219,
+          "source_frame": 438,
+          "track_id": 86,
+          "box": [
+            2630.0,
+            206.0,
+            2648.0,
+            251.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 220,
+          "source_frame": 440,
+          "track_id": 86,
+          "box": [
+            2630.0,
+            208.0,
+            2648.0,
+            251.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 221,
+          "source_frame": 442,
+          "track_id": 86,
+          "box": [
+            2630.0,
+            210.0,
+            2648.0,
+            251.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 222,
+          "source_frame": 444,
+          "track_id": 86,
+          "box": [
+            2628.0,
+            213.0,
+            2648.0,
+            251.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 229,
+          "source_frame": 458,
+          "track_id": 86,
+          "box": [
+            2600.0,
+            209.0,
+            2634.0,
+            246.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 241,
+          "source_frame": 482,
+          "track_id": 86,
+          "box": [
+            2520.0,
+            193.0,
+            2544.0,
+            239.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 242,
+          "source_frame": 484,
+          "track_id": 86,
+          "box": [
+            2516.0,
+            193.0,
+            2540.0,
+            239.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 243,
+          "source_frame": 486,
+          "track_id": 86,
+          "box": [
+            2512.0,
+            193.0,
+            2535.0,
+            239.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 244,
+          "source_frame": 488,
+          "track_id": 86,
+          "box": [
+            2509.0,
+            193.0,
+            2527.0,
+            238.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 245,
+          "source_frame": 490,
+          "track_id": 86,
+          "box": [
+            2501.0,
+            191.0,
+            2523.0,
+            238.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 246,
+          "source_frame": 492,
+          "track_id": 86,
+          "box": [
+            2498.0,
+            191.0,
+            2519.0,
+            238.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 247,
+          "source_frame": 494,
+          "track_id": 86,
+          "box": [
+            2490.0,
+            189.0,
+            2512.0,
+            238.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 248,
+          "source_frame": 496,
+          "track_id": 86,
+          "box": [
+            2485.0,
+            195.0,
+            2508.0,
+            237.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 249,
+          "source_frame": 498,
+          "track_id": 86,
+          "box": [
+            2481.0,
+            193.0,
+            2504.0,
+            237.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 251,
+          "source_frame": 502,
+          "track_id": 86,
+          "box": [
+            2469.0,
+            191.0,
+            2494.0,
+            236.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 252,
+          "source_frame": 504,
+          "track_id": 86,
+          "box": [
+            2469.0,
+            191.0,
+            2488.0,
+            236.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 253,
+          "source_frame": 506,
+          "track_id": 86,
+          "box": [
+            2466.0,
+            192.0,
+            2483.0,
+            236.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 254,
+          "source_frame": 508,
+          "track_id": 86,
+          "box": [
+            2456.0,
+            192.0,
+            2479.0,
+            236.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 255,
+          "source_frame": 510,
+          "track_id": 86,
+          "box": [
+            2455.0,
+            195.0,
+            2476.0,
+            235.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 256,
+          "source_frame": 512,
+          "track_id": 86,
+          "box": [
+            2449.0,
+            195.0,
+            2473.0,
+            235.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 257,
+          "source_frame": 514,
+          "track_id": 86,
+          "box": [
+            2449.0,
+            192.0,
+            2467.0,
+            235.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 258,
+          "source_frame": 516,
+          "track_id": 86,
+          "box": [
+            2449.0,
+            193.0,
+            2464.0,
+            234.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 259,
+          "source_frame": 518,
+          "track_id": 86,
+          "box": [
+            2446.0,
+            192.0,
+            2458.0,
+            233.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 260,
+          "source_frame": 520,
+          "track_id": 86,
+          "box": [
+            2438.0,
+            193.0,
+            2457.0,
+            233.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 261,
+          "source_frame": 522,
+          "track_id": 86,
+          "box": [
+            2434.0,
+            194.0,
+            2454.0,
+            231.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 262,
+          "source_frame": 524,
+          "track_id": 86,
+          "box": [
+            2429.0,
+            192.0,
+            2448.0,
+            231.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 263,
+          "source_frame": 526,
+          "track_id": 86,
+          "box": [
+            2425.0,
+            192.0,
+            2445.0,
+            232.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 267,
+          "source_frame": 534,
+          "track_id": 86,
+          "box": [
+            2408.0,
+            191.0,
+            2430.0,
+            231.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 271,
+          "source_frame": 542,
+          "track_id": 86,
+          "box": [
+            2405.0,
+            188.0,
+            2424.0,
+            228.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 272,
+          "source_frame": 544,
+          "track_id": 86,
+          "box": [
+            2391.0,
+            186.0,
+            2424.0,
+            229.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 273,
+          "source_frame": 546,
+          "track_id": 86,
+          "box": [
+            2402.0,
+            183.0,
+            2424.0,
+            224.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 274,
+          "source_frame": 548,
+          "track_id": 86,
+          "box": [
+            2402.0,
+            182.0,
+            2424.0,
+            222.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 275,
+          "source_frame": 550,
+          "track_id": 86,
+          "box": [
+            2405.0,
+            180.0,
+            2425.0,
+            221.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 276,
+          "source_frame": 552,
+          "track_id": 86,
+          "box": [
+            2404.0,
+            180.0,
+            2426.0,
+            221.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 283,
+          "source_frame": 566,
+          "track_id": 86,
+          "box": [
+            2415.0,
+            181.0,
+            2432.0,
+            205.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 285,
+          "source_frame": 570,
+          "track_id": 86,
+          "box": [
+            2418.0,
+            179.0,
+            2439.0,
+            220.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 286,
+          "source_frame": 572,
+          "track_id": 86,
+          "box": [
+            2424.0,
+            179.0,
+            2441.0,
+            222.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 287,
+          "source_frame": 574,
+          "track_id": 86,
+          "box": [
+            2427.0,
+            179.0,
+            2442.0,
+            221.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 288,
+          "source_frame": 576,
+          "track_id": 86,
+          "box": [
+            2428.0,
+            179.0,
+            2444.0,
+            221.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 289,
+          "source_frame": 578,
+          "track_id": 86,
+          "box": [
+            2432.0,
+            180.0,
+            2447.0,
+            222.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 290,
+          "source_frame": 580,
+          "track_id": 86,
+          "box": [
+            2434.0,
+            181.0,
+            2450.0,
+            222.0
+          ],
+          "source_matches": 0
+        },
+        {
+          "sample_order": 291,
+          "source_frame": 582,
+          "track_id": 86,
+          "box": [
+            2437.0,
+            182.0,
+            2454.0,
+            223.0
+          ],
+          "source_matches": 0
+        }
+      ],
+      "promotion_blocked": true,
+      "output_scope": "Only uniquely matched original detector boxes; upstream mask-derived fallback boxes excluded and recorded; any such fallback blocks promotion"
+    },
+    "predictions_sha256": "aef210301fff4ee2eec1def8fc047d94ea030be1728f7758a0b1e17cc42aa287",
+    "raw_corrected_boxes_sha256": "7066c795cc3e646d5b59381d43979caf63b0306c24e09880d92a9981251b1a36",
+    "window_candidates": [
+      {
+        "raw_id": 7,
+        "seed_frame": 84,
+        "entry_frame": 96,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 9,
+        "seed_frame": 348,
+        "entry_frame": 355,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 14,
+        "seed_frame": 107,
+        "entry_frame": 114,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 185,
+        "entry_frame": 191,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 287,
+        "entry_frame": 293,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 23,
+        "seed_frame": 349,
+        "entry_frame": 356,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 27,
+        "seed_frame": 42,
+        "entry_frame": 49,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 24,
+        "entry_frame": 29,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 348,
+        "entry_frame": 356,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 35,
+        "seed_frame": 12,
+        "entry_frame": 17,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 178,
+        "entry_frame": 186,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 208,
+        "entry_frame": 217,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 96,
+        "entry_frame": 101,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 311,
+        "entry_frame": 318,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 74,
+        "seed_frame": 157,
+        "entry_frame": 162,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 74,
+        "seed_frame": 251,
+        "entry_frame": 260,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 85,
+        "seed_frame": 278,
+        "entry_frame": 283,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 310,
+        "entry_frame": 316,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 95,
+        "seed_frame": 199,
+        "entry_frame": 205,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 101,
+        "seed_frame": 278,
+        "entry_frame": 286,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 107,
+        "seed_frame": 283,
+        "entry_frame": 289,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 321,
+        "entry_frame": 327,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 8,
+        "seed_frame": 248,
+        "entry_frame": 253,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 22,
+        "seed_frame": 12,
+        "entry_frame": 46,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 40,
+        "seed_frame": 73,
+        "entry_frame": 84,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 44,
+        "seed_frame": 126,
+        "entry_frame": 131,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 62,
+        "seed_frame": 93,
+        "entry_frame": 98,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 77,
+        "seed_frame": 221,
+        "entry_frame": 226,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 86,
+        "seed_frame": 152,
+        "entry_frame": 161,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 87,
+        "seed_frame": 275,
+        "entry_frame": 281,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 88,
+        "seed_frame": 207,
+        "entry_frame": 212,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 317,
+        "entry_frame": 322,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 135,
+        "seed_frame": 324,
+        "entry_frame": 342,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 349,
+        "entry_frame": 355,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 109,
+        "entry_frame": 114,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 88,
+        "seed_frame": 186,
+        "entry_frame": 191,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 90,
+        "seed_frame": 288,
+        "entry_frame": 293,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 349,
+        "entry_frame": 356,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 344,
+        "entry_frame": 356,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 90,
+        "seed_frame": 181,
+        "entry_frame": 186,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 313,
+        "entry_frame": 318,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 16,
+        "seed_frame": 153,
+        "entry_frame": 162,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 247,
+        "entry_frame": 260,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 272,
+        "entry_frame": 283,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 311,
+        "entry_frame": 316,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 263,
+        "entry_frame": 289,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 23,
+        "seed_frame": 284,
+        "entry_frame": 289,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 247,
+        "entry_frame": 253,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 25,
+        "seed_frame": 16,
+        "entry_frame": 46,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 17,
+        "seed_frame": 79,
+        "entry_frame": 84,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 79,
+        "entry_frame": 84,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 156,
+        "entry_frame": 161,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 107,
+        "seed_frame": 311,
+        "entry_frame": 322,
+        "trigger": "witness"
+      }
+    ]
+  },
+  {
+    "name": "smp_day3_prepare_v2",
+    "manifest": {
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py": "a0446e2c6a6d7b3a3ce95e74c3c7b17d13f0018e7b8ffc8729049e7be3732511",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "baseline_observations_exact": true,
+      "baseline_colours_exact": true,
+      "upstream_commit": "6472b52e79c47a7793cd4c6cabd64e812a8e5852",
+      "group": "day",
+      "segment": 3,
+      "margin": "second-smallest minus smallest cost in matched detection column, each real association stage",
+      "model": "SAM2.1 Hiera Large",
+      "model_sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318",
+      "adaptations": [
+        "Sampled original video frame loader",
+        "SAM state/video CPU offload",
+        "upstream optional CUDA hole-filling extension unavailable; official fallback"
+      ],
+      "mode": "benchmark: source boxes preserved; identity correction only",
+      "new_control_opened": false
+    },
+    "window_candidates": [
+      {
+        "raw_id": 7,
+        "seed_frame": 84,
+        "entry_frame": 96,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 9,
+        "seed_frame": 348,
+        "entry_frame": 355,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 14,
+        "seed_frame": 107,
+        "entry_frame": 114,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 185,
+        "entry_frame": 191,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 287,
+        "entry_frame": 293,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 23,
+        "seed_frame": 349,
+        "entry_frame": 356,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 27,
+        "seed_frame": 42,
+        "entry_frame": 49,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 24,
+        "entry_frame": 29,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 348,
+        "entry_frame": 356,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 35,
+        "seed_frame": 12,
+        "entry_frame": 17,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 178,
+        "entry_frame": 186,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 208,
+        "entry_frame": 217,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 96,
+        "entry_frame": 101,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 311,
+        "entry_frame": 318,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 74,
+        "seed_frame": 157,
+        "entry_frame": 162,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 74,
+        "seed_frame": 251,
+        "entry_frame": 260,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 85,
+        "seed_frame": 278,
+        "entry_frame": 283,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 310,
+        "entry_frame": 316,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 95,
+        "seed_frame": 199,
+        "entry_frame": 205,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 101,
+        "seed_frame": 278,
+        "entry_frame": 286,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 107,
+        "seed_frame": 283,
+        "entry_frame": 289,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 321,
+        "entry_frame": 327,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 8,
+        "seed_frame": 248,
+        "entry_frame": 253,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 22,
+        "seed_frame": 12,
+        "entry_frame": 46,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 40,
+        "seed_frame": 73,
+        "entry_frame": 84,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 44,
+        "seed_frame": 126,
+        "entry_frame": 131,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 62,
+        "seed_frame": 93,
+        "entry_frame": 98,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 77,
+        "seed_frame": 221,
+        "entry_frame": 226,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 86,
+        "seed_frame": 152,
+        "entry_frame": 161,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 87,
+        "seed_frame": 275,
+        "entry_frame": 281,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 88,
+        "seed_frame": 207,
+        "entry_frame": 212,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 317,
+        "entry_frame": 322,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 135,
+        "seed_frame": 324,
+        "entry_frame": 342,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 349,
+        "entry_frame": 355,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 109,
+        "entry_frame": 114,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 88,
+        "seed_frame": 186,
+        "entry_frame": 191,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 90,
+        "seed_frame": 288,
+        "entry_frame": 293,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 349,
+        "entry_frame": 356,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 344,
+        "entry_frame": 356,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 90,
+        "seed_frame": 181,
+        "entry_frame": 186,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 134,
+        "seed_frame": 313,
+        "entry_frame": 318,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 16,
+        "seed_frame": 153,
+        "entry_frame": 162,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 247,
+        "entry_frame": 260,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 69,
+        "seed_frame": 272,
+        "entry_frame": 283,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 127,
+        "seed_frame": 311,
+        "entry_frame": 316,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 263,
+        "entry_frame": 289,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 23,
+        "seed_frame": 284,
+        "entry_frame": 289,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 94,
+        "seed_frame": 247,
+        "entry_frame": 253,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 25,
+        "seed_frame": 16,
+        "entry_frame": 46,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 17,
+        "seed_frame": 79,
+        "entry_frame": 84,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 20,
+        "seed_frame": 79,
+        "entry_frame": 84,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 34,
+        "seed_frame": 156,
+        "entry_frame": 161,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 107,
+        "seed_frame": 311,
+        "entry_frame": 322,
+        "trigger": "witness"
+      }
+    ]
+  },
+  {
+    "name": "smp_night40_full_v3",
+    "manifest": {
+      "source_sha256": {
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\bench\\joint_identity_control\\source\\seg_0040.mp4": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py": "edc99251a9766026666417c3333e72fa71ee27d1c6d612fd70ac17cb96e8a2fd",
+        "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\compat.py": "1604fc0dc0d73ea46445a81308f0a2352160f646e08905159c5c86394f69d6ca"
+      },
+      "baseline_observations_exact": true,
+      "baseline_colours_exact": true,
+      "upstream_commit": "6472b52e79c47a7793cd4c6cabd64e812a8e5852",
+      "group": "night_old_control",
+      "segment": 40,
+      "margin": "second-smallest minus smallest cost in matched detection column, each real association stage",
+      "model": "SAM2.1 Hiera Large",
+      "model_sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318",
+      "adaptations": [
+        "Sampled original video frame loader",
+        "SAM state/video CPU offload",
+        "upstream optional CUDA hole-filling extension unavailable; official fallback"
+      ],
+      "mode": "benchmark: source boxes preserved; identity correction only",
+      "new_control_opened": false
+    },
+    "error": "Traceback (most recent call last):\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py\", line 150, in <module>\n    try: execute(args)\n         ^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\run_smp.py\", line 97, in execute\n    masks,windows,renames,matches=step_sam(predictor,tracks,margins,str(out/'virtual'))\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\holma91__selective-mask-propagation\\selective_mask_propagation\\core\\sam2.py\", line 84, in step_sam\n    sam_masks, windows, rename_events, match_history = run_sam(predictor, specs, tracks, margins, source_path)\n                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\holma91__selective-mask-propagation\\selective_mask_propagation\\core\\sam2.py\", line 363, in run_sam\n    return run_sam_windows(lambda: Sam2Session(predictor, img_dir), specs, tracks, margins)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\holma91__selective-mask-propagation\\selective_mask_propagation\\core\\propagation.py\", line 230, in run_sam_windows\n    obj_ids_out, video_res_masks = session.propagate_one_frame(frame_idx)\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\holma91__selective-mask-propagation\\selective_mask_propagation\\core\\sam2.py\", line 388, in propagate_one_frame\n    for _, obj_ids, masks in self.predictor.propagate_in_video(\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\venv-cv\\Lib\\site-packages\\torch\\utils\\_contextlib.py\", line 40, in generator_context\n    response = gen.send(None)\n               ^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\holma91__selective-mask-propagation\\vendor\\sam2\\sam2\\sam2_video_predictor.py\", line 554, in propagate_in_video\n    self.propagate_in_video_preflight(inference_state)\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\venv-cv\\Lib\\site-packages\\torch\\utils\\_contextlib.py\", line 124, in decorate_context\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\holma91__selective-mask-propagation\\vendor\\sam2\\sam2\\sam2_video_predictor.py\", line 511, in propagate_in_video_preflight\n    maskmem_features, maskmem_pos_enc = self._run_memory_encoder(\n                                        ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\external-study-20261010\\sources\\holma91__selective-mask-propagation\\vendor\\sam2\\sam2\\sam2_video_predictor.py\", line 834, in _run_memory_encoder\n    maskmem_features = maskmem_features.to(storage_device, non_blocking=True)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntorch.AcceleratorError: CUDA error: resource already mapped\nSearch for `cudaErrorAlreadyMapped' in https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html for more information.\nCUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.\nFor debugging consider passing CUDA_LAUNCH_BLOCKING=1\nCompile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.\n\n",
+    "window_candidates": [
+      {
+        "raw_id": 1,
+        "seed_frame": 90,
+        "entry_frame": 100,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 3,
+        "seed_frame": 51,
+        "entry_frame": 58,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 4,
+        "seed_frame": 264,
+        "entry_frame": 273,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 8,
+        "seed_frame": 72,
+        "entry_frame": 78,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 8,
+        "seed_frame": 92,
+        "entry_frame": 98,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 8,
+        "seed_frame": 113,
+        "entry_frame": 122,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 8,
+        "seed_frame": 205,
+        "entry_frame": 217,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 8,
+        "seed_frame": 229,
+        "entry_frame": 234,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 11,
+        "seed_frame": 75,
+        "entry_frame": 83,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 14,
+        "seed_frame": 347,
+        "entry_frame": 353,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 16,
+        "seed_frame": 54,
+        "entry_frame": 60,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 17,
+        "seed_frame": 47,
+        "entry_frame": 61,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 32,
+        "seed_frame": 96,
+        "entry_frame": 110,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 32,
+        "seed_frame": 113,
+        "entry_frame": 121,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 37,
+        "seed_frame": 155,
+        "entry_frame": 162,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 37,
+        "seed_frame": 231,
+        "entry_frame": 239,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 40,
+        "seed_frame": 286,
+        "entry_frame": 292,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 43,
+        "seed_frame": 137,
+        "entry_frame": 142,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 45,
+        "seed_frame": 169,
+        "entry_frame": 175,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 46,
+        "seed_frame": 260,
+        "entry_frame": 267,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 47,
+        "seed_frame": 242,
+        "entry_frame": 262,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 48,
+        "seed_frame": 162,
+        "entry_frame": 176,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 48,
+        "seed_frame": 210,
+        "entry_frame": 215,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 52,
+        "seed_frame": 196,
+        "entry_frame": 202,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 54,
+        "seed_frame": 210,
+        "entry_frame": 215,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 56,
+        "seed_frame": 248,
+        "entry_frame": 256,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 59,
+        "seed_frame": 236,
+        "entry_frame": 243,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 59,
+        "seed_frame": 255,
+        "entry_frame": 263,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 59,
+        "seed_frame": 333,
+        "entry_frame": 338,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 61,
+        "seed_frame": 264,
+        "entry_frame": 270,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 66,
+        "seed_frame": 302,
+        "entry_frame": 311,
+        "trigger": "margin"
+      },
+      {
+        "raw_id": 1,
+        "seed_frame": 151,
+        "entry_frame": 156,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 19,
+        "seed_frame": 59,
+        "entry_frame": 66,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 27,
+        "seed_frame": 134,
+        "entry_frame": 139,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 38,
+        "seed_frame": 159,
+        "entry_frame": 164,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 41,
+        "seed_frame": 156,
+        "entry_frame": 164,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 46,
+        "seed_frame": 173,
+        "entry_frame": 192,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 47,
+        "seed_frame": 205,
+        "entry_frame": 215,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 47,
+        "seed_frame": 242,
+        "entry_frame": 251,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 74,
+        "seed_frame": 345,
+        "entry_frame": 350,
+        "trigger": "gap"
+      },
+      {
+        "raw_id": 30,
+        "seed_frame": 92,
+        "entry_frame": 100,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 64,
+        "seed_frame": 268,
+        "entry_frame": 273,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 4,
+        "seed_frame": 86,
+        "entry_frame": 98,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 4,
+        "seed_frame": 113,
+        "entry_frame": 122,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 48,
+        "seed_frame": 210,
+        "entry_frame": 217,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 54,
+        "seed_frame": 219,
+        "entry_frame": 234,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 1,
+        "seed_frame": 77,
+        "entry_frame": 83,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 30,
+        "seed_frame": 77,
+        "entry_frame": 83,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 4,
+        "seed_frame": 96,
+        "entry_frame": 110,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 4,
+        "seed_frame": 113,
+        "entry_frame": 121,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 30,
+        "seed_frame": 156,
+        "entry_frame": 162,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 54,
+        "seed_frame": 219,
+        "entry_frame": 239,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 59,
+        "seed_frame": 245,
+        "entry_frame": 256,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 4,
+        "seed_frame": 238,
+        "entry_frame": 243,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 67,
+        "seed_frame": 306,
+        "entry_frame": 311,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 70,
+        "seed_frame": 305,
+        "entry_frame": 311,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 37,
+        "seed_frame": 151,
+        "entry_frame": 156,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 15,
+        "seed_frame": 159,
+        "entry_frame": 164,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 6,
+        "seed_frame": 156,
+        "entry_frame": 164,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 30,
+        "seed_frame": 187,
+        "entry_frame": 192,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 59,
+        "seed_frame": 245,
+        "entry_frame": 251,
+        "trigger": "witness"
+      },
+      {
+        "raw_id": 56,
+        "seed_frame": 246,
+        "entry_frame": 251,
+        "trigger": "witness"
+      }
+    ]
+  }
+]

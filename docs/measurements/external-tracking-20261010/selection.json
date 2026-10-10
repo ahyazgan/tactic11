@@ -1,0 +1,57 @@
+{
+  "selected_new_production_backend": null,
+  "keep_current_baseline": true,
+  "selected_development_candidate": "baseline-team-gated-mcbyte-no-mask",
+  "joint_two_clip_development_pass": true,
+  "post_hoc": true,
+  "independent_validation": false,
+  "promotion_allowed": false,
+  "completed_scored_trials": {
+    "blend_day3_v2": {
+      "local_development_pass": false,
+      "regressions": [],
+      "person_improvement": false
+    },
+    "blend_night_old_control40_v2": {
+      "local_development_pass": true,
+      "regressions": [],
+      "person_improvement": true
+    },
+    "mcbyte_day3_nomask_v1": {
+      "local_development_pass": false,
+      "regressions": [
+        "kit.correct",
+        "kit.unassigned",
+        "kit.other_assigned"
+      ],
+      "person_improvement": true
+    },
+    "mcbyte_night40_nomask_v1": {
+      "local_development_pass": false,
+      "regressions": [
+        "kit.correct",
+        "kit.wrong"
+      ],
+      "person_improvement": true
+    },
+    "smp_day3_full_v3": {
+      "local_development_pass": false,
+      "regressions": [
+        "kit.unassigned",
+        "identity-person-development-labels.same_correct",
+        "identity-person-development-labels.false_split",
+        "identity-person-development-labels.3-440-d10->3-460-d10",
+        "upstream_non_source_box_fallback"
+      ],
+      "person_improvement": true
+    }
+  },
+  "decision_basis": "The post-hoc team-gated blend preserves baseline boxes and team outputs, has no measured regression on these two clips and improves night same-person relations. Standalone candidates regress or are incomplete. This does not establish superiority to the existing guarded candidate or to all unrun projects.",
+  "existing_guarded_identity_candidate": "Separate frozen control pending; this research does not promote or change it.",
+  "next_layers": {
+    "identity": "Constrained association on the existing detector/tracker; preserve real observations.",
+    "jersey": "Multiple legible frames and contradiction rejection required.",
+    "ball": "SAM3 only after official model access and local comparison.",
+    "events": "PathCRF/ELASTIC only after stable metric trajectories and event inputs."
+  }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "edgetam.pt",
+    "url": "https://raw.githubusercontent.com/facebookresearch/EdgeTAM/main/checkpoints/edgetam.pt",
+    "status": "downloaded",
+    "size": 56116523,
+    "sha256": "ed2d4850b8792c239689b043c47046ec239b6e808a3d9b6ae676c803fd8780df"
+  },
+  {
+    "name": "sam2.1_hiera_large.pt",
+    "url": "https://huggingface.co/facebook/sam2.1-hiera-large/resolve/665f8e2ad61cf5f53d65644ff27c8ee525124610/sam2.1_hiera_large.pt",
+    "status": "downloaded",
+    "size": 898083611,
+    "sha256": "2647878d5dfa5098f2f8649825738a9345572bae2d4350a2468587ece47dd318"
+  },
+  {
+    "name": "SV_kp",
+    "url": "https://github.com/mguti97/PnLCalib/releases/download/v1.0.0/SV_kp",
+    "status": "downloaded",
+    "size": 264964645,
+    "sha256": "7ea78fa76aaf94976a8eca428d6e3c59697a93430cba1a4603e20284b61f5113"
+  },
+  {
+    "name": "SV_lines",
+    "url": "https://github.com/mguti97/PnLCalib/releases/download/v1.0.0/SV_lines",
+    "status": "downloaded",
+    "size": 264857893,
+    "sha256": "d72f4ed71734a2e3df9fa084f666e9b8adaef21bf69bac8952d6d3f970ff7455"
+  },
+  {
+    "name": "uncertainty_vit_small.pth",
+    "size": 293896830,
+    "sha256": "536ec612136ec522f23bcf3ebf88b4d794c6fc02ea0f7e301cd22eeb259df4e6",
+    "status": "downloaded",
+    "url": "https://drive.google.com/file/d/1oc8VdEHHxXQfhNZTvbHbm6gfLRkwGl2o/view",
+    "source": "Official uncertainty-jnr README ViT-Small link; downloaded with gdown"
+  }
+]

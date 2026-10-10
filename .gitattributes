@@ -25,3 +25,4 @@ docs/measurements/kit-fixed-control-labels.json text eol=crlf
 
 docs/PALET-UZLASISI-KONTROL-PLANI.md -text
 docs/BIRLESIK-KIMLIK-KONTROL-PLANI.md -text
+docs/measurements/external-tracking-20261010/** -text whitespace=trailing-space,space-before-tab,cr-at-eol

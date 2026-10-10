@@ -1,0 +1,63 @@
+"""Post-hoc development candidate: baseline observations/teams, team-gated McByte IDs."""
+import copy
+import json
+import sys
+from pathlib import Path
+import numpy as np
+
+ROOT=Path(__file__).resolve().parent
+PROJECT=ROOT.parent.parent
+sys.path.insert(0,str(PROJECT))
+from scripts.soccertrack_v2.benchmark_tracker_backends import groups,load,replay,digest
+
+for group,segment,trial in [('day',3,'mcbyte_day3_nomask_v1'),('night_old_control',40,'mcbyte_night40_nomask_v1')]:
+    cfg=groups()[group]
+    rawpath=PROJECT/cfg['cache']/f'seg_{segment:04d}.json'
+    raw=load(rawpath)
+    anchor=np.asarray(load(PROJECT/'docs/measurements'/f"{cfg['anchor']}.json")['anchors']['before'])
+    base,stats=replay(raw,'supervision',anchor)
+    candidate=load(ROOT/'runs'/trial/'predictions.json')
+    out=ROOT/'runs'/f'blend_{group}{segment}_v2'
+    out.mkdir(exist_ok=False)
+    assert len(base['samples'])==len(candidate['samples'])
+    identities={}
+    counters=dict(observations=0,external_identity_used=0,baseline_fallback=0,ambiguous_source=0)
+    result=copy.deepcopy(base)
+    for original,other,target in zip(base['samples'],candidate['samples'],result['samples'],strict=True):
+        assert original['frame_idx']==other['frame_idx']
+        by_box={}
+        for person in other['persons']:
+            by_box.setdefault(tuple(person[1:5]),[]).append(int(person[0]))
+        output=[]
+        teams={}
+        for person in original['persons']:
+            old_id=int(person[0])
+            team=original['person_teams'].get(str(old_id))
+            matches=by_box.get(tuple(person[1:5]),[])
+            if len(matches)==1 and team in (0,1):
+                key=('external',matches[0],team)
+                counters['external_identity_used']+=1
+            else:
+                key=('baseline',old_id)
+                counters['baseline_fallback']+=1
+                counters['ambiguous_source']+=int(len(matches)>1)
+            new_id=identities.setdefault(key,len(identities)+1)
+            if str(new_id) in teams: raise ValueError('Two observations claim one identity in a frame')
+            output.append([new_id,*person[1:]])
+            teams[str(new_id)]=team
+            counters['observations']+=1
+        target['persons']=output
+        target['person_teams']=teams
+        assert [tuple(p[1:]) for p in original['persons']]==[tuple(p[1:]) for p in target['persons']]
+        assert [original['person_teams'].get(str(p[0])) for p in original['persons']]==[target['person_teams'].get(str(p[0])) for p in target['persons']]
+    manifest=dict(group=group,segment=segment,frames=len(result['samples']),
+        source_sha256={str(p):digest(p) for p in (rawpath,ROOT/'runs'/trial/'predictions.json',Path(__file__))},
+        method='Use McByte no-mask export ID only on the identical baseline source observation with a known baseline team; namespace by team. Unknown/missing/ambiguous observations retain baseline track namespace.',
+        post_hoc=True,control_opened=False,upstream_commit='be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9',
+        adaptations=['No new observations or box changes','Baseline per-observation team values exactly preserved','External identities partitioned by baseline team'],
+        limitation='Developed after observing component results on these two clips; not independent validation, not production ready. Sparse labels cannot establish full-video identity accuracy.')
+    (out/'predictions.json').write_text(json.dumps(result))
+    (out/'manifest.json').write_text(json.dumps(manifest,indent=2))
+    (out/'result.json').write_text(json.dumps(dict(status='completed',manifest=manifest,stats=counters,
+        source_observations_exact=True,source_teams_exact=True),indent=2))
+    print(out.name,counters)

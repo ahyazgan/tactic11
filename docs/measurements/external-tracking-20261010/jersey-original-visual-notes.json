@@ -1,0 +1,10 @@
+{
+  "protocol": "Source contact sheet visually reviewed before opening model outputs. Diagnostic notes only; not a representative or independent jersey benchmark. Model job had been dispatched before these notes were saved, so this is not a preregistered experiment.",
+  "source_contact": "jersey_crops/contact.png",
+  "reviewer": "Codex visual inspection",
+  "confident_visible_numbers": {
+    "day_05.png": 16,
+    "night_18.png": 6
+  },
+  "others": "Not assigned numeric truth; fronts, occlusions, partial boxes and small ambiguous digits must not be guessed. day_04 is a partial body crop and excluded from numeric scoring."
+}

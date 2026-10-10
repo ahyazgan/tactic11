@@ -1,0 +1,38 @@
+import hashlib
+import json
+from pathlib import Path
+
+root=Path(__file__).resolve().parent.parent.parent
+out=root/'docs/measurements/external-tracking-20261010'
+def read(name):
+    return json.loads((out/name).read_text(encoding='utf-8'))
+hashes=read('artifact-sha256.json')
+for name,expected in hashes.items():
+    assert hashlib.sha256((out/name).read_bytes()).hexdigest()==expected,name
+for path in out.glob('*.json'):
+    json.dumps(json.loads(path.read_text(encoding='utf-8')),allow_nan=False)
+selection=read('selection.json')
+assert selection['joint_two_clip_development_pass'] and selection['post_hoc']
+assert not selection['promotion_allowed'] and not selection['independent_validation']
+assert selection['selected_new_production_backend'] is None
+scores=read('comparison-scores.json')
+assert len(scores)==5
+for name in ('blend_day3_v2','blend_night_old_control40_v2'):
+    row=scores[name]
+    assert not row['regressions']
+    before,after=row['scores']['baseline']['kit'],row['scores']['candidate']['kit']
+    assert {k:v for k,v in before.items() if k!='conflicting_track_labels'}=={k:v for k,v in after.items() if k!='conflicting_track_labels'}
+    assert after['conflicting_track_labels']<=before['conflicting_track_labels']
+night=scores['blend_night_old_control40_v2']['scores']
+key='joint-identity-control-night-pairs'
+assert night['baseline']['pairs'][key]['counts']['same_correct']==21
+assert night['candidate']['pairs'][key]['counts']['same_correct']==23
+assert night['candidate']['pairs'][key]['covered_observations']==night['baseline']['pairs'][key]['covered_observations']==57
+cal=read('calibration-results.json')
+assert cal['status']=='completed' and len(cal['records'])==12
+assert all(r.get('calibration_found') is False and 'error' not in r for r in cal['records'])
+jnr=read('jersey-results.json')
+assert len(jnr['records'])==24 and sum(r['uncertainty']>.9 for r in jnr['records'])==22
+assert len(read('repositories.json'))==15
+assert read('evidence-checks.json')['frozen_code_files_unchanged']==103
+print('PASS: artifact hashes, strict JSON, 15 repositories, 5 scored trials, post-hoc-only selection, night 21->23, 12 calibration outcomes, 24 JNR outputs, 103 frozen code files')

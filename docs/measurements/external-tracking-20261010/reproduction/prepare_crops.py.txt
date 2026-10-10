@@ -1,0 +1,49 @@
+import hashlib
+import json
+from pathlib import Path
+import cv2
+from PIL import Image, ImageDraw
+
+ROOT = Path(__file__).resolve().parent
+PROJECT = ROOT.parent.parent
+output = ROOT/'jersey_crops'
+output.mkdir(exist_ok=True)
+rows=[]
+for group, segment, cache, video, labelfile in [
+ ('day',3,'data/tracking/bench/identity_day_detections/seg_0003.json','data/tracking/bench/daylight_117093/source/seg_0003.mp4','daylight-117093-labels.json'),
+ ('night',40,'data/tracking/bench/joint_identity_control/raw_v1/seg_0040.json','data/tracking/bench/joint_identity_control/source/seg_0040.mp4','joint-identity-control-night-labels.json')]:
+    data=json.loads((PROJECT/cache).read_text())
+    labels=json.loads((PROJECT/'docs/measurements'/labelfile).read_text())['records']
+    candidates=[r for r in labels if r['segment']==segment and r['kit'] in ('blue','white')]
+    # Deterministic evenly-spaced labeled observations; no model scores used.
+    candidates=sorted(candidates,key=lambda r:(r['frame_idx'],r['id']))
+    chosen=[candidates[round(i*(len(candidates)-1)/11)] for i in range(12)]
+    cap=cv2.VideoCapture(str(PROJECT/video))
+    for row in chosen:
+        cap.set(cv2.CAP_PROP_POS_FRAMES,row['frame_idx'])
+        ok, frame=cap.read()
+        if not ok: raise ValueError('Source frame missing')
+        x1,y1,x2,y2=map(int,row['bbox'])
+        crop=frame[max(0,y1):y2,max(0,x1):x2]
+        name=f'{group}_{len(rows):02d}.png'
+        cv2.imwrite(str(output/name),crop)
+        rows.append(dict(id=name,group=group,segment=segment,source_video=video,
+                         source_frame=row['frame_idx'],source_bbox=row['bbox'],kit=row['kit'],
+                         image_sha256=hashlib.sha256((output/name).read_bytes()).hexdigest(),
+                         visible_number=None,legibility='unreviewed'))
+    cap.release()
+sheet=Image.new('RGB',(6*200,4*230),'#ececec')
+draw=ImageDraw.Draw(sheet)
+for i,row in enumerate(rows):
+    img=Image.open(output/row['id']).convert('RGB')
+    img.thumbnail((170,185))
+    # Upscale with nearest-neighbour for inspection; saved crop stays native.
+    scale=min(170/img.width,185/img.height)
+    img=img.resize((int(img.width*scale),int(img.height*scale)),Image.Resampling.NEAREST)
+    x=(i%6)*200; y=(i//6)*230
+    sheet.paste(img,(x+(200-img.width)//2,y+25))
+    draw.text((x+6,y+5),row['id'],fill='black')
+    draw.text((x+6,y+211),f"f{row['source_frame']} {row['kit']}",fill='black')
+sheet.save(output/'contact.png')
+(output/'manifest.json').write_text(json.dumps(dict(selection='24 evenly spaced existing kit labels; diagnostic sample, not representative jersey ground truth', records=rows),indent=2))
+print(output/'contact.png')
