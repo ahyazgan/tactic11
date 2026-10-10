@@ -51,6 +51,7 @@ from app.api.observability import (
 from app.api.physical_tests import router as physical_tests_router
 from app.api.plan import router as plan_router
 from app.api.reports import router as reports_router
+from app.api.review_uploads import router as review_uploads_router
 from app.api.schemas import LeagueOut, MatchOut, TeamOut
 from app.api.serialize import engine_result_to_dict
 from app.api.shared import router as shared_router
@@ -166,9 +167,10 @@ if _cors_origins:
         CORSMiddleware,
         allow_origins=_cors_origins,
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_methods=["GET", "HEAD", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
-        expose_headers=["X-Request-ID"],  # client log eşleştirsin
+        expose_headers=["X-Request-ID", "Location", "Tus-Resumable", "Tus-Version", "Tus-Extension",
+                        "Tus-Max-Size", "Upload-Offset", "Upload-Length", "Upload-Expires"],
     )
 
 # Rate limiter — settings'ten okur, tek instance.
@@ -281,6 +283,8 @@ async def observability_middleware(request: Request, call_next):
         if path == "/match-reports" or path.startswith(("/match-reports/", "/review-media/")):
             response.headers["Cache-Control"] = "private, no-store"
             response.headers["Referrer-Policy"] = "no-referrer"
+        if path == "/match-reports/uploads" or path.startswith("/match-reports/uploads/"):
+            response.headers["Tus-Resumable"] = "1.0.0"
         _apply_security_headers(response)
         return response
     finally:
@@ -1688,6 +1692,7 @@ protected.include_router(live_vaep_router)
 protected.include_router(notifications_router)
 protected.include_router(notes_router)
 protected.include_router(reports_router)
+protected.include_router(review_uploads_router)
 protected.include_router(match_reports_router)
 protected.include_router(physical_tests_router)
 protected.include_router(sportmonks_router)

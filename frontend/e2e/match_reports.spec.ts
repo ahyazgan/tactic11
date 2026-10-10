@@ -128,6 +128,46 @@ test("PWA özel raporları çevrimdışı önbellekten sunmaz", async ({ page, c
   expect(offline).toBe("offline");
 });
 
+test("geciken refresh yanıtı yeni giriş yapılan hesabın tokenlarını değiştiremez", async ({ page }) => {
+  const report = {
+    id: "11111111-1111-4111-8111-111111111111", video_id: "22222222-2222-4222-8222-222222222222",
+    title: "Oturum yarışı", version: 1, reviewed_at: null, reviewed_by: null,
+    document: { club: "Kulüp", opponent: "Rakip", match_date: null, scope: "selected_segments", summary: "",
+      strengths: "", training_focus: [], findings: [] },
+  };
+  let release!: () => void, refreshing = false;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  await page.addInitScript(() => {
+    localStorage.setItem("manager2_access_token", "old-access");
+    localStorage.setItem("manager2_refresh_token", "old-refresh");
+  });
+  await page.route("**/api/**", async route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === "/api/auth/me") return route.fulfill({ json: { email: "coach@test", tenant_id: "club", role: "coach" } });
+    if (path === "/api/auth/refresh") {
+      refreshing = true; await gate;
+      return route.fulfill({ json: { access_token: "obsolete-access", refresh_token: "obsolete-refresh" } });
+    }
+    if (path === "/api/match-reports") return route.fulfill({ json: [report] });
+    if (route.request().method() === "PUT") return route.fulfill({ status: 401, json: { detail: "expired" } });
+    if (path.endsWith("/playback")) return route.fulfill({ status: 503, json: { detail: "Test videosu kapalı" } });
+    return route.fulfill({ json: [] });
+  });
+  await page.goto("/match-reports");
+  await page.getByRole("button", { name: /Oturum yarışı/ }).click();
+  await page.getByLabel("Maç değerlendirmesi", { exact: true }).fill("Önceki hesap notu");
+  await page.getByRole("button", { name: "Değişiklikleri kaydet" }).click();
+  await expect.poll(() => refreshing).toBe(true);
+  await page.evaluate(() => {
+    localStorage.setItem("manager2_access_token", "new-account-access");
+    localStorage.setItem("manager2_refresh_token", "new-account-refresh");
+  });
+  release();
+  await expect(page.getByRole("alert").filter({ hasText: "Oturum açılamadı" })).toBeVisible();
+  expect(await page.evaluate(() => [localStorage.getItem("manager2_access_token"), localStorage.getItem("manager2_refresh_token")]))
+    .toEqual(["new-account-access", "new-account-refresh"]);
+});
+
 test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", async ({ page, context }, testInfo) => {
   test.skip(process.env.E2E_REVIEW_BACKEND !== "true", "Isolated review API and source MP4 required");
   test.setTimeout(120_000);
@@ -152,7 +192,10 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
   await page.getByLabel("Maç değerlendirmesi", { exact: true }).fill("Teknik doğrulama raporu. Bir futbol analistinin uzman değerlendirmesi değildir.");
   await page.getByLabel("Antrenman odağı 1", { exact: true }).fill("Örnek alan; gerçek antrenör değerlendirmesiyle doldurulmalı.");
   for (const [start, end] of [[1, 4], [5, 8]]) {
-    await page.getByRole("button", { name: "Pozisyon ekle", exact: true }).click();
+    if (start === 1) {
+      await page.getByRole("region", { name: "Video analiz çalışma alanı" }).focus();
+      await page.keyboard.press("n");
+    } else await page.getByRole("button", { name: "Pozisyon ekle", exact: true }).click();
     await page.getByLabel("Başlangıç (saniye)", { exact: true }).fill(String(start));
     await page.getByLabel("Bitiş (saniye)", { exact: true }).fill(String(end));
     await page.getByLabel("Pozisyon başlığı", { exact: true }).fill(`Teknik kesim ${start}–${end}`);
@@ -160,6 +203,24 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
     await page.getByLabel("Çalışma önerisi", { exact: true }).fill("Taktik öneri için antrenör incelemesi gerekir.");
     await page.getByLabel("Oyuncu (isteğe bağlı)").fill("Teknik deneme oyuncusu");
     await page.getByLabel("Sonraki maçta neye bakacağız?", { exact: true }).fill("Sonraki kayıtta aynı zaman aralığını kaynak görüntüyle karşılaştır.");
+    if (start === 1) {
+      await page.locator("video").evaluate((video: HTMLVideoElement) => { video.currentTime = 2; });
+      await expect.poll(() => page.locator("video").evaluate((video: HTMLVideoElement) => video.currentTime)).toBe(2);
+      await page.getByRole("region", { name: "Video analiz çalışma alanı" }).focus();
+      await page.keyboard.press("i");
+      await expect(page.getByLabel("Başlangıç (saniye)", { exact: true })).toHaveValue("2");
+      await page.getByLabel("Başlangıç (saniye)", { exact: true }).fill("1");
+      await page.getByRole("button", { name: "Bu kareye çizim yap" }).click();
+      const canvas = page.getByTestId("drawing-canvas").locator("canvas");
+      await expect(canvas).toBeVisible();
+      await canvas.scrollIntoViewIfNeeded();
+      const bounds = (await canvas.boundingBox())!;
+      await page.mouse.move(bounds.x + bounds.width * .2, bounds.y + bounds.height * .3);
+      await page.mouse.down();
+      await page.mouse.move(bounds.x + bounds.width * .7, bounds.y + bounds.height * .6, { steps: 5 });
+      await page.mouse.up();
+      await expect(page.getByText(/1\/20 işaret/)).toBeVisible();
+    }
     await expect(page.getByRole("button", { name: "Değişiklikleri kaydet" })).toBeDisabled();
     await page.getByRole("button", { name: "Rapora ekle", exact: true }).click();
   }
@@ -192,6 +253,8 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
   await context.setOffline(true);
   await page.goto(pathToFileURL(join(extracted, "index.html")).href);
   await expect(page.locator("video")).toHaveCount(2);
+  await expect(page.getByRole("img", { name: "Analistin pozisyon çizimi" })).toBeVisible();
+  expect(await page.getByRole("img", { name: "Analistin pozisyon çizimi" }).evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
   await page.locator("video").first().evaluate((video: HTMLVideoElement) => video.play());
   await expect.poll(() => page.locator("video").first().evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
   await page.screenshot({ path: testInfo.outputPath("offline-delivery.png"), fullPage: true });

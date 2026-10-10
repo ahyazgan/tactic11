@@ -24,7 +24,7 @@ from app.api.auth import get_current_tenant, get_current_user, require_role
 from app.core.config import get_settings
 from app.db import models
 from app.db.session import get_session
-from app.reports import review_export, review_media
+from app.reports import review_drawing, review_export, review_media
 from app.reports.review_document import ReviewDocument
 from app.reports.review_pdf import build_review_pdf
 
@@ -195,6 +195,19 @@ def playback_url(video_id: uuid.UUID, user: models.User = Depends(get_current_us
     return {"path": f"/review-media/{video_id}?access={token}"}
 
 
+@router.get("/videos/{video_id}/frame")
+def drawing_frame(video_id: uuid.UUID, at: float = Query(ge=0, allow_inf_nan=False),
+                  user: models.User = Depends(get_current_user), session: Session = Depends(get_session)):
+    video = _video(session, user, str(video_id))
+    if at >= video.duration_seconds:
+        raise HTTPException(422, "Video içinde bir kare seçin.")
+    try:
+        frame = review_drawing.source_frame(review_media.asset_path(user.tenant_id, str(video_id)), at)
+    except review_media.MediaError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    return Response(frame, media_type="image/png", headers=PRIVATE_HEADERS)
+
+
 @playback_router.get("/review-media/{video_id}")
 def play_video(video_id: uuid.UUID, access: str = Query(min_length=1, max_length=2048),
                session: Session = Depends(get_session)):
@@ -283,7 +296,13 @@ def download_pdf(report_id: uuid.UUID, user: models.User = Depends(get_current_u
     row = _report(session, user, str(report_id))
     _approved(row)
     snapshot = _snapshot(row, _video(session, user, row.video_id), session)
-    pdf = build_review_pdf(title=row.title, document=ReviewDocument.model_validate(snapshot["document"]),
+    document = ReviewDocument.model_validate(snapshot["document"])
+    try:
+        frames = review_drawing.report_frames(review_media.asset_path(user.tenant_id, row.video_id), document,
+                                              snapshot["source_hash"])
+    except (review_media.MediaError, OSError) as exc:
+        raise HTTPException(409, "Çizim görüntüleri hazırlanamadı. Kaynak videoyu kontrol edin.") from exc
+    pdf = build_review_pdf(title=row.title, document=document, frames=frames,
                            source=snapshot["source_name"], source_hash=snapshot["source_hash"],
                            reviewer=snapshot["reviewer"], reviewed_at=snapshot["reviewed_at"], version=row.version)
     return Response(pdf, media_type="application/pdf", headers={**PRIVATE_HEADERS,

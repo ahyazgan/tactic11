@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from app.db import models
 from app.db.session import SessionLocal
 from app.reports.review_document import CATEGORIES, ReviewDocument, review_time_label, time_label
+from app.reports.review_drawing import report_frames
 from app.reports.review_media import asset_path, cut_clip, private_dir
 from app.reports.review_pdf import build_review_pdf
 
@@ -59,7 +60,7 @@ def html_report(snapshot: dict[str, Any]) -> str:
     scope = "Maçın tamamı incelendi" if document.scope == "full_match" else "Seçilmiş bölümler incelendi"
     parts = ["<!doctype html><html lang='tr'><meta charset='utf-8'>",
              "<meta name='viewport' content='width=device-width,initial-scale=1'>",
-             "<meta http-equiv='Content-Security-Policy' content=\"default-src 'none'; media-src 'self'; style-src 'unsafe-inline'\">",
+             "<meta http-equiv='Content-Security-Policy' content=\"default-src 'none'; media-src 'self'; img-src 'self'; style-src 'unsafe-inline'\">",
              f"<title>{e(snapshot['title'])}</title>",
              "<style>body{font:16px/1.6 system-ui,sans-serif;max-width:900px;margin:40px auto;padding:0 20px;color:#173e38;background:#f6f8f6}article{background:white;padding:24px;border:1px solid #d5e0da;border-radius:12px;margin:24px 0}video{width:100%;max-height:480px;background:#111}p{white-space:pre-wrap}small{color:#53636a}a{color:#176553}</style>",
              f"<h1>{e(snapshot['title'])}</h1><p>{e(document.club)} - {e(document.opponent)}</p>",
@@ -73,7 +74,11 @@ def html_report(snapshot: dict[str, Any]) -> str:
     for i, finding in enumerate(document.findings, 1):
         parts.extend([f"<article><h2>{i:02d}. {e(finding.title)}</h2>",
                       f"<small>{CATEGORIES[finding.category]} | {time_label(finding.start)} - {time_label(finding.end)} | {e(finding.player)}</small>",
-                      f"<video controls preload='metadata' src='clips/{i:02d}.mp4'></video>",
+                      f"<video controls preload='metadata' src='clips/{i:02d}.mp4'></video>"])
+        if finding.drawing and finding.drawing.marks:
+            parts.append(f"<figure><img style='width:100%' alt='Analistin pozisyon çizimi' src='drawings/{i:02d}.png'>"
+                         f"<figcaption>Kaynak karesi {time_label(finding.drawing.time)} · Analistin çizimi</figcaption></figure>")
+        parts.extend([
                       f"<p><b>Gözlem:</b> {e(finding.observation)}</p>",
                       f"<p><b>Çalışma:</b> {e(finding.action)}</p>",
                       f"<p><b>Sonraki kontrol:</b> {e(finding.next_check)}</p></article>"])
@@ -127,23 +132,30 @@ def run_export(export_id: str, tenant_id: str, snapshot: dict[str, Any]) -> None
         if digest != snapshot["source_hash"]:
             raise ValueError("Kaynak video değişti. Raporu yeniden inceleyin.")
         document = ReviewDocument.model_validate(snapshot["document"])
+        frames = report_frames(source, document, digest)
         work.mkdir(exist_ok=True)
         clips = []
         for i, finding in enumerate(document.findings, 1):
             clip = work / f"{i:02d}.mp4"
             cut_clip(source, clip, finding.start, finding.end)
             clips.append(clip)
-        pdf = build_review_pdf(title=snapshot["title"], document=document,
+        pdf = build_review_pdf(title=snapshot["title"], document=document, frames=frames,
                                source=snapshot["source_name"], source_hash=digest,
                                reviewer=snapshot["reviewer"], reviewed_at=snapshot["reviewed_at"],
                                version=snapshot["version"])
         manifest = {**snapshot, "export_id": export_id, "clips": [
             {"file": f"clips/{clip.name}", "sha256": hashlib.sha256(clip.read_bytes()).hexdigest()}
-            for clip in clips]}
+            for clip in clips], "drawings": [
+                {"file": f"drawings/{i:02d}.png", "sha256": hashlib.sha256(frames[str(f.id)]).hexdigest(),
+                 "source_time": f.drawing.time}
+                for i, f in enumerate(document.findings, 1) if f.drawing and str(f.id) in frames]}
         with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_STORED) as archive:
             archive.writestr("report.pdf", pdf)
             archive.writestr("index.html", html_report(snapshot))
             archive.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
+            for i, finding in enumerate(document.findings, 1):
+                if str(finding.id) in frames:
+                    archive.writestr(f"drawings/{i:02d}.png", frames[str(finding.id)])
             for clip in clips:
                 archive.write(clip, f"clips/{clip.name}")
         temporary.replace(output)

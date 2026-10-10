@@ -12,7 +12,8 @@ _font_lock = threading.Lock()
 
 
 def build_review_pdf(*, title: str, document: ReviewDocument, source: str,
-                     source_hash: str, reviewer: str, reviewed_at: str, version: int) -> bytes:
+                     source_hash: str, reviewer: str, reviewed_at: str, version: int,
+                     frames: dict[str, bytes] | None = None) -> bytes:
     import reportlab
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4
@@ -20,7 +21,7 @@ def build_review_pdf(*, title: str, document: ReviewDocument, source: str,
     from reportlab.lib.units import mm
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
-    from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Spacer
+    from reportlab.platypus import Image, KeepTogether, Paragraph, SimpleDocTemplate, Spacer
 
     # ReportLab bundles Vera, including Turkish glyphs; no OS font dependency.
     with _font_lock:
@@ -64,6 +65,12 @@ def build_review_pdf(*, title: str, document: ReviewDocument, source: str,
             block.append(paragraph(f"Sonraki kontrolde: {finding.next_check}"))
         block.append(paragraph(f"Klip: clips/{i:02d}.mp4", small))
         story.append(KeepTogether(block))
+        if finding.drawing and frames and str(finding.id) in frames:
+            picture = Image(BytesIO(frames[str(finding.id)]))
+            scale = min(174 * mm / picture.imageWidth, 90 * mm / picture.imageHeight)
+            picture.drawWidth, picture.drawHeight = picture.imageWidth * scale, picture.imageHeight * scale
+            story.append(KeepTogether([picture, paragraph(
+                f"Kaynak karesi {time_label(finding.drawing.time)} · Analistin çizimi", small)]))
     story.append(KeepTogether([Spacer(1, 5 * mm), paragraph("Kaynak ve kapsam", heading),
                   paragraph(f"Video: {source}\nSHA-256: {source_hash}", small),
                   paragraph("Bu rapor kaydedilmiş insan gözlemlerini içerir. Kamera dışında kalan hareketler ve ölçülmemiş fiziksel değerler hakkında sonuç üretmez. Oyuncu gelişimi için aynı ölçütlerle tekrarlanan incelemeler gerekir.", small)]))

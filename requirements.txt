@@ -33,3 +33,5 @@ python-multipart>=0.0.9
 
 # CPU-only clip export; independent of experimental tracking/GPU environments.
 imageio-ffmpeg==0.6.0
+# Resumable uploads: cross-process locks on the persistent local media volume.
+portalocker==4.4.0

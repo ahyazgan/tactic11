@@ -1,17 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { apiFetch, apiFetchResponse, ApiError, login, setTokens } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
 import { ConsoleShell } from "../_console/shell";
 import { ReviewFollowUps } from "./follow-ups";
+import { VideoUpload } from "./video-upload";
+import { useReviewHotkeys } from "./review-hotkeys";
+import type { Drawing } from "./drawing-editor";
 import styles from "./reports.module.css";
+
+const DrawingEditor = dynamic(() => import("./drawing-editor"), { ssr: false, loading: () => <p>Çizim aracı yükleniyor…</p> });
 
 type Category = "attack" | "defence" | "transition" | "set_piece" | "player";
 interface Finding {
   id: string; start: number; end: number; category: Category; title: string;
   observation: string; action: string; player: string; next_check: string;
+  drawing?: Drawing | null;
 }
 interface Document {
   club: string; opponent: string; match_date: string | null; scope: "selected_segments" | "full_match";
@@ -42,8 +49,12 @@ function readDraft(key: string): Draft | null {
     const draft = JSON.parse(raw), report = draft.report, doc = report?.document;
     const strings = (value: Record<string, unknown>, keys: string[]) => keys.every(k => typeof value?.[k] === "string");
     const uuid = (value: unknown) => typeof value === "string" && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value);
+    const validDrawing = (drawing: Drawing | null | undefined) => !drawing || (Number.isFinite(drawing.time) && drawing.time >= 0
+      && Array.isArray(drawing.marks) && drawing.marks.length <= 20 && drawing.marks.every(mark =>
+        ["arrow", "box"].includes(mark.kind) && ["yellow", "red", "blue"].includes(mark.color)
+        && [mark.x1, mark.x2, mark.y1, mark.y2].every(n => Number.isFinite(n) && n >= 0 && n <= 1)));
     const validFinding = (value: Finding) => value && uuid(value.id) && Number.isFinite(value.start) && Number.isFinite(value.end)
-      && Object.keys(categories).includes(value.category) && strings(value as unknown as Record<string, unknown>, ["title", "observation", "action", "player", "next_check"]);
+      && Object.keys(categories).includes(value.category) && strings(value as unknown as Record<string, unknown>, ["title", "observation", "action", "player", "next_check"]) && validDrawing(value.drawing);
     if (!uuid(report?.id) || !uuid(report?.video_id) || typeof report.title !== "string" || !Number.isInteger(report.version)
       || !strings(doc, ["club", "opponent", "summary", "strengths"]) || !["selected_segments", "full_match"].includes(doc.scope)
       || (doc.match_date !== null && typeof doc.match_date !== "string")
@@ -111,6 +122,8 @@ export default function MatchReportsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoWorkspace = useRef<HTMLElement>(null);
+  const [drawingPreview, setDrawingPreview] = useState<string | null>(null);
   const [draftOwner, setDraftOwner] = useState<string | null>(null);
   const account = user ? `${user.tenant_id}:${user.email}` : null;
   const activeVideo = videos?.find(v => v.id === report?.video_id);
@@ -174,6 +187,17 @@ export default function MatchReportsPage() {
   };
   const changeFinding = (patch: Partial<Finding>) => finding && setFinding({ ...finding, ...patch });
   const seek = (time: number) => { if (videoRef.current) videoRef.current.currentTime = time; };
+  const newFinding = () => {
+    if (!report || finding || report.document.findings.length >= 12 || !canEdit || busy) return;
+    const start = Math.floor(videoRef.current?.currentTime ?? currentTime);
+    setFinding({ ...freshFinding(), start, end: Math.min(start + 10, activeVideo?.duration_seconds ?? start + 10) }); setEditingId(null);
+  };
+  useReviewHotkeys(videoWorkspace, videoRef, !!report && !!user && !busy, key => {
+    if (!canEdit) return;
+    const time = Math.round((videoRef.current?.currentTime ?? currentTime) * 10) / 10;
+    if (key === "n") newFinding();
+    else if (finding) changeFinding(key === "i" ? { start: time } : { end: time });
+  });
 
   const addFinding = () => {
     if (!report || !finding) return;
@@ -187,6 +211,9 @@ export default function MatchReportsPage() {
     }
     const next = editingId ? report.document.findings.map(f => f.id === editingId ? finding : f)
       : [...report.document.findings, finding];
+    if (finding.drawing && (finding.drawing.time < finding.start || finding.drawing.time >= finding.end)) {
+      setError("Çizim karesi pozisyon aralığının dışında. Aralığı düzeltin veya çizimi kaldırın."); return;
+    }
     if (next.length > 12) { setError("Bir rapora en fazla 12 pozisyon ekleyebilirsiniz."); return; }
     changeDocument({ findings: next }); setFinding(null); setEditingId(null); setError("");
   };
@@ -239,15 +266,9 @@ export default function MatchReportsPage() {
                 setReport(created); setFinding(null); setConfirmed(false); setTitle(""); await refreshReports();
               }); }} className={styles.stack}>
               <h3>Yeni rapor</h3>
-              <label>MP4 video yükle<input type="file" accept="video/mp4,.mp4" disabled={!!busy}
-                onChange={e => { const file = e.target.files?.[0]; if (!file) return;
-                  void operation("Video yükleniyor ve kontrol ediliyor", async () => {
-                    const form = new FormData(); form.append("file", file);
-                    const uploaded = await apiFetch<Video>("/match-reports/videos", { method: "POST", body: form });
-                    await refreshVideos(); setVideoId(uploaded.id); setNotice("Video kaydedildi. Rapor başlığı girerek devam edin.");
-                  }); e.target.value = "";
-                }} /></label>
-              <small>H.264 (8 bit) MP4 · En fazla 3 saat. Varsayılan yükleme sınırı 2 GB.</small>
+              <VideoUpload key={account} account={account!} onUploaded={async uploaded => {
+                await refreshVideos(); setVideoId(uploaded.id); setNotice("Video kaydedildi. Rapor başlığı girerek devam edin.");
+              }} />
               <label>Kaynak video<select required value={videoId} onChange={e => setVideoId(e.target.value)}>
                 <option value="">Video seçin</option>{videos?.map(v => <option key={v.id} value={v.id}>{v.filename} · {clock(v.duration_seconds)}</option>)}
               </select></label>
@@ -276,16 +297,15 @@ export default function MatchReportsPage() {
                 </select></label>
               </fieldset>
             </section>
-            <section className={styles.card}>
+            <section ref={videoWorkspace} className={styles.card} tabIndex={0} aria-label="Video analiz çalışma alanı">
               <h2>Video ve pozisyonlar</h2>
+              <p className={styles.muted}>Bu alana tıklayın: Boşluk oynat/duraklat · ←/→ 5 saniye · N yeni pozisyon · I başlangıç · O bitiş. Yazı alanlarında kısayollar kapalıdır.</p>
               {playback ? <video ref={videoRef} controls preload="metadata" src={playback} className={styles.video}
                 onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime ?? 0)}
                 onError={() => setError("Video oynatılamadı. Kaynak MP4 dosyasını veya oturumunuzu kontrol edin.")} /> : <p>Video hazırlanıyor…</p>}
               <div className={styles.toolbar}><small>{activeVideo?.filename} · Kaynak zamanı {clock(currentTime)}</small>
                 <button className={styles.secondary} disabled={!!busy} onClick={() => { setError(""); setPlaybackRevision(value => value + 1); }}>Videoyu yeniden bağla</button>
-                {canEdit && !finding && <button disabled={!!busy || report.document.findings.length >= 12} onClick={() => {
-                  const start = Math.floor(currentTime); setFinding({ ...freshFinding(), start, end: Math.min(start + 10, activeVideo?.duration_seconds ?? start + 10) }); setEditingId(null);
-                }}>Pozisyon ekle</button>}</div>
+                {canEdit && !finding && <button disabled={!!busy || report.document.findings.length >= 12} onClick={newFinding}>Pozisyon ekle</button>}</div>
               <p className={styles.muted}>Zamanlar videonun başlangıcına göredir. Oyuncu adı ve yorumları görüntüden doğrulayın.</p>
               {finding && <fieldset className={styles.findingForm} disabled={!!busy || !canEdit}>
                 <legend>{editingId ? "Pozisyonu düzenle" : "Yeni pozisyon"}</legend>
@@ -299,6 +319,13 @@ export default function MatchReportsPage() {
                 <label>Gözlem<textarea aria-label="Gözlem" maxLength={1500} value={finding.observation} onChange={e => changeFinding({ observation: e.target.value })} placeholder="Görüntüde ne oluyor?" /></label>
                 <label>Çalışma önerisi<textarea aria-label="Çalışma önerisi" maxLength={1000} value={finding.action} onChange={e => changeFinding({ action: e.target.value })} /></label>
                 <label>Sonraki maçta neye bakacağız?<textarea aria-label="Sonraki maçta neye bakacağız?" maxLength={700} value={finding.next_check} onChange={e => changeFinding({ next_check: e.target.value })} /></label>
+                {finding.drawing ? <><DrawingEditor videoId={report.video_id} drawing={finding.drawing} disabled={!!busy || !canEdit} onChange={drawing => changeFinding({ drawing })} />
+                  <button type="button" className={styles.secondary} onClick={() => changeFinding({ drawing: null })}>Çizimi kaldır</button></>
+                  : <button type="button" className={styles.secondary} onClick={() => {
+                    const time = Math.round((videoRef.current?.currentTime ?? currentTime) * 10) / 10;
+                    if (time < finding.start || time >= finding.end) { setError("Çizim için videoyu pozisyon aralığı içinde durdurun."); return; }
+                    videoRef.current?.pause(); changeFinding({ drawing: { time, marks: [] } }); setError("");
+                  }}>Bu kareye çizim yap</button>}
                 <div className={styles.toolbar}><button onClick={addFinding}>{editingId ? "Pozisyonu güncelle" : "Rapora ekle"}</button>
                   <button className={styles.secondary} onClick={() => { setFinding(null); setEditingId(null); }}>Vazgeç</button></div>
               </fieldset>}
@@ -306,6 +333,8 @@ export default function MatchReportsPage() {
                 <div className={styles.toolbar}><h3>{i + 1}. {f.title}</h3><button className={styles.secondary} onClick={() => seek(f.start)}>{clock(f.start)}–{clock(f.end)} · Görüntüye git</button></div>
                 <small>{categories[f.category]}{f.player ? ` · ${f.player}` : ""}</small><p>{f.observation}</p><p><strong>Çalışma:</strong> {f.action}</p>
                 {f.next_check && <p><strong>Sonraki kontrol:</strong> {f.next_check}</p>}
+                {f.drawing && f.drawing.marks.length > 0 && <><button type="button" className={styles.secondary} onClick={() => setDrawingPreview(drawingPreview === f.id ? null : f.id)}>{drawingPreview === f.id ? "Çizimi gizle" : "Çizimi göster"}</button>
+                  {drawingPreview === f.id && <DrawingEditor videoId={report.video_id} drawing={f.drawing} disabled />}</>}
                 {canEdit && <div className={styles.toolbar}><button disabled={!!busy || !!finding} className={styles.secondary} onClick={() => { setFinding({ ...f }); setEditingId(f.id); seek(f.start); }}>Düzenle</button>
                   <button disabled={!!busy || !!finding} className={styles.secondary} onClick={() => changeDocument({ findings: report.document.findings.filter(item => item.id !== f.id) })}>Pozisyonu kaldır</button></div>}
               </article>)}

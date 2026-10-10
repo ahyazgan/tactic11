@@ -117,7 +117,7 @@ jobs:
             cat ../.cache/review-api.log
             exit 1
           fi
-          npx playwright test e2e/match_reports.spec.ts --workers=1
+          npx playwright test e2e/match_reports.spec.ts e2e/review_uploads.spec.ts e2e/review_followups.spec.ts --workers=1
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

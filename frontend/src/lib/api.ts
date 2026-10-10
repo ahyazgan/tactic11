@@ -78,6 +78,8 @@ async function performRefresh(): Promise<string | null> {
       access_token: string;
       refresh_token: string;
     };
+    // An in-flight refresh must never replace a newly signed-in account.
+    if (getRefreshToken() !== refreshToken) return null;
     setTokens(data.access_token, data.refresh_token);
     return data.access_token;
   } catch {
@@ -85,7 +87,7 @@ async function performRefresh(): Promise<string | null> {
   }
 }
 
-async function getOrRefreshToken(): Promise<string | null> {
+export async function getOrRefreshToken(): Promise<string | null> {
   if (!refreshInFlight) {
     refreshInFlight = performRefresh().finally(() => {
       refreshInFlight = null;
@@ -98,8 +100,8 @@ async function getOrRefreshToken(): Promise<string | null> {
 // Backend yoksa / önizlemede her çağrı 401 olur; yönlendirme yapmayınca
 // kullanıcı dashboard'da kalır, ekranlar boş/"veri yok" gösterir, gezinebilir.
 // Giriş için sayfalardaki "Giriş" linki kullanılır.
-function clearAuthState() {
-  clearTokens();
+function clearAuthState(expectedToken: string | null) {
+  if (getAccessToken() === expectedToken) clearTokens();
 }
 
 async function rawFetch(
@@ -129,12 +131,12 @@ export async function apiFetchResponse(
   if (res.status === 401) {
     const newToken = await getOrRefreshToken();
     if (!newToken) {
-      clearAuthState();
+      clearAuthState(token);
       throw new ApiError("Unauthorized", 401);
     }
     res = await rawFetch(path, init, newToken);
     if (res.status === 401) {
-      clearAuthState();
+      clearAuthState(newToken);
       throw new ApiError("Unauthorized after refresh", 401);
     }
   }
@@ -155,13 +157,13 @@ export async function apiFetch<T = unknown>(
     // Refresh flow — singleton kuyruk
     const newToken = await getOrRefreshToken();
     if (!newToken) {
-      clearAuthState();
+      clearAuthState(token);
       throw new ApiError("Unauthorized", 401);
     }
     // Tek bir retry
     res = await rawFetch(path, init, newToken);
     if (res.status === 401) {
-      clearAuthState();
+      clearAuthState(newToken);
       throw new ApiError("Unauthorized after refresh", 401);
     }
   }
