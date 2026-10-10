@@ -8,6 +8,22 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+class Mark(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    kind: Literal["arrow", "box"]
+    color: Literal["yellow", "red", "blue"] = "yellow"
+    x1: float = Field(ge=0, le=1)
+    y1: float = Field(ge=0, le=1)
+    x2: float = Field(ge=0, le=1)
+    y2: float = Field(ge=0, le=1)
+
+
+class Drawing(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    time: float = Field(ge=0)
+    marks: list[Mark] = Field(default_factory=list, max_length=20)
+
+
 class Finding(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid", allow_inf_nan=False)
     id: UUID
@@ -19,11 +35,14 @@ class Finding(BaseModel):
     action: str = Field(min_length=1, max_length=1000)
     player: str = Field(default="", max_length=120)
     next_check: str = Field(default="", max_length=700)
+    drawing: Drawing | None = None
 
     @model_validator(mode="after")
     def valid_interval(self) -> Finding:
         if not 0.5 <= self.end - self.start <= 120:
             raise ValueError("Pozisyon 0,5 ile 120 saniye arasında olmalı.")
+        if self.drawing and not self.start <= self.drawing.time < self.end:
+            raise ValueError("Çizim karesi pozisyonun başlangıcı ile bitişi arasında olmalı.")
         return self
 
 
