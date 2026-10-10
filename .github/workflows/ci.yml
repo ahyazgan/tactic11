@@ -157,3 +157,12 @@ jobs:
           # DATABASE_URL fake (no real DB) — uvicorn boot olmaz ama import OK olmalı.
           docker run --rm --entrypoint python tactic11:ci -c \
             "import app.api.main; print('import ok, version=', app.api.main.APP_VERSION)"
+      - name: Review media survives container replacement as non-root
+        run: |
+          review_volume="review-delivery-${GITHUB_RUN_ID}"
+          docker volume create "$review_volume" > /dev/null
+          trap 'docker volume rm "$review_volume" > /dev/null 2>&1 || true' EXIT
+          docker run --rm --mount "type=volume,src=$review_volume,dst=/app/data/reviews" --entrypoint python tactic11:ci -c \
+            "import os, subprocess; from app.reports.review_media import asset_path, ffmpeg; assert os.geteuid() != 0; subprocess.run([ffmpeg(), '-version'], check=True, stdout=subprocess.DEVNULL); asset_path('ci-review', '00000000-0000-4000-8000-000000000001').write_bytes(b'preserved-review-source')"
+          docker run --rm --mount "type=volume,src=$review_volume,dst=/app/data/reviews" --entrypoint python tactic11:ci -c \
+            "import os; from app.reports.review_media import asset_path; assert os.geteuid() != 0; assert asset_path('ci-review', '00000000-0000-4000-8000-000000000001').read_bytes() == b'preserved-review-source'"

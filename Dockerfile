@@ -22,6 +22,7 @@ COPY tests ./tests
 
 # Non-root kullanıcı — production hijyeni
 RUN useradd --create-home --shell /bin/bash appuser \
+    && mkdir -p /app/data/reviews \
     && chown -R appuser:appuser /app
 USER appuser
 
