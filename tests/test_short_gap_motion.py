@@ -13,6 +13,18 @@ from scripts.soccertrack_v2.candidates.palette_motion_partitions_v1 import parti
 from scripts.soccertrack_v2.candidates.short_gap_motion_v1 import ShortGapMotionTracker, valid_color
 
 
+@pytest.fixture(params=["research", "production"], autouse=True)
+def implementation(request, monkeypatch):
+    if request.param == "production":
+        from app.tracking.guarded_partition import palette_partition
+        from app.tracking.short_gap_motion import ShortGapMotionTracker as ProductionMotion
+        from app.tracking.short_gap_motion import valid_color as production_color
+
+        monkeypatch.setitem(globals(), "ShortGapMotionTracker", ProductionMotion)
+        monkeypatch.setitem(globals(), "partition", palette_partition)
+        monkeypatch.setitem(globals(), "valid_color", production_color)
+
+
 def config():
     return dict(
         stats=dict(effective_track_fps=12.5),

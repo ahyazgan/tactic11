@@ -343,7 +343,7 @@ def collect_observations(
     # seconds-correct experiment increased kit/identity errors in daylight.
     # Report the actual lifetime below (docs/TAKIP-SUREKLILIGI-SONUCLARI.md).
     tracker: Any
-    if cfg.tracker_backend in {"deepocsort", "consensus"}:
+    if cfg.tracker_backend in {"deepocsort", "consensus", "guarded"}:
         from app.tracking.deepocsort import DeepOCSortTracker, OSNetEmbedder
 
         tracker = DeepOCSortTracker(
@@ -351,7 +351,7 @@ def collect_observations(
             lost_frames=int(max(1, round(fps_eff)) / 30 * max(1, int(cfg.lost_track_seconds * fps_eff))),
             embedder=OSNetEmbedder(cfg.reid_model),
         )
-        if cfg.tracker_backend == "consensus":
+        if cfg.tracker_backend in {"consensus", "guarded"}:
             from app.tracking.identity_consensus import ConsensusTracker
 
             primary = sv.ByteTrack(
@@ -360,7 +360,18 @@ def collect_observations(
                 minimum_matching_threshold=0.8, frame_rate=max(1, round(fps_eff)),
                 minimum_consecutive_frames=1,
             )
-            tracker = ConsensusTracker(primary, tracker)
+            if cfg.tracker_backend == "guarded":
+                from app.tracking.guarded_identity import GuardedTracker
+
+                recovery = sv.ByteTrack(
+                    track_activation_threshold=cfg.track_activation_threshold,
+                    lost_track_buffer=max(1, int(cfg.lost_track_seconds * fps_eff)),
+                    minimum_matching_threshold=0.8, frame_rate=max(1, round(fps_eff)),
+                    minimum_consecutive_frames=1,
+                )
+                tracker = GuardedTracker(primary, recovery, tracker)
+            else:
+                tracker = ConsensusTracker(primary, tracker)
     else:
         tracker = sv.ByteTrack(
             track_activation_threshold=cfg.track_activation_threshold,
@@ -374,6 +385,10 @@ def collect_observations(
         from app.tracking.identity_consensus import ConsensusTeamAssigner
 
         teams = ConsensusTeamAssigner()
+    elif cfg.tracker_backend == "guarded":
+        from app.tracking.guarded_identity import GuardedTeamAssigner
+
+        teams = GuardedTeamAssigner()
     per_frame = None
     if cfg.per_frame_calibration:
         from app.tracking.pitch_lines import PerFrameCalibrator
@@ -484,7 +499,7 @@ def collect_observations(
         balls = balls[_on_pitch_mask(balls, frame_calib, 1.0)]
         if len(balls) > 0:
             balls = balls[balls.confidence >= cfg.ball_threshold]
-        if cfg.tracker_backend in {"deepocsort", "consensus"}:
+        if cfg.tracker_backend in {"deepocsort", "consensus", "guarded"}:
             import cv2
 
             tracked = tracker.update_with_detections(persons, cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR))
@@ -530,6 +545,9 @@ def collect_observations(
         if cfg.tracker_backend == "consensus":
             assert isinstance(teams, ConsensusTeamAssigner)
             teams.record_frame(samples[-1], tracker.last_secondary)
+        elif cfg.tracker_backend == "guarded":
+            assert isinstance(teams, GuardedTeamAssigner)
+            teams.record_frame(samples[-1], tracker)
         if observation_hook is not None:
             observation_hook(rgb, all_det, samples[-1])
         if progress and order % 50 == 0:
@@ -576,7 +594,7 @@ def collect_observations(
                              "kit_color_method": "local_grass_v1" if cfg.normalize_kit_light else "raw_rgb_v1",
                              "ball_spikes_rejected": ball_spikes_rejected,
                              "effective_track_fps": round(fps_eff, 2)}
-    if cfg.tracker_backend in {"deepocsort", "consensus"}:
+    if cfg.tracker_backend in {"deepocsort", "consensus", "guarded"}:
         from app.tracking.deepocsort import MODEL_SHA256, PROFILE
 
         profile = PROFILE
@@ -584,6 +602,10 @@ def collect_observations(
             from app.tracking.identity_consensus import PROFILE as CONSENSUS_PROFILE
 
             profile = CONSENSUS_PROFILE
+        elif cfg.tracker_backend == "guarded":
+            from app.tracking.guarded_identity import PROFILE as GUARDED_PROFILE
+
+            profile = GUARDED_PROFILE
         stats["tracker"] = {"backend": cfg.tracker_backend, "profile": profile,
                             "model_sha256": MODEL_SHA256, "experimental": True}
     if per_frame is not None:
@@ -846,6 +868,12 @@ def process_video(
     `calib=None` yalnız kare başına kalibrasyonla geçerlidir: çapa görüntüden
     bulunur, her kare kendi kalibrasyonuyla gelir."""
     cfg = cfg or PipelineConfig()
+    if cfg.tracker_backend == "guarded" and team_anchor is not None:
+        from app.tracking.anchor_state import team_anchor as validate_anchor
+
+        team_anchor = validate_anchor(team_anchor)
+        if team_anchor is None:
+            raise ValueError("Guarded identity requires distinct fixed palette anchors")
     samples, assigner, calib_stats = collect_observations(
         video_path, cfg, detector=detector, calib=calib, calibrator=calibrator)
     tracks = {tid for s in samples for tid, *_ in s.persons}
@@ -867,6 +895,14 @@ def process_video(
         assignment, consensus_stats = assigner.refine(
             samples, assignment, calib, cfg, calib_stats["effective_track_fps"])
         calib_stats["identity_consensus"] = consensus_stats
+        tracks = {tid for s in samples for tid, *_ in s.persons}
+    elif cfg.tracker_backend == "guarded":
+        from app.tracking.guarded_identity import GuardedTeamAssigner
+
+        assert isinstance(assigner, GuardedTeamAssigner) and calib is not None
+        assignment, guarded_stats = assigner.refine(
+            samples, assignment, calib, cfg, calib_stats["effective_track_fps"], team_anchor)
+        calib_stats["identity_guarded"] = guarded_stats
         tracks = {tid for s in samples for tid, *_ in s.persons}
     event_frames: list[TrackingFrame] = []
     frames = build_frames(

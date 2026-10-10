@@ -1,6 +1,7 @@
 # BACKLOG.md — Work Queue
 
-> Claude Code pulls the next unchecked item from here automatically (see CLAUDE.md §7).
+> Current camera work continues through Codex in `football-intelligence` / `codex-work` (see AGENTS.md).
+> Preserve the adjacent Claude worktree; unrelated backlog items do not expand the current camera task.
 > Format per item: `- [ ] <goal>` then a `Done when:` line.
 > Check off completed items with the commit SHA: `- [x] <goal>  (abc1234)`
 > Append new sub-tasks here instead of stopping to ask.
@@ -20,7 +21,7 @@
 
 - [ ] Codex kamera: kısa kopma adayını önceki dört uzlaşı kesitiyle toplam 19 bilinen kesitte genişlet; altı doğru ayrımı ve beyaz 6 korumasını doğrula, sonra canlı entegrasyonunu sabitle.
   Done when: gündüz 60/62 ve gece 80/82 dahil kaynak bazında eski doğru ilişkiler/kapsam korunmuş, eski doğru ayrımlar kaybolmamış; iki akışın kimlik/forma kanıtı ve gecikmeli ayrım video/canlı yollarda eşit. Yeni kontrol açılmadan kod/model/parametre ve kabul koşulları dondurulur.
-  İlerleme: 19 kesit / 7.125 örnek tamamlandı; 144.623 eski gözlem ve forma kararı korundu. Birleşik aday altı doğru ayrımı ve beyaz 6 korumasını geçti; eski yöntemin 15 kesit / 112.852 gözlemi birebir üretildi. İki palet kaynağının karıştırılmasıyla oluşan ilk gerileme kaydedilip düzeltildi; 58 ilgili test geçti. Canlı/video entegrasyonu, dondurma ve yeni kontrol hâlâ açık. Kanıt: docs/BIRLESIK-KIMLIK-19-KESIT-SONUCLARI.md.
+  İlerleme: 19 kesit / 7.125 örnek tamamlandı; 144.623 eski gözlem ve forma kararı korundu. Birleşik aday altı doğru ayrımı ve beyaz 6 korumasını geçti; eski yöntemin 15 kesit / 112.852 gözlemi birebir üretildi. Üretim `guarded` yolu 19/19 araştırma çıktısını gerçek RGB/OSNet ile aynen verdi; 2.375 kare / 48.227 oyuncu kaydı bellek DB aktarımında korundu. 22 eski varsayılan çıktı / 164.772 gözlem değişmedi. Gerçek RF-DETR/top ROI ile gündüz ve gece kayıtlı/canlı kare, kimlik, olay ve önizleme eşitliği geçti; 500 kare / 10.618 oyuncu / 16 olay kaydı bellek DB kontrolünden geçti. 150 ilgili CV ve 3.104 uygulama testi geçti. Entegrasyon tamam; yeni kontrol için araç/kod/model dondurması, etiket ve değerlendirme açık. 30 saniyelik gerçek koşular 231–359 sn sürdü; gerçek zaman hedefi sağlanmadı. Kanıt: docs/BIRLESIK-KIMLIK-VIDEO-ENTEGRASYONU.md; görüntü açılmadan hazırlanan sonraki plan: docs/BIRLESIK-KIMLIK-KONTROL-PLANI.md.
 
 - [ ] Codex kamera: tüketilen palet kontrolündeki tam/kısmi kutu kopmalarını, örtüşmede kimlik devrini ve gece forma hatalarını geliştirme senaryolarında ayır.
   Done when: etiket düzeltmesinden sonraki tanı sayımlarıyla 11 yanlış aynı-kişi ilişkisi, 1 yanlış farklı-kişi birleşmesi, 63 kapsam dışı ilişki ve gece forma/sahte kutu hataları kaynak/karar izine bağlı; düzeltme yalnız geliştirmede seçilmiş, eski doğru ayrımlar ve kutu/forma kapsamı korunmuş. Yeni aday başka kontrol açılmadan dondurulur; bu dört kesit yeniden bağımsız başarı sayılmaz.

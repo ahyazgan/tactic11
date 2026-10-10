@@ -1,5 +1,16 @@
 # Takip entegrasyonlarının durumu
 
+**10 Ekim güncellemesi:** birleşik kimlik adayı `--tracker guarded` seçeneğiyle
+video ve canlı segment yollarına entegre edildi. 19 bilinen kesitte üretim/
+araştırma eşitliği, 22 eski varsayılan çıktı, gerçek gündüz/gece RF-DETR
+kayıtlı/canlı eşitliği ve bellek DB aktarımı geçti. 3.104 uygulama testi ve
+150 ilgili CV testi başarılı. Varsayılan değişmedi; yeni kontrol dondurması
+ve doğruluk değerlendirmesi açık. Gerçek 30 saniyelik koşular önizleme dahil
+231–359 saniye sürdü; gerçek zaman hedefi geçilmedi. Gece önizlemesindeki
+saha dışı görünen top işareti ayrıca tanı gerektiriyor.
+[Ayrıntılar ve ölçümler](BIRLESIK-KIMLIK-VIDEO-ENTEGRASYONU.md),
+[yeni kontrol planı](BIRLESIK-KIMLIK-KONTROL-PLANI.md).
+
 **9 Ekim güncellemesi:** GitHub'daki son Claude değişiklikleri Codex dalına
 alındı; yerel gerçek API erişimi ve giriş akışı onarıldı. Palet adayı kontrolü
 tamamlandı: dört kesitte 273 başlangıç, 282 bitiş kutusu ve 322 ilişki kör

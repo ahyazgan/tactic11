@@ -1,0 +1,15 @@
+{
+  "python": "3.12.10",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "versions": {
+    "torch": "2.11.0+cu128",
+    "rfdetr": "1.10.1",
+    "supervision": "0.30.2",
+    "trackers": "2.6.0",
+    "numpy": "2.3.5",
+    "scipy": "1.15.3",
+    "opencv-python-headless": "5.0.0.93",
+    "imageio-ffmpeg": "0.6.0",
+    "filterpy": "1.4.5"
+  }
+}

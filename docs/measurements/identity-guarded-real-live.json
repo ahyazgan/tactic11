@@ -1,0 +1,747 @@
+{
+  "scope": "Exercise real detector/ball ROI/OSNet through recorded and warm live paths.",
+  "started_at_utc": "2026-10-10T09:49:18.042743+00:00",
+  "code_model_input_sha256": {
+    "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\.cache\\guarded_live_smoke_20261010.py": "7f033caa061b5343d282d363432e54a7fb657d4bbcb9a219feb2444d90596708",
+    "data\\tracking\\models\\osnet_ain_ms_d_c.pth.tar": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+    "scripts\\track_live.py": "6b88f093953f7170fec1f4fe04ecfcf3748fa3929cc95606cd2c18d212af668a",
+    "scripts\\track_video.py": "ee547efd427ee5039993005cd25830bc010ee566f98efaa6c63c4a79aab3b20d",
+    "app\\tracking\\anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app\\tracking\\calibration.py": "9cce58bcbc532635042a6fdca94ee6b12b7dbc51dba50763c494d2b9130fcbfe",
+    "app\\tracking\\camera.py": "0cec5fa5c9ddddb14cc3fc60cc2ff2dcdafd512bd67b8c74d3069ab9d7219f5f",
+    "app\\tracking\\deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app\\tracking\\detect.py": "266672b1eab57d56014e3b898cdba75a0d2c0426436a1fbde92f32a5bc879c2b",
+    "app\\tracking\\frames.py": "1cb411e85ee1a5f614b9fd1e9bf735ff278289334a358237ccf6338e4a6d3456",
+    "app\\tracking\\guarded_identity.py": "feaf80b13b428bb75cf96211604963146acc5e570a70b9069ab8d56041768953",
+    "app\\tracking\\guarded_partition.py": "2cb8a15f7fa3b89dbd3ee2e625c07df547cfc29b34884576f119ca14212f1db8",
+    "app\\tracking\\homography_fit.py": "274301cbcaa78636bed5104bbcb9f08e99810e6746800da4219a42e0898f9e6c",
+    "app\\tracking\\identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+    "app\\tracking\\identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app\\tracking\\identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app\\tracking\\identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app\\tracking\\kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app\\tracking\\passes.py": "3ab759ca3d0b417451f8f4527cca391e28010216ab92fd6545221ac196552265",
+    "app\\tracking\\person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app\\tracking\\person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app\\tracking\\pipeline.py": "06e32bed9a454583de91ec7de6a54d7b329fe43134bbe84ba1a294bf3f3137b2",
+    "app\\tracking\\pitch_lines.py": "3283fe4e695004b683b5b63a5f6c5ad521a4e9d78d23b9b3673ad40e9245d654",
+    "app\\tracking\\pitch_model.py": "34a48302af97457d6c92006d094b0acb2457292aaea9ae13c06135fecc65ec8b",
+    "app\\tracking\\player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app\\tracking\\recoveries.py": "c7dc67427e907a58ffffe175fc606b43a442ee91acda1c43fdee21afb66df2d8",
+    "app\\tracking\\replay.py": "1f9cae4a47f2ac106433ac9be9ca1b938d0a271064db33f9833037272070e1fe",
+    "app\\tracking\\short_gap_motion.py": "c0db19fc2927212b5c648a14bd06e16849f7f023e88ed2e68e0d0694c96584a8",
+    "app\\tracking\\teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app\\tracking\\tracker_config.py": "30b5150084dc7767fbe29e66144471b3d28aa30dfa7433549b90cb864a75d670",
+    "app\\tracking\\__init__.py": "84f594b074a83977eab56248889b1e963ee19fef277fd3eaef0f907847248eb5",
+    "app\\tracking\\_vendor\\__init__.py": "c658f47c20cf512966e93c8cc6448dc6ff119523fd5d60aa17564cea1d07f598",
+    "app\\tracking\\_vendor\\deepocsort\\association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app\\tracking\\_vendor\\deepocsort\\kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app\\tracking\\_vendor\\deepocsort\\ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app\\tracking\\_vendor\\deepocsort\\osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app\\tracking\\_vendor\\deepocsort\\__init__.py": "8402dfb550c4986abfc676f04b34fbfcc7bd73f25f12ba6d9c9e9725335083c1",
+    "data\\tracking\\models\\rfdetr_mixed_small\\checkpoint_best_ema.pth": "93d84ccef0ac4d279865e2b718b7ad3b938f11dbf96fda206f3685570cd7443b",
+    "data\\tracking\\models\\rfdetr_mixed_small\\checkpoint_best_total.pth": "7b295626163b8a05bfc6ec326930132e24fb0ec1b4ba8951650e3c999aabdf01",
+    "data\\tracking\\models\\rfdetr_mixed_small\\last.ckpt": "2d49e7377c9f8d9395179627333721f77b3214f53a030894e29118c6e527ce14",
+    "data\\tracking\\models\\rfdetr_mixed_small\\last_ema.pth": "18104b0110337081f7e88a7e85a9dc82d2d2853d3e2a00cbe03e4a8d69274ffe",
+    "data\\tracking\\models\\rfdetr_mixed_small\\meta.json": "b99d593d7b82cee084e622f818abea22b3509aafc3fbba6bd9c29105dc8e53ea",
+    "data\\tracking\\models\\rfdetr_mixed_small\\metrics.csv": "728bce4cf1b06cee6b0626e2c21069583634a93d65817e6d9a5896ead2dac8bd",
+    "data\\tracking\\models\\rfdetr_mixed_small\\training_config.json": "05af2d2df0995db71f8c0e80e486c5e0c2c89d5c0e55c61b147e10b259433b79",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+    "docs\\measurements\\joint-identity-development-day-results.json": "348f1d10876a93b8617eebd1e108d4b258942582096eb07b2a7f0397d971588b",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0084.mp4": "f77272be2bda3224224753e2d20d47628ac48fbf6d7c5a8b04a848e180710cde",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\raw\\seg_0084.json": "4b65d1670284750017aca0208c3ba8c5e684dfa65e170bf5f025cbc07b203d27",
+    "docs\\measurements\\joint-identity-development-night-results.json": "c18412dd8667bff0603da4ce568311e80011fba31d8ed0f43fb5b5b53cbe7b85"
+  },
+  "cases": [
+    {
+      "group": "day",
+      "segment": 3,
+      "frames": 125,
+      "players": 2945,
+      "same_frames": true,
+      "same_identity_audit": true,
+      "recorded_seconds": 230.55663009989075,
+      "warm_seconds": 303.62778820004314,
+      "total_case_seconds": 565.3520489998627,
+      "detector_device": "cuda",
+      "timing_scope": "Pipeline includes preview; recorded_seconds excludes detector construction; shared-machine smoke is not a controlled latency benchmark.",
+      "previews": [
+        {
+          "mode": "recorded",
+          "decoded_frames": 125
+        },
+        {
+          "mode": "warm",
+          "decoded_frames": 125
+        }
+      ],
+      "summary": {
+        "sampled_frames": 375,
+        "track_fps": 15.0,
+        "effective_track_fps": 12.5,
+        "frames_written": 125,
+        "fps_out": 5.0,
+        "event_frames_used": 125,
+        "dense_events": false,
+        "derived_events": {
+          "derived_passes": [
+            {
+              "minute": 0.016,
+              "team_external_id": 213,
+              "from_player_external_id": 30012,
+              "to_player_external_id": 30006,
+              "start_x": 59.01,
+              "start_y": 10.5,
+              "end_x": 45.97,
+              "end_y": 32.86,
+              "distance_m": 20.46,
+              "flight_seconds": 2.4,
+              "ball_estimated": true,
+              "complete": false,
+              "estimated": true,
+              "period": 1,
+              "observed_flight": false
+            },
+            {
+              "minute": 0.24,
+              "team_external_id": 213,
+              "from_player_external_id": 30090,
+              "to_player_external_id": 30072,
+              "start_x": 83.53,
+              "start_y": 17.92,
+              "end_x": 77.2,
+              "end_y": 23.65,
+              "distance_m": 7.71,
+              "flight_seconds": 0.48,
+              "ball_estimated": false,
+              "complete": false,
+              "estimated": true,
+              "period": 1,
+              "observed_flight": true
+            },
+            {
+              "minute": 0.268,
+              "team_external_id": 217,
+              "from_player_external_id": 30072,
+              "to_player_external_id": 30023,
+              "start_x": 78.75,
+              "start_y": 28.2,
+              "end_x": 85.77,
+              "end_y": 48.98,
+              "distance_m": 15.94,
+              "flight_seconds": 1.68,
+              "ball_estimated": true,
+              "complete": false,
+              "estimated": true,
+              "period": 1,
+              "observed_flight": false
+            },
+            {
+              "minute": 0.304,
+              "team_external_id": 213,
+              "from_player_external_id": 30023,
+              "to_player_external_id": 30034,
+              "start_x": 84.92,
+              "start_y": 50.73,
+              "end_x": 66.39,
+              "end_y": 41.49,
+              "distance_m": 20.45,
+              "flight_seconds": 2.88,
+              "ball_estimated": true,
+              "complete": false,
+              "estimated": true,
+              "period": 1,
+              "observed_flight": false
+            },
+            {
+              "minute": 0.356,
+              "team_external_id": 217,
+              "from_player_external_id": 30034,
+              "to_player_external_id": 30006,
+              "start_x": 65.99,
+              "start_y": 41.72,
+              "end_x": 54.29,
+              "end_y": 35.58,
+              "distance_m": 12.98,
+              "flight_seconds": 1.92,
+              "ball_estimated": true,
+              "complete": true,
+              "estimated": true,
+              "period": 1,
+              "observed_flight": false
+            },
+            {
+              "minute": 0.392,
+              "team_external_id": 217,
+              "from_player_external_id": 30006,
+              "to_player_external_id": 30009,
+              "start_x": 54.37,
+              "start_y": 36.0,
+              "end_x": 59.43,
+              "end_y": 23.22,
+              "distance_m": 10.19,
+              "flight_seconds": 0.72,
+              "ball_estimated": true,
+              "complete": true,
+              "estimated": true,
+              "period": 1,
+              "observed_flight": false
+            },
+            {
+              "minute": 0.456,
+              "team_external_id": 217,
+              "from_player_external_id": 30009,
+              "to_player_external_id": 30148,
+              "start_x": 62.25,
+              "start_y": 33.77,
+              "end_x": 60.84,
+              "end_y": 39.19,
+              "distance_m": 3.98,
+              "flight_seconds": 0.72,
+              "ball_estimated": true,
+              "complete": true,
+              "estimated": true,
+              "period": 1,
+              "observed_flight": false
+            },
+            {
+              "minute": 0.488,
+              "team_external_id": 217,
+              "from_player_external_id": 30148,
+              "to_player_external_id": 30009,
+              "start_x": 61.47,
+              "start_y": 41.09,
+              "end_x": 62.08,
+              "end_y": 46.07,
+              "distance_m": 3.45,
+              "flight_seconds": 0.24,
+              "ball_estimated": true,
+              "complete": true,
+              "estimated": true,
+              "period": 1,
+              "observed_flight": false
+            }
+          ],
+          "derived_defensive_actions": []
+        },
+        "defensive_actions": {
+          "count": 0,
+          "rejected": {
+            "ball_unobserved_or_team_invalid": 100
+          },
+          "note": "yaln\u0131z g\u00f6zlenmi\u015f top kazan\u0131mlar\u0131; tackle/interception ayr\u0131m\u0131 ve tam savunma kapsamas\u0131 yok"
+        },
+        "tracks": 86,
+        "identity_scope": {
+          "period": 1,
+          "clip_offset_minutes": 0.0,
+          "namespace": 0,
+          "cross_segment_person_identity": false
+        },
+        "players_per_frame_mean": 23.6,
+        "team_counts": {
+          "home": 41,
+          "away": 30,
+          "unassigned": 15
+        },
+        "team_assignment_quality": {
+          "color_method": "raw_rgb_v1",
+          "frames_evaluated": 125,
+          "overfull_frames": 89,
+          "overfull_frame_ratio": 0.712,
+          "assigned_players_per_frame": 21.31,
+          "note": "bir tak\u0131ma 12+ oyuncu atanm\u0131\u015f kareler var; tak\u0131m atamas\u0131 belirsiz"
+        },
+        "ball_frames": 365,
+        "ball_sources": {
+          "det": 244,
+          "roi": 34,
+          "interp": 87
+        },
+        "calibration_reprojection_m": 1.432,
+        "passes": {
+          "count": 8,
+          "complete": 4,
+          "turnovers": 5,
+          "actor_ratio": 0.52,
+          "rejected": {
+            "u\u00e7u\u015f \u00e7ok uzun (top izlenemedi)": 1,
+            "k\u0131sa mesafe kapt\u0131rma (pas denemesi de\u011fil)": 1
+          },
+          "note": "8 pas denemesi (%50 isabet) \u00b7 5 top kayb\u0131 \u00b7 karelerin %52'inde tutucu belirlendi \u00b7 7 pasta top enterpole edilmi\u015fti (k\u0131r\u0131lgan)"
+        },
+        "calibration_stats": {
+          "per_frame_calibration": false,
+          "tracker_resets": 0,
+          "calibration_gap_resets": 0,
+          "requested_lost_track_seconds": 1.5,
+          "effective_lost_track_seconds": 0.56,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": true,
+            "skip_reason": null,
+            "observations_before": 11269,
+            "observations_removed": 2441,
+            "tracks_removed": 28,
+            "min_field_observations": 2,
+            "tolerance_px": 2.16,
+            "rejected_tracks": [
+              {
+                "continuity_id": 0,
+                "track_id": 1
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 2
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 3
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 4
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 28
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 29
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 30
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 31
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 32
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 41
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 42
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 53
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 60
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 61
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 81
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 82
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 89
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 91
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 97
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 104
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 113
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 115
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 123
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 138
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 141
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 150
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 155
+              },
+              {
+                "continuity_id": 0,
+                "track_id": 156
+              }
+            ],
+            "enablement": "camera_profile"
+          },
+          "identity_refinement_enabled": false,
+          "duplicate_parts_removed": 0,
+          "kit_color_method": "raw_rgb_v1",
+          "ball_spikes_rejected": 14,
+          "effective_track_fps": 12.5,
+          "tracker": {
+            "backend": "guarded",
+            "profile": "bytetrack-osnet-guarded-identity-v2",
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "experimental": true
+          },
+          "identity_guarded": {
+            "profile": "bytetrack-osnet-guarded-identity-v2",
+            "boundaries": [
+              {
+                "continuity_id": 0,
+                "raw_id": 8,
+                "first_order": 262,
+                "confirmed_order": 264,
+                "old_support": 154,
+                "new_support": 156,
+                "evidence": [
+                  "appearance_consensus"
+                ],
+                "new_id": 161
+              }
+            ],
+            "motion_proposals": [
+              {
+                "order": 296,
+                "track_id": 111,
+                "source_index": 2,
+                "proposal": [
+                  1362.5625,
+                  229.625,
+                  1382.0625,
+                  272.03125
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1367.3266776067567,
+                  249.1813142263526,
+                  0.47984010482972655,
+                  44.52682179210243,
+                  -0.659704367007828,
+                  0.22998792866039286,
+                  -1.5986909818735072e-06,
+                  -0.1752292192625
+                ],
+                "tracker_order": 296,
+                "continuity_id": 0
+              }
+            ],
+            "motion_proposals_applied": 1,
+            "boxes_removed": 0,
+            "boxes_created": 4,
+            "observation_teams_preserved": true,
+            "support_is_ground_truth": false,
+            "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+            "status": "applied",
+            "recovery_fallback": null
+          }
+        },
+        "team_colors": [
+          [
+            121.6,
+            161.7,
+            215.8
+          ],
+          [
+            236.6,
+            239.1,
+            245.2
+          ]
+        ]
+      }
+    },
+    {
+      "group": "palette_night",
+      "segment": 84,
+      "frames": 125,
+      "players": 2364,
+      "same_frames": true,
+      "same_identity_audit": true,
+      "recorded_seconds": 343.96727650007233,
+      "warm_seconds": 359.14240280003287,
+      "total_case_seconds": 704.9321113000624,
+      "detector_device": "cuda",
+      "timing_scope": "Pipeline includes preview; recorded_seconds excludes detector construction; shared-machine smoke is not a controlled latency benchmark.",
+      "previews": [
+        {
+          "mode": "recorded",
+          "decoded_frames": 125
+        },
+        {
+          "mode": "warm",
+          "decoded_frames": 125
+        }
+      ],
+      "summary": {
+        "sampled_frames": 375,
+        "track_fps": 15.0,
+        "effective_track_fps": 12.5,
+        "frames_written": 125,
+        "fps_out": 5.0,
+        "event_frames_used": 125,
+        "dense_events": false,
+        "derived_events": {
+          "derived_passes": [],
+          "derived_defensive_actions": []
+        },
+        "defensive_actions": {
+          "count": 0,
+          "rejected": {
+            "ball_unobserved_or_team_invalid": 10
+          },
+          "note": "yaln\u0131z g\u00f6zlenmi\u015f top kazan\u0131mlar\u0131; tackle/interception ayr\u0131m\u0131 ve tam savunma kapsamas\u0131 yok"
+        },
+        "tracks": 57,
+        "identity_scope": {
+          "period": 1,
+          "clip_offset_minutes": 0.0,
+          "namespace": 0,
+          "cross_segment_person_identity": false
+        },
+        "players_per_frame_mean": 18.9,
+        "team_counts": {
+          "home": 36,
+          "away": 13,
+          "unassigned": 8
+        },
+        "team_assignment_quality": {
+          "color_method": "raw_rgb_v1",
+          "frames_evaluated": 125,
+          "overfull_frames": 6,
+          "overfull_frame_ratio": 0.048,
+          "assigned_players_per_frame": 14.98,
+          "note": "bir tak\u0131ma 12+ oyuncu atanm\u0131\u015f kareler var; tak\u0131m atamas\u0131 belirsiz"
+        },
+        "ball_frames": 375,
+        "ball_sources": {
+          "det": 348,
+          "roi": 1,
+          "interp": 26
+        },
+        "calibration_reprojection_m": 1.759,
+        "passes": {
+          "count": 0,
+          "complete": 0,
+          "turnovers": 0,
+          "actor_ratio": 0.0,
+          "rejected": {},
+          "note": "hi\u00e7bir karede topu tutan belirlenemedi \u2014 top takibi ya da tak\u0131m atamas\u0131 \u00e7al\u0131\u015fmam\u0131\u015f; pas \u00e7\u0131kar\u0131m\u0131 yap\u0131lamaz"
+        },
+        "calibration_stats": {
+          "per_frame_calibration": false,
+          "tracker_resets": 0,
+          "calibration_gap_resets": 0,
+          "requested_lost_track_seconds": 1.5,
+          "effective_lost_track_seconds": 0.56,
+          "person_filter": {
+            "method": "annotated_perimeter_track_v1",
+            "applied": false,
+            "skip_reason": "disabled",
+            "observations_before": 7087,
+            "observations_removed": 0,
+            "tracks_removed": 0,
+            "min_field_observations": 2,
+            "enablement": "camera_profile"
+          },
+          "identity_refinement_enabled": false,
+          "duplicate_parts_removed": 0,
+          "kit_color_method": "raw_rgb_v1",
+          "ball_spikes_rejected": 6,
+          "effective_track_fps": 12.5,
+          "tracker": {
+            "backend": "guarded",
+            "profile": "bytetrack-osnet-guarded-identity-v2",
+            "model_sha256": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+            "experimental": true
+          },
+          "identity_guarded": {
+            "profile": "bytetrack-osnet-guarded-identity-v2",
+            "boundaries": [
+              {
+                "continuity_id": 0,
+                "raw_id": 16,
+                "new_id": 74,
+                "first_order": 236,
+                "confirmed_order": 238,
+                "old_support": 16,
+                "new_support": 11,
+                "old_palette": 0,
+                "new_palette": 1,
+                "evidence": [
+                  "palette_crossover"
+                ]
+              },
+              {
+                "continuity_id": 0,
+                "raw_id": 25,
+                "new_id": 75,
+                "first_order": 43,
+                "confirmed_order": 45,
+                "old_support": 29,
+                "new_support": 11,
+                "old_palette": 0,
+                "new_palette": 1,
+                "evidence": [
+                  "palette_crossover"
+                ]
+              }
+            ],
+            "motion_proposals": [
+              {
+                "order": 103,
+                "track_id": 25,
+                "source_index": 5,
+                "proposal": [
+                  1256.5,
+                  630.25,
+                  1286.0,
+                  674.5
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1264.5405611631209,
+                  652.1028038921773,
+                  0.65601710075953,
+                  44.81905613900174,
+                  -3.4444900954346243,
+                  0.0980165881150581,
+                  -2.477559610405999e-06,
+                  0.0
+                ],
+                "tracker_order": 103,
+                "continuity_id": 0
+              },
+              {
+                "order": 193,
+                "track_id": 16,
+                "source_index": 9,
+                "proposal": [
+                  1109.0,
+                  736.0,
+                  1140.5,
+                  792.0
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1112.4243916775142,
+                  769.7338326097378,
+                  0.6231840620627749,
+                  55.40416288943358,
+                  0.34798563486251133,
+                  -0.4521813782581744,
+                  1.114406022360479e-05,
+                  -0.003644346713367108
+                ],
+                "tracker_order": 193,
+                "continuity_id": 0
+              },
+              {
+                "order": 311,
+                "track_id": 39,
+                "source_index": 11,
+                "proposal": [
+                  1874.0,
+                  546.34375,
+                  1901.0,
+                  583.96875
+                ],
+                "matched": true,
+                "previous_mean": [
+                  1877.532947014415,
+                  567.1485846353788,
+                  0.6841642538391053,
+                  37.575550354978965,
+                  1.0038350554237745,
+                  -0.40401928251690244,
+                  9.404483424440607e-06,
+                  0.0
+                ],
+                "tracker_order": 311,
+                "continuity_id": 0
+              }
+            ],
+            "motion_proposals_applied": 3,
+            "boxes_removed": 0,
+            "boxes_created": 11,
+            "observation_teams_preserved": true,
+            "support_is_ground_truth": false,
+            "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+            "status": "applied",
+            "recovery_fallback": null
+          }
+        },
+        "team_colors": [
+          [
+            98.7,
+            103.9,
+            94.8
+          ],
+          [
+            165.2,
+            169.7,
+            159.6
+          ]
+        ]
+      }
+    }
+  ],
+  "detector_cache": false,
+  "persistent_database_written": false,
+  "accuracy_validated": false,
+  "output_sha256": {
+    ".cache\\guarded-live-smoke-20261010-v3\\manifest.json": "538a2bfb6ce7d7e139c73b5703a4a5efee0e9660aee3e3042ef58fa9a37b023c",
+    ".cache\\guarded-live-smoke-20261010-v3\\partial-report.json": "a21bdcfcf735d1da3814d0215ef40700b6d595c4c98b386a3601c4ee0d5f2f59",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\calibration.json": "7125e5008478409eb75e2568320460117144caee8dccfea3fe66e0b25e9eb777",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\recorded-0.jpg": "266a9deb96f79b8449fb4317f48542218efc6056d76c6e8a286bb3e56e1d60e0",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\recorded-40.jpg": "0297315ec7c1a369fac7b317c7000f08af402774298cd04ddde08c7f43618f63",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\recorded-80.jpg": "0902869e925a86873f2bf233e579ec6f969ff2f6e1f92065d261b2bb26bba41f",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\recorded-preview.mp4": "91b7038e692828ea9b31b23f12e983e274f657def4f55fc3c48ddc7799148773",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\recorded.json": "b3b542819c984746e3871dd42aa9b991d85b7daa990ced30e08685114933a544",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\warm-0.jpg": "266a9deb96f79b8449fb4317f48542218efc6056d76c6e8a286bb3e56e1d60e0",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\warm-40.jpg": "0297315ec7c1a369fac7b317c7000f08af402774298cd04ddde08c7f43618f63",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\warm-80.jpg": "0902869e925a86873f2bf233e579ec6f969ff2f6e1f92065d261b2bb26bba41f",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\warm-preview.mp4": "91b7038e692828ea9b31b23f12e983e274f657def4f55fc3c48ddc7799148773",
+    ".cache\\guarded-live-smoke-20261010-v3\\day\\warm.json": "be994aca800de697ed812c163f218bfdd6d1693b09199919c61eb7ee1a52d767",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\calibration.json": "8322ee76c3f9c32760925c1ed3e0a08fc451a4188bbc5a132620045ec5b84340",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\recorded-0.jpg": "470cffbc1d5d405f85ad7224c6c63e529abe82d9b2ade3d1c06a313550a89e08",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\recorded-40.jpg": "63930385f86adc70545b4fae5385060ec95d31a2165f33e976af5572246b377d",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\recorded-80.jpg": "a4f5eb9e31bc2a685ca177ed26bd3a12b29d05292d8942c00f86fa5ad785d596",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\recorded-preview.mp4": "cce9ca2aae3a245f639c373ca4027f8431b6f2f06b580f2fcce295ea74da3e40",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\recorded.json": "f53243f30f446be665e81bc7c45ba654030db92f0934359463c9d38c8fb8aedc",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\warm-0.jpg": "470cffbc1d5d405f85ad7224c6c63e529abe82d9b2ade3d1c06a313550a89e08",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\warm-40.jpg": "63930385f86adc70545b4fae5385060ec95d31a2165f33e976af5572246b377d",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\warm-80.jpg": "a4f5eb9e31bc2a685ca177ed26bd3a12b29d05292d8942c00f86fa5ad785d596",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\warm-preview.mp4": "cce9ca2aae3a245f639c373ca4027f8431b6f2f06b580f2fcce295ea74da3e40",
+    ".cache\\guarded-live-smoke-20261010-v3\\palette_night\\warm.json": "e50917dbb17b45bcd1e46e36e58e4838a1b4a269e12c8964516d9730828ea019"
+  },
+  "completed_at_utc": "2026-10-10T10:10:31.058538+00:00"
+}

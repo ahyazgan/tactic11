@@ -1,0 +1,87 @@
+{
+  "recorded_at_utc": "2026-10-09T21:39:28.563297+00:00",
+  "scope": "Explicit guarded tracker in recorded/warm/isolated paths; baseline team fitting precedes recovery and partitions. The original freeze and all four prior integration amendments remain unchanged. All 22 previous default/refiner payloads are byte-identical after excluding the same explicitly disabled config fields.",
+  "original_freeze": {
+    "path": "docs/measurements/joint-identity-frozen-decision.json",
+    "sha256": "bd8c9176c818dd952b112260feb5d30d051b627ccb30a04638fc8eb763cabb0c"
+  },
+  "code_changes": {
+    "app/tracking/pipeline.py": {
+      "before_sha256_lf": "5e24a8ab6fd110254600d5eccbaac8b9aa8ae4c96f451d1d7a5e5bdd1c20aa4b",
+      "after_sha256_lf": "06e32bed9a454583de91ec7de6a54d7b329fe43134bbe84ba1a294bf3f3137b2",
+      "reason": "Reject identity refinement for broadcast/nonfixed source even when per-frame calibration is explicitly disabled; fixed-camera classifier unchanged. Add explicit fixed-camera Deep OC-SORT selection while preserving validated default outputs. Add explicit consensus selection; preserve primary detections and team evidence while a shadow tracker corroborates color boundaries. Add guarded baseline/recovery/OSNet streams with separate fixed anchors and baseline fitted centers; retain every baseline observation team and abstain from whole-segment recovery on missing baseline boxes."
+    },
+    "scripts/track_video.py": {
+      "before_sha256_lf": "4d185093875d701e305013e8105e3c2c3eaaf30475e10250d2ca3199da26e960",
+      "after_sha256_lf": "ee547efd427ee5039993005cd25830bc010ee566f98efaa6c63c4a79aab3b20d",
+      "reason": "Validate and pass team palette; align operated-camera cut/replay flags with warm worker. Add explicit fixed-camera Deep OC-SORT selection while preserving validated default outputs. Add opt-in ROI flag, default false; preserve old default command behavior."
+    },
+    "scripts/track_live.py": {
+      "before_sha256_lf": "ed327c604f02daa4353c76adc502f833d0f8868afc2ec93453a205551bb0d572",
+      "after_sha256_lf": "6b88f093953f7170fec1f4fe04ecfcf3748fa3929cc95606cd2c18d212af668a",
+      "reason": "Persist first valid palette atomically across isolated/warm restarts; bind it to match/team/calibration/refinement/camera settings; resolve source/model paths before child cwd changes. Add explicit fixed-camera Deep OC-SORT selection while preserving validated default outputs. Add opt-in ROI flag, default false; preserve old default command behavior."
+    }
+  },
+  "added_integration_code_sha256_lf": {
+    "app/tracking/_vendor/__init__.py": "5cd05c98e04f76401abb48a6ffb71a432b87fa9b0a7a6a52524d6318739ec3a7",
+    "app/tracking/_vendor/deepocsort/__init__.py": "40275e9fcf4f0e93d7d5c4371ca54aa894fc53212bae12205381bc126fd4daf1",
+    "app/tracking/_vendor/deepocsort/association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app/tracking/_vendor/deepocsort/kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app/tracking/_vendor/deepocsort/ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app/tracking/_vendor/deepocsort/osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app/tracking/anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app/tracking/deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app/tracking/detect.py": "266672b1eab57d56014e3b898cdba75a0d2c0426436a1fbde92f32a5bc879c2b",
+    "app/tracking/guarded_identity.py": "feaf80b13b428bb75cf96211604963146acc5e570a70b9069ab8d56041768953",
+    "app/tracking/guarded_partition.py": "f3b97e2bd719af09a4c6876189a07f04afa8fcfc2f4fc24dc7e6c6df32671cb7",
+    "app/tracking/identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+    "app/tracking/short_gap_motion.py": "0e7fa0c71b78eed23e2bbed1ef8569de216a098088092b4ab5d3c83cc84594a7",
+    "app/tracking/tracker_config.py": "30b5150084dc7767fbe29e66144471b3d28aa30dfa7433549b90cb864a75d670",
+    "scripts/setup_tracking_reid.py": "5622c0d3a20d7717d541466bd21ddc0c12ef64284f10a018e2650c061cce34de",
+    "scripts/soccertrack_v2/benchmark_deepocsort.py": "af08765ed0feb34e8efb5cfce2e93a2415df5fd5405a05575b70bb9b8356d144",
+    "scripts/soccertrack_v2/export_joint_identity.py": "0d56a37a19e2aae26d0beecde1eed7fd25b1ca3ab7ae1d9d77a8a514be0fc615",
+    "scripts/soccertrack_v2/replay_consensus_defaults.py": "1bf64b1528ca0d7f33a07838d94fe10502a7094c39e6387390b74d30eaed91ef",
+    "scripts/soccertrack_v2/replay_consensus_integration.py": "a7bf237117f1690ccb2ac5c6885bde99cb1bd962d25866e0aef80cf5454e63f3",
+    "scripts/soccertrack_v2/replay_guarded_defaults.py": "f4e7ee254ef9681940cb98f0d7d2aee946ec473463d93075c3abbc597b34d735",
+    "scripts/soccertrack_v2/replay_guarded_integration.py": "412ac153728e3e2f8f09f3fc70f46e777290439c0f9860027ba49b06f013a580",
+    "scripts/soccertrack_v2/replay_reid_integration.py": "548cc74b44036675b64eb11f5ed6844090a36ebdf4f929fdd23503f3488d9e75",
+    "scripts/soccertrack_v2/replay_roi_defaults.py": "551cc1721e02098f494938b2fad3846432a7da010869fbe2dc2c0aa5658d6066",
+    "tests/test_deepocsort.py": "5e0c721b5ba6c5a35580e1eaffc1b5baa0aa7a682a14913a6219e5cd9b4fde0c",
+    "tests/test_detector_roi_batch.py": "b25c5cea7bb3cdfbd5a7614aa3038ef56841c9903e636e1a329538b318e73088",
+    "tests/test_guarded_identity.py": "885149df2c2dbf9dd9374992495401234ac196ae96c927d760fadafe30e0cc74",
+    "tests/test_guarded_ingest.py": "12566300b7de9404fb9a7a603e7daeb0678310f1bea8639eec56e751417418d0",
+    "tests/test_guarded_pipeline.py": "7bf2bf0f4f5f21f363c501ee14756e82cf6ded4012d0a8d009f7ab30c41644e5",
+    "tests/test_identity_consensus.py": "516a664a80b8d8f049d0ee65e2502da73a52690c7efabfb693013ad217ddd67b",
+    "tests/test_identity_source_guard.py": "89b07437204b8140b55ca71ab9b85fa2be7776f049dd7e89e10aa2c8032f1a30",
+    "tests/test_short_gap_motion.py": "d9e4f994c92dc09d09cd86c410d267e07b227595ae19b7896b67160e4bb3d84a",
+    "tests/test_tracking_cli_identity.py": "9c18146e86297c459ebabf0a2fa0eaaecc806f553a44bc867dfc60925cf1dad6",
+    "tests/test_tracking_reid_freeze.py": "42ae7515ace01ae18d2064d3a41946bcb51b3d87df814d591d78c9ba422448f1",
+    "tests/test_tracking_reid_integration.py": "270bf57f85919618b24e19d31c6c60ea3b4ad0d1d1b899dfcd18ce28f7c31b0b"
+  },
+  "parity_evidence": {
+    "path": "docs/measurements/joint-identity-guarded-integration-parity.json",
+    "sha256": "ab11a33d230a92cd5f05402ae68337b3f142ceca77678e2087d7fe6bacaa3397"
+  },
+  "unchanged_classifier_and_parameters": true,
+  "decision": "Default identity and team classifiers unchanged. Guarded remains an explicit experimental profile. Independent control and cross-segment person identity are not claimed.",
+  "additional_integration_scope": [
+    "BigInteger player identity storage and guarded migration",
+    "cross-match/per-period derived-event identity and legacy retry compatibility",
+    "scope-specific UI denominator and shared lossless frame/table token",
+    "Pinned OSNet checkpoint and licensed Deep OC-SORT adapter",
+    "Recorded/warm/isolated tracker selection and independent camera epochs",
+    "Only new default config fields removed for 22 byte-identical prior payloads",
+    "Explicit disabled ROI field excluded only from cache metadata comparison; all source observations/outputs retained.",
+    "Guarded identity partitions and recovery with baseline warmup when a fixed palette is unavailable; source-qualified reset IDs; frozen research candidates retained."
+  ],
+  "limits": [
+    "Fixed-camera replay parity does not prove moving-camera isolated/warm calibration equivalence.",
+    "IDs isolate segments; they do not identify a person across segments.",
+    "Original preview manifest uses the original freeze; its fixed-camera output is covered by parity."
+  ],
+  "version": 5,
+  "previous_amendment": {
+    "path": "docs/measurements/joint-identity-roi-integration-amendment.json",
+    "sha256": "5c7bfcc1ab5b43e62672bf2e2b7710d7c39871486bf957380b42ce93f0aacb2b"
+  }
+}

@@ -1,0 +1,1180 @@
+{
+  "started_at_utc": "2026-10-09T21:31:41.972200+00:00",
+  "scope": "Real RGB/OSNet production replay against the completed 19-clip candidate.\n\nOnly person detector outputs are cached. Frame decoding, colors, three trackers,\nfiltering, retrospective partitions, output frames and event derivation are real.\nThis is development parity, not fresh control or detector speed measurement.\n",
+  "acquisition": [
+    {
+      "group": "day",
+      "complete": true,
+      "samples": {
+        "64": 375,
+        "66": 375
+      },
+      "freeze_sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea"
+    },
+    {
+      "group": "night",
+      "complete": true,
+      "samples": {
+        "78": 375,
+        "84": 375
+      },
+      "freeze_sha256": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea"
+    }
+  ],
+  "input_code_sha256": {
+    ".cache\\guarded-identity-19-20261009-v2\\report.json": "f69c61bac7607bc2df062cd0d65bf8d4149789346e7bbdbb2404b70b038c5954",
+    "data\\tracking\\models\\osnet_ain_ms_d_c.pth.tar": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+    "C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\scripts\\soccertrack_v2\\replay_guarded_integration.py": "412ac153728e3e2f8f09f3fc70f46e777290439c0f9860027ba49b06f013a580",
+    "app\\tracking\\anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app\\tracking\\calibration.py": "9cce58bcbc532635042a6fdca94ee6b12b7dbc51dba50763c494d2b9130fcbfe",
+    "app\\tracking\\camera.py": "0cec5fa5c9ddddb14cc3fc60cc2ff2dcdafd512bd67b8c74d3069ab9d7219f5f",
+    "app\\tracking\\deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app\\tracking\\detect.py": "266672b1eab57d56014e3b898cdba75a0d2c0426436a1fbde92f32a5bc879c2b",
+    "app\\tracking\\frames.py": "1cb411e85ee1a5f614b9fd1e9bf735ff278289334a358237ccf6338e4a6d3456",
+    "app\\tracking\\guarded_identity.py": "feaf80b13b428bb75cf96211604963146acc5e570a70b9069ab8d56041768953",
+    "app\\tracking\\guarded_partition.py": "2cb8a15f7fa3b89dbd3ee2e625c07df547cfc29b34884576f119ca14212f1db8",
+    "app\\tracking\\homography_fit.py": "274301cbcaa78636bed5104bbcb9f08e99810e6746800da4219a42e0898f9e6c",
+    "app\\tracking\\identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+    "app\\tracking\\identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app\\tracking\\identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app\\tracking\\identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app\\tracking\\kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app\\tracking\\passes.py": "3ab759ca3d0b417451f8f4527cca391e28010216ab92fd6545221ac196552265",
+    "app\\tracking\\person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app\\tracking\\person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app\\tracking\\pipeline.py": "06e32bed9a454583de91ec7de6a54d7b329fe43134bbe84ba1a294bf3f3137b2",
+    "app\\tracking\\pitch_lines.py": "3283fe4e695004b683b5b63a5f6c5ad521a4e9d78d23b9b3673ad40e9245d654",
+    "app\\tracking\\pitch_model.py": "34a48302af97457d6c92006d094b0acb2457292aaea9ae13c06135fecc65ec8b",
+    "app\\tracking\\player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app\\tracking\\recoveries.py": "c7dc67427e907a58ffffe175fc606b43a442ee91acda1c43fdee21afb66df2d8",
+    "app\\tracking\\replay.py": "1f9cae4a47f2ac106433ac9be9ca1b938d0a271064db33f9833037272070e1fe",
+    "app\\tracking\\short_gap_motion.py": "c0db19fc2927212b5c648a14bd06e16849f7f023e88ed2e68e0d0694c96584a8",
+    "app\\tracking\\teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app\\tracking\\tracker_config.py": "30b5150084dc7767fbe29e66144471b3d28aa30dfa7433549b90cb864a75d670",
+    "app\\tracking\\__init__.py": "84f594b074a83977eab56248889b1e963ee19fef277fd3eaef0f907847248eb5",
+    "app\\tracking\\_vendor\\__init__.py": "c658f47c20cf512966e93c8cc6448dc6ff119523fd5d60aa17564cea1d07f598",
+    "app\\tracking\\_vendor\\deepocsort\\association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app\\tracking\\_vendor\\deepocsort\\kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app\\tracking\\_vendor\\deepocsort\\ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app\\tracking\\_vendor\\deepocsort\\osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app\\tracking\\_vendor\\deepocsort\\__init__.py": "8402dfb550c4986abfc676f04b34fbfcc7bd73f25f12ba6d9c9e9725335083c1",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0000.mp4": "826cd48e3e41f8ecb41ed5b4e0b19eed95bc193414001738bbf0f3dfe53a5ba2",
+    "docs\\measurements\\joint-identity-development-day-results.json": "348f1d10876a93b8617eebd1e108d4b258942582096eb07b2a7f0397d971588b",
+    ".cache\\guarded-identity-19-20261009-v2\\day\\combined\\seg_0000.json": "df1ab75a1fc90fa906b72d2264a2723ea6f7f0f537c90529d98bc254bf64ee63",
+    ".cache\\guarded-identity-19-20261009-v2\\day\\baseline\\seg_0000.json": "814723c415455469350a883fec6504f48b7d49c05238a12d29ef7c8178184486",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0003.json": "cdd9f6ef744d0aac0d63eb380b620f47a4ba8e2e865e44833ba90bbb815804d4",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0003.mp4": "3e05ec8ef4f571e6cbbb20bf0922fc47334787993548ea9bcdc795ed751b149d",
+    ".cache\\guarded-identity-19-20261009-v2\\day\\combined\\seg_0003.json": "197f3af1bdb251ec2103959ca5951ec796f3e2a3c6cbd1df8323d49b0af46d31",
+    ".cache\\guarded-identity-19-20261009-v2\\day\\baseline\\seg_0003.json": "5169a57b817abd59872bb078ccd46112284588254d134b41940ca7718948723a",
+    "data\\tracking\\bench\\identity_day_detections\\seg_0006.json": "66214e24e791b44bc6bc2f3efa81ba2c9ea4ba9242f3942e5c0406ca6fa685a9",
+    "data\\tracking\\bench\\daylight_117093\\source\\seg_0006.mp4": "d3810e6d7d940bcd854d594a6c4a76998db9200874bf19e2b1b828611a6b6372",
+    ".cache\\guarded-identity-19-20261009-v2\\day\\combined\\seg_0006.json": "379dc8229a3f2e11cd45d6741755c854bbeef6f184a60d0f716b04c6782c54b0",
+    ".cache\\guarded-identity-19-20261009-v2\\day\\baseline\\seg_0006.json": "01de76f4033b3c07e4d6ecbe353383353b1f093754eb5ea6799d31147d3f1a84",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0000.json": "d96e0195e861b6bb837dcedc11d839633b5e96e3ad568b24b75f768978f074e8",
+    "data\\tracking\\live\\990401\\seg_0000.mp4": "4e8321ea9da98664437a9700cb5a5318fb9641b8957a3ebfab54485a74ade2e1",
+    "docs\\measurements\\joint-identity-development-night-results.json": "c18412dd8667bff0603da4ce568311e80011fba31d8ed0f43fb5b5b53cbe7b85",
+    ".cache\\guarded-identity-19-20261009-v2\\night\\combined\\seg_0000.json": "eb4e71f3052565e28b6afcd447d95c9f6e5ce2d3218cb4e5542236662ab4f3ea",
+    ".cache\\guarded-identity-19-20261009-v2\\night\\baseline\\seg_0000.json": "9e98033919597ed68cbf321b2b7530d5217916b4d6e994cfccf5abef791b82c8",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0003.json": "fd180b240df279d1a04b5721315e94d8796fa0d22101a3c75fa2f976f781a86e",
+    "data\\tracking\\live\\990401\\seg_0003.mp4": "3e3bd50e00e8ca797fc53cce807eef60a92cb0aaf37f069553d567971243c066",
+    ".cache\\guarded-identity-19-20261009-v2\\night\\combined\\seg_0003.json": "5697f03896946b03bf21d4ca1883fc67ebf50520c4b07b8f69d0b1154cf2f111",
+    ".cache\\guarded-identity-19-20261009-v2\\night\\baseline\\seg_0003.json": "815f5ed579cbf12c74f8e46ca25e411ee461f6abde03ffce4a6f90797926c4c5",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0006.json": "3d7b85eb129dfbfb29e65143082f7a1851defcc775904727e5e369e6a17fc882",
+    "data\\tracking\\live\\990401\\seg_0006.mp4": "8dc05ebcd6bb42fade86c402eae24b394c7ff47251d60d9adc35efe5d2cbec9f",
+    ".cache\\guarded-identity-19-20261009-v2\\night\\combined\\seg_0006.json": "4ee5499590ac84f6856b21d175d55ad2187cf7ae26d237585d860010593cdbed",
+    ".cache\\guarded-identity-19-20261009-v2\\night\\baseline\\seg_0006.json": "b18784b7cb0b5958d52f77b961be07978a5865d47810067e8787bf60340225e5",
+    "data\\tracking\\bench\\landmark_candidates_v1\\seg_0009.json": "518ca89f534436ff5f2a0d14aae56ea49adf7dba0448261de004b935d37b3a95",
+    "data\\tracking\\live\\990401\\seg_0009.mp4": "5e0498e0cdc1b4cc113a3a7127916ba3d11d4bbab042f5f8515294c4c5950bc7",
+    ".cache\\guarded-identity-19-20261009-v2\\night\\combined\\seg_0009.json": "cda3ad071098a779995ebb271169cdeffd7690fb19c822f77549e8c3e1466561",
+    ".cache\\guarded-identity-19-20261009-v2\\night\\baseline\\seg_0009.json": "f00dca6e71828d75787883b8d06da3be91f0ad0c2b12440707e7ca9acae2246a",
+    ".cache\\kit_joint_agent\\night_new_raw_v1\\seg_0020.json": "3b0b35d5888ff2722f2ca1e0b6691324202e198225a3acb89742b0cd3dd30795",
+    "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0020.mp4": "fece86e7a119a50640eaed7ce485e833733446377f12c7f61af18e56b4905368",
+    ".cache\\guarded-identity-19-20261009-v2\\night_extra\\combined\\seg_0020.json": "760cff89f9769465210fa1930d2e3c8b36cbeadc14e5c37ee85d1df47c39526d",
+    ".cache\\guarded-identity-19-20261009-v2\\night_extra\\baseline\\seg_0020.json": "00c0975a1d2781060e47a87030e4382296a3aa029f07541fa1f1378e82d26b8e",
+    ".cache\\kit_joint_agent\\night_new_raw_v1\\seg_0030.json": "ecf11ca0769441ec7afcd1048523def07bd9b6590f9ec5778b24fdfc9360270d",
+    "data\\tracking\\bench\\perimeter_control_night\\source\\seg_0030.mp4": "c23aa824839bd371b5aecbda10159662e62129c094ef0834380c9ca9a6493499",
+    ".cache\\guarded-identity-19-20261009-v2\\night_extra\\combined\\seg_0030.json": "7fa808feb3747ee7d0d6fcc20c5b3494f94e32011305baaa6b457b4a78c8cafb",
+    ".cache\\guarded-identity-19-20261009-v2\\night_extra\\baseline\\seg_0030.json": "21a6b2b61417a5932ef861aaba15d121dd1eb4307e45a9755215d9e1105d4df6",
+    "data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0040.json": "c9f42d58d94ee93620f3ce2c80f2efe36ffdba442b6261f93b06b2ffcfcd2b08",
+    "data\\tracking\\bench\\joint_identity_control\\source\\seg_0040.mp4": "3df12f8780e3c69d2f6fb24fc54021981c532de075cceccc76ea6c987f17be3a",
+    ".cache\\guarded-identity-19-20261009-v2\\night_old_control\\combined\\seg_0040.json": "8fee7a46153707e65baa65b46c04cd730b691a7e04f0ed4cbb47dbd3cbe1d0f2",
+    ".cache\\guarded-identity-19-20261009-v2\\night_old_control\\baseline\\seg_0040.json": "923da8e309617254335cb27abceeee62c080f2990eb0b6c82e64e93b9c5dfee7",
+    "data\\tracking\\bench\\joint_identity_control\\raw_v1\\seg_0050.json": "8a4cb524a0b88949c0448a4e022b6415b55acf1eee093fca7dd117e08ebc1d43",
+    "data\\tracking\\bench\\joint_identity_control\\source\\seg_0050.mp4": "fef8c382ebad00fdfaefd0e214192decc91980e312b8f6e2d871b2eb5dc10604",
+    ".cache\\guarded-identity-19-20261009-v2\\night_old_control\\combined\\seg_0050.json": "780b24732f6f7cb4bbdbf1b361ddc383d5f1b26382dd7320141b493d0fa5ddac",
+    ".cache\\guarded-identity-19-20261009-v2\\night_old_control\\baseline\\seg_0050.json": "69736d6dcd524cd925782e217b92ec197c60e0fff606532071a8a4560c5cade7",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0064.json": "9116348cf71a1a790b9dff77d79153f10808a02ed3810b96cc08ca81fb79d73d",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0064.mp4": "0c98e12ded003e8cd7a37680dd0bebf0d404a6f3dd81c6d0e8ac8c3292bf2c9c",
+    ".cache\\guarded-identity-19-20261009-v2\\palette_day\\combined\\seg_0064.json": "09a582768cd00a2ad3f1305bd19e88b83342d9a52e33793b2c9ff90931ca5407",
+    ".cache\\guarded-identity-19-20261009-v2\\palette_day\\baseline\\seg_0064.json": "07686c4f65cd73156ae3ba7a52fa30ca4ec4fd9328163ee42ac2fa91f39ee0f1",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\raw\\seg_0066.json": "9ea28f4ec1de868dde62780568a2c0c2ecc97b65d64adc1c6a061dcc032c6e6f",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\day\\source\\seg_0066.mp4": "d112b1d93220971374c39563176d0335e9da431a38f98bf8eaf69b481a0e5765",
+    ".cache\\guarded-identity-19-20261009-v2\\palette_day\\combined\\seg_0066.json": "bf3801a60096bf925f519de716892b8103127346f1d82843a4f41f9943c651df",
+    ".cache\\guarded-identity-19-20261009-v2\\palette_day\\baseline\\seg_0066.json": "6e28e57e6cdfdb938eefad0fe0e0ff6372d585474bc054050b6e418095d8ea2e",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\raw\\seg_0078.json": "4426dc8344b11f20daf2820716293a6586e58debb052570e24058185a09a7efe",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0078.mp4": "f14c828e07423d2510bac85586a8a7b029962b00e88b51b67224a274d74884fb",
+    ".cache\\guarded-identity-19-20261009-v2\\palette_night\\combined\\seg_0078.json": "35fc6d1d7d913f127cceb8b1a89fe415fd871c464bc63d89878aceef4bde2eda",
+    ".cache\\guarded-identity-19-20261009-v2\\palette_night\\baseline\\seg_0078.json": "db1aa0f271d19b92e32534530a6061281d1821ad1c693861f8a1e226e21f664b",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\raw\\seg_0084.json": "4b65d1670284750017aca0208c3ba8c5e684dfa65e170bf5f025cbc07b203d27",
+    "data\\tracking\\bench\\consensus_palette_control_v1\\night\\source\\seg_0084.mp4": "f77272be2bda3224224753e2d20d47628ac48fbf6d7c5a8b04a848e180710cde",
+    ".cache\\guarded-identity-19-20261009-v2\\palette_night\\combined\\seg_0084.json": "93942eb6e5b0a3d537d954a025a279e83d3cb394ce630b92be2218b80ca290b6",
+    ".cache\\guarded-identity-19-20261009-v2\\palette_night\\baseline\\seg_0084.json": "441a5aa1a5135f032d95c57236643f8ca6aeb752e8d223f22e9824b340d2f7bc",
+    "data\\tracking\\bench\\consensus_control_v1\\day\\raw\\seg_0060.json": "7706280dd88f73b4f44b35cde080a1e7a29cb00d693ab7b290c5b4dac2aa7847",
+    "data\\tracking\\bench\\consensus_control_v1\\day\\source\\seg_0060.mp4": "bfa25642925051de9e13596d597ce8a1c88889eac52f8277b8577cd323013a29",
+    ".cache\\guarded-identity-19-20261009-v2\\consensus_day\\combined\\seg_0060.json": "3ad924d768e54df18e042473fae1ac2c6fe9097ad0dbafe147230bf594b99f83",
+    ".cache\\guarded-identity-19-20261009-v2\\consensus_day\\baseline\\seg_0060.json": "8890a49a703e7230e855feb764129b7e47d4ab7be41eaf98e4ef5bcef2dae052",
+    "data\\tracking\\bench\\consensus_control_v1\\day\\raw\\seg_0062.json": "d248e3395d3830bcb0ea1e609e8ad44404c17e2fd7fea296a6054038ddc2e1b9",
+    "data\\tracking\\bench\\consensus_control_v1\\day\\source\\seg_0062.mp4": "c7b1977629be9ac0c6f8a8f6a9721ea8561fc2b767644e8415b69f84f7354eb6",
+    ".cache\\guarded-identity-19-20261009-v2\\consensus_day\\combined\\seg_0062.json": "b6ccf32ceeb6cc8c88880b9e157bd9bbd0bafb81b270a4abfd765a72e463db7d",
+    ".cache\\guarded-identity-19-20261009-v2\\consensus_day\\baseline\\seg_0062.json": "3d6092db9736c96bd874cac169089d9f9b148fb4f47cf213b75b87c5de5a2407",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\raw\\seg_0080.json": "6a79fa2f84bd3fa40c56ddff937321221d7a8d9f4612afe471919016c6335eb4",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0080.mp4": "35bdaaa351824798c33da9bb669fd1366b37e4a14976600f9a2c12b4996aab54",
+    ".cache\\guarded-identity-19-20261009-v2\\consensus_night\\combined\\seg_0080.json": "719bf74fc54490a2a4f06739985bac46e488ca6a8af8b8ede5975e69cb77564c",
+    ".cache\\guarded-identity-19-20261009-v2\\consensus_night\\baseline\\seg_0080.json": "5521f4777793df7a548c3251315a34fc84f634290800cb24b31dd61b6f297cd1",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\raw\\seg_0082.json": "be9c805fdf57b7a07ee4aab2ef63f9a5e6a0e58abe33dae9dd8bc5eca432125e",
+    "data\\tracking\\bench\\consensus_control_v1\\night\\source\\seg_0082.mp4": "81733133b174fea3ad45f55fcc74b6f87fd98a12025976e52a6fe2f4ab89d32d",
+    ".cache\\guarded-identity-19-20261009-v2\\consensus_night\\combined\\seg_0082.json": "741b80e6da4041e13feb17c92c2e6306e62d04c441fa38006278570fdef8f717",
+    ".cache\\guarded-identity-19-20261009-v2\\consensus_night\\baseline\\seg_0082.json": "b929eeb2c424dbab2a03fef658135f4d1ef9517d20f6552704f4e01d9ecdf026"
+  },
+  "comparisons": [
+    {
+      "group": "day",
+      "segment": 0,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 8872,
+      "frames": 125,
+      "elapsed_seconds": 102.09187840018421,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [
+          {
+            "continuity_id": 0,
+            "raw_id": 68,
+            "new_id": 202,
+            "first_order": 152,
+            "confirmed_order": 154,
+            "old_support": 10,
+            "new_support": 37,
+            "old_palette": 0,
+            "new_palette": 1,
+            "evidence": [
+              "palette_crossover",
+              "appearance_consensus"
+            ]
+          },
+          {
+            "continuity_id": 0,
+            "raw_id": 72,
+            "first_order": 212,
+            "confirmed_order": 214,
+            "old_support": 81,
+            "new_support": 3,
+            "evidence": [
+              "appearance_consensus"
+            ],
+            "new_id": 203
+          }
+        ],
+        "motion_proposals": [
+          {
+            "order": 127,
+            "track_id": 109,
+            "source_index": 17,
+            "proposal": [
+              881.296875,
+              284.765625,
+              907.234375,
+              322.296875
+            ],
+            "matched": true,
+            "previous_mean": [
+              899.4383809200193,
+              301.79020634842004,
+              0.620718171029718,
+              37.9745679769678,
+              2.113839783353677,
+              -0.2872719321927456,
+              3.727595364273688e-07,
+              0.0
+            ],
+            "tracker_order": 127,
+            "continuity_id": 0
+          },
+          {
+            "order": 331,
+            "track_id": 173,
+            "source_index": 27,
+            "proposal": [
+              2521.9375,
+              483.0546875,
+              2563.5625,
+              611.9609375
+            ],
+            "matched": true,
+            "previous_mean": [
+              2565.1404963948853,
+              551.0093144309174,
+              0.4635410620357117,
+              131.16725509415485,
+              -8.341372727659214,
+              1.7931421892830197,
+              -7.042698552499701e-07,
+              2.699564273588479
+            ],
+            "tracker_order": 331,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 2,
+        "boxes_removed": 0,
+        "boxes_created": 11,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "day",
+      "segment": 3,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 8832,
+      "frames": 125,
+      "elapsed_seconds": 94.6584994001314,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [
+          {
+            "continuity_id": 0,
+            "raw_id": 8,
+            "first_order": 262,
+            "confirmed_order": 264,
+            "old_support": 154,
+            "new_support": 156,
+            "evidence": [
+              "appearance_consensus"
+            ],
+            "new_id": 161
+          }
+        ],
+        "motion_proposals": [
+          {
+            "order": 296,
+            "track_id": 111,
+            "source_index": 2,
+            "proposal": [
+              1362.5625,
+              229.625,
+              1382.0625,
+              272.03125
+            ],
+            "matched": true,
+            "previous_mean": [
+              1367.3266776067567,
+              249.1813142263526,
+              0.47984010482972655,
+              44.52682179210243,
+              -0.659704367007828,
+              0.22998792866039286,
+              -1.5986909818735072e-06,
+              -0.1752292192625
+            ],
+            "tracker_order": 296,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 1,
+        "boxes_removed": 0,
+        "boxes_created": 4,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "day",
+      "segment": 6,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 7391,
+      "frames": 125,
+      "elapsed_seconds": 94.04159600008279,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [],
+        "motion_proposals_applied": 0,
+        "boxes_removed": 0,
+        "boxes_created": 0,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "night",
+      "segment": 0,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 7067,
+      "frames": 125,
+      "elapsed_seconds": 98.82361340010539,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [
+          {
+            "order": 345,
+            "track_id": 16,
+            "source_index": 18,
+            "proposal": [
+              698.78125,
+              928.375,
+              745.0,
+              983.0
+            ],
+            "matched": true,
+            "previous_mean": [
+              736.7578890195548,
+              945.8271271442568,
+              0.7175814255421556,
+              53.72952618665002,
+              0.6882347913887743,
+              0.33460569621059727,
+              3.396755522802324e-05,
+              0.0
+            ],
+            "tracker_order": 345,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 1,
+        "boxes_removed": 0,
+        "boxes_created": 1,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "night",
+      "segment": 3,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 6397,
+      "frames": 125,
+      "elapsed_seconds": 96.19355800002813,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [],
+        "motion_proposals_applied": 0,
+        "boxes_removed": 0,
+        "boxes_created": 0,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "night",
+      "segment": 6,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 7868,
+      "frames": 125,
+      "elapsed_seconds": 105.29990549990907,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [
+          {
+            "order": 119,
+            "track_id": 20,
+            "source_index": 12,
+            "proposal": [
+              546.5,
+              1128.375,
+              605.0,
+              1211.125
+            ],
+            "matched": true,
+            "previous_mean": [
+              568.7872393769863,
+              1165.962409814081,
+              0.6653849420936123,
+              82.90642970581017,
+              -13.716504214658606,
+              2.591644331207786,
+              2.9031323134079205e-06,
+              -0.5781238415955923
+            ],
+            "tracker_order": 119,
+            "continuity_id": 0
+          },
+          {
+            "order": 206,
+            "track_id": 43,
+            "source_index": 11,
+            "proposal": [
+              734.921875,
+              1018.0,
+              784.046875,
+              1073.625
+            ],
+            "matched": true,
+            "previous_mean": [
+              757.8762941286041,
+              1046.5953731928398,
+              0.7323874129858188,
+              56.507273269209065,
+              2.278174062062125,
+              1.2948353407977125,
+              -3.351205518261941e-07,
+              0.0
+            ],
+            "tracker_order": 206,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 2,
+        "boxes_removed": 0,
+        "boxes_created": 2,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "night",
+      "segment": 9,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 7258,
+      "frames": 125,
+      "elapsed_seconds": 97.92119090002961,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [],
+        "motion_proposals_applied": 0,
+        "boxes_removed": 0,
+        "boxes_created": 0,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "night_extra",
+      "segment": 20,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 7366,
+      "frames": 125,
+      "elapsed_seconds": 113.30599100003019,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [
+          {
+            "order": 363,
+            "track_id": 27,
+            "source_index": 4,
+            "proposal": [
+              933.25,
+              829.5,
+              972.75,
+              892.625
+            ],
+            "matched": true,
+            "previous_mean": [
+              941.2623657365261,
+              867.2938391658093,
+              0.5754357916972155,
+              63.366442789725646,
+              3.9203142150603867,
+              -1.6961978966228832,
+              -9.7056578684377e-06,
+              0.0
+            ],
+            "tracker_order": 363,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 1,
+        "boxes_removed": 0,
+        "boxes_created": 2,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "night_extra",
+      "segment": 30,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 7605,
+      "frames": 125,
+      "elapsed_seconds": 114.36523670004681,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [
+          {
+            "order": 51,
+            "track_id": 18,
+            "source_index": 19,
+            "proposal": [
+              3015.59375,
+              901.8125,
+              3067.59375,
+              987.75
+            ],
+            "matched": true,
+            "previous_mean": [
+              3075.3440675492197,
+              953.6540979977116,
+              0.5370183314435523,
+              89.98071333576694,
+              -14.990133431714309,
+              -2.9711804026467337,
+              -2.2092301766846967e-06,
+              0.12019661427051997
+            ],
+            "tracker_order": 51,
+            "continuity_id": 0
+          },
+          {
+            "order": 201,
+            "track_id": 41,
+            "source_index": 19,
+            "proposal": [
+              3178.65625,
+              1013.59375,
+              3230.65625,
+              1125.21875
+            ],
+            "matched": true,
+            "previous_mean": [
+              3231.976635291687,
+              1072.7750521437629,
+              0.5065640312082464,
+              112.82223643035789,
+              -4.558574684311236,
+              1.2300536161228992,
+              -2.357222829703396e-06,
+              0.0
+            ],
+            "tracker_order": 201,
+            "continuity_id": 0
+          },
+          {
+            "order": 294,
+            "track_id": 55,
+            "source_index": 20,
+            "proposal": [
+              3110.9375,
+              1012.8125,
+              3171.125,
+              1106.1875
+            ],
+            "matched": true,
+            "previous_mean": [
+              3165.6820060954688,
+              1058.2950116164334,
+              0.6003938202277368,
+              93.74144199012385,
+              -8.070891396703468,
+              -0.21533971340681168,
+              -8.047992370677887e-07,
+              0.371989727792297
+            ],
+            "tracker_order": 294,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 3,
+        "boxes_removed": 0,
+        "boxes_created": 7,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "night_old_control",
+      "segment": 40,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 6451,
+      "frames": 125,
+      "elapsed_seconds": 112.75495660002343,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [],
+        "motion_proposals_applied": 0,
+        "boxes_removed": 0,
+        "boxes_created": 0,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "night_old_control",
+      "segment": 50,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 7751,
+      "frames": 125,
+      "elapsed_seconds": 119.35856069996953,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [
+          {
+            "order": 34,
+            "track_id": 2,
+            "source_index": 3,
+            "proposal": [
+              1142.25,
+              738.75,
+              1178.75,
+              789.25
+            ],
+            "matched": true,
+            "previous_mean": [
+              1169.4499347896078,
+              760.5009857234999,
+              0.6861017456189914,
+              50.1425903998137,
+              -3.3525847459423694,
+              1.7346082150094824,
+              1.4444719814452698e-06,
+              -0.04077420739508229
+            ],
+            "tracker_order": 34,
+            "continuity_id": 0
+          },
+          {
+            "order": 212,
+            "track_id": 1,
+            "source_index": 9,
+            "proposal": [
+              1868.5,
+              545.375,
+              1894.0,
+              582.75
+            ],
+            "matched": true,
+            "previous_mean": [
+              1892.0718886233003,
+              563.2045562359491,
+              0.6466623634351731,
+              37.77129123728555,
+              1.7024472972008273,
+              -0.45186326511532243,
+              1.708358167060726e-06,
+              0.0
+            ],
+            "tracker_order": 212,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 0,
+        "boxes_removed": 0,
+        "boxes_created": 0,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": {
+          "selected": "baseline",
+          "reason": "motion_lost_baseline_observations",
+          "missing_observations": [
+            {
+              "continuity_id": 0,
+              "frame_idx": 144,
+              "box": [
+                850.25,
+                846.75,
+                882.5,
+                880.75
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "palette_day",
+      "segment": 64,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 9687,
+      "frames": 125,
+      "elapsed_seconds": 117.21385940001346,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [
+          {
+            "order": 84,
+            "track_id": 36,
+            "source_index": 30,
+            "proposal": [
+              1679.75,
+              514.90625,
+              1729.75,
+              616.75
+            ],
+            "matched": true,
+            "previous_mean": [
+              1727.4385229080422,
+              561.3067269683951,
+              0.43884941682254097,
+              106.2378420933614,
+              -4.1878421693100245,
+              1.8052506660666439,
+              -3.211574884198508e-06,
+              0.0
+            ],
+            "tracker_order": 84,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 1,
+        "boxes_removed": 0,
+        "boxes_created": 13,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "palette_day",
+      "segment": 66,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 9640,
+      "frames": 125,
+      "elapsed_seconds": 116.59495519986376,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [],
+        "motion_proposals_applied": 0,
+        "boxes_removed": 0,
+        "boxes_created": 0,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "palette_night",
+      "segment": 78,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 5370,
+      "frames": 125,
+      "elapsed_seconds": 147.9481025999412,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [],
+        "motion_proposals_applied": 0,
+        "boxes_removed": 0,
+        "boxes_created": 0,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "palette_night",
+      "segment": 84,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 7098,
+      "frames": 125,
+      "elapsed_seconds": 152.08739949995652,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [
+          {
+            "continuity_id": 0,
+            "raw_id": 16,
+            "new_id": 74,
+            "first_order": 236,
+            "confirmed_order": 238,
+            "old_support": 16,
+            "new_support": 11,
+            "old_palette": 0,
+            "new_palette": 1,
+            "evidence": [
+              "palette_crossover"
+            ]
+          },
+          {
+            "continuity_id": 0,
+            "raw_id": 25,
+            "new_id": 75,
+            "first_order": 43,
+            "confirmed_order": 45,
+            "old_support": 29,
+            "new_support": 11,
+            "old_palette": 0,
+            "new_palette": 1,
+            "evidence": [
+              "palette_crossover"
+            ]
+          }
+        ],
+        "motion_proposals": [
+          {
+            "order": 103,
+            "track_id": 25,
+            "source_index": 5,
+            "proposal": [
+              1256.5,
+              630.25,
+              1286.0,
+              674.5
+            ],
+            "matched": true,
+            "previous_mean": [
+              1264.5405611631209,
+              652.1028038921773,
+              0.65601710075953,
+              44.81905613900174,
+              -3.4444900954346243,
+              0.0980165881150581,
+              -2.477559610405999e-06,
+              0.0
+            ],
+            "tracker_order": 103,
+            "continuity_id": 0
+          },
+          {
+            "order": 193,
+            "track_id": 16,
+            "source_index": 9,
+            "proposal": [
+              1109.0,
+              736.0,
+              1140.5,
+              792.0
+            ],
+            "matched": true,
+            "previous_mean": [
+              1112.4243916775142,
+              769.7338326097378,
+              0.6231840620627749,
+              55.40416288943358,
+              0.34798563486251133,
+              -0.4521813782581744,
+              1.114406022360479e-05,
+              -0.003644346713367108
+            ],
+            "tracker_order": 193,
+            "continuity_id": 0
+          },
+          {
+            "order": 311,
+            "track_id": 39,
+            "source_index": 11,
+            "proposal": [
+              1874.0,
+              546.34375,
+              1901.0,
+              583.96875
+            ],
+            "matched": true,
+            "previous_mean": [
+              1877.532947014415,
+              567.1485846353788,
+              0.6841642538391053,
+              37.575550354978965,
+              1.0038350554237745,
+              -0.40401928251690244,
+              9.404483424440607e-06,
+              0.0
+            ],
+            "tracker_order": 311,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 3,
+        "boxes_removed": 0,
+        "boxes_created": 11,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "consensus_day",
+      "segment": 60,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 8516,
+      "frames": 125,
+      "elapsed_seconds": 125.87790420022793,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [
+          {
+            "continuity_id": 0,
+            "raw_id": 13,
+            "first_order": 5,
+            "confirmed_order": 7,
+            "old_support": 13,
+            "new_support": 14,
+            "evidence": [
+              "appearance_consensus"
+            ],
+            "new_id": 217
+          }
+        ],
+        "motion_proposals": [
+          {
+            "order": 197,
+            "track_id": 87,
+            "source_index": 26,
+            "proposal": [
+              1624.9375,
+              536.21875,
+              1671.0625,
+              646.28125
+            ],
+            "matched": true,
+            "previous_mean": [
+              1665.4596797759314,
+              588.167412688628,
+              0.4069431577655631,
+              112.286891028168,
+              -1.5250852828886132,
+              1.629931094300079,
+              8.06670011773621e-07,
+              0.0
+            ],
+            "tracker_order": 197,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 1,
+        "boxes_removed": 0,
+        "boxes_created": 9,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "consensus_day",
+      "segment": 62,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 9279,
+      "frames": 125,
+      "elapsed_seconds": 139.17922389996238,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [
+          {
+            "continuity_id": 0,
+            "raw_id": 73,
+            "first_order": 112,
+            "confirmed_order": 114,
+            "old_support": 83,
+            "new_support": 33,
+            "evidence": [
+              "appearance_consensus"
+            ],
+            "new_id": 197
+          },
+          {
+            "continuity_id": 0,
+            "raw_id": 86,
+            "first_order": 137,
+            "confirmed_order": 139,
+            "old_support": 15,
+            "new_support": 131,
+            "evidence": [
+              "appearance_consensus"
+            ],
+            "new_id": 198
+          }
+        ],
+        "motion_proposals": [],
+        "motion_proposals_applied": 0,
+        "boxes_removed": 0,
+        "boxes_created": 0,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "consensus_night",
+      "segment": 80,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 7616,
+      "frames": 125,
+      "elapsed_seconds": 85.88081560004503,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [
+          {
+            "order": 84,
+            "track_id": 19,
+            "source_index": 17,
+            "proposal": [
+              2946.5,
+              695.0,
+              2978.0,
+              747.0
+            ],
+            "matched": true,
+            "previous_mean": [
+              2974.4056254655015,
+              726.0034915984362,
+              0.5933385433421171,
+              51.854985680854725,
+              0.8694691048785683,
+              -0.05424026202074321,
+              -1.680603657737371e-06,
+              0.0
+            ],
+            "tracker_order": 84,
+            "continuity_id": 0
+          }
+        ],
+        "motion_proposals_applied": 1,
+        "boxes_removed": 0,
+        "boxes_created": 3,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    },
+    {
+      "group": "consensus_night",
+      "segment": 82,
+      "baseline_equal": true,
+      "equal": true,
+      "observations": 4622,
+      "frames": 125,
+      "elapsed_seconds": 75.77415299997665,
+      "identity_guarded": {
+        "profile": "bytetrack-osnet-guarded-identity-v2",
+        "boundaries": [],
+        "motion_proposals": [],
+        "motion_proposals_applied": 0,
+        "boxes_removed": 0,
+        "boxes_created": 0,
+        "observation_teams_preserved": true,
+        "support_is_ground_truth": false,
+        "confirmation": "Retrospective within the completed segment; no cross-segment person identity",
+        "status": "applied",
+        "recovery_fallback": null
+      }
+    }
+  ],
+  "output_sha256": {
+    ".cache\\guarded-production-19-20261010-v3\\day\\seg_0000.json": "3b450b8ad918fe63976428ce86616dd8d2ea0329df4b777eff2b681182c78460",
+    ".cache\\guarded-production-19-20261010-v3\\day\\seg_0000.frames.json": "aea9365ee4ba76addd78b97800934056ecdec8d99631198eb4bcb6e61053b54d",
+    ".cache\\guarded-production-19-20261010-v3\\partial-report.json": "c7c6c36a9d81a7e9065cb26993f7811f79636e715b1562c770746e8733398bb1",
+    ".cache\\guarded-production-19-20261010-v3\\day\\seg_0003.json": "ef04c57ce3de22dc2250689dad7017aabddfc9f5f5a5e388944835d412e24b17",
+    ".cache\\guarded-production-19-20261010-v3\\day\\seg_0003.frames.json": "6d1bfef0d46842e1e20e915525946ad9009ad52c562da3ab6576ea93607f067f",
+    ".cache\\guarded-production-19-20261010-v3\\day\\seg_0006.json": "a2f383783dbabe3d91c1f73b650d4f7a1122a3fd61a15bca90fcfab534373a6a",
+    ".cache\\guarded-production-19-20261010-v3\\day\\seg_0006.frames.json": "b75e323330fcdc15943acfd8f668afdf23c56cf7141e5477c5ac3f5006159552",
+    ".cache\\guarded-production-19-20261010-v3\\night\\seg_0000.json": "1deb2ecbf4d8225c888720e6ab54ac95c7e71d1aa0a2dd97a4716178a3a816f3",
+    ".cache\\guarded-production-19-20261010-v3\\night\\seg_0000.frames.json": "9f2e30f4c49c42048021808667f277be7ff961a28a6115102772464d34b1fa9a",
+    ".cache\\guarded-production-19-20261010-v3\\night\\seg_0003.json": "ec3f9c9ebd336019c3d6d3411573c47e5b5b08e58a32c403741d8e0101b788f3",
+    ".cache\\guarded-production-19-20261010-v3\\night\\seg_0003.frames.json": "ad12cbf06dde263466b8863141876e46dc2ec56cd31ccf3a82346d2072430723",
+    ".cache\\guarded-production-19-20261010-v3\\night\\seg_0006.json": "113b4d8a2f10600e84346b30372ae72935cc62fb3389c7e4fb2b1848d07a0347",
+    ".cache\\guarded-production-19-20261010-v3\\night\\seg_0006.frames.json": "3b9e55e822e262ef0f7e1e5876ba6cbde2719992c2cf291d211b0397f62feb96",
+    ".cache\\guarded-production-19-20261010-v3\\night\\seg_0009.json": "3f94eab4be513d89a34fcae1f986a63911d694945e9bf4a41898c2b11569c8d0",
+    ".cache\\guarded-production-19-20261010-v3\\night\\seg_0009.frames.json": "0baa867b3b26de5674fc8203cd968dc11cb459558af99fa1e1883427ed01c8a1",
+    ".cache\\guarded-production-19-20261010-v3\\night_extra\\seg_0020.json": "a3373e460c87c75f771d4ad665eb4b8df52face8f9ec518499d8c2a4f0ac44f8",
+    ".cache\\guarded-production-19-20261010-v3\\night_extra\\seg_0020.frames.json": "fb92aa15f023215e803bef9bfc566cc357f1eeb960018ad3e0e73994bd417bd0",
+    ".cache\\guarded-production-19-20261010-v3\\night_extra\\seg_0030.json": "dbe337868745ad962e789d7bec07553c1d125ae6d0724cc82be89587697aa602",
+    ".cache\\guarded-production-19-20261010-v3\\night_extra\\seg_0030.frames.json": "e782885bbd2be9717fb669305f2cbdc1ff7d1985e4f0ba8fb15dd4c2ea6e2d49",
+    ".cache\\guarded-production-19-20261010-v3\\night_old_control\\seg_0040.json": "acca3d6135dfefb08b60869d6a731c0fd1bb75c769fd344063d086d6134b4b12",
+    ".cache\\guarded-production-19-20261010-v3\\night_old_control\\seg_0040.frames.json": "87a9a67f2ac75c47edbe1e4af046c357fa22626653c9df16d1239cf9b0ecacec",
+    ".cache\\guarded-production-19-20261010-v3\\night_old_control\\seg_0050.json": "48799a2603add09d4443e68a8e43290c7d1c507dad8a84503530b8a7c1d7215f",
+    ".cache\\guarded-production-19-20261010-v3\\night_old_control\\seg_0050.frames.json": "c9d8b94f79aac65a8bb5383031ec20756848e4f7e2b4c41922cce459263927a0",
+    ".cache\\guarded-production-19-20261010-v3\\palette_day\\seg_0064.json": "3dedd96a642851246d50683e89ad3c9ac592bdebd316b4f6ef33c4fc7366b1f6",
+    ".cache\\guarded-production-19-20261010-v3\\palette_day\\seg_0064.frames.json": "37233be7c03c7b3685e5b7b6387feba2a5a7589c22f02c81d68fbd6dad0adfb7",
+    ".cache\\guarded-production-19-20261010-v3\\palette_day\\seg_0066.json": "a6b3ca439dd5c36920e74e1d2448bd07ab4faf6621f21b130c8de19e075b3c50",
+    ".cache\\guarded-production-19-20261010-v3\\palette_day\\seg_0066.frames.json": "5e5dd32f1dd6983dc4fcdf59faf945d650246836cbe1596392a41663d82df066",
+    ".cache\\guarded-production-19-20261010-v3\\palette_night\\seg_0078.json": "2f180433533a8135bfad103447c66902347c5d4ab96200726fff79009129e27f",
+    ".cache\\guarded-production-19-20261010-v3\\palette_night\\seg_0078.frames.json": "6a4fc22ef67101d06f7cd8014bb65da4595b22034cc0293a14e423118da02e22",
+    ".cache\\guarded-production-19-20261010-v3\\palette_night\\seg_0084.json": "1f287f3bc649425aba4e918ec4437386c78ab1a1aecc6a46bf6e84b9202e3407",
+    ".cache\\guarded-production-19-20261010-v3\\palette_night\\seg_0084.frames.json": "05b930f55781cc4d51f6f4043a647dc9f6f25b19591bb6ca0113d8920b43d894",
+    ".cache\\guarded-production-19-20261010-v3\\consensus_day\\seg_0060.json": "f0f674a59ed108da585a5221c3e8bbeaff229f522e362f8beab1f2d466c8f125",
+    ".cache\\guarded-production-19-20261010-v3\\consensus_day\\seg_0060.frames.json": "e82c6056b1f6e2bd99de2f2fa90e8cd5c248f88be6d1e9ee54bb1dd523a06d11",
+    ".cache\\guarded-production-19-20261010-v3\\consensus_day\\seg_0062.json": "958e087b44afa8edf31b64b9d70fce1c43dcee22b4cda0dea0ae3efc1dfb4523",
+    ".cache\\guarded-production-19-20261010-v3\\consensus_day\\seg_0062.frames.json": "3161db4121d3e330a3920afef0d459eacfb3e892d18a1f13e83fe764d70504b4",
+    ".cache\\guarded-production-19-20261010-v3\\consensus_night\\seg_0080.json": "8afe9f0dbc5222e0cbf9d420c26a2d02e7f5c93e4e4e3e1ca5605296183d9aa5",
+    ".cache\\guarded-production-19-20261010-v3\\consensus_night\\seg_0080.frames.json": "728397ac35a1f9c5cd04346c1f0254d1632f9ac4275a44f921c3a9c870840f16",
+    ".cache\\guarded-production-19-20261010-v3\\consensus_night\\seg_0082.json": "a61bf37b757128a1043625cc1e50730a3e3cee073ee66d63a95c08a66b7d6ac0",
+    ".cache\\guarded-production-19-20261010-v3\\consensus_night\\seg_0082.frames.json": "63206a98dd69124a36cee83a0cb0d84c73d9f22f1f213693cc520337360b6f22"
+  },
+  "versions": {
+    "supervision": "0.30.2",
+    "trackers": "2.6.0",
+    "numpy": "2.3.5",
+    "scipy": "1.15.3",
+    "torch": "2.11.0+cu128",
+    "filterpy": "1.4.5"
+  },
+  "decoder_threads": 1,
+  "secondary_inference": "fresh source RGB and pinned OSNet on every clip",
+  "new_control_opened": false,
+  "completed_at_utc": "2026-10-09T22:07:00.361932+00:00",
+  "all_equal": true
+}
