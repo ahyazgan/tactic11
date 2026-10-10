@@ -1,0 +1,1753 @@
+{
+  "created_at_utc": "2026-10-10T10:37:06.741111+00:00",
+  "profile": "bytetrack-osnet-guarded-identity-v2",
+  "code_commit": "8f4e66aea0a896b30fa829b9d3d767e8b15009d1",
+  "control_pixels_opened": false,
+  "methods": [
+    "supervision",
+    "palette",
+    "guarded"
+  ],
+  "python": "3.12.10",
+  "runtime_versions": {
+    "torch": "2.11.0+cu128",
+    "rfdetr": "1.10.1",
+    "supervision": "0.30.2",
+    "trackers": "2.6.0",
+    "numpy": "2.3.5",
+    "scipy": "1.15.3",
+    "opencv-python-headless": "5.0.0.93",
+    "imageio-ffmpeg": "0.6.0",
+    "filterpy": "1.4.5"
+  },
+  "decoder_threads": 1,
+  "gradients": false,
+  "code_sha256_lf": {
+    "app/tracking/__init__.py": "9b90b3399aac57c8e94fc93fb938317e223dc4c1a8f7709d9074edb6639622a3",
+    "app/tracking/_vendor/__init__.py": "5cd05c98e04f76401abb48a6ffb71a432b87fa9b0a7a6a52524d6318739ec3a7",
+    "app/tracking/_vendor/deepocsort/__init__.py": "40275e9fcf4f0e93d7d5c4371ca54aa894fc53212bae12205381bc126fd4daf1",
+    "app/tracking/_vendor/deepocsort/association.py": "6f5dba90ebfd8e57153bda53a54622a829c4e910f6e3c3fd110e1f4e61794055",
+    "app/tracking/_vendor/deepocsort/kalmanfilter.py": "c575e5eb4d3ec9c441e43352ce39f2ed82fa8ccc15eab7d0a74fb5bcffaabd36",
+    "app/tracking/_vendor/deepocsort/ocsort.py": "676e2c05c8ed6aee3478405ccc6eea697be1993bb51470f26ceaca2f1297192d",
+    "app/tracking/_vendor/deepocsort/osnet_ain.py": "8d1601af4ac2a0d032f877ce565370b73ac9755bc4684fa1a05a850c261489a4",
+    "app/tracking/anchor_state.py": "93d08178c31bdb963f936432364bc35026e3c403c527db3f484a2e55ab6239df",
+    "app/tracking/calibration.py": "9cce58bcbc532635042a6fdca94ee6b12b7dbc51dba50763c494d2b9130fcbfe",
+    "app/tracking/camera.py": "6ca94dbecae543063260260ccea7584005e6486279935ddc0e8c81fc53c6924a",
+    "app/tracking/deepocsort.py": "c4f05f0b971edce000be5034f7a5faed789a1231b9258451b314f4973b0820a7",
+    "app/tracking/detect.py": "266672b1eab57d56014e3b898cdba75a0d2c0426436a1fbde92f32a5bc879c2b",
+    "app/tracking/frames.py": "c619ce2aec58df9bb08c056046f80c54be4007854e5cca562533b3cfab6a7713",
+    "app/tracking/guarded_identity.py": "feaf80b13b428bb75cf96211604963146acc5e570a70b9069ab8d56041768953",
+    "app/tracking/guarded_partition.py": "f3b97e2bd719af09a4c6876189a07f04afa8fcfc2f4fc24dc7e6c6df32671cb7",
+    "app/tracking/homography_fit.py": "eb1f3b71e3228d4099926852ae2eeae43bb36dec0c60ac5b189e7646ccf6b9ec",
+    "app/tracking/identity_consensus.py": "2e30c4d21cfa0b7096c435885c53f90879cd778274047984bb6caf65c46d5f38",
+    "app/tracking/identity_links.py": "58691da043ca5895c0451b8094bd75c105e85fa3a211902fc4e2df29f4e4c82f",
+    "app/tracking/identity_namespace.py": "d342216402eeb7815f137847d3b8ea18f8876fcc0b5e10c590eec212c3e8a91e",
+    "app/tracking/identity_split.py": "4e68b2e6396943e886921bae55f51f28423a49a3df73c086003049f1685da63f",
+    "app/tracking/kit_evidence.py": "7e995183663f6cfc0689f2eeaedc709487194f5250ba3248463125ff6ef836eb",
+    "app/tracking/passes.py": "c5a17549b1a041c8fa61497b72a86dccf278213ab9af1ec4eb86dfc394846878",
+    "app/tracking/person_filter.py": "dc80e66bb89b382c458f5f0acdc7754fa17c80cdd34115aedaf2b56258eebf5c",
+    "app/tracking/person_parts.py": "00c3c059792acb8bd5ab15f46bd4cc3cbccef1e043166156e5bc08d601d1afe9",
+    "app/tracking/pipeline.py": "06e32bed9a454583de91ec7de6a54d7b329fe43134bbe84ba1a294bf3f3137b2",
+    "app/tracking/pitch_lines.py": "3283fe4e695004b683b5b63a5f6c5ad521a4e9d78d23b9b3673ad40e9245d654",
+    "app/tracking/pitch_model.py": "cb8cfb97189c5ff9b33276e862007ef7a2f2a7857cb9adbebcd1fa0ec7bddf8d",
+    "app/tracking/player_identity.py": "4d7068d94b9b374250e50614cd0485095a66f865d1fea8a84a6fd71553b07e40",
+    "app/tracking/recoveries.py": "c7dc67427e907a58ffffe175fc606b43a442ee91acda1c43fdee21afb66df2d8",
+    "app/tracking/replay.py": "1b74a8de6bdeed354aa6660ca9f45cd4045a0f7ca67d355d105a0aa235cfd686",
+    "app/tracking/short_gap_motion.py": "0e7fa0c71b78eed23e2bbed1ef8569de216a098088092b4ab5d3c83cc84594a7",
+    "app/tracking/teams.py": "36f256178ef719ef0ac5cd8d2890899d90c2f401213c82d03e9f821a99965a9f",
+    "app/tracking/tracker_config.py": "30b5150084dc7767fbe29e66144471b3d28aa30dfa7433549b90cb864a75d670",
+    "scripts/soccertrack_v2/association_quality_experiment.py": "93ef015551058b5215e07bd5dfa08ebb18b144031ec9efdb48e5538a3aefe429",
+    "scripts/soccertrack_v2/audit_event_evidence.py": "78e8c0a429d84a6eda75a5cde309d60490da41f49fc8fae930e0a88d1a91a021",
+    "scripts/soccertrack_v2/audit_identity_failures.py": "212ce6037622410e034fac0ad532086e84f2a72f7a17cc9646bf91965bac0987",
+    "scripts/soccertrack_v2/audit_team_errors.py": "d31cc3cfcfdc8b24e1f92308cf1481ecd9fbde847726b9dbe7cb63f2955cb7cc",
+    "scripts/soccertrack_v2/ball_selection_experiment.py": "9df9e13a6fcfbc34015955856e2bd6fba2dcbaa084ef3b57e93ea7189c80c5ab",
+    "scripts/soccertrack_v2/batch_control.py": "65f915139e272dea778779b978c3be8a2ef110e1f68c892c26f7163c0a389f8b",
+    "scripts/soccertrack_v2/batch_control_replacement.py": "668b59fd169eab76d761f807a698d7be39aad0bd4667dea0a13c1e0fee0aa57f",
+    "scripts/soccertrack_v2/benchmark_daylight_kits.py": "659c16833287ce2e638825e0763a2ee705052459bb8b600b3d6a8449e998cc7c",
+    "scripts/soccertrack_v2/benchmark_deepocsort.py": "af08765ed0feb34e8efb5cfce2e93a2415df5fd5405a05575b70bb9b8356d144",
+    "scripts/soccertrack_v2/benchmark_guarded_identity.py": "7d59c18addc3e489d135cf9ef649e64877cef66f938ef0ae9b01536a7a87ebb4",
+    "scripts/soccertrack_v2/benchmark_joint_identity.py": "61047f2d2c9c854dd267b0dc18a4d972c6bee681542d37fd38d2aad05236f372",
+    "scripts/soccertrack_v2/benchmark_kit_colors.py": "11234e19108ff07876ab24771975633e6d8d0f84eeaef3c7ec2bdc27419723f6",
+    "scripts/soccertrack_v2/benchmark_local_kit_light.py": "a594d8cca82d7718a41502ffad75de669fc630d9bd94c63d749b252ee410714e",
+    "scripts/soccertrack_v2/benchmark_person_filter.py": "341d6fe37a8d94ab71c9988e5760310113841f3c9717909455a5916d775e5225",
+    "scripts/soccertrack_v2/benchmark_shadow_reassignment.py": "64f995420898ab47f09454d12b7c61818ca09414061aaf42f5c28d259a99c5d8",
+    "scripts/soccertrack_v2/benchmark_short_gap_motion.py": "c37fee37892884ea9c2a4d422975cb0d18d1ede6fce80a03b43c49978f1e0ce9",
+    "scripts/soccertrack_v2/benchmark_track_buffer.py": "db6897bcde785b705abf63583fb751b9c18639f889618ff90a9aa17399f5c135",
+    "scripts/soccertrack_v2/benchmark_tracker_backends.py": "bbfc258162d7dcbecfeacd61097b2781bc8bfda6e713ce5e940c4e6cb18b91d9",
+    "scripts/soccertrack_v2/cache_ball_candidates.py": "c39466b8ae98fd5b723b1a6150007f9595679f162731c405fba12e7b4fa93029",
+    "scripts/soccertrack_v2/cache_local_kit_light.py": "aec67f3e52d0976d8721b372f94e23b850caf7a66c14824ed6b506670637ee97",
+    "scripts/soccertrack_v2/cache_observations.py": "975dbae7dc69ff0710dd932b40696fd0c151d815faecdf7ca5ade4cf2a5149b7",
+    "scripts/soccertrack_v2/calibration_from_keypoints.py": "7c8995893ff0d69c45224306cb421ffc67abdd8e2f2ef79257d5a6a1d4e7b2fd",
+    "scripts/soccertrack_v2/candidates/__init__.py": "04537f8e63da148d3cad600819073703319b9a8da1ea8571ca427f83535adc9a",
+    "scripts/soccertrack_v2/candidates/guarded_identity_v2.py": "508629077cd147f626d140656b80690a929683be818b1ac15edfeaeeee24e5da",
+    "scripts/soccertrack_v2/candidates/identity_consensus_palette_v2.py": "af4aea241ab883279f33b6b5bdb1671311c377e57438b70b1df47aa640841a62",
+    "scripts/soccertrack_v2/candidates/palette_motion_partitions_v1.py": "8808e4f7f7172f5a7eda24483623404c2ab028da8445eff86659e4d1d0bebd9a",
+    "scripts/soccertrack_v2/candidates/short_gap_motion_v1.py": "52c65975f5af26f521d960ebc63858401d1a5147b3aeb83b7b011fd0a6464003",
+    "scripts/soccertrack_v2/color_consensus_experiment.py": "60f2bf40be0cca6dee1800bbdd71934cfdf58287e670587619b0f1dc3738413d",
+    "scripts/soccertrack_v2/consensus_control.py": "19f9d8c2d375dfc767957f14a5892cf560209470bc3eb50a372182f7f9bd6681",
+    "scripts/soccertrack_v2/consensus_palette_control.py": "ae819f5c84d25d97a10712f7a9e18e63b9b2c100f94dc8cbd4ab86e279938290",
+    "scripts/soccertrack_v2/evaluate_events.py": "64d887e774d11a3397b6856240a339d2d8103b705f0c1fd2c539de77936f4e56",
+    "scripts/soccertrack_v2/evaluate_teams.py": "f069714a8d173771abd0eb511f3889efee7659de78b69957da3d0b8f158e9b6b",
+    "scripts/soccertrack_v2/export_daylight_tracking.py": "5dc13763727e8986104c3816e4d9dc122be2206380963fd9cef2e2c7cad594a0",
+    "scripts/soccertrack_v2/export_gt.py": "fcb6f6f3dc65c5f3ec667a96cdb4c1ba466743f4f5ea38e1c94f8b6dfc6ed6a6",
+    "scripts/soccertrack_v2/export_joint_identity.py": "0d56a37a19e2aae26d0beecde1eed7fd25b1ca3ab7ae1d9d77a8a514be0fc615",
+    "scripts/soccertrack_v2/guarded_control.py": "d2e0772b6b57d85a6f2828345ad6b369d5249a7371ee86f2cfa75d613609938c",
+    "scripts/soccertrack_v2/identity_appearance_experiment.py": "e8d5e1e4bd46c4394dacca563fd07bf8d909697ba0c960ac9aebf1fa8850676f",
+    "scripts/soccertrack_v2/identity_collision_cue.py": "7783f9ff8f18d6390b4aaaaa2a3526a09aee04677e6bef09944730c804ff6f24",
+    "scripts/soccertrack_v2/identity_color_split.py": "fbe93e415defc65cf6e6d65ec596712f0ae880f12f9b91fa6174f6fe543a8360",
+    "scripts/soccertrack_v2/identity_eval_pairs.py": "f4e2a9c6f79a77c9a7b52bfba8dcdce9999fc02f6d83835a44db698fe8f5fa99",
+    "scripts/soccertrack_v2/identity_split_experiment.py": "5bdadfc820cafcb24a424128931999ab96f0428cfcfa5630728764949f36c6b4",
+    "scripts/soccertrack_v2/kit_joint_classifier.py": "b8eeb28c265911a8f2770966609e3bab7886758988e0bb3d33419e4d60f11fd6",
+    "scripts/soccertrack_v2/kit_joint_features.py": "b5d908eb55eefae4f4704b8e9821c1273b601f2c786694ca12c6aec8d00d38f6",
+    "scripts/soccertrack_v2/match_gt_calibration.py": "5a987fe9eb23ec2afcc681c2752ac06a9911e30003ebb6a2ffca7b05014da46b",
+    "scripts/soccertrack_v2/nested_person_experiment.py": "9dcaf5b9d7c7da291ab6abef320d141fe791332f1421651e280e9410348823c7",
+    "scripts/soccertrack_v2/prepare_identity_control.py": "b4f1eba3ec12a3ab06e9964db7cc46e56a1e3c096072d0f5216cd782cfc4a4f0",
+    "scripts/soccertrack_v2/prepare_kit_review.py": "57a5a28da49f24b1cc93345b1146cf8d708d6d8c6ea80a9c0ad8cef2f6962bbf",
+    "scripts/soccertrack_v2/probe_player_ball_roi.py": "b1edae654d112684a94540045137ce051af46f8c0a3a19fa3338f007cea7e056",
+    "scripts/soccertrack_v2/render_team_error_review.py": "b2c5d43d1c3d079e973c75705d84f0f41a0c6309c3fc580309ed85e3a1f11764",
+    "scripts/soccertrack_v2/replay_consensus_defaults.py": "1bf64b1528ca0d7f33a07838d94fe10502a7094c39e6387390b74d30eaed91ef",
+    "scripts/soccertrack_v2/replay_consensus_integration.py": "a7bf237117f1690ccb2ac5c6885bde99cb1bd962d25866e0aef80cf5454e63f3",
+    "scripts/soccertrack_v2/replay_events.py": "8748f158bfe73716ae9f2cf6d0795693bfcce93be54d9f072093d648cad22c97",
+    "scripts/soccertrack_v2/replay_guarded_defaults.py": "f4e7ee254ef9681940cb98f0d7d2aee946ec473463d93075c3abbc597b34d735",
+    "scripts/soccertrack_v2/replay_guarded_integration.py": "412ac153728e3e2f8f09f3fc70f46e777290439c0f9860027ba49b06f013a580",
+    "scripts/soccertrack_v2/replay_reid_integration.py": "548cc74b44036675b64eb11f5ed6844090a36ebdf4f929fdd23503f3488d9e75",
+    "scripts/soccertrack_v2/replay_roi_defaults.py": "551cc1721e02098f494938b2fad3846432a7da010869fbe2dc2c0aa5658d6066",
+    "scripts/soccertrack_v2/retrack_cached_candidates.py": "676c3cf06b7d8f7505b37dc3bb6219cd7cdf1a9f3ee5e24966e9e8e20459544b",
+    "scripts/soccertrack_v2/roi_control.py": "03afa552ce886b7e1d2108729cdf6acd451db55a0dfae343f0d70cbe75617b1f",
+    "scripts/soccertrack_v2/score_consensus_control.py": "43bdca43709c4bc97965d06e844dfbd4afc335182404d83f89c9153a7b4342b1",
+    "scripts/soccertrack_v2/score_guarded_control.py": "8a6c2476a272772bada3cad8192f9c470538b2b1363760f6994e668981b51b89",
+    "scripts/soccertrack_v2/score_palette_control.py": "5fb2298b79c41c321244619ea16814bbe210f477e5baa72083849706f2f36052",
+    "scripts/soccertrack_v2/select_cached_balls.py": "8a2ecaffc6f57e1edd8e4f287610b04ecffc1e6d863e8dfb5130e006e1d61191",
+    "scripts/soccertrack_v2/short_gap_replay_cache.py": "156b607b668e54ccb92ec9eb67f531448b01344a4cabc4849b9ffade1daee850",
+    "scripts/soccertrack_v2/tracklet_link_experiment.py": "cfd03a2f721a574ef654bbd80bffe59e84cf178e98a4a75de61c2fb7494f04da",
+    "scripts/soccertrack_v2/validate_palette_acquisition.py": "f6e5877308abcc805815bf3fcecba3cfb191ed300da4ef50b9fe62a19beea06d",
+    "scripts/soccertrack_v2/validate_positions.py": "bd8333bf445742c2093af4c587d3592975ffbd21b496b46a36ca7558370291fc",
+    "scripts/track_live.py": "6b88f093953f7170fec1f4fe04ecfcf3748fa3929cc95606cd2c18d212af668a",
+    "scripts/track_video.py": "ee547efd427ee5039993005cd25830bc010ee566f98efaa6c63c4a79aab3b20d",
+    "tests/test_guarded_control.py": "5aff907881ce9dbc0c5763d06006ea8995b936056e2c6d13fc23165c1df24c5e",
+    "tests/test_guarded_control_scoring.py": "a5b663d7e3033e9fe97d82dd570ae5d6eb9182f77dfa40a298441a7aeb3fe01c"
+  },
+  "input_sha256": {
+    "docs/BIRLESIK-KIMLIK-KONTROL-PLANI.md": "5fc95c8b8fc7d4f0d7305fde039a5005d4a2856e56fd51d9ac35d007f4c804be",
+    "docs/SABIT-KAMERA-KONTROL-ETIKETLEME.md": "e4b02da4f6c9fc117977ee620efd02b9432b2fa16c20d34a967122a71dabb462",
+    "data/tracking/models/osnet_ain_ms_d_c.pth.tar": "2f38acc25e28cb29407635db2be315edc08d5457a904b72a9a11e427f41f3242",
+    "data/tracking/models/rfdetr_mixed_small/checkpoint_best_total.pth": "7b295626163b8a05bfc6ec326930132e24fb0ec1b4ba8951650e3c999aabdf01",
+    "data/tracking/models/rfdetr_mixed_small/meta.json": "b99d593d7b82cee084e622f818abea22b3509aafc3fbba6bd9c29105dc8e53ea",
+    "docs/measurements/identity-palette-frozen-decision.json": "2e93ae0200ce97e6419ec9f108516a673514fea098bddaabf13f421aa6ab9bea",
+    "docs/measurements/identity-guarded-production-19.json": "2e1bf1f9dd2478d301efb23a0cf290187645be0b17f12babeb70d17702ce1f1b",
+    "docs/measurements/identity-guarded-production-db.json": "4852f4408b12ef885eabb7e289ca2e25fd7877c1dc2c5f76227dd86a9bcb05a4",
+    "docs/measurements/identity-guarded-real-live.json": "f7c49cd20c75a71cb519eae045c8ba70b5c94deada60883faf09cb94bfe38945",
+    "docs/measurements/identity-guarded-real-live-db.json": "8527effb8742faf11494f9319a47a2ce9c1bb411276d9b218214d70a04ff7e2c",
+    "docs/measurements/identity-guarded-integration-audit.json": "e00e79dafe964399a6a287b7718d3468e511fb9ab934708ef13a62a8e331ac28",
+    "docs/measurements/joint-identity-guarded-integration-parity.json": "ab11a33d230a92cd5f05402ae68337b3f142ceca77678e2087d7fe6bacaa3397",
+    "docs/measurements/joint-identity-guarded-integration-amendment.json": "f7f87aa83d78fba8967be93dbccf742e7149616af2136a2d3820a6fa479bb991",
+    "data/tracking/datasets/soccertrack_v2/117093/117093_panorama_1st_half.mp4": "f50dfebc70743439a8c778abe06953885a50be8b47e3c9d3d1ce8d533fe315c8",
+    "data/tracking/bench/identity_day_detections/seg_0000.json": "2bcc288c623b188b1888086c71507a6d5c36652e54065429c25bd71e7835ecad",
+    "docs/measurements/joint-identity-development-day-results.json": "348f1d10876a93b8617eebd1e108d4b258942582096eb07b2a7f0397d971588b",
+    "data/tracking/datasets/soccertrack_v2/117092/117092_panorama_1st_half.mp4": "9fabe074b0c6fc5812a602dd4119f3e6cb724e2f06b8a3a1eb9358b9734c036e",
+    "data/tracking/bench/landmark_candidates_v1/seg_0000.json": "d96e0195e861b6bb837dcedc11d839633b5e96e3ad568b24b75f768978f074e8",
+    "docs/measurements/joint-identity-development-night-results.json": "c18412dd8667bff0603da4ce568311e80011fba31d8ed0f43fb5b5b53cbe7b85"
+  },
+  "groups": {
+    "day": {
+      "source": "data/tracking/datasets/soccertrack_v2/117093/117093_panorama_1st_half.mp4",
+      "segments": {
+        "68": 2040,
+        "72": 2160
+      },
+      "config": {
+        "fps_out": 5.0,
+        "dense_events": false,
+        "track_fps": 15.0,
+        "max_seconds": null,
+        "detector": {
+          "model": "small",
+          "threshold": 0.35,
+          "tiles": 4,
+          "tile_overlap": 0.15,
+          "tile_aspect": 1.7777777777777777,
+          "resolution": null,
+          "device": null,
+          "batch_size": null,
+          "half": true,
+          "roi_single_batch": false,
+          "weights": "data/tracking/models/rfdetr_mixed_small",
+          "backend": "torch",
+          "onnx_model": null
+        },
+        "track_activation_threshold": 0.25,
+        "lost_track_seconds": 1.5,
+        "min_track_seconds": 0.4,
+        "pitch_margin_m": 2.0,
+        "ball_threshold": 0.4,
+        "ball_roi_px": 320,
+        "ball_gap_seconds": 1.0,
+        "clip_offset_minutes": 0.0,
+        "period": 1,
+        "source_name": "video_tracking",
+        "per_frame_calibration": false,
+        "allow_reacquire": false,
+        "detect_cuts": false,
+        "detect_replays": false,
+        "preview_path": null,
+        "preview_width": 1600,
+        "normalize_kit_light": false,
+        "filter_off_pitch_tracks": null,
+        "refine_player_identities": false,
+        "tracker_backend": "supervision",
+        "reid_model": "data/tracking/models/osnet_ain_ms_d_c.pth.tar"
+      },
+      "calibration": {
+        "image_size": [
+          4096,
+          1080
+        ],
+        "pitch_length_m": 105.0,
+        "pitch_width_m": 68.0,
+        "method": "tps",
+        "points": [
+          {
+            "image": [
+              111.399,
+              598.321
+            ],
+            "pitch": [
+              0.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              161.899,
+              605.488
+            ],
+            "pitch": [
+              5.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              237.066,
+              613.988
+            ],
+            "pitch": [
+              11.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              325.732,
+              624.154
+            ],
+            "pitch": [
+              16.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              436.84,
+              636.498
+            ],
+            "pitch": [
+              22.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              583.84,
+              652.498
+            ],
+            "pitch": [
+              27.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              782.84,
+              671.248
+            ],
+            "pitch": [
+              33.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1055.09,
+              691.998
+            ],
+            "pitch": [
+              38.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1418.34,
+              711.748
+            ],
+            "pitch": [
+              44.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1869.84,
+              718.748
+            ],
+            "pitch": [
+              49.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2129.34,
+              714.498
+            ],
+            "pitch": [
+              52.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2386.424,
+              707.331
+            ],
+            "pitch": [
+              55.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2806.09,
+              680.331
+            ],
+            "pitch": [
+              61.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3113.424,
+              651.998
+            ],
+            "pitch": [
+              66.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3346.757,
+              626.665
+            ],
+            "pitch": [
+              72.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3519.34,
+              606.206
+            ],
+            "pitch": [
+              77.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3647.424,
+              590.206
+            ],
+            "pitch": [
+              83.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3743.924,
+              577.706
+            ],
+            "pitch": [
+              88.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3822.09,
+              567.373
+            ],
+            "pitch": [
+              94.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3882.757,
+              559.04
+            ],
+            "pitch": [
+              99.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3935.257,
+              552.04
+            ],
+            "pitch": [
+              105.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1156.007,
+              219.623
+            ],
+            "pitch": [
+              0.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1224.507,
+              210.123
+            ],
+            "pitch": [
+              5.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1307.507,
+              200.373
+            ],
+            "pitch": [
+              11.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1391.007,
+              191.373
+            ],
+            "pitch": [
+              16.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1481.257,
+              183.373
+            ],
+            "pitch": [
+              22.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1577.507,
+              175.873
+            ],
+            "pitch": [
+              27.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1671.007,
+              168.873
+            ],
+            "pitch": [
+              33.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1772.007,
+              163.623
+            ],
+            "pitch": [
+              38.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1874.007,
+              159.373
+            ],
+            "pitch": [
+              44.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1977.257,
+              156.873
+            ],
+            "pitch": [
+              49.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2033.257,
+              156.373
+            ],
+            "pitch": [
+              52.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2088.945,
+              155.186
+            ],
+            "pitch": [
+              55.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2190.528,
+              155.727
+            ],
+            "pitch": [
+              61.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2295.153,
+              157.894
+            ],
+            "pitch": [
+              66.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2392.153,
+              160.727
+            ],
+            "pitch": [
+              72.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2484.819,
+              165.227
+            ],
+            "pitch": [
+              77.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2572.819,
+              170.061
+            ],
+            "pitch": [
+              83.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2661.152,
+              175.894
+            ],
+            "pitch": [
+              88.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2738.486,
+              182.561
+            ],
+            "pitch": [
+              94.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2826.986,
+              191.061
+            ],
+            "pitch": [
+              99.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2895.986,
+              198.894
+            ],
+            "pitch": [
+              105.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              434.819,
+              475.561
+            ],
+            "pitch": [
+              0.0,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              646.944,
+              395.686
+            ],
+            "pitch": [
+              0.0,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              731.569,
+              363.686
+            ],
+            "pitch": [
+              0.0,
+              37.66
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              839.194,
+              325.436
+            ],
+            "pitch": [
+              0.0,
+              30.34
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              913.319,
+              299.186
+            ],
+            "pitch": [
+              0.0,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1034.319,
+              258.436
+            ],
+            "pitch": [
+              0.0,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1293.819,
+              225.561
+            ],
+            "pitch": [
+              16.5,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              711.569,
+              455.561
+            ],
+            "pitch": [
+              16.5,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              730.819,
+              386.311
+            ],
+            "pitch": [
+              5.5,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              991.069,
+              289.311
+            ],
+            "pitch": [
+              5.5,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3619.069,
+              437.477
+            ],
+            "pitch": [
+              105.0,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3364.111,
+              423.227
+            ],
+            "pitch": [
+              88.5,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2770.278,
+              208.811
+            ],
+            "pitch": [
+              88.5,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3067.944,
+              265.811
+            ],
+            "pitch": [
+              99.5,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3333.944,
+              355.561
+            ],
+            "pitch": [
+              99.5,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3412.944,
+              364.311
+            ],
+            "pitch": [
+              105.0,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3326.444,
+              334.061
+            ],
+            "pitch": [
+              105.0,
+              37.66
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3217.194,
+              297.561
+            ],
+            "pitch": [
+              105.0,
+              30.34
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3143.694,
+              274.311
+            ],
+            "pitch": [
+              105.0,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3017.319,
+              234.249
+            ],
+            "pitch": [
+              105.0,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2059.104,
+              297.778
+            ],
+            "pitch": [
+              52.5,
+              43.15
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2050.104,
+              245.278
+            ],
+            "pitch": [
+              52.5,
+              34.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2043.104,
+              211.278
+            ],
+            "pitch": [
+              52.5,
+              24.85
+            ],
+            "label": ""
+          }
+        ],
+        "meta": {
+          "camera": "fixed_panoramic",
+          "experimental": true,
+          "person_filter_profile": "annotated_perimeter_track_v1",
+          "person_filter_validation": "docs/OYUNCU-SUZGECI-SONUCLARI.md",
+          "source": "annotated pitch landmarks; no player/event GT fitting",
+          "keypoint_sha256": "bcc874620cfa1bcbd49b33a6132abf51f35525f25cafb677084e8ce3e803a94f"
+        }
+      },
+      "anchor": [
+        [
+          119.9,
+          149.7,
+          188.0
+        ],
+        [
+          205.4,
+          216.8,
+          235.5
+        ]
+      ],
+      "source_frames": 67625.0,
+      "source_fps": 25.0,
+      "image_size": [
+        4096,
+        1080
+      ]
+    },
+    "night": {
+      "source": "data/tracking/datasets/soccertrack_v2/117092/117092_panorama_1st_half.mp4",
+      "segments": {
+        "74": 2220,
+        "76": 2280
+      },
+      "config": {
+        "fps_out": 5.0,
+        "dense_events": false,
+        "track_fps": 15.0,
+        "max_seconds": null,
+        "detector": {
+          "model": "small",
+          "threshold": 0.35,
+          "tiles": 4,
+          "tile_overlap": 0.15,
+          "tile_aspect": 1.7777777777777777,
+          "resolution": null,
+          "device": null,
+          "batch_size": null,
+          "half": true,
+          "roi_single_batch": false,
+          "weights": "data/tracking/models/rfdetr_mixed_small",
+          "backend": "torch",
+          "onnx_model": null
+        },
+        "track_activation_threshold": 0.25,
+        "lost_track_seconds": 1.5,
+        "min_track_seconds": 0.4,
+        "pitch_margin_m": 2.0,
+        "ball_threshold": 0.4,
+        "ball_roi_px": 320,
+        "ball_gap_seconds": 1.0,
+        "clip_offset_minutes": 0.0,
+        "period": 1,
+        "source_name": "video_tracking",
+        "per_frame_calibration": false,
+        "allow_reacquire": false,
+        "detect_cuts": false,
+        "detect_replays": false,
+        "preview_path": null,
+        "preview_width": 1600,
+        "normalize_kit_light": false,
+        "filter_off_pitch_tracks": null,
+        "refine_player_identities": false,
+        "tracker_backend": "supervision",
+        "reid_model": "data/tracking/models/osnet_ain_ms_d_c.pth.tar"
+      },
+      "calibration": {
+        "image_size": [
+          3840,
+          1906
+        ],
+        "pitch_length_m": 105.0,
+        "pitch_width_m": 68.0,
+        "method": "tps",
+        "points": [
+          {
+            "image": [
+              230.0,
+              1121.0
+            ],
+            "pitch": [
+              0.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              270.0,
+              1142.0
+            ],
+            "pitch": [
+              5.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              311.0,
+              1158.0
+            ],
+            "pitch": [
+              11.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              388.0,
+              1192.0
+            ],
+            "pitch": [
+              16.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              490.0,
+              1222.0
+            ],
+            "pitch": [
+              22.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              614.0,
+              1260.0
+            ],
+            "pitch": [
+              27.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              776.0,
+              1309.0
+            ],
+            "pitch": [
+              33.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1007.0,
+              1364.0
+            ],
+            "pitch": [
+              38.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1282.0,
+              1424.0
+            ],
+            "pitch": [
+              44.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1665.0,
+              1467.0
+            ],
+            "pitch": [
+              49.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1986.0,
+              1452.0
+            ],
+            "pitch": [
+              52.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2289.0,
+              1419.0
+            ],
+            "pitch": [
+              55.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2633.0,
+              1347.0
+            ],
+            "pitch": [
+              61.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2928.0,
+              1274.0
+            ],
+            "pitch": [
+              66.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3172.0,
+              1190.0
+            ],
+            "pitch": [
+              72.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3368.0,
+              1114.0
+            ],
+            "pitch": [
+              77.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3482.0,
+              1070.0
+            ],
+            "pitch": [
+              83.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3557.0,
+              1040.0
+            ],
+            "pitch": [
+              88.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3603.0,
+              1016.0
+            ],
+            "pitch": [
+              94.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3643.0,
+              1001.0
+            ],
+            "pitch": [
+              99.5,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3670.0,
+              994.0
+            ],
+            "pitch": [
+              105.0,
+              68.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1136.0,
+              682.0
+            ],
+            "pitch": [
+              0.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1183.0,
+              671.0
+            ],
+            "pitch": [
+              5.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1237.0,
+              655.0
+            ],
+            "pitch": [
+              11.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1316.0,
+              641.0
+            ],
+            "pitch": [
+              16.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1386.0,
+              626.0
+            ],
+            "pitch": [
+              22.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1488.0,
+              609.0
+            ],
+            "pitch": [
+              27.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1586.0,
+              595.0
+            ],
+            "pitch": [
+              33.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1698.0,
+              581.0
+            ],
+            "pitch": [
+              38.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1792.0,
+              570.0
+            ],
+            "pitch": [
+              44.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1880.0,
+              563.0
+            ],
+            "pitch": [
+              49.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1936.0,
+              560.0
+            ],
+            "pitch": [
+              52.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1987.0,
+              561.0
+            ],
+            "pitch": [
+              55.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2049.0,
+              559.0
+            ],
+            "pitch": [
+              61.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2122.0,
+              559.0
+            ],
+            "pitch": [
+              66.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2203.0,
+              561.0
+            ],
+            "pitch": [
+              72.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2300.0,
+              563.0
+            ],
+            "pitch": [
+              77.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2419.0,
+              569.0
+            ],
+            "pitch": [
+              83.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2529.0,
+              576.0
+            ],
+            "pitch": [
+              88.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2614.0,
+              584.0
+            ],
+            "pitch": [
+              94.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2690.0,
+              595.0
+            ],
+            "pitch": [
+              99.5,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2756.0,
+              606.0
+            ],
+            "pitch": [
+              105.0,
+              0.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              507.0,
+              988.0
+            ],
+            "pitch": [
+              0.0,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              690.0,
+              894.0
+            ],
+            "pitch": [
+              0.0,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              767.0,
+              856.0
+            ],
+            "pitch": [
+              0.0,
+              37.66
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              867.0,
+              808.0
+            ],
+            "pitch": [
+              0.0,
+              30.34
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              940.0,
+              776.0
+            ],
+            "pitch": [
+              0.0,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1066.0,
+              717.0
+            ],
+            "pitch": [
+              0.0,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1259.0,
+              674.0
+            ],
+            "pitch": [
+              16.5,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              714.0,
+              969.0
+            ],
+            "pitch": [
+              16.5,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              737.0,
+              886.0
+            ],
+            "pitch": [
+              5.5,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              936.0,
+              791.0
+            ],
+            "pitch": [
+              5.5,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3409.0,
+              867.0
+            ],
+            "pitch": [
+              105.0,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3186.0,
+              850.0
+            ],
+            "pitch": [
+              88.5,
+              54.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2619.0,
+              607.0
+            ],
+            "pitch": [
+              88.5,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2884.0,
+              669.0
+            ],
+            "pitch": [
+              99.5,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3132.0,
+              772.0
+            ],
+            "pitch": [
+              99.5,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3203.0,
+              781.0
+            ],
+            "pitch": [
+              105.0,
+              43.16
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3130.0,
+              745.0
+            ],
+            "pitch": [
+              105.0,
+              37.66
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              3027.0,
+              703.0
+            ],
+            "pitch": [
+              105.0,
+              30.34
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2950.0,
+              677.0
+            ],
+            "pitch": [
+              105.0,
+              24.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              2836.0,
+              634.0
+            ],
+            "pitch": [
+              105.0,
+              13.84
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1943.0,
+              719.0
+            ],
+            "pitch": [
+              52.5,
+              43.15
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1942.0,
+              660.0
+            ],
+            "pitch": [
+              52.5,
+              34.0
+            ],
+            "label": ""
+          },
+          {
+            "image": [
+              1940.0,
+              622.0
+            ],
+            "pitch": [
+              52.5,
+              24.85
+            ],
+            "label": ""
+          }
+        ],
+        "meta": {
+          "camera": "fixed_panoramic",
+          "source": "annotated pitch landmarks; no player/event GT fitting",
+          "keypoint_sha256": "910c20d8883e689e740557e96037b4681ce75b60d94e1a800c09cab0da305aa7"
+        }
+      },
+      "anchor": [
+        [
+          94.3,
+          101.0,
+          91.6
+        ],
+        [
+          176.1,
+          180.4,
+          174.0
+        ]
+      ],
+      "source_frames": 67375.0,
+      "source_fps": 25.0,
+      "image_size": [
+        3840,
+        1906
+      ]
+    }
+  },
+  "acceptance": "Per-source non-regression against both comparisons, exact baseline evidence, real-source unknown-team extras, all changes reviewed, positive independent correction; no automatic promotion."
+}

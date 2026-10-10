@@ -1,6 +1,6 @@
 # Birleşik kimlik adayı: yeni zaman aralıklarında kontrol planı
 
-10 Ekim 2026. Bu plan seçilen görüntüler açılmadan hazırlanmıştır. Henüz
+10 Ekim 2026. Bu plan seçilen görüntüler açılmadan hazırlanmıştır. Tek başına
 dondurma kaydı değildir: video/canlı entegrasyonu doğrulandıktan sonra aday,
 edinim ve değerlendirme araçları, model, ayarlar, ortam sürümleri ve bu plan
 birlikte hash'lenip Git'e kaydedilmelidir. Bu kapı geçmeden yeni görüntüler
@@ -82,3 +82,39 @@ Tek AI kaynak incelemesi insan hakem doğrulaması değildir. Seyrek ilişkiler
 tam maç HOTA/IDF1, forma numarası/kadro eşlemesi veya segmentler arası kişi
 sürekliliğini kanıtlamaz. Başarılı kontrol bile varsayılan takip motorunu
 otomatik değiştirmez; gerçek zaman kapasitesi ayrıca ölçülmelidir.
+
+## Uygulama araçları ve mühür sırası
+
+`scripts.soccertrack_v2.guarded_control` eski edinim/aday dosyalarına dokunmadan
+bu kontrolün yeni dizinlerini kullanır. `freeze`, önce tamamlanmış 19 kesit,
+22 varsayılan çıktı ve gerçek video/canlı kanıtlarının kaynak/kod/çıktı
+hashlerini denetler; ardından `identity-guarded-frozen-decision.json` yazar.
+Bu karar ve kod Git'e kaydedilip normal PR kontrollerinden geçirilir.
+`verify`, hem dosya hashlerini hem kararın ve kodun HEAD'de kayıtlı olduğunu
+denetler. Bu doğrulamadan önce hiçbir `extract/capture/prepare/replay` adımı
+çalıştırılmaz.
+
+```powershell
+.\venv-cv\Scripts\python.exe -m scripts.soccertrack_v2.guarded_control freeze
+# Karar ve kod commit/PR ile kaydedildikten sonra:
+.\venv-cv\Scripts\python.exe -m scripts.soccertrack_v2.guarded_control verify
+.\venv-cv\Scripts\python.exe -m scripts.soccertrack_v2.guarded_control extract --group day
+.\venv-cv\Scripts\python.exe -m scripts.soccertrack_v2.guarded_control capture --group day
+.\venv-cv\Scripts\python.exe -m scripts.soccertrack_v2.guarded_control validate --group day
+.\venv-cv\Scripts\python.exe -m scripts.soccertrack_v2.guarded_control prepare --group day
+```
+
+Aynı sıra gece için `--group night` ile uygulanır. Yeni ham veri dizini
+`data/tracking/bench/guarded_control_v1` altındadır. Tamamlanmamış eski deneme
+başarı manifesti olarak kullanılamaz; önceki dosyalar korunur.
+
+Etiketler bütün başlangıç ve bitiş kutularını, kaynak kapsamını ve her açık
+aynı-kişi bağının farklı-kişi karşılaştırmasını içerir. `seal --group ...
+--labels ... --pairs ...`, ancak etiket dosyaları Git'e kaydedildikten ve
+kör görüntü paketinin hashleri doğrulandıktan sonra grup mührünü yazar.
+İki grup mührü de Git'e kaydedilmeden hiçbir grubun `replay` adımı çalışmaz.
+`scripts.soccertrack_v2.score_guarded_control --group ... --out ...` özgün
+kaynak kutusu puanlayıcılarını kullanır; eksik/değişmiş tahmin manifestini
+reddeder. Puan toplamları eşit olsa bile eski doğru bir kişi bağının kaybı
+ret nedenidir. Rapor her öneri/ayrım/geri dönüşü kaynak incelemesine bırakır;
+bu inceleme bitmeden otomatik olumlu doğruluk veya varsayılan terfisi yazmaz.

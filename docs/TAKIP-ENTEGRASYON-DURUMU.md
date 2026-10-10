@@ -1,5 +1,11 @@
 # Takip entegrasyonlarının durumu
 
+**10 Ekim kontrol dondurması:** birleşik aday, 103 kod dosyası ve 19 girdi/
+kanıt dosyasıyla yeni kontrol öncesinde sabitlendi; 67 ilgili test geçti.
+Üretim davranışı değişmedi. Gündüz 68/72 ve gece 74/76 için ham edinim, kör
+etiketler ve üç kollu değerlendirme sırada; olumlu kontrol sonucu henüz yok.
+[Dondurma kaydı](BIRLESIK-KIMLIK-KONTROL-DONDURMA.md).
+
 **10 Ekim güncellemesi:** birleşik kimlik adayı `--tracker guarded` seçeneğiyle
 video ve canlı segment yollarına entegre edildi. 19 bilinen kesitte üretim/
 araştırma eşitliği, 22 eski varsayılan çıktı, gerçek gündüz/gece RF-DETR

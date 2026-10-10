@@ -1,5 +1,12 @@
 # Manager: Codex ile devam, 9 Ekim 2026
 
+**Güncel adım — 10 Ekim kontrol dondurması:** PR #283 / `8f4e66a` sonrasında
+birleşik adayın yeni kontrol araçları ve kararı hazırlandı. 103 kod, 19
+girdi/kanıt ve ortam sürümleri sabit; 67 test başarılı. Yeni görüntüler
+henüz açılmadı. Sonraki iş gündüz 68/72, gece 74/76 ham edinimi; bütün kör
+etiketler ve mühürler kaydedildikten sonra üç kolun karşılaştırılmasıdır.
+[Dondurma kaydı ve kabul sınırları](BIRLESIK-KIMLIK-KONTROL-DONDURMA.md).
+
 **10 Ekim devam noktası:** GitHub `main`, PR #282 / `8dff2c5` ile günceldi;
 CI başarılı, açık PR yoktu. Geliştirme yalnız Codex'te devam ediyor.
 Birleşik aday artık deneysel `--tracker guarded` ile gerçek video ve canlı
