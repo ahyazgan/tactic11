@@ -129,4 +129,8 @@ input[type="submit"][data-touch="true"] {
     font-weight: 700;
     line-height: 1.5;
   }
+  /* The review form is responsive and does not need a landscape pitch. */
+  body:has([data-review-workspace])::before {
+    display: none;
+  }
 }

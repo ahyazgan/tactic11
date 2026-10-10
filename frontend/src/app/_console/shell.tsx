@@ -74,6 +74,7 @@ const FULL_NAV: NavGroup[] = [
     { label: "AI Asistan",       href: "/chat",           icon: "ti-robot", badge: "AI", badgeKind: "ai" },
     { label: "Performans Analizi", href: "/xg",           icon: "ti-chart-line" },
     { label: "Haftalık Rapor",   href: "/weekly-report",  icon: "ti-report-analytics" },
+    { label: "Klipli Maç Raporu", href: "/match-reports", icon: "ti-video", badge: "YENİ", badgeKind: "new" },
   ]},
   { grp: "Sistem", items: [
     { label: "Bildirimler",    href: "/notifications", icon: "ti-bell", badge: 5, badgeKind: "count" },

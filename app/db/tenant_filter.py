@@ -29,6 +29,7 @@ _TENANT_MODELS = (
     models.EventRow, models.Decision, models.MatchSnapshot,
     models.DataAccessLog, models.PlayerMatchRating,
     models.TrackingIdentity,
+    models.ReviewVideo, models.MatchReviewReport, models.ReviewExport,
 )
 
 

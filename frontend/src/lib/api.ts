@@ -15,11 +15,27 @@ const REFRESH_KEY = "manager2_refresh_token";
  */
 export class ApiError extends Error {
   status: number | null;
-  constructor(message: string, status: number | null) {
+  detail?: string;
+  constructor(message: string, status: number | null, detail?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.detail = detail;
   }
+}
+
+async function responseError(res: Response): Promise<ApiError> {
+  const body = await res.text();
+  let detail: string | undefined;
+  try {
+    const parsed = JSON.parse(body);
+    if (typeof parsed.detail === "string") detail = parsed.detail.slice(0, 2000);
+    if (parsed.error?.code === "validation_error" && Array.isArray(parsed.error.details)) {
+      detail = "Alanları kontrol edin: " + parsed.error.details.slice(0, 3)
+        .map((item: { msg?: string }) => String(item.msg ?? "Geçersiz değer").replace(/^Value error, /, "")).join(" · ");
+    }
+  } catch { /* Non-JSON server/proxy errors retain a bounded diagnostic. */ }
+  return new ApiError(`HTTP ${res.status}: ${body.slice(0, 200)}`, res.status, detail);
 }
 
 export function getAccessToken(): string | null {
@@ -123,8 +139,7 @@ export async function apiFetchResponse(
     }
   }
   if (!res.ok) {
-    const body = await res.text();
-    throw new ApiError(`HTTP ${res.status}: ${body.slice(0, 200)}`, res.status);
+    throw await responseError(res);
   }
   return res;
 }
@@ -158,8 +173,7 @@ export async function apiFetch<T = unknown>(
   }
 
   if (!res.ok) {
-    const body = await res.text();
-    throw new ApiError(`HTTP ${res.status}: ${body.slice(0, 200)}`, res.status);
+    throw await responseError(res);
   }
   return res.json() as Promise<T>;
 }
@@ -172,6 +186,6 @@ export async function login(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password, tenant_slug: tenantSlug }),
   });
-  if (!res.ok) throw new Error(await res.text());
+  if (!res.ok) throw await responseError(res);
   return res.json();
 }

@@ -103,7 +103,10 @@ async def validation_exception_handler(
         status_code=422,
         code="validation_error",
         message="request validation failed",
-        details=exc.errors(),
+        # Validator context can contain ValueError objects and input can contain
+        # NaN, raw bytes or credentials. Return the useful, JSON-safe diagnostics.
+        details=[{key: item[key] for key in ("loc", "msg", "type") if key in item}
+                 for item in exc.errors()],
     )
     return JSONResponse(payload, status_code=422)
 
