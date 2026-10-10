@@ -16,6 +16,13 @@ oynatılabilir kliplerle teslim etmesini sağlar. Ekran: `/match-reports`
 6. PDF indir veya klipli teslim paketini hazırla. ZIP'i klasöre çıkarıp
    `index.html` dosyasını aç; klipler internet olmadan oynatılır.
 
+Yeni maç öncesinde **Önceki raporlardan gelişim takibi** bölümünü aç. En güncel
+100 rapordaki onaylı “Sonraki maçta neye bakacağız?” notları oyuncu veya konuya
+göre aranabilir. Her notun önceki çalışma önerisi, kaynak raporu ve sürümü
+görünür. Aynı adlı oyuncuların notları birleştirilmez. Açık taslak kaydedilmeden
+kaynak rapora geçilmez. Analist yeni maçta gördüklerini yeni rapora kaydeder;
+bu liste kendi başına iyileşme veya kötüleşme skoru üretmez.
+
 Önerilen ilk hizmet kapsamı: tek maç incelemesi, seçilmiş kritik pozisyonlar,
 oyuncuya özgü gözlemler ve üçe kadar antrenman odağı. Gerçek müşteriyle süre,
 revizyon ihtiyacı ve antrenörün raporu kullanıp kullanmadığı ölçülmeden sabit

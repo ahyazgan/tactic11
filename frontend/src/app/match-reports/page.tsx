@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { apiFetch, apiFetchResponse, ApiError, login, setTokens } from "@/lib/api";
 import { useCurrentUser } from "@/lib/auth";
 import { ConsoleShell } from "../_console/shell";
+import { ReviewFollowUps } from "./follow-ups";
 import styles from "./reports.module.css";
 
 type Category = "attack" | "defence" | "transition" | "set_piece" | "player";
@@ -209,6 +210,10 @@ export default function MatchReportsPage() {
           })}>Notlarımı ayrı rapora kaydet</button>
         </section>}
         {notice && <div role="status" className={styles.notice}>{notice}</div>}
+        {reports && <ReviewFollowUps key={account} reports={reports} busy={!!busy} onOpen={id => {
+          const source = reports.find(item => item.id === id);
+          if (source) openReport(source);
+        }} />}
         <div className={styles.columns}>
           <aside className={styles.card}>
             <h2>Raporlar</h2>

@@ -30,4 +30,9 @@
 .notice { background: #e9f4eb; border: 1px solid #b6d1bd; }
 .progress { position: fixed; bottom: 25px; right: 25px; z-index: 100; padding: 13px 20px; border-radius: 10px; background: #163f33; color: white; box-shadow: 0 5px 20px #0002; }
 .export { border-top: 1px solid #dbe4de; padding: 12px 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.followUps { margin-bottom: 20px; }
+.followUps summary { cursor: pointer; font-weight: 700; padding: 3px 0; }
+.followUpList { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 14px; margin: 14px 0; }
+.followUpItem { min-width: 0; border: 1px solid #dbe4de; border-radius: 9px; padding: 15px; }
+.followUpItem small { display: block; margin-bottom: 10px; overflow-wrap: anywhere; }
 @media (max-width: 1000px) { .columns { grid-template-columns: 1fr; } .card { padding: 16px; } }
