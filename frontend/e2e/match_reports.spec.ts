@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { statSync, writeFileSync } from "node:fs";
 
 test("rapor alanı giriş olmadan gerçek veri istemez", async ({ page }) => {
   const privateRequests: string[] = [];
@@ -170,7 +171,9 @@ test("geciken refresh yanıtı yeni giriş yapılan hesabın tokenlarını deği
 
 test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", async ({ page, context }, testInfo) => {
   test.skip(process.env.E2E_REVIEW_BACKEND !== "true", "Isolated review API and source MP4 required");
-  test.setTimeout(120_000);
+  const longMatch = process.env.E2E_REVIEW_LONG_MATCH === "true";
+  test.setTimeout(longMatch ? 300_000 : 120_000);
+  const timings: Record<string, number> = {};
   const title = `Teknik teslim doğrulaması ${Date.now()}`;
   await page.goto("/match-reports");
   await page.getByLabel("E-posta", { exact: true }).fill("analyst@review-pilot.test");
@@ -178,8 +181,10 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
   await page.getByLabel("Kulüp kodu (varsa)").fill("review-pilot");
   await page.getByRole("button", { name: "Giriş yap", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Yeni rapor", exact: true })).toBeVisible();
+  const uploadStarted = Date.now();
   await page.getByLabel("MP4 video yükle").setInputFiles(process.env.E2E_REVIEW_VIDEO!);
-  await expect(page.getByRole("status")).toContainText("Video kaydedildi", { timeout: 30_000 });
+  await expect(page.getByRole("status")).toContainText("Video kaydedildi", { timeout: longMatch ? 180_000 : 30_000 });
+  timings.upload_ms = Date.now() - uploadStarted;
   await page.getByLabel("Rapor başlığı", { exact: true }).fill(title);
   await page.getByRole("button", { name: "Rapor oluştur", exact: true }).click();
   await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
@@ -187,12 +192,26 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
   await page.locator("video").evaluate((video: HTMLVideoElement) => video.play());
   await expect.poll(() => page.locator("video").evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0);
   await page.locator("video").evaluate((video: HTMLVideoElement) => video.pause());
+  if (longMatch) {
+    const duration = await page.locator("video").evaluate((video: HTMLVideoElement) => video.duration);
+    expect(duration).toBeCloseTo(5400, 0);
+    for (const at of [2700, 5390]) {
+      const started = Date.now();
+      await page.locator("video").evaluate((video: HTMLVideoElement, time) => { video.currentTime = time; }, at);
+      await expect.poll(() => page.locator("video").evaluate((video: HTMLVideoElement) => !video.seeking && video.readyState >= 2), { timeout: 30_000 }).toBe(true);
+      await page.locator("video").evaluate((video: HTMLVideoElement) => video.play());
+      await expect.poll(() => page.locator("video").evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(at);
+      await page.locator("video").evaluate((video: HTMLVideoElement) => video.pause());
+      timings[`seek_and_play_${at}_ms`] = Date.now() - started;
+    }
+  }
   await page.getByLabel("Kulüp", { exact: true }).fill("Teknik deneme kulübü");
   await page.getByLabel("Rakip", { exact: true }).fill("Kaynak görüntüdeki rakip");
   await page.getByLabel("Maç değerlendirmesi", { exact: true }).fill("Teknik doğrulama raporu. Bir futbol analistinin uzman değerlendirmesi değildir.");
   await page.getByLabel("Antrenman odağı 1", { exact: true }).fill("Örnek alan; gerçek antrenör değerlendirmesiyle doldurulmalı.");
-  for (const [start, end] of [[1, 4], [5, 8]]) {
-    if (start === 1) {
+  const intervals = longMatch ? [[2699, 2702], [5395, 5398]] : [[1, 4], [5, 8]];
+  for (const [index, [start, end]] of intervals.entries()) {
+    if (index === 0) {
       await page.getByRole("region", { name: "Video analiz çalışma alanı" }).focus();
       await page.keyboard.press("n");
     } else await page.getByRole("button", { name: "Pozisyon ekle", exact: true }).click();
@@ -203,13 +222,14 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
     await page.getByLabel("Çalışma önerisi", { exact: true }).fill("Taktik öneri için antrenör incelemesi gerekir.");
     await page.getByLabel("Oyuncu (isteğe bağlı)").fill("Teknik deneme oyuncusu");
     await page.getByLabel("Sonraki maçta neye bakacağız?", { exact: true }).fill("Sonraki kayıtta aynı zaman aralığını kaynak görüntüyle karşılaştır.");
-    if (start === 1) {
-      await page.locator("video").evaluate((video: HTMLVideoElement) => { video.currentTime = 2; });
-      await expect.poll(() => page.locator("video").evaluate((video: HTMLVideoElement) => video.currentTime)).toBe(2);
+    if (index === 0) {
+      const frameTime = start + 1;
+      await page.locator("video").evaluate((video: HTMLVideoElement, time) => { video.currentTime = time; }, frameTime);
+      await expect.poll(() => page.locator("video").evaluate((video: HTMLVideoElement) => video.currentTime)).toBe(frameTime);
       await page.getByRole("region", { name: "Video analiz çalışma alanı" }).focus();
       await page.keyboard.press("i");
-      await expect(page.getByLabel("Başlangıç (saniye)", { exact: true })).toHaveValue("2");
-      await page.getByLabel("Başlangıç (saniye)", { exact: true }).fill("1");
+      await expect(page.getByLabel("Başlangıç (saniye)", { exact: true })).toHaveValue(String(frameTime));
+      await page.getByLabel("Başlangıç (saniye)", { exact: true }).fill(String(start));
       await page.getByRole("button", { name: "Bu kareye çizim yap" }).click();
       const canvas = page.getByTestId("drawing-canvas").locator("canvas");
       await expect(canvas).toBeVisible();
@@ -234,9 +254,12 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
   await followUps.getByLabel("Oyuncu veya takip konusu ara").fill(title);
   await expect(followUps.getByRole("article")).toHaveCount(2);
   await expect(followUps.getByText("Sonraki kayıtta aynı zaman aralığını kaynak görüntüyle karşılaştır.", { exact: false })).toHaveCount(2);
+  const pdfStarted = Date.now();
   const pdfDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: "PDF indir", exact: true }).click();
   await (await pdfDownload).saveAs(testInfo.outputPath("report.pdf"));
+  timings.pdf_ms = Date.now() - pdfStarted;
+  const exportStarted = Date.now();
   await page.getByRole("button", { name: "Klipli teslim paketi hazırla" }).click();
   await expect(page.getByRole("button", { name: "ZIP indir", exact: true })).toBeVisible({ timeout: 60_000 });
   const zipDownload = page.waitForEvent("download");
@@ -245,6 +268,7 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
   expect(delivery.url()).toContain("/review-media/exports/");
   expect(delivery.suggestedFilename()).toMatch(/^match-report-v\d+\.zip$/);
   await delivery.saveAs(testInfo.outputPath("delivery.zip"));
+  timings.export_ms = Date.now() - exportStarted;
   await page.screenshot({ path: testInfo.outputPath("report-screen.png"), fullPage: true });
   const extracted = testInfo.outputPath("delivery");
   const python = process.env.E2E_PYTHON ?? (process.platform === "win32" ? "../venv/Scripts/python.exe" : "python");
@@ -272,4 +296,9 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
   await page.getByRole("button", { name: "PDF indir", exact: true }).click();
   await (await mobileDownload).cancel();
   await page.screenshot({ path: testInfo.outputPath("mobile-review.png") });
+  writeFileSync(testInfo.outputPath("measurements.json"), JSON.stringify({
+    long_match: longMatch, fixture_bytes: statSync(process.env.E2E_REVIEW_VIDEO!).size,
+    intervals, timings, pdf_bytes: statSync(testInfo.outputPath("report.pdf")).size,
+    zip_bytes: statSync(testInfo.outputPath("delivery.zip")).size,
+  }, null, 2));
 });

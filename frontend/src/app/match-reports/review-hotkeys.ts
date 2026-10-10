@@ -3,7 +3,7 @@
 import { useEffect, type RefObject } from "react";
 import hotkeys from "hotkeys-js";
 
-export function useReviewHotkeys(host: RefObject<HTMLElement>, video: RefObject<HTMLVideoElement>,
+export function useReviewHotkeys(host: RefObject<HTMLElement | null>, video: RefObject<HTMLVideoElement | null>,
   enabled: boolean, onMark: (key: "n" | "i" | "o") => void) {
   useEffect(() => {
     const element = host.current;

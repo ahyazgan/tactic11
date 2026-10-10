@@ -10,6 +10,7 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import { demoLive, demoScenarios } from "@/lib/demo-data";
 import { firstHalfSummary, halftimeMoves, halftimeBrief, type HtMove } from "@/lib/halftime-advice";
 import { firstHalfStats, opponentHalftimeRead, secondHalfAdjustments } from "@/lib/halftime-scout";
@@ -183,7 +184,7 @@ export function HalftimeModeBody() {
       </a>
       <div style={{ fontSize: 11, color: "var(--dim)", textAlign: "center", lineHeight: 1.5 }}>
         Devre arası modu · 15 dakikalık karar penceresi. Tam analitik döküm{" "}
-        <a href="/matches/demo/halftime" style={{ color: "var(--accent)" }}>Devre Arası Brief</a>&apos;te.
+        <Link href="/matches/demo/halftime" style={{ color: "var(--accent)" }}>Devre Arası Brief</Link>&apos;te.
       </div>
     </div>
   );

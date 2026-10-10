@@ -167,7 +167,7 @@ export default function MacNotlaPage() {
             <span className="text-muted mb-1">Maç ID *</span>
             <input
               type="number"
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={matchId}
               onChange={(e) => setMatchId(e.target.value)}
             />
@@ -176,7 +176,7 @@ export default function MacNotlaPage() {
             <span className="text-muted mb-1">Tarih</span>
             <input
               type="date"
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={kickoff}
               onChange={(e) => setKickoff(e.target.value)}
             />
@@ -185,14 +185,14 @@ export default function MacNotlaPage() {
             <span className="text-muted mb-1">Rakip gücü (0-10)</span>
             <input
               type="number" step={0.1} min={0} max={10}
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={oppRating}
               onChange={(e) => setOppRating(e.target.value)}
             />
           </label>
           <div className="flex items-end">
             <button
-              className="px-3 py-1.5 text-xs border border-border rounded hover:bg-surface2"
+              className="px-3 py-1.5 text-xs border border-border rounded-sm hover:bg-surface2"
               onClick={loadMatch}
             >
               Mevcut maçı yükle
@@ -220,7 +220,7 @@ export default function MacNotlaPage() {
         title="Oyuncu notları"
         actions={
           <button
-            className="text-xs px-2 py-1 border border-border rounded hover:bg-surface2"
+            className="text-xs px-2 py-1 border border-border rounded-sm hover:bg-surface2"
             onClick={() => setRows((p) => [...p, emptyRow()])}
           >
             + Oyuncu ekle
@@ -245,7 +245,7 @@ export default function MacNotlaPage() {
                   <td className="p-1">
                     <input
                       type="number"
-                      className="w-20 bg-bg border border-border rounded px-2 py-1 text-sm"
+                      className="w-20 bg-bg border border-border rounded-sm px-2 py-1 text-sm"
                       value={row.player_external_id}
                       onChange={(e) => updateRow(i, { player_external_id: e.target.value })}
                     />
@@ -253,7 +253,7 @@ export default function MacNotlaPage() {
                   <td className="p-1">
                     <input
                       type="number" step={0.1} min={1} max={10}
-                      className="w-20 bg-bg border border-border rounded px-2 py-1 text-sm"
+                      className="w-20 bg-bg border border-border rounded-sm px-2 py-1 text-sm"
                       value={row.rating}
                       onChange={(e) => updateRow(i, { rating: e.target.value })}
                     />
@@ -261,7 +261,7 @@ export default function MacNotlaPage() {
                   <td className="p-1">
                     <input
                       type="number" min={0} max={120}
-                      className="w-16 bg-bg border border-border rounded px-2 py-1 text-sm"
+                      className="w-16 bg-bg border border-border rounded-sm px-2 py-1 text-sm"
                       value={row.minute_played}
                       onChange={(e) => updateRow(i, { minute_played: e.target.value })}
                     />
@@ -270,7 +270,7 @@ export default function MacNotlaPage() {
                     <input
                       type="number" step={0.05} min={0} max={1}
                       placeholder="—"
-                      className="w-16 bg-bg border border-border rounded px-2 py-1 text-sm"
+                      className="w-16 bg-bg border border-border rounded-sm px-2 py-1 text-sm"
                       value={row.fatigue_proxy}
                       onChange={(e) => updateRow(i, { fatigue_proxy: e.target.value })}
                     />
@@ -278,7 +278,7 @@ export default function MacNotlaPage() {
                   <td className="p-1">
                     <input
                       type="text"
-                      className="w-full bg-bg border border-border rounded px-2 py-1 text-sm"
+                      className="w-full bg-bg border border-border rounded-sm px-2 py-1 text-sm"
                       value={row.note}
                       onChange={(e) => updateRow(i, { note: e.target.value })}
                     />
@@ -299,7 +299,7 @@ export default function MacNotlaPage() {
 
         <div className="mt-3 flex items-center gap-3">
           <button
-            className="px-4 py-1.5 bg-accent text-white text-sm rounded"
+            className="px-4 py-1.5 bg-accent text-white text-sm rounded-sm"
             onClick={save}
             disabled={saving}
           >
@@ -321,13 +321,13 @@ export default function MacNotlaPage() {
             <span className="text-muted mb-1">Oyuncu ID</span>
             <input
               type="number"
-              className="w-28 bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="w-28 bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={perfPlayerId}
               onChange={(e) => setPerfPlayerId(e.target.value)}
             />
           </label>
           <button
-            className="px-3 py-1.5 bg-accent text-white text-sm rounded"
+            className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm"
             onClick={loadPerformance}
             disabled={perfLoading}
           >

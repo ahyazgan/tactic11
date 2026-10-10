@@ -50,16 +50,16 @@ export default function LoginPage() {
         <h1 className="text-xl font-bold">Manager’a giriş</h1>
         <p className="text-sm" style={{ color: "var(--muted)" }}>Video işlemek ve kulübünüze ait işlemleri yönetmek için hesabınızla giriş yapın.</p>
         <label className="block text-sm">E-posta
-          <input className="mt-1 block w-full rounded border p-2" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} disabled={busy} />
+          <input className="mt-1 block w-full rounded-sm border p-2" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} disabled={busy} />
         </label>
         <label className="block text-sm">Parola
-          <input className="mt-1 block w-full rounded border p-2" type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} disabled={busy} />
+          <input className="mt-1 block w-full rounded-sm border p-2" type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} disabled={busy} />
         </label>
         <label className="block text-sm">Kulüp kodu (isteğe bağlı)
-          <input className="mt-1 block w-full rounded border p-2" autoComplete="organization" value={tenant} onChange={e => setTenant(e.target.value)} disabled={busy} />
+          <input className="mt-1 block w-full rounded-sm border p-2" autoComplete="organization" value={tenant} onChange={e => setTenant(e.target.value)} disabled={busy} />
         </label>
         {error && <p role="alert" className="text-sm" style={{ color: "var(--crit)" }}>{error}</p>}
-        <button className="w-full rounded p-2 font-semibold" type="submit" disabled={busy} style={{ background: "var(--accent)", color: "#fff" }}>{busy ? "Giriş yapılıyor…" : "Giriş yap"}</button>
+        <button className="w-full rounded-sm p-2 font-semibold" type="submit" disabled={busy} style={{ background: "var(--accent)", color: "#fff" }}>{busy ? "Giriş yapılıyor…" : "Giriş yap"}</button>
       </form>
     </main>
   );

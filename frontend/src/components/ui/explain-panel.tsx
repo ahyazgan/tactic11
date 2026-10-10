@@ -28,7 +28,7 @@ export function ExplainButton({
       onClick={onClick}
       disabled={loading}
       className={cn(
-        "text-[11px] uppercase tracking-wide px-2 py-1 rounded",
+        "text-[11px] uppercase tracking-wide px-2 py-1 rounded-sm",
         "border border-borderlt text-textmut hover:text-text hover:border-accent",
         "transition-colors disabled:opacity-50",
         className,
@@ -129,9 +129,9 @@ export function ExplainPanel<T extends ExplainData = ExplainData>({
         <div className="flex-1 overflow-y-auto p-3">
           {loading && (
             <div className="space-y-2">
-              <div className="h-3 bg-surface2 rounded animate-pulse" />
-              <div className="h-3 bg-surface2 rounded animate-pulse w-5/6" />
-              <div className="h-3 bg-surface2 rounded animate-pulse w-4/6" />
+              <div className="h-3 bg-surface2 rounded-sm animate-pulse" />
+              <div className="h-3 bg-surface2 rounded-sm animate-pulse w-5/6" />
+              <div className="h-3 bg-surface2 rounded-sm animate-pulse w-4/6" />
             </div>
           )}
           {error && (

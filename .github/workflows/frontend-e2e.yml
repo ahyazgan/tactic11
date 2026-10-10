@@ -33,6 +33,12 @@ jobs:
       - name: install frontend deps
         run: npm ci
 
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+
+      - name: Lint
+        run: npm run lint
+
       - name: typecheck
         run: npm run typecheck
 

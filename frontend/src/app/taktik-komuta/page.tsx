@@ -191,7 +191,7 @@ export default function TaktikKomutaPage() {
           <label className="flex flex-col text-xs">
             <span className="text-muted mb-1">Bizim formasyon</span>
             <select
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={ourForm}
               onChange={(e) => setOurForm(e.target.value)}
             >
@@ -201,7 +201,7 @@ export default function TaktikKomutaPage() {
           <label className="flex flex-col text-xs">
             <span className="text-muted mb-1">Rakip formasyon</span>
             <select
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={oppForm}
               onChange={(e) => setOppForm(e.target.value)}
             >
@@ -211,7 +211,7 @@ export default function TaktikKomutaPage() {
           <label className="flex flex-col text-xs">
             <span className="text-muted mb-1">Rakip stili</span>
             <select
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={oppStyle}
               onChange={(e) => setOppStyle(e.target.value)}
             >
@@ -222,14 +222,14 @@ export default function TaktikKomutaPage() {
             <span className="text-muted mb-1">Bizim hava topu (0-1)</span>
             <input
               type="number" step={0.05} min={0} max={1}
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={aerial}
               onChange={(e) => setAerial(parseFloat(e.target.value) || 0)}
             />
           </label>
         </div>
         <button
-          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm mb-3"
           onClick={runPlan}
           disabled={planLoading}
         >
@@ -292,13 +292,13 @@ export default function TaktikKomutaPage() {
           <span className="text-muted mb-1">Snapshot serisi (JSON)</span>
           <textarea
             rows={6}
-            className="bg-bg border border-border rounded px-2 py-1 text-xs font-mono"
+            className="bg-bg border border-border rounded-sm px-2 py-1 text-xs font-mono"
             value={snapshotsJson}
             onChange={(e) => setSnapshotsJson(e.target.value)}
           />
         </label>
         <button
-          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm mb-3"
           onClick={runOpportunity}
           disabled={oppLoading}
         >
@@ -309,7 +309,7 @@ export default function TaktikKomutaPage() {
           <div className="space-y-2">
             <div className="text-sm">{opp.value.summary}</div>
             {opp.value.windows.map((w, i) => (
-              <div key={i} className="border border-border rounded p-2">
+              <div key={i} className="border border-border rounded-sm p-2">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs uppercase text-accent">{w.type}</span>
                   <span className="text-xs text-muted">dk {w.minute_open.toFixed(0)}</span>
@@ -331,48 +331,48 @@ export default function TaktikKomutaPage() {
           <label className="flex flex-col text-xs">
             <span className="text-muted mb-1">Dakika</span>
             <input type="number" min={0} max={120}
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={minute} onChange={(e) => setMinute(parseInt(e.target.value) || 0)}
             />
           </label>
           <label className="flex flex-col text-xs">
             <span className="text-muted mb-1">Bizim skor</span>
             <input type="number" min={0}
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={ourScore} onChange={(e) => setOurScore(parseInt(e.target.value) || 0)}
             />
           </label>
           <label className="flex flex-col text-xs">
             <span className="text-muted mb-1">Rakip skor</span>
             <input type="number" min={0}
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={oppScore} onChange={(e) => setOppScore(parseInt(e.target.value) || 0)}
             />
           </label>
           <label className="flex flex-col text-xs">
             <span className="text-muted mb-1">Yorgunluk (0-1)</span>
             <input type="number" step={0.05} min={0} max={1}
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={fatigue} onChange={(e) => setFatigue(parseFloat(e.target.value) || 0)}
             />
           </label>
           <label className="flex flex-col text-xs">
             <span className="text-muted mb-1">Sub hakkı</span>
             <input type="number" min={0} max={5}
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={subsLeft} onChange={(e) => setSubsLeft(parseInt(e.target.value) || 0)}
             />
           </label>
           <label className="flex flex-col text-xs">
             <span className="text-muted mb-1">XI sarı sayısı</span>
             <input type="number" min={0}
-              className="bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={yellows} onChange={(e) => setYellows(parseInt(e.target.value) || 0)}
             />
           </label>
         </div>
         <button
-          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm mb-3"
           onClick={runDecision}
           disabled={decLoading}
         >
@@ -383,7 +383,7 @@ export default function TaktikKomutaPage() {
           <div className="space-y-2">
             <div className="text-sm font-medium">{decision.value.headline}</div>
             {decision.value.decisions.map((d, i) => (
-              <div key={i} className="border border-border rounded p-2">
+              <div key={i} className="border border-border rounded-sm p-2">
                 <div className="flex items-center gap-2 mb-1">
                   <Pill variant={PRIORITY_VARIANT[d.priority] || "neutral"}>
                     {d.priority.toUpperCase()}

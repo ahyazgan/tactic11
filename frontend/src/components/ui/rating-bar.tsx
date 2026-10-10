@@ -45,9 +45,9 @@ export function RatingBar({
       >
         {clamped.toFixed(0)}
       </span>
-      <div className="flex-1 bg-surface2 h-1.5 rounded overflow-hidden">
+      <div className="flex-1 bg-surface2 h-1.5 rounded-sm overflow-hidden">
         <div
-          className="h-full rounded transition-all"
+          className="h-full rounded-sm transition-all"
           style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>

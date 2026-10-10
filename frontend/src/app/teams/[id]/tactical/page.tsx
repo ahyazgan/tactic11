@@ -90,7 +90,7 @@ function MetricCard({
         </div>
       )}
       {badgeVal !== null && badgeVal !== undefined && (
-        <div className="inline-block mt-2 px-2 py-0.5 rounded bg-accent/20 text-xs uppercase">
+        <div className="inline-block mt-2 px-2 py-0.5 rounded-sm bg-accent/20 text-xs uppercase">
           {String(badgeVal)}
         </div>
       )}

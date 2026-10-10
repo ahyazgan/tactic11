@@ -17,7 +17,7 @@ export function EndpointTag({
     <span
       className={cn(
         "inline-flex items-center gap-1.5 font-mono text-[10px] text-textdim",
-        "bg-surface2 border border-border rounded px-2 py-0.5 whitespace-nowrap",
+        "bg-surface2 border border-border rounded-sm px-2 py-0.5 whitespace-nowrap",
         className,
       )}
     >

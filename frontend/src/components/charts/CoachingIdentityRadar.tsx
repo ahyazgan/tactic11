@@ -41,7 +41,7 @@ export function CoachingIdentityRadar({
     <div className="card">
       <h3 className="text-sm uppercase text-muted mb-1">Koç Parmak İzi</h3>
       {archetype && (
-        <div className="inline-block mb-2 px-2 py-0.5 rounded bg-accent/20 text-xs uppercase">
+        <div className="inline-block mb-2 px-2 py-0.5 rounded-sm bg-accent/20 text-xs uppercase">
           {archetype}
         </div>
       )}
