@@ -1,16 +1,19 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
 import { AppShell } from "./shell-client";
 import { SwRegister } from "./sw-register";
 
-// Kurumsal gövde fontu — next/font ile build'de self-host edilir (runtime'da CDN
-// yok; engelli ortamla uyumlu). IBM Plex Sans: teknik/kurumsal, jenerik "Inter"
-// görünümünden uzak. Türkçe için latin-ext alt kümesi dahil.
-const sans = IBM_Plex_Sans({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "500", "600", "700"],
+// Official IBM Plex files include Turkish glyphs. Both build and runtime work
+// without Google Fonts; upstream commit and OFL license are stored with files.
+const sans = localFont({
+  src: [
+    { path: "../../public/fonts/ibm-plex-sans/IBMPlexSans-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/ibm-plex-sans/IBMPlexSans-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/ibm-plex-sans/IBMPlexSans-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/ibm-plex-sans/IBMPlexSans-Bold.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-sans",
   display: "swap",
 });

@@ -11,6 +11,8 @@
 
 React Konva'nın React 18 sürümü seçildi. Lisansların tam metinleri `frontend/public/review-third-party-notices.txt` dosyasında dağıtılır. Bu tablo eklenen doğrudan bağımlılıkları kapsar; tüm ürün bağımlılıklarının lisans envanteri değildir.
 
+CI doğrulamasında mevcut Google Fonts yanıtının Next 14 ayrıştırıcısını bozduğu görüldü. Aynı IBM Plex Sans ailesinin dört tam WOFF2 dosyası [resmi IBM deposunun sabit sürümünden](https://github.com/IBM/plex/tree/763c36ef9117782905ae010056dfbe8fd2653a25/packages/plex-sans) OFL-1.1 lisansıyla alındı. `next/font/local` kullanılır; derleme font indirmek için dış ağa çıkmaz. Lisans ve kaynak kaydı `frontend/public/fonts/ibm-plex-sans` altındadır.
+
 ## Yükleme ve saklama sınırları
 
 - `/match-reports/uploads` rotaları JWT, aktif kulüp ve düzenleyici rolü ister. Yükleme makbuzları kulüp **ve kullanıcı** alanına aittir. Tamamlanan videolar mevcut kulüp video kütüphanesine girer.
