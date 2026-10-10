@@ -7,11 +7,17 @@ from pathlib import Path
 
 import pytest
 
+from app.tracking.guarded_partition import partition as production_partition
 from scripts.soccertrack_v2.benchmark_guarded_identity import (
     boundary_witnesses,
     known_configurations,
 )
-from scripts.soccertrack_v2.candidates.guarded_identity_v2 import partition
+from scripts.soccertrack_v2.candidates.guarded_identity_v2 import partition as research_partition
+
+
+@pytest.fixture(params=[research_partition, production_partition], ids=["research", "production"])
+def partition(request):
+    return request.param
 
 
 def scenario(colors, switch=7):
@@ -36,7 +42,7 @@ def scenario(colors, switch=7):
     return raw, primary, secondary
 
 
-def test_two_cues_create_one_boundary_and_preserve_each_observation_team():
+def test_two_cues_create_one_boundary_and_preserve_each_observation_team(partition):
     raw, primary, secondary = scenario([[30.0, 60.0, 190.0]] * 7 + [[246.0, 246.0, 251.0]] * 9)
     original = deepcopy((raw, primary, secondary))
     output, events = partition(
@@ -57,7 +63,7 @@ def test_two_cues_create_one_boundary_and_preserve_each_observation_team():
         assert after["person_teams"][str(row[0])] == before["person_teams"]["100"]
 
 
-def test_previous_white_six_lighting_case_is_not_split():
+def test_previous_white_six_lighting_case_is_not_split(partition):
     colors = [
         [125.0, 171.0, 230.0],
         [125.0, 169.0, 228.0],
@@ -81,7 +87,7 @@ def test_previous_white_six_lighting_case_is_not_split():
 
 
 @pytest.mark.parametrize("unsupported", ["unchanged", "missing", "unstable"])
-def test_neither_color_cue_can_replace_independent_identity_evidence(unsupported):
+def test_neither_color_cue_can_replace_independent_identity_evidence(unsupported, partition):
     raw, primary, secondary = scenario([[30.0, 60.0, 190.0]] * 7 + [[246.0, 246.0, 251.0]] * 9)
     for sample in secondary["samples"]:
         if unsupported == "missing":
@@ -99,7 +105,7 @@ def test_neither_color_cue_can_replace_independent_identity_evidence(unsupported
     assert events == [] and output == primary
 
 
-def test_missing_primary_observation_uses_whole_baseline_before_combining():
+def test_missing_primary_observation_uses_whole_baseline_before_combining(partition):
     raw, primary, secondary = scenario([[30.0, 60.0, 190.0]] * 7 + [[246.0, 246.0, 251.0]] * 9)
     incomplete = deepcopy(primary)
     incomplete["samples"][0]["persons"] = []
@@ -116,7 +122,7 @@ def test_missing_primary_observation_uses_whole_baseline_before_combining():
     assert len(output["samples"][0]["persons"]) == 1
 
 
-def test_achromatic_transition_is_added_without_weakening_appearance_rule():
+def test_achromatic_transition_is_added_without_weakening_appearance_rule(partition):
     raw, primary, secondary = scenario([[80.0, 85.0, 90.0]] * 7 + [[200.0, 205.0, 210.0]] * 9)
     anchors = [[80, 85, 90], [200, 205, 210]]
     _, legacy = partition(
@@ -128,7 +134,7 @@ def test_achromatic_transition_is_added_without_weakening_appearance_rule():
 
 
 @pytest.mark.parametrize("case_index", range(7))
-def test_actual_old_boundary_history_preserves_six_splits_and_white_six(case_index):
+def test_actual_old_boundary_history_preserves_six_splits_and_white_six(case_index, partition):
     fixture = json.loads(
         gzip.decompress(
             (
@@ -166,7 +172,7 @@ def test_known_set_includes_both_consumed_control_generations():
     assert configs["palette_night"]["segments"] == [78, 84]
 
 
-def test_boundary_witness_uses_source_boxes_and_rejects_missing_or_rejoined_evidence():
+def test_boundary_witness_uses_source_boxes_and_rejects_missing_or_rejoined_evidence(partition):
     raw, primary, secondary = scenario([[30.0, 60.0, 190.0]] * 7 + [[246.0, 246.0, 251.0]] * 9)
     output, _ = partition(
         raw,

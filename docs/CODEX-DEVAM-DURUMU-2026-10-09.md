@@ -1,5 +1,16 @@
 # Manager: Codex ile devam, 9 Ekim 2026
 
+**10 Ekim devam noktası:** GitHub `main`, PR #282 / `8dff2c5` ile günceldi;
+CI başarılı, açık PR yoktu. Geliştirme yalnız Codex'te devam ediyor.
+Birleşik aday artık deneysel `--tracker guarded` ile gerçek video ve canlı
+segmentte çalışıyor. 19/19 üretim tekrarı, 22 eski çıktı, gündüz/gece gerçek
+dedektörle kayıtlı/canlı eşitliği ve bellek DB doğrulaması tamamlandı.
+3.104 uygulama testi, 150 ilgili CV testi, Ruff ve mypy geçti. Yeni kontrol
+öncesi dondurma, kör etiket ve değerlendirme sıradaki iştir. Gerçek zaman,
+genel forma ve top/olay doğruluğu tamamlanmadı.
+[Son entegrasyon kaydı](BIRLESIK-KIMLIK-VIDEO-ENTEGRASYONU.md),
+[görüntü açılmadan hazırlanan kontrol planı](BIRLESIK-KIMLIK-KONTROL-PLANI.md).
+
 Son çalışma başlangıcında GitHub ana dalı yeniden kontrol edildi:
 `eece9cd` / PR #280, 9 Ekim 2026; ana dal CI başarılıydı, açık PR yoktu.
 Yeni kör etiketler `e3d9618` ile tahminler açılmadan

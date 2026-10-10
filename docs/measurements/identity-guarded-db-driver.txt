@@ -1,0 +1,28 @@
+"""Verify every completed production replay output through disposable SQLite."""
+import json, sys, hashlib, os
+os.environ["DATABASE_URL"]="sqlite:///:memory:"
+from pathlib import Path
+sys.path.insert(0,str(Path.cwd()))
+from scripts.verify_tracking_payload import main as verify
+from scripts.soccertrack_v2.benchmark_tracker_backends import digest
+root,out=map(Path,sys.argv[1:])
+report_path=root/'report.json'
+report=json.loads(report_path.read_bytes())
+if not report.get('all_equal') or not report.get('completed_at_utc') or len(report['comparisons'])!=19:
+    raise ValueError('Complete 19-clip production parity required')
+original_sha=digest(report_path)
+registered={Path(p).resolve():sha for p,sha in report['output_sha256'].items()}
+out.mkdir(parents=True,exist_ok=False)
+checks=[]
+for case in report['comparisons']:
+    source=root/case['group']/f"seg_{case['segment']:04d}.frames.json"
+    if registered.get(source.resolve())!=digest(source): raise ValueError('Changed production output')
+    target=out/f"{case['group']}-{case['segment']}.json"
+    sys.argv=['verify_tracking_payload','--json',str(source),'--out',str(target)]
+    verify()
+    result=json.loads(target.read_bytes())
+    if not result['evidence_preserved'] or result['persistent_database_written']: raise ValueError('Evidence/DB safety violation')
+    checks.append(dict(group=case['group'],segment=case['segment'],verification=str(target),verification_sha256=digest(target),**result))
+if digest(report_path)!=original_sha: raise ValueError('Reference changed')
+summary=dict(scope=__doc__,production_report=str(report_path),production_report_sha256=original_sha,driver_sha256=digest(Path(__file__)),checks=checks,all_evidence_preserved=True,clips=len(checks),frames=sum(c['frames_verified'] for c in checks),players=sum(c['players_verified'] for c in checks),database='sqlite:///:memory:',persistent_database_written=False,accuracy_validated=False)
+(out/'report.json').write_text(json.dumps(summary,indent=2)+'\n',encoding='utf-8')

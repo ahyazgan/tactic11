@@ -1,0 +1,55 @@
+"""Verify completed actual-detector recorded/warm outputs in disposable SQLite."""
+import contextlib
+import io
+import json
+import os
+import sys
+from pathlib import Path
+
+os.environ['DATABASE_URL'] = 'sqlite:///:memory:'
+sys.path.insert(0, str(Path.cwd()))
+from scripts.verify_tracking_payload import main as verify
+from scripts.soccertrack_v2.benchmark_tracker_backends import digest
+
+root, out = map(Path, sys.argv[1:])
+source_report = root / 'report.json'
+report = json.loads(source_report.read_bytes())
+if not report.get('completed_at_utc') or len(report['cases']) != 2:
+    raise ValueError('Complete day and night live smoke required')
+if not all(c['same_frames'] and c['same_identity_audit'] for c in report['cases']):
+    raise ValueError('Recorded/warm parity required')
+source_sha = digest(source_report)
+registered = {Path(p).resolve(): sha for p, sha in report['output_sha256'].items()}
+out.mkdir(parents=True, exist_ok=False)
+checks = []
+for case in report['cases']:
+    recorded = None
+    for mode in ('recorded', 'warm'):
+        path = root / case['group'] / f'{mode}.json'
+        if registered.get(path.resolve()) != digest(path):
+            raise ValueError('Changed actual detector output')
+        payload = json.loads(path.read_bytes())
+        events = {k: payload[k] for k in ('derived_passes', 'derived_defensive_actions')}
+        if mode == 'recorded':
+            recorded = events
+        elif recorded != events:
+            raise ValueError('Recorded/warm events differ')
+        target = out / f"{case['group']}-{mode}.json"
+        sys.argv = ['verify_tracking_payload', '--json', str(path), '--out', str(target)]
+        with contextlib.redirect_stdout(io.StringIO()):
+            verify()
+        result = json.loads(target.read_bytes())
+        if not result['evidence_preserved'] or result['persistent_database_written']:
+            raise ValueError('Evidence/DB safety violation')
+        checks.append(dict(group=case['group'], mode=mode, verification=str(target),
+                           verification_sha256=digest(target), **result))
+        print(case['group'], mode, 'DB preserved', result['frames_verified'], flush=True)
+if digest(source_report) != source_sha:
+    raise ValueError('Live report changed')
+summary = dict(scope=__doc__, source_report=str(source_report), source_report_sha256=source_sha,
+    driver_sha256=digest(Path(__file__)), checks=checks, all_evidence_preserved=True,
+    same_recorded_warm_events=True, frames=sum(c['frames_verified'] for c in checks),
+    players=sum(c['players_verified'] for c in checks),
+    events=sum(c['derived_events_verified'] for c in checks),
+    database='sqlite:///:memory:', persistent_database_written=False, accuracy_validated=False)
+(out / 'report.json').write_text(json.dumps(summary, indent=2) + '\n', encoding='utf-8')

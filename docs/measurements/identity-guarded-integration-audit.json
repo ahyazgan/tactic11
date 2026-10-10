@@ -1,0 +1,51 @@
+{
+  "scope": "Completed integration rendering and artifact integrity audit; not player/ball accuracy.",
+  "production_report_sha256": "2e1bf1f9dd2478d301efb23a0cf290187645be0b17f12babeb70d17702ce1f1b",
+  "live_report_sha256": "f7c49cd20c75a71cb519eae045c8ba70b5c94deada60883faf09cb94bfe38945",
+  "live_db_report_sha256": "8527effb8742faf11494f9319a47a2ce9c1bb411276d9b218214d70a04ff7e2c",
+  "runtime_report_sha256": "35917d964a070b033317d0e8660d4d355f3f5e7c30de10c6be394965acdc8020",
+  "source_model_code_rechecked": true,
+  "all_live_output_hashes_rechecked": true,
+  "checks": [
+    {
+      "group": "day",
+      "preview_bytes_equal": true,
+      "preview_sha256": "91b7038e692828ea9b31b23f12e983e274f657def4f55fc3c48ddc7799148773",
+      "decoded_frames_per_preview": 125
+    },
+    {
+      "group": "palette_night",
+      "preview_bytes_equal": true,
+      "preview_sha256": "cce9ca2aae3a245f639c373ca4027f8431b6f2f06b580f2fcce295ea74da3e40",
+      "decoded_frames_per_preview": 125
+    }
+  ],
+  "visual_review": {
+    "reviewed_images": [
+      "day/recorded-40.jpg",
+      "day/warm-80.jpg",
+      "palette_night/recorded-40.jpg",
+      "palette_night/warm-80.jpg"
+    ],
+    "rendering": "Source image, person rectangles, track labels and field overlay are visible; all four full previews decode.",
+    "unresolved": "Night preview at 9.6 seconds shows the ball marker below the drawn field boundary; source ball/calibration accuracy still needs separate diagnosis. Night kit assignments are not newly validated by this transport test.",
+    "reviewer": "Single AI visual review; no independent human adjudication",
+    "saved_images": {
+      "docs/measurements/identity-guarded-day-preview.jpg": "0297315ec7c1a369fac7b317c7000f08af402774298cd04ddde08c7f43618f63",
+      "docs/measurements/identity-guarded-night-preview.jpg": "63930385f86adc70545b4fae5385060ec95d31a2165f33e976af5572246b377d"
+    }
+  },
+  "preliminary_runs": [
+    {
+      "run": "guarded-live-smoke-20261010-v1",
+      "status": "Process absent after interrupted session; no completion report; not accepted"
+    },
+    {
+      "run": "guarded-live-smoke-20261010-v2",
+      "status": "Sandbox launcher exited without output; no completion report; not accepted"
+    }
+  ],
+  "persistent_database_written": false,
+  "new_control_opened": false,
+  "accuracy_validated": false
+}

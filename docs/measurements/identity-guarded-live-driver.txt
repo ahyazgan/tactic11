@@ -1,0 +1,104 @@
+"""Exercise real detector/ball ROI/OSNet through recorded and warm live paths."""
+import gc, json, sys, hashlib
+from pathlib import Path
+from dataclasses import asdict
+from datetime import UTC, datetime
+from time import perf_counter
+from unittest.mock import patch
+import numpy as np
+import cv2
+import torch
+sys.path.insert(0, str(Path.cwd()))
+from app.tracking import pipeline
+from app.tracking.calibration import PitchCalibration
+from app.tracking.deepocsort import DEFAULT_MODEL
+from app.tracking.detect import DetectorConfig, make_detector
+from app.tracking.frames import frames_to_json
+from scripts.track_live import WarmTracker
+from scripts.soccertrack_v2.benchmark_guarded_identity import known_configurations
+from scripts.soccertrack_v2.benchmark_deepocsort import VIDEO_DIRS
+from scripts.soccertrack_v2.benchmark_tracker_backends import digest, load
+
+out = Path(sys.argv[1])
+out.mkdir(parents=True, exist_ok=False)
+cv2.setNumThreads(1)
+torch.set_grad_enabled(False)
+original_capture = cv2.VideoCapture
+
+def capture(path):
+    cap = original_capture(str(path), cv2.CAP_FFMPEG, [cv2.CAP_PROP_N_THREADS, 1])
+    if not cap.isOpened() or cap.get(cv2.CAP_PROP_N_THREADS) != 1:
+        cap.release()
+        raise ValueError('Single-thread decoder unavailable')
+    return cap
+
+paths=[Path(__file__),Path(DEFAULT_MODEL),Path('scripts/track_live.py'),Path('scripts/track_video.py'),*Path('app/tracking').rglob('*.py')]
+paths += list(Path('data/tracking/models/rfdetr_mixed_small').glob('*'))
+hashes={str(p):digest(p) for p in paths if p.is_file()}
+report=dict(scope=__doc__, started_at_utc=datetime.now(UTC).isoformat(), code_model_input_sha256=hashes, cases=[], detector_cache=False, persistent_database_written=False, accuracy_validated=False)
+for group,segment in [('day',3),('palette_night',84)]:
+    spec=known_configurations()[group]
+    raw_path=Path(spec['cache'])/f'seg_{segment:04d}.json'
+    raw=load(raw_path)
+    source=Path(raw['video']) if 'video' in raw else Path(VIDEO_DIRS[group])/f'seg_{segment:04d}.mp4'
+    anchor_path=Path('docs/measurements')/f"{spec['anchor']}.json"
+    anchor=np.asarray(load(anchor_path)['anchors']['before'])
+    for p in (source,raw_path,anchor_path): hashes[str(p)]=digest(p)
+    target=out/group
+    target.mkdir()
+    calibration_path=target/'calibration.json'
+    calibration_path.write_text(json.dumps(raw['calibration']),encoding='utf-8')
+    config=pipeline.PipelineConfig(**{k:v for k,v in raw['config'].items() if k!='detector'})
+    config.tracker_backend='guarded'
+    config.refine_player_identities=False
+    config.detector=DetectorConfig(**raw['config']['detector'])
+    config.detector.backend='torch'
+    config.preview_path=str(target/'recorded-preview.mp4')
+    args=dict(match_id=991011 if group=='day' else 991012,home_team_id=217,away_team_id=213)
+    (out/'manifest.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+    case_started=perf_counter()
+    detector=make_detector(config.detector)
+    with patch.object(cv2,'VideoCapture',side_effect=capture):
+        started=perf_counter()
+        frames,summary=pipeline.process_video(source,PitchCalibration.from_dict(raw['calibration']),cfg=config,detector=detector,team_anchor=anchor,**args)
+        elapsed=perf_counter()-started
+        payload=frames_to_json(frames,match_id=args['match_id'],extra=dict(video=source.name,home_team_external_id=217,away_team_external_id=213))
+        payload.update(summary=summary,**summary['derived_events'])
+        (target/'recorded.json').write_text(json.dumps(payload)+'\n',encoding='utf-8')
+        kwargs=asdict(config)
+        for key in ('detector','source_name','per_frame_calibration','allow_reacquire','detect_cuts','detect_replays','clip_offset_minutes','period'):
+            kwargs.pop(key)
+        kwargs['preview_path']=str(target/'warm-preview.mp4')
+        warm=WarmTracker(calibration=str(calibration_path),detector_cfg=config.detector,pipeline_kwargs=kwargs,camera='static',per_frame_mode='off')
+        warm._detector=detector
+        warm._size=tuple(raw['calibration']['image_size'])
+        warm.team_anchor=anchor.copy()
+        started=perf_counter()
+        warm_summary=warm.run(source,out_json=target/'warm.json',offset_minutes=config.clip_offset_minutes,match_id=args['match_id'],home_team=217,away_team=213,period=config.period)
+        warm_elapsed=perf_counter()-started
+    other=load(target/'warm.json')
+    same=payload['frames']==other['frames']
+    identity_same=summary['calibration_stats']['identity_guarded']==warm_summary['calibration_stats']['identity_guarded']
+    previews=[]
+    for mode in ('recorded','warm'):
+        cap=capture(target/f'{mode}-preview.mp4')
+        count=0
+        while True:
+            ok,frame=cap.read()
+            if not ok: break
+            if count in (0,40,80): cv2.imwrite(str(target/f'{mode}-{count}.jpg'),frame)
+            count+=1
+        cap.release()
+        if count!=len(frames): raise ValueError('Incomplete preview')
+        previews.append(dict(mode=mode,decoded_frames=count))
+    report['cases'].append(dict(group=group,segment=segment,frames=len(frames),players=sum(len(f.players) for f in frames),same_frames=same,same_identity_audit=identity_same,recorded_seconds=elapsed,warm_seconds=warm_elapsed,total_case_seconds=perf_counter()-case_started,detector_device=str(detector.device),timing_scope='Pipeline includes preview; recorded_seconds excludes detector construction; shared-machine smoke is not a controlled latency benchmark.',previews=previews,summary=summary))
+    (out/'partial-report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+    print(group,'real detector + live parity:',same,identity_same,flush=True)
+    if not same or not identity_same: raise ValueError('Recorded/live evidence differs')
+    del warm,detector,frames
+    gc.collect()
+    if torch.cuda.is_available(): torch.cuda.empty_cache()
+if hashes!={p:digest(Path(p)) for p in hashes}: raise ValueError('Code/model/input changed')
+report['output_sha256']={str(p):digest(p) for p in out.rglob('*') if p.is_file()}
+report['completed_at_utc']=datetime.now(UTC).isoformat()
+(out/'report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
