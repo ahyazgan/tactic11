@@ -112,7 +112,10 @@ jobs:
           api_pid=$!
           trap 'kill "$api_pid" || true' EXIT
           cd frontend
-          npx wait-on http://127.0.0.1:8000/health -t 30000
+          if ! npx wait-on http-get://127.0.0.1:8000/health -t 30000; then
+            cat ../.cache/review-api.log
+            exit 1
+          fi
           npx playwright test e2e/match_reports.spec.ts --workers=1
       - uses: actions/upload-artifact@v4
         if: failure()

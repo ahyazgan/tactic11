@@ -41,7 +41,7 @@ test("kaydetme çakışması analistin yazdığı notu korur", async ({ page }) 
   await page.getByRole("button", { name: /U17 raporu/ }).click();
   await page.getByLabel("Maç değerlendirmesi", { exact: true }).fill("Kaybolmaması gereken yeni analist notu");
   await expect(page.getByRole("button", { name: "PDF indir", exact: true })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "İncelemeyi onayla" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "İncelemeyi onayla" })).toHaveCount(0);
   await page.getByRole("button", { name: "Değişiklikleri kaydet" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "başka bir oturumda" })).toBeVisible();
   await expect(page.getByLabel("Maç değerlendirmesi", { exact: true })).toHaveValue("Kaybolmaması gereken yeni analist notu");
