@@ -158,6 +158,8 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
     await page.getByLabel("Pozisyon başlığı", { exact: true }).fill(`Teknik kesim ${start}–${end}`);
     await page.getByLabel("Gözlem", { exact: true }).fill("Bu kayıt klip, metin ve zaman aralığı eşleşmesini doğrular.");
     await page.getByLabel("Çalışma önerisi", { exact: true }).fill("Taktik öneri için antrenör incelemesi gerekir.");
+    await page.getByLabel("Oyuncu (isteğe bağlı)").fill("Teknik deneme oyuncusu");
+    await page.getByLabel("Sonraki maçta neye bakacağız?", { exact: true }).fill("Sonraki kayıtta aynı zaman aralığını kaynak görüntüyle karşılaştır.");
     await expect(page.getByRole("button", { name: "Değişiklikleri kaydet" })).toBeDisabled();
     await page.getByRole("button", { name: "Rapora ekle", exact: true }).click();
   }
@@ -166,6 +168,11 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
   await page.getByRole("checkbox", { name: "Videodaki pozisyonları, oyuncu adlarını ve yorumları kontrol ettim." }).check();
   await page.getByRole("button", { name: "İncelemeyi onayla" }).click();
   await expect(page.getByRole("status")).toContainText("İnceleme kaydedildi");
+  const followUps = page.locator("details").filter({ hasText: "Önceki raporlardan gelişim takibi" });
+  await followUps.locator("summary").click();
+  await followUps.getByLabel("Oyuncu veya takip konusu ara").fill(title);
+  await expect(followUps.getByRole("article")).toHaveCount(2);
+  await expect(followUps.getByText("Sonraki kayıtta aynı zaman aralığını kaynak görüntüyle karşılaştır.", { exact: false })).toHaveCount(2);
   const pdfDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: "PDF indir", exact: true }).click();
   await (await pdfDownload).saveAs(testInfo.outputPath("report.pdf"));
@@ -173,7 +180,10 @@ test("gerçek API: video yükle, pozisyonu onayla, PDF ve klip paketini indir", 
   await expect(page.getByRole("button", { name: "ZIP indir", exact: true })).toBeVisible({ timeout: 60_000 });
   const zipDownload = page.waitForEvent("download");
   await page.getByRole("button", { name: "ZIP indir", exact: true }).click();
-  await (await zipDownload).saveAs(testInfo.outputPath("delivery.zip"));
+  const delivery = await zipDownload;
+  expect(delivery.url()).toContain("/review-media/exports/");
+  expect(delivery.suggestedFilename()).toMatch(/^match-report-v\d+\.zip$/);
+  await delivery.saveAs(testInfo.outputPath("delivery.zip"));
   await page.screenshot({ path: testInfo.outputPath("report-screen.png"), fullPage: true });
   const extracted = testInfo.outputPath("delivery");
   const python = process.env.E2E_PYTHON ?? (process.platform === "win32" ? "../venv/Scripts/python.exe" : "python");

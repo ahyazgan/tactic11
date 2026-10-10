@@ -102,6 +102,7 @@ jobs:
         env:
           DATABASE_URL: "sqlite:///./.cache/review-e2e-ci.db"
           REVIEW_DATA_DIR: ".cache/review-e2e-media"
+          DEV_DEFAULT_TENANT_ID: "t-default"
           E2E_REVIEW_BACKEND: "true"
           E2E_REVIEW_VIDEO: "${{ github.workspace }}/.cache/review-e2e-source.mp4"
         run: |

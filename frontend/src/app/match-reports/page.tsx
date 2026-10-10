@@ -77,6 +77,17 @@ async function download(path: string, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
+async function downloadDelivery(reportId: string, jobId: string) {
+  const result = await apiFetch<{ path: string }>(`/match-reports/${reportId}/exports/${jobId}/download-link`, { method: "POST" });
+  const link = document.createElement("a");
+  link.href = `/api${result.path}`;
+  link.download = "";
+  link.referrerPolicy = "no-referrer";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 export default function MatchReportsPage() {
   const { user, isLoading: authLoading, mutate: refreshUser } = useCurrentUser();
   const canEdit = !!user && ["admin", "analyst", "coach"].includes(user.role);
@@ -319,7 +330,7 @@ export default function MatchReportsPage() {
                 })}>Klipli teslim paketi hazırla</button>}</div>
               <p className={styles.muted}>Paket; PDF, oynatılabilir MP4 klipler ve çevrimdışı rapor sayfası içerir. ZIP dosyasını çıkarıp index.html dosyasını açın.</p>
               {exports?.map(job => <div key={job.id} className={styles.export}><span>Rapor v{job.report_version} · {{ queued: "Sırada", running: "Klipler hazırlanıyor", done: "Paket hazır", failed: "Hazırlanamadı" }[job.state]}</span>
-                {job.error && <p role="alert">{job.error}</p>}{job.state === "done" && <button disabled={!!busy} onClick={() => void operation("Paket indiriliyor", () => download(`/match-reports/${report.id}/exports/${job.id}/download`, `mac-raporu-v${job.report_version}.zip`))}>ZIP indir</button>}
+                {job.error && <p role="alert">{job.error}</p>}{job.state === "done" && <button disabled={!!busy} onClick={() => void operation("İndirme başlatılıyor", () => downloadDelivery(report.id, job.id))}>ZIP indir</button>}
               </div>)}
             </section>
           </div>}
