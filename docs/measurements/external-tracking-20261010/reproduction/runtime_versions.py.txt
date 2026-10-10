@@ -1,0 +1,12 @@
+import importlib.metadata as metadata
+import json
+import platform
+from pathlib import Path
+
+root=Path(__file__).resolve().parent
+packages={}
+for name in ('torch','torchvision','supervision','numpy','scipy','opencv-python-headless','transformers','trackers','timm','gdown','huggingface-hub'):
+    try: packages[name]=metadata.version(name)
+    except metadata.PackageNotFoundError: packages[name]='not in base venv; see isolated package list'
+(root/'runtime_versions.json').write_text(json.dumps(dict(python=platform.python_version(),platform=platform.platform(),base_environment=packages,
+    additional_packages=json.loads((root/'isolated-packages.json').read_text(encoding='utf-8-sig'))),indent=2))

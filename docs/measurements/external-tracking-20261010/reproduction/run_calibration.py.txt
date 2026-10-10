@@ -1,0 +1,70 @@
+import json
+import sys
+import time
+import traceback
+from pathlib import Path
+ROOT=Path(__file__).resolve().parent
+PROJECT=ROOT.parent.parent
+SOURCE=ROOT/'sources/mguti97__PnLCalib'
+sys.path[:0]=[str(ROOT/'site'),str(SOURCE)]
+import cv2
+import numpy as np
+import torch
+import yaml
+import inference as upstream
+
+torch.set_num_threads(2)
+cv2.setNumThreads(1)
+upstream.device='cpu'
+upstream.transform2=upstream.T.Resize((540,960))
+cfg=yaml.safe_load((SOURCE/'config/hrnetv2_w48.yaml').read_text())
+cfg_l=yaml.safe_load((SOURCE/'config/hrnetv2_w48_l.yaml').read_text())
+model=upstream.get_cls_net(cfg)
+model_l=upstream.get_cls_net_l(cfg_l)
+model.load_state_dict(torch.load(ROOT/'models/SV_kp',map_location='cpu',weights_only=True),strict=True)
+model_l.load_state_dict(torch.load(ROOT/'models/SV_lines',map_location='cpu',weights_only=True),strict=True)
+model.eval(); model_l.eval()
+results=[]
+for group,cache,video in [
+ ('day','data/tracking/bench/identity_day_detections/seg_0003.json','data/tracking/bench/daylight_117093/source/seg_0003.mp4'),
+ ('night','data/tracking/bench/joint_identity_control/raw_v1/seg_0040.json','data/tracking/bench/joint_identity_control/source/seg_0040.mp4')]:
+    data=json.loads((PROJECT/cache).read_text())
+    cap=cv2.VideoCapture(str(PROJECT/video))
+    for frame_idx in (0,124,240,374,500,686):
+        cap.set(cv2.CAP_PROP_POS_FRAMES,frame_idx)
+        ok,frame=cap.read()
+        if not ok: raise ValueError('Missing source image')
+        h,w=frame.shape[:2]
+        cam=upstream.FramebyFrameCalib(iwidth=w,iheight=h,denormalize=True)
+        start=time.perf_counter()
+        row=dict(group=group,frame_idx=frame_idx,image_size=[w,h])
+        try:
+            result=upstream.inference(cam,frame,model,model_l,.3434,.7867,True)
+            row['calibration_found']=result is not None
+            if result is not None:
+                P=upstream.projection_from_cam_params(result)
+                points=data['calibration']['points']
+                world=np.array([[p['pitch'][0]-52.5,p['pitch'][1]-34,0,1] for p in points])
+                pixels=world@P.T
+                predicted=pixels[:,:2]/pixels[:,2,None]
+                target=np.array([p['image'] for p in points])
+                residual=np.linalg.norm(predicted-target,axis=1)
+                row.update(projection_matrix=P.tolist(), annotated_points=len(points),
+                           annotation_residual_median_px=float(np.median(residual)),
+                           annotation_residual_p95_px=float(np.percentile(residual,95)))
+                row['parameters']=result
+        except Exception as exc:
+            row.update(status='runtime_error',error=str(exc),traceback=traceback.format_exc())
+        row['seconds']=time.perf_counter()-start
+        results.append(row)
+        print(group,frame_idx,row.get('calibration_found'),row.get('annotation_residual_median_px'),row.get('error'),flush=True)
+        def convert(obj):
+            if isinstance(obj,np.ndarray): return obj.tolist()
+            if isinstance(obj,np.generic): return obj.item()
+            raise TypeError(type(obj).__name__)
+        (ROOT/'calibration_result.json').write_text(json.dumps(dict(
+            upstream_commit='8c87391d6f4ea40c5e4d65e61529916c7a49ce62',
+            status='running' if len(results)<12 else 'completed',device='cpu',
+            protocol='Official single-view checkpoints and thresholds, PnL refinement enabled, original panoramic source frames. Annotation residual is consistency with existing calibration annotations, not independent accuracy.',
+            records=results),indent=2,default=convert))
+    cap.release()

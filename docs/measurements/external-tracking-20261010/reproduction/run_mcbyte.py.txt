@@ -1,0 +1,168 @@
+"""Pinned McByte++ on identical Manager detections; retain source provenance."""
+import argparse
+import json
+import sys
+import time
+import traceback
+from dataclasses import asdict
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parent
+PROJECT = ROOT.parent.parent
+MC = ROOT / 'sources/tstanczyk95__McBytePlusPlus'
+sys.path[:0] = [str(ROOT / 'site'), str(PROJECT), str(MC),
+                str(MC / 'deep-person-reid'), str(MC / 'mask_propagation/EdgeTAM')]
+import cv2
+import numpy as np
+import torch
+import supervision as sv
+from compat import install_bbox_compat, patch_sam_frames
+install_bbox_compat()
+from yolox.tracker.mcbyteplusplus_tracker__with_reid import McBytePlusPlusTracker
+from mask_propagation import mask_manager__edgetam as masks
+from app.tracking.calibration import PitchCalibration
+from scripts.soccertrack_v2.benchmark_tracker_backends import groups, backend_settings, load, digest
+from scripts.soccertrack_v2.benchmark_track_buffer import retrack
+from scripts.soccertrack_v2.benchmark_deepocsort import VIDEO_DIRS
+
+
+def execute(args):
+    output = ROOT / 'runs' / args.name
+    output.mkdir(parents=True, exist_ok=False)
+    config = groups()[args.group]
+    rawpath = PROJECT / config['cache'] / f'seg_{args.segment:04d}.json'
+    video = PROJECT / VIDEO_DIRS[args.group] / f'seg_{args.segment:04d}.mp4'
+    data = load(rawpath)
+    original_hashes = {str(p): digest(p) for p in (rawpath, video, Path(__file__), ROOT/'compat.py')}
+    if args.frames:
+        data['samples'] = data['samples'][:args.frames]
+    settings = backend_settings(data, 'supervision')
+    lost = int(settings['frame_rate'] / 30 * settings['lost_track_buffer'])
+    parameters = dict(track_thresh=settings['track_activation_threshold'], track_buffer=lost,
+                      cmc_method='none', cmc_downscale=4, cmc_interval=1,
+                      reid_model_path=str(PROJECT/'.cache/upstream-gta-link-e4d5cc4/sports_model.pth.tar-60'),
+                      reid_device='cuda', reid_min_det_score=.6, reid_min_box_area=1024,
+                      reid_min_frame_gap=5, reid_sim_thresh=.8,
+                      with_mask_removal=False, with_mask_update=False, mask_update_every_k_frames=1)
+    manifest = dict(group=args.group, segment=args.segment, frames=len(data['samples']),
+                    source_sha256=original_hashes, parameters=parameters,
+                    upstream_commit='be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9',
+                    adaptations=['NumPy inclusive bbox IoU compatibility', 'sampled original video frame loader',
+                                 'SAM video/state CPU offload', 'source detection boxes restored',
+                                 'common confidence/lifetime; fixed-camera CMC disabled',
+                                 'upstream optional CUDA hole-filling extension unavailable; official fallback'],
+                    control_opened=False, model_sha256=digest(ROOT/'models/edgetam.pt'),
+                    reid_sha256=digest(Path(parameters['reid_model_path'])))
+    (output/'manifest.json').write_text(json.dumps(manifest, indent=2))
+    torch.set_num_threads(4)
+    cv2.setNumThreads(2)
+    np.random.seed(0)
+    torch.manual_seed(0)
+    parameters = SimpleNamespace(**parameters)
+    tracker = McBytePlusPlusTracker(parameters, str(output), frame_rate=30, enable_logging=False)
+    if not tracker.reid_manager.enabled:
+        raise RuntimeError('Required ReID did not initialize; do not silently benchmark without it')
+    restore = patch_sam_frames(video, [s['frame_idx'] for s in data['samples']])
+    masks.checkpoint = str(ROOT/'models/edgetam.pt')
+    manager = masks.MaskManager(str(output/'virtual_frames'), parameters) if not args.no_mask else None
+    cal = PitchCalibration.from_dict(data['calibration'])
+    capture = cv2.VideoCapture(str(video))
+    source_frame = -1
+    last_boxes, last_ids, new, removed = [], [], [], []
+    mapping, track_objects, times = [], {}, []
+    try:
+        with torch.inference_mode():
+            for i, sample in enumerate(data['samples']):
+                while source_frame < sample['frame_idx']:
+                    ok, bgr = capture.read()
+                    if not ok:
+                        raise ValueError('Source ended early')
+                    source_frame += 1
+                raw = data['detected_persons'][str(sample['order'])]
+                eligible = [(j, r) for j, r in enumerate(raw) if cal.is_on_pitch(
+                    (r['box'][0]+r['box'][2])/2, r['box'][3], margin_m=data['config']['pitch_margin_m'])]
+                xyxy = np.asarray([r['box'] for _, r in eligible], dtype=float).reshape(-1, 4)
+                conf = np.asarray([r['confidence'] for _, r in eligible])
+                det = np.column_stack((xyxy, conf))
+                started = time.perf_counter()
+                prediction, mask_ids = None, None
+                if manager is not None and i > 0:
+                    with torch.autocast('cuda', dtype=torch.bfloat16):
+                        prediction, mask_ids = manager.get_updated_masks(i+1, last_boxes, last_ids, new, removed)
+                active, removed, new, _, _ = tracker.update(det.copy(), bgr.shape[:2], bgr.shape[:2],
+                    prediction_mask=prediction, tracklet_mask_dict=mask_ids, frame_img=bgr,
+                    vis_type='no_vis', dets_from_file=True)
+                torch.cuda.synchronize()
+                times.append(time.perf_counter()-started)
+                last_boxes = [t.tlwh.copy() for t in active]
+                last_ids = [int(t.track_id) for t in active]
+                frame_map = {}
+                for t in active:
+                    box = np.asarray(t.last_det_tlwh).copy()
+                    box[2:] += box[:2]
+                    candidates = np.flatnonzero(np.all(np.isclose(xyxy, box, rtol=0, atol=1e-7), axis=1))
+                    if len(candidates) != 1:
+                        raise ValueError(f'Ambiguous or invented source box frame={i} matches={len(candidates)}')
+                    raw_index = eligible[int(candidates[0])][0]
+                    if raw_index in frame_map:
+                        raise ValueError('Two tracks claim the same source detection')
+                    frame_map[raw_index] = int(t.track_id)
+                    track_objects[int(t.track_id)] = t
+                mapping.append(frame_map)
+                if i % 25 == 0:
+                    print('FRAME', args.name, i+1, len(data['samples']), 'tracks', len(active),
+                          'seconds', round(sum(times), 2), flush=True)
+                    (output/'progress.json').write_text(json.dumps(dict(frame=i+1, seconds=sum(times))))
+        final_ids = {tid: int(t.export_id if t.export_id is not None else tid) for tid,t in track_objects.items()}
+        for row in mapping:
+            ids = [final_ids[tid] for tid in row.values()]
+            if len(set(ids)) != len(ids):
+                raise ValueError('Final exported identity collision within a frame')
+
+        class Replay:
+            max_time_lost = lost
+            cursor = 0
+            def update_with_detections(self, detections):
+                row = mapping[self.cursor]
+                self.cursor += 1
+                keep = [k for k, raw_index in enumerate(detections.data['raw_index']) if int(raw_index) in row]
+                result = detections[np.asarray(keep, dtype=int)]
+                result.tracker_id = np.asarray([final_ids[row[int(j)]] for j in result.data['raw_index']], dtype=int)
+                return result
+        with patch.object(sv, 'ByteTrack', return_value=Replay()):
+            samples, teams, stats = retrack(data, correct_buffer=False)
+        anchors = np.asarray(load(PROJECT/'docs/measurements'/f"{config['anchor']}.json")['anchors']['before'])
+        assignment = teams.fit(anchors, eligible_tracks={p[0] for s in samples for p in s.persons})
+        for sample in samples:
+            sample.person_teams = {str(p[0]): assignment.team_by_track.get(p[0]) for p in sample.persons}
+        payload = {'samples': [asdict(s) for s in samples]}
+        stats.update(tracking_mask_reid_seconds=sum(times), frame_times=times,
+                     tracked_observations=sum(len(s.persons) for s in samples),
+                     reid_feature_updates=sum(t.reid_num_updates for t in track_objects.values()),
+                     reid_joined_tracklets=sum(tid != final for tid,final in final_ids.items()),
+                     max_cuda_allocated=torch.cuda.max_memory_allocated())
+        if original_hashes != {str(p): digest(Path(p)) for p in original_hashes}:
+            raise ValueError('Source or experiment code changed during run')
+        (output/'predictions.json').write_text(json.dumps(payload))
+        (output/'result.json').write_text(json.dumps(dict(status='completed', manifest=manifest, stats=stats), indent=2))
+        print('COMPLETE', args.name, stats['tracked_observations'], round(sum(times),2), flush=True)
+    finally:
+        capture.release()
+        restore()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--group', required=True)
+    parser.add_argument('--segment', required=True, type=int)
+    parser.add_argument('--name', required=True)
+    parser.add_argument('--frames', type=int)
+    parser.add_argument('--no-mask', action='store_true')
+    args = parser.parse_args()
+    try:
+        execute(args)
+    except Exception as exc:
+        (ROOT/'runs'/args.name/'error.txt').write_text(traceback.format_exc())
+        raise

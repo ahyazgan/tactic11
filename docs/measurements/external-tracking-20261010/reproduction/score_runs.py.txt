@@ -1,0 +1,69 @@
+"""Score completed full-clip trials against identical development observations."""
+import json
+import sys
+from pathlib import Path
+import numpy as np
+
+ROOT = Path(__file__).resolve().parent
+PROJECT = ROOT.parent.parent
+sys.path.insert(0, str(PROJECT))
+from scripts.soccertrack_v2.benchmark_tracker_backends import (
+    groups, load, replay, score_pairs, score_rows, predictions, source_boxes,
+    pair_subset, adjudicated_rows, regressions,
+)
+from scripts.soccertrack_v2.benchmark_track_buffer import box_key
+
+measurements = PROJECT / 'docs/measurements'
+results = {}
+for directory in sorted((ROOT / 'runs').iterdir()):
+    path = directory / 'result.json'
+    if not path.exists():
+        continue
+    result = load(path)
+    manifest = result['manifest']
+    group, segment = manifest['group'], manifest['segment']
+    cfg = groups()[group]
+    raw = load(PROJECT / cfg['cache'] / f'seg_{segment:04d}.json')
+    candidate = load(directory / 'predictions.json')
+    if len(candidate['samples']) != len(raw['samples']):
+        continue  # Smoke clips do not establish full-segment accuracy.
+    anchor = np.asarray(load(measurements / f"{cfg['anchor']}.json")['anchors']['before'])
+    baseline, baseline_stats = replay(raw, 'supervision', anchor)
+    available = source_boxes({segment: raw})
+    rows = [r for name in cfg['labels'] for r in load(measurements / f'{name}.json')['records']]
+    excluded = set()
+    if group == 'day':
+        rows = adjudicated_rows(rows, [load(measurements/'identity-kit-label-adjudication.json')])
+        parts = load(measurements/'duplicate-part-development-labels.json')['records']
+        parts += [r for r in load(measurements/'joint-identity-control-day-pairs.json')['observations'] if r.get('duplicate_part_of')]
+        excluded = {(r['segment'], box_key(r['frame_idx'], r['bbox'])) for r in parts}
+        rows += load(measurements/'joint-identity-control-day-labels.json')['records']
+    rows = [r for r in rows if r['segment'] == segment and (segment, box_key(r['frame_idx'], r['bbox'])) not in excluded]
+    assert all((segment, box_key(r['frame_idx'], r['bbox'])) in available for r in rows)
+    pair_labels = {}
+    for name in cfg['pairs']:
+        labels = pair_subset(load(measurements / f'{name}.json'), excluded)
+        labels['observations'] = [r for r in labels['observations'] if r['segment'] == segment]
+        ids = {r['id'] for r in labels['observations']}
+        labels['pairs'] = [p for p in labels['pairs'] if p['left'] in ids and p['right'] in ids]
+        pair_labels[name] = labels
+    scores = {}
+    for name, payload in [('baseline', baseline), ('candidate', candidate)]:
+        payloads = {segment: payload}
+        pairs = {key: score_pairs(labels, payloads, available) for key, labels in pair_labels.items()}
+        assert not any(p['source_unmatched_observations'] for p in pairs.values())
+        scores[name] = dict(kit=score_rows(rows, predictions(payloads), blue=0), pairs=pairs)
+    failures = regressions(scores['baseline'], scores['candidate'])
+    if result.get('promotion_blocked'):
+        failures.append('upstream_non_source_box_fallback')
+    improved = any(
+        score['counts'].get(metric, 0) > scores['baseline']['pairs'][name]['counts'].get(metric, 0)
+        for name, score in scores['candidate']['pairs'].items()
+        for metric in ('same_correct', 'different_correct')
+    )
+    results[directory.name] = dict(group=group, segment=segment, baseline_exact=baseline_stats['baseline_exact'],
+        scores=scores, regressions=failures, person_improvement=improved,
+        local_development_pass=not failures and improved,
+        promotion_allowed=False, scope='Sparse previously seen development labels; not full-video IDF1/HOTA or blind control')
+    print(directory.name, 'regressions', failures, 'improved', improved)
+(ROOT/'comparison_scores.json').write_text(json.dumps(results, indent=2))

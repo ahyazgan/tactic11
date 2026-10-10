@@ -1,0 +1,128 @@
+{
+  "upstream_commit": "8c87391d6f4ea40c5e4d65e61529916c7a49ce62",
+  "status": "completed",
+  "device": "cpu",
+  "protocol": "Official single-view checkpoints and thresholds, PnL refinement enabled, original panoramic source frames. Annotation residual is consistency with existing calibration annotations, not independent accuracy.",
+  "records": [
+    {
+      "group": "day",
+      "frame_idx": 0,
+      "image_size": [
+        4096,
+        1080
+      ],
+      "calibration_found": false,
+      "seconds": 7.84386400016956
+    },
+    {
+      "group": "day",
+      "frame_idx": 124,
+      "image_size": [
+        4096,
+        1080
+      ],
+      "calibration_found": false,
+      "seconds": 6.8448967998847365
+    },
+    {
+      "group": "day",
+      "frame_idx": 240,
+      "image_size": [
+        4096,
+        1080
+      ],
+      "calibration_found": false,
+      "seconds": 6.626781200058758
+    },
+    {
+      "group": "day",
+      "frame_idx": 374,
+      "image_size": [
+        4096,
+        1080
+      ],
+      "calibration_found": false,
+      "seconds": 6.3096280000172555
+    },
+    {
+      "group": "day",
+      "frame_idx": 500,
+      "image_size": [
+        4096,
+        1080
+      ],
+      "calibration_found": false,
+      "seconds": 7.987318500177935
+    },
+    {
+      "group": "day",
+      "frame_idx": 686,
+      "image_size": [
+        4096,
+        1080
+      ],
+      "calibration_found": false,
+      "seconds": 7.137962099863216
+    },
+    {
+      "group": "night",
+      "frame_idx": 0,
+      "image_size": [
+        3840,
+        1906
+      ],
+      "calibration_found": false,
+      "seconds": 8.31577660003677
+    },
+    {
+      "group": "night",
+      "frame_idx": 124,
+      "image_size": [
+        3840,
+        1906
+      ],
+      "calibration_found": false,
+      "seconds": 6.768943399889395
+    },
+    {
+      "group": "night",
+      "frame_idx": 240,
+      "image_size": [
+        3840,
+        1906
+      ],
+      "calibration_found": false,
+      "seconds": 6.559480299940333
+    },
+    {
+      "group": "night",
+      "frame_idx": 374,
+      "image_size": [
+        3840,
+        1906
+      ],
+      "calibration_found": false,
+      "seconds": 6.384454499930143
+    },
+    {
+      "group": "night",
+      "frame_idx": 500,
+      "image_size": [
+        3840,
+        1906
+      ],
+      "calibration_found": false,
+      "seconds": 6.793257700046524
+    },
+    {
+      "group": "night",
+      "frame_idx": 686,
+      "image_size": [
+        3840,
+        1906
+      ],
+      "calibration_found": false,
+      "seconds": 6.588941100053489
+    }
+  ]
+}

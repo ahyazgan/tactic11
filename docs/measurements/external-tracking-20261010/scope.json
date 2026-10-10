@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-10",
+  "production_changed": false,
+  "new_control_pixels_opened": false,
+  "sampling": "previously seen day segment 3 and night_old_control segment 40 only",
+  "jersey_note_amendment": "day_05 initial 16 visual note is ambiguous 15/16; excluded from correctness claims. night_18 visually 6, model 15. This is a diagnostic, not an accuracy estimate.",
+  "score_scope": "Only completed full-clip predictions scored; sparse source-box labels, no IDF1/HOTA claims.",
+  "dependency_install": "pip --target .cache/external-study-20261010/site --no-deps --no-cache-dir; production environments unchanged",
+  "calibration_failed_attempt": "Initial concurrent memory failure excluded; calibration-results.json is the completed serial 12-frame run.",
+  "sam_native_extension": "Optional CUDA hole filling extension absent; upstream official fallback used.",
+  "exclusions": "No upstream source, model weights, source footage, private data or account credentials committed."
+}

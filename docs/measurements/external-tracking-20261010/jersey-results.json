@@ -1,0 +1,612 @@
+{
+  "status": "completed",
+  "model_sha256": "536ec612136ec522f23bcf3ebf88b4d794c6fc02ea0f7e301cd22eeb259df4e6",
+  "strict_state_loading": true,
+  "device": "cpu",
+  "dtype": "float32",
+  "preprocessing": "Upstream JerseyCrop integer bounds; cubic resize 224x224; RGB/127.5-1",
+  "upstream_commit": "f19d9cb90e1a67d5ffe44acbf69fb348fe6525e7",
+  "scope": "24 diagnostic crops from existing development clips, not representative accuracy benchmark",
+  "records": [
+    {
+      "id": "day_00.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 124,
+      "source_bbox": [
+        2354.28125,
+        192.125,
+        2377.09375,
+        238.0
+      ],
+      "kit": "white",
+      "image_sha256": "8858e5cbdfb28a17345990bf3ac4469f153835d0065798ca1cd14b7b88c6243c",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010090927593410015,
+      "uncertainty": 0.9997402429580688,
+      "absent_softmax": 0.9856058955192566,
+      "native_size": [
+        23,
+        46
+      ]
+    },
+    {
+      "id": "day_01.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 124,
+      "source_bbox": [
+        2443.625,
+        145.5,
+        2461.375,
+        181.625
+      ],
+      "kit": "white",
+      "image_sha256": "777ad73589821cf536273f069baf0e156319c9994a42a9f833c343a9fe9e41d1",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010063187219202518,
+      "uncertainty": 0.9997845888137817,
+      "absent_softmax": 0.9866318106651306,
+      "native_size": [
+        18,
+        36
+      ]
+    },
+    {
+      "id": "day_02.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 124,
+      "source_bbox": [
+        2410.4375,
+        141.5,
+        2426.4375,
+        174.125
+      ],
+      "kit": "blue",
+      "image_sha256": "04c7d671cdf336cda82d1d292e6708141e001a5e16bc65c3a105f425244793e2",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010061720386147499,
+      "uncertainty": 0.9998607635498047,
+      "absent_softmax": 0.993455708026886,
+      "native_size": [
+        16,
+        33
+      ]
+    },
+    {
+      "id": "day_03.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 124,
+      "source_bbox": [
+        2828.5,
+        277.59375,
+        2853.125,
+        331.75
+      ],
+      "kit": "white",
+      "image_sha256": "29605f6b98666abee318fccf58bc03c1b61a0d063999ecc8dffbf45de90a5608",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010104166343808174,
+      "uncertainty": 0.9995831251144409,
+      "absent_softmax": 0.9669287800788879,
+      "native_size": [
+        25,
+        54
+      ]
+    },
+    {
+      "id": "day_04.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 124,
+      "source_bbox": [
+        1880.25,
+        243.5,
+        1905.5,
+        270.0
+      ],
+      "kit": "blue",
+      "image_sha256": "285648d6618ab1a73d5ec657d404a1a3c46e99e6869963f20d349519bd8577c2",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 10,
+      "number_probability": 0.010987116023898125,
+      "uncertainty": 0.9948775172233582,
+      "absent_softmax": 0.6589459180831909,
+      "native_size": [
+        25,
+        27
+      ]
+    },
+    {
+      "id": "day_05.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 124,
+      "source_bbox": [
+        1876.25,
+        246.609375,
+        1905.0,
+        311.125
+      ],
+      "kit": "blue",
+      "image_sha256": "9bd05895990a4f250bf38f2ea45afe554225354d14e82685532927961f213e23",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 15,
+      "number_probability": 0.9858427047729492,
+      "uncertainty": 0.001211505034007132,
+      "absent_softmax": 1.7095395378419198e-05,
+      "native_size": [
+        29,
+        65
+      ]
+    },
+    {
+      "id": "day_06.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 500,
+      "source_bbox": [
+        2987.25,
+        230.625,
+        3005.75,
+        269.75
+      ],
+      "kit": "blue",
+      "image_sha256": "9f95101fb26b3ab81f1ae1903c3d9895671f44dbff68dfa99ae5fde500c1f086",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 4,
+      "number_probability": 0.04657541587948799,
+      "uncertainty": 0.9619343876838684,
+      "absent_softmax": 0.24740305542945862,
+      "native_size": [
+        18,
+        39
+      ]
+    },
+    {
+      "id": "day_07.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 500,
+      "source_bbox": [
+        2939.625,
+        267.84375,
+        2962.25,
+        319.125
+      ],
+      "kit": "white",
+      "image_sha256": "7d6d60305fb8b931ae1191f4851c3de43b97e472a01ea49ad3d1380f43f3f63f",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010097026824951172,
+      "uncertainty": 0.999403715133667,
+      "absent_softmax": 0.9617352485656738,
+      "native_size": [
+        23,
+        52
+      ]
+    },
+    {
+      "id": "day_08.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 500,
+      "source_bbox": [
+        2154.875,
+        178.0,
+        2174.0,
+        226.0
+      ],
+      "kit": "blue",
+      "image_sha256": "7df080bc3777926e8f1ac27958e5983a2af4f072badde9204451378ae9f2b0f8",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010041072964668274,
+      "uncertainty": 0.9998672604560852,
+      "absent_softmax": 0.9937648773193359,
+      "native_size": [
+        20,
+        48
+      ]
+    },
+    {
+      "id": "day_09.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 500,
+      "source_bbox": [
+        3096.7568359375,
+        304.1875,
+        3116.890625,
+        354.625
+      ],
+      "kit": "blue",
+      "image_sha256": "a45cd2e75d24ca5e35075b05976b93ce43ab4eaf9ff02a7489ba2a0b0f0910b0",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.01003047451376915,
+      "uncertainty": 0.9998742341995239,
+      "absent_softmax": 0.993861198425293,
+      "native_size": [
+        20,
+        50
+      ]
+    },
+    {
+      "id": "day_10.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 500,
+      "source_bbox": [
+        2879.0,
+        206.0,
+        2896.75,
+        245.875
+      ],
+      "kit": "white",
+      "image_sha256": "50aa6add8d3a194fd8d68b56b81cc474e3604bf35e54d970479bbf9592412d9a",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010059257969260216,
+      "uncertainty": 0.9995667338371277,
+      "absent_softmax": 0.9619453549385071,
+      "native_size": [
+        17,
+        39
+      ]
+    },
+    {
+      "id": "day_11.png",
+      "group": "day",
+      "segment": 3,
+      "source_video": "data/tracking/bench/daylight_117093/source/seg_0003.mp4",
+      "source_frame": 500,
+      "source_bbox": [
+        2765.0625,
+        204.875,
+        2784.8125,
+        245.75
+      ],
+      "kit": "white",
+      "image_sha256": "61fd1c683e727b010fcb644288a35dfde7d6c1e58d700f29abc7a1c9a8eddff6",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010037608444690704,
+      "uncertainty": 0.9997801780700684,
+      "absent_softmax": 0.9813088774681091,
+      "native_size": [
+        19,
+        41
+      ]
+    },
+    {
+      "id": "night_12.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 374,
+      "source_bbox": [
+        2061.75,
+        544.125,
+        2087.5,
+        585.25
+      ],
+      "kit": "blue",
+      "image_sha256": "05c6c2b40afbd0d678416ff56c971dd9833c4c3f9bbfce08bb2a069961eb17d9",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.0100740697234869,
+      "uncertainty": 0.9997981786727905,
+      "absent_softmax": 0.9878403544425964,
+      "native_size": [
+        26,
+        41
+      ]
+    },
+    {
+      "id": "night_13.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 374,
+      "source_bbox": [
+        2420.0,
+        545.5,
+        2441.5,
+        580.375
+      ],
+      "kit": "blue",
+      "image_sha256": "de5b2cd6932bca47296189fe3f455318149575df374bf85ae7bae006ea27966f",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.01006772369146347,
+      "uncertainty": 0.9996657371520996,
+      "absent_softmax": 0.9771979451179504,
+      "native_size": [
+        21,
+        35
+      ]
+    },
+    {
+      "id": "night_14.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 374,
+      "source_bbox": [
+        2765.0,
+        647.875,
+        2792.75,
+        695.75
+      ],
+      "kit": "white",
+      "image_sha256": "cc0ad6eb67005528627c96178dc3ff98fb0819be5ca0fda108174145415055e5",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 3,
+      "number_probability": 0.010055135935544968,
+      "uncertainty": 0.9996514916419983,
+      "absent_softmax": 0.9763679504394531,
+      "native_size": [
+        27,
+        48
+      ]
+    },
+    {
+      "id": "night_15.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 374,
+      "source_bbox": [
+        2816.375,
+        641.875,
+        2844.5,
+        690.25
+      ],
+      "kit": "white",
+      "image_sha256": "30cee4a2dbe23c2da44bc7fdcc5494e24704fc227420fd6bf81120f167ccc426",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010075573809444904,
+      "uncertainty": 0.9996961951255798,
+      "absent_softmax": 0.9775810241699219,
+      "native_size": [
+        28,
+        49
+      ]
+    },
+    {
+      "id": "night_16.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 374,
+      "source_bbox": [
+        2602.0,
+        632.875,
+        2636.5,
+        690.0
+      ],
+      "kit": "blue",
+      "image_sha256": "39d6aa9a913a87de598152f827400acbeaea24738ac303782e192c8cb6840d3e",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 8,
+      "number_probability": 0.010591522790491581,
+      "uncertainty": 0.9973390698432922,
+      "absent_softmax": 0.6557080149650574,
+      "native_size": [
+        34,
+        58
+      ]
+    },
+    {
+      "id": "night_17.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 374,
+      "source_bbox": [
+        2389.0,
+        578.125,
+        2414.5,
+        619.5
+      ],
+      "kit": "blue",
+      "image_sha256": "f589d4c38259b2dddfd436b03fcf0e0e4ecce343405affc0c703c5ea0cbdda0f",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 6,
+      "number_probability": 0.010094146244227886,
+      "uncertainty": 0.9995957016944885,
+      "absent_softmax": 0.9673905372619629,
+      "native_size": [
+        25,
+        41
+      ]
+    },
+    {
+      "id": "night_18.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 686,
+      "source_bbox": [
+        1983.5,
+        626.25,
+        2021.0,
+        692.75
+      ],
+      "kit": "blue",
+      "image_sha256": "e6d5f317bb06257daed5702edff56e5d647768495891decce8e0c7fa6136d5d5",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 15,
+      "number_probability": 0.9932815432548523,
+      "uncertainty": 0.0016663148999214172,
+      "absent_softmax": 3.0122497264528647e-05,
+      "native_size": [
+        38,
+        66
+      ]
+    },
+    {
+      "id": "night_19.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 686,
+      "source_bbox": [
+        3310.5,
+        827.25,
+        3340.0,
+        879.25
+      ],
+      "kit": "white",
+      "image_sha256": "0bcd5c33ab07705f169e54185156e63bd7e28429a171aa700a3d32545105341e",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 5,
+      "number_probability": 0.010559582151472569,
+      "uncertainty": 0.9984785914421082,
+      "absent_softmax": 0.9389021396636963,
+      "native_size": [
+        30,
+        52
+      ]
+    },
+    {
+      "id": "night_20.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 686,
+      "source_bbox": [
+        2046.0,
+        577.75,
+        2073.0,
+        636.375
+      ],
+      "kit": "blue",
+      "image_sha256": "0aad12f82ec4efdbdeefdcb2b14183cc3405c854dc113fffc1f365db4420c52c",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010106146335601807,
+      "uncertainty": 0.9996986985206604,
+      "absent_softmax": 0.9781867861747742,
+      "native_size": [
+        27,
+        59
+      ]
+    },
+    {
+      "id": "night_21.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 686,
+      "source_bbox": [
+        2752.0,
+        663.25,
+        2785.75,
+        719.5
+      ],
+      "kit": "white",
+      "image_sha256": "227ae859a83d07863facb7dab43d0e6d07c1b584512a946337f2c80c57d51876",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.010066530667245388,
+      "uncertainty": 0.9995708465576172,
+      "absent_softmax": 0.9737711548805237,
+      "native_size": [
+        33,
+        56
+      ]
+    },
+    {
+      "id": "night_22.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 686,
+      "source_bbox": [
+        2805.5,
+        624.125,
+        2833.625,
+        664.5
+      ],
+      "kit": "white",
+      "image_sha256": "28f9210d5c812e3d87af88d0c17c0b08e038d9b2e5b4ab0ec65f7299fc1ba1f2",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.0101108243688941,
+      "uncertainty": 0.9996092915534973,
+      "absent_softmax": 0.9803816080093384,
+      "native_size": [
+        28,
+        40
+      ]
+    },
+    {
+      "id": "night_23.png",
+      "group": "night",
+      "segment": 40,
+      "source_video": "data/tracking/bench/joint_identity_control/source/seg_0040.mp4",
+      "source_frame": 686,
+      "source_bbox": [
+        2947.0,
+        661.25,
+        2976.0,
+        702.75
+      ],
+      "kit": "white",
+      "image_sha256": "06c27448599acd3a5e5b1644a0eaad662c06a1b6027fdcb4166d64ec3aedd71e",
+      "visible_number": null,
+      "legibility": "unreviewed",
+      "predicted_number": 1,
+      "number_probability": 0.01008293405175209,
+      "uncertainty": 0.999778151512146,
+      "absent_softmax": 0.9851363897323608,
+      "native_size": [
+        29,
+        41
+      ]
+    }
+  ]
+}

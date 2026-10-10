@@ -1,0 +1,137 @@
+[
+  {
+    "repo": "holma91/selective-mask-propagation",
+    "default_branch": "main",
+    "size_kb": 49319,
+    "head": "6472b52e79c47a7793cd4c6cabd64e812a8e5852",
+    "commit_date": "2026-07-14T13:27:46Z",
+    "license": "MIT",
+    "archived": false
+  },
+  {
+    "repo": "holma91/sam3-ball-tracking",
+    "default_branch": "main",
+    "size_kb": 162955,
+    "head": "8ca5f335dff5846efb1ec7b4ebac2846a2c0c908",
+    "commit_date": "2026-05-26T15:31:57Z",
+    "license": "MIT",
+    "archived": false
+  },
+  {
+    "repo": "ron941/GTATrack-STC2025",
+    "default_branch": "main",
+    "size_kb": 114957,
+    "head": "fa554145687e9b126c492072d205e42bfe01bc5b",
+    "commit_date": "2026-01-29T03:23:57Z",
+    "license": null,
+    "archived": false
+  },
+  {
+    "repo": "tstanczyk95/McBytePlusPlus",
+    "default_branch": "main",
+    "size_kb": 26307,
+    "head": "be1bbc03f18e33e93e0a359bbcbfdfc4dc4ab6b9",
+    "commit_date": "2026-09-08T11:03:05Z",
+    "license": "Apache-2.0",
+    "archived": false
+  },
+  {
+    "repo": "haolinyang-hlyang/SoccerMaster",
+    "default_branch": "main",
+    "size_kb": 54316,
+    "head": "2e5619712d93f634b841aaf37231cd9fceb6b262",
+    "commit_date": "2026-08-22T08:14:29Z",
+    "license": null,
+    "archived": false
+  },
+  {
+    "repo": "lukaszgrad/uncertainty-jnr",
+    "default_branch": "main",
+    "size_kb": 213,
+    "head": "f19d9cb90e1a67d5ffe44acbf69fb348fe6525e7",
+    "commit_date": "2025-06-24T10:46:22Z",
+    "license": "NOASSERTION",
+    "archived": false
+  },
+  {
+    "repo": "mguti97/PnLCalib",
+    "default_branch": "main",
+    "size_kb": 96551,
+    "head": "8c87391d6f4ea40c5e4d65e61529916c7a49ce62",
+    "commit_date": "2026-03-17T07:46:43Z",
+    "license": "GPL-2.0",
+    "archived": false
+  },
+  {
+    "repo": "hyunsungkim-ds/pathcrf",
+    "default_branch": "main",
+    "size_kb": 187120,
+    "head": "1b7c6f85a6b78c92e4543fde72ca2b86a933f997",
+    "commit_date": "2026-06-08T13:55:04Z",
+    "license": "MPL-2.0",
+    "archived": false
+  },
+  {
+    "repo": "hyunsungkim-ds/elastic",
+    "default_branch": "cikm2026",
+    "size_kb": 22631,
+    "head": "e245224aad7450961eca40954ae2bc85e1e6e696",
+    "commit_date": "2026-09-07T09:06:19Z",
+    "license": "MPL-2.0",
+    "archived": false
+  },
+  {
+    "repo": "hyunsungkim-ds/defcon",
+    "default_branch": "main",
+    "size_kb": 5718,
+    "head": "f8a3a2b987b376221afe30453b0f145b965edcae",
+    "commit_date": "2026-02-25T05:32:45Z",
+    "license": null,
+    "archived": false
+  },
+  {
+    "repo": "areyesan/SambaGraph",
+    "default_branch": "main",
+    "size_kb": 525,
+    "head": "ef51afa3e5db2a9e0cf72dd9b5fd21b09b53fce0",
+    "commit_date": "2026-08-30T02:04:54Z",
+    "license": "MIT",
+    "archived": false
+  },
+  {
+    "repo": "evs-broadcast/BroadTrack",
+    "default_branch": "main",
+    "size_kb": 1473,
+    "head": "31d4703c9a9ff84eeda36c8667c433a72cdace1f",
+    "commit_date": "2025-02-17T14:46:50Z",
+    "license": "NOASSERTION",
+    "archived": false
+  },
+  {
+    "repo": "mkoshkina/jersey-number-pipeline",
+    "default_branch": "main",
+    "size_kb": 87510,
+    "head": "007d54e5530a66616ed5081ca35e0028b36aadb5",
+    "commit_date": "2024-10-07T16:09:56Z",
+    "license": "NOASSERTION",
+    "archived": false
+  },
+  {
+    "repo": "roboflow/sports",
+    "default_branch": "main",
+    "size_kb": 1741,
+    "head": "42c80c06b6b65a7f89455b89fe31cdf4c38ba227",
+    "commit_date": "2025-05-27T08:58:09Z",
+    "license": "MIT",
+    "archived": false
+  },
+  {
+    "repo": "AnInsomniacy/tracknet-series-pytorch",
+    "default_branch": "main",
+    "size_kb": 221849,
+    "head": "0d358f732904c2bebafe9fa836a38e176bde70f0",
+    "commit_date": "2026-05-13T04:38:31Z",
+    "license": null,
+    "archived": false
+  }
+]

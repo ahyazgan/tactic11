@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "pinned_repositories": 15,
+  "source_files_hash_verified": 3226,
+  "frozen_code_files_unchanged": 103,
+  "inclusive_iou_cases": 10000,
+  "inclusive_iou_max_abs_error": 0.0,
+  "iou_scope": "Analytic edge cases and independent scalar formula; native Cython binary not available on this Windows environment",
+  "new_control_pixels_opened": false,
+  "production_changed": false
+}
