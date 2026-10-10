@@ -83,7 +83,7 @@ if ($needBuild) {
     Push-Location $frontend
     try {
         $buildLog = Join-Path $cache 'codex-runtime-build.log'
-        & $node $next build *> $buildLog
+        & $node $next build --webpack *> $buildLog
         if ($LASTEXITCODE -ne 0) { throw "Frontend build failed. See $buildLog" }
     } finally { Pop-Location }
     @{ head = $head; apiUrl = $apiUrl; demoMode = $false } |

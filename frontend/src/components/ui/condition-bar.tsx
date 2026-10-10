@@ -16,9 +16,9 @@ export function ConditionBar({
   const pct = Math.max(0, Math.min(100, (value / (max || 1)) * 100));
   const color = pct >= 85 ? "bg-ok" : pct >= 72 ? "bg-warn" : "bg-high";
   return (
-    <div className={cn("h-2 rounded bg-elevated overflow-hidden", className)}>
+    <div className={cn("h-2 rounded-sm bg-elevated overflow-hidden", className)}>
       <div
-        className={cn("h-full rounded transition-all", color)}
+        className={cn("h-full rounded-sm transition-all", color)}
         style={{ width: `${pct}%` }}
       />
     </div>

@@ -20,7 +20,7 @@ export function ProbBar({
   const a = (away / total) * 100;
   return (
     <div className={className}>
-      <div className="flex h-2 rounded overflow-hidden bg-elevated">
+      <div className="flex h-2 rounded-sm overflow-hidden bg-elevated">
         <div className="bg-ok" style={{ width: `${h}%` }} />
         <div className="bg-textdim" style={{ width: `${d}%` }} />
         <div className="bg-high" style={{ width: `${a}%` }} />

@@ -46,7 +46,7 @@ export function MiniPitch({
       width={W}
       height={H}
       viewBox={`0 0 ${W} ${H}`}
-      className="rounded border border-border"
+      className="rounded-sm border border-border"
       aria-label={label ?? "Saha mini-map"}
     >
       <defs>

@@ -14,7 +14,7 @@ const sans = localFont({
     { path: "../../public/fonts/ibm-plex-sans/IBMPlexSans-SemiBold.woff2", weight: "600", style: "normal" },
     { path: "../../public/fonts/ibm-plex-sans/IBMPlexSans-Bold.woff2", weight: "700", style: "normal" },
   ],
-  variable: "--font-sans",
+  variable: "--font-ibm-plex-sans",
   display: "swap",
 });
 

@@ -1,6 +1,54 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss' source('../');
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface2: var(--c-surface2);
+  --color-elevated: var(--c-elevated);
+  --color-border: var(--c-border);
+  --color-borderlt: var(--c-borderlt);
+  --color-text: var(--c-text);
+  --color-textmut: var(--c-textmut);
+  --color-textdim: var(--c-textdim);
+  --color-accent: #3d7eff;
+  --color-accenthov: #5a92ff;
+  --color-brand: var(--brand, #e30613);
+  --color-win: #3fb950;
+  --color-draw: #d4a72c;
+  --color-loss: #e5534b;
+  --color-warn: #d4a72c;
+  --color-danger: #e5534b;
+  --color-ok: #3fb950;
+  --color-high: #f97316;
+  --color-panel: var(--c-surface);
+  --color-fg: var(--c-text);
+  --color-muted: var(--c-textmut);
+  --color-good: #3fb950;
+  --color-bad: #e5534b;
+
+  --font-sans: var(--font-ibm-plex-sans), ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-mono: JetBrains Mono, ui-monospace, monospace;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 :root {
   color-scheme: light;
@@ -79,17 +127,17 @@ html.light .pp-root .card {
   button[aria-label="Tema değiştir"] { bottom: 76px !important; }
 }
 
-html, body { background: theme('colors.bg'); color: theme('colors.text'); }
+html, body { background: var(--color-bg); color: var(--color-text); }
 
 body {
-  font-family: theme('fontFamily.sans');
+  font-family: var(--font-ibm-plex-sans), ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* DESIGN.md legacy — eski sayfalar refactor edilene kadar */
 .card {
-  background: theme('colors.surface');
-  border: 1px solid theme('colors.border');
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   padding: 1rem;
 }

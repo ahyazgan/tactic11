@@ -10,6 +10,18 @@ interface Video { id: string; filename: string; duration_seconds: number; size_b
 interface Pending { id: string; filename: string; offset: number; length: number; expires: number }
 const endpoint = "/api/match-reports/uploads";
 const mb = (n: number) => (n / 1024 / 1024).toFixed(1);
+const retryDelays = [0, 1000, 3000, 5000, 15000, 30000, 60000];
+
+class ResumeResponseError extends Error {
+  constructor(readonly status: number) { super("Yükleme durumu geçici olarak alınamadı."); }
+}
+
+function responseStatus(error: DetailedError): number {
+  // tus wraps errors thrown by onAfterResponse; retain the HTTP status through
+  // that wrapper so a denied HEAD cannot silently create a replacement upload.
+  if (error.causingError instanceof ResumeResponseError) return error.causingError.status;
+  return error.originalResponse?.getStatus() ?? 0;
+}
 
 function identity(token: string | null): string {
   try {
@@ -30,6 +42,7 @@ export function VideoUpload({ account, onUploaded }: { account: string; onUpload
   const [progress, setProgress] = useState({ sent: 0, total: 0 });
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [waiting, setWaiting] = useState(false);
   const ref = useRef<Upload | null>(null);
   const alive = useRef(true);
   const { data: pending, mutate } = useSWR<Pending[]>(["/match-reports/uploads", account], ([path]: [string, string]) => apiFetch(path));
@@ -54,25 +67,44 @@ export function VideoUpload({ account, onUploaded }: { account: string; onUpload
       const sample = await new Blob([file.slice(0, 65536), file.slice(Math.max(0, Math.floor(file.size / 2) - 32768), Math.floor(file.size / 2) + 32768), file.slice(-65536)]).arrayBuffer();
       const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", sample))).map(b => b.toString(16).padStart(2, "0")).join("");
       checkOwner();
+      let retryNotBefore = 0;
       const upload = new Upload(file, {
         endpoint: new URL(endpoint, window.location.origin).href,
-        chunkSize: 2 * 1024 * 1024, retryDelays: [0, 1000, 3000, 5000, 15000, 30000, 60000],
+        chunkSize: 2 * 1024 * 1024, retryDelays: [...retryDelays],
         metadata: { filename: file.name }, removeFingerprintOnSuccess: true,
         fingerprint: async () => `manager-review-v1:${account}:${owner}:${file.name}:${file.size}:${file.lastModified}:${hash}`,
         onBeforeRequest: request => {
           checkOwner(); safeURL(request.getURL());
+          setWaiting(false);
           request.setHeader("Authorization", `Bearer ${getAccessToken()}`);
         },
-        onAfterResponse: async (_, response) => {
-          if (response.getStatus() === 401) { checkOwner(); await getOrRefreshToken(); checkOwner(); }
+        onAfterResponse: async (request, response) => {
+          const status = response.getStatus();
+          if (status === 401) { checkOwner(); await getOrRefreshToken(); checkOwner(); }
+          if (status === 429 || status === 503) {
+            const value = response.getHeader("Retry-After");
+            const seconds = value && /^\d+$/.test(value) ? Number(value) : NaN;
+            const wait = Number.isFinite(seconds) ? seconds * 1000 : value ? Date.parse(value) - Date.now() : 0;
+            retryNotBefore = Date.now() + Math.min(300_000, Math.max(0, Number.isFinite(wait) ? wait : 0));
+            if (alive.current) setWaiting(retryNotBefore > Date.now());
+          }
+          // tus 4.3.1 recreates uploads for unsuccessful HEAD responses. Only a
+          // missing/expired receipt may do that; transient errors must resume.
+          if (request.getMethod() === "HEAD" && status >= 300 && status !== 404 && status !== 410)
+            throw new ResumeResponseError(status);
         },
-        onShouldRetry: error => [0, 401, 409, 423, 429, 500, 502, 503, 504].includes(error.originalResponse?.getStatus() ?? 0),
+        onShouldRetry: (error, attempt, options) => {
+          if (options.retryDelays && attempt < retryDelays.length)
+            options.retryDelays[attempt] = Math.max(retryDelays[attempt], retryNotBefore - Date.now());
+          return [0, 401, 409, 423, 429, 500, 502, 503, 504].includes(responseStatus(error));
+        },
         onProgress: (sent, total) => { if (alive.current) setProgress({ sent, total }); },
         onError: err => {
           if (!alive.current) return;
           let detail = "Bağlantı kesildi. Devam et ile yeniden deneyin; sayfayı yenilediyseniz aynı dosyayı seçin.";
           if (err instanceof DetailedError) {
             try { const body = JSON.parse(err.originalResponse?.getBody() || "{}"); if (typeof body.detail === "string") detail = body.detail; } catch { /* Proxy errors contain no user-facing detail. */ }
+            if (responseStatus(err) === 403) detail = "Yüklemeye erişilemiyor. Hesap yetkisini kontrol edin.";
           }
           setError(detail); setState("error"); void mutate();
         },
@@ -102,7 +134,7 @@ export function VideoUpload({ account, onUploaded }: { account: string; onUpload
     <small>H.264 (8 bit) MP4 · En fazla 3 saat / varsayılan 2 GB. Yarım yükleme 24 saat korunur. Yeniledikten sonra aynı dosyayı seçin.</small>
     {name && <div aria-live="polite"><strong>{name}</strong>
       <progress aria-label="Video yükleme ilerlemesi" max={progress.total || 1} value={progress.sent} className={styles.uploadProgress} />
-      <small>{mb(progress.sent)} / {mb(progress.total)} MB · {state === "done" ? "Video kaydedildi" : state === "paused" ? "Duraklatıldı" : progress.sent === progress.total && active ? "Video kontrol ediliyor…" : active ? "Yükleniyor…" : "Devam edilebilir"}</small>
+      <small>{mb(progress.sent)} / {mb(progress.total)} MB · {state === "done" ? "Video kaydedildi" : state === "paused" ? "Duraklatıldı" : active && waiting ? "Sunucu bekleme istedi; yükleme otomatik sürdürülecek…" : progress.sent === progress.total && active ? "Video kontrol ediliyor…" : active ? "Yükleniyor…" : "Devam edilebilir"}</small>
       <div className={styles.toolbar}>
         {state === "sending" && <button type="button" onClick={() => { void ref.current?.abort().then(() => { setState("paused"); void mutate(); }); }}>Duraklat</button>}
         {(state === "paused" || state === "error") && ref.current && <button type="button" onClick={() => { setError(""); setState("sending"); ref.current?.start(); }}>Yüklemeye devam et</button>}

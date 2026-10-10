@@ -489,13 +489,13 @@ export default function PerformansPage() {
             <span className="text-muted mb-1">Oyuncu ID</span>
             <input
               type="number"
-              className="w-32 bg-bg border border-border rounded px-2 py-1 text-sm"
+              className="w-32 bg-bg border border-border rounded-sm px-2 py-1 text-sm"
               value={savedPlayerId}
               onChange={(e) => setSavedPlayerId(e.target.value)}
             />
           </label>
           <button
-            className="px-3 py-1.5 bg-accent text-white text-sm rounded"
+            className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm"
             onClick={loadFromSaved}
             disabled={savedLoading}
           >
@@ -515,7 +515,7 @@ export default function PerformansPage() {
           {Object.entries(SAMPLE_PRESETS).map(([k, v]) => (
             <button
               key={k}
-              className="text-xs px-2 py-1 border border-border rounded hover:bg-surface2"
+              className="text-xs px-2 py-1 border border-border rounded-sm hover:bg-surface2"
               onClick={() => setSeriesText(v)}
             >
               {k}
@@ -524,14 +524,14 @@ export default function PerformansPage() {
         </div>
         <textarea
           rows={3}
-          className="w-full bg-bg border border-border rounded px-2 py-1 text-sm font-mono"
+          className="w-full bg-bg border border-border rounded-sm px-2 py-1 text-sm font-mono"
           placeholder="6.5, 7.0, 7.2, 6.8, 7.5 (virgül veya yeni satır ayır)"
           value={seriesText}
           onChange={(e) => setSeriesText(e.target.value)}
         />
         <div className="mt-2 flex items-center gap-3">
           <button
-            className="px-3 py-1.5 bg-accent text-white text-sm rounded"
+            className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm"
             onClick={runAnalysis}
             disabled={loading}
           >
@@ -644,7 +644,7 @@ export default function PerformansPage() {
           <p className="text-sm">{trajectory.value.summary}</p>
 
           {trajectory.value.rtm_warning && (
-            <div className="mt-3 p-2 border border-warn/40 bg-warn/10 rounded text-xs">
+            <div className="mt-3 p-2 border border-warn/40 bg-warn/10 rounded-sm text-xs">
               <span className="font-semibold">RTM Uyarısı:</span>{" "}
               {trajectory.value.rtm_warning}
             </div>
@@ -687,7 +687,7 @@ export default function PerformansPage() {
           ) : (
             <div className="space-y-2">
               {anomaly.value.events.map((ev, i) => (
-                <div key={i} className="border border-border rounded p-2">
+                <div key={i} className="border border-border rounded-sm p-2">
                   <div className="flex items-center gap-2 mb-1">
                     <Pill
                       variant={
@@ -721,13 +721,13 @@ export default function PerformansPage() {
           </span>
           <textarea
             rows={8}
-            className="bg-bg border border-border rounded px-2 py-1 text-xs font-mono"
+            className="bg-bg border border-border rounded-sm px-2 py-1 text-xs font-mono"
             value={adjustedJson}
             onChange={(e) => setAdjustedJson(e.target.value)}
           />
         </label>
         <button
-          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm mb-3"
           onClick={runAdjusted}
           disabled={adjustedLoading}
         >
@@ -827,13 +827,13 @@ export default function PerformansPage() {
           </span>
           <textarea
             rows={8}
-            className="bg-bg border border-border rounded px-2 py-1 text-xs font-mono"
+            className="bg-bg border border-border rounded-sm px-2 py-1 text-xs font-mono"
             value={clutchJson}
             onChange={(e) => setClutchJson(e.target.value)}
           />
         </label>
         <button
-          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm mb-3"
           onClick={runClutch}
           disabled={clutchLoading}
         >
@@ -933,13 +933,13 @@ export default function PerformansPage() {
           </span>
           <textarea
             rows={10}
-            className="bg-bg border border-border rounded px-2 py-1 text-xs font-mono"
+            className="bg-bg border border-border rounded-sm px-2 py-1 text-xs font-mono"
             value={teamJson}
             onChange={(e) => setTeamJson(e.target.value)}
           />
         </label>
         <button
-          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm mb-3"
           onClick={runTeamForm}
           disabled={teamLoading}
         >
@@ -1054,13 +1054,13 @@ export default function PerformansPage() {
           <span className="text-muted mb-1">Oyuncular (JSON — 2-6 oyuncu)</span>
           <textarea
             rows={10}
-            className="bg-bg border border-border rounded px-2 py-1 text-xs font-mono"
+            className="bg-bg border border-border rounded-sm px-2 py-1 text-xs font-mono"
             value={compareJson}
             onChange={(e) => setCompareJson(e.target.value)}
           />
         </label>
         <button
-          className="px-3 py-1.5 bg-accent text-white text-sm rounded mb-3"
+          className="px-3 py-1.5 bg-accent text-white text-sm rounded-sm mb-3"
           onClick={runComparison}
           disabled={compareLoading}
         >

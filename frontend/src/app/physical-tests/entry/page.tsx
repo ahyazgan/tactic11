@@ -320,7 +320,7 @@ export default function PhysicalPanelPage() {
               <div className="ctitle">Yükleme Riski Analizi</div>
               <div className="gauge">
                 <div
-                  className="ring"
+                  className="ring-3"
                   style={{ "--p": score, "--ringc": ringColor } as unknown as React.CSSProperties}
                 >
                   <div className="val">

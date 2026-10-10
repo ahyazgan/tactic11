@@ -5,10 +5,18 @@ test("tus: bağlantı kesilince duraklat, yenile ve aynı dosyayı kaldığı ye
   test.setTimeout(120_000);
   let interrupt = true, creations = 0, sawFirst = false, refreshes = 0, unauthorized = false;
   const resumedOffsets: number[] = [];
+  const headErrors = [429, 401, 503];
+  let headAttempts = 0, throttledAt = 0, retriedAt = 0;
   page.on("request", request => { if (request.url().endsWith("/api/auth/refresh")) refreshes++; });
   await page.route("**/api/match-reports/uploads**", async route => {
     const request = route.request();
     if (request.method() === "POST") creations++;
+    if (request.method() === "HEAD" && !interrupt && headAttempts < headErrors.length) {
+      const status = headErrors[headAttempts++];
+      if (status === 429) throttledAt = Date.now();
+      else if (!retriedAt) retriedAt = Date.now();
+      return route.fulfill({ status, headers: { "Retry-After": "1" } });
+    }
     if (request.method() === "PATCH") {
       const offset = Number(request.headers()["upload-offset"]);
       if (offset > 0 && interrupt) { sawFirst = true; return route.abort("internetdisconnected"); }
@@ -40,6 +48,8 @@ test("tus: bağlantı kesilince duraklat, yenile ve aynı dosyayı kaldığı ye
   await expect(page.getByRole("status")).toContainText("Video kaydedildi", { timeout: 60_000 });
   expect(creations).toBe(1);
   expect(resumedOffsets[0]).toBe(pending[0].offset);
-  expect(refreshes).toBe(1);
+  expect(headAttempts).toBe(3);
+  expect(retriedAt - throttledAt).toBeGreaterThanOrEqual(950);
+  expect(refreshes).toBe(2);
   await expect(page.getByLabel("Kaynak video")).not.toHaveValue("");
 });

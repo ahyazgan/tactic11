@@ -81,7 +81,7 @@ export function TopBar() {
         <select
           value={season}
           onChange={(e) => setSeason(Number(e.target.value))}
-          className="bg-surface2 border border-border text-text text-[12px] px-2 py-1 rounded h-7"
+          className="bg-surface2 border border-border text-text text-[12px] px-2 py-1 rounded-sm h-7"
           aria-label={t("Sezon")}
         >
           {SEASONS.map((s) => (
@@ -96,7 +96,7 @@ export function TopBar() {
         <button
           type="button"
           onClick={() => setLang(lang === "tr" ? "en" : "tr")}
-          className="text-[11px] uppercase tracking-wide px-2 py-1 rounded border border-borderlt text-textmut hover:text-text hover:border-accent transition-colors"
+          className="text-[11px] uppercase tracking-wide px-2 py-1 rounded-sm border border-borderlt text-textmut hover:text-text hover:border-accent transition-colors"
           aria-label={t("Dil")}
           title={t("Dil")}
         >
@@ -120,7 +120,7 @@ export function TopBar() {
             <button
               type="button"
               onClick={logout}
-              className="text-[11px] uppercase tracking-wide px-2 py-1 rounded border border-borderlt text-textmut hover:text-text hover:border-accent transition-colors"
+              className="text-[11px] uppercase tracking-wide px-2 py-1 rounded-sm border border-borderlt text-textmut hover:text-text hover:border-accent transition-colors"
             >
               {t("Çıkış")}
             </button>

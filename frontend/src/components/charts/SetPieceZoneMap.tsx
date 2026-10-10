@@ -98,7 +98,7 @@ export function SetPieceZoneMap({
       width={W}
       height={H}
       viewBox={`0 0 ${W} ${H}`}
-      className="rounded border border-border bg-[#0d1f12]"
+      className="rounded-sm border border-border bg-[#0d1f12]"
       role="img"
       aria-label="Set-piece zone heatmap"
     >

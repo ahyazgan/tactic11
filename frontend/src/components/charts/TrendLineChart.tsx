@@ -45,7 +45,7 @@ export function TrendLineChart({
       <div className="flex items-baseline justify-between mb-2">
         <h3 className="text-sm uppercase text-muted">{title}</h3>
         <span
-          className="text-xs uppercase px-2 py-0.5 rounded"
+          className="text-xs uppercase px-2 py-0.5 rounded-sm"
           style={{ backgroundColor: `${directionColor}33`, color: directionColor }}
         >
           {trend.direction}

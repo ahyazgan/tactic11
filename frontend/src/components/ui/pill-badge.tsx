@@ -28,7 +28,7 @@ export function Pill({
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase",
+        "inline-flex items-center justify-center px-1.5 py-0.5 rounded-sm text-[10px] font-bold uppercase",
         VARIANT_CLASSES[variant],
         className,
       )}
@@ -48,7 +48,7 @@ export function ResultDot({ result }: { result: "W" | "D" | "L" }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center w-4 h-4 rounded text-[10px] font-bold",
+        "inline-flex items-center justify-center w-4 h-4 rounded-sm text-[10px] font-bold",
         VARIANT_CLASSES[variant],
       )}
     >
