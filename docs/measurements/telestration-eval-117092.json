@@ -28,23 +28,23 @@
   "pred_vs_gt": {
     "frames": 1500,
     "ref_label_counts": {
-      "Alçak blok": 111,
-      "Yüksek blok": 782,
-      "Orta blok": 235,
+      "Alçak blok": 112,
+      "Yüksek blok": 779,
+      "Orta blok": 237,
       "Orta blok · pres": 7
     },
-    "majority_baseline_pct": 68.9,
-    "block_balanced_pct": 70.9,
+    "majority_baseline_pct": 68.6,
+    "block_balanced_pct": 71.3,
     "block_confusion": {
-      "Alçak blok -> Alçak blok": 83,
+      "Alçak blok -> Alçak blok": 84,
       "Alçak blok -> Orta blok": 4,
       "Alçak blok -> Yüksek blok": 24,
-      "Orta blok -> Alçak blok": 50,
-      "Orta blok -> Orta blok": 137,
+      "Orta blok -> Alçak blok": 49,
+      "Orta blok -> Orta blok": 140,
       "Orta blok -> Yüksek blok": 55,
       "Yüksek blok -> Alçak blok": 59,
-      "Yüksek blok -> Orta blok": 86,
-      "Yüksek blok -> Yüksek blok": 637
+      "Yüksek blok -> Orta blok": 84,
+      "Yüksek blok -> Yüksek blok": 636
     },
     "drawn_ref": 1497,
     "drawn_test": 1179,
@@ -52,18 +52,18 @@
     "test_only": 0,
     "ref_only": 318,
     "label_n": 1135,
-    "label_exact_pct": 75.5,
-    "block_match_pct": 75.5,
+    "label_exact_pct": 75.8,
+    "block_match_pct": 75.8,
     "press_agree_pct": 97.7,
     "def_line_error": {
       "n": 1179,
-      "median_m": 6.1,
-      "p90_m": 24.99
+      "median_m": 6.08,
+      "p90_m": 25.12
     },
     "line_gap_error": {
       "n": 188,
-      "median_m": 4.0,
-      "p90_m": 11.79
+      "median_m": 4.04,
+      "p90_m": 11.72
     },
     "test_gates": {
       "possession": 3,
@@ -75,15 +75,15 @@
   "pred_gt_team_vs_gt": {
     "frames": 1500,
     "ref_label_counts": {
-      "Yüksek blok": 225,
-      "Orta blok": 24
+      "Yüksek blok": 226,
+      "Orta blok": 23
     },
-    "majority_baseline_pct": 90.4,
-    "block_balanced_pct": 72.7,
+    "majority_baseline_pct": 90.8,
+    "block_balanced_pct": 71.3,
     "block_confusion": {
-      "Orta blok -> Orta blok": 11,
+      "Orta blok -> Orta blok": 10,
       "Orta blok -> Yüksek blok": 13,
-      "Yüksek blok -> Orta blok": 1,
+      "Yüksek blok -> Orta blok": 2,
       "Yüksek blok -> Yüksek blok": 224
     },
     "drawn_ref": 1497,
@@ -92,18 +92,18 @@
     "test_only": 0,
     "ref_only": 1114,
     "label_n": 249,
-    "label_exact_pct": 94.4,
-    "block_match_pct": 94.4,
+    "label_exact_pct": 94.0,
+    "block_match_pct": 94.0,
     "press_agree_pct": 99.5,
     "def_line_error": {
       "n": 383,
-      "median_m": 3.19,
-      "p90_m": 14.87
+      "median_m": 3.11,
+      "p90_m": 14.95
     },
     "line_gap_error": {
       "n": 32,
-      "median_m": 1.62,
-      "p90_m": 4.77
+      "median_m": 1.6,
+      "p90_m": 4.73
     },
     "test_gates": {
       "possession": 3,
@@ -136,12 +136,12 @@
     "press_agree_pct": 99.7,
     "def_line_error": {
       "n": 360,
-      "median_m": 2.82,
-      "p90_m": 14.42
+      "median_m": 2.81,
+      "p90_m": 14.47
     },
     "line_gap_error": {
       "n": 9,
-      "median_m": 1.34,
+      "median_m": 1.38,
       "p90_m": 4.27
     },
     "test_gates": {
@@ -156,21 +156,21 @@
     "pred": {
       "frames": 360,
       "ref_label_counts": {
-        "Yüksek blok": 279,
-        "Orta blok": 73,
+        "Yüksek blok": 278,
+        "Orta blok": 74,
         "Alçak blok": 2
       },
-      "majority_baseline_pct": 78.8,
+      "majority_baseline_pct": 78.5,
       "block_balanced_pct": 67.6,
       "block_confusion": {
         "Alçak blok -> Alçak blok": 1,
         "Alçak blok -> Yüksek blok": 1,
         "Orta blok -> Alçak blok": 7,
-        "Orta blok -> Orta blok": 49,
+        "Orta blok -> Orta blok": 50,
         "Orta blok -> Yüksek blok": 17,
         "Yüksek blok -> Alçak blok": 6,
-        "Yüksek blok -> Orta blok": 34,
-        "Yüksek blok -> Yüksek blok": 239
+        "Yüksek blok -> Orta blok": 35,
+        "Yüksek blok -> Yüksek blok": 237
       },
       "drawn_ref": 360,
       "drawn_test": 360,
@@ -178,18 +178,18 @@
       "test_only": 0,
       "ref_only": 0,
       "label_n": 354,
-      "label_exact_pct": 81.6,
-      "block_match_pct": 81.6,
+      "label_exact_pct": 81.4,
+      "block_match_pct": 81.4,
       "press_agree_pct": 99.2,
       "def_line_error": {
         "n": 360,
-        "median_m": 4.3,
-        "p90_m": 13.99
+        "median_m": 4.37,
+        "p90_m": 14.02
       },
       "line_gap_error": {
         "n": 35,
-        "median_m": 3.07,
-        "p90_m": 6.14
+        "median_m": 3.08,
+        "p90_m": 6.19
       },
       "test_gates": {
         "drawn": 360
@@ -198,15 +198,15 @@
     "pred_gt_team": {
       "frames": 360,
       "ref_label_counts": {
-        "Yüksek blok": 214,
-        "Orta blok": 21
+        "Yüksek blok": 215,
+        "Orta blok": 20
       },
-      "majority_baseline_pct": 91.1,
-      "block_balanced_pct": 76.0,
+      "majority_baseline_pct": 91.5,
+      "block_balanced_pct": 74.5,
       "block_confusion": {
-        "Orta blok -> Orta blok": 11,
+        "Orta blok -> Orta blok": 10,
         "Orta blok -> Yüksek blok": 10,
-        "Yüksek blok -> Orta blok": 1,
+        "Yüksek blok -> Orta blok": 2,
         "Yüksek blok -> Yüksek blok": 213
       },
       "drawn_ref": 360,
@@ -215,22 +215,34 @@
       "test_only": 0,
       "ref_only": 0,
       "label_n": 235,
-      "label_exact_pct": 95.3,
-      "block_match_pct": 95.3,
+      "label_exact_pct": 94.9,
+      "block_match_pct": 94.9,
       "press_agree_pct": 99.4,
       "def_line_error": {
         "n": 360,
-        "median_m": 3.32,
-        "p90_m": 14.73
+        "median_m": 3.26,
+        "p90_m": 14.93
       },
       "line_gap_error": {
         "n": 30,
-        "median_m": 1.5,
-        "p90_m": 4.86
+        "median_m": 1.51,
+        "p90_m": 4.84
       },
       "test_gates": {
         "drawn": 360
       }
+    }
+  },
+  "interpolation": {
+    "held": {
+      "n": 59768,
+      "median_m": 1.959,
+      "mean_m": 1.862
+    },
+    "interpolated": {
+      "n": 61333,
+      "median_m": 1.952,
+      "mean_m": 1.851
     }
   },
   "gt_gates": {

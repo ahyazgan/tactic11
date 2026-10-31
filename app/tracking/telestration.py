@@ -65,7 +65,9 @@ DIRECTION_WINDOW_S = 10.0
 POSSESSION_WINDOW_S = 1.0
 LABEL_HOLD_S = 1.0           # etiket ancak bu süre kararlıysa değişir
 TPS_INVERSE_ITERATIONS = 8
-LINE_SMOOTHING = 0.35        # hat derinliği/aralığı için üstel yumuşatma (yeni karenin payı)
+LINE_SMOOTHING = 0.35        # hat derinliği/aralığı için üstel yumuşatma: her 0,2 sn'de yeni değerin payı
+LINE_SMOOTHING_PERIOD_S = 0.2
+INTERPOLATE_MAX_GAP_S = 0.6  # takip kareleri arası bundan uzunsa enterpolasyon yok (kopma)
 LINE_MARGIN_M = 3.0          # çizgi hattın uç oyuncularından bu kadar taşar
 TPS_INVERSE_MAX_RESIDUAL_M = 0.1  # sayısal ters, ileri dönüşümle bu kadar tutmalı
 
@@ -91,6 +93,29 @@ class PlayerSpot:
     team: int | None
     x_m: float
     y_m: float
+
+
+def interpolate_spots(a: list[PlayerSpot], b: list[PlayerSpot], w: float) -> list[PlayerSpot]:
+    """İki takip karesi arasında `w` ∈ [0, 1] konumu. İkisinde de olan kimlik doğrusal
+    enterpole edilir (takımı `a`'dan); yalnız birinde olan, yakın olduğu karede gösterilir."""
+    later = {p.tid: p for p in b}
+    out = []
+    for p in a:
+        q = later.pop(p.tid, None)
+        if q is not None:
+            out.append(PlayerSpot(p.tid, p.team, p.x_m + w * (q.x_m - p.x_m), p.y_m + w * (q.y_m - p.y_m)))
+        elif w < 0.5:
+            out.append(p)
+    if w >= 0.5:
+        out.extend(later.values())
+    return out
+
+
+def interpolate_point(a: tuple[float, float] | None, b: tuple[float, float] | None,
+                      w: float) -> tuple[float, float] | None:
+    if a is None or b is None:
+        return a if w < 0.5 else b
+    return a[0] + w * (b[0] - a[0]), a[1] + w * (b[1] - a[1])
 
 
 def spots_from_frame(frame: TrackingFrame, home_team_id: int, away_team_id: int, calib: PitchCalibration,
@@ -201,6 +226,29 @@ class _Projector:
         residual = np.hypot(*(forward(u) - target).T)
         return u, residual <= TPS_INVERSE_MAX_RESIDUAL_M
 
+    def rings(self, centers: np.ndarray, radius: float, n: int = 24) -> tuple[np.ndarray, np.ndarray]:
+        """Saha çemberlerinin izdüşümü (K×n×2) ve geçerlilik (K). Merkezler tek seferde
+        ters dönüştürülür; çember, merkezde ileri dönüşümün sayısal Jacobian'ının tersiyle
+        taşınır (0,9 m'de doğrusal yaklaşım; oyuncu başına ayrı ters dönüşüm gerekmez)."""
+        uv, ok = self.project(centers)
+        if not len(centers):
+            return np.empty((0, n, 2)), ok
+        step = 0.5
+        base = self.forward(uv)
+        dx = (self.forward(uv + [step, 0.0]) - base) / step     # d(saha)/du
+        dy = (self.forward(uv + [0.0, step]) - base) / step     # d(saha)/dv
+        det = dx[:, 0] * dy[:, 1] - dy[:, 0] * dx[:, 1]
+        ok &= np.abs(det) > 1e-12
+        safe = np.where(ok, det, 1.0)
+        a = np.linspace(0, 2 * np.pi, n, endpoint=False)
+        off = radius * np.c_[np.cos(a), np.sin(a)]               # n×2 saha ofseti
+        # [du, dv] = J⁻¹ · [dX, dY],  J = [[dx0, dy0], [dx1, dy1]]
+        du = (dy[:, None, 1] * off[None, :, 0] - dy[:, None, 0] * off[None, :, 1]) / safe[:, None]
+        dv = (-dx[:, None, 1] * off[None, :, 0] + dx[:, None, 0] * off[None, :, 1]) / safe[:, None]
+        pts = uv[:, None, :] + np.stack([du, dv], axis=2)
+        ok &= self.inside(pts.reshape(-1, 2)).reshape(len(centers), n).all(axis=1)
+        return pts, ok
+
     def __call__(self, pts: np.ndarray) -> np.ndarray | None:
         """Hepsi geçerliyse izdüşüm, değilse None (halka, tek nokta)."""
         out, ok = self.project(pts)
@@ -268,6 +316,8 @@ class Telestrator:
         self._frames: deque[SimpleNamespace] = deque(maxlen=max(1, round(DIRECTION_WINDOW_S * fps)))
         self._owners: deque[int] = deque(maxlen=max(1, round(POSSESSION_WINDOW_S * fps)))
         self._hold = max(1, round(LABEL_HOLD_S * fps))
+        # kare hızından bağımsız aynı zaman sabiti: 0,2 sn'de LINE_SMOOTHING kadar
+        self._alpha = 1.0 - (1.0 - LINE_SMOOTHING) ** (1.0 / (fps * LINE_SMOOTHING_PERIOD_S))
         self._candidate: str | None = None
         self._streak = 0
         self.label: str | None = None
@@ -281,6 +331,7 @@ class Telestrator:
         self.last_defending: int | None = None
         self.last_lines: list[Line] = []
         self.last_pressers = 0
+        self._proj: _Projector | None = None
 
     def _direction(self, team: int) -> int:
         if self._home_attack:
@@ -300,7 +351,7 @@ class Telestrator:
     def _smooth(self, lines: list[Line]) -> list[Line]:
         """Aynı hatlar kareler arasında titremesin; hat değişince (sayı ya da
         hat boşluğundan büyük sıçrama) yumuşatma sıfırlanır."""
-        prev, a = self._line_state, LINE_SMOOTHING
+        prev, a = self._line_state, self._alpha
         same = len(prev) == len(lines) and all(
             abs(p.depth - n.depth) <= LINE_CLUSTER_GAP_M for p, n in zip(prev, lines, strict=True))
         if same:
@@ -324,7 +375,7 @@ class Telestrator:
         """Bir karenin çizim öğeleri. `possession` verilmezse topa en yakın
         oyuncudan (≤ 4 m) çıkarılır; ikisi de kısa pencerede çoğunluk oyuna girer."""
         out: list[Mark] = []
-        proj = _Projector(calib) if calib is not None else None
+        proj = self._projector(calib)
         if proj is None or not proj.usable:
             self.gate_counts["calibration"] += 1
             self.last_gate, self.last_defending, self.last_lines, self.last_pressers = "calibration", None, [], 0
@@ -380,21 +431,24 @@ class Telestrator:
         self.last_lines, self.last_pressers = list(self._line_state), len(pressers)
         label = self._settle_label(candidate)
 
-        for p in players:
-            ring = self._ring(proj, (p.x_m, p.y_m))
-            if ring is not None:
-                out.append(Mark("ring", ring, team=p.team, emphasis=p.tid in pressers))
+        rings, good = proj.rings(np.array([(p.x_m, p.y_m) for p in players]).reshape(-1, 2), RING_RADIUS_M)
+        for p, ring, ok_ring in zip(players, rings, good, strict=True):
+            if ok_ring:
+                out.append(Mark("ring", tuple(map(tuple, ring.round(1).tolist())), team=p.team,
+                                emphasis=p.tid in pressers))
         if ball_px is not None:
             out.append(Mark("ball", (tuple(ball_px[0].round(1).tolist()),)))
         if label:
             out.append(Mark("label", (), team=defending, text=label))
         return out
 
-    @staticmethod
-    def _ring(proj: _Projector, center: tuple[float, float]) -> tuple[tuple[float, float], ...] | None:
-        a = np.linspace(0, 2 * np.pi, 24, endpoint=False)
-        pts = proj(np.c_[center[0] + RING_RADIUS_M * np.cos(a), center[1] + RING_RADIUS_M * np.sin(a)])
-        return None if pts is None else tuple(map(tuple, pts.round(1).tolist()))
+    def _projector(self, calib: PitchCalibration | None) -> _Projector | None:
+        """Aynı kalibrasyon nesnesi için projektör (destek zarfı vb.) bir kez kurulur."""
+        if calib is None:
+            return None
+        if self._proj is None or self._proj.calib is not calib:
+            self._proj = _Projector(calib)
+        return self._proj
 
     @staticmethod
     def _block_marks(proj: _Projector, calib: PitchCalibration, direction: int, lines: list[Line],
@@ -472,6 +526,12 @@ def _pill(bgr: np.ndarray, text: str, center: tuple[int, int], size: int,
         draw.ellipse((pad, cy - r, pad + 2 * r, cy + r), fill=(accent[2], accent[1], accent[0], 255))
     img = Image.alpha_composite(img.convert("RGBA"), shade).convert("RGB")
     bgr[top:top + h, left:left + w] = np.asarray(img)[:, :, ::-1]
+
+
+def scaled(marks: list[Mark], factor: float) -> list[Mark]:
+    """Görüntü küçültüldüğünde öğeleri aynı orana taşı (çizim küçük karede yapılır)."""
+    return [Mark(m.kind, tuple((x * factor, y * factor) for x, y in m.points), m.team, m.emphasis, m.text)
+            for m in marks]
 
 
 def render(bgr: np.ndarray, marks: list[Mark]) -> None:

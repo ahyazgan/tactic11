@@ -219,3 +219,57 @@ def test_render_draws_turkish_label(width: int) -> None:
     before = bgr.copy()
     render(bgr, run(Telestrator(fps=5), calib()))
     assert (bgr != before).any()
+
+
+def test_interpolate_spots_by_identity() -> None:
+    from app.tracking.telestration import interpolate_point, interpolate_spots
+
+    a = [PlayerSpot(1, 0, 10.0, 10.0), PlayerSpot(2, 1, 50.0, 30.0)]
+    b = [PlayerSpot(1, 0, 20.0, 14.0), PlayerSpot(3, 1, 70.0, 40.0)]
+    early = interpolate_spots(a, b, 0.25)
+    assert [(p.tid, p.x_m, p.y_m) for p in early] == [(1, 12.5, 11.0), (2, 50.0, 30.0)]
+    late = interpolate_spots(a, b, 0.75)
+    assert [(p.tid, p.x_m) for p in late] == [(1, 17.5), (3, 70.0)]   # yalnız birinde olan yakın karede
+    assert interpolate_point((0.0, 0.0), (10.0, 20.0), 0.5) == (5.0, 10.0)
+    assert interpolate_point(None, (10.0, 20.0), 0.4) is None
+
+
+def test_line_smoothing_time_constant_is_fps_independent() -> None:
+    slow, fast = Telestrator(fps=5), Telestrator(fps=25)
+    slow._smooth([Line(30.0, 0, 1)])
+    fast._smooth([Line(30.0, 0, 1)])
+    after_slow = slow._smooth([Line(34.0, 0, 1)])[0].depth          # 0,2 sn = 1 kare
+    after_fast = 0.0
+    for _ in range(5):                                                # 0,2 sn = 5 kare
+        after_fast = fast._smooth([Line(34.0, 0, 1)])[0].depth
+    assert after_fast == pytest.approx(after_slow)
+
+
+def test_schedule_interpolates_within_continuity_only() -> None:
+    from scripts.telestrate_video import schedule
+
+    spots = [([PlayerSpot(1, 0, float(x), 0.0)], None, 0) for x in (0, 10, 20, 30)]
+    seconds = [0.0, 0.2, 0.4, 2.0]           # son aralık 1,6 sn: kopma
+    continuity: list[int | None] = [0, 0, 1, 1]  # 0,2 → 0,4 arası kamera kesmesi
+    plan = schedule(seconds, spots, continuity, 25.0, interpolate=True)
+    xs = {idx: sp[0][0].x_m for idx, _t, sp in plan if sp[0]}
+    assert xs[0] == 0.0 and xs[5] == 10.0
+    assert xs[2] == pytest.approx(4.0)                    # 0,08 sn: 0 → 10 arasında
+    assert 7 not in xs                                    # kesme sonrası boşlukta çizim yok
+    assert xs[10] == 20.0 and xs[50] == 30.0              # takip kareleri kendileri
+    assert 30 not in xs                                   # uzun boşlukta uydurma yok
+    plain = schedule(seconds, spots, continuity, 25.0, interpolate=False)
+    assert [idx for idx, *_ in plain] == [0, 5, 10, 50]
+
+
+@pytest.mark.parametrize("make", [calib, tps_calib])
+def test_batched_rings_match_exact_projection(make) -> None:
+    proj = _Projector(make())
+    centers = np.array([[30.0, 20.0], [70.0, 50.0], [52.5, 34.0]])
+    rings, ok = proj.rings(centers, 0.9)
+    assert ok.all()
+    a = np.linspace(0, 2 * np.pi, 24, endpoint=False)
+    for c, ring in zip(centers, rings, strict=True):
+        exact = proj(np.c_[c[0] + 0.9 * np.cos(a), c[1] + 0.9 * np.sin(a)])
+        assert exact is not None
+        assert np.abs(ring - exact).max() < 0.5   # piksel: doğrusal yaklaşım hatası

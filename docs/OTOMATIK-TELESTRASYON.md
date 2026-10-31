@@ -49,8 +49,7 @@ Kalibrasyon: TPS, 500 nokta, LOO 0,76 m (köşeler işaretli değil → dışbü
 | operatör (`x+`) | 68 / 126 (%54) | possession 3, players 55, drawn 68 |
 
 `players` kapısı takım atamasının dengesizliğinden gelir (karede ortalama 9,5'e
-6,1 atanmış oyuncu). Eşikler bu klibe bakılarak gevşetilmedi. 30 sn 4K video
-17 sn'de çizildi (takip hariç).
+6,1 atanmış oyuncu). Eşikler bu klibe bakılarak gevşetilmedi. Çizim hızı aşağıda (25 fps bölümü).
 
 ![SoccerTrack önizleme](measurements/telestration-soccertrack-117092.jpg)
 
@@ -72,31 +71,51 @@ bu veriye bakılarak ayarlanmadı.
 | 1500 kare | Çizilen | Blok etiketi = GT | Taban (hep en sık) | Dengeli doğruluk | Savunma hattı hatası medyan / p90 |
 |---|---:|---:|---:|---:|---:|
 | GT konum + GT takım | %99,8 | — | — | — | — |
-| **takip (üretim)** | %78,6 | %75,5 | %68,9 | **%70,9** | 6,1 / 25,0 m |
+| **takip (üretim)** | %78,6 | %75,8 | %68,6 | **%71,3** | 6,1 / 25,1 m |
 
-GT etiketlerinin %69'u "Yüksek blok"; ham isabet tabanın yalnız 6,6 puan üstündedir.
+GT etiketlerinin %69'u "Yüksek blok"; ham isabet tabanın yalnız 7,2 puan üstündedir.
 Dengeli doğruluk (sınıf başına duyarlılık ortalaması, sabit tahmin = %33,3)
-%70,9'dur: alçak %75, orta %57, yüksek %81.
+%71,3'tür: alçak %75, orta %57, yüksek %82.
 
 Hata kaynağı, üç koşunun da çizdiği aynı 360 karede:
 
 | aynı 360 kare | Blok = GT | Dengeli | Hat hatası medyan / p90 |
 |---|---:|---:|---:|
-| takip | %81,6 | %67,6 | 4,3 / 14,0 m |
-| takip konumu + doğru takım | %95,3 | %76,0 | 3,3 / 14,7 m |
+| takip | %81,4 | %67,6 | 4,4 / 14,0 m |
+| takip konumu + doğru takım | %94,9 | %74,5 | 3,3 / 14,9 m |
 
 Takım ataması bu kayıtta %77 doğru (11739 eşleşmenin 9065'i). Düzeltilirse
-dengeli doğrulukta ~8 puan ve hatta ~1 m kazanç var; kalan p90 hatası
+dengeli doğrulukta ~7 puan ve hatta ~1 m kazanç var; kalan p90 hatası
 tespit/konumdan (karede ortalama 8,5 oyuncu GT ile eşleşiyor). Doğru takımlı
 koşu yalnız %25,5 karede çizer, çünkü eşleşmeyen oyuncular takımsız kalır ve
 savunan takımda 6 oyuncu bulunamaz; bu yüzden karşılaştırma aynı karelerde yapılır.
+
+## 25 fps enterpolasyon
+
+`telestrate_video` varsayılan olarak kaynak kare hızında yazar: takip kareleri
+arasında oyuncular kimliğe göre doğrusal enterpole edilir (kamera kesmesinde ve
+0,6 sn'den uzun boşlukta yapılmaz). Hat yumuşatması zamana bağlıdır (0,2 sn'de
+yeni değerin payı 0,35), kare hızı değişince davranış değişmez.
+
+Ölçüm (aynı rapor, `interpolation`): takip kareleri arasındaki GT karelerinde,
+iki karede de bulunan oyuncular için eşleşme hatası medyanı **son kareyi tutma
+1,959 m → enterpolasyon 1,952 m** (~60 bin eşleşme). Kazanç görsel akıcılıktır,
+doğruluk değil: hata tespit/kalibrasyon tabanından (~1,9 m) gelir; 0,24 sn'lik
+aralıkta oyuncunun yer değiştirmesi bunun yanında küçüktür.
+
+Hız: 30 sn 4K kaynak 25 fps'te 31 sn'de çizilir (~4 sn'si tek seferlik açılış:
+importlar ve TPS kalibrasyonunun LOO hatası). Kare başına ~11 ms çözme, ~3 ms
+küçültme, ~21 ms çizim öğesi hesabı, ~3 ms çizim. İlk sürüm 4K karede ve oyuncu
+başına ayrı TPS tersiyle gerçek zamanın ~3 katıydı; çizim artık çıktı boyutunda,
+halkalar tek toplu ters dönüşüm + merkezde yerel Jacobian ile (tam izdüşümden
+<0,5 px fark, `test_batched_rings_match_exact_projection`).
 
 ## Sınırlar ve sıradaki adımlar
 
 - Yalnız sabit kalibrasyon. Kare başına kalibrasyonla işlenen hareketli kamera
   karelerin kendi homografisini çıktıya yazmadığı için desteklenmez.
-- Çıktı takip kare hızındadır (~4–5 fps); oyuncu konumları kareler arasında
-  enterpole edilmez.
 - Blok eşikleri sezgiseldir; etiketli faz verisiyle ayarlanmadı.
+- Doğruluğu en çok takım ataması sınırlıyor (yukarıdaki ayrıştırma); sonra
+  tespit kapsaması (karede 8,5 eşleşen oyuncu).
 - Sırada: canlı mod segmentlerine bağlama (`scripts/canli_mac.py`) ve panelde
   video üstü katman (`--marks-json`), topsuz koşu okları, boşluk boyama.

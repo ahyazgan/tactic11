@@ -36,7 +36,13 @@ from scipy.optimize import linear_sum_assignment
 
 from app.domain import TrackingFrame
 from app.tracking.calibration import PitchCalibration
-from app.tracking.telestration import PlayerSpot, Telestrator, spots_from_frame
+from app.tracking.telestration import (
+    INTERPOLATE_MAX_GAP_S,
+    PlayerSpot,
+    Telestrator,
+    interpolate_spots,
+    spots_from_frame,
+)
 
 GT_PLAYER, GT_KEEPER = 1, 2
 MATCH_RADIUS_M = 3.0
@@ -145,6 +151,38 @@ def summarise(ref: list[Record], test: list[Record]) -> dict:
     }
 
 
+def interpolation_check(frames: list[TrackingFrame], spots: list[list[PlayerSpot]],
+                        gt: dict[int, np.ndarray], delta: int) -> dict:
+    """Takip kareleri ARASINDAKİ GT karelerinde konum hatası: son kareyi tutmak
+    (enterpolasyonsuz 25 fps) ile kimliğe göre doğrusal enterpolasyon."""
+    held: list[float] = []
+    interp: list[float] = []
+    for k in range(len(frames) - 1):
+        a, b = frames[k], frames[k + 1]
+        gap = (b.minute - a.minute) * 60.0
+        if not 0 < gap <= INTERPOLATE_MAX_GAP_S or a.continuity_id != b.continuity_id:
+            continue
+        fa, fb = gt_frame(a.minute, delta), gt_frame(b.minute, delta)
+        for f in range(fa + 1, fb):
+            g = gt.get(f)
+            if g is None:
+                continue
+            w = (f - fa) / (fb - fa)
+            target = gt_metres(g)
+            for pool, people in ((held, spots[k]), (interp, interpolate_spots(spots[k], spots[k + 1], w))):
+                # yalnız iki karede de olan kimlikler: aynı oyuncular karşılaştırılsın
+                ids = {p.tid for p in spots[k]} & {p.tid for p in spots[k + 1]}
+                pts = np.array([(p.x_m, p.y_m) for p in people if p.tid in ids]).reshape(-1, 2)
+                for i, j in match(pts, target):
+                    pool.append(float(np.linalg.norm(pts[i] - target[j])))
+
+    def stats(values: list[float]) -> dict | None:
+        return {"n": len(values), "median_m": round(float(np.median(values)), 3),
+                "mean_m": round(float(np.mean(values)), 3)} if values else None
+
+    return {"held": stats(held), "interpolated": stats(interp)}
+
+
 def common_frames(records: dict[str, list[Record]]) -> dict:
     keep = [i for i in range(len(records["gt"])) if all(records[v][i].gate == "drawn" for v in VARIANTS)]
     pick = {v: [records[v][i] for i in keep] for v in VARIANTS}
@@ -226,6 +264,7 @@ def main() -> int:
         "pred_vs_pred_gt_team": summarise(records["pred_gt_team"], records["pred"]),
         # adil ayrıştırma: üç koşunun da çizdiği aynı kareler
         "common_frames": common_frames(records),
+        "interpolation": interpolation_check(frames, [mf[2] for mf in matched_frames], gt, delta),
         "gt_gates": dict(Counter(r.gate for r in records["gt"])),
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
