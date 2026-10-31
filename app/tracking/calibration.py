@@ -219,6 +219,13 @@ class PitchCalibration:
             return float(x), float(y)
         return apply_homography(self.homography, u, v)
 
+    def image_to_pitch_m_many(self, q: np.ndarray) -> np.ndarray:
+        """Vektörel `image_to_pitch_m`: N×2 piksel → N×2 metre."""
+        q = np.atleast_2d(np.asarray(q, dtype=float))
+        p = np.c_[q, np.ones(len(q))] @ self.homography.T
+        base = p[:, :2] / p[:, 2:3]
+        return base + tps_apply(self._tps, q) if self.method == "tps" else base
+
     def image_to_normalized(self, u: float, v: float, *, clamp: bool = True) -> tuple[float, float]:
         x_m, y_m = self.image_to_pitch_m(u, v)
         x = x_m / self.pitch_length_m * 100.0
