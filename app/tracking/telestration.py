@@ -46,7 +46,7 @@ from app.engine.space_map.compute import (
     infer_attack_direction,
 )
 from app.engine.tracking.compute import PRESS_RADIUS_M
-from app.tracking.calibration import PitchCalibration
+from app.tracking.calibration import PitchCalibration, tps_apply
 from app.tracking.person_filter import (
     BOUNDARY_TOLERANCE_HEIGHT,
     annotated_boundary,
@@ -154,6 +154,15 @@ class _Projector:
         self.tolerance_px = BOUNDARY_TOLERANCE_HEIGHT * h
         self.usable = calib.method == "homography" or self.boundary is not None
 
+    def forward(self, q: np.ndarray) -> np.ndarray:
+        """Vektörel `image_to_pitch_m` (N×2 piksel → N×2 m). calibration.py ölçülmüş
+        kontrol kodunun parçası olduğu için (tests/test_guarded_control.py) yöntem
+        oraya eklenmez; aynı hesap homografi + artık TPS modeliyle burada yapılır."""
+        q = np.atleast_2d(np.asarray(q, dtype=float))
+        h = np.c_[q, np.ones(len(q))] @ self.calib.homography.T
+        base = h[:, :2] / h[:, 2:3]
+        return base + tps_apply(self.calib._tps, q) if self.calib.method == "tps" else base
+
     def inside(self, uv: np.ndarray) -> np.ndarray:
         """Görüntü noktası işaretli saha sınırı içinde mi (sınır yoksa hep evet)."""
         if self.boundary is None:
@@ -175,7 +184,7 @@ class _Projector:
         return out, ok
 
     def _refine(self, guess: np.ndarray, target: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        forward = self.calib.image_to_pitch_m_many
+        forward = self.forward
         u, step = guess.copy(), 0.5
         for _ in range(TPS_INVERSE_ITERATIONS):
             base = forward(u)

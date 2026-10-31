@@ -167,9 +167,11 @@ def test_invalid_direction_rejected() -> None:
 def test_tps_numeric_inverse_round_trips() -> None:
     cal = tps_calib()
     targets = np.array([[30.0, 20.0], [70.0, 50.0], [52.5, 34.0]])
-    uv, ok = _Projector(cal).project(targets)
+    proj = _Projector(cal)
+    uv, ok = proj.project(targets)
     assert ok.all()
-    assert np.allclose(cal.image_to_pitch_m_many(uv), targets, atol=0.1)
+    assert np.allclose(proj.forward(uv), targets, atol=0.1)
+    assert np.allclose(proj.forward(uv[:1])[0], cal.image_to_pitch_m(*uv[0]), atol=1e-9)
     assert np.allclose(uv, [barrel(*t) for t in targets], atol=3.0)
 
 
