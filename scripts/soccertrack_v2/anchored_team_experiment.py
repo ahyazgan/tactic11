@@ -10,6 +10,10 @@ gölge beyaz + mavi) çapa bunu düzeltemez. Adaylar:
   aykırılık eşikleri üretimdekiyle aynı biçimde, çapa merkezlerine göre
 - **seeded**: k-means çapadan başlar (Lloyd), merkez çapadan `max_drift` RGB'den
   fazla kayarsa o segmentte nearest_anchor'a düşer; eşikler yeni merkezlere göre
+- **gated_anchor**: segmentin üretim kümesi merkezlerinden biri çapadan
+  `gate_distance` RGB'den (varsayılan üretimdeki `RGB_MIN_DISTANCE` = 30, "ayrı
+  renk" eşiği) fazla uzaksa segment kümelemesi çökmüş sayılır ve nearest_anchor
+  kullanılır; değilse üretim ataması aynen kalır (GT'siz çökme tespiti)
 - **anchor_chroma**: en yakın çapa RENK ORANINDA (parlaklıktan bağımsız) seçilir,
   yalnız renk oranı aykırılığı uygulanır — gölgedeki beyazı tutar; siyah/gri
   giysiyi beyazdan ayıramama riski taşır
@@ -43,7 +47,7 @@ from app.tracking.teams import (
 )
 from scripts.soccertrack_v2.evaluate_teams import matched
 
-METHODS = ("production", "nearest_anchor", "seeded", "anchor_chroma")
+METHODS = ("production", "nearest_anchor", "seeded", "anchor_chroma", "gated_anchor")
 OUTLIER_FACTOR = 2.5      # üretimdeki TeamAssigner varsayılanı
 
 
@@ -119,9 +123,15 @@ def seeded_centers(feats: np.ndarray, anchor: np.ndarray, iters: int = 10) -> np
 
 
 def assign(method: str, payload: dict, anchor: np.ndarray | None, max_drift: float,
-           ) -> tuple[dict[int, int | None], str]:
+           gate_distance: float = RGB_MIN_DISTANCE) -> tuple[dict[int, int | None], str]:
     if method == "production" or anchor is None:
         return production(payload, anchor)[0], "production"
+    if method == "gated_anchor":
+        teams, centers = production(payload, anchor)
+        collapsed = not centers.any() or float(np.linalg.norm(centers - anchor, axis=1).max()) > gate_distance
+        if not collapsed:
+            return teams, "production"
+        method = "nearest_anchor"
     tracks, feats = track_features(payload)
     centers, used = anchor, "anchor_chroma" if method == "anchor_chroma" else "nearest_anchor"
     if method == "seeded" and len(feats):
@@ -134,14 +144,14 @@ def assign(method: str, payload: dict, anchor: np.ndarray | None, max_drift: flo
 
 
 def score(payload: dict, team_by_track: dict[int, int | None], gt: dict[int, np.ndarray], delta: int,
-          stride: int) -> list[tuple[int | None, int]]:
+          stride: int, start_seconds: float = 600.0) -> list[tuple[int | None, int]]:
     cal = PitchCalibration.from_dict(payload["calibration"])
     empty = np.empty((0, 10))
     pairs = []
     for s in payload["samples"][::stride]:
         people = s["persons"]
         pts = np.array([cal.image_to_pitch_m((r[1] + r[3]) / 2, r[4]) for r in people]).reshape(-1, 2)
-        t = 600 + payload["segment"] * 30 + s["seconds"]
+        t = start_seconds + payload["segment"] * 30 + s["seconds"]
         g = gt.get(round(t * 25) + 1 + delta, empty)
         for i, j in matched(pts, g, 3.0):
             if g[j, 3] == 1:  # yalnız saha oyuncusu
@@ -163,6 +173,11 @@ def main() -> int:
     p.add_argument("--cache", type=Path, required=True)
     p.add_argument("--segments", type=int, nargs="+", required=True, help="Değerlendirilen segmentler")
     p.add_argument("--anchor-segment", type=int, default=0, help="Çapanın öğrenildiği ilk segment")
+    p.add_argument("--anchor-cache", type=Path, default=None,
+                   help="Çapa segmentinin önbelleği (varsayılan --cache); maçın erken bir diliminden çapa için")
+    p.add_argument("--start-seconds", type=float, default=600.0, help="Önbellekteki segment 0'ın maç saniyesi")
+    p.add_argument("--gate-distance", type=float, default=RGB_MIN_DISTANCE,
+                   help="gated_anchor: çapadan bu RGB uzaklığının ötesindeki küme merkezi = çökme")
     p.add_argument("--home-gt-team", type=int, choices=[0, 1], default=None,
                    help="Ev sahibi ↔ GT takım eşlemesi; verilmezse çapa segmentinden çoğunlukla seçilir")
     p.add_argument("--gt", type=Path, required=True)
@@ -178,17 +193,22 @@ def main() -> int:
     gt = {int(f): a for f, a in zip(ids, np.split(rows, starts[1:]), strict=True)}
     delta = int(json.loads(args.alignment.read_text(encoding="utf-8"))["delta_frames"])
 
-    anchor_payload = load(args.cache, args.anchor_segment)
+    anchor_cache = args.anchor_cache or args.cache
+    anchor_payload = load(anchor_cache, args.anchor_segment)
     anchor_teams, anchor = production(anchor_payload, None)
     if not distinct_team_colors(anchor):
         p.error("çapa segmenti ayrı iki takım rengi vermiyor")
     home_gt = args.home_gt_team
     if home_gt is None:
-        pairs = score(anchor_payload, anchor_teams, gt, delta, args.stride)
+        if args.anchor_cache is not None:
+            p.error("--anchor-cache ile --home-gt-team verilmeli")
+        pairs = score(anchor_payload, anchor_teams, gt, delta, args.stride, args.start_seconds)
         votes = Counter((a, b) for a, b in pairs if a is not None)
         home_gt = 0 if votes[(0, 0)] + votes[(1, 1)] >= votes[(0, 1)] + votes[(1, 0)] else 1
 
-    report: dict = {"anchor_segment": args.anchor_segment, "anchor_colors": anchor.round(1).tolist(),
+    report: dict = {"anchor_segment": args.anchor_segment, "anchor_cache": str(anchor_cache),
+                    "start_seconds": args.start_seconds, "gate_distance": args.gate_distance,
+                    "anchor_colors": anchor.round(1).tolist(),
                     "home_gt_team": home_gt, "max_drift": args.max_drift, "stride": args.stride,
                     "segments": args.segments, "methods": {}}
     for method in args.methods:
@@ -196,10 +216,11 @@ def main() -> int:
         for seg in args.segments:
             payload = load(args.cache, seg)
             # çapa segmenti kendi renkleriyle öğrenildi: orada her yöntem üretimle aynıdır
-            seg_anchor = None if seg == args.anchor_segment else anchor
-            teams, used = assign(method, payload, seg_anchor, args.max_drift)
+            same = args.anchor_cache is None and seg == args.anchor_segment
+            seg_anchor = None if same else anchor
+            teams, used = assign(method, payload, seg_anchor, args.max_drift, args.gate_distance)
             used_counts[used] += 1
-            pairs = score(payload, teams, gt, delta, args.stride)
+            pairs = score(payload, teams, gt, delta, args.stride, args.start_seconds)
             per_segment[seg] = summary(pairs, home_gt)
             all_pairs += pairs
         accs = [v["accuracy_when_assigned"] for v in per_segment.values() if v["accuracy_when_assigned"] is not None]
