@@ -1,0 +1,29 @@
+{
+  "written": "2026-11-01, after the 12 development segments (600-960 s), before any result on the new control slice was seen",
+  "previous": "docs/TAKIM-CAPA-DENEYI-SONUCLARI.md: nearest_anchor helped only where per-segment clustering collapsed",
+  "candidate": "gated_anchor: keep production TeamAssigner.fit(anchor) unless one of its two centres is farther than RGB_MIN_DISTANCE (30, existing production constant) from the anchor; then classify by nearest anchor colour (same outlier rule as production)",
+  "why_30": "existing 'distinct colours' constant in app/tracking/teams.py; not tuned on this data (development separation: segments with distance > 30 all gained, 1 gaining segment at 27.1 is missed)",
+  "development_result": {
+    "file": "docs/measurements/team-gate-development.json",
+    "correct_of_matched": {"production": 0.7136, "nearest_anchor": 0.7376, "gated_anchor": 0.7348},
+    "gate_fired_segments": 4
+  },
+  "control": {
+    "source": "data/tracking/live/990402, cut by scripts/soccertrack_v2/cut_segments.py --start-seconds 1200 --count 12 (panorama frames 30000-39000, same grid as 990401)",
+    "cache": "data/tracking/bench/team_tele_ctrl_v1 (same cache_observations defaults)",
+    "gt": "data/tracking/bench/team_ctrl_gt.npy (export_gt --start-frame 29750 --end-frame 39300)",
+    "alignment": "delta +9 frames (unchanged; same panorama grid), start_seconds 1200",
+    "anchor": "production assignment of development segment 0 (600 s, team_tele_v1): learned 10 minutes earlier, as a live worker would",
+    "home_gt_team": 0,
+    "segments": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+  },
+  "acceptance_on_control": [
+    "correct_of_matched >= production + 0.02",
+    "no segment's correct_of_matched below production by more than 0.02",
+    "accuracy_when_assigned >= production"
+  ],
+  "inconclusive_if": "the gate fires on fewer than 2 control segments (then not accepted, reported as inconclusive)",
+  "reported_not_decisive": "nearest_anchor on the same control",
+  "after_control": "no change to method, threshold, anchor or criteria",
+  "limits": "one night match, positional GT agreement (not verified shirt identity); production integration touches frozen app/tracking/teams.py and needs its own amendment"
+}

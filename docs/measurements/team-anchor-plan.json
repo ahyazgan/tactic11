@@ -1,0 +1,22 @@
+{
+  "written": "2026-11-01, before any development or control result of this experiment was seen",
+  "question": "Does classifying tracks against the first segment's team colours (anchor) beat per-segment k=2 re-clustering?",
+  "data": {
+    "cache": "data/tracking/bench/team_tele_v1 (current code, 12 x 30 s segments of 117092, 600-960 s)",
+    "gt": "data/tracking/bench/signal_quality_gt.npy",
+    "alignment": "data/tracking/bench/signal_quality_alignment.json (delta +9, fixed earlier)",
+    "anchor_segment": 0,
+    "development_segments": [0, 1, 2, 3, 4, 5],
+    "control_segments": [6, 7, 8, 9, 10, 11]
+  },
+  "candidates": ["nearest_anchor", "seeded (max_drift 40 RGB)", "anchor_chroma"],
+  "baseline": "production TeamAssigner.fit(anchor)",
+  "selection_on_development": "highest correct_of_matched (correct / all matched outfield observations, so abstaining is not rewarded); tie -> simpler method; no parameter search beyond the listed defaults",
+  "acceptance_on_control": [
+    "correct_of_matched >= production + 0.03",
+    "accuracy_when_assigned >= production",
+    "min_segment_accuracy >= production min_segment_accuracy - 0.02"
+  ],
+  "after_control": "no change to method, parameters or criteria; a failed candidate is reported as failed",
+  "limits": "single night match, positional GT agreement (not verified shirt identity), anchor from one segment; production integration would touch frozen app/tracking/teams.py and needs its own amendment"
+}

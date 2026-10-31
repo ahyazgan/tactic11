@@ -1,0 +1,13 @@
+{
+  "written": "2026-11-01, after development, before control was run",
+  "plan": "docs/measurements/team-anchor-plan.json (246a77b)",
+  "development_result": "docs/measurements/team-anchor-development.json",
+  "development_correct_of_matched": {"production": 0.6534, "nearest_anchor": 0.7175, "seeded": 0.6933, "anchor_chroma": 0.5509},
+  "selected": "nearest_anchor",
+  "parameters": {"anchor_segment": 0, "outlier_factor": 2.5, "rgb_min_distance": 30.0, "chromaticity_min_distance": 15.0, "stride": 2, "home_gt_team": 0},
+  "acceptance_on_control": [
+    "correct_of_matched >= production + 0.03",
+    "accuracy_when_assigned >= production",
+    "min_segment_accuracy >= production min_segment_accuracy - 0.02"
+  ]
+}

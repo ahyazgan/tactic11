@@ -1,0 +1,375 @@
+{
+  "anchor_segment": 0,
+  "anchor_cache": "data\\tracking\\bench\\team_tele_v1",
+  "start_seconds": 600.0,
+  "gate_distance": 30.0,
+  "anchor_colors": [
+    [
+      100.6,
+      104.3,
+      93.3
+    ],
+    [
+      176.1,
+      180.4,
+      174.0
+    ]
+  ],
+  "home_gt_team": 0,
+  "max_drift": 40.0,
+  "stride": 2,
+  "segments": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "methods": {
+    "production": {
+      "overall": {
+        "matched": 18954,
+        "assigned": 17518,
+        "correct": 13526,
+        "accuracy_when_assigned": 0.7721,
+        "correct_of_matched": 0.7136,
+        "unassigned_ratio": 0.0758
+      },
+      "min_segment_accuracy": 0.5689,
+      "used": {
+        "production": 12
+      },
+      "per_segment": {
+        "0": {
+          "matched": 1065,
+          "assigned": 994,
+          "correct": 859,
+          "accuracy_when_assigned": 0.8642,
+          "correct_of_matched": 0.8066,
+          "unassigned_ratio": 0.0667
+        },
+        "1": {
+          "matched": 1080,
+          "assigned": 907,
+          "correct": 516,
+          "accuracy_when_assigned": 0.5689,
+          "correct_of_matched": 0.4778,
+          "unassigned_ratio": 0.1602
+        },
+        "2": {
+          "matched": 1549,
+          "assigned": 1534,
+          "correct": 1002,
+          "accuracy_when_assigned": 0.6532,
+          "correct_of_matched": 0.6469,
+          "unassigned_ratio": 0.0097
+        },
+        "3": {
+          "matched": 940,
+          "assigned": 909,
+          "correct": 793,
+          "accuracy_when_assigned": 0.8724,
+          "correct_of_matched": 0.8436,
+          "unassigned_ratio": 0.033
+        },
+        "4": {
+          "matched": 1356,
+          "assigned": 1346,
+          "correct": 892,
+          "accuracy_when_assigned": 0.6627,
+          "correct_of_matched": 0.6578,
+          "unassigned_ratio": 0.0074
+        },
+        "5": {
+          "matched": 1639,
+          "assigned": 1394,
+          "correct": 923,
+          "accuracy_when_assigned": 0.6621,
+          "correct_of_matched": 0.5631,
+          "unassigned_ratio": 0.1495
+        },
+        "6": {
+          "matched": 1372,
+          "assigned": 1308,
+          "correct": 956,
+          "accuracy_when_assigned": 0.7309,
+          "correct_of_matched": 0.6968,
+          "unassigned_ratio": 0.0466
+        },
+        "7": {
+          "matched": 1703,
+          "assigned": 1700,
+          "correct": 1379,
+          "accuracy_when_assigned": 0.8112,
+          "correct_of_matched": 0.8097,
+          "unassigned_ratio": 0.0018
+        },
+        "8": {
+          "matched": 2477,
+          "assigned": 2192,
+          "correct": 1700,
+          "accuracy_when_assigned": 0.7755,
+          "correct_of_matched": 0.6863,
+          "unassigned_ratio": 0.1151
+        },
+        "9": {
+          "matched": 1786,
+          "assigned": 1764,
+          "correct": 1543,
+          "accuracy_when_assigned": 0.8747,
+          "correct_of_matched": 0.8639,
+          "unassigned_ratio": 0.0123
+        },
+        "10": {
+          "matched": 1759,
+          "assigned": 1644,
+          "correct": 1335,
+          "accuracy_when_assigned": 0.812,
+          "correct_of_matched": 0.759,
+          "unassigned_ratio": 0.0654
+        },
+        "11": {
+          "matched": 2228,
+          "assigned": 1826,
+          "correct": 1628,
+          "accuracy_when_assigned": 0.8916,
+          "correct_of_matched": 0.7307,
+          "unassigned_ratio": 0.1804
+        }
+      }
+    },
+    "nearest_anchor": {
+      "overall": {
+        "matched": 18954,
+        "assigned": 17641,
+        "correct": 13981,
+        "accuracy_when_assigned": 0.7925,
+        "correct_of_matched": 0.7376,
+        "unassigned_ratio": 0.0693
+      },
+      "min_segment_accuracy": 0.6543,
+      "used": {
+        "production": 1,
+        "nearest_anchor": 11
+      },
+      "per_segment": {
+        "0": {
+          "matched": 1065,
+          "assigned": 994,
+          "correct": 859,
+          "accuracy_when_assigned": 0.8642,
+          "correct_of_matched": 0.8066,
+          "unassigned_ratio": 0.0667
+        },
+        "1": {
+          "matched": 1080,
+          "assigned": 1069,
+          "correct": 738,
+          "accuracy_when_assigned": 0.6904,
+          "correct_of_matched": 0.6833,
+          "unassigned_ratio": 0.0102
+        },
+        "2": {
+          "matched": 1549,
+          "assigned": 1478,
+          "correct": 967,
+          "accuracy_when_assigned": 0.6543,
+          "correct_of_matched": 0.6243,
+          "unassigned_ratio": 0.0458
+        },
+        "3": {
+          "matched": 940,
+          "assigned": 940,
+          "correct": 821,
+          "accuracy_when_assigned": 0.8734,
+          "correct_of_matched": 0.8734,
+          "unassigned_ratio": 0.0
+        },
+        "4": {
+          "matched": 1356,
+          "assigned": 1271,
+          "correct": 935,
+          "accuracy_when_assigned": 0.7356,
+          "correct_of_matched": 0.6895,
+          "unassigned_ratio": 0.0627
+        },
+        "5": {
+          "matched": 1639,
+          "assigned": 1598,
+          "correct": 1154,
+          "accuracy_when_assigned": 0.7222,
+          "correct_of_matched": 0.7041,
+          "unassigned_ratio": 0.025
+        },
+        "6": {
+          "matched": 1372,
+          "assigned": 1308,
+          "correct": 956,
+          "accuracy_when_assigned": 0.7309,
+          "correct_of_matched": 0.6968,
+          "unassigned_ratio": 0.0466
+        },
+        "7": {
+          "matched": 1703,
+          "assigned": 1703,
+          "correct": 1396,
+          "accuracy_when_assigned": 0.8197,
+          "correct_of_matched": 0.8197,
+          "unassigned_ratio": 0.0
+        },
+        "8": {
+          "matched": 2477,
+          "assigned": 2035,
+          "correct": 1606,
+          "accuracy_when_assigned": 0.7892,
+          "correct_of_matched": 0.6484,
+          "unassigned_ratio": 0.1784
+        },
+        "9": {
+          "matched": 1786,
+          "assigned": 1764,
+          "correct": 1543,
+          "accuracy_when_assigned": 0.8747,
+          "correct_of_matched": 0.8639,
+          "unassigned_ratio": 0.0123
+        },
+        "10": {
+          "matched": 1759,
+          "assigned": 1744,
+          "correct": 1469,
+          "accuracy_when_assigned": 0.8423,
+          "correct_of_matched": 0.8351,
+          "unassigned_ratio": 0.0085
+        },
+        "11": {
+          "matched": 2228,
+          "assigned": 1737,
+          "correct": 1537,
+          "accuracy_when_assigned": 0.8849,
+          "correct_of_matched": 0.6899,
+          "unassigned_ratio": 0.2204
+        }
+      }
+    },
+    "gated_anchor": {
+      "overall": {
+        "matched": 18954,
+        "assigned": 17814,
+        "correct": 13927,
+        "accuracy_when_assigned": 0.7818,
+        "correct_of_matched": 0.7348,
+        "unassigned_ratio": 0.0601
+      },
+      "min_segment_accuracy": 0.6532,
+      "used": {
+        "production": 8,
+        "nearest_anchor": 4
+      },
+      "per_segment": {
+        "0": {
+          "matched": 1065,
+          "assigned": 994,
+          "correct": 859,
+          "accuracy_when_assigned": 0.8642,
+          "correct_of_matched": 0.8066,
+          "unassigned_ratio": 0.0667
+        },
+        "1": {
+          "matched": 1080,
+          "assigned": 1069,
+          "correct": 738,
+          "accuracy_when_assigned": 0.6904,
+          "correct_of_matched": 0.6833,
+          "unassigned_ratio": 0.0102
+        },
+        "2": {
+          "matched": 1549,
+          "assigned": 1534,
+          "correct": 1002,
+          "accuracy_when_assigned": 0.6532,
+          "correct_of_matched": 0.6469,
+          "unassigned_ratio": 0.0097
+        },
+        "3": {
+          "matched": 940,
+          "assigned": 940,
+          "correct": 821,
+          "accuracy_when_assigned": 0.8734,
+          "correct_of_matched": 0.8734,
+          "unassigned_ratio": 0.0
+        },
+        "4": {
+          "matched": 1356,
+          "assigned": 1346,
+          "correct": 892,
+          "accuracy_when_assigned": 0.6627,
+          "correct_of_matched": 0.6578,
+          "unassigned_ratio": 0.0074
+        },
+        "5": {
+          "matched": 1639,
+          "assigned": 1394,
+          "correct": 923,
+          "accuracy_when_assigned": 0.6621,
+          "correct_of_matched": 0.5631,
+          "unassigned_ratio": 0.1495
+        },
+        "6": {
+          "matched": 1372,
+          "assigned": 1308,
+          "correct": 956,
+          "accuracy_when_assigned": 0.7309,
+          "correct_of_matched": 0.6968,
+          "unassigned_ratio": 0.0466
+        },
+        "7": {
+          "matched": 1703,
+          "assigned": 1703,
+          "correct": 1396,
+          "accuracy_when_assigned": 0.8197,
+          "correct_of_matched": 0.8197,
+          "unassigned_ratio": 0.0
+        },
+        "8": {
+          "matched": 2477,
+          "assigned": 2192,
+          "correct": 1700,
+          "accuracy_when_assigned": 0.7755,
+          "correct_of_matched": 0.6863,
+          "unassigned_ratio": 0.1151
+        },
+        "9": {
+          "matched": 1786,
+          "assigned": 1764,
+          "correct": 1543,
+          "accuracy_when_assigned": 0.8747,
+          "correct_of_matched": 0.8639,
+          "unassigned_ratio": 0.0123
+        },
+        "10": {
+          "matched": 1759,
+          "assigned": 1744,
+          "correct": 1469,
+          "accuracy_when_assigned": 0.8423,
+          "correct_of_matched": 0.8351,
+          "unassigned_ratio": 0.0085
+        },
+        "11": {
+          "matched": 2228,
+          "assigned": 1826,
+          "correct": 1628,
+          "accuracy_when_assigned": 0.8916,
+          "correct_of_matched": 0.7307,
+          "unassigned_ratio": 0.1804
+        }
+      }
+    }
+  }
+}
