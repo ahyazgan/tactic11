@@ -1,0 +1,240 @@
+{
+  "frames_files": [
+    "data/tracking/live/990401/frames/seg_0000.json",
+    "data/tracking/live/990401/frames/seg_0001.json",
+    "data/tracking/live/990401/frames/seg_0002.json",
+    "data/tracking/live/990401/frames/seg_0003.json",
+    "data/tracking/live/990401/frames/seg_0004.json",
+    "data/tracking/live/990401/frames/seg_0005.json",
+    "data/tracking/live/990401/frames/seg_0006.json",
+    "data/tracking/live/990401/frames/seg_0007.json",
+    "data/tracking/live/990401/frames/seg_0008.json",
+    "data/tracking/live/990401/frames/seg_0009.json",
+    "data/tracking/live/990401/frames/seg_0010.json",
+    "data/tracking/live/990401/frames/seg_0011.json"
+  ],
+  "frames_evaluated": 1500,
+  "fps": 4.167,
+  "home_is_gt_team": 0,
+  "team_pairs": {
+    "0->0": 4303,
+    "0->1": 1133,
+    "1->0": 1541,
+    "1->1": 4762
+  },
+  "gt_home_attack_direction": 1,
+  "matched_players_per_frame": 8.54,
+  "held_constant": "possession = tracking frame possession; direction = GT keepers",
+  "pred_vs_gt": {
+    "frames": 1500,
+    "ref_label_counts": {
+      "Alçak blok": 111,
+      "Yüksek blok": 782,
+      "Orta blok": 235,
+      "Orta blok · pres": 7
+    },
+    "majority_baseline_pct": 68.9,
+    "block_balanced_pct": 70.9,
+    "block_confusion": {
+      "Alçak blok -> Alçak blok": 83,
+      "Alçak blok -> Orta blok": 4,
+      "Alçak blok -> Yüksek blok": 24,
+      "Orta blok -> Alçak blok": 50,
+      "Orta blok -> Orta blok": 137,
+      "Orta blok -> Yüksek blok": 55,
+      "Yüksek blok -> Alçak blok": 59,
+      "Yüksek blok -> Orta blok": 86,
+      "Yüksek blok -> Yüksek blok": 637
+    },
+    "drawn_ref": 1497,
+    "drawn_test": 1179,
+    "drawn_both": 1179,
+    "test_only": 0,
+    "ref_only": 318,
+    "label_n": 1135,
+    "label_exact_pct": 75.5,
+    "block_match_pct": 75.5,
+    "press_agree_pct": 97.7,
+    "def_line_error": {
+      "n": 1179,
+      "median_m": 6.1,
+      "p90_m": 24.99
+    },
+    "line_gap_error": {
+      "n": 188,
+      "median_m": 4.0,
+      "p90_m": 11.79
+    },
+    "test_gates": {
+      "possession": 3,
+      "players": 280,
+      "drawn": 1179,
+      "lines": 38
+    }
+  },
+  "pred_gt_team_vs_gt": {
+    "frames": 1500,
+    "ref_label_counts": {
+      "Yüksek blok": 225,
+      "Orta blok": 24
+    },
+    "majority_baseline_pct": 90.4,
+    "block_balanced_pct": 72.7,
+    "block_confusion": {
+      "Orta blok -> Orta blok": 11,
+      "Orta blok -> Yüksek blok": 13,
+      "Yüksek blok -> Orta blok": 1,
+      "Yüksek blok -> Yüksek blok": 224
+    },
+    "drawn_ref": 1497,
+    "drawn_test": 383,
+    "drawn_both": 383,
+    "test_only": 0,
+    "ref_only": 1114,
+    "label_n": 249,
+    "label_exact_pct": 94.4,
+    "block_match_pct": 94.4,
+    "press_agree_pct": 99.5,
+    "def_line_error": {
+      "n": 383,
+      "median_m": 3.19,
+      "p90_m": 14.87
+    },
+    "line_gap_error": {
+      "n": 32,
+      "median_m": 1.62,
+      "p90_m": 4.77
+    },
+    "test_gates": {
+      "possession": 3,
+      "players": 1112,
+      "drawn": 383,
+      "lines": 2
+    }
+  },
+  "pred_vs_pred_gt_team": {
+    "frames": 1500,
+    "ref_label_counts": {
+      "Yüksek blok": 219,
+      "Orta blok": 12
+    },
+    "majority_baseline_pct": 94.8,
+    "block_balanced_pct": 95.4,
+    "block_confusion": {
+      "Orta blok -> Orta blok": 12,
+      "Yüksek blok -> Orta blok": 20,
+      "Yüksek blok -> Yüksek blok": 199
+    },
+    "drawn_ref": 383,
+    "drawn_test": 1179,
+    "drawn_both": 360,
+    "test_only": 819,
+    "ref_only": 23,
+    "label_n": 231,
+    "label_exact_pct": 91.3,
+    "block_match_pct": 91.3,
+    "press_agree_pct": 99.7,
+    "def_line_error": {
+      "n": 360,
+      "median_m": 2.82,
+      "p90_m": 14.42
+    },
+    "line_gap_error": {
+      "n": 9,
+      "median_m": 1.34,
+      "p90_m": 4.27
+    },
+    "test_gates": {
+      "possession": 3,
+      "players": 280,
+      "drawn": 1179,
+      "lines": 38
+    }
+  },
+  "common_frames": {
+    "frames": 360,
+    "pred": {
+      "frames": 360,
+      "ref_label_counts": {
+        "Yüksek blok": 279,
+        "Orta blok": 73,
+        "Alçak blok": 2
+      },
+      "majority_baseline_pct": 78.8,
+      "block_balanced_pct": 67.6,
+      "block_confusion": {
+        "Alçak blok -> Alçak blok": 1,
+        "Alçak blok -> Yüksek blok": 1,
+        "Orta blok -> Alçak blok": 7,
+        "Orta blok -> Orta blok": 49,
+        "Orta blok -> Yüksek blok": 17,
+        "Yüksek blok -> Alçak blok": 6,
+        "Yüksek blok -> Orta blok": 34,
+        "Yüksek blok -> Yüksek blok": 239
+      },
+      "drawn_ref": 360,
+      "drawn_test": 360,
+      "drawn_both": 360,
+      "test_only": 0,
+      "ref_only": 0,
+      "label_n": 354,
+      "label_exact_pct": 81.6,
+      "block_match_pct": 81.6,
+      "press_agree_pct": 99.2,
+      "def_line_error": {
+        "n": 360,
+        "median_m": 4.3,
+        "p90_m": 13.99
+      },
+      "line_gap_error": {
+        "n": 35,
+        "median_m": 3.07,
+        "p90_m": 6.14
+      },
+      "test_gates": {
+        "drawn": 360
+      }
+    },
+    "pred_gt_team": {
+      "frames": 360,
+      "ref_label_counts": {
+        "Yüksek blok": 214,
+        "Orta blok": 21
+      },
+      "majority_baseline_pct": 91.1,
+      "block_balanced_pct": 76.0,
+      "block_confusion": {
+        "Orta blok -> Orta blok": 11,
+        "Orta blok -> Yüksek blok": 10,
+        "Yüksek blok -> Orta blok": 1,
+        "Yüksek blok -> Yüksek blok": 213
+      },
+      "drawn_ref": 360,
+      "drawn_test": 360,
+      "drawn_both": 360,
+      "test_only": 0,
+      "ref_only": 0,
+      "label_n": 235,
+      "label_exact_pct": 95.3,
+      "block_match_pct": 95.3,
+      "press_agree_pct": 99.4,
+      "def_line_error": {
+        "n": 360,
+        "median_m": 3.32,
+        "p90_m": 14.73
+      },
+      "line_gap_error": {
+        "n": 30,
+        "median_m": 1.5,
+        "p90_m": 4.86
+      },
+      "test_gates": {
+        "drawn": 360
+      }
+    }
+  },
+  "gt_gates": {
+    "possession": 3,
+    "drawn": 1497
+  }
+}

@@ -58,6 +58,39 @@ Görsel denetim (4 kare): top ev sahibi kalesi önündeyken "Alçak blok" (yeşi
 top ortadayken deplasman "Yüksek blok" — oyun durumuyla tutarlı. Etiket doğruluğu
 etiketli maçla **ölçülmedi**; bu bir görsel kontroldür.
 
+## Doğruluk: saha gerçeğiyle karşılaştırma (SoccerTrack v2 GSR)
+
+`scripts/soccertrack_v2/eval_telestration.py`, rapor
+`docs/measurements/telestration-eval-117092.json`. Girdi: canlı mod koşusunun
+12 segmenti (`data/tracking/live/990401/frames`, dk 10–16, 1500 kare). Aynı
+`Telestrator` üç girdiyle çalışır: GSR konum + takım (referans), takip çıktısı,
+takip konumu + eşleşen GT takımı (≤3 m Macar eşlemesi). Sahiplik üçünde de
+takip karesinden, hücum yönü GT kalecilerinden gelir; yani sahiplik ve yön
+**ölçülmez**. Hizalama geliştirme segmentlerinde sabitlenmiş kaydırmadır; eşikler
+bu veriye bakılarak ayarlanmadı.
+
+| 1500 kare | Çizilen | Blok etiketi = GT | Taban (hep en sık) | Dengeli doğruluk | Savunma hattı hatası medyan / p90 |
+|---|---:|---:|---:|---:|---:|
+| GT konum + GT takım | %99,8 | — | — | — | — |
+| **takip (üretim)** | %78,6 | %75,5 | %68,9 | **%70,9** | 6,1 / 25,0 m |
+
+GT etiketlerinin %69'u "Yüksek blok"; ham isabet tabanın yalnız 6,6 puan üstündedir.
+Dengeli doğruluk (sınıf başına duyarlılık ortalaması, sabit tahmin = %33,3)
+%70,9'dur: alçak %75, orta %57, yüksek %81.
+
+Hata kaynağı, üç koşunun da çizdiği aynı 360 karede:
+
+| aynı 360 kare | Blok = GT | Dengeli | Hat hatası medyan / p90 |
+|---|---:|---:|---:|
+| takip | %81,6 | %67,6 | 4,3 / 14,0 m |
+| takip konumu + doğru takım | %95,3 | %76,0 | 3,3 / 14,7 m |
+
+Takım ataması bu kayıtta %77 doğru (11739 eşleşmenin 9065'i). Düzeltilirse
+dengeli doğrulukta ~8 puan ve hatta ~1 m kazanç var; kalan p90 hatası
+tespit/konumdan (karede ortalama 8,5 oyuncu GT ile eşleşiyor). Doğru takımlı
+koşu yalnız %25,5 karede çizer, çünkü eşleşmeyen oyuncular takımsız kalır ve
+savunan takımda 6 oyuncu bulunamaz; bu yüzden karşılaştırma aynı karelerde yapılır.
+
 ## Sınırlar ve sıradaki adımlar
 
 - Yalnız sabit kalibrasyon. Kare başına kalibrasyonla işlenen hareketli kamera

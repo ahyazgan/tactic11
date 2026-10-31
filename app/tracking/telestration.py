@@ -275,6 +275,12 @@ class Telestrator:
         # direction | players | lines) veya "drawn"; iddia tekrarlanabilir olsun diye.
         self.gate_counts: Counter[str] = Counter()
         self._line_state: list[Line] = []
+        # Son karenin ölçümleri (değerlendirme ve panel için): çizilmeme nedeni,
+        # savunan takım, yumuşatılmış hatlar, presçi sayısı.
+        self.last_gate: str | None = None
+        self.last_defending: int | None = None
+        self.last_lines: list[Line] = []
+        self.last_pressers = 0
 
     def _direction(self, team: int) -> int:
         if self._home_attack:
@@ -321,6 +327,7 @@ class Telestrator:
         proj = _Projector(calib) if calib is not None else None
         if proj is None or not proj.usable:
             self.gate_counts["calibration"] += 1
+            self.last_gate, self.last_defending, self.last_lines, self.last_pressers = "calibration", None, [], 0
             return out
         # yalnız görüntüde destek bölgesine izdüşen oyuncu/top sayılır ve çizilir
         _uv, ok = proj.project(np.array([(p.x_m, p.y_m) for p in players]).reshape(-1, 2))
@@ -369,6 +376,8 @@ class Telestrator:
         if gate is not None:
             self._line_state = []
         self.gate_counts[gate or "drawn"] += 1
+        self.last_gate, self.last_defending = gate or "drawn", defending
+        self.last_lines, self.last_pressers = list(self._line_state), len(pressers)
         label = self._settle_label(candidate)
 
         for p in players:
