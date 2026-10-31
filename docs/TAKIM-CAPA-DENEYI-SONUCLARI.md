@@ -81,15 +81,39 @@ Kapı 3 segmentte açıldı (sonuç belirsiz değil): segment 1 +3,5, segment 5
 segmentte çapa (karar dışı, bilgi için) %69,6 verdi ama tek segmentte −8,3 puan
 düşürdü; kapı bu zararı önledi.
 
+## Üçüncü inceleme: iz içi oylama — kontrole gitmeden elendi
+
+Teşhis (iki dilim, 24 segment, artık hepsi geliştirme verisi): hataların çoğu
+tek bir takip izinin İÇİNDE, iz başka takımdan oyuncuya kaydığında oluşuyor.
+
+| Eşleşme | Doğru | Yanlış, karışık iz | Yanlış, saf iz | Atanmamış |
+|---|---:|---:|---:|---:|
+| ≤3 m (30624 gözlem) | %70,3 | %18,3 | %4,8 | %6,7 |
+| ≤1 m, 3 m içinde rakip yok (3527) | %75,9 | %9,6 | %7,5 | %6,9 |
+
+Karışık izlerin bir bölümü ölçüm gürültüsüdür (yakın rakiple eşleşme), ama en
+temiz eşleşmede de ~%10 gerçek iz içi kayma kalır. İz başına en iyi TEK etiket
+(kâhin) %84'tür; üstüne çıkmak izi bölmeyi gerektirir. Gözlem tek tek renge göre
+sınıflandırılınca doğruluk saf izlerde %85,4, karışık izlerde %66,6'dır.
+
+`scripts/soccertrack_v2/track_vote_probe.py`: her izin gözlem renkleri iki
+durumlu Viterbi ile yumuşatıldı (maliyet = merkeze uzaklık / iz içi medyan,
+değişim cezası 1–16). En iyi ceza bile doğru/eşleşen oranını %70,32 → %71,14
+yaptı (+0,8 puan, örneklem içi, ayarlanmış). Ön kayıtlı kazanç çıtası +2 puan
+olduğundan yeni kontrol dilimi harcanmadı: gürültülü gözlem rengini zamansal
+oylama temizleyemiyor; bilgi rengin kendisinde yok.
+
 ## Ne öğrendik, sırada ne var
 
 - Gece maçında yalnız renge dayalı takım ataması bu iki dilimde %68–71
-  düzeyinde; iki deney de rengin nasıl kümelendiğini değiştirerek kalıcı kazanç
-  getirmedi. Kazanç küçük ve dengesiz (bazı segmentlerde +10, bazılarında atanmış
-  doğruluk düşüyor).
-- Sıradaki eksen renk kümelemesi değil, ek bilgi olmalı: takip kimliği boyunca
-  oylama ve görünüş (ReID) özellikleri, ya da renk belirsizken "bilinmiyor"u
-  koruyup telestrasyonun bunu tolere etmesi.
+  düzeyinde; üç yaklaşım da (çapa, kapılı çapa, iz içi oylama) rengi farklı
+  kullanarak kalıcı kazanç getirmedi. Darboğaz gözlem başına renk sinyalinin
+  kendisi (karışık izlerde %67) ve iz içi kimlik kaymaları.
+- Gerçek kaldıraçlar: (1) gözlem başına daha güçlü görünüş sinyali (ReID
+  gömmesi, daha yüksek çözünürlüklü kırpım) — tespit/kimlik tarafı, dondurulmuş;
+  (2) kimlik kaymasını önleyen takip (kör kimlik kontrolünün konusu);
+  (3) telestrasyonun takım belirsizliğini tolere etmesi (ör. yalnız güvenli
+  atanmış oyuncularla hat çizmek) — dondurmaya dokunmaz, hemen yapılabilir.
 
 - 117092'de gerçek 6 dakikalık takım uyumu (12 segment, üretim) %70,9: geliştirme
   4985+kontrol 8541 doğru / 18954 eşleşme. Önceki "%81" yalnız iyi segmentlerdi.
