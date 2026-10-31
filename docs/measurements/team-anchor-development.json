@@ -1,0 +1,288 @@
+{
+  "anchor_segment": 0,
+  "anchor_colors": [
+    [
+      100.6,
+      104.3,
+      93.3
+    ],
+    [
+      176.1,
+      180.4,
+      174.0
+    ]
+  ],
+  "home_gt_team": 0,
+  "max_drift": 40.0,
+  "stride": 2,
+  "segments": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "methods": {
+    "production": {
+      "overall": {
+        "matched": 7629,
+        "assigned": 7084,
+        "correct": 4985,
+        "accuracy_when_assigned": 0.7037,
+        "correct_of_matched": 0.6534,
+        "unassigned_ratio": 0.0714
+      },
+      "min_segment_accuracy": 0.5689,
+      "used": {
+        "production": 6
+      },
+      "per_segment": {
+        "0": {
+          "matched": 1065,
+          "assigned": 994,
+          "correct": 859,
+          "accuracy_when_assigned": 0.8642,
+          "correct_of_matched": 0.8066,
+          "unassigned_ratio": 0.0667
+        },
+        "1": {
+          "matched": 1080,
+          "assigned": 907,
+          "correct": 516,
+          "accuracy_when_assigned": 0.5689,
+          "correct_of_matched": 0.4778,
+          "unassigned_ratio": 0.1602
+        },
+        "2": {
+          "matched": 1549,
+          "assigned": 1534,
+          "correct": 1002,
+          "accuracy_when_assigned": 0.6532,
+          "correct_of_matched": 0.6469,
+          "unassigned_ratio": 0.0097
+        },
+        "3": {
+          "matched": 940,
+          "assigned": 909,
+          "correct": 793,
+          "accuracy_when_assigned": 0.8724,
+          "correct_of_matched": 0.8436,
+          "unassigned_ratio": 0.033
+        },
+        "4": {
+          "matched": 1356,
+          "assigned": 1346,
+          "correct": 892,
+          "accuracy_when_assigned": 0.6627,
+          "correct_of_matched": 0.6578,
+          "unassigned_ratio": 0.0074
+        },
+        "5": {
+          "matched": 1639,
+          "assigned": 1394,
+          "correct": 923,
+          "accuracy_when_assigned": 0.6621,
+          "correct_of_matched": 0.5631,
+          "unassigned_ratio": 0.1495
+        }
+      }
+    },
+    "nearest_anchor": {
+      "overall": {
+        "matched": 7629,
+        "assigned": 7350,
+        "correct": 5474,
+        "accuracy_when_assigned": 0.7448,
+        "correct_of_matched": 0.7175,
+        "unassigned_ratio": 0.0366
+      },
+      "min_segment_accuracy": 0.6543,
+      "used": {
+        "production": 1,
+        "nearest_anchor": 5
+      },
+      "per_segment": {
+        "0": {
+          "matched": 1065,
+          "assigned": 994,
+          "correct": 859,
+          "accuracy_when_assigned": 0.8642,
+          "correct_of_matched": 0.8066,
+          "unassigned_ratio": 0.0667
+        },
+        "1": {
+          "matched": 1080,
+          "assigned": 1069,
+          "correct": 738,
+          "accuracy_when_assigned": 0.6904,
+          "correct_of_matched": 0.6833,
+          "unassigned_ratio": 0.0102
+        },
+        "2": {
+          "matched": 1549,
+          "assigned": 1478,
+          "correct": 967,
+          "accuracy_when_assigned": 0.6543,
+          "correct_of_matched": 0.6243,
+          "unassigned_ratio": 0.0458
+        },
+        "3": {
+          "matched": 940,
+          "assigned": 940,
+          "correct": 821,
+          "accuracy_when_assigned": 0.8734,
+          "correct_of_matched": 0.8734,
+          "unassigned_ratio": 0.0
+        },
+        "4": {
+          "matched": 1356,
+          "assigned": 1271,
+          "correct": 935,
+          "accuracy_when_assigned": 0.7356,
+          "correct_of_matched": 0.6895,
+          "unassigned_ratio": 0.0627
+        },
+        "5": {
+          "matched": 1639,
+          "assigned": 1598,
+          "correct": 1154,
+          "accuracy_when_assigned": 0.7222,
+          "correct_of_matched": 0.7041,
+          "unassigned_ratio": 0.025
+        }
+      }
+    },
+    "seeded": {
+      "overall": {
+        "matched": 7629,
+        "assigned": 7078,
+        "correct": 5289,
+        "accuracy_when_assigned": 0.7472,
+        "correct_of_matched": 0.6933,
+        "unassigned_ratio": 0.0722
+      },
+      "min_segment_accuracy": 0.6752,
+      "used": {
+        "production": 1,
+        "nearest_anchor": 1,
+        "seeded": 4
+      },
+      "per_segment": {
+        "0": {
+          "matched": 1065,
+          "assigned": 994,
+          "correct": 859,
+          "accuracy_when_assigned": 0.8642,
+          "correct_of_matched": 0.8066,
+          "unassigned_ratio": 0.0667
+        },
+        "1": {
+          "matched": 1080,
+          "assigned": 1069,
+          "correct": 738,
+          "accuracy_when_assigned": 0.6904,
+          "correct_of_matched": 0.6833,
+          "unassigned_ratio": 0.0102
+        },
+        "2": {
+          "matched": 1549,
+          "assigned": 1478,
+          "correct": 998,
+          "accuracy_when_assigned": 0.6752,
+          "correct_of_matched": 0.6443,
+          "unassigned_ratio": 0.0458
+        },
+        "3": {
+          "matched": 940,
+          "assigned": 909,
+          "correct": 793,
+          "accuracy_when_assigned": 0.8724,
+          "correct_of_matched": 0.8436,
+          "unassigned_ratio": 0.033
+        },
+        "4": {
+          "matched": 1356,
+          "assigned": 1346,
+          "correct": 998,
+          "accuracy_when_assigned": 0.7415,
+          "correct_of_matched": 0.736,
+          "unassigned_ratio": 0.0074
+        },
+        "5": {
+          "matched": 1639,
+          "assigned": 1282,
+          "correct": 903,
+          "accuracy_when_assigned": 0.7044,
+          "correct_of_matched": 0.5509,
+          "unassigned_ratio": 0.2178
+        }
+      }
+    },
+    "anchor_chroma": {
+      "overall": {
+        "matched": 7629,
+        "assigned": 7420,
+        "correct": 4203,
+        "accuracy_when_assigned": 0.5664,
+        "correct_of_matched": 0.5509,
+        "unassigned_ratio": 0.0274
+      },
+      "min_segment_accuracy": 0.42,
+      "used": {
+        "production": 1,
+        "anchor_chroma": 5
+      },
+      "per_segment": {
+        "0": {
+          "matched": 1065,
+          "assigned": 994,
+          "correct": 859,
+          "accuracy_when_assigned": 0.8642,
+          "correct_of_matched": 0.8066,
+          "unassigned_ratio": 0.0667
+        },
+        "1": {
+          "matched": 1080,
+          "assigned": 1069,
+          "correct": 449,
+          "accuracy_when_assigned": 0.42,
+          "correct_of_matched": 0.4157,
+          "unassigned_ratio": 0.0102
+        },
+        "2": {
+          "matched": 1549,
+          "assigned": 1444,
+          "correct": 777,
+          "accuracy_when_assigned": 0.5381,
+          "correct_of_matched": 0.5016,
+          "unassigned_ratio": 0.0678
+        },
+        "3": {
+          "matched": 940,
+          "assigned": 940,
+          "correct": 518,
+          "accuracy_when_assigned": 0.5511,
+          "correct_of_matched": 0.5511,
+          "unassigned_ratio": 0.0
+        },
+        "4": {
+          "matched": 1356,
+          "assigned": 1356,
+          "correct": 804,
+          "accuracy_when_assigned": 0.5929,
+          "correct_of_matched": 0.5929,
+          "unassigned_ratio": 0.0
+        },
+        "5": {
+          "matched": 1639,
+          "assigned": 1617,
+          "correct": 796,
+          "accuracy_when_assigned": 0.4923,
+          "correct_of_matched": 0.4857,
+          "unassigned_ratio": 0.0134
+        }
+      }
+    }
+  }
+}
