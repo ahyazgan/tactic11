@@ -58,3 +58,25 @@ def test_summary_maps_home_to_gt_team() -> None:
     pairs = [(0, 1), (1, 0), (0, 0), (None, 1)]
     s = summary(pairs, home_gt=1)
     assert (s["assigned"], s["correct"], s["unassigned_ratio"]) == (3, 2, 0.25)
+
+
+def _payload(colors: list[np.ndarray]) -> dict:
+    return {"colors": {str(t): [c.tolist(), (c + 1).tolist(), (c - 1).tolist()] for t, c in enumerate(colors)},
+            "samples": [{"persons": [[t, 0, 0, 1, 1, 1.0] for t in range(len(colors))]}]}
+
+
+def test_gated_anchor_keeps_production_when_clusters_match_anchor() -> None:
+    payload = _payload([WHITE + d for d in (-4, 0, 4)] + [BLUE + d for d in (-4, 0, 4)])
+    _teams, used = assign("gated_anchor", payload, ANCHOR, max_drift=40.0)
+    assert used == "production"
+
+
+def test_gated_anchor_switches_when_clustering_splits_by_light() -> None:
+    # aydınlık beyaz / gölge beyaz + mavi: üretim merkezlerinden biri çapadan çok uzak
+    lit = [WHITE + d for d in (-3, 0, 3, 5)]
+    shade = [np.array([120.0, 125.0, 150.0]) + d for d in (-3, 0, 3)]
+    blue = [BLUE + d for d in (-3, 0, 3)]
+    teams, used = assign("gated_anchor", _payload(lit + shade + blue), ANCHOR, max_drift=40.0)
+    assert used == "nearest_anchor"
+    assert [teams[t] for t in range(4)] == [0] * 4
+    assert [teams[t] for t in range(7, 10)] == [1] * 3
