@@ -1,6 +1,6 @@
-# Çapalı takım ataması: ön kayıtlı deney sonucu
+# Çapalı takım ataması: iki ön kayıtlı deney
 
-1 Kasım 2026. **Aday kontrol kapısını geçmedi; üretim değiştirilmedi.**
+1 Kasım 2026. **İki aday da kontrol kapısını geçmedi; üretim değiştirilmedi.**
 
 ## Neden denendi
 
@@ -54,14 +54,44 @@ Kontrol segmentlerinin hiçbirinde kümeleme çökmedi (üretim %73–89). Çapa
 çöken segmentleri kurtarıyor, çökme olmayan yerde nötr kalıyor; atanmamış oranı
 %7,9 → %9,1 arttı. Ön kayıt gereği yöntem, parametre ve şart sonradan değiştirilmedi.
 
+## İkinci deney: kapılı çapa (GT'siz çökme tespiti) — kabul edilmedi
+
+Ön kayıt: `docs/measurements/team-gate-plan.json` (`f4a8ba2`). Kural: üretim
+atamasının küme merkezlerinden biri çapadan 30 RGB'den (üretimdeki
+`RGB_MIN_DISTANCE`) uzaksa segment çökmüş sayılır ve en yakın çapa kullanılır;
+değilse üretim aynen kalır. Geliştirme (yukarıdaki 12 segment, artık örneklem içi):
+üretim %71,4, kapılı %73,5, her yerde çapa %73,8; kapı 4 segmentte açıldı.
+
+Yeni kontrol: daha önce kullanılmamış 1200–1560 sn, 12 segment
+(`scripts/soccertrack_v2/cut_segments.py` ile panoramanın aynı kare ızgarasından
+kesildi; 990401'in 600 sn başlangıcı piksel farkı 0 ile doğrulandı), yeni GT
+dilimi, çapa 10 dk önceki 600 sn segmentinden (canlı işçideki gibi).
+
+| Kontrol (11670 eşleşme) | Üretim | Kapılı çapa | Şart | Sonuç |
+|---|---:|---:|---|---|
+| Doğru / eşleşen | %68,45 | %69,66 | ≥ +2 puan | geçmedi (+1,2) |
+| Segment gerilemesi | — | en kötü −0,3 puan | ≤ 2 puan | geçti |
+| Atananda doğru | %72,25 | %71,26 | ≥ üretim | geçmedi |
+
+Kapı 3 segmentte açıldı (sonuç belirsiz değil): segment 1 +3,5, segment 5
++10,1, segment 4 −0,3 puan. Segment 4 asıl dersi verir: üretim gözlemlerin
+%48,5'ini zaten atamamıştı (kalanında %88,7 doğru); çapa hepsini atadı ve yalnız
+%45,3'ü doğru. Çöken segmentte çapa, güvenli "bilinmiyor"u yazı tura etiketine
+çevirebiliyor; telestrasyonda yanlış takım, bilinmeyen takımdan kötüdür. Her
+segmentte çapa (karar dışı, bilgi için) %69,6 verdi ama tek segmentte −8,3 puan
+düşürdü; kapı bu zararı önledi.
+
 ## Ne öğrendik, sırada ne var
+
+- Gece maçında yalnız renge dayalı takım ataması bu iki dilimde %68–71
+  düzeyinde; iki deney de rengin nasıl kümelendiğini değiştirerek kalıcı kazanç
+  getirmedi. Kazanç küçük ve dengesiz (bazı segmentlerde +10, bazılarında atanmış
+  doğruluk düşüyor).
+- Sıradaki eksen renk kümelemesi değil, ek bilgi olmalı: takip kimliği boyunca
+  oylama ve görünüş (ReID) özellikleri, ya da renk belirsizken "bilinmiyor"u
+  koruyup telestrasyonun bunu tolere etmesi.
 
 - 117092'de gerçek 6 dakikalık takım uyumu (12 segment, üretim) %70,9: geliştirme
   4985+kontrol 8541 doğru / 18954 eşleşme. Önceki "%81" yalnız iyi segmentlerdi.
-- Yeni hipotez (bu verilerden doğdu, burada sınanmadı): çapayı yalnız segment
-  kümelemesi çapadan saptığında kullanmak (GT'siz çökme tespiti, örn. küme
-  merkezlerinin çapaya uzaklığı ya da iki atamanın uyuşmazlığı). Bunu sınamak için
-  bu 12 segment artık geliştirme verisidir; kontrol için yeni GT dilimi
-  (örn. 117092 GSR'nin başka bir aralığı ya da 117093 gündüz maçı) gerekir.
 - Üretime alınacak her yöntem dondurulmuş `app/tracking/teams.py`'ye dokunur ve
   kendi değişiklik belgesini (amendment + eşitlik kanıtı) ister.
