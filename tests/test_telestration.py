@@ -378,3 +378,16 @@ def test_line_validation_error_detects_misfit_and_missing_lines() -> None:
     assert err_y is None or err_y > 0.5
     none_err, none_cov = line_validation_error(h_true, np.full_like(dist, 500.0))
     assert none_err is None and none_cov == 0.0
+
+
+def test_four_point_homography_is_unverified() -> None:
+    from app.tracking.telestration import calibration_validation
+
+    corners = [(0.0, 0.0), (105.0, 0.0), (105.0, 68.0), (0.0, 68.0)]
+    four = PitchCalibration(points=tuple(CalibrationPoint(image=img(x, y), pitch=(x, y)) for x, y in corners),
+                            image_size=(2000, 1200))
+    assert four.reprojection_error_m < 1e-6                     # her 4 nokta kusursuz oturur
+    assert calibration_validation(four) == ("unverified", None)
+    five = PitchCalibration(points=four.points + (CalibrationPoint(image=img(52.5, 34.0), pitch=(52.5, 34.0)),),
+                            image_size=(2000, 1200))
+    assert calibration_validation(five)[0] == "landmark_loo"

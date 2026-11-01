@@ -77,6 +77,7 @@ LANDMARK_SHARE = 0.8         # noktaların bu payı işaret üzerindeyse kalibra
 LINE_CHECK_NEAR_PX = 18.0    # çizgi doğrulaması: model noktası en çok bu kadar uzaktaki çizgiyle eşleşir
 LINE_CHECK_MIN_COVERAGE = 0.5  # görünür model noktalarının en az bu payı bir çizgiyle eşleşmeli
 LINE_CHECK_MIN_POINTS = 30
+MIN_HOMOGRAPHY_LANDMARKS = 5   # 4 noktalık homografi o noktalara tam oturur: hata 0, bir şey ölçmez
 DIRECTION_WINDOW_S = 10.0
 POSSESSION_WINDOW_S = 1.0
 LABEL_HOLD_S = 1.0           # etiket ancak bu süre kararlıysa değişir
@@ -255,7 +256,8 @@ def calibration_validation(calib: PitchCalibration) -> tuple[str, float | None]:
     """Kapının kullanacağı bağımsız hata: (kaynak, metre).
 
     - `line_validation`: `meta["line_validation_error_m"]` (saha çizgisi noktalarında ölçülmüş)
-    - `landmark_loo`: noktaların ≥%80'i saha işareti üzerinde → LOO hatası
+    - `landmark_loo`: noktaların ≥%80'i saha işareti üzerinde → LOO hatası (homografide
+      en az 5 nokta: 4 noktaya her homografi kusursuz oturur, hata bir şey söylemez)
     - `unverified`: ikisi de yok (oyuncudan türetilmiş, yapay ızgara, standart dışı ölçü)
     """
     meta = calib.meta if isinstance(calib.meta, dict) else {}
@@ -265,7 +267,8 @@ def calibration_validation(calib: PitchCalibration) -> tuple[str, float | None]:
     standard = (abs(calib.pitch_length_m - PITCH_LENGTH_M) < 1e-6
                 and abs(calib.pitch_width_m - PITCH_WIDTH_M) < 1e-6)
     pts = np.array([p.pitch for p in calib.points], dtype=float)
-    if standard and len(pts) and float(_on_marking(pts).mean()) >= LANDMARK_SHARE:
+    enough = calib.method == "tps" or len(pts) >= MIN_HOMOGRAPHY_LANDMARKS
+    if standard and enough and len(pts) and float(_on_marking(pts).mean()) >= LANDMARK_SHARE:
         return "landmark_loo", calib.reprojection_error_m
     return "unverified", None
 
