@@ -1,5 +1,5 @@
 {
-  "measured": "2026-11-01 20:50-21:00, once, after plan c00188d/090c218; control labels written before any refit output for those frames was computed",
+  "measured": "2026-11-01 see git history, once, after plan c00188d/090c218; control labels written before any refit output for those frames was computed",
   "plan": "docs/measurements/team-refit-plan.json",
   "control_A_132831": {
     "labels": "docs/measurements/team-eye-control-132831-labels.json",

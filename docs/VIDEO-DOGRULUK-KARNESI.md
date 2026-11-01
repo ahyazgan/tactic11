@@ -9,7 +9,8 @@ diye yazılır.
 - **Sabit kamera** (stadyum çatısı, direk ya da panorama). Telestrasyon TV yayınında
   çalışmaz; yayında yalnız takip var (`docs/CANLI-MOD-KILAVUZU.md`).
 - **Saha kalibrasyonu**: stadyum başına bir kez, en az 5 saha işareti; bağımsız
-  doğrulama hatası ≤ 2,0 m olmazsa çizgi ve etiket çizilmez.
+  doğrulama hatası ≤ 2,0 m olmazsa çizgi ve etiket çizilmez (`canli_mac` bunu
+  başlamadan denetler ve geçmeyen kalibrasyonla başlamaz).
 - **GPU**: ölçümler RTX 5060 (8 GB) dizüstünde.
 
 ## Koçun gördüğü çıktılar
