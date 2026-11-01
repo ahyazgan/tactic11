@@ -18,7 +18,8 @@ için adım adım yol. Tüm komutlar proje kökünden (`football-intelligence`).
 - Top: `--telestration` açıkken takip düşük güvenli top adaylarını da kaydeder ve
   telestrasyon topu bu adaylardan kurulan izle seçer. Gece maçında savunan takım
   doğruluğu %46 → %68 (ön kayıtlı kontrol, `docs/TOP-TESPITI-OLAY-OLCUMU.md`).
-  Veritabanına giden top değişmez.
+  Düzeltilmiş top veritabanındaki karelere de yazılır (paneldeki top tabanlı kartlar);
+  takipten çıkarılan pas listesi hâlâ ham topla hesaplanır.
 - Doğruluk (SoccerTrack gece maçı, gerçek konumlara karşı): blok etiketi dengeli
   doğruluk %71–75, savunma hattı hatası medyan ~6 m; takım ataması ~%70.
   Ayrıntı: `docs/OTOMATIK-TELESTRASYON.md`, `docs/TESPIT-KALITESI-DENETIMI.md`.

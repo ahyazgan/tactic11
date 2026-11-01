@@ -92,3 +92,42 @@ def test_continuity_breaks_only_across_skipped_segments() -> None:
     assert continues(end, seg(10.5))          # ardışık segment: ~0,1 sn boşluk
     assert not continues(end, seg(11.5))      # --keep-up iki segment atladı: ~60 sn
     assert continues(end, {"frames": []})     # boş segment kararı değiştirmez
+
+
+def test_refined_frames_wait_for_tracking_ingest(tmp_path, monkeypatch) -> None:
+    import json as _json
+    import subprocess
+
+    from scripts import telestrate_live as tl
+
+    (tmp_path / "frames_ball").mkdir()
+    for name in ("seg_0000", "seg_0001"):
+        (tmp_path / "frames_ball" / f"{name}.json").write_text("{}", encoding="utf-8")
+    (tmp_path / tl.STATE_FILE).write_text(_json.dumps({"processed": ["seg_0000.mp4"]}), encoding="utf-8")
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append((cmd, kwargs["env"].get("DATABASE_URL")))
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+
+    monkeypatch.setattr(tl.subprocess, "run", fake_run)
+    target = tl.IngestTarget("t-default", 990800, "sqlite:///x.db", "py")
+    assert tl.ingest_refined(tmp_path, target) == 1          # seg_0001: takip aktarımı bitmedi
+    assert calls[0][0][:3] == ["py", "-m", "scripts.ingest_tracking_json"]
+    assert calls[0][0][-1] == "--append" and calls[0][1] == "sqlite:///x.db"
+    assert (tmp_path / "frames_ball" / "seg_0000.ingested").exists()
+    assert tl.ingest_refined(tmp_path, target) == 0          # bir kez gider
+
+
+def test_failed_refined_ingest_is_retried(tmp_path, monkeypatch) -> None:
+    import json as _json
+    import subprocess
+
+    from scripts import telestrate_live as tl
+
+    (tmp_path / "frames_ball").mkdir()
+    (tmp_path / "frames_ball" / "seg_0000.json").write_text("{}", encoding="utf-8")
+    (tmp_path / tl.STATE_FILE).write_text(_json.dumps({"processed": ["seg_0000.mp4"]}), encoding="utf-8")
+    monkeypatch.setattr(tl.subprocess, "run", lambda cmd, **kw: subprocess.CompletedProcess(cmd, 1, "", "db yok"))
+    assert tl.ingest_refined(tmp_path, tl.IngestTarget("t", 1, None, "py")) == 0
+    assert not (tmp_path / "frames_ball" / "seg_0000.ingested").exists()

@@ -467,6 +467,10 @@ def main() -> int:
                     "--calibration", calibration, "--home-attack", args.home_attack]
         if args.swap_at_minute is not None:
             tele_cmd += ["--swap-at-minute", f"{args.swap_at_minute:g}"]
+        # düzeltilmiş top veritabanındaki aynı karelere de yazılır
+        tele_cmd += ["--match-id", str(args.match_id), "--tenant", args.tenant]
+        if args.database_url:
+            tele_cmd += ["--database-url", args.database_url]
         tele_proc = subprocess.Popen(tele_cmd, cwd=str(PROJECT_ROOT),  # noqa: S603
                                      env=dict(os.environ, PYTHONIOENCODING="utf-8"))
         print(f"[canlı] telestrasyon: {watch / 'tele'} (latest.json)")

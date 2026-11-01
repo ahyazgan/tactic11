@@ -109,8 +109,11 @@ Karar: canlı telestrasyon aday izini kullanır (`canli_mac --telestration` taki
   kullanılmamış bir gündüz panoraması indirme gerektirir).
 - Dokunuşta top hâlâ çoğunlukla yanlış ya da yok (%58 / %23): ayak dibindeki top ile
   başka oyuncunun ayakkabısı ayrılamıyor. Kazanç asıl olarak "top kimde" tarafında.
-- Veritabanına yazılan kareler (takip işçisinin kendi aktarımı, dondurulmuş) üretim
-  topunu taşır; paneldeki top tabanlı sinyaller bu değişiklikten etkilenmez.
+- Veritabanı: `canli_mac --telestration` düzeltilmiş kareleri, takip işçisinin
+  kendi aktarımı bittikten sonra aynı zaman damgalarına yeniden yazar (güncelleme,
+  çoğaltma yok). Doğrulama (990723, 30–31,5 dk, 1125 kare): veritabanındaki topun
+  saha dışı ışıkta olma payı %99,8 → %0; topu olan kare 1125 → 863. Takipten
+  çıkarılan paslar (`derived_passes`) hâlâ ham topla hesaplanır.
 - Takip konumlarının kendisi GSR'ye karşı medyan ~2,4–3 m sapıyor; 5 m yarıçap bunu taşır.
 
 ## Tekrar üretim
