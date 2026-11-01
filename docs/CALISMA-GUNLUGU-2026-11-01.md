@@ -128,3 +128,12 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - 5/5 geçti (aşağı yönlü değil): savunan takım %82,7 → %81,3, dokunuş %71,9 → %73,2.
   Gündüzde sistem çok daha iyi; top izinin gece kazancı ışık adaylarından.
 
+## 18:55–20:10 — Başka stadyum sınavı (132831) — geçmedi
+- Ön kayıt (60e7b47) indirmeden önce. Disk iki kez daraldı: işi biten 132877 panoraması
+  (3,3 GB, yeniden indirilebilir) ve 117092'den kesilmiş segment videoları (990721–23,
+  6,2 GB; panoramadan yeniden kesilebilir, kareler/adaylar duruyor) silindi.
+- Sonuç: D1/D3 geçti, D2 (yanlış top +5,0) kaldı; D4/D5 ölçülemedi — takım ataması bu sahada
+  iki takımı tutarlı ayıramadı. Kod değişmedi; sınır karnede.
+- Bulunan veri tutarsızlığı: aday izi topu değiştirirken aktör/sahip alanı eski topta kalıyor;
+  yeniden hesaplamak geliştirmede fark yaratmadı → değiştirilmedi.
+
