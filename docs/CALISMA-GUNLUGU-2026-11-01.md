@@ -14,5 +14,32 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Plan: v2 — MOT dilimlerinde topları eski modelle etiketle (öğretmen), 128058'i bağımsız
   test için tamamen ayır.
 
+## 06:45 — Dedektör v2 başlatıldı
+- Ön kayıt `docs/measurements/detector-finetune-v2-plan.json`: öğretmen top etiketleri
+  (eski model, güven ≥0,5, oyuncu ayak bandında, oyuncuya ≤3 boy), 128058 bağımsız test.
+- Öğretmen 480 eğitim karesinin 74'ünde top etiketledi (top etiketi 345 → 419).
+- 128058 başlangıç (eski model): klip recall %92,3, kesinlik %71,9.
+- Eğitim arka planda (~55 dk).
+
+## 06:50 — Canlı telestrasyon (PR #301, birleşti)
+- `scripts/telestrate_live.py` + `canli_mac --telestration`; segment başına H.264 video,
+  marks ve latest.json; hata kaydı + devam. Duman testi: 2 segment 57 sn.
+- Sorun (çözüldü): geçici dosya `.mp4.part` → yazıcılar biçimi uzantıdan seçiyor; `.tmp.mp4`.
+
+## 07:00 — Panel kartı (PR #302, birleşti)
+- API `/tracking/live/{id}/telestration` (+ video), panelde "Canlı Telestrasyon" kartı.
+- Kayıt: panel görsel doğrulaması YAPILMADI — yerel kurulum demo modunda, `.env.local`
+  değiştirilmedi.
+
+## 07:05 — Kalibrasyon doğrulama açığı (PR #303)
+- Sorun (benim #298 kapımın yan etkisi): `propose_calibration` yapay ızgara noktaları yazıyor
+  → kapı her öneriyi "doğrulanmamış" sayıyordu. Çözüm: saha çizgilerine karşı yön gruplu
+  doğrulama (`line_validation_error_m`); tek medyan çizgi yönündeki kaymayı görmüyordu
+  (test yakaladı).
+- Ek açık: 4 noktalık homografi her zaman 0 hata → en az 5 nokta şartı.
+- Kayıt: VLSC ve pan_zoom karelerinde `propose_calibration` kendi %90 kapısını geçemedi
+  (önceden var olan durum) — gerçek karede çizgi doğrulaması gösterilemedi.
+- `docs/CANLI-MOD-KILAVUZU.md` eklendi.
+
 ## Bekleyen kullanıcı kararları
 - (yok)
