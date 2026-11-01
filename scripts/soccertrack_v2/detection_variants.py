@@ -7,6 +7,9 @@ duvar saati süresi de yazılır (canlı mod için 30 sn'lik segment bütçesi).
 
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.soccertrack_v2.detection_variants \\
         --segments 1 5 9 --tiles 6 --threshold 0.35 --out data/tracking/bench/det_t6
+
+`--backend onnx` aynı ağırlıkların ONNX dışa aktarımını (onnxruntime) kullanır;
+ilk segment oturum açılışını içerir, hız karşılaştırmasında atlanmalıdır.
 """
 from __future__ import annotations
 
@@ -30,6 +33,7 @@ def main() -> int:
     p.add_argument("--tiles", type=int, default=4)
     p.add_argument("--threshold", type=float, default=0.35)
     p.add_argument("--resolution", type=int, default=None)
+    p.add_argument("--backend", default="auto", choices=["auto", "torch", "onnx"])
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
 
@@ -38,7 +42,7 @@ def main() -> int:
         if (args.out / f"seg_{seg:04d}.json").exists():
             p.error(f"önbellek var: segment {seg}")
     detector_cfg = DetectorConfig(model="small", weights=args.weights, tiles=args.tiles,
-                                  threshold=args.threshold, resolution=args.resolution)
+                                  threshold=args.threshold, resolution=args.resolution, backend=args.backend)
     cfg = PipelineConfig(detector=detector_cfg)
     detector = make_detector(detector_cfg)
     calib = PitchCalibration.load(args.calibration)

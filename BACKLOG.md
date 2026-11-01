@@ -12,14 +12,14 @@
 
 ### Claude otonom oturum 2026-11-01 (12:00'ye kadar) — günlük: docs/CALISMA-GUNLUGU-2026-11-01.md
 
-- [ ] Dedektör v2: eğitim kliplerindeki topları eski modelle (öğretmen) etiketle, 128058'i tamamen teste ayır, yeniden eğit ve ön kayıtlı şartlarla ölç.
-  Done when: ön kayıt eğitimden önce commit; 128058 oyuncu testi, TeamTrack top testi, 117092 panorama (tekrar) ölçüldü; sonuç belgede, üretim yalnız şartlar geçerse değişir.
-- [ ] Telestrasyonu canlı moda bağla: her işlenen segment için çizim öğeleri (marks) ve telestrasyonlu video üret; panelde video üstü katman.
-  Done when: canli_mac akışında segment başına marks JSON + mp4; dondurulmuş dosyalara dokunulmadı; testler yeşil.
-- [ ] Canlı prova: 1080p ön ayarıyla gerçek hızda 10+ dk prova, gecikme ve doğruluk ölçümü.
-  Done when: gecikme eğrisi ve segment süreleri belgede; ön ayar önerisi ölçüme dayalı.
-- [ ] Hız: ONNX arka ucu ve 1080p ile segment süresini ölç; gerçek zamana ne kadar yaklaşıldığını raporla.
-  Done when: aynı segmentlerde torch/onnx × 4K/1080p süre ve tespit oranı tablosu.
+- [x] Dedektör v2: eğitim kliplerindeki topları eski modelle (öğretmen) etiketle, 128058'i tamamen teste ayır, yeniden eğit ve ön kayıtlı şartlarla ölç.
+  Done when: ön kayıt eğitimden önce commit; 128058 oyuncu testi, TeamTrack top testi, 117092 panorama (tekrar) ölçüldü; sonuç belgede, üretim yalnız şartlar geçerse değişir. (3a9f38e: 6/7 şart, terfi yok; kullanıcı kararı bekliyor)
+- [x] Telestrasyonu canlı moda bağla: her işlenen segment için çizim öğeleri (marks) ve telestrasyonlu video üret; panelde video üstü katman.
+  Done when: canli_mac akışında segment başına marks JSON + mp4; dondurulmuş dosyalara dokunulmadı; testler yeşil. (PR #301, #302)
+- [x] Canlı prova: 1080p ön ayarıyla gerçek hızda 10+ dk prova, gecikme ve doğruluk ölçümü.
+  Done when: gecikme eğrisi ve segment süreleri belgede; ön ayar önerisi ölçüme dayalı. (docs/CANLI-HIZ-VE-PROVA.md; 6 dk prova, kaynak 6 dk)
+- [x] Hız: ONNX arka ucu ve 1080p ile segment süresini ölç; gerçek zamana ne kadar yaklaşıldığını raporla.
+  Done when: aynı segmentlerde torch/onnx × 4K/1080p süre ve tespit oranı tablosu. (1080p × 4/3/2 dilim; 4K süre önceki ölçümde ~100 sn; gerçek zamana ulaşılmadı → --keep-up)
 
 
 - [x] Codex devamı: GitHub ana dalını al, başka projelerin portlarını koruyarak gerçek API arayüzünü aç; video girişini ve eksik edinim kapısını doğrula.

@@ -48,6 +48,26 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Sorun (çözüldü): değerlendirme zinciri yanlış dalda çalıştı (evaluate_ball.py yoktu);
   dal değiştirilip eksik ölçümler tekrarlandı.
 
+## 08:50 — Veritabanı ön kontrolü (PR #308, birleşti)
+- Sorun: prova ingest'i `.env`'deki şablon `DATABASE_URL` (`host`) yüzünden 12 segmentte de
+  reddedildi; gecikme göstergesi "işlenen dk 10.0"da kaldı. `canli_mac` artık başlamadan
+  bağlantıyı dener, hata sınıfı + ilk satırı yazıp 2 ile çıkar.
+- Sorun (çözüldü): ilk test kapalı porta bağlanıyordu; bu makinede güvenlik duvarı yanıt
+  vermediği için 30 sn zaman aşımına düştü. Test ağsız hale getirildi (açılamayan sqlite yolu).
+
+## 09:00–09:20 — Doğru veritabanıyla prova
+- 12 segment, 0 hata, 1500 kare DB'de. Segment 96 sn (3,2× yavaş), gecikme segment başına
+  ~66 sn büyüyor; 6. dakikada 824 sn. `docs/measurements/live-rehearsal-990601.json`.
+
+## 09:20–09:46 — Hız matrisi (ön kayıtlı)
+- torch/onnx × 4/3/2 dilim. Hiçbir hızlı ayar şartı geçmedi (3 dilim −5,8, 2 dilim −23,6
+  puan); ONNX aynı tespit, ~2× yavaş. Öneri değişmedi. Gerçek zamana ulaşılmadı.
+
+## 09:50 — Canlı kalma modu (`--keep-up`)
+- Takip boşalınca en yeni segment işlenir, aradakiler atlanır (incoming/ içinde kalır);
+  dakika segment adından okunur. API segment adı kuralı genişletildi.
+- Sorun (çözüldü): arka plan komutu `frontend/` klasöründen çalıştı, göreli yollar bulunamadı.
+
 ## Bekleyen kullanıcı kararları
 - Dedektör v2'yi (rfdetr_soccertrack_ft_v2) üretime almak: ön kayıt dışı ürün kararı.
   Lehine: kesinlik +19 puan, top korunuyor, panorama/klip her eksende daha iyi.

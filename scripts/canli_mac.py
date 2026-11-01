@@ -38,6 +38,19 @@ segment sayısı). Fark = koçun gördüğü resmin kaç saniye eski olduğu. Ek
 - Skor ve dakika videodan okunmaz; dakika segment sırasından türetilir
   (`--start-minute`), skor panelde şut olaylarından gelir.
 
+## Canlı kalma (`--keep-up`)
+
+Takip segmenti gerçek zamandan yavaş işliyorsa (ölçüldü: 1080p panorama, 4 dilim,
+RTX 5060'ta 30 sn'lik segment ~96 sn) gecikme her segmentte ~66 sn büyür; 6 dk
+sonra koç 14 dk eski resmi görür. `--keep-up` ile ffmpeg segmentleri
+`<watch>/incoming/` klasörüne yazar; takip boştayken yalnız EN YENİ kapanmış
+segment izlenen klasöre alınır, aradakiler atlanır. Gecikme sınırlı kalır
+(≈ bir segmentin işlenme süresi + segment süresi) ama maçın bir kısmı görülmez;
+atlanan segmentler `incoming/` içinde kalır ve maç sonu tam işlenebilir. Alınan
+segment adı dakikasını taşır (`seg_0007_m13.500.mp4`) ve takip dakikayı addan
+okur (`--minute-from-name`), çünkü sıra numarası artık işlenen segment sayısına
+eşit değildir.
+
 ## Veritabanı ön kontrolü
 
 Kareler ana ortamın ingest süreciyle veritabanına yazılır; yazılamayan segment
@@ -205,6 +218,49 @@ def _written_count(watch: Path) -> int:
     return len(list(watch.glob("seg_*.mp4")))
 
 
+# --keep-up: alınan segment adı dakikayı taşır; track_live `--minute-from-name` ile okur
+KEEP_UP_MINUTE_PATTERN = r"_m(\d+\.\d+)"
+
+
+def keep_up_name(index: int, *, start_minute: float, segment_seconds: float) -> str:
+    """`incoming/seg_0007.mp4` → `seg_0007_m13.500.mp4` (segmentin başladığı maç dakikası)."""
+    return f"seg_{index:04d}_m{start_minute + index * segment_seconds / 60.0:.3f}.mp4"
+
+
+def segment_index(name: str) -> int:
+    """`seg_0007.mp4` / `seg_0007_m13.500.mp4` → 7."""
+    return int(name[4:8])
+
+
+def keep_up_choice(closed: list[str], promoted: list[str], processed: set[str]) -> str | None:
+    """Takip boştaysa alınacak segment: kapanmış olanların en yenisi, son alınandan yeniyse.
+
+    `closed` ffmpeg'in bitirdiği `incoming` adları; `promoted` izlenen klasöre alınmış
+    adlar; `processed` takibin bitirdikleri. Takip hâlâ bir segmentle meşgulse None.
+    """
+    if any(name not in processed for name in promoted):
+        return None
+    last = max((segment_index(n) for n in promoted), default=-1)
+    newer = [n for n in closed if segment_index(n) > last]
+    return max(newer, key=segment_index) if newer else None
+
+
+def closed_segments(incoming: Path, source_ended: bool) -> list[str]:
+    """ffmpeg'in kapattığı segmentler: yazılan son dosya, kaynak bitmedikçe hâlâ açıktır."""
+    names = sorted(p.name for p in incoming.glob("seg_*.mp4"))
+    return names if source_ended else names[:-1]
+
+
+def _processed_names(watch: Path) -> set[str]:
+    state = watch / ".track_live_state.json"
+    if not state.is_file():
+        return set()
+    try:
+        return set(json.loads(state.read_text(encoding="utf-8")).get("processed", []))
+    except (ValueError, OSError):
+        return set()
+
+
 # hata sınıfı + ilk satır: SQLAlchemy'nin "Background on this error" kuyruğu bilgi taşımaz
 DB_CHECK = (
     "import sys\n"
@@ -252,11 +308,11 @@ def scale_calibration(calibration: Path, size: tuple[int, int], out_dir: Path) -
     return out
 
 
-def wait_first_segment_size(watch: Path, seg_proc: subprocess.Popen, timeout_s: float = 180.0) -> tuple[int, int]:
+def wait_first_segment_size(seg_dir: Path, seg_proc: subprocess.Popen, timeout_s: float = 180.0) -> tuple[int, int]:
     """İlk segment tamamlanınca (ikincisi başlayınca ya da kaynak bitince) boyutunu oku."""
     import cv2  # noqa: PLC0415 — yalnız --height ile gerekir (venv-cv)
 
-    first, second = watch / "seg_0000.mp4", watch / "seg_0001.mp4"
+    first, second = seg_dir / "seg_0000.mp4", seg_dir / "seg_0001.mp4"
     deadline = time.time() + timeout_s
     while time.time() < deadline:
         if first.exists() and (second.exists() or seg_proc.poll() is not None):
@@ -300,6 +356,8 @@ def main() -> int:
     p.add_argument("--onnx-model", default=None)
     p.add_argument("--database-url", default=None)
     p.add_argument("--fresh", action="store_true", help="klasördeki eski segment ve durumu sil")
+    p.add_argument("--keep-up", action="store_true",
+                   help="takip yetişemezse aradaki segmentleri atla, hep en yenisini işle (gecikme sınırlı)")
     p.add_argument("--telestration", action="store_true",
                    help="işlenen her segment için telestrasyonlu video üret (scripts.telestrate_live)")
     p.add_argument("--swap-at-minute", type=float, default=None,
@@ -318,6 +376,8 @@ def main() -> int:
     if args.fresh and watch.exists():
         shutil.rmtree(watch)
     watch.mkdir(parents=True, exist_ok=True)
+    seg_dir = watch / "incoming" if args.keep_up else watch
+    seg_dir.mkdir(exist_ok=True)
 
     # track_live ile aynı ingest yorumlayıcısı
     from scripts.track_live import default_ingest_python  # noqa: PLC0415
@@ -332,7 +392,7 @@ def main() -> int:
     ffmpeg = find_ffmpeg(args.ffmpeg)
     transcode = (not kind.is_stream) and source_needs_transcode(args.source)
     seg_cmd = ffmpeg_segment_command(
-        ffmpeg, args.source, kind, watch, segment_seconds=args.segment_seconds,
+        ffmpeg, args.source, kind, seg_dir, segment_seconds=args.segment_seconds,
         start_seconds=args.start_seconds, transcode=transcode, height=args.height,
     )
     track_cmd = [
@@ -344,6 +404,8 @@ def main() -> int:
         "--tiles", str(args.tiles), "--track-fps", f"{args.track_fps:g}",
         "--backend", args.backend, "--poll-seconds", f"{POLL_SECONDS:g}",
     ]
+    if args.keep_up:
+        track_cmd += ["--minute-from-name", KEEP_UP_MINUTE_PATTERN]
     for flag, val in (("--calibration", args.calibration), ("--weights", args.weights),
                       ("--onnx-model", args.onnx_model), ("--database-url", args.database_url)):
         if val:
@@ -358,7 +420,7 @@ def main() -> int:
     seg_proc = subprocess.Popen(seg_cmd, cwd=str(PROJECT_ROOT))  # noqa: S603
     calibration = args.calibration
     if args.height and calibration:
-        size = wait_first_segment_size(watch, seg_proc)
+        size = wait_first_segment_size(seg_dir, seg_proc)
         calibration = str(scale_calibration(Path(calibration), size, watch))
         track_cmd[track_cmd.index("--calibration") + 1] = calibration
         print(f"[canlı] kalibrasyon {size[0]}x{size[1]} segmentlere ölçeklendi: {calibration}")
@@ -373,16 +435,42 @@ def main() -> int:
         tele_proc = subprocess.Popen(tele_cmd, cwd=str(PROJECT_ROOT),  # noqa: S603
                                      env=dict(os.environ, PYTHONIOENCODING="utf-8"))
         print(f"[canlı] telestrasyon: {watch / 'tele'} (latest.json)")
+    promoted: list[str] = []   # --keep-up: incoming adları, alınış sırasıyla
     try:
         while True:
             time.sleep(POLL_SECONDS)
+            source_ended = seg_proc.poll() is not None
             elapsed = (time.time() - t0) if kind.realtime else None
-            lat = latency(_processed_count(watch), _written_count(watch),
-                          segment_seconds=args.segment_seconds, start_minute=args.start_minute,
-                          elapsed_seconds=elapsed, source_ended=seg_proc.poll() is not None)
+            if args.keep_up:
+                processed = {n for n in promoted
+                             if keep_up_name(segment_index(n), start_minute=args.start_minute,
+                                             segment_seconds=args.segment_seconds) in _processed_names(watch)}
+                closed = closed_segments(seg_dir, source_ended)
+                choice = keep_up_choice(closed, promoted, processed)
+                if choice is not None:
+                    skipped = [n for n in closed
+                               if max((segment_index(m) for m in promoted), default=-1)
+                               < segment_index(n) < segment_index(choice)]
+                    target = keep_up_name(segment_index(choice), start_minute=args.start_minute,
+                                          segment_seconds=args.segment_seconds)
+                    # kopya: incoming tam kayıt olarak kalır; .part uzantısı takibe yarım dosya göstermez
+                    shutil.copy2(seg_dir / choice, watch / f"{target}.part")
+                    os.replace(watch / f"{target}.part", watch / target)
+                    promoted.append(choice)
+                    print(f"[canlı] işlenecek: {target}"
+                          f"{f' · atlandı {len(skipped)} segment' if skipped else ''}", flush=True)
+                done = max((segment_index(n) + 1 for n in processed), default=0)
+                written = len(closed)
+                caught_up = source_ended and len(processed) == len(promoted) and \
+                    keep_up_choice(closed, promoted, processed) is None
+            else:
+                done, written = _processed_count(watch), _written_count(watch)
+                caught_up = source_ended and done >= written
+            lat = latency(done, written, segment_seconds=args.segment_seconds, start_minute=args.start_minute,
+                          elapsed_seconds=elapsed, source_ended=source_ended)
             print(f"[canlı] işlenen dk {lat.processed_minute:.1f} · akış dk {lat.stream_minute:.1f} "
                   f"· gecikme {lat.lag_seconds:.0f} sn", flush=True)
-            if seg_proc.poll() is not None and _processed_count(watch) >= _written_count(watch):
+            if caught_up:
                 if tele_proc is not None and tele_proc.poll() is None and _telestration_backlog(watch):
                     print(f"[canlı] telestrasyon bekleniyor: {_telestration_backlog(watch)} segment", flush=True)
                     continue

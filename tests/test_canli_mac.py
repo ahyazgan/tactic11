@@ -119,3 +119,36 @@ def test_check_database_missing_interpreter() -> None:
 
     error = check_database("yok/python.exe", None)
     assert error is not None and error.startswith("yorumlayıcı başlatılamadı")
+
+
+def test_keep_up_choice_waits_then_takes_newest() -> None:
+    from scripts.canli_mac import keep_up_choice
+
+    closed = ["seg_0000.mp4", "seg_0001.mp4", "seg_0002.mp4", "seg_0003.mp4"]
+    assert keep_up_choice([], [], set()) is None
+    assert keep_up_choice(closed[:1], [], set()) == "seg_0000.mp4"
+    # takip meşgul: yeni segment alınmaz
+    assert keep_up_choice(closed, ["seg_0000.mp4"], set()) is None
+    # takip bitti: aradakiler atlanır, en yenisi alınır
+    assert keep_up_choice(closed, ["seg_0000.mp4"], {"seg_0000.mp4"}) == "seg_0003.mp4"
+    # yeni kapanan yok
+    assert keep_up_choice(closed, ["seg_0000.mp4", "seg_0003.mp4"], {"seg_0000.mp4", "seg_0003.mp4"}) is None
+
+
+def test_keep_up_name_round_trips_through_track_live(tmp_path: Path) -> None:
+    from scripts.canli_mac import (
+        KEEP_UP_MINUTE_PATTERN,
+        closed_segments,
+        keep_up_name,
+        segment_index,
+    )
+    from scripts.track_live import _minute_from_name
+
+    name = keep_up_name(7, start_minute=10.0, segment_seconds=30.0)
+    assert name == "seg_0007_m13.500.mp4" and segment_index(name) == 7
+    assert _minute_from_name(name, KEEP_UP_MINUTE_PATTERN) == 13.5
+    for i in range(3):
+        (tmp_path / f"seg_{i:04d}.mp4").write_bytes(b"")
+    # son dosya ffmpeg tarafından hâlâ yazılıyor; kaynak bitince o da kapanmıştır
+    assert closed_segments(tmp_path, source_ended=False) == ["seg_0000.mp4", "seg_0001.mp4"]
+    assert len(closed_segments(tmp_path, source_ended=True)) == 3

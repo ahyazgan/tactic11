@@ -504,7 +504,8 @@ def delete_job(job_id: str, _user: models.User = Depends(get_current_user)) -> d
 
 # --- Canlı telestrasyon (scripts.telestrate_live çıktısı) ------------------- #
 
-LIVE_SEGMENT = re.compile(r"^seg_\d{4}$")
+# canli_mac --keep-up adı dakikayı taşır: seg_0007_m13.500
+LIVE_SEGMENT = re.compile(r"^seg_\d{4}(_m\d+\.\d{3})?$")
 LIVE_VIDEO_HEADERS = {"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"}
 
 

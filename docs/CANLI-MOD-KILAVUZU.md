@@ -52,8 +52,13 @@ venv-cv\Scripts\python.exe -m scripts.canli_mac --source rtsp://kamera/stream --
   yöne hücum ediyor. `--swap-at-minute 45` verilirse ikinci yarı segmentlerinde
   yön kendiliğinden ters çevrilir (yeniden başlatma gerekmez).
   `auto` çoğu zaman karar veremez (kaleciler görünmüyor).
-- `--height 1080`: segmentleri 1080p'ye indirir; hız için ilk denenecek ayar. Kalibrasyon
-  ilk segmentin boyutuna otomatik ölçeklenir (`<watch>/calibration_<g>x<y>.json`).
+- `--height 1080`: segmentleri 1080p'ye indirir (video kodlama ve disk için); tespit
+  süresini kısaltmaz, çünkü dilim sayısı aynı kalır. Kalibrasyon ilk segmentin boyutuna
+  otomatik ölçeklenir (`<watch>/calibration_<g>x<y>.json`).
+- `--keep-up`: takip yetişemezse aradaki segmentleri atlar, hep en yenisini işler.
+  Gecikme büyümez ama maçın bir kısmı görülmez; atlanan segmentler
+  `<watch>/incoming/` içinde kalır (maç sonu tam işlenebilir). Ölçüm:
+  `docs/CANLI-HIZ-VE-PROVA.md`.
 - `--database-url`: karelerin yazılacağı veritabanı. Başlamadan önce bağlantı
   denenir; ulaşılamazsa akış hiç başlamaz ve hata tek satırla yazılır. Yerel
   kurulumda `--database-url "sqlite:///<proje yolu>/demo.db"` (başlatıcının
@@ -73,7 +78,7 @@ segment dakikası ve çizilen kare oranı görünür.
 |---|---|
 | Telestrasyonda yalnız halkalar var | Kalibrasyon doğrulanmamış (4 nokta, oyuncudan türetilmiş ya da çizgilerle eşleşmeyen öneri) veya hata > 2 m. İşçi başlarken uyarı yazar. |
 | Etiket hiç çıkmıyor | Hücum yönü verilmedi (`--home-attack`) ya da savunan takımdan 6 oyuncu görünmüyor. |
-| Gecikme sürekli artıyor | Bilgisayar segmenti 30 sn'den uzun sürede işliyor. `--height 1080` dene. |
+| Gecikme sürekli artıyor | Bilgisayar segmenti 30 sn'den uzun sürede işliyor (RTX 5060, panorama, 4 dilim: ~96 sn). `--keep-up` ver; dilim azaltmak oyuncu kaybettirir (ölçüldü). |
 | Kart "canlı telestrasyon yok" diyor | `--telestration` verilmedi ya da henüz ilk segment işlenmedi (`data/tracking/live/<maç>/tele/latest.json`). |
 | "veritabanına ulaşılamıyor" ile hemen çıkıyor | `DATABASE_URL` yanlış ya da sunucu kapalı. `--database-url` ile doğru adresi verin. |
 | Segment atlandı | `data/tracking/live/<maç>/tele/seg_XXXX.error.json` hatayı içerir; akış durmaz. |

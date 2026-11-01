@@ -1,0 +1,23 @@
+{
+  "measured": "2026-11-01, same machine and source as live-rehearsal-990601.json, only --keep-up added (match 990602)",
+  "result": {
+    "segments_written": 12,
+    "segments_processed": 5,
+    "segments_skipped": 7,
+    "coverage": 0.42,
+    "lag_tracked_s_while_streaming": {"min": 96, "max": 116},
+    "lag_tracked_s_last_segment": 185,
+    "lag_tele_s_while_streaming": {"min": 117, "max": 133},
+    "db_frames": 625,
+    "frame_minutes_match_names": true,
+    "without_keep_up_lag_after_6_min_s": 824
+  },
+  "segments": [
+    {"segment": "seg_0000_m10.000", "stream_end_s": 30, "tracked_s": 134, "tele_s": 156, "lag_tracked_s": 104, "lag_tele_s": 126, "frame_minutes": [10.0, 10.5]},
+    {"segment": "seg_0003_m11.500", "stream_end_s": 120, "tracked_s": 236, "tele_s": 253, "lag_tracked_s": 116, "lag_tele_s": 133, "frame_minutes": [11.5, 12.0]},
+    {"segment": "seg_0007_m13.500", "stream_end_s": 240, "tracked_s": 336, "tele_s": 357, "lag_tracked_s": 96, "lag_tele_s": 117, "frame_minutes": [13.5, 14.0]},
+    {"segment": "seg_0010_m15.000", "stream_end_s": 330, "tracked_s": 435, "tele_s": 453, "lag_tracked_s": 105, "lag_tele_s": 123, "frame_minutes": [15.0, 15.5]},
+    {"segment": "seg_0011_m15.500", "stream_end_s": 358, "tracked_s": 542, "tele_s": 556, "lag_tracked_s": 185, "lag_tele_s": 198, "frame_minutes": [15.5, 16.0]}
+  ],
+  "note": "last segment closed when the source ended while seg_0010 was still being tracked, so it waited one extra cycle"
+}

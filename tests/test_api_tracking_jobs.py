@@ -301,3 +301,12 @@ def test_live_telestration_missing_broken_and_unsafe(client, env):
     assert client.get("/tracking/live/990204/telestration").status_code == 502
     assert client.get("/tracking/live/990204/telestration/seg_99.mp4").status_code == 422
     assert client.get("/tracking/live/990204/telestration/seg_0001.mp4").status_code == 404
+
+
+def test_live_telestration_keep_up_segment_name(client, env):
+    # canli_mac --keep-up adı dakikayı taşır; yol geçişi yine reddedilir
+    _live_tele(env, 990205, json.dumps({"segment": "seg_0007_m13.500"}), ("seg_0007_m13.500",))
+    body = client.get("/tracking/live/990205/telestration").json()
+    assert body["video_url"] == "/tracking/live/990205/telestration/seg_0007_m13.500.mp4"
+    assert client.get(body["video_url"]).status_code == 200
+    assert client.get("/tracking/live/990205/telestration/seg_0007_m13.5x.mp4").status_code == 422
