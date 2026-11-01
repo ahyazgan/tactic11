@@ -110,12 +110,64 @@ başına ayrı TPS tersiyle gerçek zamanın ~3 katıydı; çizim artık çıkt�
 halkalar tek toplu ters dönüşüm + merkezde yerel Jacobian ile (tam izdüşümden
 <0,5 px fark, `test_batched_rings_match_exact_projection`).
 
+## Dayanıklılık denemesi: çizim katmanında düzeltilemiyor
+
+Takım ataması deneyleri (`docs/TAKIM-CAPA-DENEYI-SONUCLARI.md`) kalıcı kazanç
+getirmeyince, telestrasyonun kendisini gürültüye dayanıklı yapmak denendi.
+
+Teşhis (geliştirme 600–960 sn, savunma hattı hem takipte hem GT'de çizilen 1179
+kare): savunan takım sayılan ~10 oyuncunun 4,3–5,6'sı GT'de 3 m içinde karşılık
+bulmuyor (hayalet tespit ya da konumu sapmış); yanlış takımlı oyuncu ise hatası
+küçük ve büyük (>8 m) karelerde aynı (1,1 / 1,3; en geri 4'te 0,46 / 0,47).
+Büyük hat hatasını ayıran takım ataması değil, karşılıksız tespitlerdir.
+
+`TelestrationConfig` (varsayılanlar üretim davranışı) ile geliştirmede taranan
+adaylar (`eval_telestration --config-json`):
+
+| Ayar | Çizilen | Blok = GT | Dengeli | Hat hatası medyan / p90 |
+|---|---:|---:|---:|---:|
+| üretim | 1179 | %75,8 | %71,3 | 6,1 / 25,1 m |
+| kısa ömürlü tespit dışarıda, 0,5 / 1 / 2 sn | 1106 / 970 / 719 | %73,5 / 70,7 / 72,2 | %68,1 / 61,1 / 65,6 | 6,1–7,3 / 25,3–26,1 m |
+| hat derinliği medyan | 1179 | %75,6 | %71,2 | 6,1 / 25,9 m |
+| hat yumuşatması 0,15 | 1179 | %76,0 | %71,6 | 6,1 / 24,6 m |
+
+Etiket kararlılığı 2 sn ilk bakışta %78,0 dengeli verdi, ama bu ayar GT
+referansına da uygulanmıştı: referansın tanımı değişince uyum yapay olarak
+artar. Referans sabit (1 sn) tutulunca (`--reference-default`) 2 sn %64,2,
+3 sn %45,5 verdi — zararlı. Hiçbir aday geliştirmede anlamlı kazanç göstermediği
+için kontrol dilimine gidilmedi; üretim varsayılanları değişmedi. Hayalet ve
+sapmış tespiti çizim katmanı ayıramıyor: kısa ömürlü tespitleri atmak gerçek
+oyuncuları da attı (çizilen kare düştü, doğruluk artmadı).
+
+## Bağımsız tekrar: görülmemiş dilim, güncel kod
+
+`docs/measurements/telestration-eval-117092-1200.json`. 1200–1560 sn
+(`scripts/soccertrack_v2/cut_segments.py` ile kesilen `data/tracking/live/990402`),
+bugünkü `track_video` ile canlı işçi gibi segment segment takip edildi (ilk
+segmentin takım renkleri çapa); bu dilim daha önce hiçbir telestrasyon kararında
+kullanılmadı. Üretim varsayılanları.
+
+| | 600–960 (eski kod) | 1200–1560 (güncel kod) |
+|---|---:|---:|
+| Çizilen kare | %78,6 | %50,9 |
+| Blok = GT (taban) | %75,8 (%68,6) | %81,8 (%64,3) |
+| Dengeli doğruluk | %71,3 | %74,9 |
+| Savunma hattı hatası medyan / p90 | 6,1 / 25,1 m | 6,0 / 25,9 m |
+| Takım ataması (eşleşen) | %77 | %72 |
+| Karede GT ile eşleşen oyuncu | 8,5 | 5,4 |
+
+Etiket doğruluğu ve hat hatası tekrarlandı. Çizilen kare oranı, karede daha az
+oyuncu eşleştiği için düştü: kapılar (savunan takımda ≥6 oyuncu) daha sık devreye
+girdi. Bu dilimde üç koşunun da çizdiği yalnız 119 kare olduğundan takım ataması
+ayrıştırması güvenilir değildir ve rapor edilmez.
+
 ## Sınırlar ve sıradaki adımlar
 
 - Yalnız sabit kalibrasyon. Kare başına kalibrasyonla işlenen hareketli kamera
   karelerin kendi homografisini çıktıya yazmadığı için desteklenmez.
 - Blok eşikleri sezgiseldir; etiketli faz verisiyle ayarlanmadı.
-- Doğruluğu en çok takım ataması sınırlıyor (yukarıdaki ayrıştırma); sonra
-  tespit kapsaması (karede 8,5 eşleşen oyuncu).
+- Doğruluğu sınırlayan sırayla: savunan takımdaki karşılıksız tespitler
+  (hayalet/sapmış konum), takım ataması, tespit kapsaması. Üçü de takip/tespit
+  tarafındadır (dondurulmuş kod); çizim katmanı ayarları bunları telafi etmedi.
 - Sırada: canlı mod segmentlerine bağlama (`scripts/canli_mac.py`) ve panelde
   video üstü katman (`--marks-json`), topsuz koşu okları, boşluk boyama.

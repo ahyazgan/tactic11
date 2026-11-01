@@ -278,8 +278,9 @@ class Line:
     y_max: float
 
 
-def _lines(players: list[tuple[float, float]]) -> list[Line]:
-    """(kendi kalesine uzaklık, y) oyuncularını büyük boşluklardan hatlara böl."""
+def _lines(players: list[tuple[float, float]], statistic: str = "mean") -> list[Line]:
+    """(kendi kalesine uzaklık, y) oyuncularını büyük boşluklardan hatlara böl;
+    hat derinliği üyelerin ortalaması ya da medyanı."""
     groups: list[list[tuple[float, float]]] = []
     for d, y in sorted(players):
         if groups and d - groups[-1][-1][0] <= LINE_CLUSTER_GAP_M:
@@ -288,8 +289,26 @@ def _lines(players: list[tuple[float, float]]) -> list[Line]:
             groups.append([(d, y)])
     if len(groups) > 1 and len(groups[0]) == 1:
         groups = groups[1:]  # izole en derin = kaleci
-    return [Line(float(np.mean([d for d, _ in g])), min(y for _, y in g), max(y for _, y in g))
+    center = np.median if statistic == "median" else np.mean
+    return [Line(float(center([d for d, _ in g])), min(y for _, y in g), max(y for _, y in g))
             for g in groups if len(g) >= MIN_LINE_PLAYERS]
+
+
+@dataclass(frozen=True)
+class TelestrationConfig:
+    """Hat/etiket davranışının ayarları; varsayılanlar ölçülmüş üretim davranışıdır
+    (docs/OTOMATIK-TELESTRASYON.md)."""
+
+    line_smoothing: float = LINE_SMOOTHING   # her 0,2 sn'de yeni hat değerinin payı
+    label_hold_s: float = LABEL_HOLD_S       # etiket değişmeden önce gereken kararlılık
+    min_track_s: float = 0.0                 # hat/pres hesabına girmek için kesintisiz görünme
+    line_statistic: str = "mean"             # hat derinliği: mean | median
+
+    def __post_init__(self) -> None:
+        if self.line_statistic not in ("mean", "median"):
+            raise ValueError("line_statistic mean ya da median olmalı")
+        if not 0.0 < self.line_smoothing <= 1.0 or self.label_hold_s < 0 or self.min_track_s < 0:
+            raise ValueError("geçersiz telestrasyon ayarı")
 
 
 def block_label(def_line_m: float, pressing: bool) -> str:
@@ -305,7 +324,8 @@ def block_label(def_line_m: float, pressing: bool) -> str:
 class Telestrator:
     """Kare kare çizim üretir; yön, sahiplik ve etiket için kısa geçmiş tutar."""
 
-    def __init__(self, fps: float, home_attack_direction: int = 0) -> None:
+    def __init__(self, fps: float, home_attack_direction: int = 0,
+                 config: TelestrationConfig | None = None) -> None:
         """`home_attack_direction`: takım 0'ın hücum yönü (+1: saha x artan, -1: azalan,
         0: kaleci/en derin oyuncudan çıkar). Devre boyunca sabittir; gerçek görüntüde
         kaleciler çoğu zaman görünmediği için canlıda operatör girdisi asıl yoldur."""
@@ -315,9 +335,12 @@ class Telestrator:
         self._home_attack = home_attack_direction
         self._frames: deque[SimpleNamespace] = deque(maxlen=max(1, round(DIRECTION_WINDOW_S * fps)))
         self._owners: deque[int] = deque(maxlen=max(1, round(POSSESSION_WINDOW_S * fps)))
-        self._hold = max(1, round(LABEL_HOLD_S * fps))
-        # kare hızından bağımsız aynı zaman sabiti: 0,2 sn'de LINE_SMOOTHING kadar
-        self._alpha = 1.0 - (1.0 - LINE_SMOOTHING) ** (1.0 / (fps * LINE_SMOOTHING_PERIOD_S))
+        self.config = config or TelestrationConfig()
+        self._hold = max(1, round(self.config.label_hold_s * fps))
+        # kare hızından bağımsız aynı zaman sabiti: 0,2 sn'de line_smoothing kadar
+        self._alpha = 1.0 - (1.0 - self.config.line_smoothing) ** (1.0 / (fps * LINE_SMOOTHING_PERIOD_S))
+        self._min_track = max(1, round(self.config.min_track_s * fps))
+        self._seen: dict[int, int] = {}
         self._candidate: str | None = None
         self._streak = 0
         self.label: str | None = None
@@ -387,6 +410,9 @@ class Telestrator:
         if ball_px is None:
             ball_m = None
         pitch = {p.tid: (p.x_m, p.y_m) for p in players if p.team in (0, 1)}
+        # kesintisiz görünme sayacı: kısa ömürlü (çoğu hayalet/yanlış) tespitler hat hesabına girmez
+        self._seen = {p.tid: self._seen.get(p.tid, 0) + 1 for p in players}
+        steady = {tid: xy for tid, xy in pitch.items() if self._seen[tid] >= self._min_track}
         L = proj.calib.pitch_length_m
         self._frames.append(SimpleNamespace(players=[
             SimpleNamespace(x=p.x_m / L * 100.0, team_external_id=p.team, is_keeper=False)
@@ -406,9 +432,9 @@ class Telestrator:
         if gate is None:
             defending = 1 - Counter(self._owners).most_common(1)[0][0]
             direction = self._direction(defending)
-            team_pts = {p.tid: pitch[p.tid] for p in players if p.team == defending and p.tid in pitch}
+            team_pts = {p.tid: steady[p.tid] for p in players if p.team == defending and p.tid in steady}
             lines = self._smooth(_lines([((xy[0] if direction > 0 else L - xy[0]), xy[1])
-                                         for xy in team_pts.values()]))
+                                         for xy in team_pts.values()], self.config.line_statistic))
             if direction == 0:
                 gate = "direction"
             elif len(team_pts) < MIN_TEAM_PLAYERS:

@@ -1,0 +1,257 @@
+{
+  "frames_files": [
+    "data/tracking/live/990402/frames/seg_0000.json",
+    "data/tracking/live/990402/frames/seg_0001.json",
+    "data/tracking/live/990402/frames/seg_0002.json",
+    "data/tracking/live/990402/frames/seg_0003.json",
+    "data/tracking/live/990402/frames/seg_0004.json",
+    "data/tracking/live/990402/frames/seg_0005.json",
+    "data/tracking/live/990402/frames/seg_0006.json",
+    "data/tracking/live/990402/frames/seg_0007.json",
+    "data/tracking/live/990402/frames/seg_0008.json",
+    "data/tracking/live/990402/frames/seg_0009.json",
+    "data/tracking/live/990402/frames/seg_0010.json",
+    "data/tracking/live/990402/frames/seg_0011.json"
+  ],
+  "frames_evaluated": 1500,
+  "fps": 4.167,
+  "home_is_gt_team": 0,
+  "team_pairs": {
+    "0->0": 2590,
+    "0->1": 904,
+    "1->0": 1123,
+    "1->1": 2738
+  },
+  "gt_home_attack_direction": 1,
+  "matched_players_per_frame": 5.35,
+  "held_constant": "possession = tracking frame possession; direction = GT keepers",
+  "config": {
+    "line_smoothing": 0.35,
+    "label_hold_s": 1.0,
+    "min_track_s": 0.0,
+    "line_statistic": "mean"
+  },
+  "reference_default": false,
+  "pred_vs_gt": {
+    "frames": 1500,
+    "ref_label_counts": {
+      "Yüksek blok": 471,
+      "Alçak blok": 67,
+      "Orta blok": 185,
+      "Yüksek blok · pres": 9
+    },
+    "majority_baseline_pct": 64.3,
+    "block_balanced_pct": 74.9,
+    "block_confusion": {
+      "Alçak blok -> Alçak blok": 46,
+      "Alçak blok -> Yüksek blok": 21,
+      "Orta blok -> Alçak blok": 47,
+      "Orta blok -> Orta blok": 123,
+      "Orta blok -> Yüksek blok": 15,
+      "Yüksek blok -> Alçak blok": 20,
+      "Yüksek blok -> Orta blok": 30,
+      "Yüksek blok -> Yüksek blok": 430
+    },
+    "drawn_ref": 1486,
+    "drawn_test": 763,
+    "drawn_both": 763,
+    "test_only": 0,
+    "ref_only": 723,
+    "label_n": 732,
+    "label_exact_pct": 80.6,
+    "block_match_pct": 81.8,
+    "press_agree_pct": 95.4,
+    "def_line_error": {
+      "n": 763,
+      "median_m": 5.95,
+      "p90_m": 25.86
+    },
+    "line_gap_error": {
+      "n": 169,
+      "median_m": 3.6,
+      "p90_m": 8.0
+    },
+    "test_gates": {
+      "possession": 5,
+      "drawn": 763,
+      "players": 711,
+      "lines": 21
+    }
+  },
+  "pred_gt_team_vs_gt": {
+    "frames": 1500,
+    "ref_label_counts": {
+      "Yüksek blok": 35,
+      "Orta blok": 12
+    },
+    "majority_baseline_pct": 74.5,
+    "block_balanced_pct": 80.5,
+    "block_confusion": {
+      "Orta blok -> Orta blok": 8,
+      "Orta blok -> Yüksek blok": 4,
+      "Yüksek blok -> Orta blok": 2,
+      "Yüksek blok -> Yüksek blok": 33
+    },
+    "drawn_ref": 1486,
+    "drawn_test": 129,
+    "drawn_both": 129,
+    "test_only": 0,
+    "ref_only": 1357,
+    "label_n": 47,
+    "label_exact_pct": 87.2,
+    "block_match_pct": 87.2,
+    "press_agree_pct": 96.1,
+    "def_line_error": {
+      "n": 129,
+      "median_m": 3.62,
+      "p90_m": 16.25
+    },
+    "line_gap_error": {
+      "n": 9,
+      "median_m": 4.26,
+      "p90_m": 6.24
+    },
+    "test_gates": {
+      "possession": 5,
+      "players": 1365,
+      "drawn": 129,
+      "lines": 1
+    }
+  },
+  "pred_vs_pred_gt_team": {
+    "frames": 1500,
+    "ref_label_counts": {
+      "Yüksek blok": 35,
+      "Orta blok": 10
+    },
+    "majority_baseline_pct": 77.8,
+    "block_balanced_pct": 84.3,
+    "block_confusion": {
+      "Orta blok -> Orta blok": 8,
+      "Orta blok -> Yüksek blok": 2,
+      "Yüksek blok -> Orta blok": 4,
+      "Yüksek blok -> Yüksek blok": 31
+    },
+    "drawn_ref": 129,
+    "drawn_test": 763,
+    "drawn_both": 119,
+    "test_only": 644,
+    "ref_only": 10,
+    "label_n": 45,
+    "label_exact_pct": 86.7,
+    "block_match_pct": 86.7,
+    "press_agree_pct": 98.3,
+    "def_line_error": {
+      "n": 119,
+      "median_m": 4.93,
+      "p90_m": 17.23
+    },
+    "line_gap_error": {
+      "n": 6,
+      "median_m": 2.24,
+      "p90_m": 9.57
+    },
+    "test_gates": {
+      "possession": 5,
+      "drawn": 763,
+      "players": 711,
+      "lines": 21
+    }
+  },
+  "common_frames": {
+    "frames": 119,
+    "pred": {
+      "frames": 119,
+      "ref_label_counts": {
+        "Yüksek blok": 84,
+        "Orta blok": 32,
+        "Yüksek blok · pres": 3
+      },
+      "majority_baseline_pct": 70.6,
+      "block_balanced_pct": 91.0,
+      "block_confusion": {
+        "Orta blok -> Alçak blok": 3,
+        "Orta blok -> Orta blok": 27,
+        "Orta blok -> Yüksek blok": 2,
+        "Yüksek blok -> Orta blok": 2,
+        "Yüksek blok -> Yüksek blok": 85
+      },
+      "drawn_ref": 119,
+      "drawn_test": 119,
+      "drawn_both": 119,
+      "test_only": 0,
+      "ref_only": 0,
+      "label_n": 119,
+      "label_exact_pct": 91.6,
+      "block_match_pct": 94.1,
+      "press_agree_pct": 95.8,
+      "def_line_error": {
+        "n": 119,
+        "median_m": 3.65,
+        "p90_m": 14.03
+      },
+      "line_gap_error": {
+        "n": 39,
+        "median_m": 1.38,
+        "p90_m": 6.6
+      },
+      "test_gates": {
+        "drawn": 119
+      }
+    },
+    "pred_gt_team": {
+      "frames": 119,
+      "ref_label_counts": {
+        "Yüksek blok": 33,
+        "Orta blok": 12
+      },
+      "majority_baseline_pct": 73.3,
+      "block_balanced_pct": 80.3,
+      "block_confusion": {
+        "Orta blok -> Orta blok": 8,
+        "Orta blok -> Yüksek blok": 4,
+        "Yüksek blok -> Orta blok": 2,
+        "Yüksek blok -> Yüksek blok": 31
+      },
+      "drawn_ref": 119,
+      "drawn_test": 119,
+      "drawn_both": 119,
+      "test_only": 0,
+      "ref_only": 0,
+      "label_n": 45,
+      "label_exact_pct": 86.7,
+      "block_match_pct": 86.7,
+      "press_agree_pct": 95.8,
+      "def_line_error": {
+        "n": 119,
+        "median_m": 3.59,
+        "p90_m": 14.34
+      },
+      "line_gap_error": {
+        "n": 7,
+        "median_m": 4.75,
+        "p90_m": 6.45
+      },
+      "test_gates": {
+        "drawn": 119
+      }
+    }
+  },
+  "interpolation": {
+    "held": {
+      "n": 37417,
+      "median_m": 2.099,
+      "mean_m": 1.988
+    },
+    "interpolated": {
+      "n": 38606,
+      "median_m": 2.096,
+      "mean_m": 1.982
+    }
+  },
+  "gt_gates": {
+    "possession": 5,
+    "drawn": 1486,
+    "players": 9
+  }
+}
