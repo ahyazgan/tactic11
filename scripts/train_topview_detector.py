@@ -29,6 +29,8 @@ def main() -> int:
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--resolution", type=int, default=None)
     p.add_argument("--workers", type=int, default=2)
+    p.add_argument("--init-weights", default=None,
+                   help="Başlangıç ağırlık klasörü (meta.json + checkpoint_best_total.pth); ince ayar için")
     args = p.parse_args()
 
     from rfdetr import RFDETRBase, RFDETRLarge, RFDETRMedium, RFDETRNano, RFDETRSmall
@@ -37,6 +39,8 @@ def main() -> int:
     kwargs = {}
     if args.resolution:
         kwargs["resolution"] = args.resolution
+    if args.init_weights:
+        kwargs["pretrain_weights"] = str(Path(args.init_weights) / "checkpoint_best_total.pth")
     model = cls(**kwargs)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -66,6 +70,7 @@ def main() -> int:
         "person_class_ids": [i for i, n in classes.items() if n == "player"],
         "ball_class_ids": [i for i, n in classes.items() if n == "ball"],
         "dataset": args.dataset,
+        "init_weights": args.init_weights,
         "epochs": args.epochs,
         "elapsed_minutes": round((time.time() - started) / 60, 1),
     }
