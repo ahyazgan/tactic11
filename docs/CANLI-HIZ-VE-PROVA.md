@@ -40,7 +40,10 @@ Aynı üç segment, ölçeklenmiş kalibrasyon, GT'ye karşı tespit denetimi. S
   2 dilim −23,6 puan. Öneri değişmedi: torch, 4 dilim.
 - ONNX aynı tespitleri veriyor ama derlenmiş fp16 torch yolundan ~2× yavaş.
 - `--height 1080` tespiti hızlandırmaz: dilim sayısı satır sayısından ve en-boy
-  oranından gelir, çözünürlükten değil.
+  oranından gelir, çözünürlükten değil. Üstelik kapsama düşürür: aynı ayarla 4K'da
+  çizilen kare %78,2, 1080p'de %70,9; dengeli doğruluk %68,5'e karşı %67,3; segment
+  süresi ~99'a karşı ~96 sn (`docs/measurements/live-resolution-4k-vs-1080p.json`).
+  Panoramada doğal çözünürlükte kalın.
 - Gerçek zamana ulaşılmadı. En hızlı ayar bile (2 dilim, oyuncuların yarısı kayıp)
   30 sn'lik segmenti 36 sn'de işliyor.
 - Ölçülüp elenen: iki takip işçisini paralel çalıştırmak. Tek işçide GPU zaten
