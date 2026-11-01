@@ -37,6 +37,14 @@ segment sayısı). Fark = koçun gördüğü resmin kaç saniye eski olduğu. Ek
   verilmezse çapa görüntüden aranır (TV kuralı) — sabit kamerada yanlış olabilir.
 - Skor ve dakika videodan okunmaz; dakika segment sırasından türetilir
   (`--start-minute`), skor panelde şut olaylarından gelir.
+
+## Telestrasyon (`--telestration`)
+
+`scripts.telestrate_live` işçisi takiple birlikte başlar: işlenen her segment
+için `<watch>/tele/seg_XXXX.mp4` (halka, blok çizgileri, faz etiketi) ve
+`latest.json` yazar. Sabit kamera kalibrasyonu (`--calibration`, saha çizgisi
+noktalı) ve hücum yönü (`--home-attack`) gerekir; kaynak bitince işçinin kalan
+segmentleri bitirmesi beklenir.
 """
 from __future__ import annotations
 
@@ -180,6 +188,13 @@ def _written_count(watch: Path) -> int:
     return len(list(watch.glob("seg_*.mp4")))
 
 
+def _telestration_backlog(watch: Path) -> int:
+    """Takibi bitmiş ama telestrasyonu (çıktı ya da hata kaydı) henüz yazılmamış segment sayısı."""
+    tele = watch / "tele"
+    return sum(1 for f in (watch / "frames").glob("seg_*.json")
+               if not (tele / f"{f.stem}.mp4").exists() and not (tele / f"{f.stem}.error.json").exists())
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Canlı maç modu: kaynak → segment → takip → panel")
     p.add_argument("--source", required=True, help="video dosyası | rtsp://... | http(s)://... (HLS)")
@@ -204,7 +219,13 @@ def main() -> int:
     p.add_argument("--onnx-model", default=None)
     p.add_argument("--database-url", default=None)
     p.add_argument("--fresh", action="store_true", help="klasördeki eski segment ve durumu sil")
+    p.add_argument("--telestration", action="store_true",
+                   help="işlenen her segment için telestrasyonlu video üret (scripts.telestrate_live)")
+    p.add_argument("--home-attack", default="auto", choices=["auto", "x+", "x-"],
+                   help="telestrasyon: ev sahibi kalibrasyonun saha x'i artan/azalan yöne hücum eder")
     args = p.parse_args()
+    if args.telestration and not args.calibration:
+        p.error("--telestration sabit kamera kalibrasyonu ister (--calibration)")
 
     kind = classify_source(args.source, realtime_file=not args.no_realtime)
     if not kind.is_stream and not Path(args.source).is_file():
@@ -244,6 +265,13 @@ def main() -> int:
     seg_proc = subprocess.Popen(seg_cmd, cwd=str(PROJECT_ROOT))  # noqa: S603
     track_proc = subprocess.Popen(track_cmd, cwd=str(PROJECT_ROOT),  # noqa: S603
                                   env=dict(os.environ, PYTHONIOENCODING="utf-8"))
+    tele_proc = None
+    if args.telestration:
+        tele_cmd = [sys.executable, "-m", "scripts.telestrate_live", "--watch", str(watch),
+                    "--calibration", args.calibration, "--home-attack", args.home_attack]
+        tele_proc = subprocess.Popen(tele_cmd, cwd=str(PROJECT_ROOT),  # noqa: S603
+                                     env=dict(os.environ, PYTHONIOENCODING="utf-8"))
+        print(f"[canlı] telestrasyon: {watch / 'tele'} (latest.json)")
     try:
         while True:
             time.sleep(POLL_SECONDS)
@@ -254,6 +282,9 @@ def main() -> int:
             print(f"[canlı] işlenen dk {lat.processed_minute:.1f} · akış dk {lat.stream_minute:.1f} "
                   f"· gecikme {lat.lag_seconds:.0f} sn", flush=True)
             if seg_proc.poll() is not None and _processed_count(watch) >= _written_count(watch):
+                if tele_proc is not None and tele_proc.poll() is None and _telestration_backlog(watch):
+                    print(f"[canlı] telestrasyon bekleniyor: {_telestration_backlog(watch)} segment", flush=True)
+                    continue
                 print("[canlı] kaynak bitti ve bütün segmentler işlendi.")
                 break
             if track_proc.poll() is not None:
@@ -262,8 +293,8 @@ def main() -> int:
     except KeyboardInterrupt:
         print("\n[canlı] durduruluyor…")
     finally:
-        for proc in (seg_proc, track_proc):
-            if proc.poll() is None:
+        for proc in (seg_proc, track_proc, tele_proc):
+            if proc is not None and proc.poll() is None:
                 proc.terminate()
                 try:
                     proc.wait(timeout=10)
