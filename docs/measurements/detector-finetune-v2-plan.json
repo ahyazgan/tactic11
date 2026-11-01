@@ -1,0 +1,27 @@
+{
+  "written": "2026-11-01, before building the v2 dataset or training",
+  "previous": "docs/DEDEKTOR-INCE-AYAR-SONUCLARI.md (v1 not accepted: panorama ball frames 0.60x)",
+  "diagnosis": "v1 kept balls on TeamTrack test (recall 0.794 -> 0.816) but lost them on the 117092 panorama (ball frames 16.4% -> 9.8%; ball seen at 37 in-play events 35% -> 16%): unlabelled balls in SoccerTrack MOT tiles",
+  "changes_from_v1": [
+    "teacher ball labels in MOT training frames from rfdetr_mixed_small (confidence >= 0.5, within the players' foot band, <= 3 player heights from a player)",
+    "128058 removed from validation and held out as an independent test match; checkpoint selection on the TeamTrack validation split only"
+  ],
+  "data": {"train_matches": ["117093", "118575", "118576", "118577"], "valid": "teamtrack_mixed valid only",
+           "held_out_test_match": "128058", "tiles": 3, "every": 50, "base_dataset": "teamtrack_mixed"},
+  "training": "identical to v1: init rfdetr_mixed_small, small, 512, 8 epochs, lr 1e-4, batch 8, grad_accum 2, checkpoint_best_total",
+  "baselines_old_model": {
+    "128058_clip": "docs/measurements/detector-mot-128058-baseline.json: recall 0.9233, precision 0.7185",
+    "teamtrack_test_ball": "recall 0.794, precision 0.947 (136 balls, 1470 images, centre distance <= 12 px)",
+    "117092_panorama": "recall 0.607, ghost 0.341, ball frames 0.1644, in-play event ball rate 0.351 (37 events)"
+  },
+  "acceptance": [
+    "128058 clip recall >= old + 0.03",
+    "128058 clip precision >= old - 0.02",
+    "TeamTrack test ball recall >= old - 0.03",
+    "117092 panorama ball frames >= 0.8 x old",
+    "117092 panorama in-play event ball rate >= old - 0.05",
+    "117092 panorama recall >= old and ghost share <= old + 0.03"
+  ],
+  "note": "117092 was already used to judge v1; its numbers here are a repeat, not an independent test. 128058 is the independent player test.",
+  "after_test": "no change to split, settings, checkpoint or criteria; failed model is reported, not promoted"
+}
