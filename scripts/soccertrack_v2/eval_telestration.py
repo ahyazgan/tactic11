@@ -39,6 +39,7 @@ from app.tracking.calibration import PitchCalibration
 from app.tracking.telestration import (
     INTERPOLATE_MAX_GAP_S,
     PlayerSpot,
+    TelestrationConfig,
     Telestrator,
     interpolate_spots,
     spots_from_frame,
@@ -197,7 +198,12 @@ def main() -> int:
     p.add_argument("--alignment", type=Path, required=True)
     p.add_argument("--calibration", type=Path, required=True)
     p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--config-json", default=None,
+                   help="TelestrationConfig alanları (JSON); takip koşularına uygulanır")
+    p.add_argument("--reference-default", action="store_true",
+                   help="GT referansı varsayılan ayarla kalsın (yalnız tahmin tarafı değişsin)")
     args = p.parse_args()
+    config = TelestrationConfig(**json.loads(args.config_json)) if args.config_json else TelestrationConfig()
 
     paths = sorted(glob.glob(args.frames))
     payloads = [json.loads(Path(path).read_text(encoding="utf-8")) for path in paths]
@@ -231,7 +237,8 @@ def main() -> int:
     steps = sorted(b - a for a, b in zip(seconds, seconds[1:], strict=False) if b > a)
     fps = 1.0 / steps[len(steps) // 2]
 
-    tele = {v: Telestrator(fps, direction) for v in VARIANTS}
+    tele = {v: Telestrator(fps, direction, TelestrationConfig() if v == "gt" and args.reference_default else config)
+            for v in VARIANTS}
     records: dict[str, list[Record]] = {v: [] for v in VARIANTS}
     for _f, g, players, ball, owner, m in matched_frames:
         if g is None:
@@ -259,6 +266,7 @@ def main() -> int:
         "gt_home_attack_direction": direction,
         "matched_players_per_frame": round(float(np.mean(matched_counts)), 2) if matched_counts else 0.0,
         "held_constant": "possession = tracking frame possession; direction = GT keepers",
+        "config": config.__dict__, "reference_default": args.reference_default,
         "pred_vs_gt": summarise(records["gt"], records["pred"]),
         "pred_gt_team_vs_gt": summarise(records["gt"], records["pred_gt_team"]),
         "pred_vs_pred_gt_team": summarise(records["pred_gt_team"], records["pred"]),

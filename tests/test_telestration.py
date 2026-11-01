@@ -273,3 +273,35 @@ def test_batched_rings_match_exact_projection(make) -> None:
         exact = proj(np.c_[c[0] + 0.9 * np.cos(a), c[1] + 0.9 * np.sin(a)])
         assert exact is not None
         assert np.abs(ring - exact).max() < 0.5   # piksel: doğrusal yaklaşım hatası
+
+
+def test_config_defaults_match_production_and_validate() -> None:
+    from app.tracking.telestration import TelestrationConfig
+
+    assert TelestrationConfig() == TelestrationConfig(0.35, 1.0, 0.0, "mean")
+    with pytest.raises(ValueError):
+        TelestrationConfig(line_statistic="mode")
+    with pytest.raises(ValueError):
+        TelestrationConfig(line_smoothing=0.0)
+
+
+def test_short_lived_tracks_stay_out_of_lines_until_steady() -> None:
+    from app.tracking.telestration import TelestrationConfig
+
+    t = Telestrator(fps=5, config=TelestrationConfig(min_track_s=1.0))   # 5 kare
+    for _ in range(4):
+        t.marks(scene(), BALL, calib())
+    assert t.last_gate == "players"           # henüz hiçbir oyuncu 1 sn görünmedi
+    t.marks(scene(), BALL, calib())
+    assert t.last_gate == "drawn"
+    ghost = PlayerSpot(999, 1, 66.0, 34.0)    # yeni beliren tek karelik tespit
+    t.marks([*scene(), ghost], BALL, calib())
+    assert t.last_lines[0].depth == pytest.approx(35.0, abs=0.5)   # hat ona göre kaymadı
+
+
+def test_median_line_depth_resists_one_outlier() -> None:
+    from app.tracking.telestration import _lines
+
+    players = [(30.0, 10.0), (31.0, 20.0), (32.0, 30.0), (37.5, 40.0)]
+    assert _lines(players, "mean")[0].depth == pytest.approx(32.625)
+    assert _lines(players, "median")[0].depth == pytest.approx(31.5)
