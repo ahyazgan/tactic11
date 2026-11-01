@@ -68,8 +68,25 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
   dakika segment adından okunur. API segment adı kuralı genişletildi.
 - Sorun (çözüldü): arka plan komutu `frontend/` klasöründen çalıştı, göreli yollar bulunamadı.
 
+## 10:20 — Savunan oyuncu eşiği deneyi (PR #313, ön kayıtlı, geçmedi)
+- 6 → 5/4: doğruluk bozulmadı, kapsama kazancı +5 puan şartının altında (4: +5,2 / +4,9).
+  Üretim 6'da kaldı.
+
+## 10:22 — Sorun: kilit dosyası CI'da reddedildi (PR #314)
+- #312 yerel npm 11.6.2 ile üretilen kilitle birleşti; CI'nin npm 11.19.1'i `npm ci`'yi
+  reddetti, e2e/live_auth kırmızı (zorunlu kontrol olmadıkları için auto-merge birleştirdi).
+  Kilit CI'nin npm sürümüyle yeniden üretildi; e2e/live_auth yeşil.
+- Kayıt: Vercel ücretsiz plan dağıtım sınırına takıldı ("24 saat sonra"), kodla ilgisi yok.
+
+## 10:30–11:05 — Dedektör v2 telestrasyonda (betimsel)
+- Aynı komut, yalnız ağırlık: iki pencerede de v2 her ölçütte iyi (dengeli doğruluk
+  %67→%77 ve %53→%82; hat medyanı 5,9→2,6 m ve 6,4→1,9 m). Üretim değişmedi.
+- Açık soru: 1080p provasında eski model (%67,3) 4K koşusundan (%73,2) düşük; ayarları
+  kaydedilmemiş koşuyla karşılaştırma temiz değil.
+
 ## Bekleyen kullanıcı kararları
 - Dedektör v2'yi (rfdetr_soccertrack_ft_v2) üretime almak: ön kayıt dışı ürün kararı.
   Lehine: kesinlik +19 puan, top korunuyor, panorama/klip her eksende daha iyi.
   Aleyhine: bağımsız maçta tespit artışı +2,1 (+3 istenmişti). Alternatif: yeni bir
   bağımsız maçla (Drive'da Challenge/Test klipleri; indirme izni gerekir) yeniden sına.
+  Ek kanıt (11:05): telestrasyonda v2 iki pencerede de belirgin iyi (yukarıda).

@@ -91,6 +91,25 @@ eskiden iyi. Yüksek başlangıçlı (%92) maçta +3 puan şartı sıkıydı; bu
 gevşetilmez. Üretime almak, ön kayıt dışı bir ürün kararıdır ve kullanıcıya
 bırakıldı. Ağırlıklar: `data/tracking/models/rfdetr_soccertrack_ft_v2` (git dışı).
 
+## v2 telestrasyonda (betimsel ek ölçüm, karar için kanıt)
+
+Telestrasyonun kapsamasını tespit sınırlıyor ("players" kapısı). Aynı `track_live`
+komutu iki pencerede yalnız ağırlık değiştirilerek koşuldu ve GT'ye karşı ölçüldü
+(`docs/measurements/detector-v2-telestration.json`). Ön kayıtlı bir terfi sınavı
+değildir; 117092 eğitimde yoktu ama dedektörü yargılamakta daha önce kullanıldı.
+
+| | Eski (600 / 1200 sn) | v2 (600 / 1200 sn) |
+|---|---|---|
+| Çizilen kare | %70,9 / %48,4 | %73,1 / %70,4 |
+| Blok etiketi dengeli doğruluk | %67,3 / %53,0 | %77,2 / %82,1 |
+| Savunma hattı hatası medyan | 5,9 / 6,4 m | 2,6 / 1,9 m |
+| Savunma hattı hatası p90 | 23,0 / 64,0 m | 15,8 / 10,6 m |
+| Takım uyuşması (eşleşen oyuncu) | %73 / %56 | %79 / %71 |
+
+İki pencerede de her ölçüt v2 lehine. Kesinlik artışı (daha az hayalet) hem hattı hem
+takım renklerini düzeltiyor gibi görünüyor. Sınır: tek maç, 2250 kare; 1200 penceresinde
+12 segmentin 6'sı. Üretim değişmedi; v2'nin terfisi kullanıcı kararı.
+
 ## Sıradaki adımlar
 
 - Top sorununu ayırmak: oyuncu tespiti için ince ayarlı, top için eski modeli
