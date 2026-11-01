@@ -1,0 +1,72 @@
+{
+  "measured": "2026-11-01 (see git history), descriptive",
+  "match": "SoccerTrack v2 132831 first half 600-1200 s (other venue, daylight, 3840x1504), 990751 tracking",
+  "reference": "GSR (image-id base 3917000000, frames 14900-30100); alignment delta -21 (scan -36..+3, median 3.40 m flat at -21..-27)",
+  "method": "eval_telestration --reference-default, tracked possession on both sides",
+  "window_600_1200": {
+    "production_ball": {
+      "team_agreement": 0.7671,
+      "matched_pairs": 56572,
+      "matched_players_per_frame": 9.05,
+      "block_balanced_pct": 63.8,
+      "label_exact_pct": 72.8,
+      "press_agree_pct": 96.6,
+      "def_line_error": {
+        "n": 7248,
+        "median_m": 4.93,
+        "p90_m": 25.25
+      },
+      "drawn_test": 7270,
+      "frames": 7500
+    },
+    "refined_ball_default": {
+      "team_agreement": 0.7671,
+      "matched_pairs": 56572,
+      "matched_players_per_frame": 9.05,
+      "block_balanced_pct": 64.3,
+      "label_exact_pct": 70.8,
+      "press_agree_pct": 96.0,
+      "def_line_error": {
+        "n": 7259,
+        "median_m": 5.16,
+        "p90_m": 24.67
+      },
+      "drawn_test": 7281,
+      "frames": 7500
+    }
+  },
+  "team_refit_post_hoc_990753_4_segments": {
+    "production": {
+      "team_agreement": 0.7672,
+      "matched_pairs": 12280,
+      "matched_players_per_frame": 10.08,
+      "block_balanced_pct": 55.8,
+      "label_exact_pct": 72.9,
+      "press_agree_pct": 95.8,
+      "def_line_error": {
+        "n": 1489,
+        "median_m": 5.96,
+        "p90_m": 26.25
+      },
+      "drawn_test": 1490,
+      "frames": 1500
+    },
+    "chroma_refit": {
+      "team_agreement": 0.7782,
+      "matched_pairs": 11024,
+      "matched_players_per_frame": 10.08,
+      "block_balanced_pct": 63.4,
+      "label_exact_pct": 74.3,
+      "press_agree_pct": 96.1,
+      "def_line_error": {
+        "n": 1338,
+        "median_m": 3.01,
+        "p90_m": 21.75
+      },
+      "drawn_test": 1339,
+      "frames": 1500
+    },
+    "note": "post-hoc only: the refit failed its pre-registered control (team-refit-control-result.json); here team agreement 76.7 -> 77.8 with 10% fewer drawn frames and fewer assigned players"
+  },
+  "reading": "at this venue the limiting factor is detection/position, not kit colour: 9.1 matched players per frame (132877: 15.2), tracked-to-GSR median distance 3.4 m (132877: 2.4 m), defensive line error 4.9 m (132877: 1.9 m); team agreement 76.7% is on par with the night match"
+}

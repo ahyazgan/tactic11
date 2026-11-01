@@ -152,6 +152,10 @@ Karar (plan gereği): sınav geçmedi; kod ve ölçüt değişmedi, sınır olar
 Aday izi bu sahada daha çok kareye top koyuyor (kayıp %28,6 → %16,8): 23 dokunuş
 daha isabetli, 17 dokunuş daha yanlış.
 
+GSR'ye karşı (betimsel, `docs/measurements/venue-132831-gsr-telestration.json`): takım
+rengi %76,7, blok dengeli %64,3, hat medyanı 5,2 m, karede eşleşen oyuncu 9,1
+(132877: 15,2) — sınır bu sahada tespit/konum.
+
 Bulgular:
 - ~~Takım ataması bu sahada çalışmıyor~~ — **sonradan düzeltildi**
   (`docs/TAKIM-AYRIMI-GUNES.md`): göz etiketli 98 kutuda üretim net renkli
