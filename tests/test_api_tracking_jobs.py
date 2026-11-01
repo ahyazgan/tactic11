@@ -270,3 +270,34 @@ def test_job_validation_errors(client, env):
     client.post("/tracking/calibrations", json={"name": "saha-a", "calibration": CALIB})
     r = client.post("/tracking/jobs", json={"video": "clip.mp4", "calibration": "saha-a", "weights": str(env / "nope")})
     assert r.status_code == 422
+
+
+def _live_tele(env, match_id: int, latest: str | None, videos: tuple[str, ...] = ()) -> None:
+    tele = env / "live" / str(match_id) / "tele"
+    tele.mkdir(parents=True)
+    if latest is not None:
+        (tele / "latest.json").write_text(latest, encoding="utf-8")
+    for stem in videos:
+        (tele / f"{stem}.mp4").write_bytes(b"\x00\x00\x00\x18ftypisom")
+
+
+def test_live_telestration_latest_and_video(client, env):
+    _live_tele(env, 990201, json.dumps({"segment": "seg_0003", "summary": {"label": "Orta blok"}}), ("seg_0003",))
+    r = client.get("/tracking/live/990201/telestration")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["segment"] == "seg_0003" and body["summary"]["label"] == "Orta blok"
+    assert body["video_url"] == "/tracking/live/990201/telestration/seg_0003.mp4"
+    v = client.get(body["video_url"])
+    assert v.status_code == 200 and v.headers["content-type"] == "video/mp4"
+    assert v.headers["cache-control"] == "private, no-store"
+
+
+def test_live_telestration_missing_broken_and_unsafe(client, env):
+    assert client.get("/tracking/live/990202/telestration").status_code == 404
+    _live_tele(env, 990203, "{yarım")
+    assert client.get("/tracking/live/990203/telestration").status_code == 503
+    _live_tele(env, 990204, json.dumps({"segment": "../../secret"}))
+    assert client.get("/tracking/live/990204/telestration").status_code == 502
+    assert client.get("/tracking/live/990204/telestration/seg_99.mp4").status_code == 422
+    assert client.get("/tracking/live/990204/telestration/seg_0001.mp4").status_code == 404
