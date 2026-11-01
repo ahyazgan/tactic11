@@ -1,0 +1,18 @@
+{
+  "model": "small",
+  "resolution": 512,
+  "classes": {
+    "1": "player",
+    "2": "ball"
+  },
+  "person_class_ids": [
+    1
+  ],
+  "ball_class_ids": [
+    2
+  ],
+  "dataset": "data/tracking/datasets/soccertrack_mot_ft",
+  "init_weights": "data/tracking/models/rfdetr_mixed_small",
+  "epochs": 8,
+  "elapsed_minutes": 52.1
+}
