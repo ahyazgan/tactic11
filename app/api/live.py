@@ -568,6 +568,10 @@ async def matches_live(
     tenant_id: str = Query(default="t-default"),
     feed_mode: str | None = Query(default=None, alias="feed",
         description="replay | camera — verilmezse LIVE_FEED_MODE"),
+    service: str | None = Query(default=None,
+        description="canlı servis: sportmonks | api_football (skor, olaylar, sahiplik payı)"),
+    service_fixture: int | None = Query(default=None,
+        description="servisteki fikstür kimliği (aynı maç)"),
     session: Session = Depends(get_session),
 ) -> None:
     """WebSocket: her N saniyede tactical snapshot push.
@@ -610,6 +614,16 @@ async def matches_live(
             await websocket.send_text(json.dumps({"error": str(e)}))
             return
         camera = getattr(feed, "clock", None) is not None
+        poller = None
+        if service and service_fixture:
+            from app.data.sources.live_service import LiveServicePoller, make_live_service
+            try:
+                poller = LiveServicePoller(make_live_service(service), service_fixture)
+            except ValueError as e:
+                await websocket.send_text(json.dumps({"error": str(e)}))
+                return
+        my_side = (0 if my_team_id == feed.home_team_id else 1 if my_team_id == feed.away_team_id
+                   else None)
         last_event_minute = feed.last_event_minute()
         clock_cfg = ClockConfig(speed=speed, start_minute=SIMULATION_START_MINUTE)
         while True:
@@ -661,6 +675,15 @@ async def matches_live(
                     for a in _alerts.alerts
                 ],
             }
+            if poller is not None:
+                from app.api.live_service_bridge import merge_alerts, service_alerts, service_block
+                fresh = await asyncio.to_thread(poller.poll) if poller.due() else []
+                block = service_block(poller)
+                snapshot["service"] = block
+                if block and block.get("score") and block.get("status") in ("live", "half_time", "finished"):
+                    # videodan gol okunmaz: skorun kaynağı servis
+                    snapshot["score"] = f"{block['score'][0]}-{block['score'][1]}"
+                merge_alerts(snapshot["live_alerts"], service_alerts(fresh, my_side))
             await websocket.send_text(json.dumps(snapshot, default=str))
             # Kritik uyarıyı telefona it (event-loop'u bloklamadan, WS'i bozmadan).
             if _push_critical and _alerts.critical:
