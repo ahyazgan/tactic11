@@ -92,3 +92,19 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Kullanıcı "v2'ye geç" dedi. `canli_mac` sabit kamerada ve API işleri varsayılan
   olarak v2 kullanıyor; yayın/operatörlü kamera değişmedi (v2 orada ölçülmedi).
 - TeamTrack doğrulamasında (drone/yan açı) v2 eşit: F1 0,822 / 0,822, mAP50 −2,3 puan.
+
+## 14:00–16:29 — Top tespiti (PR açık)
+- Panoramada top GT'si yerine dokunuş olayları (1225, konum + zaman eşlemesi GSR'ye karşı
+  bulundu: eksenler yer değiştirmiş, takıma göre normalize; medyan 1,0 m).
+- Teşhis: üretim "topu"nun %78'i saha dışındaki sabit bir parlak nesne (gece); dokunuşta
+  isabet %9, savunan takım %52 (12,5 fps, 4K).
+- Saha dışını karartma denendi; sahte nesneyi siliyor ama isabeti artırmıyor → bırakıldı.
+- `track_live_candidates`: dondurulmuş takibi değiştirmeden düşük güvenli top adaylarını
+  kaydediyor (çıktı birebir aynı, doğrulandı). `ball_track`: sabit aday ayıklama + zaman
+  tutarlı iz (dinamik programlama).
+- Ön kayıtlı kontrol (1800–2400 sn) 6/6 geçti: dokunuşta isabet %0,8 → %19,1, savunan
+  takım %46,1 → %68,1, uçtan uca blok etiketi %51,5 → %63,7.
+- Sorunlar: durdurduğumu sandığım eski takip koşusu GPU'yu paylaşıp her segmenti 2 kat
+  yavaşlattı (süreçler ayrıca kapatıldı); paralel değerlendirmeler kabuk kapanınca
+  sessizce öldü (tek arka plan işinde `wait` ile yeniden koşuldu).
+

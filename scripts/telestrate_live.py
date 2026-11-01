@@ -17,6 +17,11 @@ sonrakine geçilir; yarım yazılmış takip JSON'u hata sayılmaz, sonraki turd
 yeniden denenir. Dondurulmuş takip koduna dokunmaz; `canli_mac --telestration`
 bu işçiyi takiple birlikte başlatır.
 
+Top: `<watch>/ball_candidates/seg_XXXX.json` varsa (`scripts.track_live_candidates`)
+karelerin topu çizimden önce aday iziyle değiştirilir (`app.tracking.ball_track`);
+sahiplik, dolayısıyla savunan takım ve pres bu topa göre hesaplanır. Veritabanına
+yazılan kareler (takip işçisinin kendi aktarımı) değişmez.
+
     venv-cv\\Scripts\\python.exe -m scripts.telestrate_live --watch data/tracking/live/990201 \\
         --calibration saha.json --home-attack x+
 """
@@ -30,6 +35,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from app.tracking.ball_track import refine_segment
 from app.tracking.calibration import PitchCalibration
 from app.tracking.telestration import Telestrator
 from scripts.telestrate_video import HOME_ATTACK, render_segment, warn_calibration
@@ -86,6 +92,11 @@ def process(video: Path, frames_json: Path, stem: str, out: Path, calib: PitchCa
         payload = json.loads(frames_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return  # takip hâlâ yazıyor olabilir; sonraki turda yeniden dene
+    candidates = frames_json.parent.parent / "ball_candidates" / frames_json.name
+    if candidates.exists():
+        ball = refine_segment(payload.get("frames", []), json.loads(candidates.read_text(encoding="utf-8")), calib)
+        print(f"[telestrasyon] {stem}: top izi {ball['tracked']} örnek · sabit {ball['static_removed']}",
+              flush=True)
     if state.tele is not None and not continues(state.end_minute, payload):
         print(f"[telestrasyon] {stem}: önceki segmentle süreklilik yok — durum sıfırlandı", flush=True)
         state.tele = None

@@ -15,6 +15,10 @@ için adım adım yol. Tüm komutlar proje kökünden (`football-intelligence`).
 - Dedektör: `--camera static`'te varsayılan v2 (`rfdetr_soccertrack_ft_v2`); başka
   model için `--weights`. v2 telestrasyonda eski modelden belirgin iyi
   (`docs/DEDEKTOR-INCE-AYAR-SONUCLARI.md`); aşağıdaki doğruluk satırı eski modele ait.
+- Top: `--telestration` açıkken takip düşük güvenli top adaylarını da kaydeder ve
+  telestrasyon topu bu adaylardan kurulan izle seçer. Gece maçında savunan takım
+  doğruluğu %46 → %68 (ön kayıtlı kontrol, `docs/TOP-TESPITI-OLAY-OLCUMU.md`).
+  Veritabanına giden top değişmez.
 - Doğruluk (SoccerTrack gece maçı, gerçek konumlara karşı): blok etiketi dengeli
   doğruluk %71–75, savunma hattı hatası medyan ~6 m; takım ataması ~%70.
   Ayrıntı: `docs/OTOMATIK-TELESTRASYON.md`, `docs/TESPIT-KALITESI-DENETIMI.md`.

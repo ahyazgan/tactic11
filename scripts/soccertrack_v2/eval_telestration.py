@@ -192,6 +192,25 @@ def common_frames(records: dict[str, list[Record]]) -> dict:
             "pred_gt_team": summarise(pick["gt"], pick["pred_gt_team"])}
 
 
+def defending_accuracy(defending: list[tuple[float, str, int | None]], team_of_gt: dict[int, int]) -> dict:
+    """Çizilen karelerde savunan takım, dokunuş olaylarından çıkan sahipliğin tersi mi?"""
+    from scripts.soccertrack_v2.evaluate_ball_events import load_touches, possession_intervals
+
+    intervals = possession_intervals(load_touches())
+    in_gt = drawn = correct = 0
+    for t, gate, pred in defending:
+        hit = next((team for a, b, team in intervals if a <= t < b), None)
+        if hit is None:
+            continue
+        in_gt += 1
+        if gate == "drawn" and pred is not None:
+            drawn += 1
+            correct += pred == 1 - team_of_gt[hit]
+    return {"frames_in_possession": in_gt, "drawn": drawn, "correct": correct,
+            "accuracy_pct": round(100.0 * correct / max(1, drawn), 1),
+            "correct_of_possession_pct": round(100.0 * correct / max(1, in_gt), 1)}
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--frames", required=True, help="Takip frames JSON (glob olabilir)")
@@ -206,6 +225,9 @@ def main() -> int:
                         "karşı konumdur (kapı üretimde doğrulanmamış kalibrasyonla çizimi engeller)")
     p.add_argument("--reference-default", action="store_true",
                    help="GT referansı varsayılan ayarla kalsın (yalnız tahmin tarafı değişsin)")
+    p.add_argument("--possession-events", action="store_true",
+                   help="savunan takımı SoccerTrack dokunuş olaylarına karşı ölç (117092 ilk yarı); "
+                        "gt referansı da sahipliği bilinen karelerde olaylardan alır → pred_vs_gt uçtan uca olur")
     args = p.parse_args()
     config = TelestrationConfig(**json.loads(args.config_json)) if args.config_json else TelestrationConfig()
     if args.ignore_calibration_gate:
@@ -247,7 +269,13 @@ def main() -> int:
     tele = {v: Telestrator(fps, direction, TelestrationConfig() if v == "gt" and args.reference_default else config)
             for v in VARIANTS}
     records: dict[str, list[Record]] = {v: [] for v in VARIANTS}
-    for _f, g, players, ball, owner, m in matched_frames:
+    defending: list[tuple[float, str, int | None]] = []   # (sn, tahmin kapısı, tahmin savunan)
+    intervals = []
+    if args.possession_events:
+        from scripts.soccertrack_v2.evaluate_ball_events import load_touches, possession_intervals
+
+        intervals = possession_intervals(load_touches())
+    for f, g, players, ball, owner, m in matched_frames:
         if g is None:
             continue
         gt_spots = [PlayerSpot(int(r[1]) + 100000, team_of_gt.get(int(r[2])), x, y)
@@ -260,9 +288,11 @@ def main() -> int:
         }
         for v in VARIANTS:
             t = tele[v]
-            t.marks(inputs[v], ball, calib, owner)
+            gt_owner = next((team_of_gt[team] for a, b, team in intervals if a <= f.minute * 60.0 < b), None)
+            t.marks(inputs[v], ball, calib, gt_owner if v == "gt" and gt_owner is not None else owner)
             records[v].append(Record(t.last_gate or "", t.label if t.last_gate == "drawn" else None,
                                      [(ln.depth, ln.y_min, ln.y_max) for ln in t.last_lines], t.last_pressers))
+        defending.append((f.minute * 60.0, tele["pred"].last_gate or "", tele["pred"].last_defending))
 
     matched_counts = [len(m) for *_, m in matched_frames]
     report = {
@@ -283,6 +313,8 @@ def main() -> int:
         "interpolation": interpolation_check(frames, [mf[2] for mf in matched_frames], gt, delta),
         "gt_gates": dict(Counter(r.gate for r in records["gt"])),
     }
+    if args.possession_events:
+        report["defending_vs_events"] = defending_accuracy(defending, team_of_gt)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))

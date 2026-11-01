@@ -429,7 +429,7 @@ def main() -> int:
         start_seconds=args.start_seconds, transcode=transcode, height=args.height,
     )
     track_cmd = [
-        sys.executable, "-m", "scripts.track_live",
+        sys.executable, "-m", "scripts.track_live_candidates" if args.telestration else "scripts.track_live",
         "--watch", str(watch), "--match-id", str(args.match_id),
         "--home-team", str(args.home_team), "--away-team", str(args.away_team),
         "--tenant", args.tenant, "--segment-seconds", f"{args.segment_seconds:g}",

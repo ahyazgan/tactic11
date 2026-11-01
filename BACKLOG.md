@@ -155,3 +155,6 @@
 
 - (none currently)
 - [x] Dedektör v2'yi üretime al (kullanıcı kararı 2026-11-01): canli_mac sabit kamera + API varsayılanı.
+- [x] Top tespiti: olay tabanlı ölçüm + aday izi, ön kayıtlı kontrol 6/6 geçti (feat/top-izi).
+- [ ] Top: gündüz maçında doğrulama (olaylı, eğitimde kullanılmamış panorama; indirme izni gerekir).
+- [ ] Top: veritabanına giden karelere de aday izini uygula (dondurulmuş aktarım yolu; yeniden aktarım tasarımı gerekir).
