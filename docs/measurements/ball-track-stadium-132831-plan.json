@@ -1,0 +1,18 @@
+{
+  "written": "2026-11-01, before match 132831 was downloaded in full, tracked or evaluated",
+  "question": "Does the system hold up at a different stadium, and does the candidate ball track stay at least as good as the production ball there?",
+  "match": "SoccerTrack v2 132831 (Challenge set; never used for training, tuning or any decision), first half, daylight, a different venue and camera placement than the University of Tsukuba matches 117092/132877",
+  "window": "match minutes 10-20 of the first half, 20 segments of 30 s. Timeline rule fixed now from metadata only: if the panorama duration is within 5 s of the first-half length in padding_info (2712 s), video seconds = match seconds; otherwise video seconds = match seconds + padding (183 s)",
+  "pipeline": "identical to the 132877 test: track_live_candidates, v2 weights, tiles 4, track-fps 15, frames at 12.5 fps, camera static, landmark TPS calibration from 132831_keypoints.json; home attack direction from the event mapping",
+  "event_mapping": "derive_event_mapping on tracked players only for axis flips and team side; video offset fixed = -0.28 s (117092 lag); player-derived offset reported, not used",
+  "arms": {"baseline": "production frames ball", "candidate": "refine_segment with defaults at the commit of this file"},
+  "criteria": {
+    "D1": "touch hit within 5 m: candidate >= baseline - 2 points",
+    "D2": "touch wrong-ball share: candidate <= baseline + 2 points",
+    "D3": "pass-flight hit within 5 m: candidate >= baseline - 5 points",
+    "D4": "defending-team accuracy on drawn frames (eval_defending_events): candidate >= baseline - 2 points",
+    "D5": "correct defending share of all possession frames: candidate >= baseline - 2 points"
+  },
+  "decision": "all pass -> candidate track stays default; the scorecard gains a second-stadium column. Any failure -> reported as a limit with a backlog item; code and criteria unchanged after the result. If the calibration fails the 2.0 m gate, telestration metrics are reported as not drawable and only ball metrics are judged",
+  "not_measured_here": "end-to-end block-label accuracy and team-colour accuracy (no GSR table)"
+}
