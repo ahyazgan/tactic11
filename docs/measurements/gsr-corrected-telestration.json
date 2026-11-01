@@ -1,0 +1,81 @@
+{
+  "measured": "2026-11-02 (see git history), descriptive",
+  "method": "GSR pitch positions re-derived from the GSR image foot points through our 65-landmark TPS calibration (scripts/soccertrack_v2/correct_gsr_positions.py); eval_telestration --reference-default with tracked possession on both sides; refined-ball frames (default since #318)",
+  "shift_applied_to_gsr_m": {
+    "132831": {
+      "dx_median": -0.2,
+      "dy_median": 3.01,
+      "dist_median": 4.34
+    },
+    "132877": {
+      "dx_median": -0.04,
+      "dy_median": 2.25,
+      "dist_median": 3.52
+    }
+  },
+  "132831_600_1200": {
+    "before": {
+      "team_agreement": 0.767,
+      "matched_players_per_frame": 9.05,
+      "block_balanced_pct": 64.3,
+      "label_exact_pct": 70.8,
+      "def_line_median_m": 5.16,
+      "press_agree_pct": 96.0
+    },
+    "after": {
+      "team_agreement": 0.9258,
+      "matched_pairs": 97623,
+      "matched_players_per_frame": 14.01,
+      "block_balanced_pct": 68.4,
+      "label_exact_pct": 74.6,
+      "press_agree_pct": 97.7,
+      "def_line_error": {
+        "n": 7265,
+        "median_m": 3.24,
+        "p90_m": 28.39
+      },
+      "drawn_test": 7281,
+      "frames": 7500
+    }
+  },
+  "132877_600_1200": {
+    "before": {
+      "team_agreement": 0.916,
+      "matched_players_per_frame": 15.19,
+      "block_balanced_pct": 80.8,
+      "label_exact_pct": 85.0,
+      "def_line_median_m": 1.9,
+      "press_agree_pct": 93.8
+    },
+    "after": {
+      "team_agreement": 0.9338,
+      "matched_pairs": 118794,
+      "matched_players_per_frame": 17.58,
+      "block_balanced_pct": 84.0,
+      "label_exact_pct": 86.2,
+      "press_agree_pct": 94.8,
+      "def_line_error": {
+        "n": 7495,
+        "median_m": 0.99,
+        "p90_m": 10.38
+      },
+      "drawn_test": 7497,
+      "frames": 7500
+    }
+  },
+  "matched_share_after_correction_r2_5_by_image_column": {
+    "132831": {
+      "sol": 0.32,
+      "orta": 0.8,
+      "sag": 0.23
+    },
+    "132877": {
+      "sol": 0.71,
+      "orta": 0.71,
+      "sag": 0.87
+    },
+    "note": "both tracked and corrected-GSR positions now pass through the same calibration, so remaining column offsets (132831 wings: 2 m) are foot-point/detection differences at steep perspective, not calibration"
+  },
+  "117092_night": "not corrected: the GSR image (3840x1504) is not a crop of the 3840x1906 panorama (overlay with offsets 0/201/402 px matches no player; docs/measurements/gsr-pixels-on-panorama-117092-nomatch.jpg); night position figures keep the reference caveat",
+  "reading": "with the reference brought onto the official markings, the third venue is close to the first: team agreement 92.6% (was 76.7%), block label balanced 68.4%, defensive line median 3.2 m; the 132877 line error drops to 1.0 m and team agreement to 93.4%"
+}

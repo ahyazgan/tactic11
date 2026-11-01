@@ -93,5 +93,7 @@ Ne öğrenildi:
   üretim takım uyumu %76,7 (gece 117092 ile aynı düzey); yeniden atama 4 kontrol
   segmentinde %77,8 ama çizilen kare %10 daha az — kontrol sonucunu değiştirmez.
   Bu sahada tespit iyi (MOT klibinde v2 %96,1; karede 22,4 takip edilen oyuncu);
-  GSR'ye karşı düşük eşleşme (9,1/kare) referans geometrisindeki 2–3 m kaymadan
-  (`docs/measurements/venue-132831-detector-and-geometry.json`).
+  GSR'ye karşı düşük eşleşme (9,1/kare) referans geometrisindeki 2–3 m kaymadan.
+  Referans saha işaretlerine göre düzeltilince üretim takım uyumu **%92,6**
+  (`docs/measurements/gsr-corrected-telestration.json`) — yani bu sahada takım
+  ataması gündüz 132877 ile aynı düzeyde.

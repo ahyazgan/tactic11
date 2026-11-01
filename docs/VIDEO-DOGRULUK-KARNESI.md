@@ -23,25 +23,24 @@ oyuncu konumları da.
 | Çıktı | Gece (117092) | Gündüz (132877) | Not |
 |---|---|---|---|
 | Hangi takım savunuyor (çizilen karelerde) | %68,1 | %81,3 | gece önceki top seçimiyle %46,1 |
-| Blok etiketi (alçak/orta/yüksek) | dengeli %63,7, tam isabet %67,6 (uçtan uca, sahiplik olaylardan) | dengeli %80,8, tam isabet %85,0 (sahiplik takipten) | gündüz GSR konumlarına karşı |
-| Savunma hattı hatası (GSR'ye karşı) | medyan 1,9 m | medyan 1,9 m, p90 11,7 m | |
+| Blok etiketi (alçak/orta/yüksek) | dengeli %63,7, tam isabet %67,6 (uçtan uca, sahiplik olaylardan) | dengeli %84,0, tam isabet %86,2 (sahiplik takipten) | gündüz: referans saha işaretlerine göre düzeltilmiş GSR |
+| Savunma hattı hatası (referansa karşı) | medyan 1,9 m | medyan 1,0 m, p90 10,4 m | gece referansı düzeltilemedi (farklı görüntü uzayı) |
 | Çizim kapsaması | %86 | %100 | gece kalanında savunandan < 6 oyuncu görünür |
-| Pres işareti uyumu | %96,7 | %93,8 | |
-| Oyuncu takım rengi | %76 | %91,6 | eşleşen oyuncu, 105 157 eşleşme |
+| Pres işareti uyumu | %96,7 | %94,8 | |
+| Oyuncu takım rengi | %76 | %93,4 | eşleşen oyuncu, 118 794 eşleşme |
 | Top, dokunuş anında 5 m içinde | %19,1 | %73,2 | gece ayak dibindeki top çoğunlukla bulunamıyor |
 | Top, pas uçuşunda 5 m içinde | %50 (42 pas) | %91,1 (79 pas) | |
 
 Gündüz ve aydınlık sahada sistem belirgin biçimde daha güvenilir; gece ışıklarla
 sahte top adayları en zor durum.
 
-**Başka stadyum (132831, gündüz, GSR'ye karşı 10 dk):** takım rengi %76,7, blok
-etiketi dengeli %64,3 / tam %70,8, savunma hattı medyan 5,2 m, pres %96, kapsama %97;
-top dokunuşta %42,2, pas uçuşunda %71,4. Oyuncu tespiti bu sahada iyi: MOT etiketli
-klipte v2 tespit oranı %96,1, kesinlik %91,6; panoramada karede 22,4 takip edilen oyuncu
-(GSR'de 22). GSR'ye karşı eşleşmenin düşük görünmesi (karede 9,1) referans
-geometrisinden: saha işareti kalibrasyonu ile GSR konumları arasında uzak yarıda
-sahanın eni boyunca sistemli 2–3 m kayma var; 6 m yarıçapta oyuncuların %82–96'sı
-eşleşiyor. Göz etiketli net renkli kutularda takım ataması %93–97
+**Başka stadyum (132831, gündüz, düzeltilmiş referansa karşı 10 dk):** takım rengi
+%92,6, blok etiketi dengeli %68,4 / tam %74,6, savunma hattı medyan 3,2 m, pres %97,7,
+kapsama %97, karede eşleşen oyuncu 14,0; top dokunuşta %42,2, pas uçuşunda %71,4.
+Oyuncu tespiti bu sahada iyi: MOT etiketli klipte v2 tespit oranı %96,1, kesinlik
+%91,6. (Ham GSR referansıyla ilk ölçüm takım %76,7 / hat 5,2 m göstermişti; fark
+referansın kendi 2–3 m en kaymasından, `docs/measurements/gsr-corrected-telestration.json`.)
+Göz etiketli net renkli kutularda takım ataması %93–97
 (`docs/TAKIM-AYRIMI-GUNES.md`; renk oranıyla yeniden atama ön kayıtlı kontrolde geçmedi).
 Ayrıntı: `docs/measurements/venue-132831-detector-and-geometry.json`, `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
 
@@ -68,16 +67,18 @@ Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 ## Bilinen sınırlar
 
 - Üç maç: iki maç aynı üniversite sahasında (bir gece, bir gündüz); üçüncü,
-  başka bir stadyum (132831), referans konumlara karşı daha zayıf görünüyor ama
-  tespit orada iyi; fark büyük ölçüde referans geometrisinden (aşağıdaki madde).
+  başka bir stadyum (132831). Düzeltilmiş referansla üçüncü saha ilkine yakın
+  (takım %92,6, blok dengeli %68,4, hat 3,2 m).
 - GSR referansı ile saha işareti kalibrasyonumuz arasında, iki gündüz maçında da,
   sahanın eni boyunca sistemli 2–3 m kayma ölçüldü. Resmî saha işaretlerine karşı
   sınandığında kaymanın GSR tarafında olduğu görüldü: GSR'nin piksel→saha dönüşümü
   işaretleri 5–9 m yanlış yere koyuyor, bizim kalibrasyonumuz 1,5 m içinde
   (`docs/measurements/gsr-reference-geometry.json`). Bu yüzden GSR'ye karşı
   "eşleşen oyuncu" ve "savunma hattı hatası" sayıları gerçek doğruluğumuzu OLDUĞUNDAN
-  KÖTÜ gösterir; takım ve blok etiketi uyumu az etkilenir (kayma en boyunca, blok
-  derinliği boy boyunca).
+  KÖTÜ gösterir. Gündüz sütunu ve üçüncü saha paragrafı referans saha işaretlerine
+  göre DÜZELTİLEREK yeniden hesaplandı (`gsr-corrected-telestration.json`); gece
+  referansı düzeltilemedi (GSR görüntüsü panoramanın kırpımı değil), oradaki hat
+  hatası ve takım rengi sayıları ham referansa aittir.
 - Savunan takım üç karenin birinde hâlâ yanlış olabilir; çıktı bir ikinci göz olarak
   okunmalı, kesin hüküm olarak değil.
 - Takipten çıkarılan pas listesi ham topla hesaplanır; top düzeltmesi yalnız kare

@@ -165,6 +165,6 @@
 - [x] Takım: 132831 GSR'ye karşı ölçüldü — takım uyumu %76,7; sınır tespit/konum (9,1 eşleşen oyuncu/kare, 3,4 m).
 - [x] Yeni sahada tespit kapsaması: 132831 MOT klibinde v2 %96,1 — tespit sorun değil; düşük GSR eşleşmesi referans geometrisi (2–3 m en kayması).
 - [x] GSR–kalibrasyon 2–3 m en kayması çözüldü: resmî saha işaretlerine karşı GSR dönüşümü 5–9 m sapıyor, bizimki 1,5 m → kayma GSR tarafında (gsr-reference-geometry.json).
-- [ ] GSR tabanlı konum ölçütlerini (eşleşen oyuncu, hat hatası) GSR'yi saha işaretlerine göre düzelterek yeniden hesapla ya da karnede yalnız etiket uyumunu kullan.
+- [x] GSR referansı saha işaretlerine göre düzeltildi (correct_gsr_positions); gündüz ve üçüncü saha karnesi yeniden hesaplandı. Gece (117092) GSR görüntüsü panorama kırpımı değil — düzeltilemedi.
 - [ ] Aday izi 132831'de yanlış topu +5 puan artırdı (ön kayıtlı sınır +2): yeni sahada adayları seçicilik ayarı, yeni ön kayıtla.
 - [ ] Aday izi sonrası aktör/sahip alanları eski topta kalıyor (veri tutarlılığı; ölçülen etki yok).
