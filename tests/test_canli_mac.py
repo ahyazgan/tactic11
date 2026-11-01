@@ -152,3 +152,16 @@ def test_keep_up_name_round_trips_through_track_live(tmp_path: Path) -> None:
     # son dosya ffmpeg tarafından hâlâ yazılıyor; kaynak bitince o da kapanmıştır
     assert closed_segments(tmp_path, source_ended=False) == ["seg_0000.mp4", "seg_0001.mp4"]
     assert len(closed_segments(tmp_path, source_ended=True)) == 3
+
+
+def test_write_status_is_complete_json(tmp_path: Path) -> None:
+    import json
+
+    from scripts.canli_mac import write_status
+
+    lat = latency(3, 5, segment_seconds=30, start_minute=10, elapsed_seconds=None)
+    write_status(tmp_path, lat, skipped=2, keep_up=True, source_ended=False)
+    data = json.loads((tmp_path / "status.json").read_text(encoding="utf-8"))
+    assert data["lag_seconds"] == 60.0 and data["processed_minute"] == 11.5 and data["skipped_segments"] == 2
+    assert data["keep_up"] is True and data["updated"].endswith("+00:00")
+    assert not (tmp_path / "status.json.tmp").exists()

@@ -51,6 +51,13 @@ segment adı dakikasını taşır (`seg_0007_m13.500.mp4`) ve takip dakikayı ad
 okur (`--minute-from-name`), çünkü sıra numarası artık işlenen segment sayısına
 eşit değildir.
 
+## Panelde gecikme (`<watch>/status.json`)
+
+Her turda ölçülen gecikme `status.json` olarak da yazılır (akış ve işlenen dakika,
+gecikme, atlanan segment, kaynak bitti mi, yazılma zamanı). API bunu canlı
+telestrasyon yanıtına ekler; panel kartı koçun gördüğü resmin kaç saniye eski
+olduğunu gösterir.
+
 ## Veritabanı ön kontrolü
 
 Kareler ana ortamın ingest süreciyle veritabanına yazılır; yazılamayan segment
@@ -86,6 +93,7 @@ import subprocess
 import sys
 import time
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -293,6 +301,17 @@ def check_database(ingest_python: str, database_url: str | None, timeout_s: floa
     return lines[-1] if lines else f"çıkış kodu {proc.returncode}"
 
 
+def write_status(watch: Path, lat: Latency, *, skipped: int, keep_up: bool, source_ended: bool) -> None:
+    """Paneldeki gecikme göstergesi için durum; okuyucu yarım dosya görmesin diye geçici dosya + yer değiştirme."""
+    payload = {"updated": datetime.now(UTC).isoformat(timespec="seconds"),
+               "stream_minute": lat.stream_minute, "processed_minute": lat.processed_minute,
+               "lag_seconds": lat.lag_seconds, "skipped_segments": skipped, "keep_up": keep_up,
+               "source_ended": source_ended}
+    tmp = watch / "status.json.tmp"
+    tmp.write_text(json.dumps(payload), encoding="utf-8")
+    os.replace(tmp, watch / "status.json")
+
+
 def scale_calibration(calibration: Path, size: tuple[int, int], out_dir: Path) -> Path:
     """Kalibrasyonu yeni görüntü boyutuna ölçekle (saha noktaları aynı); boyut aynıysa olduğu gibi."""
     data = json.loads(calibration.read_text(encoding="utf-8"))
@@ -436,6 +455,7 @@ def main() -> int:
                                      env=dict(os.environ, PYTHONIOENCODING="utf-8"))
         print(f"[canlı] telestrasyon: {watch / 'tele'} (latest.json)")
     promoted: list[str] = []   # --keep-up: incoming adları, alınış sırasıyla
+    skipped_total = 0
     try:
         while True:
             time.sleep(POLL_SECONDS)
@@ -457,6 +477,7 @@ def main() -> int:
                     shutil.copy2(seg_dir / choice, watch / f"{target}.part")
                     os.replace(watch / f"{target}.part", watch / target)
                     promoted.append(choice)
+                    skipped_total += len(skipped)
                     print(f"[canlı] işlenecek: {target}"
                           f"{f' · atlandı {len(skipped)} segment' if skipped else ''}", flush=True)
                 done = max((segment_index(n) + 1 for n in processed), default=0)
@@ -470,6 +491,7 @@ def main() -> int:
                           elapsed_seconds=elapsed, source_ended=source_ended)
             print(f"[canlı] işlenen dk {lat.processed_minute:.1f} · akış dk {lat.stream_minute:.1f} "
                   f"· gecikme {lat.lag_seconds:.0f} sn", flush=True)
+            write_status(watch, lat, skipped=skipped_total, keep_up=args.keep_up, source_ended=source_ended)
             if caught_up:
                 if tele_proc is not None and tele_proc.poll() is None and _telestration_backlog(watch):
                     print(f"[canlı] telestrasyon bekleniyor: {_telestration_backlog(watch)} segment", flush=True)
