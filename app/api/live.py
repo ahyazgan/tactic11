@@ -675,6 +675,15 @@ async def matches_live(
                     for a in _alerts.alerts
                 ],
             }
+            if camera:
+                from app.api.live_service_bridge import merge_alerts
+                from app.api.live_shape_bridge import shape_watch_for
+                shape_block, shape_alerts = shape_watch_for(
+                    session, match_id, home_team_id=feed.home_team_id, away_team_id=feed.away_team_id,
+                    my_team_id=my_team_id, minute=current_minute)
+                if shape_block is not None:
+                    snapshot["shape_watch"] = shape_block
+                    merge_alerts(snapshot["live_alerts"], shape_alerts)
             if poller is not None:
                 from app.api.live_service_bridge import merge_alerts, service_alerts, service_block
                 fresh = await asyncio.to_thread(poller.poll) if poller.due() else []

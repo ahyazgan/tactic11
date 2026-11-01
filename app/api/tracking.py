@@ -154,22 +154,28 @@ _POSITION_FIELDS = frozenset({
 
 def frames_in_window(
     session: Session, match_id: int, from_minute: float, to_minute: float,
-    *, limit: int = SHAPE_MAX_FRAMES,
+    *, limit: int = SHAPE_MAX_FRAMES, spread: bool = False,
 ) -> list[Any]:
     """Pencere içindeki kareleri `TrackingFrame` domain nesnesi olarak döner.
 
     Canlı karar paneli ve /shape ucu ortak kullanır; kimlik eşlemesi uygulanır.
+    Varsayılan: limit aşılırsa pencerenin SONU korunur. `spread=True`: kareler
+    pencereye eşit yayılır (her k'ıncı satır) — uzun pencerede "normal"
+    hesaplanırken yalnız son dakikalar okunmasın diye.
     """
     from app.domain.tracking import TrackingFrame
 
+    query = _base_query(match_id).where(
+        models.TrackingFrameRow.minute >= max(0.0, from_minute),
+        models.TrackingFrameRow.minute <= to_minute,
+    )
+    if spread:
+        count = session.execute(select(func.count()).select_from(query.subquery())).scalar_one()
+        step = -(-int(count) // limit) if count > limit else 1
+        if step > 1:
+            query = query.where(models.TrackingFrameRow.id % step == 0)
     rows: Sequence[models.TrackingFrameRow] = session.execute(
-        _base_query(match_id)
-        .where(
-            models.TrackingFrameRow.minute >= max(0.0, from_minute),
-            models.TrackingFrameRow.minute <= to_minute,
-        )
-        .order_by(models.TrackingFrameRow.timestamp.desc())
-        .limit(limit)
+        query.order_by(models.TrackingFrameRow.timestamp.desc()).limit(limit)
     ).scalars().all()
     if not rows:
         return []
