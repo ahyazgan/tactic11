@@ -166,6 +166,21 @@ oyuncu eşleştiği için düştü: kapılar (savunan takımda ≥6 oyuncu) daha
 girdi. Bu dilimde üç koşunun da çizdiği yalnız 119 kare olduğundan takım ataması
 ayrıştırması güvenilir değildir ve rapor edilmez.
 
+## Canlı mod bağlantısı
+
+`scripts/telestrate_live.py` canlı modun segment klasörünü izler; `track_live`'ın
+bıraktığı her `seg_XXXX.mp4` + `frames/seg_XXXX.json` için `tele/seg_XXXX.mp4`
+(H.264, tarayıcıda oynar), `tele/seg_XXXX.marks.json` ve `tele/latest.json` yazar.
+Telestratör durumu segmentler arasında korunur. Hata veren segment
+`seg_XXXX.error.json` ile kaydedilip atlanır; yarım yazılmış takip JSON'u sonraki
+turda yeniden denenir. `canli_mac --telestration --calibration <çizgi noktalı> --home-attack x+`
+işçiyi takiple birlikte başlatır ve kaynak bitince kalan segmentleri bekler.
+Çizim için `scripts/telestrate_video.py` içindeki `render_segment` ortak kullanılır.
+
+Duman testi (`990402`'nin iki segmenti, eğitim GPU'yu kullanırken): 2 × 30 sn
+57 sn'de çizildi (segment başına ~28 sn, gerçek zamana yetişiyor). Panelde bu
+videoyu gösteren katman henüz yok.
+
 ## Sınırlar ve sıradaki adımlar
 
 - Yalnız sabit kalibrasyon. Kare başına kalibrasyonla işlenen hareketli kamera
@@ -174,5 +189,5 @@ ayrıştırması güvenilir değildir ve rapor edilmez.
 - Doğruluğu sınırlayan sırayla: savunan takımdaki karşılıksız tespitler
   (hayalet/sapmış konum), takım ataması, tespit kapsaması. Üçü de takip/tespit
   tarafındadır (dondurulmuş kod); çizim katmanı ayarları bunları telafi etmedi.
-- Sırada: canlı mod segmentlerine bağlama (`scripts/canli_mac.py`) ve panelde
-  video üstü katman (`--marks-json`), topsuz koşu okları, boşluk boyama.
+- Sırada: panelde canlı telestrasyon videosu (`tele/latest.json`), topsuz koşu
+  okları, boşluk boyama.

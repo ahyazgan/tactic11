@@ -88,51 +88,53 @@ def schedule(seconds: list[float], spots: list[Spots], continuity: list[int | No
     return out
 
 
-def main() -> int:
-    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--video", required=True)
-    p.add_argument("--calibration", required=True, help="Takipte kullanılan sabit kalibrasyon JSON")
-    p.add_argument("--frames", required=True, help="scripts.track_video çıktısı (frames JSON)")
-    p.add_argument("--out", required=True, help="Telestrasyonlu mp4")
-    p.add_argument("--home-attack", default="auto", choices=sorted(HOME_ATTACK),
-                   help="Ev sahibi kalibrasyonun saha x'i artan (x+) ya da azalan (x-) yöne hücum eder; "
-                        "auto = kaleci/en derin oyuncudan çıkar")
-    p.add_argument("--clip-offset-minutes", type=float, default=0.0,
-                   help="Takipte verilen klip başlangıç dakikası (track_video ile aynı)")
-    p.add_argument("--width", type=int, default=1600, help="Çıktı genişliği (en fazla)")
-    p.add_argument("--marks-json", default=None, help="Kare başına çizim öğeleri JSON yolu")
-    p.add_argument("--no-interpolate", action="store_true", help="Yalnız takip karelerini yaz (~5 fps)")
-    args = p.parse_args()
+class VideoSink:
+    """mp4 yazıcı: tarayıcıda oynatılabilen H.264 (PyAV/libx264) istenirse ve varsa onu, yoksa OpenCV mp4v."""
 
-    import cv2
+    def __init__(self, path: str | Path, fps: float, size: tuple[int, int], *, h264: bool = False) -> None:
+        self._av: tuple | None = None
+        self._cv = None
+        if h264:
+            try:
+                import av
 
-    data = json.loads(Path(args.frames).read_text(encoding="utf-8"))
-    frames = sorted((TrackingFrame.model_validate(f) for f in data["frames"]), key=lambda f: f.minute)
-    if len(frames) < 2:
-        print("hata: en az iki takip karesi gerekli", file=sys.stderr)
-        return 2
-    calib = PitchCalibration.load(args.calibration)
-    home, away = data["home_team_external_id"], data["away_team_external_id"]
-    seconds = [(f.minute - args.clip_offset_minutes) * 60.0 for f in frames]
-    steps = sorted(b - a for a, b in zip(seconds, seconds[1:], strict=False) if b > a)
-    fps = 1.0 / steps[len(steps) // 2]
+                container = av.open(str(path), "w")
+                stream = container.add_stream("libx264", rate=round(fps))
+                stream.width, stream.height = size
+                stream.pix_fmt, stream.options = "yuv420p", {"crf": "23", "preset": "veryfast"}
+                self._av = (av, container, stream)
+            except Exception:  # noqa: BLE001 — kodek yoksa mp4v ile devam
+                self._av = None
+        if self._av is None:
+            import cv2
 
-    cap = cv2.VideoCapture(args.video)
-    if not cap.isOpened():
-        print(f"hata: video açılamadı: {args.video}", file=sys.stderr)
-        return 2
-    src_fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
-    size = output_size(int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), args.width)
-    interpolate = not args.no_interpolate
-    out_fps = src_fps if interpolate else fps
-    writer = cv2.VideoWriter(args.out, cv2.VideoWriter_fourcc(*"mp4v"), out_fps, size)
-    if not writer.isOpened():
-        print(f"hata: video yazıcısı açılamadı: {args.out}", file=sys.stderr)
-        return 2
+            self._cv = cv2.VideoWriter(str(path), cv2.VideoWriter_fourcc(*"mp4v"), fps, size)
+            if not self._cv.isOpened():
+                raise OSError(f"video yazıcısı açılamadı: {path}")
 
-    spots = [spots_from_frame(f, home, away, calib) for f in frames]
-    plan = schedule(seconds, spots, [f.continuity_id for f in frames], src_fps, interpolate)
-    tele = Telestrator(out_fps, HOME_ATTACK[args.home_attack])
+    @property
+    def codec(self) -> str:
+        return "h264" if self._av is not None else "mp4v"
+
+    def write(self, bgr) -> None:
+        if self._av is not None:
+            av, container, stream = self._av
+            for packet in stream.encode(av.VideoFrame.from_ndarray(bgr, format="bgr24")):
+                container.mux(packet)
+        elif self._cv is not None:
+            self._cv.write(bgr)
+
+    def close(self) -> None:
+        if self._av is not None:
+            _av, container, stream = self._av
+            for packet in stream.encode():
+                container.mux(packet)
+            container.close()
+        elif self._cv is not None:
+            self._cv.release()
+
+
+def warn_calibration(calib: PitchCalibration) -> None:
     source, error = calibration_validation(calib)
     if source == "unverified":
         print("uyarı: kalibrasyon bağımsız doğrulanmamış (noktalar saha işareti değil, çizgi doğrulaması "
@@ -140,9 +142,44 @@ def main() -> int:
     elif error is not None and error > MAX_REPROJECTION_M:
         print(f"uyarı: kalibrasyon hatası {error:.2f} m > {MAX_REPROJECTION_M} m; yalnız halkalar çizilecek.",
               file=sys.stderr)
+
+
+def render_segment(video: str | Path, payload: dict, calib: PitchCalibration, out: str | Path, *,
+                   home_attack: int = 0, tele: Telestrator | None = None, clip_offset_minutes: float | None = None,
+                   width: int = 1600, interpolate: bool = True, keep_marks: bool = False,
+                   h264: bool = False) -> tuple[dict, list[dict], Telestrator]:
+    """Bir videoyu takip çıktısıyla telestrasyonlu yaz → (özet, kare başına öğeler, telestratör).
+
+    `tele` verilirse durumu (yön, sahiplik, hat yumuşatma, etiket) korunarak devam
+    edilir — canlı modda segmentler arası süreklilik için. `clip_offset_minutes`
+    verilmezse videonun başı ilk takip karesinin dakikası sayılır (canlı segment)."""
+    import cv2
+
+    frames = sorted((TrackingFrame.model_validate(f) for f in payload["frames"]), key=lambda f: f.minute)
+    if len(frames) < 2:
+        raise ValueError("en az iki takip karesi gerekli")
+    home, away = payload["home_team_external_id"], payload["away_team_external_id"]
+    offset = frames[0].minute if clip_offset_minutes is None else clip_offset_minutes
+    seconds = [(f.minute - offset) * 60.0 for f in frames]
+    steps = sorted(b - a for a, b in zip(seconds, seconds[1:], strict=False) if b > a)
+    fps = 1.0 / steps[len(steps) // 2]
+    cap = cv2.VideoCapture(str(video))
+    if not cap.isOpened():
+        raise OSError(f"video açılamadı: {video}")
+    src_fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+    size = output_size(int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), width)
+    out_fps = src_fps if interpolate else fps
+    try:
+        sink = VideoSink(out, out_fps, size, h264=h264)
+    except OSError:
+        cap.release()
+        raise
+    spots = [spots_from_frame(f, home, away, calib) for f in frames]
+    plan = schedule(seconds, spots, [f.continuity_id for f in frames], src_fps, interpolate)
+    tele = tele or Telestrator(out_fps, home_attack)
+    before = dict(tele.gate_counts)
     log: list[dict] = []
-    position = 0
-    written = 0
+    position = written = 0
     try:
         for idx, t, (players, ball, owner) in plan:
             while position < idx and cap.grab():
@@ -157,23 +194,56 @@ def main() -> int:
                 # önce küçült, sonra çiz: 4K karede çizmek gerçek zamanın ~3 katı sürüyordu
                 bgr = cv2.resize(bgr, size, interpolation=cv2.INTER_AREA)
             render(bgr, scaled(marks, factor))
-            writer.write(bgr)
+            sink.write(bgr)
             written += 1
-            if args.marks_json:
-                log.append({"seconds": round(t, 3), "marks": [asdict(m) for m in marks]})
+            if keep_marks:
+                log.append({"seconds": round(t, 3), "minute": round(offset + t / 60.0, 4),
+                            "marks": [asdict(m) for m in marks]})
     finally:
-        writer.release()
+        sink.close()
         cap.release()
-
-    gates = dict(tele.gate_counts)
+    gates = {k: v - before.get(k, 0) for k, v in tele.gate_counts.items() if v - before.get(k, 0)}
     summary = {"frames_written": written, "fps": round(out_fps, 3), "tracking_fps": round(fps, 3),
-               "interpolated": interpolate, "home_attack": args.home_attack,
-               "gates": gates, "drawn_ratio": round(gates.get("drawn", 0) / max(written, 1), 3)}
+               "interpolated": interpolate, "codec": sink.codec, "start_minute": round(offset, 4),
+               "gates": gates, "drawn_ratio": round(gates.get("drawn", 0) / max(written, 1), 3),
+               "label": tele.label}
+    return summary, log, tele
+
+
+def main() -> int:
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--video", required=True)
+    p.add_argument("--calibration", required=True, help="Takipte kullanılan sabit kalibrasyon JSON")
+    p.add_argument("--frames", required=True, help="scripts.track_video çıktısı (frames JSON)")
+    p.add_argument("--out", required=True, help="Telestrasyonlu mp4")
+    p.add_argument("--home-attack", default="auto", choices=sorted(HOME_ATTACK),
+                   help="Ev sahibi kalibrasyonun saha x'i artan (x+) ya da azalan (x-) yöne hücum eder; "
+                        "auto = kaleci/en derin oyuncudan çıkar")
+    p.add_argument("--clip-offset-minutes", type=float, default=0.0,
+                   help="Takipte verilen klip başlangıç dakikası (track_video ile aynı)")
+    p.add_argument("--width", type=int, default=1600, help="Çıktı genişliği (en fazla)")
+    p.add_argument("--marks-json", default=None, help="Kare başına çizim öğeleri JSON yolu")
+    p.add_argument("--no-interpolate", action="store_true", help="Yalnız takip karelerini yaz (~5 fps)")
+    p.add_argument("--h264", action="store_true", help="Tarayıcıda oynatılabilen H.264 (PyAV) ile yaz")
+    args = p.parse_args()
+
+    calib = PitchCalibration.load(args.calibration)
+    warn_calibration(calib)
+    payload = json.loads(Path(args.frames).read_text(encoding="utf-8"))
+    try:
+        summary, log, _tele = render_segment(
+            args.video, payload, calib, args.out, home_attack=HOME_ATTACK[args.home_attack],
+            clip_offset_minutes=args.clip_offset_minutes, width=args.width,
+            interpolate=not args.no_interpolate, keep_marks=bool(args.marks_json), h264=args.h264)
+    except (OSError, ValueError) as exc:
+        print(f"hata: {exc}", file=sys.stderr)
+        return 2
+    summary["home_attack"] = args.home_attack
     if args.marks_json:
         Path(args.marks_json).write_text(json.dumps({"summary": summary, "frames": log}, ensure_ascii=False),
                                          encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False))
-    return 0 if written else 1
+    return 0 if summary["frames_written"] else 1
 
 
 if __name__ == "__main__":
