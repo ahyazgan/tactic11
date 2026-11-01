@@ -89,6 +89,8 @@ Ne öğrenildi:
   izdüşümleri üst üste (medyan −0,3 ve +1,4), yöntem başka bir eksende bölüp
   takipleri tek takıma yığıyor. Dondurulmuş `teams.py`'nin gece için seçtiği
   parlaklık taşıyan RGB özelliği bu durumda doğru seçim.
-- Açık kalan gerçek sorun küçük: uzak/soluk oyuncuların bir kısmı; ölçmek için
-  kare başına GT (GSR) olan bir gündüz maçı gerekir, göz etiketi bu çözünürlükte
-  güvenilir değil (16 kutu "karar verilemez" kaldı).
+- Sonradan GSR'ye karşı ölçüldü (`docs/measurements/venue-132831-gsr-telestration.json`):
+  üretim takım uyumu %76,7 (gece 117092 ile aynı düzey); yeniden atama 4 kontrol
+  segmentinde %77,8 ama çizilen kare %10 daha az — kontrol sonucunu değiştirmez.
+  Bu sahadaki asıl sınır takım rengi değil tespit/konum (karede 9,1 eşleşen oyuncu,
+  takip–GSR uzaklığı medyan 3,4 m).

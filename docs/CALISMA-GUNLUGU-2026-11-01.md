@@ -166,3 +166,7 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
   (oyuncu uzaklığı taramasıyla). 990741 (10 dk): takım rengi %91,6, blok etiketi dengeli
   %80,8, hat medyanı 1,9 m, pres %93,8, kapsama %100. Karnede gündüz sütunu doldu.
 
+## 23:00–23:25 — Üçüncü stadyum GSR'ye karşı
+- 132831 GSR (base 3917000000, hizalama −21): takım %76,7, blok dengeli %64,3, hat 5,2 m,
+  karede eşleşen oyuncu 9,1. Sınır takım rengi değil tespit/konum. Karne güncellendi.
+

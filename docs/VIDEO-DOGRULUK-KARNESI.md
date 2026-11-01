@@ -34,11 +34,13 @@ oyuncu konumları da.
 Gündüz ve aydınlık sahada sistem belirgin biçimde daha güvenilir; gece ışıklarla
 sahte top adayları en zor durum.
 
-**Başka stadyum (132831, gündüz, ön kayıtlı, sınav geçmedi):** top dokunuşta %42,2,
-pas uçuşunda %71,4 doğru yerde. Takım ataması göz etiketli kutularda net renkli
-oyuncularda %93–97 doğru (`docs/TAKIM-AYRIMI-GUNES.md`; renk oranıyla yeniden atama
-denendi, ön kayıtlı kontrolde geçmedi); savunan takım bu sahada olay kayıtlarıyla
-ölçülemedi. Ayrıntı: `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
+**Başka stadyum (132831, gündüz, GSR'ye karşı 10 dk):** takım rengi %76,7, blok
+etiketi dengeli %64,3 / tam %70,8, savunma hattı medyan 5,2 m, pres %96, kapsama %97;
+top dokunuşta %42,2, pas uçuşunda %71,4. Bu sahada sınır tespit/konum: karede
+eşleşen oyuncu 9,1 (132877'de 15,2), takip–GSR uzaklığı medyan 3,4 m (2,4 m), hat
+hatası 2,7 kat. Göz etiketli net renkli kutularda takım ataması %93–97
+(`docs/TAKIM-AYRIMI-GUNES.md`; renk oranıyla yeniden atama ön kayıtlı kontrolde geçmedi).
+Ayrıntı: `docs/measurements/venue-132831-gsr-telestration.json`, `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
 
 Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 `docs/measurements/ball-track-control.json`, `docs/measurements/daylight-132877-gsr-telestration.json`,
@@ -63,7 +65,8 @@ Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 ## Bilinen sınırlar
 
 - Üç maç: iki maç aynı üniversite sahasında (bir gece, bir gündüz); üçüncü,
-  başka bir stadyum (132831), takım ayrımında başarısız oldu.
+  başka bir stadyum (132831), tespit kapsaması ve konum hatasıyla belirgin daha zayıf
+  (GSR'ye karşı yukarıda).
 - Savunan takım üç karenin birinde hâlâ yanlış olabilir; çıktı bir ikinci göz olarak
   okunmalı, kesin hüküm olarak değil.
 - Takipten çıkarılan pas listesi ham topla hesaplanır; top düzeltmesi yalnız kare

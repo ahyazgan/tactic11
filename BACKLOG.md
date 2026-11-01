@@ -162,6 +162,7 @@
 - [ ] Pas motoru: gecede duyarlılık ~%0–15; top görünürlüğü sınırı — kare başına top GT'li yeni veriyle tasarım.
 - [x] Panel gerçek modda doğrulandı: Canlı Telestrasyon kartı videoyu gösteriyor; genel bakıştaki yanlış 'backend bağlı değil' uyarısı düzeltildi.
 - [x] Takım ataması, renk oranıyla yeniden atama: ön kayıtlı kontrol 1/4 — GEÇMEDİ, canlıya bağlanmadı; üretim net renkte %93–97 doğru (docs/TAKIM-AYRIMI-GUNES.md).
-- [ ] Takım: uzak/soluk oyuncu hatasını kare başına GT'si olan bir gündüz maçında ölç (göz etiketi bu çözünürlükte yetersiz).
+- [x] Takım: 132831 GSR'ye karşı ölçüldü — takım uyumu %76,7; sınır tespit/konum (9,1 eşleşen oyuncu/kare, 3,4 m).
+- [ ] Yeni sahada tespit kapsaması: 132831'de karede 9,1 eşleşen oyuncu (132877: 15,2); dedektörü bu kamera açısında ölç (MOT GT 132831 klibi mevcut).
 - [ ] Aday izi 132831'de yanlış topu +5 puan artırdı (ön kayıtlı sınır +2): yeni sahada adayları seçicilik ayarı, yeni ön kayıtla.
 - [ ] Aday izi sonrası aktör/sahip alanları eski topta kalıyor (veri tutarlılığı; ölçülen etki yok).
