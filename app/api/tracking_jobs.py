@@ -127,11 +127,15 @@ def worker_cmd(module: str) -> list[str]:
 
 
 def default_weights() -> str | None:
-    """İnce ayarlı ağırlık klasörü — karma (drone + yan açı) tercih edilir."""
+    """İnce ayarlı ağırlık klasörü — v2 (karmadan SoccerTrack'e ince ayar), yoksa karma.
+
+    v2 panoramada her telestrasyon ölçütünde karmadan iyi; TeamTrack doğrulamasında
+    F1 aynı (docs/DEDEKTOR-INCE-AYAR-SONUCLARI.md).
+    """
     env = os.environ.get("TRACKING_WEIGHTS")
     if env:
         return env
-    for name in ("rfdetr_mixed_small", "rfdetr_top_small"):
+    for name in ("rfdetr_soccertrack_ft_v2", "rfdetr_mixed_small", "rfdetr_top_small"):
         cand = data_root() / "models" / name
         if (cand / "meta.json").exists():
             return str(cand)

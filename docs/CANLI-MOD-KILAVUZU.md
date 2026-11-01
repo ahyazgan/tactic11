@@ -12,6 +12,9 @@ için adım adım yol. Tüm komutlar proje kökünden (`football-intelligence`).
   ve 60–80. dk kararları için uygundur, son dakika anlık kararı için değil.
 - Telestrasyon yalnız **sabit kamerada** çalışır (yayın kamerasında takip var,
   telestrasyon yok).
+- Dedektör: `--camera static`'te varsayılan v2 (`rfdetr_soccertrack_ft_v2`); başka
+  model için `--weights`. v2 telestrasyonda eski modelden belirgin iyi
+  (`docs/DEDEKTOR-INCE-AYAR-SONUCLARI.md`); aşağıdaki doğruluk satırı eski modele ait.
 - Doğruluk (SoccerTrack gece maçı, gerçek konumlara karşı): blok etiketi dengeli
   doğruluk %71–75, savunma hattı hatası medyan ~6 m; takım ataması ~%70.
   Ayrıntı: `docs/OTOMATIK-TELESTRASYON.md`, `docs/TESPIT-KALITESI-DENETIMI.md`.

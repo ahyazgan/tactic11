@@ -108,7 +108,24 @@ değildir; 117092 eğitimde yoktu ama dedektörü yargılamakta daha önce kulla
 
 İki pencerede de her ölçüt v2 lehine. Kesinlik artışı (daha az hayalet) hem hattı hem
 takım renklerini düzeltiyor gibi görünüyor. Sınır: tek maç, 2250 kare; 1200 penceresinde
-12 segmentin 6'sı. Üretim değişmedi; v2'nin terfisi kullanıcı kararı.
+12 segmentin 6'sı.
+
+## Terfi (2026-11-01, kullanıcı kararı)
+
+Kullanıcı v2'yi üretime aldı. Ön kayıtlı sınav geçilmedi (yukarıda); karar ön kayıt
+dışı bir ürün kararıdır, sınav sonucu değişmedi.
+
+- `canli_mac`: `--weights` verilmezse `--camera static`'te v2 (klasör yoksa COCO).
+  Yayın/operatörlü/auto kamerada davranış aynı kaldı: v2 orada ölçülmedi.
+- API işleri (`default_weights`): v2 → karma → top. `TRACKING_WEIGHTS` ve isteğin
+  `weights` alanı yine önceliklidir.
+- Drone/yan açı için dayanak: TeamTrack doğrulamasında (1471 görüntü, aynı küme) son
+  dönemde F1 0,822 → 0,822, kesinlik 0,843 → 0,838, duyarlık 0,804 → 0,808; mAP50
+  0,792 → 0,769 (−2,3 puan). Yani orada eşit sayılır, panoramada açık ara iyi.
+- `track_live`/`track_video` dondurulmuş: kendi varsayılanları (COCO) değişmedi;
+  doğrudan çağıranlar `--weights` verir.
+- Geri dönüş: `--weights data/tracking/models/rfdetr_mixed_small` ya da
+  `TRACKING_WEIGHTS`.
 
 ## Sıradaki adımlar
 
