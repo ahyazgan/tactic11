@@ -221,6 +221,8 @@ def main() -> int:
     p.add_argument("--fresh", action="store_true", help="klasördeki eski segment ve durumu sil")
     p.add_argument("--telestration", action="store_true",
                    help="işlenen her segment için telestrasyonlu video üret (scripts.telestrate_live)")
+    p.add_argument("--swap-at-minute", type=float, default=None,
+                   help="telestrasyon: bu dakikadan sonra hücum yönünü ters çevir (ikinci yarı, ör. 45)")
     p.add_argument("--home-attack", default="auto", choices=["auto", "x+", "x-"],
                    help="telestrasyon: ev sahibi kalibrasyonun saha x'i artan/azalan yöne hücum eder")
     args = p.parse_args()
@@ -269,6 +271,8 @@ def main() -> int:
     if args.telestration:
         tele_cmd = [sys.executable, "-m", "scripts.telestrate_live", "--watch", str(watch),
                     "--calibration", args.calibration, "--home-attack", args.home_attack]
+        if args.swap_at_minute is not None:
+            tele_cmd += ["--swap-at-minute", f"{args.swap_at_minute:g}"]
         tele_proc = subprocess.Popen(tele_cmd, cwd=str(PROJECT_ROOT),  # noqa: S603
                                      env=dict(os.environ, PYTHONIOENCODING="utf-8"))
         print(f"[canlı] telestrasyon: {watch / 'tele'} (latest.json)")
