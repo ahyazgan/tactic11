@@ -170,4 +170,3 @@
 - [ ] Aday izi sonrası aktör/sahip alanları eski topta kalıyor (veri tutarlılığı; ölçülen etki yok).
 - [x] Şekil bekçisi eşikleri referansa karşı ölçüldü: blok 6 m ve hat aralığı 4 m güvenilir; genişlik 6 m ve boy 6 m gürültü içinde (SEKIL-BEKCISI-OLCUMU.md).
 - [ ] (diğer oturum) genişlik → %10–90 aralığı + eşik 8 m; boy → p90 derinlik − geri hat; sonra aynı araçla yeniden ölç.
-

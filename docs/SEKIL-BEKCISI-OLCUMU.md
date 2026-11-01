@@ -27,9 +27,11 @@ p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güveni
 ## Okuma
 
 - **Blok derinliği** ve **hat aralığı**: gündüzde gürültü eşiklerin çok altında (0,8 ve
-  0,6 m); gecede ve yeni sahada p90 eşiğe değiyor (6,5 ve 4,7 m) → karar "sınırda".
-  Bekçi tek dakikaya değil 5 dakikalık medyan farkına baktığı için pratikte kullanılabilir,
-  ama gece uyarılarının bir kısmı ölçüm hatası olabilir.
+  0,6 m); gecede p90 eşiğe değiyor (6,5 ve 4,7 m). Kurala göre blok "sınırda"; hat
+  aralığı medyanı 2,04 m ile eşik/2 sınırını 4 cm aştığı için kural gereği "güvenilmez"
+  yazıldı — fiilen blokla aynı durumda (kural sonradan gevşetilmedi). Bekçi tek dakikaya
+  değil 5 dakikalık medyan farkına baktığı için ikisi de pratikte kullanılabilir; gece
+  uyarılarının bir kısmı ölçüm hatası olabilir.
 - **Genişlik (en–en)**: gürültü 2,4–5,8 m medyan, 8,7–12,9 m p90 — 6 m eşik gürültünün
   içinde; uyarıların yarısı ölçüm hatası olur. Uçları kırpan tanımlar (%10–90 aralığı)
   p90'ı 6–8 m'ye indiriyor ama medyan 3,5–4,6 m kalıyor: genişlik için eşik en az 8 m
@@ -42,7 +44,7 @@ p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güveni
 ## Diğer oturum için somut öneri
 
 1. `width` → %10–90 yüzdelik aralığı, eşik 8 m; `length` → p90 derinlik − geri hat.
-2. `block_depth` 6 m ve `line_gap` 4 m kalsın.
+2. `block_depth` 6 m kalsın; `line_gap` için 5 m gece gürültüsünün (p90 4,7 m) üstüne çıkar.
 3. Bu değişiklikler yapılırsa aynı araçla yeniden ölçülür; değişiklik uyarı sayısını
    düşürür, bu yüzden "normalden sapma" tespiti için 25+5 dakikalık pencere korunmalı.
 
