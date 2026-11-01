@@ -391,3 +391,13 @@ def test_four_point_homography_is_unverified() -> None:
     five = PitchCalibration(points=four.points + (CalibrationPoint(image=img(52.5, 34.0), pitch=(52.5, 34.0)),),
                             image_size=(2000, 1200))
     assert calibration_validation(five)[0] == "landmark_loo"
+
+
+def test_min_team_players_config_is_validated() -> None:
+    import pytest
+
+    from app.tracking.telestration import MIN_TEAM_PLAYERS, TelestrationConfig
+
+    assert TelestrationConfig().min_team_players == MIN_TEAM_PLAYERS
+    with pytest.raises(ValueError):
+        TelestrationConfig(min_team_players=1)

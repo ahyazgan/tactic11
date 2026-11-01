@@ -426,11 +426,13 @@ class TelestrationConfig:
     label_hold_s: float = LABEL_HOLD_S       # etiket değişmeden önce gereken kararlılık
     min_track_s: float = 0.0                 # hat/pres hesabına girmek için kesintisiz görünme
     line_statistic: str = "mean"             # hat derinliği: mean | median
+    min_team_players: int = MIN_TEAM_PLAYERS  # çizgi/etiket için savunan takımdan görünür oyuncu
 
     def __post_init__(self) -> None:
         if self.line_statistic not in ("mean", "median"):
             raise ValueError("line_statistic mean ya da median olmalı")
-        if not 0.0 < self.line_smoothing <= 1.0 or self.label_hold_s < 0 or self.min_track_s < 0:
+        if (not 0.0 < self.line_smoothing <= 1.0 or self.label_hold_s < 0 or self.min_track_s < 0
+                or self.min_team_players < 2):
             raise ValueError("geçersiz telestrasyon ayarı")
 
 
@@ -570,7 +572,7 @@ class Telestrator:
                                          for xy in team_pts.values()], self.config.line_statistic))
             if direction == 0:
                 gate = "direction"
-            elif len(team_pts) < MIN_TEAM_PLAYERS:
+            elif len(team_pts) < self.config.min_team_players:
                 gate = "players"
             elif not lines:
                 gate = "lines"
