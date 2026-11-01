@@ -51,7 +51,8 @@ venv-cv\Scripts\python.exe -m scripts.canli_mac --source rtsp://kamera/stream --
 - `--home-attack x+` / `x-`: ev sahibi kalibrasyonun saha x ekseninde hangi
   yöne hücum ediyor. Devre arasında yön değişir; ikinci yarıda tersini ver.
   `auto` çoğu zaman karar veremez (kaleciler görünmüyor).
-- `--height 1080`: segmentleri 1080p'ye indirir; hız için ilk denenecek ayar.
+- `--height 1080`: segmentleri 1080p'ye indirir; hız için ilk denenecek ayar. Kalibrasyon
+  ilk segmentin boyutuna otomatik ölçeklenir (`<watch>/calibration_<g>x<y>.json`).
 - Provada `--source mac.mp4` dosyayı gerçek hızda akıtır: "sisteme kaç dakika
   geriden gelir" sorusunun dürüst cevabı budur.
 

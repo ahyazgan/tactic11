@@ -38,6 +38,14 @@ segment sayısı). Fark = koçun gördüğü resmin kaç saniye eski olduğu. Ek
 - Skor ve dakika videodan okunmaz; dakika segment sırasından türetilir
   (`--start-minute`), skor panelde şut olaylarından gelir.
 
+## Küçültülmüş segment ve kalibrasyon (`--height`)
+
+Piksel kalibrasyonu çekildiği çözünürlüğe bağlıdır; takip hattı boyut farkında
+kareyi reddeder. `--height` ile `--calibration` birlikte verilirse ilk segment
+bitince gerçek boyutu okunur, kalibrasyon o boyuta ölçeklenip
+`<watch>/calibration_<g>x<y>.json` olarak yazılır ve takip ile telestrasyona bu
+dosya verilir. Saha konumları ve çizgi doğrulaması değişmez (yalnız piksel ölçeği).
+
 ## Telestrasyon (`--telestration`)
 
 `scripts.telestrate_live` işçisi takiple birlikte başlar: işlenen her segment
@@ -188,6 +196,38 @@ def _written_count(watch: Path) -> int:
     return len(list(watch.glob("seg_*.mp4")))
 
 
+def scale_calibration(calibration: Path, size: tuple[int, int], out_dir: Path) -> Path:
+    """Kalibrasyonu yeni görüntü boyutuna ölçekle (saha noktaları aynı); boyut aynıysa olduğu gibi."""
+    data = json.loads(calibration.read_text(encoding="utf-8"))
+    w0, h0 = (int(v) for v in data["image_size"])
+    if (w0, h0) == size:
+        return calibration
+    sx, sy = size[0] / w0, size[1] / h0
+    scaled = {**data, "image_size": [size[0], size[1]],
+              "points": [{**pt, "image": [pt["image"][0] * sx, pt["image"][1] * sy]} for pt in data["points"]],
+              "meta": {**(data.get("meta") or {}), "scaled_from": [w0, h0], "scaled_source": str(calibration)}}
+    out = out_dir / f"calibration_{size[0]}x{size[1]}.json"
+    out.write_text(json.dumps(scaled, ensure_ascii=False, indent=2), encoding="utf-8")
+    return out
+
+
+def wait_first_segment_size(watch: Path, seg_proc: subprocess.Popen, timeout_s: float = 180.0) -> tuple[int, int]:
+    """İlk segment tamamlanınca (ikincisi başlayınca ya da kaynak bitince) boyutunu oku."""
+    import cv2  # noqa: PLC0415 — yalnız --height ile gerekir (venv-cv)
+
+    first, second = watch / "seg_0000.mp4", watch / "seg_0001.mp4"
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        if first.exists() and (second.exists() or seg_proc.poll() is not None):
+            cap = cv2.VideoCapture(str(first))
+            size = (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+            cap.release()
+            if size[0] > 0 and size[1] > 0:
+                return size
+        time.sleep(1.0)
+    raise SystemExit("ilk segment zamanında oluşmadı; kalibrasyon ölçeklenemedi")
+
+
 def _telestration_backlog(watch: Path) -> int:
     """Takibi bitmiş ama telestrasyonu (çıktı ya da hata kaydı) henüz yazılmamış segment sayısı."""
     tele = watch / "tele"
@@ -263,12 +303,18 @@ def main() -> int:
           f"&current_minute=<işlenen dk>")
     t0 = time.time()
     seg_proc = subprocess.Popen(seg_cmd, cwd=str(PROJECT_ROOT))  # noqa: S603
+    calibration = args.calibration
+    if args.height and calibration:
+        size = wait_first_segment_size(watch, seg_proc)
+        calibration = str(scale_calibration(Path(calibration), size, watch))
+        track_cmd[track_cmd.index("--calibration") + 1] = calibration
+        print(f"[canlı] kalibrasyon {size[0]}x{size[1]} segmentlere ölçeklendi: {calibration}")
     track_proc = subprocess.Popen(track_cmd, cwd=str(PROJECT_ROOT),  # noqa: S603
                                   env=dict(os.environ, PYTHONIOENCODING="utf-8"))
     tele_proc = None
     if args.telestration:
         tele_cmd = [sys.executable, "-m", "scripts.telestrate_live", "--watch", str(watch),
-                    "--calibration", args.calibration, "--home-attack", args.home_attack]
+                    "--calibration", calibration, "--home-attack", args.home_attack]
         tele_proc = subprocess.Popen(tele_cmd, cwd=str(PROJECT_ROOT),  # noqa: S603
                                      env=dict(os.environ, PYTHONIOENCODING="utf-8"))
         print(f"[canlı] telestrasyon: {watch / 'tele'} (latest.json)")
