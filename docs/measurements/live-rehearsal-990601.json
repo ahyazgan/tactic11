@@ -1,0 +1,32 @@
+{
+  "measured": "2026-11-01, RTX 5060 8 GB, nothing else on the GPU",
+  "command": "canli_mac --source data/tracking/videos/soccertrack_117092_sample_600_960.mp4 --match-id 990601 --start-minute 10 --calibration data/tracking/calibrations/soccertrack_v2_117092_landmarks.json --camera static --weights data/tracking/models/rfdetr_mixed_small --tiles 4 --height 1080 --telestration --home-attack x+ --fresh --database-url sqlite:///<proje>/demo.db",
+  "source": "6 min SoccerTrack v2 117092 panorama, streamed at real speed (-re), 30 s segments, scaled to 2176x1080",
+  "method": "file modification times: seg_XXXX.mp4 (segment closed = stream time), frames/seg_XXXX.json (tracking + ingest done), tele/seg_XXXX.mp4 (telestration done); t0 = first segment close - 30 s",
+  "result": {
+    "segments": 12,
+    "errors": 0,
+    "db_frames": 1500,
+    "db_frames_with_ball": 1145,
+    "track_seconds_per_segment": {"mean": 96, "min": 89, "max": 102},
+    "telestration_seconds_after_tracking": {"mean": 21, "min": 14, "max": 27},
+    "realtime_factor": 3.2,
+    "lag_growth_seconds_per_segment": 66,
+    "lag_after_last_segment_s": {"tracked": 824, "telestration": 838}
+  },
+  "segments": [
+    {"segment": "seg_0000", "stream_end_s": 30, "tracked_s": 128, "tele_s": 152, "track_seconds": 98, "lag_tracked_s": 98, "lag_tele_s": 122},
+    {"segment": "seg_0001", "stream_end_s": 60, "tracked_s": 217, "tele_s": 235, "track_seconds": 89, "lag_tracked_s": 157, "lag_tele_s": 175},
+    {"segment": "seg_0002", "stream_end_s": 90, "tracked_s": 310, "tele_s": 337, "track_seconds": 93, "lag_tracked_s": 220, "lag_tele_s": 247},
+    {"segment": "seg_0003", "stream_end_s": 120, "tracked_s": 409, "tele_s": 426, "track_seconds": 99, "lag_tracked_s": 289, "lag_tele_s": 306},
+    {"segment": "seg_0004", "stream_end_s": 150, "tracked_s": 503, "tele_s": 525, "track_seconds": 95, "lag_tracked_s": 353, "lag_tele_s": 375},
+    {"segment": "seg_0005", "stream_end_s": 180, "tracked_s": 606, "tele_s": 627, "track_seconds": 102, "lag_tracked_s": 426, "lag_tele_s": 447},
+    {"segment": "seg_0006", "stream_end_s": 210, "tracked_s": 696, "tele_s": 717, "track_seconds": 90, "lag_tracked_s": 486, "lag_tele_s": 507},
+    {"segment": "seg_0007", "stream_end_s": 240, "tracked_s": 791, "tele_s": 811, "track_seconds": 95, "lag_tracked_s": 551, "lag_tele_s": 571},
+    {"segment": "seg_0008", "stream_end_s": 270, "tracked_s": 893, "tele_s": 916, "track_seconds": 101, "lag_tracked_s": 623, "lag_tele_s": 646},
+    {"segment": "seg_0009", "stream_end_s": 300, "tracked_s": 987, "tele_s": 1010, "track_seconds": 95, "lag_tracked_s": 687, "lag_tele_s": 710},
+    {"segment": "seg_0010", "stream_end_s": 330, "tracked_s": 1080, "tele_s": 1105, "track_seconds": 93, "lag_tracked_s": 750, "lag_tele_s": 775},
+    {"segment": "seg_0011", "stream_end_s": 358, "tracked_s": 1182, "tele_s": 1196, "track_seconds": 101, "lag_tracked_s": 824, "lag_tele_s": 838}
+  ],
+  "previous_run": "same command without --database-url: every ingest failed on the .env placeholder host, the processed counter never advanced (fixed by the database preflight, PR #308)"
+}

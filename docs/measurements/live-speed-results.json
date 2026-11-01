@@ -1,0 +1,20 @@
+{
+  "plan": "docs/measurements/live-speed-plan.json (committed 3d2b0d4 before the runs)",
+  "measured": "2026-11-01, RTX 5060 8 GB, nothing else on the GPU",
+  "runner": "tmp script: detection_variants --source data/tracking/live/990601 --calibration data/tracking/live/990601/calibration_2176x1080.json --segments 1 2 3 --tiles T --backend B; detection_audit --segments 1 2 3 --start-seconds 600",
+  "rows": [
+    {"backend": "torch", "tiles": 4, "segment_seconds": [85.6, 90.5, 91.8], "mean_s": 89.3, "gt_detected": 0.499, "ghost_share": 0.461, "detections": 4903},
+    {"backend": "torch", "tiles": 3, "segment_seconds": [51.0, 51.4, 41.9], "mean_s": 48.1, "gt_detected": 0.441, "ghost_share": 0.469, "detections": 4420},
+    {"backend": "torch", "tiles": 2, "segment_seconds": [38.5, 38.1, 31.9], "mean_s": 36.2, "gt_detected": 0.263, "ghost_share": 0.464, "detections": 2701},
+    {"backend": "onnx", "tiles": 4, "segment_seconds": [183.0, 184.4, 184.8], "mean_s_excluding_first": 184.6, "gt_detected": 0.498, "ghost_share": 0.461, "detections": 4900},
+    {"backend": "onnx", "tiles": 3, "segment_seconds": [98.5, 100.2, 96.2], "mean_s_excluding_first": 98.2, "gt_detected": 0.441, "ghost_share": 0.470, "detections": 4416},
+    {"backend": "onnx", "tiles": 2, "segment_seconds": [57.7, 59.6, 55.8], "mean_s_excluding_first": 57.7, "gt_detected": 0.263, "ghost_share": 0.465, "detections": 2705}
+  ],
+  "verdict": {
+    "passing_settings": [],
+    "reason": "every faster setting loses more than 2.0 points of GT players: tiles 3 -5.8, tiles 2 -23.6; onnx gives the same detections but is ~2x slower than the compiled fp16 torch path",
+    "recommended": "keep torch, tiles 4 (unchanged)",
+    "real_time": "not reached: best passing setting 89 s per 30 s segment (3.0x); the fastest setting at any accuracy (torch tiles 2) is still 36 s"
+  },
+  "consequence": "lag cannot be closed by detector settings on this GPU; canli_mac --keep-up bounds it by skipping to the newest segment"
+}
