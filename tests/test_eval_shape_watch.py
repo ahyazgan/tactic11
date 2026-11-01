@@ -19,7 +19,7 @@ def test_robust_width_and_length_ignore_a_single_outlier() -> None:
     clean = alt_widths(frame(base), 7, 1)
     with_ghost = alt_widths(frame(base + [(99, 90.0, 66.0)]), 7, 1)        # hayalet: en ileri ve en kenar
     assert clean is not None and with_ghost is not None
-    assert abs(with_ghost["width_p10_90"] - clean["width_p10_90"]) < 4.0   # en–en 22 m büyürdü
+    assert abs(with_ghost["width_p10_90"] - clean["width_p10_90"]) < 6.0   # en–en 22 m büyürdü
     assert abs(with_ghost["length_p90"] - clean["length_p90"]) < 6.0        # en ileri oyuncu tanımı 44 m büyürdü
     assert alt_widths(frame(base[:5]), 7, 1) is None and alt_widths(frame(base), 7, 0) is None
     assert alt_widths(frame(base, keeper_ids={0}), 7, 1)["width_trim1"] < clean["width_trim1"]

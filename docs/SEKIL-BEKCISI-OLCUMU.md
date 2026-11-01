@@ -10,12 +10,13 @@ GSR'den, yön GSR kalecilerinden, her iki takım her karede) uygulanır; hata =
 Gündüz ve üçüncü saha referansı saha işaretlerine göre düzeltilmiş GSR; gece ham GSR
 (düzeltilemedi, `gsr-corrected-telestration.json`).
 
-Hücre: dakikalık medyan hatasının **medyanı / p90'ı** (m). Karar en kötü pencereye göre:
+Hücre: dakikalık medyan hatasının **medyanı / p90'ı** (m). Karar en kötü 10 dakikalık
+pencereye göre (4 segmentlik ayrık pencere yalnız gösterge; p90 için çok az dakika):
 p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güvenilmez.
 
 | Ölçüm | Gündüz 132877 (düzeltilmiş GSR) | Başka stadyum 132831 (düzeltilmiş GSR) | Gece 117092 (ham GSR) | 132831 ayrık 4 segment | Karar |
 |---|---|---|---|---|---|
-| Blok derinliği (eşik 6 m) | 0.8 / 2.5 | 0.9 / 5.6 | 2.1 / 6.5 | 4.6 / 12.5 | güvenilmez |
+| Blok derinliği (eşik 6 m) | 0.8 / 2.5 | 0.9 / 5.6 | 2.1 / 6.5 | 4.6 / 12.5 | sınırda |
 | Genişlik, en–en (eşik 6 m) | 5.8 / 10.9 | 2.4 / 9.7 | 5.2 / 12.9 | 3.6 / 8.7 | güvenilmez |
 | Hat aralığı (eşik 4 m) | 0.6 / 1.4 | 1.6 / 3.4 | 2.0 / 4.7 | 1.8 / 3.2 | güvenilmez |
 | Boy, en ileri oyuncu (eşik 6 m) | 1.3 / 3.8 | 10.6 / 21.4 | 2.6 / 6.2 | 10.8 / 18.9 | güvenilmez |
@@ -25,9 +26,10 @@ p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güveni
 
 ## Okuma
 
-- **Blok derinliği** ve **hat aralığı**: gürültü eşiklerin altında; 6 m ve 4 m eşikler
-  anlamlı. Gecede ve yeni sahada p90 eşiğe yaklaşıyor (5,6–6,5 m), yani tek dakikalık
-  sapma değil, bekçinin yaptığı gibi 5 dakikalık medyan farkı okunmalı.
+- **Blok derinliği** ve **hat aralığı**: gündüzde gürültü eşiklerin çok altında (0,8 ve
+  0,6 m); gecede ve yeni sahada p90 eşiğe değiyor (6,5 ve 4,7 m) → karar "sınırda".
+  Bekçi tek dakikaya değil 5 dakikalık medyan farkına baktığı için pratikte kullanılabilir,
+  ama gece uyarılarının bir kısmı ölçüm hatası olabilir.
 - **Genişlik (en–en)**: gürültü 2,4–5,8 m medyan, 8,7–12,9 m p90 — 6 m eşik gürültünün
   içinde; uyarıların yarısı ölçüm hatası olur. Uçları kırpan tanımlar (%10–90 aralığı)
   p90'ı 6–8 m'ye indiriyor ama medyan 3,5–4,6 m kalıyor: genişlik için eşik en az 8 m

@@ -336,27 +336,31 @@
   "recommendation": {
     "block_depth": {
       "threshold_m": 6.0,
-      "worst_window_noise_median_m": 4.59,
-      "worst_window_noise_p90_m": 12.46,
-      "verdict": "güvenilmez"
+      "worst_window_noise_median_m": 2.1,
+      "worst_window_noise_p90_m": 6.47,
+      "verdict": "sınırda",
+      "verdict_rule": "p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güvenilmez; en kötü 10 dakikalık pencere"
     },
     "width": {
       "threshold_m": 6.0,
       "worst_window_noise_median_m": 5.78,
       "worst_window_noise_p90_m": 12.87,
-      "verdict": "güvenilmez"
+      "verdict": "güvenilmez",
+      "verdict_rule": "p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güvenilmez; en kötü 10 dakikalık pencere"
     },
     "line_gap": {
       "threshold_m": 4.0,
       "worst_window_noise_median_m": 2.04,
       "worst_window_noise_p90_m": 4.73,
-      "verdict": "güvenilmez"
+      "verdict": "güvenilmez",
+      "verdict_rule": "p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güvenilmez; en kötü 10 dakikalık pencere"
     },
     "length": {
       "threshold_m": 6.0,
-      "worst_window_noise_median_m": 10.75,
+      "worst_window_noise_median_m": 10.61,
       "worst_window_noise_p90_m": 21.41,
-      "verdict": "güvenilmez"
+      "verdict": "güvenilmez",
+      "verdict_rule": "p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güvenilmez; en kötü 10 dakikalık pencere"
     },
     "width_p10_90": {
       "worst_window_noise_median_m": 4.55,
