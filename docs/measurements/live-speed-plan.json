@@ -1,0 +1,17 @@
+{
+  "written": "2026-11-01T09:10+03:00, before any run of this matrix",
+  "question": "Which detector setting brings the live segment time closest to the 30 s budget without losing players?",
+  "source": "data/tracking/live/990601 segments 1-3 (SoccerTrack v2 117092, 600-690 s, 1080p rehearsal output, 2176x1080)",
+  "calibration": "data/tracking/live/990601/calibration_2176x1080.json (landmark calibration scaled by canli_mac)",
+  "gt": "data/tracking/bench/signal_quality_gt.npy, start 600 s",
+  "matrix": {"backend": ["torch", "onnx"], "tiles": [4, 3, 2]},
+  "timing": "elapsed_seconds per segment from detection_variants (collect_observations wall clock); onnx: segment 1 includes session start and is reported but excluded from the mean",
+  "quality": "detection_audit on segments 1-3: share of GT players detected (good+projection) and ghost share",
+  "reference": "torch, tiles 4 (current live preset)",
+  "acceptance": {
+    "recommend_setting_if": "GT detected share drops by at most 2.0 points vs reference AND ghost share rises by at most 2.0 points",
+    "choose": "the fastest setting that passes; ties broken by higher detected share",
+    "real_time_claim_only_if": "mean segment time <= 30 s"
+  },
+  "not_changed": "frozen tracking files, model weights, thresholds"
+}
