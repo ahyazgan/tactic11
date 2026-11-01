@@ -73,3 +73,55 @@ Adayların çoğu sabit: aynı pikselde segment boyunca duran ışık, çizgi ke
 nesneler (bir segmentte 36 hücre). Bunlar ayıklanınca karede ortalama 2,6 aday kalıyor.
 Kalanların bir kısmı oyuncu ayakkabısı/çorabı; topu süren oyuncunun ayağındaki gerçek
 toptan ayırmak asıl zorluk.
+
+## 4. Aday izi ve ön kayıtlı kontrol sınavı
+
+`app/tracking/ball_track.py`: segmentte sabit pikselde duran adaylar ve işaretli saha
+sınırının 80 px dışı atılır; kalan adaylardan fiziksel olarak bağlanabilen (≤ 40 m/sn,
+≤ 1,5 sn boşluk) en yüksek puanlı yol dinamik programlamayla seçilir (puan: güven +
+bağlantı ödülü − boşluk/mesafe/yeniden başlatma bedeli), ≤ 1 sn boşluklar doğrusal
+doldurulur, sonra yanında oyuncu olmadan ≥ 3 sn yerinde duran top atılır.
+
+Geliştirme (600–960 ve 1200–1560 sn, 293 dokunuş): dokunuşta isabet %6,5 → %32,1,
+yanlış %90,1 → %52,6, uçuş %19,5 → %51,2; savunan takım %52,3 → %77,0 ve %49,6 → %73,8.
+Ayar yalnız burada yapıldı (yeniden başlatma bedeli 0,7 → 1,2; topu son süren oyuncuya
+bağlama denendi, kazandırmadı, çıkarıldı).
+
+Ön kayıt `docs/measurements/ball-track-plan.json` (commit 7a577b2) kontrol sonucundan
+önce yazıldı. Kontrol 1800–2400 sn (20 segment, hiçbir karar için kullanılmamıştı),
+tek sefer (`docs/measurements/ball-track-control.json`):
+
+| Kontrol | Üretim topu | Aday izi | Şart | Sonuç |
+|---|---:|---:|---|---|
+| Dokunuşta top ≤ 5 m (241 dokunuş) | %0,8 | %19,1 | ≥ +10 | geçti (+18,3) |
+| Çizilen karelerde savunan takım doğru | %46,1 | %68,1 | ≥ +5 | geçti (+22,0) |
+| Dokunuşta yanlış top | %99,2 | %57,7 | artmasın | geçti |
+| Pas uçuşunda top ≤ 5 m (42 pas) | %0 | %50 | ≥ −5 | geçti |
+| Sahiplik karelerinde doğru savunan | %43,6 | %63,4 | düşmesin | geçti |
+| Uçtan uca blok etiketi (dengeli) | %51,5 | %63,7 | ≥ −3 | geçti |
+
+Karar: canlı telestrasyon aday izini kullanır (`canli_mac --telestration` takibi
+`track_live_candidates` ile başlatır, `telestrate_live` topu çizimden önce değiştirir).
+
+## Sınırlar
+
+- Tek gece maçı, 10 dakikalık kontrol. Gündüz ölçülmedi (olaylı ve eğitimde
+  kullanılmamış bir gündüz panoraması indirme gerektirir).
+- Dokunuşta top hâlâ çoğunlukla yanlış ya da yok (%58 / %23): ayak dibindeki top ile
+  başka oyuncunun ayakkabısı ayrılamıyor. Kazanç asıl olarak "top kimde" tarafında.
+- Veritabanına yazılan kareler (takip işçisinin kendi aktarımı, dondurulmuş) üretim
+  topunu taşır; paneldeki top tabanlı sinyaller bu değişiklikten etkilenmez.
+- Takip konumlarının kendisi GSR'ye karşı medyan ~2,4–3 m sapıyor; 5 m yarıçap bunu taşır.
+
+## Tekrar üretim
+
+```powershell
+venv-cv\Scripts\python.exe -X utf8 -m scripts.track_live_candidates --watch data/tracking/live/990723 --match-id 990723 --home-team 30798 --away-team 30799 --segment-seconds 30 --start-minute 30 --camera static --tiles 4 --track-fps 15 --fps 12.5 --calibration data/tracking/calibrations/soccertrack_v2_117092_landmarks.json --weights data/tracking/models/rfdetr_soccertrack_ft_v2 --once
+venv-cv\Scripts\python.exe -m scripts.clean_ball_frames --frames data/tracking/live/990723/frames --out data/tracking/live/990723/frames_ball --candidates data/tracking/live/990723/ball_candidates --calibration data/tracking/calibrations/soccertrack_v2_117092_landmarks.json
+venv\Scripts\python.exe -X utf8 -m scripts.soccertrack_v2.evaluate_ball_events --frames data/tracking/live/990723/frames_ball --radius 5
+venv-cv\Scripts\python.exe -X utf8 -m scripts.soccertrack_v2.eval_telestration --frames "data/tracking/live/990723/frames_ball/seg_*.json" --gt data/tracking/bench/gsr_first_half_gt.npy --alignment data/tracking/bench/signal_quality_alignment.json --calibration data/tracking/calibrations/soccertrack_v2_117092_landmarks.json --out out.json --reference-default --possession-events
+```
+
+Segmentler panoramadan `ffmpeg -ss <sn> -t 30` ile kesildi (kare hizası mevcut
+990401 segmentleriyle birebir doğrulandı); GSR tablosu
+`export_gt --start-frame 1 --end-frame 67400`.

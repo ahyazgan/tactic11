@@ -1,0 +1,103 @@
+{
+  "measured": "2026-11-01, once, after ball-track-plan.json was committed (7a577b2)",
+  "plan": "docs/measurements/ball-track-plan.json",
+  "window": "990723: 1800-2400 s, 20 segments",
+  "arms": {
+    "baseline": {
+      "ball_frame_pct": 99.8,
+      "touch_5m": {
+        "hit": 2,
+        "wrong": 239,
+        "missing": 0,
+        "events": 241,
+        "hit_pct": 0.8,
+        "wrong_pct": 99.2,
+        "missing_pct": 0.0
+      },
+      "flight_5m": {
+        "hit": 0,
+        "wrong": 41,
+        "missing": 1,
+        "events": 42,
+        "hit_pct": 0.0,
+        "wrong_pct": 97.6,
+        "missing_pct": 2.4
+      },
+      "touch_error_median_m": 48.11,
+      "defending": {
+        "frames_in_possession": 3035,
+        "drawn": 2867,
+        "correct": 1322,
+        "accuracy_pct": 46.1,
+        "correct_of_possession_pct": 43.6
+      },
+      "e2e_block_balanced_pct": 51.5,
+      "e2e_label_exact_pct": 51.0
+    },
+    "candidate": {
+      "ball_frame_pct": 76.2,
+      "touch_5m": {
+        "hit": 46,
+        "wrong": 139,
+        "missing": 56,
+        "events": 241,
+        "hit_pct": 19.1,
+        "wrong_pct": 57.7,
+        "missing_pct": 23.2
+      },
+      "flight_5m": {
+        "hit": 21,
+        "wrong": 17,
+        "missing": 4,
+        "events": 42,
+        "hit_pct": 50.0,
+        "wrong_pct": 40.5,
+        "missing_pct": 9.5
+      },
+      "touch_error_median_m": 14.03,
+      "defending": {
+        "frames_in_possession": 3035,
+        "drawn": 2824,
+        "correct": 1924,
+        "accuracy_pct": 68.1,
+        "correct_of_possession_pct": 63.4
+      },
+      "e2e_block_balanced_pct": 63.7,
+      "e2e_label_exact_pct": 67.6
+    }
+  },
+  "criteria": {
+    "P1": {
+      "delta": 18.3,
+      "required": ">= +10",
+      "pass": true
+    },
+    "P2": {
+      "delta": 22.0,
+      "required": ">= +5",
+      "pass": true
+    },
+    "G1": {
+      "delta": -41.5,
+      "required": "<= 0",
+      "pass": true
+    },
+    "G2": {
+      "delta": 50.0,
+      "required": ">= -5",
+      "pass": true
+    },
+    "G3": {
+      "delta": 19.8,
+      "required": ">= 0",
+      "pass": true
+    },
+    "G4": {
+      "delta": 12.2,
+      "required": ">= -3",
+      "pass": true
+    }
+  },
+  "decision": "all pass -> candidate track enabled in live telestration",
+  "limits": "one night match (117092), 10 minutes, 241 touches / 42 passes; event positions carry ~1 m error and tracked positions ~2.4-3 m vs GSR; the database still receives the production ball (frozen ingest path); daylight not measured"
+}
