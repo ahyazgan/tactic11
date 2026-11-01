@@ -1,0 +1,32 @@
+{
+  "written": "2026-11-01, before any control-window (1800-2400 s) ball/telestration result was computed",
+  "question": "Does the candidate ball track (app/tracking/ball_track.py, frozen defaults at this commit) put the ball in the right place and the right team on defence more often than the production ball?",
+  "data": {
+    "match": "SoccerTrack v2 117092, first half, native 4K panorama, v2 detector, tiles 4, track-fps 15, frames at 12.5 fps (scripts.track_live_candidates; output verified identical to track_live on a test segment)",
+    "development": ["990721: 600-960 s (12 segments)", "990722: 1200-1560 s (12 segments)"],
+    "control": "990723: 1800-2400 s (20 segments); never used for any ball, telestration or detector decision; tracked but not evaluated before this file was committed",
+    "ground_truth": "SoccerTrack player_nodes touch positions (evaluate_ball_events.py mapping) and same-team touch intervals for possession; GSR player positions for telestration"
+  },
+  "arms": {
+    "baseline": "production frames JSON ball (track_live)",
+    "candidate": "same frames, ball replaced by refine_segment(frames, candidates, calibration) with default CandidateTrackConfig/BallTrackConfig of this commit"
+  },
+  "criteria_on_control": {
+    "P1": "touch hit within 5 m (nearest frame within 0.2 s): candidate - baseline >= +10 percentage points",
+    "P2": "defending-team accuracy on drawn frames (eval_telestration --possession-events): candidate - baseline >= +5 points",
+    "G1": "touch wrong-ball share: candidate <= baseline",
+    "G2": "pass-flight hit within 5 m: candidate >= baseline - 5 points",
+    "G3": "correct defending share of all possession frames (correct_of_possession_pct): candidate >= baseline",
+    "G4": "end-to-end block-label balanced accuracy (pred_vs_gt with event possession in the reference): candidate >= baseline - 3 points"
+  },
+  "decision": "all six pass -> live telestration uses the candidate track (canli_mac --telestration runs track_live_candidates; telestrate_live refines). Any failure -> wiring reverted, tools kept, failure reported. Criteria and code are not changed after the control result.",
+  "development_results_known_when_writing": {
+    "touch_hit_5m": {"baseline": 6.5, "candidate": 32.1, "touches": 293},
+    "touch_wrong": {"baseline": 90.1, "candidate": 52.6},
+    "flight_hit_5m": {"baseline": 19.5, "candidate": 51.2, "passes": 41},
+    "defending_accuracy": {"990721": [52.3, 77.0], "990722": [49.6, 73.8]},
+    "correct_of_possession": {"990721": [41.9, 56.1], "990722": [44.9, 67.7]},
+    "e2e_block_balanced": {"990721": [51.0, 55.0], "990722": [53.8, 67.3]},
+    "tuning_done_on_development": "restart_penalty 0.7 -> 1.2; carry-to-last-player removed (no gain, more wrong); static_share 0.2/max_speed 30/max_gap 1.0/distance_penalty 0.06/conf_ref 0.3/link_bonus 0.3 tried, not better"
+  }
+}
