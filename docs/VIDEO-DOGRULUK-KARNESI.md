@@ -72,8 +72,9 @@ Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
   tespit orada iyi; fark büyük ölçüde referans geometrisinden (aşağıdaki madde).
 - GSR referansı ile saha işareti kalibrasyonumuz arasında, iki gündüz maçında da,
   sahanın eni boyunca sistemli 2–3 m kayma ölçüldü (`venue-132831-detector-and-geometry.json`).
-  Hangisinin doğru olduğu bu dosyalardan anlaşılamaz; kalibrasyonumuz resmî saha
-  işaretleriyle doğrulanmış (1,5 m). Bu yüzden GSR'ye karşı "eşleşen oyuncu" ve
+  Hangisinin doğru olduğu bu dosyalardan anlaşılamaz (GSR'nin piksel koordinatları
+  panoramanın piksel uzayında değil, köprü olarak kullanılamadı); kalibrasyonumuz
+  resmî saha işaretleriyle doğrulanmış (1,5 m). Bu yüzden GSR'ye karşı "eşleşen oyuncu" ve
   "savunma hattı hatası" sayıları bir referans payı taşır; takım ve blok etiketi
   uyumu daha az etkilenir (kayma en boyunca, blok derinliği boy boyunca).
 - Savunan takım üç karenin birinde hâlâ yanlış olabilir; çıktı bir ikinci göz olarak
