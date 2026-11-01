@@ -158,7 +158,8 @@
 - [x] Top tespiti: olay tabanlı ölçüm + aday izi, ön kayıtlı kontrol 6/6 geçti (feat/top-izi).
 - [x] Top: gündüz maçında doğrulama — 132877, ön kayıtlı 5/5 geçti (test/gunduz-132877).
 - [x] Top: veritabanına giden karelere de aday izini uygula (telestrasyon işçisi takip aktarımından sonra günceller; fix/panel-gercek-mod).
-- [ ] Top: takipten çıkarılan pasları düzeltilmiş topla yeniden hesapla (derived_passes ham topla).
+- [x] Top: pasları düzeltilmiş topla yeniden türetme — iki ön kayıtlı sınav geçmedi (kesinlik −8, savunan takım −4/−22); bağlanmadı (TOP-TESPITI-OLAY-OLCUMU §7).
+- [ ] Pas motoru: gecede duyarlılık ~%0–15; top görünürlüğü sınırı — kare başına top GT'li yeni veriyle tasarım.
 - [x] Panel gerçek modda doğrulandı: Canlı Telestrasyon kartı videoyu gösteriyor; genel bakıştaki yanlış 'backend bağlı değil' uyarısı düzeltildi.
 - [x] Takım ataması, renk oranıyla yeniden atama: ön kayıtlı kontrol 1/4 — GEÇMEDİ, canlıya bağlanmadı; üretim net renkte %93–97 doğru (docs/TAKIM-AYRIMI-GUNES.md).
 - [ ] Takım: uzak/soluk oyuncu hatasını kare başına GT'si olan bir gündüz maçında ölç (göz etiketi bu çözünürlükte yetersiz).

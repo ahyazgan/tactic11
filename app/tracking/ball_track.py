@@ -15,6 +15,12 @@ Bu modül frames JSON + `scripts.track_live_candidates` aday dosyası üzerinde
    nesnedir → o kareler topsuz sayılır. Gerçek top ölü topta da durur ama o zaman
    yanında oyuncu vardır.
 
+`recompute_actors` (aktör/sahip alanlarını yeni topa göre kurma) bir ARAÇ olarak
+durur, canlı yolda ÇAĞRILMAZ: iki ön kayıtlı kontrolde telestrasyonun savunan takım
+doğruluğunu düşürdü (−4,2 ve −21,7 puan) ve pas kesinliğini gündüz −8 puan bozdu
+(docs/TOP-TESPITI-OLAY-OLCUMU.md §7). Telestratör sahipliği kendi kuralıyla
+(topa ≤ 4 m en yakın oyuncu, kısa pencere çoğunluğu) üretilmiş kareler daha iyi.
+
 Denenip alınmayan: topu görünmediğinde son süren oyuncunun ayağına bağlamak
 (geliştirmede isabeti değiştirmedi, yanlışı artırdı).
 """
@@ -24,6 +30,8 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+
+from app.tracking.frames import ACTOR_RADIUS_M
 
 PITCH_L, PITCH_W = 105.0, 68.0
 
@@ -77,6 +85,31 @@ def static_runs(frames: list[dict[str, Any]], cfg: BallTrackConfig) -> list[tupl
                 runs.append((i, last))
         i = last + 1
     return runs
+
+
+def recompute_actors(frames: list[dict[str, Any]]) -> int:
+    """Her karede aktörü (topa ≤ ACTOR_RADIUS_M en yakın, takımı bilinen oyuncu) ve sahip takımı yeniden kur.
+
+    `frames.build_frame` ile aynı kural; döndürülen sayı aktörü değişen kare sayısıdır.
+    """
+    changed = 0
+    for f in frames:
+        before = next((p["player_external_id"] for p in f.get("players", []) if p.get("is_actor")), None)
+        actor: dict[str, Any] | None = None
+        best = ACTOR_RADIUS_M
+        ball = f.get("ball")
+        for p in f.get("players", []):
+            p["is_actor"] = False
+            if ball is None or p.get("team_external_id") is None:
+                continue
+            d = _dist(_xy(p), _xy(ball))
+            if d < best:
+                best, actor = d, p
+        if actor is not None:
+            actor["is_actor"] = True
+        f["possession_team_external_id"] = actor["team_external_id"] if actor is not None else None
+        changed += (actor["player_external_id"] if actor is not None else None) != before
+    return changed
 
 
 def clean_ball(frames: list[dict[str, Any]], cfg: BallTrackConfig | None = None) -> dict[str, int]:

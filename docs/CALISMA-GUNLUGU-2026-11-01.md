@@ -148,3 +148,10 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Tuzak: taze takip koşusunda ev/deplasman adı ilk segmentin küme büyüklüğünden
   geliyor; 990753'te mavi "ev" oldu, etiket eşlemesi buna göre not edildi.
 
+## 21:10–22:05 — Pas listesi düzeltilmiş topla: iki ön kayıt, ikisi de geçmedi
+- Geliştirmede aktörü yeni topa göre kurmak eşleşen pası 6→20 / 1→18 yaptı.
+- Plan 1: gece 0→15 eşleşme ama "≥2×" şartı %68 tabanlı gündüzde ulaşılamazdı (tasarım
+  hatası, gevşetilmedi) ve sahiplik yeniden kurulunca savunan takım −4,2.
+- Plan 2 (taze pencereler, aşağı yönlü olmama): 132831'de kesinlik −7,9, 990731'de savunan
+  takım −21,7 → geçmedi. recompute_actors canlı yoldan çıkarıldı, araç olarak kaldı.
+

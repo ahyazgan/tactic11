@@ -163,6 +163,30 @@ Ayrıca geliştirmede görüldü (sınav dışı): aday izi topu değiştirirken
 ölçülebilir fark yaratmadı (gece %77,0 → %77,7 ve %73,8 → %71,4; gündüz %81,3 → %81,2);
 davranış değiştirilmedi, veri tutarsızlığı olarak iş listesinde.
 
+## 7. Pas listesini düzeltilmiş topla yeniden türetmek — iki ön kayıtlı sınav, ikisi de geçmedi
+
+Veritabanındaki paslar (`video_passes`) karelerdeki aktör/sahip alanından türer
+(`passes.extract_passes`); top izi bu alanlara dokunmadığı için paslar eski topa
+göre kalıyordu. Geliştirmede (990721/990722) aktörü yeni topa göre yeniden kurmak
+(`ball_track.recompute_actors`, `build_frame` kuralı) eşleşen pası 6 → 20 ve 1 → 18
+yaptı (olay pasları ±1,5 sn, 6 m).
+
+Plan 1 (`pass-refined-ball-plan.json`, c7038aa) kontrol: gece 990723'te eşleşen
+pas 0/97 → 15/97, kesinlik 0 → %11,5; gündüz 990741'de duyarlılık %67,8 → %68,5,
+kesinlik %69,2 → %67,6. "Duyarlılık ≥ 2×" şartı %68 tabanda ulaşılamazdı (plan
+tasarım hatası; gevşetilmedi), ayrıca yeniden kurulan sahiplik telestrasyonun savunan
+takımını gecede −4,2 puan düşürdü → geçmedi.
+
+Plan 2 (`pass-refined-ball-plan-2.json`, 17ddf5f; aşağı yönlü olmama + bir pencerede
+kazanç) taze pencereler: gece 990731 eşleşen 0/49 → 5/49; 132831 (7 segment) 11/234 →
+12/234 ama kesinlik %37,9 → %30,0 (şart ≥ −3) ve 990731'de savunan takım %63,8 →
+%42,1 (231 kare) → geçmedi. Sonuçlar `pass-refined-ball-result.json`, `-result-2.json`.
+
+Karar: paslar yeniden türetilmedi; `recompute_actors` canlı yoldan çıkarıldı, araç
+olarak duruyor. Öğrenilen: telestratörün kendi sahiplik kuralı (≤ 4 m en yakın +
+pencere çoğunluğu), kare başına 2,5 m aktörden daha sağlam; pas motorunun asıl
+sınırı gecede top görünürlüğü (üretimde 10 dakikada 2–3 pas).
+
 ## Sınırlar
 
 - Gece: tek maç, 10 dk kontrol. Gündüz: tek maç (132877), 10 dk; uçtan uca blok

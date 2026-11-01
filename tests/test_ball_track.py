@@ -61,3 +61,17 @@ def test_candidate_track_interpolates_short_gap_only() -> None:
     assert [p.source for p in track[:6] if p] == ["cand", "interp", "interp", "interp", "interp", "cand"]
     assert all(p is None for p in track[6:25])
     assert track[25] is not None and track[25].source == "cand"
+
+
+def test_recompute_actors_follows_the_refined_ball() -> None:
+    from app.tracking.ball_track import recompute_actors
+
+    frames = [frame(0.0, (50.0, 30.0), [(7, 50.5, 30.0), (8, 60.0, 30.0)])]
+    frames[0]["players"][1]["is_actor"] = True                      # eski topa göre kalmış aktör
+    frames[0]["possession_team_external_id"] = 99
+    assert recompute_actors(frames) == 1
+    assert [p["is_actor"] for p in frames[0]["players"]] == [True, False]
+    assert frames[0]["possession_team_external_id"] == 1
+    far = [frame(0.0, (50.0, 30.0), [(7, 55.0, 30.0)])]             # 5 m: aktör yok
+    recompute_actors(far)
+    assert far[0]["possession_team_external_id"] is None and not far[0]["players"][0]["is_actor"]
