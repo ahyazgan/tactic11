@@ -19,8 +19,11 @@ bu işçiyi takiple birlikte başlatır.
 
 Top: `<watch>/ball_candidates/seg_XXXX.json` varsa (`scripts.track_live_candidates`)
 karelerin topu çizimden önce aday iziyle değiştirilir (`app.tracking.ball_track`);
-sahiplik, dolayısıyla savunan takım ve pres bu topa göre hesaplanır. Veritabanına
-yazılan kareler (takip işçisinin kendi aktarımı) değişmez.
+sahiplik, dolayısıyla savunan takım ve pres bu topa göre hesaplanır. `--match-id` ve
+`--tenant` verilirse düzeltilmiş kareler `<watch>/frames_ball/` altına yazılır ve
+veritabanındaki aynı kareler güncellenir (aktarım zaman damgasıyla günceller). Takip
+işçisinin kendi aktarımı bunun üstüne yazmasın diye segment, işçinin durum dosyasında
+"işlendi" görünmeden aktarılmaz; aktarılan segment `.ingested` işaretiyle bir kez gider.
 
     venv-cv\\Scripts\\python.exe -m scripts.telestrate_live --watch data/tracking/live/990201 \\
         --calibration saha.json --home-attack x+
@@ -29,6 +32,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
 import time
 import traceback
 from dataclasses import dataclass
@@ -39,6 +44,49 @@ from app.tracking.ball_track import refine_segment
 from app.tracking.calibration import PitchCalibration
 from app.tracking.telestration import Telestrator
 from scripts.telestrate_video import HOME_ATTACK, render_segment, warn_calibration
+from scripts.track_live import PROJECT_ROOT, STATE_FILE, default_ingest_python
+
+
+@dataclass(frozen=True)
+class IngestTarget:
+    """Düzeltilmiş karelerin yazılacağı maç (takip işçisinin aktarımıyla aynı)."""
+    tenant: str
+    match_id: int
+    database_url: str | None = None
+    python: str = ""
+
+
+def tracked_segments(watch: Path) -> set[str]:
+    """Takip işçisinin aktarımını bitirdiği segmentler (durum dosyası; uzantısız)."""
+    try:
+        state = json.loads((watch / STATE_FILE).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    return {Path(name).stem for name in state.get("processed", [])}
+
+
+def ingest_refined(watch: Path, target: IngestTarget) -> int:
+    """Takibi aktarılmış ama düzeltilmiş hali aktarılmamış segmentleri veritabanına yaz."""
+    done = tracked_segments(watch)
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    if target.database_url:
+        env["DATABASE_URL"] = target.database_url
+    written = 0
+    for path in sorted((watch / "frames_ball").glob("seg_*.json")):
+        marker = path.with_suffix(".ingested")
+        if marker.exists() or path.stem not in done:
+            continue
+        run = subprocess.run(  # noqa: S603 — sabit komut listesi
+            [target.python or default_ingest_python(), "-m", "scripts.ingest_tracking_json", "--json", str(path),
+             "--tenant", target.tenant, "--match-id", str(target.match_id), "--append"],
+            capture_output=True, text=True, cwd=str(PROJECT_ROOT), check=False, env=env)
+        if run.returncode != 0:
+            print(f"[telestrasyon] {path.stem}: düzeltilmiş top aktarılamadı, yeniden denenecek — "
+                  f"{(run.stderr or run.stdout).strip()[-200:]}", flush=True)
+            continue
+        marker.touch()
+        written += 1
+    return written
 
 
 def pending(watch: Path, out: Path) -> list[tuple[Path, Path, str]]:
@@ -87,7 +135,7 @@ def continues(previous_end: float | None, payload: dict) -> bool:
 
 def process(video: Path, frames_json: Path, stem: str, out: Path, calib: PitchCalibration,
             state: LiveState, *, home_attack: int, width: int, h264: bool,
-            swap_at_minute: float | None = None) -> None:
+            swap_at_minute: float | None = None, keep_refined: bool = False) -> None:
     try:
         payload = json.loads(frames_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
@@ -97,6 +145,10 @@ def process(video: Path, frames_json: Path, stem: str, out: Path, calib: PitchCa
         ball = refine_segment(payload.get("frames", []), json.loads(candidates.read_text(encoding="utf-8")), calib)
         print(f"[telestrasyon] {stem}: top izi {ball['tracked']} örnek · sabit {ball['static_removed']}",
               flush=True)
+        if keep_refined:
+            refined = frames_json.parent.parent / "frames_ball"
+            refined.mkdir(exist_ok=True)
+            write_json(refined / frames_json.name, payload)
     if state.tele is not None and not continues(state.end_minute, payload):
         print(f"[telestrasyon] {stem}: önceki segmentle süreklilik yok — durum sıfırlandı", flush=True)
         state.tele = None
@@ -138,7 +190,15 @@ def main() -> int:
     p.add_argument("--poll-seconds", type=float, default=3.0)
     p.add_argument("--once", action="store_true", help="Mevcut segmentleri işle ve çık")
     p.add_argument("--no-h264", action="store_true", help="mp4v ile yaz (tarayıcıda oynamayabilir)")
+    p.add_argument("--match-id", type=int, default=None, help="düzeltilmiş topu bu maçın karelerine yaz")
+    p.add_argument("--tenant", default=None)
+    p.add_argument("--database-url", default=None)
+    p.add_argument("--ingest-python", default=None)
     args = p.parse_args()
+    if (args.match_id is None) != (args.tenant is None):
+        p.error("--match-id ve --tenant birlikte verilir")
+    target = None if args.match_id is None else IngestTarget(
+        args.tenant, args.match_id, args.database_url, args.ingest_python or default_ingest_python())
 
     calib = PitchCalibration.load(args.calibration)
     warn_calibration(calib)
@@ -148,7 +208,10 @@ def main() -> int:
     while True:
         for video, frames_json, stem in pending(args.watch, out):
             process(video, frames_json, stem, out, calib, state, home_attack=HOME_ATTACK[args.home_attack],
-                    width=args.width, h264=not args.no_h264, swap_at_minute=args.swap_at_minute)
+                    width=args.width, h264=not args.no_h264, swap_at_minute=args.swap_at_minute,
+                    keep_refined=target is not None)
+        if target is not None:
+            ingest_refined(args.watch, target)
         if args.once:
             return 0
         time.sleep(args.poll_seconds)

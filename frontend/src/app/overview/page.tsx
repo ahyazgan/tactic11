@@ -274,8 +274,9 @@ export default function OverviewConsolePage() {
     when: o.updated_at.slice(0, 16).replace("T", " "),
     summary: o.summary,
   }));
-  // Backend bağlı değil / boş → demo şeridi göster.
-  const offline = !isLoading && (!!error || players.length === 0);
+  // Backend bağlı değil → demo şeridi; bağlı ama oyuncu yok → boş-veri şeridi (bağlantı hatası değil).
+  const offline = !isLoading && !!error;
+  const empty = !isLoading && !error && players.length === 0;
   const total = players.length;
   const totalTests = players.reduce((a, p) => a + p.test_count, 0);
   const risky = players.filter((p) => p.risk_label === "Yüksek" || p.risk_label === "Kritik").length;
@@ -441,6 +442,13 @@ export default function OverviewConsolePage() {
           <span style={{ fontSize: 15 }}>🔌</span>
           <span><b>Demo modu</b> — veri sunucusu (backend) bağlı değil, sayılar 0 görünüyor. Bağlanınca tüm ekranlar gerçek veriyle dolar.</span>
           <a className="db-cta" href="https://github.com/ahyazgan/tactic11#-canlıya-alma-3-dakika" target="_blank" rel="noreferrer">Nasıl bağlanır?</a>
+        </div>
+      )}
+      {empty && (
+        <div className="demobar">
+          <span style={{ fontSize: 15 }}>📋</span>
+          <span><b>Henüz oyuncu verisi yok</b> — sunucu bağlı ama bu kulüp için fiziksel test girilmemiş; sayılar 0 görünüyor.</span>
+          <Link className="db-cta" href="/physical-tests">Test gir</Link>
         </div>
       )}
 

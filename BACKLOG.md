@@ -157,4 +157,6 @@
 - [x] Dedektör v2'yi üretime al (kullanıcı kararı 2026-11-01): canli_mac sabit kamera + API varsayılanı.
 - [x] Top tespiti: olay tabanlı ölçüm + aday izi, ön kayıtlı kontrol 6/6 geçti (feat/top-izi).
 - [ ] Top: gündüz maçında doğrulama (olaylı, eğitimde kullanılmamış panorama; indirme izni gerekir).
-- [ ] Top: veritabanına giden karelere de aday izini uygula (dondurulmuş aktarım yolu; yeniden aktarım tasarımı gerekir).
+- [x] Top: veritabanına giden karelere de aday izini uygula (telestrasyon işçisi takip aktarımından sonra günceller; fix/panel-gercek-mod).
+- [ ] Top: takipten çıkarılan pasları düzeltilmiş topla yeniden hesapla (derived_passes ham topla).
+- [x] Panel gerçek modda doğrulandı: Canlı Telestrasyon kartı videoyu gösteriyor; genel bakıştaki yanlış 'backend bağlı değil' uyarısı düzeltildi.
