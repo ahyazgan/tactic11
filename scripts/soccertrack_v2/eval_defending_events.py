@@ -26,7 +26,11 @@ from pathlib import Path
 from app.domain import TrackingFrame
 from app.tracking.calibration import PitchCalibration
 from app.tracking.telestration import Telestrator, spots_from_frame
-from scripts.soccertrack_v2.evaluate_ball_events import EventMapping, load_touches, possession_intervals
+from scripts.soccertrack_v2.evaluate_ball_events import (
+    EventMapping,
+    load_touches,
+    possession_intervals,
+)
 
 
 def home_direction(mapping: EventMapping) -> int:
