@@ -161,3 +161,8 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Ölçüm dosyalarındaki saat tahminleri yanlıştı; commit zamanına işaret edecek şekilde düzeltildi.
 - Tam paket 3274 test yeşil. PR #323 CI bekliyor (takım + pas sonuçları + ön kontrol).
 
+## 22:30–23:00 — Gündüz maçı GSR'ye karşı (karne tamamlandı)
+- 132877 GSR tablosu indirildi (2,7 GB; export sonrası silindi). Hizalama −24 kare
+  (oyuncu uzaklığı taramasıyla). 990741 (10 dk): takım rengi %91,6, blok etiketi dengeli
+  %80,8, hat medyanı 1,9 m, pres %93,8, kapsama %100. Karnede gündüz sütunu doldu.
+

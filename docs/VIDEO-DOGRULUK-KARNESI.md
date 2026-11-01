@@ -23,10 +23,11 @@ oyuncu konumları da.
 | Çıktı | Gece (117092) | Gündüz (132877) | Not |
 |---|---|---|---|
 | Hangi takım savunuyor (çizilen karelerde) | %68,1 | %81,3 | gece önceki top seçimiyle %46,1 |
-| Blok etiketi (alçak/orta/yüksek), uçtan uca | dengeli %63,7, tam isabet %67,6 | ölçülmedi | gündüz GSR yok |
+| Blok etiketi (alçak/orta/yüksek) | dengeli %63,7, tam isabet %67,6 (uçtan uca, sahiplik olaylardan) | dengeli %80,8, tam isabet %85,0 (sahiplik takipten) | gündüz GSR konumlarına karşı |
+| Savunma hattı hatası (GSR'ye karşı) | medyan 1,9 m | medyan 1,9 m, p90 11,7 m | |
 | Çizim kapsaması | %86 | %100 | gece kalanında savunandan < 6 oyuncu görünür |
-| Pres işareti uyumu | %96,7 | ölçülmedi | |
-| Oyuncu takım rengi | %76 | ölçülmedi | |
+| Pres işareti uyumu | %96,7 | %93,8 | |
+| Oyuncu takım rengi | %76 | %91,6 | eşleşen oyuncu, 105 157 eşleşme |
 | Top, dokunuş anında 5 m içinde | %19,1 | %73,2 | gece ayak dibindeki top çoğunlukla bulunamıyor |
 | Top, pas uçuşunda 5 m içinde | %50 (42 pas) | %91,1 (79 pas) | |
 
@@ -40,8 +41,8 @@ denendi, ön kayıtlı kontrolde geçmedi); savunan takım bu sahada olay kayıt
 ölçülemedi. Ayrıntı: `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
 
 Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
-`docs/measurements/ball-track-control.json`, `docs/OTOMATIK-TELESTRASYON.md`,
-`docs/DEDEKTOR-INCE-AYAR-SONUCLARI.md`.
+`docs/measurements/ball-track-control.json`, `docs/measurements/daylight-132877-gsr-telestration.json`,
+`docs/OTOMATIK-TELESTRASYON.md`, `docs/DEDEKTOR-INCE-AYAR-SONUCLARI.md`.
 
 ## Altyapı ölçümleri
 

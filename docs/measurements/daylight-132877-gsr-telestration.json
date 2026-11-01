@@ -1,0 +1,71 @@
+{
+  "measured": "2026-11-01 (see git history), descriptive — no decision depends on it",
+  "match": "SoccerTrack v2 132877 first half, 600-1200 s (match minutes 10-20), daylight, 990741 tracking (v2, tiles 4, 12.5 fps frames)",
+  "reference": "GSR player positions/teams exported with export_gt (image-id base 3919000000, frames 14900-30100); alignment delta -24 frames chosen by tracked-player vs GSR median-distance scan (-36..+3; 2.40 m at -24/-27), data/tracking/bench/gsr_132877_alignment.json",
+  "method": "eval_telestration --reference-default; possession on both sides from the tracking frames (no --possession-events: that flag is hard-wired to 117092 touches)",
+  "arms": {
+    "production_ball": {
+      "team_agreement": 0.9163,
+      "team_pairs": {
+        "0->0": 5243,
+        "0->1": 47904,
+        "1->0": 48450,
+        "1->1": 3560
+      },
+      "matched_players_per_frame": 15.19,
+      "block_balanced_pct": 80.2,
+      "label_exact_pct": 82.5,
+      "majority_baseline_pct": 54.5,
+      "press_agree_pct": 93.9,
+      "def_line_error": {
+        "n": 7422,
+        "median_m": 1.89,
+        "p90_m": 12.12
+      },
+      "line_gap_error": {
+        "n": 1272,
+        "median_m": 2.21,
+        "p90_m": 5.05
+      },
+      "drawn_test": 7422,
+      "frames": 7500,
+      "test_gates": {
+        "drawn": 7422,
+        "lines": 57,
+        "players": 21
+      }
+    },
+    "refined_ball_default_since_318": {
+      "team_agreement": 0.9163,
+      "team_pairs": {
+        "0->0": 5243,
+        "0->1": 47904,
+        "1->0": 48450,
+        "1->1": 3560
+      },
+      "matched_players_per_frame": 15.19,
+      "block_balanced_pct": 80.8,
+      "label_exact_pct": 85.0,
+      "majority_baseline_pct": 63.5,
+      "press_agree_pct": 93.8,
+      "def_line_error": {
+        "n": 7497,
+        "median_m": 1.9,
+        "p90_m": 11.68
+      },
+      "line_gap_error": {
+        "n": 1348,
+        "median_m": 2.34,
+        "p90_m": 5.38
+      },
+      "drawn_test": 7497,
+      "frames": 7500,
+      "test_gates": {
+        "drawn": 7497,
+        "players": 2,
+        "lines": 1
+      }
+    }
+  },
+  "limits": "one daylight match at the same venue as 117092; alignment derived on the same window (players only); the block-label figure is not end-to-end for possession (both sides use tracked possession), unlike the night figure that used event possession in the reference"
+}
