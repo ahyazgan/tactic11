@@ -10,6 +10,18 @@
 
 ## Now (current session — work top to bottom, don't pause between items)
 
+### Claude otonom oturum 2026-11-01 (12:00'ye kadar) — günlük: docs/CALISMA-GUNLUGU-2026-11-01.md
+
+- [ ] Dedektör v2: eğitim kliplerindeki topları eski modelle (öğretmen) etiketle, 128058'i tamamen teste ayır, yeniden eğit ve ön kayıtlı şartlarla ölç.
+  Done when: ön kayıt eğitimden önce commit; 128058 oyuncu testi, TeamTrack top testi, 117092 panorama (tekrar) ölçüldü; sonuç belgede, üretim yalnız şartlar geçerse değişir.
+- [ ] Telestrasyonu canlı moda bağla: her işlenen segment için çizim öğeleri (marks) ve telestrasyonlu video üret; panelde video üstü katman.
+  Done when: canli_mac akışında segment başına marks JSON + mp4; dondurulmuş dosyalara dokunulmadı; testler yeşil.
+- [ ] Canlı prova: 1080p ön ayarıyla gerçek hızda 10+ dk prova, gecikme ve doğruluk ölçümü.
+  Done when: gecikme eğrisi ve segment süreleri belgede; ön ayar önerisi ölçüme dayalı.
+- [ ] Hız: ONNX arka ucu ve 1080p ile segment süresini ölç; gerçek zamana ne kadar yaklaşıldığını raporla.
+  Done when: aynı segmentlerde torch/onnx × 4K/1080p süre ve tespit oranı tablosu.
+
+
 - [x] Codex devamı: GitHub ana dalını al, başka projelerin portlarını koruyarak gerçek API arayüzünü aç; video girişini ve eksik edinim kapısını doğrula.
   Done when: 3100/8100 başlatıcısı, gerçek-mod giriş/401 görünürlüğü, 5 giriş tarayıcı testi, gerçek hesaptan 12 başarılı takip isteği ve 17 ham edinim testi. Sonuç: docs/CODEX-DEVAM-DURUMU-2026-10-09.md. Sonraki ölçümlü koşuda gece ham edinimi tamamlandı; palet adayı varsayılan yapılmadı.
 

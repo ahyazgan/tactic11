@@ -56,6 +56,41 @@ GT olmadığından gerçek top kaybı ölçülemedi, şart bu yüzden koruyucu).
 değiştirilmedi. Ağırlıklar yerelde `data/tracking/models/rfdetr_soccertrack_ft`
 (git dışı); meta ve eğitim eğrisi `docs/measurements/detector-finetune-*`.
 
+## v2: öğretmen top etiketleri + bağımsız test maçı — 7 şartın 6'sı
+
+Ön kayıt: `docs/measurements/detector-finetune-v2-plan.json` (eğitimden önce).
+
+Teşhis (v1): TeamTrack test bölümünde (gerçek top etiketi, 136 top) v1 topu
+unutmamıştı (bulma %79,4 → %81,6); kayıp yalnız SoccerTrack panoramasındaydı
+(oyundaki 37 olay anında topu görme %35 → %16) — MOT dilimlerindeki etiketsiz toplar.
+
+Değişiklikler: (1) MOT eğitim karelerinde top, eski modelin tespitinden etiketlendi
+(güven ≥0,5, oyuncu ayak bandında, oyuncuya ≤3 boy; 480 karenin 74'ünde → top
+etiketi 345 → 419); (2) 128058 doğrulamadan çıkarılıp bağımsız test yapıldı,
+checkpoint seçimi yalnız TeamTrack doğrulamasıyla. Eğitim ayarları v1 ile aynı.
+
+| Şart (ön kayıt) | Eski model | v2 | Sonuç |
+|---|---:|---:|---|
+| 128058 klip tespit oranı ≥ +3 puan | %92,33 | %94,41 | geçmedi (+2,08) |
+| 128058 klip kesinliği ≥ −2 puan | %71,85 | %90,78 | geçti (+18,9) |
+| TeamTrack top bulma ≥ −3 puan | %79,41 | %80,15 | geçti |
+| 117092 panorama top tespitli kare ≥ 0,8× | %16,44 | %14,76 | geçti (0,90×) |
+| 117092 olay anında topu görme ≥ −5 puan | %35,1 | %37,8 | geçti (v1: %16,2) |
+| 117092 panorama tespit oranı ≥ eski | %60,7 | %61,9 | geçti |
+| 117092 panorama hayalet payı ≤ +3 puan | %34,1 | %33,9 | geçti |
+
+117092 klibi (v1 kararında kullanıldı, bağımsız değil): tespit %75,0 → %80,5,
+kesinlik %85,2 → %93,5. 128058 bölgesel tespit: sol uzak %80,9 → %85,7, sol yakın
+%88,8 → %91,6, sağ uzak/yakın %99/%98 → %100. 128058'de top tespitli kare %99,6 →
+%50,4 (eski modelin projektörleri top sanması azaldı; top GT'si olmadığından ayrım
+ölçülmedi).
+
+Karar: ön kayıt gereği **kabul edilmedi** (bir şart +0,92 puan farkla geçmedi);
+üretim ağırlıkları değişmedi. Top kaybı çözüldü; model diğer bütün eksenlerde
+eskiden iyi. Yüksek başlangıçlı (%92) maçta +3 puan şartı sıkıydı; bu sonradan
+gevşetilmez. Üretime almak, ön kayıt dışı bir ürün kararıdır ve kullanıcıya
+bırakıldı. Ağırlıklar: `data/tracking/models/rfdetr_soccertrack_ft_v2` (git dışı).
+
 ## Sıradaki adımlar
 
 - Top sorununu ayırmak: oyuncu tespiti için ince ayarlı, top için eski modeli
