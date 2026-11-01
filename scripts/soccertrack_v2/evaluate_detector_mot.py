@@ -8,7 +8,8 @@ model MOT kutularından daha geniş çizer (aynı oyuncuda IoU ≥0,3 %41–77, 
 %9–45); MOT ile ince ayarlanan model yalnız biçimi öğrenerek IoU'da "iyileşmiş"
 görünür. Takip hattı da ayak noktasını kullanır. Raporlanan: tespit oranı (recall), kesinlik (precision), görüntünün
 yatay üçte birlerinde (sol/orta/sağ = panoramanın uçları) ve dikey yarılarında
-(uzak/yakın) tespit oranı, karede top tespiti olan kare oranı (MOT'ta top
+(uzak/yakın) tespit oranı, GT kutu yüksekliğine göre tespit oranı (uzak/küçük
+oyuncu kaybını ayırmak için), karede top tespiti olan kare oranı (MOT'ta top
 etiketi yok; yalnız kıyas için).
 
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.soccertrack_v2.evaluate_detector_mot \\
@@ -29,6 +30,14 @@ from scipy.optimize import linear_sum_assignment
 from scripts.soccertrack_v2.build_mot_dataset import read_mot
 
 FOOT_RADIUS = 0.5   # GT kutu yüksekliği oranı
+HEIGHT_BINS = (30, 45, 60)   # GT kutu yüksekliği (px) dilimleri: <30, 30–45, 45–60, ≥60
+
+
+def height_bin(h: float) -> str:
+    for edge in HEIGHT_BINS:
+        if h < edge:
+            return f"<{edge}"
+    return f">={HEIGHT_BINS[-1]}"
 
 
 def iou_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -87,6 +96,9 @@ def main() -> int:
     cap = cv2.VideoCapture(str(args.clip.with_suffix(".mp4")))
     counts: Counter[str] = Counter()
     by_region: dict[str, Counter[str]] = {}
+    by_height: dict[str, Counter[str]] = {}
+    gt_heights: list[float] = []
+    size = (0, 0)
     fi, frames, ball_frames, elapsed = 0, 0, 0, 0.0
     while True:
         ok, bgr = cap.read()
@@ -94,6 +106,7 @@ def main() -> int:
             break
         if fi % args.every == 0 and fi in gt:
             h, w = bgr.shape[:2]
+            size = (w, h)
             rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
             started = time.perf_counter()
             persons, balls = det.split(det.detect(rgb))
@@ -109,6 +122,10 @@ def main() -> int:
                 key = "/".join(region(box, w, h, foot_split))
                 by_region.setdefault(key, Counter())["gt"] += 1
                 by_region[key]["tp"] += j in found
+                hb = height_bin(float(box[3] - box[1]))
+                gt_heights.append(float(box[3] - box[1]))
+                by_height.setdefault(hb, Counter())["gt"] += 1
+                by_height[hb]["tp"] += j in found
             ball_frames += len(balls) > 0
             frames += 1
         fi += 1
@@ -122,6 +139,12 @@ def main() -> int:
         "ball_frame_share": round(ball_frames / max(1, frames), 4),
         "seconds_per_frame": round(elapsed / max(1, frames), 3),
         "by_region_recall": {k: round(v["tp"] / max(1, v["gt"]), 4) for k, v in sorted(by_region.items())},
+        "frame_size": list(size),
+        "gt_height_px": {"median": round(float(np.median(gt_heights)), 1) if gt_heights else None,
+                         "p10": round(float(np.percentile(gt_heights, 10)), 1) if gt_heights else None,
+                         "p90": round(float(np.percentile(gt_heights, 90)), 1) if gt_heights else None},
+        "by_height_recall": {k: {"recall": round(v["tp"] / max(1, v["gt"]), 4), "gt": v["gt"]}
+                             for k, v in sorted(by_height.items(), key=lambda kv: float(kv[0].strip("<>=")))},
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
