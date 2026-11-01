@@ -49,7 +49,8 @@ venv-cv\Scripts\python.exe -m scripts.canli_mac --source rtsp://kamera/stream --
 - `--source`: video dosyası (gerçek hızda prova), `rtsp://…` (stadyum/kulüp
   kamerası) ya da `https://…/index.m3u8` (canlı yayın).
 - `--home-attack x+` / `x-`: ev sahibi kalibrasyonun saha x ekseninde hangi
-  yöne hücum ediyor. Devre arasında yön değişir; ikinci yarıda tersini ver.
+  yöne hücum ediyor. `--swap-at-minute 45` verilirse ikinci yarı segmentlerinde
+  yön kendiliğinden ters çevrilir (yeniden başlatma gerekmez).
   `auto` çoğu zaman karar veremez (kaleciler görünmüyor).
 - `--height 1080`: segmentleri 1080p'ye indirir; hız için ilk denenecek ayar. Kalibrasyon
   ilk segmentin boyutuna otomatik ölçeklenir (`<watch>/calibration_<g>x<y>.json`).

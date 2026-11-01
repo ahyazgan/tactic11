@@ -53,3 +53,29 @@ def test_write_json_replaces_atomically(tmp_path) -> None:
     write_json(target, {"segment": "seg_0002"})
     assert json.loads(target.read_text(encoding="utf-8")) == {"segment": "seg_0002"}
     assert not list(tmp_path.glob("*.tmp"))
+
+
+def test_attack_direction_swaps_from_given_minute() -> None:
+    from scripts.telestrate_live import segment_attack
+
+    first = {"frames": [{"minute": 44.5}, {"minute": 44.99}]}
+    second = {"frames": [{"minute": 45.0}, {"minute": 45.4}]}
+    assert segment_attack(first, 1, 45.0) == 1
+    assert segment_attack(second, 1, 45.0) == -1
+    assert segment_attack(second, 1, None) == 1
+    assert segment_attack({"frames": []}, -1, 45.0) == -1
+
+
+def test_telestrator_attack_change_resets_lines_only() -> None:
+    import pytest
+
+    from app.tracking.telestration import Line, Telestrator
+
+    t = Telestrator(fps=5, home_attack_direction=1)
+    t._line_state = [Line(30.0, 0.0, 10.0)]
+    t.set_home_attack(1)
+    assert t._line_state                       # aynı yön: durum korunur
+    t.set_home_attack(-1)
+    assert t._line_state == [] and t._direction(0) == -1 and t._direction(1) == 1
+    with pytest.raises(ValueError):
+        t.set_home_attack(2)

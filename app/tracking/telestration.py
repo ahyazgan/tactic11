@@ -479,6 +479,14 @@ class Telestrator:
         self.last_pressers = 0
         self._proj: _Projector | None = None
 
+    def set_home_attack(self, direction: int) -> None:
+        """Takım 0'ın hücum yönünü değiştir (devre arası); diğer durum korunur."""
+        if direction not in (-1, 0, 1):
+            raise ValueError("home_attack_direction -1, 0 veya 1 olmalı")
+        if direction != self._home_attack:
+            self._home_attack = direction
+            self._line_state = []
+
     def _direction(self, team: int) -> int:
         if self._home_attack:
             return self._home_attack if team == 0 else -self._home_attack
