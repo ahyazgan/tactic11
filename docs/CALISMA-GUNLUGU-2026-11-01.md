@@ -108,3 +108,14 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
   yavaşlattı (süreçler ayrıca kapatıldı); paralel değerlendirmeler kabuk kapanınca
   sessizce öldü (tek arka plan işinde `wait` ile yeniden koşuldu).
 
+## 16:30–17:10 — Panel gerçek modda, top veritabanında, tam zincir provası
+- Panel ilk kez gerçek modda açıldı (API 8100 + next dev 3100; kullanıcının 3000'deki
+  demo derlemesine dokunulmadı). Canlı Telestrasyon kartı videoyu oynatıyor.
+- Bulunan hata: genel bakış, kulübün oyuncusu yokken "backend bağlı değil" diyordu → ayrıldı (PR #319).
+- Düzeltilmiş top artık veritabanına da yazılıyor; takip aktarımı bittikten sonra (PR #319).
+  990723'te veritabanındaki topun ışıkta olma payı %99,8 → %0.
+- Segment boyu sahiplik yumuşatması denendi: geliştirmede tutarlı kazanç yok → alınmadı.
+- Tam zincir canlı prova (990731, gerçek hız, keep-up): hata 0, her segment adaylı/düzeltilmiş/
+  aktarılmış/çizilmiş; panel başlığı "akış bitti · atlanan 6 segment".
+- `docs/VIDEO-DOGRULUK-KARNESI.md`: kulübe verilecek tek sayfalık doğruluk özeti.
+
