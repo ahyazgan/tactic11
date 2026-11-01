@@ -76,7 +76,6 @@ def test_watch_clock_merges_anchor_and_kickoff_anchor(tmp_path: Path) -> None:
         kickoff_anchor,
         load_watch_clock,
         save_anchor,
-        segment_index_of,
     )
 
     assert load_watch_clock(tmp_path) is None
@@ -91,5 +90,3 @@ def test_watch_clock_merges_anchor_and_kickoff_anchor(tmp_path: Path) -> None:
     merged = load_watch_clock(tmp_path)
     assert merged is not None and merged.delay_s == 42.0 and merged.delay_anchored_periods == (1,)
     assert kickoff_anchor(merged, merged.segment_state(1), 1, 0.5, frames, HOME, AWAY) is None  # bir kez
-    assert segment_index_of("seg_0007_m13.500.mp4", 0) == 7
-    assert segment_index_of("clip.mp4", 3) == 3

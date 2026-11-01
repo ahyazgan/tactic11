@@ -572,6 +572,9 @@ async def matches_live(
         description="canlı servis: sportmonks | api_football (skor, olaylar, sahiplik payı)"),
     service_fixture: int | None = Query(default=None,
         description="servisteki fikstür kimliği (aynı maç)"),
+    home_attack: str | None = Query(default=None,
+        description="kamera: ev sahibi 1. yarıda saha x'i artan (x+) / azalan (x-) yöne hücum eder; "
+                    "verilmezse kaleciden çıkarılır"),
     session: Session = Depends(get_session),
 ) -> None:
     """WebSocket: her N saniyede tactical snapshot push.
@@ -680,7 +683,8 @@ async def matches_live(
                 from app.api.live_shape_bridge import shape_watch_for
                 shape_block, shape_alerts = shape_watch_for(
                     session, match_id, home_team_id=feed.home_team_id, away_team_id=feed.away_team_id,
-                    my_team_id=my_team_id, minute=current_minute)
+                    my_team_id=my_team_id, minute=current_minute,
+                    home_attack={"x+": 1, "x-": -1}.get(home_attack or "", 0))
                 if shape_block is not None:
                     snapshot["shape_watch"] = shape_block
                     merge_alerts(snapshot["live_alerts"], shape_alerts)

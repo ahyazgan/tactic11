@@ -222,3 +222,51 @@ def test_service_clock_written_and_refreshed_when_second_half_starts(tmp_path: P
     assert refresh_service_clock(tmp_path, snap(k1, k2))
     after = load_watch_clock(tmp_path)
     assert after is not None and after.period_starts == (k1, k2) and after.delay_s == 40
+
+
+def test_to_promote_in_order_or_newest_only() -> None:
+    from scripts.canli_mac import to_promote
+
+    closed = ["seg_0000.mp4", "seg_0001.mp4", "seg_0002.mp4"]
+    assert to_promote(closed, [], set(), keep_up=False) == closed
+    assert to_promote(closed, ["seg_0000.mp4"], set(), keep_up=False) == closed[1:]
+    assert to_promote(closed, [], set(), keep_up=True) == ["seg_0002.mp4"]
+    assert to_promote(closed, ["seg_0000.mp4"], set(), keep_up=True) == []   # takip meşgul
+
+
+def test_clocked_target_names_minute_and_skips_break() -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from app.tracking.match_clock import MatchClock
+    from scripts.canli_mac import clocked_target
+
+    k1 = datetime(2026, 11, 1, 17, 0, tzinfo=UTC)
+    k2 = k1 + timedelta(minutes=63)
+    clock = MatchClock(period_starts=(k1, k2), stream_started_at=k1 - timedelta(minutes=1), segment_seconds=30)
+    assert clocked_target(clock, 0) is None                      # başlamadan önce
+    assert clocked_target(clock, 4) == ("seg_0004_m1.000.mp4", 1)
+    assert clocked_target(clock, 2 * 58) is None                 # 57. dk gerçek: devre arası
+    assert clocked_target(clock, 2 * 64 + 1) == ("seg_0129_m45.500.mp4", 2)
+
+
+def test_try_kickoff_anchor_reads_tracker_output(tmp_path: Path) -> None:
+    import argparse
+    import json
+    from datetime import UTC, datetime
+
+    from app.tracking.match_clock import MatchClock, load_watch_clock
+    from scripts.canli_mac import try_kickoff_anchor
+    from tests.test_match_clock import AWAY, HOME, _frame
+
+    k1 = datetime(2026, 11, 1, 17, 0, tzinfo=UTC)
+    clock = MatchClock(period_starts=(k1,), stream_started_at=k1, segment_seconds=30)
+    clock.save(tmp_path / "clock.json")
+    (tmp_path / "frames").mkdir()
+    frames = [_frame(0.5 + 0.01 * i, kickoff=i <= 20).model_dump(mode="json") for i in range(40)]
+    (tmp_path / "frames" / "seg_0001_m0.500.json").write_text(json.dumps({"frames": frames}), encoding="utf-8")
+    args = argparse.Namespace(home_team=HOME, away_team=AWAY)
+    assert try_kickoff_anchor(tmp_path, clock, "seg_0001.mp4", None, args) is None
+    note = try_kickoff_anchor(tmp_path, clock, "seg_0001.mp4", "seg_0001_m0.500.mp4", args)
+    assert note is not None and "42 sn" in note
+    merged = load_watch_clock(tmp_path)
+    assert merged is not None and merged.delay_s == 42.0

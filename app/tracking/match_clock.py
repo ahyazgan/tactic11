@@ -97,7 +97,7 @@ class MatchClock:
         return replace(self, delay_s=round(delay, 1),
                        delay_anchored_periods=tuple(sorted({*self.delay_anchored_periods, period})))
 
-    # ---- dosya (canli_mac yazar, track_live okur) ------------------------- #
+    # ---- dosya (canli_mac yazar ve segment adlarına uygular) --------------- #
 
     def to_json(self) -> dict:
         return {
@@ -167,15 +167,15 @@ def detect_kickoff(frames: Iterable[TrackingFrame], home: int, away: int, min_ru
     return run[-1] if len(run) >= min_run else None
 
 
-# ---- canlı mod klasörü (canli_mac yazar, track_live okur) ----------------- #
+# ---- canlı mod klasörü (canli_mac; dondurulmuş takip koduna dokunulmaz) --- #
 
 CLOCK_FILE = "clock.json"            # canli_mac: devre başlangıçları, akış başlangıcı, elle gecikme
-ANCHOR_FILE = "clock_anchor.json"    # track_live: başlama vuruşundan çıkarılan gecikme
+ANCHOR_FILE = "clock_anchor.json"    # canli_mac: takip çıktısındaki başlama vuruşundan çıkarılan gecikme
 KICKOFF_SEARCH_MIN = 3.0             # devrenin ilk bu kadar dakikasındaki segmentlerde aranır
 
 
 def load_watch_clock(watch: Path) -> MatchClock | None:
-    """İki dosyayı birleştir; ayrı dosyalar iki sürecin birbirinin yazdığını ezmemesi için."""
+    """İki dosyayı birleştir: devre yenilemesi (`clock.json`) çapalanmış gecikmeyi ezmesin."""
     path = watch / CLOCK_FILE
     if not path.exists():
         return None
@@ -213,12 +213,3 @@ def kickoff_anchor(clock: MatchClock, state: ClockState, segment_index: int, off
     wall = clock.segment_wall(segment_index) + timedelta(seconds=(hit.minute - offset_minute) * 60.0)
     return clock.anchor_delay(state.period, wall)
 
-
-def segment_index_of(name: str, fallback: int) -> int:
-    """`seg_0007...` → 7 (segmentin akıştaki sırası = duvar saati); ad uymazsa `fallback`."""
-    stem = name.split(".")[0]
-    if stem.startswith("seg_"):
-        digits = stem[4:].split("_")[0]
-        if digits.isdigit():
-            return int(digits)
-    return fallback
