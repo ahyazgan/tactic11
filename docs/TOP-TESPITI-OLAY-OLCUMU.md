@@ -149,9 +149,12 @@ Aday izi bu sahada daha çok kareye top koyuyor (kayıp %28,6 → %16,8): 23 dok
 daha isabetli, 17 dokunuş daha yanlış.
 
 Bulgular:
-- **Takım ataması bu sahada çalışmıyor**: formalar "beyaza yakın" ve "açık mavi"
-  kümelendi; segment başına karelerin %8–65'inde bir takıma 12+ oyuncu atandı. Bu
-  sahada telestrasyonun "savunan takım"ı güvenilir değildir.
+- ~~Takım ataması bu sahada çalışmıyor~~ — **sonradan düzeltildi**
+  (`docs/TAKIM-AYRIMI-GUNES.md`): göz etiketli 98 kutuda üretim net renkli
+  oyuncularda %97 doğru; hata, güneşte beyaza dönen uzak oyuncuların hepsinin "ev"
+  sayılması. "Bir takımda 12+ oyuncu" oranı takım kalitesinin göstergesi değil
+  (iyi ayrılan 132877'de %57). Dokunuş oylarının tutarsızlığı bu sahada
+  dokunuşların yalnız %23'ünün 2 m içinde takip edilen oyuncuya denk gelmesinden.
 - Dokunuşların yalnız %23,5'inde 2 m içinde takip edilen oyuncu var (132877: %52,
   117092: %30); dokunuş hatası medyanı ~5 m.
 

@@ -33,10 +33,10 @@ Gündüz ve aydınlık sahada sistem belirgin biçimde daha güvenilir; gece ı�
 sahte top adayları en zor durum.
 
 **Başka stadyum (132831, gündüz, ön kayıtlı, sınav geçmedi):** top dokunuşta %42,2,
-pas uçuşunda %71,4 doğru yerde; ama **takım ataması bu sahada çalışmadı** (iki
-takım tutarlı ayrılamadı), bu yüzden savunan takım ve blok etiketi bu sahada
-güvenilir değil ve ölçülemedi. Yeni bir stadyumda kullanmadan önce takım renk
-ayrımının kontrol edilmesi gerekir. Ayrıntı: `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
+pas uçuşunda %71,4 doğru yerde. Takım ataması net renkli oyuncularda %97 doğru,
+ama güneşte beyaza dönen uzak oyuncular sistematik olarak tek takıma yazılıyor
+(göz etiketli ölçüm, `docs/TAKIM-AYRIMI-GUNES.md`); savunan takım bu sahada olay
+kayıtlarıyla ölçülemedi. Ayrıntı: `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
 
 Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 `docs/measurements/ball-track-control.json`, `docs/OTOMATIK-TELESTRASYON.md`,
