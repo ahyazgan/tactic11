@@ -222,5 +222,19 @@
   },
   "organisers_homography_npy": "units/convention unknown (errors ~10^3), not usable for arbitration",
   "reading": "detection is not the limit at 132831 (v2 recall 96.1%, precision 91.6% on the MOT clip; 22.4 tracked players per frame vs 22 in GSR). The low GSR match rate comes from a systematic 2-3 m offset along pitch width between the landmark-based calibration and the GSR pitch coordinates, largest in the far half; with a 6 m radius 82-96% of GSR players have a tracked counterpart (so the players are detected; the disagreement is positional). Which side is right cannot be settled from these files; our calibration is validated on official pitch markings (LOO 1.57 m). GSR-based matched counts and defensive-line errors therefore carry a reference bias; label-level agreement (team, block label) is affected less because the bias is along y while block depth is along x.",
-  "correction": "docs/measurements/venue-132831-gsr-telestration.json 'reading' (detection coverage as the limit) is superseded by this file"
+  "correction": "docs/measurements/venue-132831-gsr-telestration.json 'reading' (detection coverage as the limit) is superseded by this file",
+  "independent_ruler_attempts": {
+    "gsr_table_homography": "image->pitch fitted from the GSR table itself is not a planar homography of the panorama (inliers 36%/47%, landmarks off by 12-18 m): GSR pixel coordinates are in another image space, so they cannot arbitrate",
+    "throw_in_touchline": {
+      "idea": "the thrower stands on the touchline (y=0/68); compare tracked vs GSR y of the nearest player to the event position",
+      "samples": {
+        "132831": 5,
+        "132877": 3,
+        "117092": 1
+      },
+      "result": "inconclusive: tracked positions are clamped to the pitch (0..100) so touchline distances read 0.0, GSR shows the same clamping; in the two unclamped cases tracked was 1.0-1.5 m further inside than GSR, consistent with the far-half +y offset but too few to decide who is right",
+      "script": "scratch only (throwin_ruler.py); not promoted"
+    },
+    "status": "open — needs a ruler in metres that is independent of both mappings (e.g. hand-marked frames of a player on a painted line, or the organisers' undistortion maps to bring GSR pixels into panorama space)"
+  }
 }

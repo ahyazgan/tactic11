@@ -178,3 +178,11 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
   yarıçapta %82–96 eşleşiyor. #325'teki "sınır tespit" okuması düzeltildi.
 - Organizatörün homography.npy'si farklı birim/uzayda; hakemlik için kullanılamadı.
 
+## 00:20–00:50 — Kayma kimde? Bağımsız cetvel denemeleri
+- GSR tablosundan uydurulan görüntü→saha dönüşümü düzlemsel homografi değil (iç nokta %36/%47,
+  saha işaretlerinde 12–18 m): GSR pikselleri panorama uzayında değil → köprü olamaz; önceki
+  "GSR ayak noktalarını kalibrasyondan geçirme" sonucu geri çekildi.
+- Taç atışı cetveli (atıcı çizgide): 5+3+1 örnek, konumlar 0–100'e kırpıldığı için çizgi
+  mesafesi okunamıyor; iki açık örnekte takip GSR'den 1–1,5 m daha içeride. Karar yok.
+- Durum: 2–3 m en kayması açık; bağımsız metre cetveli gerekiyor (iş listesinde).
+
