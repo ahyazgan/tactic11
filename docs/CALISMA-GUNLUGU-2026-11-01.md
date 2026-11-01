@@ -186,3 +186,10 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
   mesafesi okunamıyor; iki açık örnekte takip GSR'den 1–1,5 m daha içeride. Karar yok.
 - Durum: 2–3 m en kayması açık; bağımsız metre cetveli gerekiyor (iş listesinde).
 
+## 00:50–01:20 — Kayma GSR tarafında
+- GSR ayak noktaları panorama karesine çizildi: 22 nokta oyuncuların ayağında, işaret noktaları
+  çizgi kesişimlerinde → GSR pikselleri panorama uzayında (önceki not yanlıştı, geri alındı).
+- GSR çiftlerinden uydurulan düzgün dönüşüm resmî işaretleri 8,8 m (132831) / 5,3 m (132877)
+  yanlış koyuyor; bizim TPS 1,5 m. Karar: 2–3 m en kayması GSR tarafında. Karne notu güncellendi:
+  GSR tabanlı konum sayıları doğruluğumuzu olduğundan kötü gösteriyor.
+

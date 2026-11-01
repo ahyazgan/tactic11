@@ -1,0 +1,55 @@
+{
+  "measured": "2026-11-02 (see git history), descriptive",
+  "question": "The tracked-vs-GSR positions differ by +2-3 m along pitch width in the far half (132831, 132877). Which side carries it?",
+  "step_1_pixel_space": {
+    "test": "GSR image foot points (u,v) of GSR frame 18930 (aligned -21) drawn on the 990753 panorama frame at match second 758",
+    "result": "all 22 GSR points sit on the players' feet; the 65 official landmark pixels sit on the line intersections",
+    "evidence": "docs/measurements/gsr-pixels-on-panorama-132831.jpg",
+    "conclusion": "GSR pixel coordinates ARE in the panorama pixel space (the earlier 'not panorama pixels' note was wrong; the planar-homography failure below is because the stitched panorama is not planar)"
+  },
+  "step_2_gsr_mapping_vs_official_markings": {
+    "method": "smooth cubic polynomial image->pitch fitted on 30k GSR (u,v)->(x,y) pairs per match, evaluated at the 65 official landmark pixels against their official pitch coordinates",
+    "132831": {
+      "self_residual_median_m": 1.65,
+      "landmark_error_median_m": 8.8,
+      "inside_data_hull_n": 51,
+      "inside_hull_median_m": 9.14,
+      "dx_dy_median_m": [
+        0.07,
+        5.91
+      ]
+    },
+    "132877": {
+      "self_residual_median_m": 1.03,
+      "landmark_error_median_m": 5.3,
+      "inside_data_hull_n": 43,
+      "inside_hull_median_m": 5.97,
+      "dx_dy_median_m": [
+        -0.32,
+        3.94
+      ]
+    },
+    "planar_homography_from_gsr_pairs": {
+      "132831_inliers_1m": 0.36,
+      "132877_inliers_1m": 0.47,
+      "landmark_error_median_m": [
+        18.4,
+        12.4
+      ]
+    },
+    "our_landmark_tps": {
+      "in_sample_m": 0.0,
+      "loo_mean_m": [
+        1.57,
+        1.53
+      ]
+    }
+  },
+  "verdict": "relative to the official painted markings, the GSR pitch coordinates are biased by several metres along pitch width (growing toward the far half); our landmark TPS honours the markings. The +2-3 m tracked-vs-GSR offset therefore sits mainly on the GSR side. Consequence for the scorecard: GSR-based 'matched players per frame' and 'defensive line error' UNDERSTATE our accuracy; team-colour and block-label agreement are affected little (bias is along width, block depth is along length).",
+  "caveats": [
+    "the cubic map has 1-1.7 m self-residual and landmarks near the hull edge extrapolate; inside the hull the error is still 6-9 m, far above that",
+    "pixel-space identity verified visually on one frame (22 points) for 132831; 132877 inferred from identical image size (4096x1084) and the same offset signature",
+    "117092 (night) GSR images are 3840x1504 vs the 3840x1906 panorama, a different crop; its position-based figures were measured earlier and are not re-interpreted here"
+  ],
+  "supersedes": "the 'retraction' entry in venue-132831-detector-and-geometry.json (GSR pixels not panorama pixels) — that was wrong"
+}

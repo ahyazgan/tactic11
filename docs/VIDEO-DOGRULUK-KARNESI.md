@@ -71,12 +71,13 @@ Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
   başka bir stadyum (132831), referans konumlara karşı daha zayıf görünüyor ama
   tespit orada iyi; fark büyük ölçüde referans geometrisinden (aşağıdaki madde).
 - GSR referansı ile saha işareti kalibrasyonumuz arasında, iki gündüz maçında da,
-  sahanın eni boyunca sistemli 2–3 m kayma ölçüldü (`venue-132831-detector-and-geometry.json`).
-  Hangisinin doğru olduğu bu dosyalardan anlaşılamaz (GSR'nin piksel koordinatları
-  panoramanın piksel uzayında değil, köprü olarak kullanılamadı); kalibrasyonumuz
-  resmî saha işaretleriyle doğrulanmış (1,5 m). Bu yüzden GSR'ye karşı "eşleşen oyuncu" ve
-  "savunma hattı hatası" sayıları bir referans payı taşır; takım ve blok etiketi
-  uyumu daha az etkilenir (kayma en boyunca, blok derinliği boy boyunca).
+  sahanın eni boyunca sistemli 2–3 m kayma ölçüldü. Resmî saha işaretlerine karşı
+  sınandığında kaymanın GSR tarafında olduğu görüldü: GSR'nin piksel→saha dönüşümü
+  işaretleri 5–9 m yanlış yere koyuyor, bizim kalibrasyonumuz 1,5 m içinde
+  (`docs/measurements/gsr-reference-geometry.json`). Bu yüzden GSR'ye karşı
+  "eşleşen oyuncu" ve "savunma hattı hatası" sayıları gerçek doğruluğumuzu OLDUĞUNDAN
+  KÖTÜ gösterir; takım ve blok etiketi uyumu az etkilenir (kayma en boyunca, blok
+  derinliği boy boyunca).
 - Savunan takım üç karenin birinde hâlâ yanlış olabilir; çıktı bir ikinci göz olarak
   okunmalı, kesin hüküm olarak değil.
 - Takipten çıkarılan pas listesi ham topla hesaplanır; top düzeltmesi yalnız kare
