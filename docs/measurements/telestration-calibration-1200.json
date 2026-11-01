@@ -1,0 +1,103 @@
+{
+  "cache": "data\\tracking\\bench\\team_tele_ctrl_v1",
+  "start_seconds": 1200.0,
+  "stride": 3,
+  "calibration_gate": false,
+  "frames": 1500,
+  "gt_home_attack_direction": 1,
+  "calibrations": {
+    "soccertrack_v2_117092.json": {
+      "frames": 1500,
+      "ref_label_counts": {
+        "Yüksek blok": 463,
+        "Alçak blok": 66,
+        "Orta blok": 196,
+        "Yüksek blok · pres": 9
+      },
+      "majority_baseline_pct": 63.1,
+      "block_balanced_pct": 82.1,
+      "block_confusion": {
+        "Alçak blok -> Alçak blok": 56,
+        "Alçak blok -> Yüksek blok": 10,
+        "Orta blok -> Alçak blok": 47,
+        "Orta blok -> Orta blok": 133,
+        "Orta blok -> Yüksek blok": 16,
+        "Yüksek blok -> Alçak blok": 10,
+        "Yüksek blok -> Orta blok": 20,
+        "Yüksek blok -> Yüksek blok": 442
+      },
+      "drawn_ref": 1486,
+      "drawn_test": 769,
+      "drawn_both": 769,
+      "test_only": 0,
+      "ref_only": 717,
+      "label_n": 734,
+      "label_exact_pct": 84.7,
+      "block_match_pct": 86.0,
+      "press_agree_pct": 95.6,
+      "def_line_error": {
+        "n": 769,
+        "median_m": 5.73,
+        "p90_m": 20.31
+      },
+      "line_gap_error": {
+        "n": 168,
+        "median_m": 3.72,
+        "p90_m": 7.85
+      },
+      "test_gates": {
+        "possession": 5,
+        "drawn": 769,
+        "players": 694,
+        "lines": 32
+      },
+      "loo_error_m": 0.76
+    },
+    "soccertrack_v2_117092_landmarks.json": {
+      "frames": 1500,
+      "ref_label_counts": {
+        "Yüksek blok": 456,
+        "Alçak blok": 135,
+        "Orta blok": 214
+      },
+      "majority_baseline_pct": 56.6,
+      "block_balanced_pct": 83.0,
+      "block_confusion": {
+        "Alçak blok -> Alçak blok": 125,
+        "Alçak blok -> Orta blok": 10,
+        "Orta blok -> Alçak blok": 8,
+        "Orta blok -> Orta blok": 143,
+        "Orta blok -> Yüksek blok": 63,
+        "Yüksek blok -> Alçak blok": 14,
+        "Yüksek blok -> Orta blok": 34,
+        "Yüksek blok -> Yüksek blok": 408
+      },
+      "drawn_ref": 1485,
+      "drawn_test": 858,
+      "drawn_both": 851,
+      "test_only": 7,
+      "ref_only": 634,
+      "label_n": 805,
+      "label_exact_pct": 83.5,
+      "block_match_pct": 84.0,
+      "press_agree_pct": 96.9,
+      "def_line_error": {
+        "n": 851,
+        "median_m": 4.43,
+        "p90_m": 18.93
+      },
+      "line_gap_error": {
+        "n": 92,
+        "median_m": 2.18,
+        "p90_m": 6.36
+      },
+      "test_gates": {
+        "possession": 5,
+        "drawn": 858,
+        "players": 618,
+        "lines": 19
+      },
+      "loo_error_m": 1.76
+    }
+  }
+}
