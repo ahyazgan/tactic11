@@ -193,3 +193,10 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
   yanlış koyuyor; bizim TPS 1,5 m. Karar: 2–3 m en kayması GSR tarafında. Karne notu güncellendi:
   GSR tabanlı konum sayıları doğruluğumuzu olduğundan kötü gösteriyor.
 
+## 01:20–01:50 — Referans düzeltildi, karne yeniden
+- `correct_gsr_positions`: GSR ayak pikselleri işaret kalibrasyonundan geçirildi (kayma 3,0 / 2,3 m).
+- 132831: takım %76,7 → %92,6, eşleşen oyuncu 9,1 → 14,0, blok dengeli %64,3 → %68,4, hat 5,2 → 3,2 m.
+  132877: takım %91,6 → %93,4, hat 1,9 → 1,0 m, blok %80,8 → %84,0.
+- 117092 GSR görüntüsü panoramanın kırpımı değil (0/201/402 px kaydırmada eşleşme yok) → gece
+  referansı düzeltilmedi, kanıt görüntüsü kaydedildi.
+

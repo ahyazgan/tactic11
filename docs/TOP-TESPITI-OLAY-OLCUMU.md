@@ -157,7 +157,9 @@ rengi %76,7, blok dengeli %64,3, hat medyanı 5,2 m, karede eşleşen oyuncu 9,1
 (132877: 15,2). Sonraki ölçüm (`venue-132831-detector-and-geometry.json`) bunun
 tespit değil referans geometrisi olduğunu gösterdi: MOT klibinde v2 tespit %96,1,
 panoramada karede 22,4 takip edilen oyuncu; GSR konumları ile kalibrasyon arasında
-en boyunca 2–3 m sistemli kayma.
+en boyunca 2–3 m sistemli kayma — ve kayma GSR tarafında (resmî işaretlere karşı
+5–9 m). Referans düzeltilince: takım %92,6, blok dengeli %68,4, hat 3,2 m
+(`gsr-corrected-telestration.json`).
 
 Bulgular:
 - ~~Takım ataması bu sahada çalışmıyor~~ — **sonradan düzeltildi**
