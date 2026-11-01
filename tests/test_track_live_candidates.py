@@ -46,3 +46,18 @@ def test_records_all_ball_candidates_and_delegates() -> None:
     rec.detect(np.zeros((4, 4, 3)))
     assert rec.last_balls() == [[6.0, 6.0, 0.15, 2.0, 2.0], [51.0, 51.0, 0.45, 2.0, 2.0]]
     assert rec.device == "cpu" and rec.ball_ids == {2}
+
+
+def test_kit_recorder_medians_per_track() -> None:
+    from app.tracking.kit_features import KitRecorder, torso_median_color
+
+    rgb = np.zeros((100, 100, 3), np.uint8)
+    rgb[:, :50] = (240, 230, 60)      # sarı forma solda
+    rgb[:, 50:] = (40, 80, 200)       # mavi forma sağda
+    rec = KitRecorder()
+    for _ in range(3):
+        rec.observe(rgb, [(1, 0, 0, 50, 100, 0.9), (2, 50, 0, 100, 100, 0.9)])
+    s = rec.summary()
+    assert s["1"]["n"] == 3 and s["1"]["median"] == [240.0, 230.0, 60.0]
+    assert s["2"]["median"] == [40.0, 80.0, 200.0] and s["2"]["height_px"] == 100.0
+    assert torso_median_color(rgb, (0, 0, 1, 2)) is None
