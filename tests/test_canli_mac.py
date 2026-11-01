@@ -99,3 +99,23 @@ def test_scale_calibration_keeps_pitch_and_validation(tmp_path: Path) -> None:
                        original.image_to_pitch_m(u * 0.5 * original.image_size[0] / 1920,
                                                  v * 0.5 * original.image_size[1] / 1080), atol=1e-6)
     assert scale_calibration(src, original.image_size, tmp_path) == src
+
+
+def test_check_database_reports_reachable_and_unreachable(tmp_path: Path) -> None:
+    import sys
+
+    from scripts.canli_mac import check_database
+
+    # gerçek ingest ön kontrolü: sqlite dosyası açılır, açılamayan yol tek satırla raporlanır
+    # (ağ yok: kapalı porta bağlanma bazı güvenlik duvarlarında yanıtsız kalır)
+    assert check_database(sys.executable, f"sqlite:///{(tmp_path / 'ok.db').as_posix()}") is None
+    error = check_database(sys.executable, f"sqlite:///{(tmp_path / 'yok' / 'x.db').as_posix()}")
+    assert error is not None and error.startswith("OperationalError")
+    assert "Background on this error" not in error
+
+
+def test_check_database_missing_interpreter() -> None:
+    from scripts.canli_mac import check_database
+
+    error = check_database("yok/python.exe", None)
+    assert error is not None and error.startswith("yorumlayıcı başlatılamadı")

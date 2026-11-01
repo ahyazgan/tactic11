@@ -54,6 +54,10 @@ venv-cv\Scripts\python.exe -m scripts.canli_mac --source rtsp://kamera/stream --
   `auto` çoğu zaman karar veremez (kaleciler görünmüyor).
 - `--height 1080`: segmentleri 1080p'ye indirir; hız için ilk denenecek ayar. Kalibrasyon
   ilk segmentin boyutuna otomatik ölçeklenir (`<watch>/calibration_<g>x<y>.json`).
+- `--database-url`: karelerin yazılacağı veritabanı. Başlamadan önce bağlantı
+  denenir; ulaşılamazsa akış hiç başlamaz ve hata tek satırla yazılır. Yerel
+  kurulumda `--database-url "sqlite:///<proje yolu>/demo.db"` (başlatıcının
+  kullandığı veritabanı); `.env`'deki şablon adres çalışmaz.
 - Provada `--source mac.mp4` dosyayı gerçek hızda akıtır: "sisteme kaç dakika
   geriden gelir" sorusunun dürüst cevabı budur.
 
@@ -71,4 +75,5 @@ segment dakikası ve çizilen kare oranı görünür.
 | Etiket hiç çıkmıyor | Hücum yönü verilmedi (`--home-attack`) ya da savunan takımdan 6 oyuncu görünmüyor. |
 | Gecikme sürekli artıyor | Bilgisayar segmenti 30 sn'den uzun sürede işliyor. `--height 1080` dene. |
 | Kart "canlı telestrasyon yok" diyor | `--telestration` verilmedi ya da henüz ilk segment işlenmedi (`data/tracking/live/<maç>/tele/latest.json`). |
+| "veritabanına ulaşılamıyor" ile hemen çıkıyor | `DATABASE_URL` yanlış ya da sunucu kapalı. `--database-url` ile doğru adresi verin. |
 | Segment atlandı | `data/tracking/live/<maç>/tele/seg_XXXX.error.json` hatayı içerir; akış durmaz. |
