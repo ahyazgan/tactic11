@@ -1,0 +1,21 @@
+{
+  "written": "2026-11-01 10:25 local, before any run with a changed threshold",
+  "question": "Can the defending-team visibility gate (MIN_TEAM_PLAYERS = 6) be lowered to draw in more frames without losing accuracy?",
+  "diagnosis_before_plan": "with production settings the 'players' gate blocks 288 of 331 undrawn frames (600-960 s) and 591 of 629 (1200-1560 s); measured with eval_telestration --reference-default, landmark calibration",
+  "variants": {"min_team_players": [6, 5, 4]},
+  "reference": "min_team_players = 6 (production)",
+  "windows": {
+    "development": "data/tracking/live/990401 frames, signal_quality_gt.npy (600-960 s)",
+    "held_out": "data/tracking/live/990402 frames, team_ctrl_gt.npy (1200-1560 s)"
+  },
+  "command": "eval_telestration --calibration data/tracking/calibrations/soccertrack_v2_117092_landmarks.json --alignment data/tracking/bench/signal_quality_alignment.json --reference-default --config-json '{\"min_team_players\": K}'",
+  "acceptance": {
+    "on_both_windows": [
+      "drawn share (pred) rises by at least 5.0 points vs reference",
+      "block_balanced_pct drops by at most 1.0 point vs reference",
+      "def_line_error median rises by at most 1.0 m vs reference"
+    ],
+    "choose": "the smallest K that passes; none passing keeps 6"
+  },
+  "not_changed": "detector, tracking, team assignment, all other telestration constants"
+}

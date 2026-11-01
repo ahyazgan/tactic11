@@ -202,6 +202,26 @@ Not: kalibrasyon kapısı artık oyuncudan türetilmiş 117092 kalibrasyonunu
 doğrulanmamış saydığından, bu karelerle ölçüm `eval_telestration --ignore-calibration-gate`
 ile yapılır (konumlar karelerde zaten hesaplıdır; ölçüm GT'ye karşı konumdur).
 
+## Denenen ve bırakılan: savunan oyuncu eşiğini düşürmek
+
+Çizilmeyen karelerin çoğunu "players" kapısı kesiyor (savunan takımdan 6'dan az
+görünür oyuncu): 600–960 sn'de 331'in 288'i, 1200–1560 sn'de 629'un 591'i. Eşik
+(`TelestrationConfig.min_team_players`) ön kayıtla 5 ve 4'e indirildi
+(`docs/measurements/telestration-min-players-plan.json`, sonuçlardan önce commit).
+Şart: iki pencerede de çizilen kare ≥ +5 puan, dengeli doğruluk en çok −1 puan, hat
+hatası medyanı en çok +1 m.
+
+| Eşik | Çizilen (600 / 1200) | Dengeli doğruluk | Hat hatası medyanı |
+|---|---|---|---|
+| 6 (üretim) | %77,9 / %58,1 | %73,2 / %79,4 | 5,9 / 5,6 m |
+| 5 | %80,6 / %61,1 | %73,3 / %79,9 | 6,3 / 5,8 m |
+| 4 | %83,1 / %63,0 | %74,1 / %80,2 | 5,9 / 5,6 m |
+
+Doğruluk bozulmadı ama kapsama kazancı şartın altında kaldı (4: +5,2 / **+4,9**).
+Üretim 6'da kaldı. Eşik düşünce karelerin çoğu "players" kapısından "lines"
+kapısına geçiyor: kapsamayı sınırlayan eşik değil, tespit (GT oyuncularının
+yaklaşık yarısı bulunmuyor). Sonuç: `docs/measurements/telestration-min-players-results.json`.
+
 ## Sınırlar ve sıradaki adımlar
 
 - Yalnız sabit kalibrasyon. Kare başına kalibrasyonla işlenen hareketli kamera
