@@ -1,0 +1,109 @@
+{
+  "measured": "2026-11-01 18:45, once, after the plan (44758cb) and its addendum were committed",
+  "plan": "docs/measurements/ball-track-daylight-132877-plan.json",
+  "mapping": "docs/measurements/ball-events-mapping-132877.json",
+  "window": "990741: 132877 first half, video 600-1200 s, 20 segments",
+  "calibration": "soccertrack_v2_132877_landmarks.json, 65 landmarks, leave-one-out 1.53 m",
+  "arms": {
+    "baseline": {
+      "ball_frame_pct": 81.4,
+      "touch_5m": {
+        "hit": 215,
+        "wrong": 61,
+        "missing": 23,
+        "events": 299,
+        "hit_pct": 71.9,
+        "wrong_pct": 20.4,
+        "missing_pct": 7.7
+      },
+      "flight_5m": {
+        "hit": 72,
+        "wrong": 7,
+        "missing": 0,
+        "events": 79,
+        "hit_pct": 91.1,
+        "wrong_pct": 8.9,
+        "missing_pct": 0.0
+      },
+      "touch_error_median_m": 2.85,
+      "defending": {
+        "frames_in_possession": 4687,
+        "drawn": 4687,
+        "correct": 3876,
+        "accuracy_pct": 82.7,
+        "correct_of_possession_pct": 82.7
+      },
+      "drawn_pct": 99.0,
+      "gates": {
+        "drawn": 7422,
+        "lines": 57,
+        "players": 21
+      }
+    },
+    "candidate": {
+      "ball_frame_pct": 85.5,
+      "touch_5m": {
+        "hit": 219,
+        "wrong": 66,
+        "missing": 14,
+        "events": 299,
+        "hit_pct": 73.2,
+        "wrong_pct": 22.1,
+        "missing_pct": 4.7
+      },
+      "flight_5m": {
+        "hit": 72,
+        "wrong": 7,
+        "missing": 0,
+        "events": 79,
+        "hit_pct": 91.1,
+        "wrong_pct": 8.9,
+        "missing_pct": 0.0
+      },
+      "touch_error_median_m": 2.87,
+      "defending": {
+        "frames_in_possession": 4687,
+        "drawn": 4687,
+        "correct": 3809,
+        "accuracy_pct": 81.3,
+        "correct_of_possession_pct": 81.3
+      },
+      "drawn_pct": 100.0,
+      "gates": {
+        "drawn": 7497,
+        "players": 2,
+        "lines": 1
+      }
+    }
+  },
+  "criteria": {
+    "D1": {
+      "delta": 1.3,
+      "required": ">= -2",
+      "pass": true
+    },
+    "D2": {
+      "delta": 1.7,
+      "required": "<= +2",
+      "pass": true
+    },
+    "D3": {
+      "delta": 0.0,
+      "required": ">= -5",
+      "pass": true
+    },
+    "D4": {
+      "delta": -1.4,
+      "required": ">= -2",
+      "pass": true
+    },
+    "D5": {
+      "delta": -1.4,
+      "required": ">= -2",
+      "pass": true
+    }
+  },
+  "decision": "all pass -> candidate track stays default; daylight evidence added",
+  "reading": "in daylight the production ball is already good (touch hit 71.9%, defending 82.7%); the candidate track neither helps nor hurts beyond the margins. Its night gain (+22 points defending) came from rejecting floodlight distractors.",
+  "limits": "one daylight match, 10 minutes; event time offset is a prior from 117092 (player-derived -0.20 s agrees); no GSR, so end-to-end block-label accuracy and team-colour accuracy are not measured here"
+}

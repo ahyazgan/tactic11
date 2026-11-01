@@ -14,19 +14,23 @@ diye yazılır.
 
 ## Koçun gördüğü çıktılar
 
-Ölçüm: SoccerTrack v2 117092 (gece maçı, 4K sabit panorama), v2 dedektörü,
-1800–2400 sn ön kayıtlı kontrol penceresi (20 segment, 7500 kare); referans GSR
-oyuncu konumları ve olay kayıtları.
+İki maç, ikisi de ön kayıtlı ve sistemin karar verirken görmediği 10'ar dakika:
+**gece** SoccerTrack v2 117092 (1800–2400 sn, 7500 kare) ve **gündüz** 132877
+(600–1200 sn, hiç kullanılmamış test maçı). Referans olay kayıtları; gecede GSR
+oyuncu konumları da.
 
-| Çıktı | Ölçülen | Not |
-|---|---|---|
-| Hangi takım savunuyor (çizilen karelerde) | %68,1 doğru | önceki top seçimiyle %46,1 |
-| Blok etiketi (alçak/orta/yüksek), uçtan uca | dengeli doğruluk %63,7, tam isabet %67,6 | sahiplik dahil zincirin tamamı |
-| Çizim kapsaması | karelerin %86'sında çizim var | kalanında savunandan < 6 oyuncu görünür |
-| Pres işareti uyumu | %96,7 | referansla aynı karar |
-| Oyuncu takım rengi | eşleşen oyuncuların %76'sı doğru takımda | |
-| Top, dokunuş anında 5 m içinde | %19,1 | çoğunlukla ayak dibindeki top bulunamıyor |
-| Top, pas uçuşunda 5 m içinde | %50 | 42 kısa pas |
+| Çıktı | Gece (117092) | Gündüz (132877) | Not |
+|---|---|---|---|
+| Hangi takım savunuyor (çizilen karelerde) | %68,1 | %81,3 | gece önceki top seçimiyle %46,1 |
+| Blok etiketi (alçak/orta/yüksek), uçtan uca | dengeli %63,7, tam isabet %67,6 | ölçülmedi | gündüz GSR yok |
+| Çizim kapsaması | %86 | %100 | gece kalanında savunandan < 6 oyuncu görünür |
+| Pres işareti uyumu | %96,7 | ölçülmedi | |
+| Oyuncu takım rengi | %76 | ölçülmedi | |
+| Top, dokunuş anında 5 m içinde | %19,1 | %73,2 | gece ayak dibindeki top çoğunlukla bulunamıyor |
+| Top, pas uçuşunda 5 m içinde | %50 (42 pas) | %91,1 (79 pas) | |
+
+Gündüz ve aydınlık sahada sistem belirgin biçimde daha güvenilir; gece ışıklarla
+sahte top adayları en zor durum.
 
 Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 `docs/measurements/ball-track-control.json`, `docs/OTOMATIK-TELESTRASYON.md`,
@@ -50,7 +54,8 @@ Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 
 ## Bilinen sınırlar
 
-- Tek maç (gece), tek kamera tipi. Gündüz ve başka stadyumlarda ölçülmedi.
+- İki maç (bir gece, bir gündüz), aynı üniversite sahası ve aynı kamera sistemi;
+  başka stadyumlarda ölçülmedi.
 - Savunan takım üç karenin birinde hâlâ yanlış olabilir; çıktı bir ikinci göz olarak
   okunmalı, kesin hüküm olarak değil.
 - Takipten çıkarılan pas listesi ham topla hesaplanır; top düzeltmesi yalnız kare

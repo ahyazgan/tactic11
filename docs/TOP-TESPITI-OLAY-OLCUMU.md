@@ -103,10 +103,36 @@ tek sefer (`docs/measurements/ball-track-control.json`):
 Karar: canlı telestrasyon aday izini kullanır (`canli_mac --telestration` takibi
 `track_live_candidates` ile başlatır, `telestrate_live` topu çizimden önce değiştirir).
 
+## 5. Gündüz, görülmemiş maç (132877): ön kayıtlı ek sınav
+
+132877 SoccerTrack test maçı: eğitimde, ayarda ya da hiçbir kararda kullanılmadı;
+gündüz, 4096×1084 panorama. Ön kayıt `docs/measurements/ball-track-daylight-132877-plan.json`
+(44758cb) takipten önce yazıldı; indirince videonun başlama vuruşuyla başladığı
+görüldü ve zaman varsayımı, hiçbir sonuca bakmadan ek olarak düzeltildi.
+
+- Kalibrasyon: 65 resmî saha işareti, bir-dışarıda doğrulama 1,53 m.
+- Olay eşlemesi yalnız takip edilen oyunculardan (`derive_event_mapping`): eksen
+  çevirmesi ve takım tarafı belirgin (oylar 57:19, 56:18); zaman kayması önceden
+  sabitlenen −0,28 sn (oyunculardan bulunan −0,20 sn ile uyumlu). GSR yok; savunan
+  takım `eval_defending_events` ile ölçüldü (117092'de `eval_telestration` ile birebir aynı sonucu verdiği doğrulandı).
+
+| 600–1200 sn (20 segment) | Üretim topu | Aday izi | Şart | Sonuç |
+|---|---:|---:|---|---|
+| Dokunuşta top ≤ 5 m (299 dokunuş) | %71,9 | %73,2 | ≥ −2 | geçti |
+| Dokunuşta yanlış top | %20,4 | %22,1 | ≤ +2 | geçti |
+| Pas uçuşunda top ≤ 5 m (79 pas) | %91,1 | %91,1 | ≥ −5 | geçti |
+| Çizilen karelerde savunan takım doğru | %82,7 | %81,3 | ≥ −2 | geçti |
+| Sahiplik karelerinde doğru savunan | %82,7 | %81,3 | ≥ −2 | geçti |
+| Çizim kapsaması | %99,0 | %100 | — | — |
+
+Okuma: gündüzde üretim topu zaten iyi; aday izi kazandırmıyor, kaybettirmiyor.
+Gecedeki kazanç (+22 puan savunan takım) ışık gibi sahte adayları ayıklamaktan
+geliyordu. Aday izi varsayılan kalır. Sonuç: `docs/measurements/ball-track-daylight-132877-result.json`.
+
 ## Sınırlar
 
-- Tek gece maçı, 10 dakikalık kontrol. Gündüz ölçülmedi (olaylı ve eğitimde
-  kullanılmamış bir gündüz panoraması indirme gerektirir).
+- Gece: tek maç, 10 dk kontrol. Gündüz: tek maç (132877), 10 dk; uçtan uca blok
+  etiketi ve takım rengi gündüzde ölçülmedi (GSR indirilmedi).
 - Dokunuşta top hâlâ çoğunlukla yanlış ya da yok (%58 / %23): ayak dibindeki top ile
   başka oyuncunun ayakkabısı ayrılamıyor. Kazanç asıl olarak "top kimde" tarafında.
 - Veritabanı: `canli_mac --telestration` düzeltilmiş kareleri, takip işçisinin
