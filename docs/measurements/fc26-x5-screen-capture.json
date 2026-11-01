@@ -1,0 +1,27 @@
+{
+  "measured": "2026-11-02 (see git history), descriptive — EA FC 26 shown on a laptop screen, filmed with an Insta360 X5 over USB (dshow), broadcast camera mode",
+  "why": "the user has no match footage yet and wanted to see how well the X5 records and whether the live chain does anything with the game picture",
+  "capture_quality": {
+    "mode": "2880x1440 @ 30 fps MJPEG → H.264 30 s segments (~40 MB each)",
+    "observed": "screen sharp, no moire, no visible flicker, exposure fine; screen fills ~55% of the frame width at ~40 cm because of the ~150° lens; strong barrel distortion bends the screen edges and the pitch lines"
+  },
+  "live_run_990772": {
+    "command": "canli_mac --source \"dshow:Insta360 X5\" --device-fps 30 --camera broadcast --segment-seconds 30",
+    "result": "every frame skipped — per-frame calibration never found an anchor (two segments: 29 and 59 searches, 0 found; landmark inlier 3%); no frames written, panel empty"
+  },
+  "offline_variants_on_saved_segments": [
+    {"clip": "raw seg_0002 (goal-area view)", "anchors": "0 / 30 searches", "calibrated_frames": "0 / 450"},
+    {"clip": "lenscorrection k1=-0.35 + crop to the screen (1182x668)", "anchors": "0 / 26", "calibrated_frames": "0 / 450"},
+    {"clip": "same correction, seg_0000 (centre circle + halfway line visible), upscaled to 1920 wide", "anchors": "0 / 14 (landmark inlier 22%)", "calibrated_frames": "0 / 450"}
+  ],
+  "detector_probe": {
+    "frame": "corrected + cropped seg_0002 frame, COCO RF-DETR (broadcast default)",
+    "detections": 15,
+    "classes": ["person", "sports ball"],
+    "box_heights_px": [119, 102, 97, 63, 96, 56, 107, 66, 46],
+    "reading": "players are detected well in the filmed game picture; the chain stops only at calibration"
+  },
+  "conclusion": "the X5 records cleanly, but its wide lens is the wrong tool for filming a screen and the broadcast anchor search (tuned on real TV geometry) does not accept the filmed FC 26 picture even after lens correction. To test the system on FC 26, record the game directly on the gaming laptop (Windows Game Bar, Win+Alt+R) and process the file; that tests the system, not the camera.",
+  "files_kept": "data/tracking/live/990772/seg_0000.mp4 (40 MB) for a later comparison; other segments deleted (disk)",
+  "not_tested": ["a narrower-FOV webcam mode of the X5 (if the camera offers one)", "the static-camera TPS path on the filmed screen (would need a hand calibration on the screen picture; not meaningful for a moving game camera)"]
+}
