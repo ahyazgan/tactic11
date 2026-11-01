@@ -40,6 +40,8 @@ Panelde **Video Analiz → kalibrasyon** (`/video-tracking/calibrate`): videodan
 
 - **En az 5 nokta** gir. 4 noktaya her homografi kusursuz oturur; hata ölçülemez
   ve telestrasyon bu kalibrasyonla çizgi/etiket çizmez ("doğrulanmamış").
+  `canli_mac --telestration` bunu başlamadan denetler ve geçmeyen kalibrasyonla
+  başlamaz (yalnız halka isteyen operatör için `--allow-unverified-calibration`).
 - Noktalar sahanın farklı bölgelerine yayılsın; çizilen saha çizgileri kareye
   oturmuyorsa kaydetme.
 - Otomatik öneri: `venv-cv\Scripts\python.exe -m scripts.propose_calibration --video mac.mp4 --at-seconds 30 --out data/tracking/calibrations/saha.json --preview onizleme.png`.
