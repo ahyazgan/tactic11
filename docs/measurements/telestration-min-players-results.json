@@ -1,0 +1,17 @@
+{
+  "plan": "docs/measurements/telestration-min-players-plan.json (committed before the runs)",
+  "rows": [
+    {"min_team_players": 6, "window": "600-960 dev", "drawn_pct": 77.9, "block_balanced_pct": 73.2, "def_line_median_m": 5.92, "def_line_p90_m": 25.81, "gates": {"drawn": 1169, "players": 288, "lines": 43}},
+    {"min_team_players": 6, "window": "1200-1560 held-out", "drawn_pct": 58.1, "block_balanced_pct": 79.4, "def_line_median_m": 5.61, "def_line_p90_m": 27.68, "gates": {"possession": 5, "drawn": 871, "players": 591, "lines": 33}},
+    {"min_team_players": 5, "window": "600-960 dev", "drawn_pct": 80.6, "block_balanced_pct": 73.3, "def_line_median_m": 6.26, "def_line_p90_m": 26.79, "gates": {"drawn": 1209, "lines": 110, "players": 181}},
+    {"min_team_players": 5, "window": "1200-1560 held-out", "drawn_pct": 61.1, "block_balanced_pct": 79.9, "def_line_median_m": 5.75, "def_line_p90_m": 30.32, "gates": {"possession": 5, "drawn": 916, "lines": 93, "players": 486}},
+    {"min_team_players": 4, "window": "600-960 dev", "drawn_pct": 83.1, "block_balanced_pct": 74.1, "def_line_median_m": 5.90, "def_line_p90_m": 26.61, "gates": {"drawn": 1247, "lines": 145, "players": 108}},
+    {"min_team_players": 4, "window": "1200-1560 held-out", "drawn_pct": 63.0, "block_balanced_pct": 80.2, "def_line_median_m": 5.56, "def_line_p90_m": 27.70, "gates": {"possession": 5, "drawn": 945, "lines": 148, "players": 402}}
+  ],
+  "verdict": {
+    "passing": [],
+    "reason": "accuracy and line error held for 5 and 4, but the drawn-share gain stayed under +5.0 points on at least one window (5: +2.7 / +3.0; 4: +5.2 / +4.9)",
+    "production": "unchanged, min_team_players = 6",
+    "observation": "lowering the gate mostly moves frames from the 'players' gate to the 'lines' gate; the coverage limit is detection (about half of GT players are not detected), not the threshold"
+  }
+}
