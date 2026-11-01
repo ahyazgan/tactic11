@@ -9,7 +9,8 @@
 - `<watch>/tele/latest.json` — panelin okuyacağı son segment özeti
 
 Telestratör durumu (hücum yönü, sahiplik, hat yumuşatma, etiket) segmentler
-arasında korunur. Bir segment hata verirse `seg_XXXX.error.json` yazılır ve
+arasında korunur. `--swap-at-minute 45`: segment başlangıç dakikası bu değere
+ulaşınca ev sahibinin hücum yönü kendiliğinden ters çevrilir (ikinci yarı). Bir segment hata verirse `seg_XXXX.error.json` yazılır ve
 sonrakine geçilir; yarım yazılmış takip JSON'u hata sayılmaz, sonraki turda
 yeniden denenir. Dondurulmuş takip koduna dokunmaz; `canli_mac --telestration`
 bu işçiyi takiple birlikte başlatır.
@@ -49,12 +50,24 @@ def write_json(path: Path, payload: dict) -> None:
     tmp.replace(path)
 
 
+def segment_attack(payload: dict, home_attack: int, swap_at_minute: float | None) -> int:
+    """Segmentin ev sahibi hücum yönü: başlangıç dakikası `swap_at_minute`'e ulaştıysa ters."""
+    minutes = [float(f["minute"]) for f in payload.get("frames", []) if "minute" in f]
+    if swap_at_minute is None or not minutes or min(minutes) < swap_at_minute:
+        return home_attack
+    return -home_attack
+
+
 def process(video: Path, frames_json: Path, stem: str, out: Path, calib: PitchCalibration,
-            tele: Telestrator | None, *, home_attack: int, width: int, h264: bool) -> Telestrator | None:
+            tele: Telestrator | None, *, home_attack: int, width: int, h264: bool,
+            swap_at_minute: float | None = None) -> Telestrator | None:
     try:
         payload = json.loads(frames_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return tele  # takip hâlâ yazıyor olabilir; sonraki turda yeniden dene
+    home_attack = segment_attack(payload, home_attack, swap_at_minute)
+    if tele is not None:
+        tele.set_home_attack(home_attack)
     partial = out / f"{stem}.tmp.mp4"  # uzantı .mp4 kalmalı: yazıcılar biçimi uzantıdan seçer
     try:
         summary, log, tele = render_segment(video, payload, calib, partial, home_attack=home_attack, tele=tele,
@@ -79,6 +92,8 @@ def main() -> int:
     p.add_argument("--watch", type=Path, required=True)
     p.add_argument("--calibration", type=Path, required=True)
     p.add_argument("--home-attack", default="auto", choices=sorted(HOME_ATTACK))
+    p.add_argument("--swap-at-minute", type=float, default=None,
+                   help="Bu dakikadan başlayan segmentlerde ev sahibi hücum yönünü ters çevir (ör. 45)")
     p.add_argument("--width", type=int, default=1280)
     p.add_argument("--poll-seconds", type=float, default=3.0)
     p.add_argument("--once", action="store_true", help="Mevcut segmentleri işle ve çık")
@@ -93,7 +108,7 @@ def main() -> int:
     while True:
         for video, frames_json, stem in pending(args.watch, out):
             tele = process(video, frames_json, stem, out, calib, tele, home_attack=HOME_ATTACK[args.home_attack],
-                           width=args.width, h264=not args.no_h264)
+                           width=args.width, h264=not args.no_h264, swap_at_minute=args.swap_at_minute)
         if args.once:
             return 0
         time.sleep(args.poll_seconds)
