@@ -43,6 +43,8 @@ Aynı üç segment, ölçeklenmiş kalibrasyon, GT'ye karşı tespit denetimi. S
   oranından gelir, çözünürlükten değil.
 - Gerçek zamana ulaşılmadı. En hızlı ayar bile (2 dilim, oyuncuların yarısı kayıp)
   30 sn'lik segmenti 36 sn'de işliyor.
+- Ölçülüp elenen: iki takip işçisini paralel çalıştırmak. Tek işçide GPU zaten
+  ort. %76 meşgul (p90 %88, 3,4 GB / 8 GB); kazanç en çok ~1,3× olurdu, bellek de dar.
 - Düşünülüp elenen: görüntüyü saha bandına kırpmak. Oyuncular yüksekliğin ~%52'sinde
   ama genişliğin tamamında; dilim ızgarası en-boy oranını izlediği için kazanç
   sınırlı, `detect.py` de dondurulmuş.
