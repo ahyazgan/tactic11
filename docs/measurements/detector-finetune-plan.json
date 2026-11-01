@@ -1,0 +1,34 @@
+{
+  "written": "2026-11-01, before building the dataset or training",
+  "question": "Does fine-tuning rfdetr_mixed_small on SoccerTrack Challenge MOT clips improve player detection on an unseen match?",
+  "data": {
+    "source": "SoccerTrack Challenge 2025 public Drive folder (ScoccerChllenge2025 / Training Dataset), 6 clips 4096x1080, 25 fps, 22 MOT player boxes per frame, no ball labels",
+    "train_matches": ["117093", "118575", "118576", "118577"],
+    "valid_matches": ["128058"],
+    "test_match": "117092 (night) - never used for training or checkpoint selection",
+    "tiles": 3,
+    "tiles_reason": "player height / tile height 0.114 vs 0.123 for production panorama tiles (median MOT box 40.9 px; panorama detections 58.6 px over 476 px tiles)",
+    "every": 50,
+    "base_dataset": "data/tracking/datasets/teamtrack_mixed copied into all splits so that ball labels are kept (MOT tiles contain unlabelled balls)"
+  },
+  "training": {
+    "init_weights": "data/tracking/models/rfdetr_mixed_small",
+    "model": "small", "resolution": 512, "epochs": 8, "lr": 0.0001, "batch_size": 8, "grad_accum": 2,
+    "checkpoint": "checkpoint_best_total.pth as selected by rfdetr on the validation split"
+  },
+  "metrics_on_test": {
+    "clip": "scripts/soccertrack_v2/evaluate_detector_mot.py on 117092 clip, tiles 3, every 25, foot-point matching (<=0.5 x GT box height); IoU is not used because box drawing convention differs between TeamTrack-trained and MOT-trained models",
+    "panorama": "scripts/soccertrack_v2/detection_audit.py on our 117092 panorama, segments 1 5 9 of 600-960 s, line-landmark calibration, tiles 4 (live default) via scripts/soccertrack_v2/detection_variants.py",
+    "baseline_clip": "docs/measurements/detector-mot-117092-baseline.json: recall 0.7504, precision 0.8515",
+    "baseline_panorama": "docs/measurements/detection-variant-t4_c0.35.json: recall 0.607, ghost share 0.341"
+  },
+  "acceptance": [
+    "clip recall >= baseline + 0.05",
+    "clip precision >= baseline - 0.02",
+    "panorama recall >= baseline + 0.03",
+    "panorama ghost share <= baseline + 0.03",
+    "panorama frames with a ball detection >= 0.8 x baseline (no ball ground truth; guard against forgetting the ball class)"
+  ],
+  "after_test": "no change to data split, training settings, checkpoint choice or criteria; a failed model is reported and not promoted",
+  "limits": "one unseen test match (night); MOT clips and panorama come from the same camera system; promotion to production would replace the default weights and is a separate step"
+}
