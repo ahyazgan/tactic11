@@ -2,7 +2,7 @@
 import json
 
 from scripts.canli_mac import _telestration_backlog
-from scripts.telestrate_live import pending, process, write_json
+from scripts.telestrate_live import LiveState, continues, pending, process, write_json
 
 
 def _segment(watch, stem: str, frames: str = '{"frames": []}') -> None:
@@ -28,9 +28,10 @@ def test_failed_segment_is_recorded_and_stream_continues(tmp_path) -> None:
     out.mkdir()
     _segment(tmp_path, "seg_0000", json.dumps({"frames": [], "home_team_external_id": 1,
                                                "away_team_external_id": 2}))
-    tele = process(tmp_path / "seg_0000.mp4", tmp_path / "frames" / "seg_0000.json", "seg_0000", out,
-                   calib=None, tele=None, home_attack=0, width=640, h264=False)  # type: ignore[arg-type]
-    assert tele is None
+    state = LiveState()
+    process(tmp_path / "seg_0000.mp4", tmp_path / "frames" / "seg_0000.json", "seg_0000", out,
+            calib=None, state=state, home_attack=0, width=640, h264=False)  # type: ignore[arg-type]
+    assert state.tele is None
     error = json.loads((out / "seg_0000.error.json").read_text(encoding="utf-8"))
     assert error["segment"] == "seg_0000" and error["error"]
     assert not (out / "seg_0000.mp4").exists() and not (out / "latest.json").exists()
@@ -42,7 +43,7 @@ def test_half_written_frames_are_retried_not_errored(tmp_path) -> None:
     out.mkdir()
     _segment(tmp_path, "seg_0000", '{"frames": [')
     process(tmp_path / "seg_0000.mp4", tmp_path / "frames" / "seg_0000.json", "seg_0000", out,
-            calib=None, tele=None, home_attack=0, width=640, h264=False)  # type: ignore[arg-type]
+            calib=None, state=LiveState(), home_attack=0, width=640, h264=False)  # type: ignore[arg-type]
     assert not (out / "seg_0000.error.json").exists()
     assert [stem for *_, stem in pending(tmp_path, out)] == ["seg_0000"]
 
@@ -79,3 +80,15 @@ def test_telestrator_attack_change_resets_lines_only() -> None:
     assert t._line_state == [] and t._direction(0) == -1 and t._direction(1) == 1
     with pytest.raises(ValueError):
         t.set_home_attack(2)
+
+
+def test_continuity_breaks_only_across_skipped_segments() -> None:
+    def seg(start: float) -> dict:
+        return {"frames": [{"minute": start + i * 0.08 / 60} for i in range(375)]}
+
+    first = seg(10.0)
+    end = max(f["minute"] for f in first["frames"])
+    assert continues(None, first)
+    assert continues(end, seg(10.5))          # ardışık segment: ~0,1 sn boşluk
+    assert not continues(end, seg(11.5))      # --keep-up iki segment atladı: ~60 sn
+    assert continues(end, {"frames": []})     # boş segment kararı değiştirmez
