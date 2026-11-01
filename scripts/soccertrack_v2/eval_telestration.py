@@ -34,6 +34,7 @@ from pathlib import Path
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
+import app.tracking.telestration as telestration
 from app.domain import TrackingFrame
 from app.tracking.calibration import PitchCalibration
 from app.tracking.telestration import (
@@ -101,6 +102,20 @@ class Record:
     label: str | None
     lines: list[tuple[float, float, float]] = field(default_factory=list)
     pressers: int = 0
+    runs: list[tuple[float, float]] = field(default_factory=list)
+
+
+def run_agreement(ref: list[Record], test: list[Record], radius: float = MATCH_RADIUS_M) -> dict:
+    """Koşu okları: aynı karede ≤ radius m içinde birebir eşleşen tahmin/GT koşuları."""
+    tp = n_test = n_ref = 0
+    for r, t in zip(ref, test, strict=True):
+        n_test += len(t.runs)
+        n_ref += len(r.runs)
+        if t.runs and r.runs:
+            tp += len(match(np.array(t.runs), np.array(r.runs), radius))
+    return {"runs_test": n_test, "runs_ref": n_ref, "runs_matched": tp,
+            "run_precision_pct": round(100.0 * tp / n_test, 1) if n_test else None,
+            "run_recall_pct": round(100.0 * tp / n_ref, 1) if n_ref else None}
 
 
 def summarise(ref: list[Record], test: list[Record]) -> dict:
@@ -146,6 +161,7 @@ def summarise(ref: list[Record], test: list[Record]) -> dict:
         "label_exact_pct": pct([ref[i].label == test[i].label for i in labelled]),
         "block_match_pct": pct([block(ref[i].label) == block(test[i].label) for i in labelled]),
         "press_agree_pct": pct([(ref[i].pressers > 0) == (test[i].pressers > 0) for i in both]),
+        **run_agreement(ref, test),
         "def_line_error": stats(depth),
         "line_gap_error": stats(gap),
         "test_gates": dict(Counter(t.gate for t in test)),
@@ -200,10 +216,16 @@ def main() -> int:
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--config-json", default=None,
                    help="TelestrationConfig alanları (JSON); takip koşularına uygulanır")
+    p.add_argument("--ignore-calibration-gate", action="store_true",
+                   help="Kalibrasyon kapısını kapat: karelerin konumları zaten hesaplanmıştır, ölçüm GT'ye "
+                        "karşı konumdur (kapı üretimde doğrulanmamış kalibrasyonla çizimi engeller)")
     p.add_argument("--reference-default", action="store_true",
                    help="GT referansı varsayılan ayarla kalsın (yalnız tahmin tarafı değişsin)")
     args = p.parse_args()
     config = TelestrationConfig(**json.loads(args.config_json)) if args.config_json else TelestrationConfig()
+    if args.ignore_calibration_gate:
+        telestration.MAX_REPROJECTION_M = float("inf")
+        telestration.calibration_validation = lambda _calib: ("ignored", 0.0)
 
     paths = sorted(glob.glob(args.frames))
     payloads = [json.loads(Path(path).read_text(encoding="utf-8")) for path in paths]
@@ -255,7 +277,8 @@ def main() -> int:
             t = tele[v]
             t.marks(inputs[v], ball, calib, owner)
             records[v].append(Record(t.last_gate or "", t.label if t.last_gate == "drawn" else None,
-                                     [(ln.depth, ln.y_min, ln.y_max) for ln in t.last_lines], t.last_pressers))
+                                     [(ln.depth, ln.y_min, ln.y_max) for ln in t.last_lines], t.last_pressers,
+                                     [(x, y) for _tid, x, y in t.last_runs]))
 
     matched_counts = [len(m) for *_, m in matched_frames]
     report = {
@@ -267,6 +290,7 @@ def main() -> int:
         "matched_players_per_frame": round(float(np.mean(matched_counts)), 2) if matched_counts else 0.0,
         "held_constant": "possession = tracking frame possession; direction = GT keepers",
         "config": config.__dict__, "reference_default": args.reference_default,
+        "calibration_gate": not args.ignore_calibration_gate,
         "pred_vs_gt": summarise(records["gt"], records["pred"]),
         "pred_gt_team_vs_gt": summarise(records["gt"], records["pred_gt_team"]),
         "pred_vs_pred_gt_team": summarise(records["pred_gt_team"], records["pred"]),

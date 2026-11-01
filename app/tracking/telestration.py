@@ -12,6 +12,8 @@ hattına dokunmadan hem kayıtlı videoda hem canlı segmentlerde çalışır.
 - **Pres vurgusu** — topa 5 m içindeki savunan oyuncuların halkası vurgulanır.
 - **Faz etiketi** — "Orta blok · pres" gibi; savunma hattının kendi kalesine
   uzaklığından ve top çevresindeki baskıdan.
+- **Koşu okları** — topa sahip takımın son 1 sn'de rakip kaleye doğru hızlı koşan
+  oyuncuları (≥ 5,5 m/s, yönü hücum yönüyle en çok ~45°); ok 1 sn sonrasını gösterir.
 
 İzdüşüm: homografide kapalı biçimde ters; TPS'de ileri modelin sayısal tersi,
 yalnız destek bölgesinde (bkz. `_Projector`).
@@ -77,6 +79,10 @@ LANDMARK_SHARE = 0.8         # noktaların bu payı işaret üzerindeyse kalibra
 DIRECTION_WINDOW_S = 10.0
 POSSESSION_WINDOW_S = 1.0
 LABEL_HOLD_S = 1.0           # etiket ancak bu süre kararlıysa değişir
+RUN_WINDOW_S = 1.0           # koşu: bu süredeki yer değiştirme
+RUN_MIN_SPEED_MPS = 5.5      # koşu sayılacak en düşük hız
+RUN_MAX_SPEED_MPS = 12.0     # üstü fiziksel değil: kimlik kayması, ok çizilmez
+RUN_MIN_FORWARD = 0.7        # yer değiştirme yönünün hücum yönüyle kosinüsü (~45°)
 TPS_INVERSE_ITERATIONS = 8
 LINE_SMOOTHING = 0.35        # hat derinliği/aralığı için üstel yumuşatma: her 0,2 sn'de yeni değerin payı
 LINE_SMOOTHING_PERIOD_S = 0.2
@@ -91,7 +97,7 @@ _FONT_PATH = Path(__file__).resolve().parents[2] / "frontend/public/fonts/ibm-pl
 class Mark:
     """Tek çizim öğesi (görüntü pikseli). JSON'a `dataclasses.asdict` ile çevrilir."""
 
-    kind: str                                  # ring | line | band | label | ball
+    kind: str                                  # ring | line | band | label | ball | run
     points: tuple[tuple[float, float], ...]
     team: int | None = None
     emphasis: bool = False
@@ -395,6 +401,11 @@ class Telestrator:
         self._alpha = 1.0 - (1.0 - self.config.line_smoothing) ** (1.0 / (fps * LINE_SMOOTHING_PERIOD_S))
         self._min_track = max(1, round(self.config.min_track_s * fps))
         self._seen: dict[int, int] = {}
+        self._run_frames = max(1, round(RUN_WINDOW_S * fps))
+        self._run_dt = self._run_frames / fps
+        self._trail: dict[int, deque[tuple[float, float]]] = {}
+        # son karede koşu sayılan oyuncular: (kimlik, x m, y m) — değerlendirme için
+        self.last_runs: list[tuple[int, float, float]] = []
         self._candidate: str | None = None
         self._streak = 0
         self.label: str | None = None
@@ -470,6 +481,11 @@ class Telestrator:
         self._seen = {p.tid: self._seen.get(p.tid, 0) + 1 for p in players}
         steady = {tid: xy for tid, xy in pitch.items() if self._seen[tid] >= self._min_track}
         L = proj.calib.pitch_length_m
+        # kimlik başına son RUN_WINDOW_S'lik iz; kareden kaybolan kimliğin izi silinir
+        self._trail = {tid: self._trail.get(tid, deque(maxlen=self._run_frames + 1)) for tid in pitch}
+        for tid, xy in pitch.items():
+            self._trail[tid].append(xy)
+        self.last_runs = []
         self._frames.append(SimpleNamespace(players=[
             SimpleNamespace(x=p.x_m / L * 100.0, team_external_id=p.team, is_keeper=False)
             for p in players if p.team in (0, 1)]))
@@ -488,6 +504,8 @@ class Telestrator:
         if gate is None:
             defending = 1 - Counter(self._owners).most_common(1)[0][0]
             direction = self._direction(defending)
+            if direction != 0:
+                out += self._run_marks(proj, players, 1 - defending, -direction)
             team_pts = {p.tid: steady[p.tid] for p in players if p.team == defending and p.tid in steady}
             lines = self._smooth(_lines([((xy[0] if direction > 0 else L - xy[0]), xy[1])
                                          for xy in team_pts.values()], self.config.line_statistic))
@@ -522,6 +540,27 @@ class Telestrator:
             out.append(Mark("ball", (tuple(ball_px[0].round(1).tolist()),)))
         if label:
             out.append(Mark("label", (), team=defending, text=label))
+        return out
+
+    def _run_marks(self, proj: _Projector, players: list[PlayerSpot], attacking: int,
+                   attack_direction: int) -> list[Mark]:
+        """Hücum eden takımın derinlik koşuları: hız ve yön eşiği, fiziksel olmayan hız elenir."""
+        out: list[Mark] = []
+        for p in players:
+            trail = self._trail.get(p.tid)
+            if p.team != attacking or trail is None or len(trail) <= self._run_frames:
+                continue
+            (x0, y0), (x1, y1) = trail[0], trail[-1]
+            dx, dy = x1 - x0, y1 - y0
+            dist = float(np.hypot(dx, dy))
+            speed = dist / self._run_dt
+            if not RUN_MIN_SPEED_MPS <= speed <= RUN_MAX_SPEED_MPS or dx * attack_direction < RUN_MIN_FORWARD * dist:
+                continue
+            ahead = (x1 + dx / self._run_dt * RUN_WINDOW_S, y1 + dy / self._run_dt * RUN_WINDOW_S)
+            pts = proj(np.array([(x1, y1), ahead]))
+            if pts is not None:
+                out.append(Mark("run", tuple(map(tuple, pts.round(1).tolist())), team=attacking))
+                self.last_runs.append((p.tid, x1, y1))
         return out
 
     def _projector(self, calib: PitchCalibration | None) -> _Projector | None:
@@ -566,6 +605,7 @@ class Telestrator:
 # BGR: ev sahibi yeşil, deplasman kırmızı, atanmamış gri; vurgu (pres) sıcak kırmızı
 TEAM_COLORS: dict[int | None, tuple[int, int, int]] = {0: (90, 200, 40), 1: (60, 80, 230), None: (170, 170, 170)}
 EMPHASIS_COLOR = (40, 40, 235)
+RUN_COLOR = (0, 215, 255)       # sarı: koşu oku
 
 
 @lru_cache(maxsize=4)
@@ -637,6 +677,10 @@ def render(bgr: np.ndarray, marks: list[Mark]) -> None:
                           (2 if m.emphasis else 1) * scale, cv2.LINE_AA)
         elif m.kind == "line":
             cv2.polylines(bgr, [np.rint(m.points).astype(np.int32)], False, (245, 245, 245), 2 * scale, cv2.LINE_AA)
+        elif m.kind == "run":
+            (ax, ay), (bx, by) = m.points
+            cv2.arrowedLine(bgr, (int(ax), int(ay)), (int(bx), int(by)), RUN_COLOR, 2 * scale, cv2.LINE_AA,
+                            tipLength=0.3)
         elif m.kind == "ball":
             cx, cy = (int(round(v)) for v in m.points[0])
             cv2.circle(bgr, (cx, cy), 6 * scale, (255, 255, 255), 2 * scale, cv2.LINE_AA)

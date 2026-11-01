@@ -343,3 +343,28 @@ def test_landmark_calibrations_use_loo() -> None:
     source, error = calibration_validation(calib())
     assert source == "landmark_loo" and error is not None and error < 0.01
     assert calibration_validation(tps_calib())[0] == "landmark_loo"
+
+
+def _run_scene(step_x: float, frames: int = 7) -> tuple[Telestrator, list]:
+    """Takım 0 x+ yönüne hücum eder (takım 1 kalesi x=105); oyuncu 2 her karede step_x ilerler."""
+    t = Telestrator(fps=5)                      # 1 sn = 5 kare
+    marks = []
+    for k in range(frames):
+        people = [PlayerSpot(p.tid, p.team, p.x_m + (step_x * k if p.tid == 2 else 0.0), p.y_m) for p in scene()]
+        marks = t.marks(people, BALL, calib(), possession=0)   # koşan oyuncu toptan uzaklaşsa da top takım 0'da
+    return t, marks
+
+
+def test_forward_run_draws_arrow_ahead() -> None:
+    t, marks = _run_scene(1.4)                  # 1,4 m / 0,2 sn = 7 m/s ileri
+    runs = [m for m in marks if m.kind == "run"]
+    assert len(runs) == 1 and runs[0].team == 0
+    assert [tid for tid, *_ in t.last_runs] == [2]
+    (ax, _ay), (bx, _by) = runs[0].points
+    assert bx > ax                              # ok ileriyi (x+) gösterir
+
+
+@pytest.mark.parametrize("step", [0.6, -1.4, 4.0])   # yavaş, geriye, ışınlanma (20 m/s)
+def test_slow_backward_or_teleporting_players_get_no_arrow(step: float) -> None:
+    t, marks = _run_scene(step)
+    assert not any(m.kind == "run" for m in marks) and t.last_runs == []
