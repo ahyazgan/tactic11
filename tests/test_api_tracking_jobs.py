@@ -326,3 +326,15 @@ def test_live_telestration_includes_lag_status(client, env):
                                                          encoding="utf-8")
     r = client.get("/tracking/live/990206/telestration")
     assert r.status_code == 200 and r.json()["status"] is None
+
+
+def test_default_weights_prefers_v2_then_mixed(env, monkeypatch) -> None:
+    models_dir = env / "models"
+    for name in ("rfdetr_mixed_small", "rfdetr_soccertrack_ft_v2"):
+        (models_dir / name).mkdir(parents=True)
+        (models_dir / name / "meta.json").write_text("{}", encoding="utf-8")
+    assert tracking_jobs.default_weights() == str(models_dir / "rfdetr_soccertrack_ft_v2")
+    (models_dir / "rfdetr_soccertrack_ft_v2" / "meta.json").unlink()
+    assert tracking_jobs.default_weights() == str(models_dir / "rfdetr_mixed_small")
+    monkeypatch.setenv("TRACKING_WEIGHTS", "elle")
+    assert tracking_jobs.default_weights() == "elle"

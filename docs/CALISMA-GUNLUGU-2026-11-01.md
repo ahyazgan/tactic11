@@ -88,9 +88,7 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Aynı model ve komut: 4K çizilen kare %78,2 / 1080p %70,9; süre aynı (~99 / ~96 sn).
   Panoramada 1080p önerisi kaldırıldı; README'deki "serbest kazanç" sonucu drone klibine ait.
 
-## Bekleyen kullanıcı kararları
-- Dedektör v2'yi (rfdetr_soccertrack_ft_v2) üretime almak: ön kayıt dışı ürün kararı.
-  Lehine: kesinlik +19 puan, top korunuyor, panorama/klip her eksende daha iyi.
-  Aleyhine: bağımsız maçta tespit artışı +2,1 (+3 istenmişti). Alternatif: yeni bir
-  bağımsız maçla (Drive'da Challenge/Test klipleri; indirme izni gerekir) yeniden sına.
-  Ek kanıt (11:05): telestrasyonda v2 iki pencerede de belirgin iyi (yukarıda).
+## 13:45 — Dedektör v2 üretimde (kullanıcı kararı)
+- Kullanıcı "v2'ye geç" dedi. `canli_mac` sabit kamerada ve API işleri varsayılan
+  olarak v2 kullanıyor; yayın/operatörlü kamera değişmedi (v2 orada ölçülmedi).
+- TeamTrack doğrulamasında (drone/yan açı) v2 eşit: F1 0,822 / 0,822, mAP50 −2,3 puan.

@@ -98,6 +98,8 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SEGMENT_SECONDS = 30.0
+# Sabit kamerada (panorama) üretim dedektörü; kanıt docs/DEDEKTOR-INCE-AYAR-SONUCLARI.md
+STATIC_DEFAULT_WEIGHTS = PROJECT_ROOT / "data" / "tracking" / "models" / "rfdetr_soccertrack_ft_v2"
 POLL_SECONDS = 5.0
 STREAM_SCHEMES = ("rtsp://", "rtsps://", "rtmp://", "http://", "https://", "udp://", "srt://")
 
@@ -327,6 +329,18 @@ def scale_calibration(calibration: Path, size: tuple[int, int], out_dir: Path) -
     return out
 
 
+def resolve_weights(weights: str | None, camera: str, default: Path = STATIC_DEFAULT_WEIGHTS) -> str | None:
+    """`--weights` verilmediyse sabit kamerada v2 (klasör varsa); diğer kameralarda COCO.
+
+    v2 yalnız sabit panoramada ölçüldü; yayın/operatörlü kamerada eski davranış kalır.
+    """
+    if weights:
+        return weights
+    if camera == "static" and (default / "meta.json").exists():
+        return str(default)
+    return None
+
+
 def wait_first_segment_size(seg_dir: Path, seg_proc: subprocess.Popen, timeout_s: float = 180.0) -> tuple[int, int]:
     """İlk segment tamamlanınca (ikincisi başlayınca ya da kaynak bitince) boyutunu oku."""
     import cv2  # noqa: PLC0415 — yalnız --height ile gerekir (venv-cv)
@@ -425,12 +439,14 @@ def main() -> int:
     ]
     if args.keep_up:
         track_cmd += ["--minute-from-name", KEEP_UP_MINUTE_PATTERN]
-    for flag, val in (("--calibration", args.calibration), ("--weights", args.weights),
+    weights = resolve_weights(args.weights, args.camera)
+    for flag, val in (("--calibration", args.calibration), ("--weights", weights),
                       ("--onnx-model", args.onnx_model), ("--database-url", args.database_url)):
         if val:
             track_cmd += [flag, val]
 
     print(f"[canlı] kaynak: {kind.label} · {args.source}")
+    print(f"[canlı] dedektör: {weights or 'COCO ön-eğitimli'}")
     print(f"[canlı] segment: {args.segment_seconds:g} sn → {watch}"
           f"{' · yeniden kodlama' if transcode or args.height else ' · kopya'}")
     print(f"[canlı] panel: /admin/matches/{args.match_id}/live-decision?my_team_id={args.home_team}"

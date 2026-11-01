@@ -154,3 +154,4 @@
 ## Notes / blockers (anything needing human eyes)
 
 - (none currently)
+- [x] Dedektör v2'yi üretime al (kullanıcı kararı 2026-11-01): canli_mac sabit kamera + API varsayılanı.
