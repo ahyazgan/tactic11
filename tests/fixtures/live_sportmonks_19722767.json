@@ -1,0 +1,922 @@
+{
+ "data": {
+  "id": 19722767,
+  "name": "Hibernian vs Celtic",
+  "starting_at_timestamp": 1792929600,
+  "state": {
+   "id": 5,
+   "state": "FT",
+   "name": "Full Time",
+   "short_name": "FT",
+   "developer_name": "FT"
+  },
+  "participants": [
+   {
+    "id": 53,
+    "name": "Celtic",
+    "meta": {
+     "location": "away",
+     "winner": true,
+     "position": 1
+    }
+   },
+   {
+    "id": 66,
+    "name": "Hibernian",
+    "meta": {
+     "location": "home",
+     "winner": false,
+     "position": 12
+    }
+   }
+  ],
+  "scores": [
+   {
+    "id": 36727113,
+    "fixture_id": 19722767,
+    "type_id": 1,
+    "participant_id": 53,
+    "score": {
+     "goals": 2,
+     "participant": "away"
+    },
+    "description": "1ST_HALF"
+   },
+   {
+    "id": 36727114,
+    "fixture_id": 19722767,
+    "type_id": 1,
+    "participant_id": 66,
+    "score": {
+     "goals": 1,
+     "participant": "home"
+    },
+    "description": "1ST_HALF"
+   },
+   {
+    "id": 36727115,
+    "fixture_id": 19722767,
+    "type_id": 2,
+    "participant_id": 53,
+    "score": {
+     "goals": 2,
+     "participant": "away"
+    },
+    "description": "2ND_HALF"
+   },
+   {
+    "id": 36727116,
+    "fixture_id": 19722767,
+    "type_id": 2,
+    "participant_id": 66,
+    "score": {
+     "goals": 1,
+     "participant": "home"
+    },
+    "description": "2ND_HALF"
+   },
+   {
+    "id": 36727111,
+    "fixture_id": 19722767,
+    "type_id": 1525,
+    "participant_id": 53,
+    "score": {
+     "goals": 2,
+     "participant": "away"
+    },
+    "description": "CURRENT"
+   },
+   {
+    "id": 36727112,
+    "fixture_id": 19722767,
+    "type_id": 1525,
+    "participant_id": 66,
+    "score": {
+     "goals": 1,
+     "participant": "home"
+    },
+    "description": "CURRENT"
+   },
+   {
+    "id": 36730331,
+    "fixture_id": 19722767,
+    "type_id": 48996,
+    "participant_id": 53,
+    "score": {
+     "goals": 0,
+     "participant": "away"
+    },
+    "description": "2ND_HALF_ONLY"
+   },
+   {
+    "id": 36730330,
+    "fixture_id": 19722767,
+    "type_id": 48996,
+    "participant_id": 66,
+    "score": {
+     "goals": 0,
+     "participant": "home"
+    },
+    "description": "2ND_HALF_ONLY"
+   }
+  ],
+  "events": [
+   {
+    "id": 158394691,
+    "fixture_id": 19722767,
+    "period_id": 7192193,
+    "participant_id": 66,
+    "type_id": 14,
+    "section": "event",
+    "player_id": 37691888,
+    "related_player_id": 2781,
+    "player_name": "Owen Elding",
+    "related_player_name": "Joe Newell",
+    "result": "1-0",
+    "info": "Left foot shot",
+    "addition": "1st Goal",
+    "minute": 3,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": 1521,
+    "detailed_period_id": 7192193,
+    "rescinded": null,
+    "sort_order": 1,
+    "type": {
+     "id": 14,
+     "name": "Goal",
+     "code": "goal",
+     "developer_name": "GOAL",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158394768,
+    "fixture_id": 19722767,
+    "period_id": 7192193,
+    "participant_id": 53,
+    "type_id": 15,
+    "section": "event",
+    "player_id": 173154,
+    "related_player_id": null,
+    "player_name": "Jason Kerr",
+    "related_player_name": null,
+    "result": "1-1",
+    "info": "Own Goal",
+    "addition": "1st Own Goal",
+    "minute": 5,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": 15,
+    "detailed_period_id": 7192193,
+    "rescinded": null,
+    "sort_order": 2,
+    "type": {
+     "id": 15,
+     "name": "Own Goal",
+     "code": "owngoal",
+     "developer_name": "OWNGOAL",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158396010,
+    "fixture_id": 19722767,
+    "period_id": 7192193,
+    "participant_id": 53,
+    "type_id": 14,
+    "section": "event",
+    "player_id": 37709508,
+    "related_player_id": null,
+    "player_name": "Camilo Durán",
+    "related_player_name": null,
+    "result": "1-2",
+    "info": "Left foot shot",
+    "addition": "2nd Goal",
+    "minute": 43,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": 1521,
+    "detailed_period_id": 7192193,
+    "rescinded": null,
+    "sort_order": 3,
+    "type": {
+     "id": 14,
+     "name": "Goal",
+     "code": "goal",
+     "developer_name": "GOAL",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158396917,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 53,
+    "type_id": 18,
+    "section": "event",
+    "player_id": 35659846,
+    "related_player_id": 37732189,
+    "player_name": "Alistair Johnston",
+    "related_player_name": "Colby Donovan",
+    "result": null,
+    "info": null,
+    "addition": "1st Substitution",
+    "minute": 52,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": null,
+    "detailed_period_id": 7192544,
+    "rescinded": null,
+    "sort_order": 1,
+    "type": {
+     "id": 18,
+     "name": "Substitution",
+     "code": "substitution",
+     "developer_name": "SUBSTITUTION",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158397292,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 53,
+    "type_id": 18,
+    "section": "event",
+    "player_id": 18584306,
+    "related_player_id": 15061513,
+    "player_name": "Haissem Hassan",
+    "related_player_name": "Kasper Høgh",
+    "result": null,
+    "info": null,
+    "addition": "2nd Substitution",
+    "minute": 64,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": null,
+    "detailed_period_id": 7192544,
+    "rescinded": null,
+    "sort_order": 2,
+    "type": {
+     "id": 18,
+     "name": "Substitution",
+     "code": "substitution",
+     "developer_name": "SUBSTITUTION",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158397314,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 53,
+    "type_id": 18,
+    "section": "event",
+    "player_id": 163711,
+    "related_player_id": 37598290,
+    "player_name": "Jota",
+    "related_player_name": "Callum Osmand",
+    "result": null,
+    "info": null,
+    "addition": "3rd Substitution",
+    "minute": 64,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": null,
+    "detailed_period_id": 7192544,
+    "rescinded": null,
+    "sort_order": 3,
+    "type": {
+     "id": 18,
+     "name": "Substitution",
+     "code": "substitution",
+     "developer_name": "SUBSTITUTION",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158397414,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 66,
+    "type_id": 18,
+    "section": "event",
+    "player_id": 2875852,
+    "related_player_id": 14338021,
+    "player_name": "Rabbi Matondo",
+    "related_player_name": "Thibault Klidjé",
+    "result": null,
+    "info": null,
+    "addition": "4th Substitution",
+    "minute": 68,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": null,
+    "detailed_period_id": 7192544,
+    "rescinded": null,
+    "sort_order": 4,
+    "type": {
+     "id": 18,
+     "name": "Substitution",
+     "code": "substitution",
+     "developer_name": "SUBSTITUTION",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158397415,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 66,
+    "type_id": 18,
+    "section": "event",
+    "player_id": 37571435,
+    "related_player_id": 121792,
+    "player_name": "Ante Suto",
+    "related_player_name": "Jamie McGrath",
+    "result": null,
+    "info": null,
+    "addition": "5th Substitution",
+    "minute": 68,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": null,
+    "detailed_period_id": 7192544,
+    "rescinded": null,
+    "sort_order": 5,
+    "type": {
+     "id": 18,
+     "name": "Substitution",
+     "code": "substitution",
+     "developer_name": "SUBSTITUTION",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158397574,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 53,
+    "type_id": 18,
+    "section": "event",
+    "player_id": 37714106,
+    "related_player_id": 37709508,
+    "player_name": "Shumaira Mheuka",
+    "related_player_name": "Camilo Durán",
+    "result": null,
+    "info": null,
+    "addition": "6th Substitution",
+    "minute": 73,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": null,
+    "detailed_period_id": 7192544,
+    "rescinded": null,
+    "sort_order": 6,
+    "type": {
+     "id": 18,
+     "name": "Substitution",
+     "code": "substitution",
+     "developer_name": "SUBSTITUTION",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158397597,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 53,
+    "type_id": 18,
+    "section": "event",
+    "player_id": 1712,
+    "related_player_id": 35659846,
+    "player_name": "Cameron Carter-Vickers",
+    "related_player_name": "Alistair Johnston",
+    "result": null,
+    "info": null,
+    "addition": "7th Substitution",
+    "minute": 73,
+    "extra_minute": null,
+    "injured": true,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": null,
+    "detailed_period_id": 7192544,
+    "rescinded": null,
+    "sort_order": 7,
+    "type": {
+     "id": 18,
+     "name": "Substitution",
+     "code": "substitution",
+     "developer_name": "SUBSTITUTION",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158397728,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 66,
+    "type_id": 18,
+    "section": "event",
+    "player_id": 37554905,
+    "related_player_id": 2781,
+    "player_name": "Azeem Abdullah",
+    "related_player_name": "Joe Newell",
+    "result": null,
+    "info": null,
+    "addition": "8th Substitution",
+    "minute": 77,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": null,
+    "detailed_period_id": 7192544,
+    "rescinded": null,
+    "sort_order": 8,
+    "type": {
+     "id": 18,
+     "name": "Substitution",
+     "code": "substitution",
+     "developer_name": "SUBSTITUTION",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158397971,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 66,
+    "type_id": 18,
+    "section": "event",
+    "player_id": 807,
+    "related_player_id": 37605120,
+    "player_name": "Grant Hanley",
+    "related_player_name": "Miguel Chaiwa",
+    "result": null,
+    "info": null,
+    "addition": "9th Substitution",
+    "minute": 82,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": null,
+    "detailed_period_id": 7192544,
+    "rescinded": null,
+    "sort_order": 9,
+    "type": {
+     "id": 18,
+     "name": "Substitution",
+     "code": "substitution",
+     "developer_name": "SUBSTITUTION",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158396162,
+    "fixture_id": 19722767,
+    "period_id": 7192193,
+    "participant_id": 53,
+    "type_id": 19,
+    "section": "event",
+    "player_id": 15061513,
+    "related_player_id": null,
+    "player_name": "Kasper Høgh",
+    "related_player_name": null,
+    "result": null,
+    "info": "Argument",
+    "addition": "1st Yellowcard",
+    "minute": 45,
+    "extra_minute": 1,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": 1497,
+    "detailed_period_id": 7192193,
+    "rescinded": false,
+    "sort_order": 1,
+    "type": {
+     "id": 19,
+     "name": "Yellowcard",
+     "code": "yellowcard",
+     "developer_name": "YELLOWCARD",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158396704,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 66,
+    "type_id": 19,
+    "section": "event",
+    "player_id": 14338021,
+    "related_player_id": null,
+    "player_name": "Thibault Klidjé",
+    "related_player_name": null,
+    "result": null,
+    "info": "Foul",
+    "addition": "2nd Yellowcard",
+    "minute": 47,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": 1496,
+    "detailed_period_id": 7192544,
+    "rescinded": false,
+    "sort_order": 2,
+    "type": {
+     "id": 19,
+     "name": "Yellowcard",
+     "code": "yellowcard",
+     "developer_name": "YELLOWCARD",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158397893,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 53,
+    "type_id": 19,
+    "section": "event",
+    "player_id": 172960,
+    "related_player_id": null,
+    "player_name": "Kieran Tierney",
+    "related_player_name": null,
+    "result": null,
+    "info": "Foul",
+    "addition": "3rd Yellowcard",
+    "minute": 80,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": 1496,
+    "detailed_period_id": 7192544,
+    "rescinded": false,
+    "sort_order": 3,
+    "type": {
+     "id": 19,
+     "name": "Yellowcard",
+     "code": "yellowcard",
+     "developer_name": "YELLOWCARD",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158398078,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 66,
+    "type_id": 19,
+    "section": "event",
+    "player_id": 37562348,
+    "related_player_id": null,
+    "player_name": "Marko Ivezic",
+    "related_player_name": null,
+    "result": null,
+    "info": "Foul",
+    "addition": "4th Yellowcard",
+    "minute": 85,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": 1496,
+    "detailed_period_id": 7192544,
+    "rescinded": false,
+    "sort_order": 4,
+    "type": {
+     "id": 19,
+     "name": "Yellowcard",
+     "code": "yellowcard",
+     "developer_name": "YELLOWCARD",
+     "model_type": "event",
+     "stat_group": null
+    }
+   },
+   {
+    "id": 158398094,
+    "fixture_id": 19722767,
+    "period_id": 7192544,
+    "participant_id": 53,
+    "type_id": 19,
+    "section": "event",
+    "player_id": 37714106,
+    "related_player_id": null,
+    "player_name": "Shumaira Mheuka",
+    "related_player_name": null,
+    "result": null,
+    "info": "Foul",
+    "addition": "5th Yellowcard",
+    "minute": 85,
+    "extra_minute": null,
+    "injured": null,
+    "on_bench": false,
+    "coach_id": null,
+    "sub_type_id": 1496,
+    "detailed_period_id": 7192544,
+    "rescinded": false,
+    "sort_order": 5,
+    "type": {
+     "id": 19,
+     "name": "Yellowcard",
+     "code": "yellowcard",
+     "developer_name": "YELLOWCARD",
+     "model_type": "event",
+     "stat_group": null
+    }
+   }
+  ],
+  "statistics": [
+   {
+    "id": 1069410875,
+    "fixture_id": 19722767,
+    "type_id": 34,
+    "participant_id": 53,
+    "data": {
+     "value": 6
+    },
+    "location": "away",
+    "type": {
+     "id": 34,
+     "name": "Corners",
+     "code": "corners",
+     "developer_name": "CORNERS",
+     "model_type": "statistic",
+     "stat_group": "offensive"
+    }
+   },
+   {
+    "id": 1069410876,
+    "fixture_id": 19722767,
+    "type_id": 34,
+    "participant_id": 66,
+    "data": {
+     "value": 2
+    },
+    "location": "home",
+    "type": {
+     "id": 34,
+     "name": "Corners",
+     "code": "corners",
+     "developer_name": "CORNERS",
+     "model_type": "statistic",
+     "stat_group": "offensive"
+    }
+   },
+   {
+    "id": 1069385713,
+    "fixture_id": 19722767,
+    "type_id": 45,
+    "participant_id": 53,
+    "data": {
+     "value": 61
+    },
+    "location": "away",
+    "type": {
+     "id": 45,
+     "name": "Ball Possession %",
+     "code": "ball-possession",
+     "developer_name": "BALL_POSSESSION",
+     "model_type": "statistic",
+     "stat_group": "overall"
+    }
+   },
+   {
+    "id": 1069385714,
+    "fixture_id": 19722767,
+    "type_id": 45,
+    "participant_id": 66,
+    "data": {
+     "value": 39
+    },
+    "location": "home",
+    "type": {
+     "id": 45,
+     "name": "Ball Possession %",
+     "code": "ball-possession",
+     "developer_name": "BALL_POSSESSION",
+     "model_type": "statistic",
+     "stat_group": "overall"
+    }
+   },
+   {
+    "id": 1069418907,
+    "fixture_id": 19722767,
+    "type_id": 52,
+    "participant_id": 53,
+    "data": {
+     "value": 2
+    },
+    "location": "away",
+    "type": {
+     "id": 52,
+     "name": "Goals",
+     "code": "goals",
+     "developer_name": "GOALS",
+     "model_type": "statistic",
+     "stat_group": "offensive"
+    }
+   },
+   {
+    "id": 1069418908,
+    "fixture_id": 19722767,
+    "type_id": 52,
+    "participant_id": 66,
+    "data": {
+     "value": 1
+    },
+    "location": "home",
+    "type": {
+     "id": 52,
+     "name": "Goals",
+     "code": "goals",
+     "developer_name": "GOALS",
+     "model_type": "statistic",
+     "stat_group": "offensive"
+    }
+   },
+   {
+    "id": 1069424289,
+    "fixture_id": 19722767,
+    "type_id": 79,
+    "participant_id": 53,
+    "data": {
+     "value": 0
+    },
+    "location": "away",
+    "type": {
+     "id": 79,
+     "name": "Assists",
+     "code": "assists",
+     "developer_name": "ASSISTS",
+     "model_type": "statistic",
+     "stat_group": "offensive"
+    }
+   },
+   {
+    "id": 1069424290,
+    "fixture_id": 19722767,
+    "type_id": 79,
+    "participant_id": 66,
+    "data": {
+     "value": 1
+    },
+    "location": "home",
+    "type": {
+     "id": 79,
+     "name": "Assists",
+     "code": "assists",
+     "developer_name": "ASSISTS",
+     "model_type": "statistic",
+     "stat_group": "offensive"
+    }
+   },
+   {
+    "id": 1069606131,
+    "fixture_id": 19722767,
+    "type_id": 84,
+    "participant_id": 53,
+    "data": {
+     "value": 3
+    },
+    "location": "away",
+    "type": {
+     "id": 84,
+     "name": "Yellowcards",
+     "code": "yellowcards",
+     "developer_name": "YELLOWCARDS",
+     "model_type": "statistic",
+     "stat_group": "overall"
+    }
+   },
+   {
+    "id": 1069606132,
+    "fixture_id": 19722767,
+    "type_id": 84,
+    "participant_id": 66,
+    "data": {
+     "value": 2
+    },
+    "location": "home",
+    "type": {
+     "id": 84,
+     "name": "Yellowcards",
+     "code": "yellowcards",
+     "developer_name": "YELLOWCARDS",
+     "model_type": "statistic",
+     "stat_group": "overall"
+    }
+   },
+   {
+    "id": 1069414793,
+    "fixture_id": 19722767,
+    "type_id": 1605,
+    "participant_id": 53,
+    "data": {
+     "value": 55
+    },
+    "location": "away",
+    "type": {
+     "id": 1605,
+     "name": "Successful Dribbles Percentage",
+     "code": "successful-dribbles-percentage",
+     "developer_name": "SUCCESSFUL_DRIBBLES_PERCENTAGE",
+     "model_type": "statistic",
+     "stat_group": "offensive"
+    }
+   },
+   {
+    "id": 1069414794,
+    "fixture_id": 19722767,
+    "type_id": 1605,
+    "participant_id": 66,
+    "data": {
+     "value": 40
+    },
+    "location": "home",
+    "type": {
+     "id": 1605,
+     "name": "Successful Dribbles Percentage",
+     "code": "successful-dribbles-percentage",
+     "developer_name": "SUCCESSFUL_DRIBBLES_PERCENTAGE",
+     "model_type": "statistic",
+     "stat_group": "offensive"
+    }
+   }
+  ],
+  "periods": [
+   {
+    "id": 7192193,
+    "fixture_id": 19722767,
+    "type_id": 1,
+    "started": 1792929675,
+    "ended": 1792932440,
+    "counts_from": 0,
+    "ticking": false,
+    "sort_order": 1,
+    "description": "1st-half",
+    "time_added": 1,
+    "period_length": 45,
+    "minutes": 46,
+    "seconds": 5,
+    "has_timer": false
+   },
+   {
+    "id": 7192544,
+    "fixture_id": 19722767,
+    "type_id": 2,
+    "started": 1792933462,
+    "ended": 1792936377,
+    "counts_from": 45,
+    "ticking": false,
+    "sort_order": 2,
+    "description": "2nd-half",
+    "time_added": 3,
+    "period_length": 45,
+    "minutes": 93,
+    "seconds": 35,
+    "has_timer": false
+   }
+  ]
+ }
+}
