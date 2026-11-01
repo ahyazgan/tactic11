@@ -12,6 +12,16 @@ GECİKMEYİ ÖLÇÜP GÖSTERİR — gizlemez.
         --match-id 990201 --home-team 611 --away-team 612 [--calibration saha.json]
     venv-cv\\Scripts\\python.exe -m scripts.canli_mac --source rtsp://kamera/stream ...
     venv-cv\\Scripts\\python.exe -m scripts.canli_mac --source https://.../index.m3u8 ...
+    venv-cv\\Scripts\\python.exe -m scripts.canli_mac --source "dshow:Integrated Camera" ...
+
+## USB kamera (DirectShow)
+
+`dshow:<aygıt adı>` bilgisayara takılı kamerayı doğrudan alır (ffmpeg `-f dshow`).
+Aygıt adları için `--source dshow:` (boş ad) listeyi yazar ve çıkar. Kamera ham/MJPEG
+kare verdiğinden segmentler her zaman H.264'e kodlanır; `--device-size 3840x2160
+--device-fps 30` kameranın desteklediği bir kip olmalı (desteklemiyorsa ffmpeg açılışta
+hata verir, hattın gerisi başlamaz). OBS'nin gördüğü her kaynak "OBS Virtual Camera"
+adıyla aynı kapıdan girer.
 
 ## Dosya kaynağı = canlı prova
 
@@ -105,6 +115,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -119,6 +130,8 @@ DEFAULT_SEGMENT_SECONDS = 30.0
 STATIC_DEFAULT_WEIGHTS = PROJECT_ROOT / "data" / "tracking" / "models" / "rfdetr_soccertrack_ft_v2"
 POLL_SECONDS = 5.0
 STREAM_SCHEMES = ("rtsp://", "rtsps://", "rtmp://", "http://", "https://", "udp://", "srt://")
+DEVICE_PREFIX = "dshow:"          # Windows DirectShow kamerası: dshow:<aygıt adı>
+DEVICE_RTBUF = "512M"             # ham kareler için ffmpeg gerçek-zaman tamponu
 
 
 @dataclass(frozen=True)
@@ -126,10 +139,18 @@ class SourceKind:
     is_stream: bool
     realtime: bool          # dosyayı gerçek hızda oku (-re)
     label: str
+    is_device: bool = False  # takılı kamera (dshow): akış gibi canlı, ama ham kare → kodlama şart
+
+
+def device_name(source: str) -> str:
+    """`dshow:Integrated Camera` → `Integrated Camera` (boş olabilir: listele)."""
+    return source[len(DEVICE_PREFIX):].strip()
 
 
 def classify_source(source: str, *, realtime_file: bool) -> SourceKind:
     low = source.lower()
+    if low.startswith(DEVICE_PREFIX):
+        return SourceKind(is_stream=True, realtime=False, label="USB kamera (dshow)", is_device=True)
     if low.startswith(STREAM_SCHEMES):
         return SourceKind(is_stream=True, realtime=False, label="akış")
     return SourceKind(is_stream=False, realtime=realtime_file,
@@ -156,23 +177,33 @@ def find_ffmpeg(explicit: str | None = None) -> str:
 def ffmpeg_segment_command(
     ffmpeg: str, source: str, kind: SourceKind, watch: Path, *,
     segment_seconds: float, start_seconds: float = 0.0, transcode: bool = False,
-    height: int | None = None,
+    height: int | None = None, device_size: str | None = None, device_fps: float | None = None,
 ) -> list[str]:
     """Kaynağı `watch/seg_%04d.mp4` segmentlerine böl.
 
     `-c copy` (H.264 kaynak) kayıpsız ve ucuzdur; VP9/webm ya da çözünürlük
     düşürme istenirse yeniden kodlanır (`transcode`, `height`). Segmentler
     anahtar kareye hizalanır; `-reset_timestamps 1` her segmenti 0'dan başlatır
-    ki takip kare zamanlarını segment içi saysın.
+    ki takip kare zamanlarını segment içi saysın. Takılı kamera (`dshow:`) ham
+    kare verir: giriş `-f dshow`, kip `device_size`/`device_fps`, kodlama zorunlu.
     """
     cmd = [ffmpeg, "-hide_banner", "-loglevel", "warning", "-nostdin"]
     if kind.is_stream and source.lower().startswith(("rtsp://", "rtsps://")):
         cmd += ["-rtsp_transport", "tcp"]
     if kind.realtime:
         cmd += ["-re"]
-    if start_seconds > 0:
+    if start_seconds > 0 and not kind.is_device:
         cmd += ["-ss", f"{start_seconds:.3f}"]
-    cmd += ["-i", source, "-an"]
+    if kind.is_device:
+        cmd += ["-f", "dshow", "-rtbufsize", DEVICE_RTBUF]
+        if device_fps:
+            cmd += ["-framerate", f"{device_fps:g}"]
+        if device_size:
+            cmd += ["-video_size", device_size]
+        cmd += ["-i", f"video={device_name(source)}", "-an"]
+        transcode = True
+    else:
+        cmd += ["-i", source, "-an"]
     if transcode or height:
         cmd += ["-c:v", "libx264", "-preset", "veryfast", "-crf", "20",
                 "-g", str(int(segment_seconds * 2)), "-pix_fmt", "yuv420p"]
@@ -185,6 +216,17 @@ def ffmpeg_segment_command(
             "-reset_timestamps", "1", "-segment_format", "mp4",
             str(watch / "seg_%04d.mp4")]
     return cmd
+
+
+def list_devices(ffmpeg: str) -> list[str]:
+    """ffmpeg'in gördüğü DirectShow video aygıt adları (yalnız Windows)."""
+    proc = subprocess.run([ffmpeg, "-hide_banner", "-list_devices", "true", "-f", "dshow", "-i", "dummy"],
+                          capture_output=True, text=True, encoding="utf-8", errors="replace", check=False)
+    return parse_device_list(proc.stderr)
+
+
+def parse_device_list(ffmpeg_stderr: str) -> list[str]:
+    return re.findall(r'"([^"]+)" \(video\)', ffmpeg_stderr)
 
 
 def source_needs_transcode(source: str) -> bool:
@@ -483,7 +525,8 @@ def refresh_service_clock(watch: Path, snapshot) -> bool:
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Canlı maç modu: kaynak → segment → takip → panel")
-    p.add_argument("--source", required=True, help="video dosyası | rtsp://... | http(s)://... (HLS)")
+    p.add_argument("--source", required=True,
+                   help="video dosyası | rtsp://... | http(s)://... (HLS) | dshow:<kamera adı> (dshow: → listele)")
     p.add_argument("--match-id", type=int, required=True)
     p.add_argument("--home-team", type=int, required=True)
     p.add_argument("--away-team", type=int, required=True)
@@ -495,6 +538,8 @@ def main() -> int:
     p.add_argument("--start-seconds", type=float, default=0.0, help="dosyada bu saniyeden başla")
     p.add_argument("--no-realtime", action="store_true", help="dosyayı gerçek hızda değil, olabildiğince hızlı oku")
     p.add_argument("--height", type=int, default=None, help="segmentleri bu yüksekliğe indir (ör. 1080)")
+    p.add_argument("--device-size", default=None, help="dshow kamera kipi, ör. 3840x2160 (kamera desteklemeli)")
+    p.add_argument("--device-fps", type=float, default=None, help="dshow kamera kare hızı, ör. 30")
     p.add_argument("--ffmpeg", default=None)
     p.add_argument("--camera", default="auto", choices=["auto", "static", "broadcast", "operated"],
                    help="static=sabit, broadcast=TV, operated=operatörlü tek kamera (pan/zoom, kesme yok)")
@@ -537,6 +582,10 @@ def main() -> int:
             print(f"[canlı] uyarı: {calib_error}")
 
     kind = classify_source(args.source, realtime_file=not args.no_realtime)
+    if kind.is_device and not device_name(args.source):
+        names = list_devices(find_ffmpeg(args.ffmpeg))
+        print("[canlı] kameralar: " + (" | ".join(f"dshow:{n}" for n in names) if names else "yok"))
+        return 0
     if not kind.is_stream and not Path(args.source).is_file():
         print(f"kaynak yok: {args.source}")
         return 2
@@ -559,10 +608,11 @@ def main() -> int:
         return 2
 
     ffmpeg = find_ffmpeg(args.ffmpeg)
-    transcode = (not kind.is_stream) and source_needs_transcode(args.source)
+    transcode = kind.is_device or ((not kind.is_stream) and source_needs_transcode(args.source))
     seg_cmd = ffmpeg_segment_command(
         ffmpeg, args.source, kind, seg_dir, segment_seconds=args.segment_seconds,
         start_seconds=args.start_seconds, transcode=transcode, height=args.height,
+        device_size=args.device_size, device_fps=args.device_fps,
     )
     track_cmd = [
         sys.executable, "-m", "scripts.track_live_candidates" if args.telestration else "scripts.track_live",
