@@ -1,0 +1,17 @@
+{
+  "written": "2026-11-01 ~21:57, after plan 1 (c7038aa) was evaluated on 990723/990741 and before any of the windows below was evaluated for passes",
+  "why_a_second_plan": "plan 1's P1 ('recall >= 2 x production') cannot be met when production recall is already 68% (990741); it failed there while the night window went from 0/97 to 15/97 matched. Plan 1 is reported as failed; this plan uses a non-inferiority criterion and fresh windows. Criteria of plan 1 are not changed retroactively.",
+  "method_frozen": "identical to plan 1: refine_segment default -> recompute_actors -> extract_passes per segment",
+  "ground_truth": "as plan 1; 132831 uses docs/measurements/ball-events-mapping-132831.json (position/time only; its team mapping is not used for pass matching)",
+  "windows": {
+    "C": "990731: 117092 40.0-45.0 min, 4 keep-up segments from the full-chain rehearsal (night); never used for pass decisions",
+    "D": "990752 + 990753: 132831 segments 11.5/16.0/19.5 and 12.5/14.5/17.5/18.5 min (daylight, other venue); never used for pass decisions"
+  },
+  "criteria": {
+    "Q1": "each window: recall refined >= production - 2 points",
+    "Q2": "each window: precision refined >= production - 3 points",
+    "Q3": "at least one window: recall refined >= production + 5 points",
+    "Q4": "defending-team accuracy with recomputed possession (eval_defending_events, 990731 only; 132831 has no valid team mapping): >= without recompute - 3 points"
+  },
+  "decision": "all pass -> telestrate_live re-derives passes from refined frames and the ingest replaces the segment window's earlier derived events. Any failure -> not wired; documented."
+}
