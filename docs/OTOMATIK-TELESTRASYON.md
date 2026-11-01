@@ -181,6 +181,27 @@ Duman testi (`990402`'nin iki segmenti, eğitim GPU'yu kullanırken): 2 × 30 sn
 57 sn'de çizildi (segment başına ~28 sn, gerçek zamana yetişiyor). Panelde bu
 videoyu gösteren katman henüz yok.
 
+## Denenen ve bırakılan: topsuz koşu okları
+
+Deneme commit'i `b5ed6a4`, geri alma `e981142`. Topa sahip takımın son 1 sn'de
+≥5,5 m/s ve hücum yönüyle ≤~45° koşan oyuncularına ok; ışınlanma (>12 m/s,
+kimlik kayması) elenir. Eşikler ölçümden önce sabitlendi. Aynı kural GT
+konumlarına uygulandı; ok, aynı karede 3 m içinde bir GT koşusuyla eşleşirse doğru.
+
+| | Çizilen ok | GT koşusu | Eşleşen | Doğru ok | Yakalanan koşu |
+|---|---:|---:|---:|---:|---:|
+| 600–960 sn (990401) | 331 | 209 | 27 | %8,2 | %12,9 |
+| 1200–1560 sn (990402) | 221 | 153 | 3 | %1,4 | %2,0 |
+
+Okların neredeyse tamamı yanlış: ~4 fps'lik konumlarda kalibrasyon hatası ve tespit
+titremesi hız tahminini bozuyor, kimlik kaymaları izleri bölüyor. Yanlış çizim hiç
+çizim olmamasından kötü olduğu için özellik üretime alınmadı. Önkoşul: daha doğru
+konum (kalibrasyon) ve daha uzun ömürlü kimlik.
+
+Not: kalibrasyon kapısı artık oyuncudan türetilmiş 117092 kalibrasyonunu
+doğrulanmamış saydığından, bu karelerle ölçüm `eval_telestration --ignore-calibration-gate`
+ile yapılır (konumlar karelerde zaten hesaplıdır; ölçüm GT'ye karşı konumdur).
+
 ## Sınırlar ve sıradaki adımlar
 
 - Yalnız sabit kalibrasyon. Kare başına kalibrasyonla işlenen hareketli kamera
