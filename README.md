@@ -565,6 +565,12 @@ kamera dışı oyuncular sayılmaz, bu yüzden yerleşim yalnız kadro görünü
 
 ### Canlı maç: segment akışı → maç-içi karar paneli
 
+> **Adım adım kullanım:** [docs/CANLI-MOD-KILAVUZU.md](docs/CANLI-MOD-KILAVUZU.md) — kalibrasyon
+> (≥5 saha işareti), `scripts.canli_mac --telestration --home-attack`, panelde canlı
+> telestrasyon kartı, ölçülmüş doğruluk/hız sınırları. Telestrasyonun ölçümleri:
+> [docs/OTOMATIK-TELESTRASYON.md](docs/OTOMATIK-TELESTRASYON.md); tespit/kalibrasyon
+> bulguları: [docs/TESPIT-KALITESI-DENETIMI.md](docs/TESPIT-KALITESI-DENETIMI.md).
+
 Klip sonrası işlemeye ek olarak video **maç sırasında** okunabilir. Kamera/encoder
 klasöre segment yazar, `scripts/track_live.py` klasörü izler; her yeni segmenti takip
 hattından geçirip kareleri **aynı maça ekler** (`ingest_tracking_json --append`).
