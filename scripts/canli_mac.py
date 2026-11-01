@@ -38,6 +38,15 @@ segment sayısı). Fark = koçun gördüğü resmin kaç saniye eski olduğu. Ek
 - Skor ve dakika videodan okunmaz; dakika segment sırasından türetilir
   (`--start-minute`), skor panelde şut olaylarından gelir.
 
+## Veritabanı ön kontrolü
+
+Kareler ana ortamın ingest süreciyle veritabanına yazılır; yazılamayan segment
+"işlendi" sayılmaz ve gecikme göstergesi ilerlemez. Başlamadan önce aynı
+yorumlayıcı ve aynı `DATABASE_URL` ile bağlantı denenir; ulaşılamazsa akış hiç
+başlamaz ve ne yapılacağı yazılır (ölçüldü: `.env`'deki şablon adresle 12
+segmentin hepsi sessizce reddedilmişti). Yerel kurulum için
+`--database-url sqlite:///<proje>/demo.db`.
+
 ## Küçültülmüş segment ve kalibrasyon (`--height`)
 
 Piksel kalibrasyonu çekildiği çözünürlüğe bağlıdır; takip hattı boyut farkında
@@ -196,6 +205,38 @@ def _written_count(watch: Path) -> int:
     return len(list(watch.glob("seg_*.mp4")))
 
 
+# hata sınıfı + ilk satır: SQLAlchemy'nin "Background on this error" kuyruğu bilgi taşımaz
+DB_CHECK = (
+    "import sys\n"
+    "from sqlalchemy import text\n"
+    "from app.db.session import engine\n"
+    "try:\n"
+    "    with engine.connect() as c:\n"
+    "        c.execute(text('select 1'))\n"
+    "except Exception as exc:\n"
+    "    print(type(exc).__name__ + ': ' + (str(exc).splitlines() or [''])[0], file=sys.stderr)\n"
+    "    sys.exit(1)\n"
+)
+
+
+def check_database(ingest_python: str, database_url: str | None, timeout_s: float = 30.0) -> str | None:
+    """Ingest ortamında veritabanı bağlantısını dene → None (tamam) ya da hata metninin son satırı."""
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    if database_url:
+        env["DATABASE_URL"] = database_url
+    try:
+        proc = subprocess.run([ingest_python, "-c", DB_CHECK], cwd=str(PROJECT_ROOT), env=env,  # noqa: S603
+                              capture_output=True, text=True, timeout=timeout_s)
+    except subprocess.TimeoutExpired:
+        return f"{timeout_s:g} sn içinde yanıt yok"
+    except OSError as exc:
+        return f"yorumlayıcı başlatılamadı: {exc}"
+    if proc.returncode == 0:
+        return None
+    lines = [ln for ln in (proc.stderr or proc.stdout).splitlines() if ln.strip()]
+    return lines[-1] if lines else f"çıkış kodu {proc.returncode}"
+
+
 def scale_calibration(calibration: Path, size: tuple[int, int], out_dir: Path) -> Path:
     """Kalibrasyonu yeni görüntü boyutuna ölçekle (saha noktaları aynı); boyut aynıysa olduğu gibi."""
     data = json.loads(calibration.read_text(encoding="utf-8"))
@@ -277,6 +318,16 @@ def main() -> int:
     if args.fresh and watch.exists():
         shutil.rmtree(watch)
     watch.mkdir(parents=True, exist_ok=True)
+
+    # track_live ile aynı ingest yorumlayıcısı
+    from scripts.track_live import default_ingest_python  # noqa: PLC0415
+
+    db_error = check_database(default_ingest_python(), args.database_url)
+    if db_error is not None:
+        print(f"[canlı] veritabanına ulaşılamıyor: {db_error}")
+        print("[canlı] kareler yazılamaz; --database-url verin (yerel: sqlite:///<proje>/demo.db) "
+              "ya da DATABASE_URL'i düzeltin.")
+        return 2
 
     ffmpeg = find_ffmpeg(args.ffmpeg)
     transcode = (not kind.is_stream) and source_needs_transcode(args.source)
