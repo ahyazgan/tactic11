@@ -155,3 +155,9 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Plan 2 (taze pencereler, aşağı yönlü olmama): 132831'de kesinlik −7,9, 990731'de savunan
   takım −21,7 → geçmedi. recompute_actors canlı yoldan çıkarıldı, araç olarak kaldı.
 
+## 22:05–22:30 — Kalibrasyon ön kontrolü, temizlik
+- `canli_mac --telestration` başlamadan kalibrasyonu telestrasyon kapısından geçiriyor;
+  geçmeyen kalibrasyonla başlamıyor (`--allow-unverified-calibration` ile zorlanır).
+- Ölçüm dosyalarındaki saat tahminleri yanlıştı; commit zamanına işaret edecek şekilde düzeltildi.
+- Tam paket 3274 test yeşil. PR #323 CI bekliyor (takım + pas sonuçları + ön kontrol).
+
