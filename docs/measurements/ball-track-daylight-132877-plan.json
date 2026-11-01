@@ -1,0 +1,18 @@
+{
+  "written": "2026-11-01, before match 132877 was tracked or any of its results computed",
+  "question": "Does the candidate ball track (default since PR #318) stay at least as good as the production ball on a daylight match the system has never seen?",
+  "match": "SoccerTrack v2 132877 (Test Videos set; never used for training, tuning or any decision), first half panorama, daylight, University of Tsukuba pitch",
+  "window": "match minutes 10-20 of the first half: video seconds padding+600 ... padding+1200, padding = 2007 s from 132877_padding_info.csv (FIRST_HALF); 20 segments of 30 s. If the video does not cover this range, the window is the first 20 full segments after kickoff and this is noted before evaluation",
+  "pipeline": "same as 117092 control: track_live_candidates, v2 weights, tiles 4, track-fps 15, frames at 12.5 fps, camera static, landmark TPS calibration from 132877_keypoints.json (calibration_from_keypoints); home attack direction from the event mapping",
+  "event_mapping": "derive_event_mapping on tracked players only (no ball, no possession) for axis flips and team side; video offset fixed in advance = padding - 0.28 s (the GSR-measured lag on 117092); the player-derived best offset is reported but not used",
+  "arms": {"baseline": "production frames ball", "candidate": "refine_segment with defaults at the commit of this file"},
+  "criteria": {
+    "D1": "touch hit within 5 m: candidate >= baseline - 2 points",
+    "D2": "touch wrong-ball share: candidate <= baseline + 2 points",
+    "D3": "pass-flight hit within 5 m: candidate >= baseline - 5 points",
+    "D4": "defending-team accuracy on drawn frames (eval_defending_events): candidate >= baseline - 2 points",
+    "D5": "correct defending share of all possession frames: candidate >= baseline - 2 points"
+  },
+  "decision": "all pass -> the candidate track stays the default with daylight evidence added to the scorecard. Any failure -> reported as a daylight limit, backlog item opened; code and criteria are not changed after seeing the result",
+  "not_measured_here": "end-to-end block-label accuracy (needs GSR player table, not downloaded for this match)"
+}

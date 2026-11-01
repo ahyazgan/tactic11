@@ -10,6 +10,10 @@ ayağındadır. GSR'ye karşı doğrulandı (bkz. docs/TOP-TESPITI-OLAY-OLCUMU.m
   (GSR karesi = round(t·25) + 1 + 9, `signal_quality_alignment.json`).
 - Bu eşlemeyle olay konumu en yakın GSR oyuncusuna medyan 1,0 m, %85'i ≤ 2 m.
 
+Başka maç: `--mapping eşleme.json` ({"nodes", "flip", "video_offset_s", "team_side"});
+eşleme ölçülen sonuçlara bakılmadan, takip edilen oyuncular ya da GSR'ye karşı bulunur
+(117092: yukarıdaki; 132877: docs/measurements/ball-events-mapping-132877.json).
+
 Ölçütler (frames JSON klasörleri; dakika alanı mutlak maç dakikası olmalı):
 
 - **dokunuş**: olay anına en yakın karede (≤ `--window` sn) top olay konumuna
@@ -32,13 +36,28 @@ from typing import Any
 
 import numpy as np
 
-NODES = Path("data/tracking/datasets/soccertrack_v2/117092/117092_player_nodes.csv")
 PITCH_L, PITCH_W = 105.0, 68.0
-VIDEO_LAG_S = 0.28                      # video sn = olay sn − bu
-FLIP = {"30798": True, "9834": False}   # takıma göre normalize eksenler (117092 ilk yarı)
-GSR_TEAM = {"30798": 1, "9834": 0}      # olay takımı → GSR takımı (sol 0 / sağ 1), konumla eşlendi
 PASS_MIN_S, PASS_MAX_S = 0.6, 3.0
 POSSESSION_MAX_GAP_S = 4.0
+
+
+@dataclass(frozen=True)
+class EventMapping:
+    """Bir maçın dokunuş olaylarını videoya bağlayan eşleme (ilk yarı)."""
+    nodes: Path
+    flip: dict[str, bool]          # takıma göre normalize eksenler: True → iki eksen ters
+    video_offset_s: float          # video sn = olay sn + bu
+    team_side: dict[str, int]      # olay takımı → 0/1 (117092'de GSR sol/sağ)
+
+    @classmethod
+    def load(cls, path: Path) -> EventMapping:
+        d = json.loads(path.read_text(encoding="utf-8"))
+        return cls(Path(d["nodes"]), {k: bool(v) for k, v in d["flip"].items()}, float(d["video_offset_s"]),
+                   {k: int(v) for k, v in d["team_side"].items()})
+
+
+MATCH_117092 = EventMapping(Path("data/tracking/datasets/soccertrack_v2/117092/117092_player_nodes.csv"),
+                            {"30798": True, "9834": False}, -0.28, {"30798": 1, "9834": 0})
 
 
 @dataclass(frozen=True)
@@ -50,16 +69,16 @@ class Touch:
     types: str
 
 
-def load_touches(path: Path = NODES) -> list[Touch]:
+def load_touches(mapping: EventMapping = MATCH_117092) -> list[Touch]:
     out = []
-    with path.open(encoding="utf-8") as fh:
+    with mapping.nodes.open(encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
-            if r["event_period"] != "FIRST_HALF" or not r["x"] or r["team_id"] not in FLIP:
+            if r["event_period"] != "FIRST_HALF" or not r["x"] or r["team_id"] not in mapping.flip:
                 continue
             u, v = float(r["y"]), float(r["x"])  # eksenler yer değiştirmiş
-            if FLIP[r["team_id"]]:
+            if mapping.flip[r["team_id"]]:
                 u, v = 1.0 - u, 1.0 - v
-            out.append(Touch(float(r["event_time"]) / 1000.0 - VIDEO_LAG_S, u * PITCH_L, v * PITCH_W,
+            out.append(Touch(float(r["event_time"]) / 1000.0 + mapping.video_offset_s, u * PITCH_L, v * PITCH_W,
                              r["team_id"], r["filtered_event_types"]))
     return sorted(out, key=lambda e: e.t)
 
@@ -74,13 +93,14 @@ def short_passes(touches: list[Touch]) -> list[tuple[Touch, Touch]]:
     return pairs
 
 
-def possession_intervals(touches: list[Touch], max_gap: float = POSSESSION_MAX_GAP_S,
-                         ) -> list[tuple[float, float, int]]:
-    """(başlangıç, bitiş, GSR takımı): aynı takımın ardışık iki dokunuşu arası — top o takımda.
+def possession_intervals(touches: list[Touch], team_side: dict[str, int] | None = None,
+                         max_gap: float = POSSESSION_MAX_GAP_S) -> list[tuple[float, float, int]]:
+    """(başlangıç, bitiş, takım tarafı): aynı takımın ardışık iki dokunuşu arası — top o takımda.
 
     Takım değiştiren aralıklar (kayıp, kesme) belirsiz olduğu için alınmaz.
     """
-    return [(a.t, b.t, GSR_TEAM[a.team]) for a, b in zip(touches, touches[1:], strict=False)
+    side = team_side or MATCH_117092.team_side
+    return [(a.t, b.t, side[a.team]) for a, b in zip(touches, touches[1:], strict=False)
             if a.team == b.team and 0.0 < b.t - a.t <= max_gap]
 
 
@@ -146,14 +166,15 @@ def evaluate(ts: np.ndarray, balls: np.ndarray, touches: list[Touch], *, radius:
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--frames", type=Path, nargs="+", required=True, help="frames JSON klasörleri")
-    p.add_argument("--nodes", type=Path, default=NODES)
+    p.add_argument("--mapping", type=Path, default=None, help="başka maç için eşleme JSON'u (varsayılan 117092)")
     p.add_argument("--radius", type=float, default=3.0)
     p.add_argument("--window", type=float, default=0.2, help="olay ile kare arası en çok (sn)")
     p.add_argument("--out", type=Path, default=None)
     args = p.parse_args()
     ts, balls = load_balls(args.frames)
     report = {"frames_dirs": [str(d) for d in args.frames], "radius_m": args.radius, "window_s": args.window,
-              **evaluate(ts, balls, load_touches(args.nodes), radius=args.radius, window=args.window)}
+              **evaluate(ts, balls, load_touches(EventMapping.load(args.mapping) if args.mapping else MATCH_117092),
+                 radius=args.radius, window=args.window)}
     text = json.dumps(report, ensure_ascii=False, indent=2)
     if args.out:
         args.out.write_text(text + "\n", encoding="utf-8")
