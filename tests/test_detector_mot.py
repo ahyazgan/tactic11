@@ -40,3 +40,10 @@ def test_teacher_balls_keep_only_in_play_detections() -> None:
              (405.0, 350.0, 411.0, 356.0, 0.3)]    # güven düşük
     assert plausible_balls(balls, players, 0.5) == [(115.0, 330.0, 6.0, 6.0)]
     assert plausible_balls(balls, [], 0.5) == []
+def test_ball_matching_counts_each_prediction_once() -> None:
+    from scripts.soccertrack_v2.evaluate_ball import match_balls
+
+    gt = [(100.0, 100.0), (300.0, 300.0)]
+    pred = [(105.0, 102.0), (101.0, 99.0), (500.0, 500.0)]   # iki tahmin aynı topa yakın, biri boşta
+    assert match_balls(pred, gt) == (1, 1, 2)
+    assert match_balls([], gt) == (0, 2, 0)
