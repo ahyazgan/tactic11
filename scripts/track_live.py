@@ -68,6 +68,14 @@ import time
 from pathlib import Path
 
 from app.tracking.anchor_state import team_anchor as valid_team_anchor
+from app.tracking.match_clock import (
+    ClockState,
+    MatchClock,
+    kickoff_anchor,
+    load_watch_clock,
+    save_anchor,
+    segment_index_of,
+)
 
 VIDEO_EXT = {".mp4", ".mkv", ".ts", ".mov"}
 STATE_FILE = ".track_live_state.json"
@@ -430,6 +438,18 @@ def main() -> int:
         )
         warm.team_anchor = anchor
 
+    def _try_kickoff_anchor(clock: MatchClock, state: ClockState, seg_index: int, offset: float,
+                            frames_json: Path) -> None:
+        """Devre başı segmentinde başlama vuruşu → yayın gecikmesi (clock_anchor.json)."""
+        from app.domain import TrackingFrame
+        payload = json.loads(frames_json.read_text(encoding="utf-8"))
+        frames = [TrackingFrame.model_validate(f) for f in payload.get("frames", [])]
+        anchored = kickoff_anchor(clock, state, seg_index, offset, frames, args.home_team, args.away_team)
+        if anchored is not None:
+            save_anchor(watch, anchored)
+            print(f"  maç saati: {state.period}. devre başlama vuruşu bulundu — yayın gecikmesi "
+                  f"{anchored.delay_s:.0f} sn (önceki {clock.delay_s:.0f} sn)", flush=True)
+
     def _done(name: str) -> None:
         nonlocal index
         processed.add(name)
@@ -438,7 +458,7 @@ def main() -> int:
                             "team_anchor": anchor.tolist() if anchor is not None else None,
                             "team_anchor_context": anchor_context})
 
-    def _track_isolated(seg: Path, offset: float, frames_json: Path) -> bool:
+    def _track_isolated(seg: Path, offset: float, frames_json: Path, period: int) -> bool:
         """Eski yol: her segment ayrı süreçte (model her seferinde yeniden yüklenir)."""
         nonlocal anchor
         cmd = [
@@ -454,7 +474,7 @@ def main() -> int:
             "--tracker", args.tracker, "--reid-model", args.reid_model,
             "--tiles", str(args.tiles), "--threshold", str(args.threshold),
             "--ball-threshold", str(args.threshold),
-            "--clip-offset-minutes", repr(offset), "--period", str(args.period),
+            "--clip-offset-minutes", repr(offset), "--period", str(period),
             # Yayın ayarları alt sürece de geçmeli; yoksa --isolate sessizce
             # farklı (sabit kamera) davranır ve iki mod aynı maçta karışır.
             "--camera", args.camera,
@@ -480,7 +500,7 @@ def main() -> int:
 
     last_summary: dict = {}
 
-    def _track_warm(seg: Path, offset: float, frames_json: Path) -> bool:
+    def _track_warm(seg: Path, offset: float, frames_json: Path, period: int) -> bool:
         """Sıcak model: aynı süreçte, dedektör yeniden yüklenmeden."""
         nonlocal anchor
         assert warm is not None
@@ -488,7 +508,7 @@ def main() -> int:
         last_summary.update(warm.run(
             seg, out_json=frames_json, offset_minutes=offset,
             match_id=args.match_id, home_team=args.home_team,
-            away_team=args.away_team, period=args.period,
+            away_team=args.away_team, period=period,
         ))
         anchor = warm.team_anchor
         return frames_json.exists()
@@ -509,16 +529,30 @@ def main() -> int:
 
     def _handle(seg: Path) -> None:
         """Tek segment: takip → JSON → DB. İşlendi işaretlemesi burada yapılır."""
-        offset = _minute_from_name(seg.name, args.minute_from_name)
-        if offset is None:
-            offset = args.start_minute + index * (args.segment_seconds / 60.0)
+        clock = load_watch_clock(watch)
+        seg_index = segment_index_of(seg.name, index)
+        state = clock.segment_state(seg_index) if clock is not None else None
+        if state is not None and state.status != "in_play":
+            # maç saati (servisin devre başlangıçları): başlamadı / devre arası → işlenmez
+            print(f"  {seg.name}: maç saati '{state.status}' — işlenmedi", flush=True)
+            _done(seg.name)
+            return
+        if state is not None and state.minute is not None and state.period is not None:
+            offset, period = state.minute, state.period
+        else:
+            offset = _minute_from_name(seg.name, args.minute_from_name)
+            if offset is None:
+                offset = args.start_minute + index * (args.segment_seconds / 60.0)
+            period = args.period
         frames_json = out_dir / f"{seg.stem}.json"
         t0 = time.time()
-        ok = _track_isolated(seg, offset, frames_json) if args.isolate \
-            else _track_warm(seg, offset, frames_json)
+        ok = _track_isolated(seg, offset, frames_json, period) if args.isolate \
+            else _track_warm(seg, offset, frames_json, period)
         if not ok:
             _done(seg.name)
             return
+        if clock is not None and state is not None:
+            _try_kickoff_anchor(clock, state, seg_index, offset, frames_json)
         ing = subprocess.run(  # noqa: S603 — sabit komut listesi
             [args.ingest_python, "-m", "scripts.ingest_tracking_json",
              "--json", str(frames_json), "--tenant", args.tenant,

@@ -35,8 +35,17 @@ segment sayısı). Fark = koçun gördüğü resmin kaç saniye eski olduğu. Ek
   ve 60-80. dk kararları için yeterli, 89. dk için değil.
 - Sabit kamera için kalibrasyon JSON'u gerekir (`scripts.propose_calibration`);
   verilmezse çapa görüntüden aranır (TV kuralı) — sabit kamerada yanlış olabilir.
-- Skor ve dakika videodan okunmaz; dakika segment sırasından türetilir
+- Skor ve dakika videodan okunmaz. Servis yoksa dakika segment sırasından türetilir
   (`--start-minute`), skor panelde şut olaylarından gelir.
+
+## Maç saati (`--service sportmonks --service-fixture <id>`)
+
+Dakika ve devre canlı servisin devre başlangıçlarından türetilir
+(`app.tracking.match_clock`): `clock.json` başta yazılır, ikinci yarı başlayınca
+güncellenir; devre arası segmentleri işlenmez. Yayın gecikmesi `--stream-delay-s`
+ile verilir ya da 0 bırakılırsa devre başındaki başlama vuruşu dizilişinden
+çapalanır (`clock_anchor.json`; sezgisel, makul aralık dışında alınmaz). Panel
+skoru için WS'e `service=` / `service_fixture=` verilir.
 
 ## Canlı kalma (`--keep-up`)
 
@@ -395,6 +404,30 @@ def _telestration_backlog(watch: Path) -> int:
                if not (tele / f"{f.stem}.mp4").exists() and not (tele / f"{f.stem}.error.json").exists())
 
 
+CLOCK_REFRESH_S = 60.0
+
+
+def service_clock(snapshot, *, started_at: datetime, segment_seconds: float, delay_s: float):
+    """Servisin devre başlangıçlarından maç saati (track_live `clock.json`'dan okur)."""
+    from app.tracking.match_clock import MatchClock  # noqa: PLC0415
+
+    return MatchClock(period_starts=tuple(snapshot.period_starts), delay_s=delay_s,
+                      stream_started_at=started_at, segment_seconds=segment_seconds)
+
+
+def refresh_service_clock(watch: Path, snapshot) -> bool:
+    """Yeni devre başladıysa `clock.json`'u güncelle; değiştiyse True."""
+    from app.tracking.match_clock import CLOCK_FILE, MatchClock  # noqa: PLC0415
+
+    path = watch / CLOCK_FILE
+    clock = MatchClock.load(path)
+    starts = tuple(sorted(snapshot.period_starts))
+    if not starts or starts == clock.period_starts:
+        return False
+    clock.with_period_starts(starts).save(path)
+    return True
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Canlı maç modu: kaynak → segment → takip → panel")
     p.add_argument("--source", required=True, help="video dosyası | rtsp://... | http(s)://... (HLS)")
@@ -429,7 +462,16 @@ def main() -> int:
                    help="telestrasyon: ev sahibi kalibrasyonun saha x'i artan/azalan yöne hücum eder")
     p.add_argument("--allow-unverified-calibration", action="store_true",
                    help="telestrasyon kapısını geçmeyen kalibrasyonla yine başla (yalnız halkalar çizilir)")
+    p.add_argument("--service", default=None, choices=["sportmonks", "api_football"],
+                   help="maç saati canlı servisten: segment dakikası/devresi devre başlangıçlarından "
+                        "türetilir, devre arası işlenmez (--start-minute yerine)")
+    p.add_argument("--service-fixture", type=int, default=None, help="servisteki fikstür kimliği")
+    p.add_argument("--stream-delay-s", type=float, default=0.0,
+                   help="yayının stadyumdan gecikmesi (sn); bilinmiyorsa 0 bırakın, başlama "
+                        "vuruşundan otomatik çapalanır")
     args = p.parse_args()
+    if bool(args.service) != bool(args.service_fixture):
+        p.error("--service ve --service-fixture birlikte verilmeli")
     if args.telestration and not args.calibration:
         p.error("--telestration sabit kamera kalibrasyonu ister (--calibration)")
     if args.telestration:
@@ -491,6 +533,25 @@ def main() -> int:
           f"{' · yeniden kodlama' if transcode or args.height else ' · kopya'}")
     print(f"[canlı] panel: /admin/matches/{args.match_id}/live-decision?my_team_id={args.home_team}"
           f"&current_minute=<işlenen dk>")
+    poller = None
+    if args.service:
+        from app.data.sources.live_service import (  # noqa: PLC0415
+            LiveServicePoller,
+            make_live_service,
+        )
+
+        poller = LiveServicePoller(make_live_service(args.service), args.service_fixture,
+                                   interval_s=CLOCK_REFRESH_S)
+        poller.poll()
+        if poller.snapshot is None:
+            print(f"[canlı] servis yanıt vermedi: {poller.last_error}")
+            return 2
+        snap = poller.snapshot
+        service_clock(snap, started_at=datetime.now(UTC), segment_seconds=args.segment_seconds,
+                      delay_s=args.stream_delay_s).save(watch / "clock.json")
+        print(f"[canlı] maç saati: {args.service} · {snap.home_name} – {snap.away_name} · durum {snap.status}"
+              f" · başlamış devre {len(snap.period_starts)} · gecikme {args.stream_delay_s:g} sn"
+              f"{' (başlama vuruşundan çapalanacak)' if not args.stream_delay_s else ''}")
     t0 = time.time()
     seg_proc = subprocess.Popen(seg_cmd, cwd=str(PROJECT_ROOT))  # noqa: S603
     calibration = args.calibration
@@ -521,6 +582,10 @@ def main() -> int:
             time.sleep(POLL_SECONDS)
             source_ended = seg_proc.poll() is not None
             elapsed = (time.time() - t0) if kind.realtime else None
+            if poller is not None and poller.due():
+                poller.poll()
+                if poller.snapshot is not None and refresh_service_clock(watch, poller.snapshot):
+                    print(f"[canlı] maç saati: {len(poller.snapshot.period_starts)}. devre başladı", flush=True)
             if args.keep_up:
                 processed = {n for n in promoted
                              if keep_up_name(segment_index(n), start_minute=args.start_minute,

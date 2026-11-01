@@ -199,3 +199,26 @@ def test_check_calibration_applies_the_telestration_gate(tmp_path: Path) -> None
     assert "2.7 m > 2.0 m" in (check_calibration(loose) or "")
     assert "okunamadı" in (check_calibration(tmp_path / "yok.json") or "")
     assert check_calibration(Path("data/tracking/calibrations/soccertrack_v2_117092_landmarks.json")) is None
+
+
+def test_service_clock_written_and_refreshed_when_second_half_starts(tmp_path: Path) -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from app.data.sources.live_service import ServiceSnapshot
+    from app.tracking.match_clock import MatchClock, load_watch_clock
+    from scripts.canli_mac import refresh_service_clock, service_clock
+
+    k1 = datetime(2026, 11, 1, 17, 0, tzinfo=UTC)
+
+    def snap(*starts: datetime) -> ServiceSnapshot:
+        return ServiceSnapshot("sportmonks", 1, "live", 10, "A", "B", (0, 0), (), None, starts, k1)
+
+    started = k1 + timedelta(minutes=5)
+    service_clock(snap(k1), started_at=started, segment_seconds=30, delay_s=40).save(tmp_path / "clock.json")
+    clock = load_watch_clock(tmp_path)
+    assert isinstance(clock, MatchClock) and clock.delay_s == 40 and clock.stream_started_at == started
+    assert not refresh_service_clock(tmp_path, snap(k1))
+    k2 = k1 + timedelta(minutes=62)
+    assert refresh_service_clock(tmp_path, snap(k1, k2))
+    after = load_watch_clock(tmp_path)
+    assert after is not None and after.period_starts == (k1, k2) and after.delay_s == 40
