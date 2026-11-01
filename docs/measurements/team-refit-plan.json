@@ -1,5 +1,5 @@
 {
-  "written": "2026-11-01 ~20:45, after development on 132831 segments 11.5/16.0/19.5 min (990752) and before any control frame was labelled or any control/night refit result was computed. Control tracking (kit recording only, no tuning input) was already running when this file was written; its outputs had not been read.",
+  "written": "2026-11-01 ~20:27 (commit c00188d carries the exact time), after development on 132831 segments 11.5/16.0/19.5 min (990752) and before any control frame was labelled or any control/night refit result was computed. Control tracking (kit recording only, no tuning input) was already running when this file was written; its outputs had not been read.",
   "question": "Does re-assigning teams from the chromaticity of each track's median torso colour (app/tracking/team_refit.py, defaults at this commit) fix washed-out far players in sunlight without hurting clear-colour players or the night match?",
   "method_frozen": {
     "feature": "median (torso_median_color), chromaticity 255*RGB/sum",
@@ -12,15 +12,30 @@
   },
   "development_result_132831_990752": {
     "eye_labelled_boxes": 98,
-    "clear_colour_accuracy": {"production": "66/68 = 97.1%", "refit": "65/68 = 95.6%"},
-    "pale_boxes": {"production": "15 home, 0 away", "refit": "10 home, 5 away", "note": "track blueness shows exactly 5 pale tracks with blue tint (+9..+20) and 10 with yellow tint (-14..-1); eye could not decide them"},
-    "other_colour_assigned_a_team": {"production": 4, "refit": 2},
+    "clear_colour_accuracy": {
+      "production": "66/68 = 97.1%",
+      "refit": "65/68 = 95.6%"
+    },
+    "pale_boxes": {
+      "production": "15 home, 0 away",
+      "refit": "10 home, 5 away",
+      "note": "track blueness shows exactly 5 pale tracks with blue tint (+9..+20) and 10 with yellow tint (-14..-1); eye could not decide them"
+    },
+    "other_colour_assigned_a_team": {
+      "production": 4,
+      "refit": 2
+    },
     "rejected_variants": "3-D chromaticity k-means (pale unchanged), 1-D k-means midpoint (pale unchanged), bright-40 feature (pale unchanged)"
   },
   "control": {
     "A_132831_heldout": {
       "watch": "data/tracking/live/990753 (hard links of 990751 segments 5, 9, 15, 17; never used in development)",
-      "frames_fixed_now": ["seg_0000_m12.500:8", "seg_0001_m14.500:22", "seg_0002_m17.500:12", "seg_0003_m18.500:3"],
+      "frames_fixed_now": [
+        "seg_0000_m12.500:8",
+        "seg_0001_m14.500:22",
+        "seg_0002_m17.500:12",
+        "seg_0003_m18.500:3"
+      ],
       "labels": "all on-pitch v2 detections in those frames, eye-labelled by Claude from a hint-free 60x120 montage BEFORE seeing any refit output for these frames; Y/B/other/pale; pale boxes additionally judged from a 120x240 montage into pale-Y / pale-B / unsure",
       "pipeline": "scripts.track_live_candidates (kit recording), same tracking settings as 990751; refit via scripts.refit_team_frames; evaluation scripts.soccertrack_v2.eval_team_eye_labels"
     },
