@@ -137,3 +137,14 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Bulunan veri tutarsızlığı: aday izi topu değiştirirken aktör/sahip alanı eski topta kalıyor;
   yeniden hesaplamak geliştirmede fark yaratmadı → değiştirilmedi.
 
+## 20:10–21:05 — Takım ayrımı (132831): teşhis doğru, çözüm kontrolü geçmedi
+- Göz etiketli 98 kutu: üretim net renkte %97 doğru; "takım ayrımı çalışmıyor" iddiası
+  düzeltildi. Hata güneşte beyaza dönen uzak oyuncularda (15/15 tek takım, 5'i mavi tonlu).
+- Çözüm: takip başına gövde ortanca rengi kaydı (frozen koda dokunmadan) + renk oranı
+  ana ekseninde yeniden atama; geliştirmede soluk 5 maviyi düzeltti.
+- Ön kayıt (c00188d) → kontrol: 1/4 geçti. Soluk hata kontrol karelerinde tekrarlamadı
+  (üretim 14/16), gece uyumu 0,75 → 0,54 çöktü, atanan payı −13 puan. Canlıdan çıkarıldı,
+  araçlar kaldı.
+- Tuzak: taze takip koşusunda ev/deplasman adı ilk segmentin küme büyüklüğünden
+  geliyor; 990753'te mavi "ev" oldu, etiket eşlemesi buna göre not edildi.
+

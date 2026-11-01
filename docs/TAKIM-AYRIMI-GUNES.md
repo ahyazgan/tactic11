@@ -60,3 +60,35 @@ kanıtıyla birebir); başka renkli kişiye takım verme 4 → 2.
 
 Ön kayıt `docs/measurements/team-refit-plan.json`; kontrol kareleri ve ölçütler
 orada, hiçbir kontrol sonucu görülmeden yazıldı.
+
+## 3. Ön kayıtlı kontrol — geçmedi
+
+Kontrol kareleri (132831 segment 5/9/15/17: 12,5 / 14,5 / 17,5 / 18,5. dk, 94 kutu) göz
+etiketlendi; etiketler bu kareler için hiçbir yeniden atama çıktısı hesaplanmadan yazıldı
+(`docs/measurements/team-eye-control-132831-labels.json`). Gece kontrolü 117092
+1800–1980 sn (6 segment, GSR takım etiketleri). Sonuç `docs/measurements/team-refit-control-result.json`.
+
+| Ölçüt | Üretim | Yeniden atama | Şart | Sonuç |
+|---|---:|---:|---|---|
+| C1 Net renkte doğruluk (56/48 atanmış kutu) | %92,9 | %93,8 | ≥ −3 | geçti |
+| C2 Karar verilebilen soluk kutular (16) | %87,5 | %78,6 | ≥ +30 | **kaldı** |
+| C3 Gece takım uyumu (GSR, 20 403 eşleşme) | 0,748 | 0,538 | ≥ −0,02 | **kaldı** |
+| C4 Net renkte atanan payı | %88,9 | %76,2 | ≥ −5 | **kaldı** |
+
+Karar (plan gereği): yeniden atama canlı işçiden çıkarıldı; araçlar (`kit_colors`
+kaydı, `team_refit`, `refit_team_frames`, göz etiketi değerlendiricisi) kaldı; kod ve
+ölçüt sonuçtan sonra değişmedi.
+
+Ne öğrenildi:
+- Bu sahada üretim takım ataması net renkli oyuncularda %93–97 doğru. Üçüncü stadyum
+  sınavındaki "takım ayrımı çalışmıyor" cümlesi yanlıştı; §1'de düzeltildi.
+- Geliştirmedeki soluk-oyuncu hatası (15'inin hepsi tek takıma, 5'i mavi tonlu) kontrol
+  karelerinde tekrarlamadı: üretim karar verilebilen 16 soluk kutunun 14'ünü doğru
+  bildi. Geliştirme bulgusu 5 takibe dayanıyordu; genellemek için azdı.
+- Gecede takip başına renk oranının ana bileşeni forma ekseni değil: iki takımın
+  izdüşümleri üst üste (medyan −0,3 ve +1,4), yöntem başka bir eksende bölüp
+  takipleri tek takıma yığıyor. Dondurulmuş `teams.py`'nin gece için seçtiği
+  parlaklık taşıyan RGB özelliği bu durumda doğru seçim.
+- Açık kalan gerçek sorun küçük: uzak/soluk oyuncuların bir kısmı; ölçmek için
+  kare başına GT (GSR) olan bir gündüz maçı gerekir, göz etiketi bu çözünürlükte
+  güvenilir değil (16 kutu "karar verilemez" kaldı).

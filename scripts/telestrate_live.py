@@ -17,10 +17,7 @@ sonrakine geçilir; yarım yazılmış takip JSON'u hata sayılmaz, sonraki turd
 yeniden denenir. Dondurulmuş takip koduna dokunmaz; `canli_mac --telestration`
 bu işçiyi takiple birlikte başlatır.
 
-Takım: `<watch>/kit_colors/seg_XXXX.json` varsa takım ataması forma renk oranıyla
-yeniden kurulur (`app.tracking.team_refit`; güneşte beyaza dönen uzak oyuncular için,
-çapa `<watch>/team_refit_anchor.json`). Top: `<watch>/ball_candidates/seg_XXXX.json`
-varsa (`scripts.track_live_candidates`)
+Top: `<watch>/ball_candidates/seg_XXXX.json` varsa (`scripts.track_live_candidates`)
 karelerin topu çizimden önce aday iziyle değiştirilir (`app.tracking.ball_track`);
 sahiplik, dolayısıyla savunan takım ve pres bu topa göre hesaplanır. `--match-id` ve
 `--tenant` verilirse düzeltilmiş kareler `<watch>/frames_ball/` altına yazılır ve
@@ -45,7 +42,6 @@ from pathlib import Path
 
 from app.tracking.ball_track import refine_segment
 from app.tracking.calibration import PitchCalibration
-from app.tracking.team_refit import refit_segment
 from app.tracking.telestration import Telestrator
 from scripts.telestrate_video import HOME_ATTACK, render_segment, warn_calibration
 from scripts.track_live import PROJECT_ROOT, STATE_FILE, default_ingest_python
@@ -144,14 +140,8 @@ def process(video: Path, frames_json: Path, stem: str, out: Path, calib: PitchCa
         payload = json.loads(frames_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return  # takip hâlâ yazıyor olabilir; sonraki turda yeniden dene
-    watch = frames_json.parent.parent
-    kit_colors = watch / "kit_colors" / frames_json.name
-    if kit_colors.exists():
-        team = refit_segment(payload.get("frames", []), json.loads(kit_colors.read_text(encoding="utf-8")),
-                             watch / "team_refit_anchor.json",
-                             int(payload["home_team_external_id"]), int(payload["away_team_external_id"]))
-        note = team["reason"] or f"{team['changed']} oyuncu gözlemi değişti · atanmayan takip {team['unassigned']}"
-        print(f"[telestrasyon] {stem}: takım yeniden atama — {note}", flush=True)
+    # Takım yeniden ataması (app.tracking.team_refit) burada BİLEREK yok: ön kayıtlı
+    # kontrolde gece maçında takım uyumunu %75 → %54'e düşürdü (docs/TAKIM-AYRIMI-GUNES.md).
     candidates = frames_json.parent.parent / "ball_candidates" / frames_json.name
     if candidates.exists():
         ball = refine_segment(payload.get("frames", []), json.loads(candidates.read_text(encoding="utf-8")), calib)

@@ -160,6 +160,7 @@
 - [x] Top: veritabanına giden karelere de aday izini uygula (telestrasyon işçisi takip aktarımından sonra günceller; fix/panel-gercek-mod).
 - [ ] Top: takipten çıkarılan pasları düzeltilmiş topla yeniden hesapla (derived_passes ham topla).
 - [x] Panel gerçek modda doğrulandı: Canlı Telestrasyon kartı videoyu gösteriyor; genel bakıştaki yanlış 'backend bağlı değil' uyarısı düzeltildi.
-- [ ] Takım ataması güneşte beyaza dönen uzak oyuncuları tek takıma yazıyor (132831; net renkte %97 doğru): renk oranıyla yeniden atama, ön kayıtlı kontrol (feat/takim-yeniden-atama).
+- [x] Takım ataması, renk oranıyla yeniden atama: ön kayıtlı kontrol 1/4 — GEÇMEDİ, canlıya bağlanmadı; üretim net renkte %93–97 doğru (docs/TAKIM-AYRIMI-GUNES.md).
+- [ ] Takım: uzak/soluk oyuncu hatasını kare başına GT'si olan bir gündüz maçında ölç (göz etiketi bu çözünürlükte yetersiz).
 - [ ] Aday izi 132831'de yanlış topu +5 puan artırdı (ön kayıtlı sınır +2): yeni sahada adayları seçicilik ayarı, yeni ön kayıtla.
 - [ ] Aday izi sonrası aktör/sahip alanları eski topta kalıyor (veri tutarlılığı; ölçülen etki yok).
