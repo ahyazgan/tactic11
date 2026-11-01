@@ -343,3 +343,38 @@ def test_landmark_calibrations_use_loo() -> None:
     source, error = calibration_validation(calib())
     assert source == "landmark_loo" and error is not None and error < 0.01
     assert calibration_validation(tps_calib())[0] == "landmark_loo"
+
+
+def _rendered_dist_map(h_img_to_pitch: np.ndarray, size=(1600, 900)) -> np.ndarray:
+    """Saha çizgilerini homografinin tersiyle çiz, en yakın çizgi pikseline uzaklık haritası üret."""
+    from scipy.ndimage import distance_transform_edt
+
+    from app.tracking.pitch_model import model_points
+
+    w, h = size
+    mask = np.zeros((h, w), dtype=bool)
+    pts = model_points(0.1, "all")
+    q = np.c_[pts, np.ones(len(pts))] @ np.linalg.inv(h_img_to_pitch).T
+    uv = (q[:, :2] / q[:, 2:3]).round().astype(int)
+    keep = (q[:, 2] > 0) & (uv[:, 0] >= 0) & (uv[:, 0] < w) & (uv[:, 1] >= 0) & (uv[:, 1] < h)
+    mask[uv[keep, 1], uv[keep, 0]] = True
+    return distance_transform_edt(~mask).astype(np.float32)
+
+
+def test_line_validation_error_detects_misfit_and_missing_lines() -> None:
+    from app.tracking.telestration import line_validation_error
+
+    # saha → görüntü: tüm saha 1600×900 karede, hafif perspektif; görüntü → saha bunun tersi
+    pitch_to_img = np.array([[13.0, 3.0, 80.0], [0.0, 10.0, 120.0], [0.0, 0.002, 1.0]])
+    h_true = np.linalg.inv(pitch_to_img)
+    dist = _rendered_dist_map(h_true)
+    err, coverage = line_validation_error(h_true, dist)
+    assert err is not None and err < 0.15 and coverage > 0.95
+    shift = np.array([[1.0, 0.0, 3.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])   # 3 m kaymış oturma
+    err_shift, _ = line_validation_error(shift @ h_true, dist)
+    assert err_shift is None or err_shift > 0.5
+    y_shift = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 3.0], [0.0, 0.0, 1.0]])   # enine 3 m
+    err_y, _ = line_validation_error(y_shift @ h_true, dist)
+    assert err_y is None or err_y > 0.5
+    none_err, none_cov = line_validation_error(h_true, np.full_like(dist, 500.0))
+    assert none_err is None and none_cov == 0.0

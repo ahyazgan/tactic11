@@ -31,9 +31,11 @@ import sys
 
 import numpy as np
 
+from app.tracking.calibration import PitchCalibration
 from app.tracking.homography_fit import find_anchor
 from app.tracking.pitch_lines import calibration_from_homography, extract_lines
 from app.tracking.pitch_model import model_points
+from app.tracking.telestration import line_validation_error
 
 
 def _describe(h: np.ndarray, width: int, height: int) -> str:
@@ -132,7 +134,18 @@ def main() -> int:
 
     print(f"\nÖNERİ: {_describe(res.homography, w_img, h_img)}")
     calib = calibration_from_homography(res.homography, (w_img, h_img))
-    print(f"geri-izdüşüm hatası: {calib.reprojection_error_m:.3f} m")
+    # Noktalar homografiden üretilmiş yapay ızgaradır (LOO ~0, bir şey ölçmez);
+    # telestrasyon kapısı için hata görüntüdeki saha çizgilerine karşı ölçülür.
+    line_error, coverage = line_validation_error(res.homography, ext.dist_map)
+    meta = {"source": "propose_calibration", "line_validation_coverage": round(coverage, 3)}
+    if line_error is not None:
+        meta["line_validation_error_m"] = round(line_error, 3)
+    calib = PitchCalibration(points=calib.points, image_size=calib.image_size, meta=meta)
+    if line_error is None:
+        print(f"çizgi doğrulaması YOK: görünür çizgi noktalarının yalnız %{coverage * 100:.0f}'i eşleşti; "
+              "telestrasyon bu kalibrasyonla çizgi/etiket çizmez")
+    else:
+        print(f"çizgi doğrulaması: medyan {line_error:.2f} m (kapsama %{coverage * 100:.0f})")
     if args.preview:
         _write_preview(frame, res.homography, args.preview)
         print(f"önizleme: {args.preview} — model çizgileri gerçek çizgilere oturuyor mu, bakın")
