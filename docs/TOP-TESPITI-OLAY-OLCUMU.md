@@ -125,6 +125,10 @@ görüldü ve zaman varsayımı, hiçbir sonuca bakmadan ek olarak düzeltildi.
 | Sahiplik karelerinde doğru savunan | %82,7 | %81,3 | ≥ −2 | geçti |
 | Çizim kapsaması | %99,0 | %100 | — | — |
 
+GSR'ye karşı ek ölçüm (betimsel, `docs/measurements/daylight-132877-gsr-telestration.json`):
+takım rengi uyumu %91,6, blok etiketi dengeli %80,8 / tam %85,0, savunma hattı
+medyan 1,9 m, pres uyumu %93,8, kapsama %100 (aday izi; üretim topuyla dengeli %80,2).
+
 Okuma: gündüzde üretim topu zaten iyi; aday izi kazandırmıyor, kaybettirmiyor.
 Gecedeki kazanç (+22 puan savunan takım) ışık gibi sahte adayları ayıklamaktan
 geliyordu. Aday izi varsayılan kalır. Sonuç: `docs/measurements/ball-track-daylight-132877-result.json`.
