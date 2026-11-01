@@ -34,6 +34,11 @@ oyuncu konumları da.
 Gündüz ve aydınlık sahada sistem belirgin biçimde daha güvenilir; gece ışıklarla
 sahte top adayları en zor durum.
 
+**Şekil bekçisi (blok/genişlik/hat aralığı/boy uyarıları):** dakikalık medyan ölçüm
+gürültüsü blok derinliğinde 0,8–2,1 m ve hat aralığında 0,6–2,0 m (eşikler 6 ve 4 m:
+gündüz güvenilir, gecede sınırda); genişlikte 2,4–5,8 m (6 m eşik gürültü içinde:
+güvenilmez) ve boyda yeni sahada 10 m (güvenilmez). Ayrıntı ve öneri: `docs/SEKIL-BEKCISI-OLCUMU.md`.
+
 **Başka stadyum (132831, gündüz, düzeltilmiş referansa karşı 10 dk):** takım rengi
 %92,6, blok etiketi dengeli %68,4 / tam %74,6, savunma hattı medyan 3,2 m, pres %97,7,
 kapsama %97, karede eşleşen oyuncu 14,0; top dokunuşta %42,2, pas uçuşunda %71,4.

@@ -1,0 +1,374 @@
+{
+  "measured": "2026-11-02 (see git history), descriptive — measurement noise of engine.shape_watch metrics against the reference",
+  "method": "scripts/soccertrack_v2/eval_shape_watch.py: same sample_frame on tracked frames and on GSR-built frames (GSR keepers excluded, direction from GSR keepers, both teams every frame); error = |tracked − reference| per frame and per 1-minute median (the watcher's unit)",
+  "thresholds_in_production_m": {
+    "block_depth": 6.0,
+    "width": 6.0,
+    "line_gap": 4.0,
+    "length": 6.0
+  },
+  "windows": {
+    "132877": {
+      "label": "Gündüz 132877 (düzeltilmiş GSR)",
+      "reference": "corrected",
+      "coverage": {
+        "gsr": 15000,
+        "tracked": 14913,
+        "frames": 15000
+      },
+      "metrics": {
+        "block_depth": {
+          "frames": 14913,
+          "frame_abs_error_median_m": 1.02,
+          "frame_abs_error_p90_m": 8.39,
+          "windows": 20,
+          "window_median_abs_error_median_m": 0.77,
+          "window_median_abs_error_p90_m": 2.52,
+          "share_of_windows_below_threshold": 1.0,
+          "gsr_value_median_m": 46.4
+        },
+        "width": {
+          "frames": 14913,
+          "frame_abs_error_median_m": 5.2,
+          "frame_abs_error_p90_m": 17.61,
+          "windows": 20,
+          "window_median_abs_error_median_m": 5.78,
+          "window_median_abs_error_p90_m": 10.87,
+          "share_of_windows_below_threshold": 0.5,
+          "gsr_value_median_m": 43.0
+        },
+        "line_gap": {
+          "frames": 4672,
+          "frame_abs_error_median_m": 0.92,
+          "frame_abs_error_p90_m": 5.19,
+          "windows": 20,
+          "window_median_abs_error_median_m": 0.55,
+          "window_median_abs_error_p90_m": 1.45,
+          "share_of_windows_below_threshold": 1.0,
+          "gsr_value_median_m": 21.1
+        },
+        "length": {
+          "frames": 14913,
+          "frame_abs_error_median_m": 1.18,
+          "frame_abs_error_p90_m": 10.58,
+          "windows": 20,
+          "window_median_abs_error_median_m": 1.28,
+          "window_median_abs_error_p90_m": 3.79,
+          "share_of_windows_below_threshold": 0.95,
+          "gsr_value_median_m": 24.1
+        },
+        "width_trim1": {
+          "frames": 14913,
+          "frame_abs_error_median_m": 3.04,
+          "frame_abs_error_p90_m": 14.92,
+          "windows": 20,
+          "window_median_abs_error_median_m": 3.17,
+          "window_median_abs_error_p90_m": 10.23,
+          "share_of_windows_below_threshold": 0.75,
+          "gsr_value_median_m": 28.6
+        },
+        "width_p10_90": {
+          "frames": 14913,
+          "frame_abs_error_median_m": 3.04,
+          "frame_abs_error_p90_m": 11.83,
+          "windows": 20,
+          "window_median_abs_error_median_m": 3.91,
+          "window_median_abs_error_p90_m": 7.92,
+          "share_of_windows_below_threshold": 0.75,
+          "gsr_value_median_m": 30.0
+        },
+        "length_p90": {
+          "frames": 14913,
+          "frame_abs_error_median_m": 1.22,
+          "frame_abs_error_p90_m": 6.54,
+          "windows": 20,
+          "window_median_abs_error_median_m": 0.97,
+          "window_median_abs_error_p90_m": 4.48,
+          "share_of_windows_below_threshold": 1.0,
+          "gsr_value_median_m": 22.2
+        }
+      }
+    },
+    "132831": {
+      "label": "Başka stadyum 132831 (düzeltilmiş GSR)",
+      "reference": "corrected",
+      "coverage": {
+        "gsr": 15000,
+        "tracked": 14988,
+        "frames": 15000
+      },
+      "metrics": {
+        "block_depth": {
+          "frames": 14988,
+          "frame_abs_error_median_m": 1.69,
+          "frame_abs_error_p90_m": 13.75,
+          "windows": 20,
+          "window_median_abs_error_median_m": 0.87,
+          "window_median_abs_error_p90_m": 5.64,
+          "share_of_windows_below_threshold": 0.9,
+          "gsr_value_median_m": 49.5
+        },
+        "width": {
+          "frames": 14988,
+          "frame_abs_error_median_m": 4.26,
+          "frame_abs_error_p90_m": 17.38,
+          "windows": 20,
+          "window_median_abs_error_median_m": 2.42,
+          "window_median_abs_error_p90_m": 9.74,
+          "share_of_windows_below_threshold": 0.75,
+          "gsr_value_median_m": 42.8
+        },
+        "line_gap": {
+          "frames": 4113,
+          "frame_abs_error_median_m": 2.05,
+          "frame_abs_error_p90_m": 6.34,
+          "windows": 20,
+          "window_median_abs_error_median_m": 1.64,
+          "window_median_abs_error_p90_m": 3.41,
+          "share_of_windows_below_threshold": 0.9,
+          "gsr_value_median_m": 21.4
+        },
+        "length": {
+          "frames": 14988,
+          "frame_abs_error_median_m": 9.24,
+          "frame_abs_error_p90_m": 26.94,
+          "windows": 20,
+          "window_median_abs_error_median_m": 10.61,
+          "window_median_abs_error_p90_m": 21.41,
+          "share_of_windows_below_threshold": 0.5,
+          "gsr_value_median_m": 21.3
+        },
+        "width_trim1": {
+          "frames": 14988,
+          "frame_abs_error_median_m": 5.09,
+          "frame_abs_error_p90_m": 15.16,
+          "windows": 20,
+          "window_median_abs_error_median_m": 4.61,
+          "window_median_abs_error_p90_m": 8.61,
+          "share_of_windows_below_threshold": 0.7,
+          "gsr_value_median_m": 31.5
+        },
+        "width_p10_90": {
+          "frames": 14988,
+          "frame_abs_error_median_m": 4.42,
+          "frame_abs_error_p90_m": 13.0,
+          "windows": 20,
+          "window_median_abs_error_median_m": 4.55,
+          "window_median_abs_error_p90_m": 7.57,
+          "share_of_windows_below_threshold": 0.85,
+          "gsr_value_median_m": 32.9
+        },
+        "length_p90": {
+          "frames": 14988,
+          "frame_abs_error_median_m": 2.6,
+          "frame_abs_error_p90_m": 11.02,
+          "windows": 20,
+          "window_median_abs_error_median_m": 2.33,
+          "window_median_abs_error_p90_m": 6.83,
+          "share_of_windows_below_threshold": 0.8,
+          "gsr_value_median_m": 21.5
+        }
+      }
+    },
+    "117092": {
+      "label": "Gece 117092 (ham GSR)",
+      "reference": "raw",
+      "coverage": {
+        "gsr": 15000,
+        "tracked": 13129,
+        "frames": 15000
+      },
+      "metrics": {
+        "block_depth": {
+          "frames": 13129,
+          "frame_abs_error_median_m": 2.99,
+          "frame_abs_error_p90_m": 13.55,
+          "windows": 20,
+          "window_median_abs_error_median_m": 2.1,
+          "window_median_abs_error_p90_m": 6.47,
+          "share_of_windows_below_threshold": 0.85,
+          "gsr_value_median_m": 43.7
+        },
+        "width": {
+          "frames": 13129,
+          "frame_abs_error_median_m": 6.08,
+          "frame_abs_error_p90_m": 17.57,
+          "windows": 20,
+          "window_median_abs_error_median_m": 5.15,
+          "window_median_abs_error_p90_m": 12.87,
+          "share_of_windows_below_threshold": 0.6,
+          "gsr_value_median_m": 37.4
+        },
+        "line_gap": {
+          "frames": 2956,
+          "frame_abs_error_median_m": 2.89,
+          "frame_abs_error_p90_m": 7.34,
+          "windows": 18,
+          "window_median_abs_error_median_m": 2.04,
+          "window_median_abs_error_p90_m": 4.73,
+          "share_of_windows_below_threshold": 0.722,
+          "gsr_value_median_m": 20.8
+        },
+        "length": {
+          "frames": 13129,
+          "frame_abs_error_median_m": 4.91,
+          "frame_abs_error_p90_m": 17.02,
+          "windows": 20,
+          "window_median_abs_error_median_m": 2.63,
+          "window_median_abs_error_p90_m": 6.15,
+          "share_of_windows_below_threshold": 0.9,
+          "gsr_value_median_m": 22.8
+        },
+        "width_trim1": {
+          "frames": 13129,
+          "frame_abs_error_median_m": 5.64,
+          "frame_abs_error_p90_m": 13.67,
+          "windows": 20,
+          "window_median_abs_error_median_m": 5.46,
+          "window_median_abs_error_p90_m": 8.09,
+          "share_of_windows_below_threshold": 0.55,
+          "gsr_value_median_m": 27.2
+        },
+        "width_p10_90": {
+          "frames": 13129,
+          "frame_abs_error_median_m": 4.78,
+          "frame_abs_error_p90_m": 11.33,
+          "windows": 20,
+          "window_median_abs_error_median_m": 3.54,
+          "window_median_abs_error_p90_m": 7.13,
+          "share_of_windows_below_threshold": 0.7,
+          "gsr_value_median_m": 28.3
+        },
+        "length_p90": {
+          "frames": 13129,
+          "frame_abs_error_median_m": 3.32,
+          "frame_abs_error_p90_m": 10.56,
+          "windows": 20,
+          "window_median_abs_error_median_m": 2.16,
+          "window_median_abs_error_p90_m": 8.5,
+          "share_of_windows_below_threshold": 0.8,
+          "gsr_value_median_m": 23.1
+        }
+      }
+    },
+    "132831_heldout": {
+      "label": "132831 ayrık 4 segment",
+      "reference": "corrected",
+      "coverage": {
+        "gsr": 3000,
+        "tracked": 2998,
+        "frames": 3000
+      },
+      "metrics": {
+        "block_depth": {
+          "frames": 2998,
+          "frame_abs_error_median_m": 1.72,
+          "frame_abs_error_p90_m": 16.44,
+          "windows": 8,
+          "window_median_abs_error_median_m": 4.59,
+          "window_median_abs_error_p90_m": 12.46,
+          "share_of_windows_below_threshold": 0.5,
+          "gsr_value_median_m": 47.1
+        },
+        "width": {
+          "frames": 2998,
+          "frame_abs_error_median_m": 4.07,
+          "frame_abs_error_p90_m": 11.34,
+          "windows": 8,
+          "window_median_abs_error_median_m": 3.56,
+          "window_median_abs_error_p90_m": 8.73,
+          "share_of_windows_below_threshold": 0.75,
+          "gsr_value_median_m": 39.3
+        },
+        "line_gap": {
+          "frames": 1016,
+          "frame_abs_error_median_m": 1.89,
+          "frame_abs_error_p90_m": 5.64,
+          "windows": 8,
+          "window_median_abs_error_median_m": 1.75,
+          "window_median_abs_error_p90_m": 3.22,
+          "share_of_windows_below_threshold": 1.0,
+          "gsr_value_median_m": 22.3
+        },
+        "length": {
+          "frames": 2998,
+          "frame_abs_error_median_m": 7.74,
+          "frame_abs_error_p90_m": 24.67,
+          "windows": 8,
+          "window_median_abs_error_median_m": 10.75,
+          "window_median_abs_error_p90_m": 18.93,
+          "share_of_windows_below_threshold": 0.25,
+          "gsr_value_median_m": 23.4
+        },
+        "width_trim1": {
+          "frames": 2998,
+          "frame_abs_error_median_m": 4.64,
+          "frame_abs_error_p90_m": 10.27,
+          "windows": 8,
+          "window_median_abs_error_median_m": 4.55,
+          "window_median_abs_error_p90_m": 7.16,
+          "share_of_windows_below_threshold": 0.5,
+          "gsr_value_median_m": 29.4
+        },
+        "width_p10_90": {
+          "frames": 2998,
+          "frame_abs_error_median_m": 4.17,
+          "frame_abs_error_p90_m": 9.0,
+          "windows": 8,
+          "window_median_abs_error_median_m": 4.05,
+          "window_median_abs_error_p90_m": 6.16,
+          "share_of_windows_below_threshold": 0.75,
+          "gsr_value_median_m": 30.2
+        },
+        "length_p90": {
+          "frames": 2998,
+          "frame_abs_error_median_m": 2.91,
+          "frame_abs_error_p90_m": 18.93,
+          "windows": 8,
+          "window_median_abs_error_median_m": 2.28,
+          "window_median_abs_error_p90_m": 7.9,
+          "share_of_windows_below_threshold": 0.75,
+          "gsr_value_median_m": 22.1
+        }
+      }
+    }
+  },
+  "recommendation": {
+    "block_depth": {
+      "threshold_m": 6.0,
+      "worst_window_noise_median_m": 2.1,
+      "worst_window_noise_p90_m": 6.47,
+      "verdict": "sınırda",
+      "verdict_rule": "p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güvenilmez; en kötü 10 dakikalık pencere"
+    },
+    "width": {
+      "threshold_m": 6.0,
+      "worst_window_noise_median_m": 5.78,
+      "worst_window_noise_p90_m": 12.87,
+      "verdict": "güvenilmez",
+      "verdict_rule": "p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güvenilmez; en kötü 10 dakikalık pencere"
+    },
+    "line_gap": {
+      "threshold_m": 4.0,
+      "worst_window_noise_median_m": 2.04,
+      "worst_window_noise_p90_m": 4.73,
+      "verdict": "güvenilmez",
+      "verdict_rule": "p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güvenilmez; en kötü 10 dakikalık pencere"
+    },
+    "length": {
+      "threshold_m": 6.0,
+      "worst_window_noise_median_m": 10.61,
+      "worst_window_noise_p90_m": 21.41,
+      "verdict": "güvenilmez",
+      "verdict_rule": "p90 ≤ eşik → güvenilir; medyan ≤ eşik/2 → sınırda; değilse güvenilmez; en kötü 10 dakikalık pencere"
+    },
+    "width_p10_90": {
+      "worst_window_noise_median_m": 4.55,
+      "worst_window_noise_p90_m": 7.92
+    },
+    "length_p90": {
+      "worst_window_noise_median_m": 2.33,
+      "worst_window_noise_p90_m": 8.5
+    }
+  }
+}

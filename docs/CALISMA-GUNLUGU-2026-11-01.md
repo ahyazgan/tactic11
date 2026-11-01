@@ -200,3 +200,7 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - 117092 GSR görüntüsü panoramanın kırpımı değil (0/201/402 px kaydırmada eşleşme yok) → gece
   referansı düzeltilmedi, kanıt görüntüsü kaydedildi.
 
+## 01:50–02:40 — Şekil bekçisi gürültü tabanı
+- `eval_shape_watch`: aynı hesap takip ve GSR karelerinde; dakikalık medyan hatası 4 pencerede.
+- Blok derinliği ve hat aralığı eşikleri güvenilir; genişlik (en–en) ve boy (en ileri oyuncu)
+  eşikleri gürültü içinde. Dayanıklı tanımlar ölçüldü ve diğer oturuma öneri yazıldı.
