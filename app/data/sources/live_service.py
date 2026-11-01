@@ -136,10 +136,10 @@ def parse_sportmonks(body: dict[str, Any], *, fetched_at: datetime | None = None
     pos: dict[int, float] = {}
     for s in f.get("statistics") or []:
         if ((s.get("type") or {}).get("developer_name") or "").upper() == "BALL_POSSESSION":
-            idx = side.get(_int(s.get("participant_id")) or -1)
+            team_idx = side.get(_int(s.get("participant_id")) or -1)
             value = (s.get("data") or {}).get("value")
-            if idx is not None and value is not None:
-                pos[idx] = float(value)
+            if team_idx is not None and value is not None:
+                pos[team_idx] = float(value)
     if len(pos) == 2:
         possession = (pos[0], pos[1])
     periods = sorted((p for p in f.get("periods") or [] if p.get("started")), key=lambda p: p.get("sort_order") or 0)
