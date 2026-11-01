@@ -9,7 +9,8 @@ diye yazılır.
 - **Sabit kamera** (stadyum çatısı, direk ya da panorama). Telestrasyon TV yayınında
   çalışmaz; yayında yalnız takip var (`docs/CANLI-MOD-KILAVUZU.md`).
 - **Saha kalibrasyonu**: stadyum başına bir kez, en az 5 saha işareti; bağımsız
-  doğrulama hatası ≤ 2,0 m olmazsa çizgi ve etiket çizilmez.
+  doğrulama hatası ≤ 2,0 m olmazsa çizgi ve etiket çizilmez (`canli_mac` bunu
+  başlamadan denetler ve geçmeyen kalibrasyonla başlamaz).
 - **GPU**: ölçümler RTX 5060 (8 GB) dizüstünde.
 
 ## Koçun gördüğü çıktılar
@@ -33,10 +34,10 @@ Gündüz ve aydınlık sahada sistem belirgin biçimde daha güvenilir; gece ı�
 sahte top adayları en zor durum.
 
 **Başka stadyum (132831, gündüz, ön kayıtlı, sınav geçmedi):** top dokunuşta %42,2,
-pas uçuşunda %71,4 doğru yerde; ama **takım ataması bu sahada çalışmadı** (iki
-takım tutarlı ayrılamadı), bu yüzden savunan takım ve blok etiketi bu sahada
-güvenilir değil ve ölçülemedi. Yeni bir stadyumda kullanmadan önce takım renk
-ayrımının kontrol edilmesi gerekir. Ayrıntı: `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
+pas uçuşunda %71,4 doğru yerde. Takım ataması göz etiketli kutularda net renkli
+oyuncularda %93–97 doğru (`docs/TAKIM-AYRIMI-GUNES.md`; renk oranıyla yeniden atama
+denendi, ön kayıtlı kontrolde geçmedi); savunan takım bu sahada olay kayıtlarıyla
+ölçülemedi. Ayrıntı: `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
 
 Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 `docs/measurements/ball-track-control.json`, `docs/OTOMATIK-TELESTRASYON.md`,

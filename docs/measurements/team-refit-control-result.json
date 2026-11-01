@@ -1,0 +1,72 @@
+{
+  "measured": "2026-11-01 see git history, once, after plan c00188d/090c218; control labels written before any refit output for those frames was computed",
+  "plan": "docs/measurements/team-refit-plan.json",
+  "control_A_132831": {
+    "labels": "docs/measurements/team-eye-control-132831-labels.json",
+    "boxes": 94,
+    "eval": "docs/measurements/team-refit-control-132831.json",
+    "home_naming_note": "fresh run 990753 named the blue kit 'home'; home_label=B set from the production majority on clear colours (naming only)"
+  },
+  "control_B_117092_night": {
+    "production": {
+      "team_agreement": 0.748,
+      "team_pairs": {
+        "0->0": 8058,
+        "0->1": 2304,
+        "1->0": 2837,
+        "1->1": 7204
+      },
+      "block_balanced_pct": 63.3,
+      "drawn_test": 2078
+    },
+    "refit": {
+      "team_agreement": 0.5378,
+      "team_pairs": {
+        "0->0": 9365,
+        "0->1": 8778,
+        "1->0": 430,
+        "1->1": 1348
+      },
+      "block_balanced_pct": 61.6,
+      "drawn_test": 950
+    }
+  },
+  "criteria": {
+    "C1": {
+      "production": 92.9,
+      "refit": 93.8,
+      "delta": 0.9,
+      "required": ">= -3",
+      "pass": true
+    },
+    "C2": {
+      "decidable_pale_boxes": 16,
+      "production": 87.5,
+      "refit": 78.6,
+      "delta": -8.9,
+      "required": ">= +30 (decisive, >= 6 boxes)",
+      "pass": false
+    },
+    "C3": {
+      "production": 0.748,
+      "refit": 0.5378,
+      "delta_points": -21.0,
+      "required": ">= -2 points",
+      "pass": false
+    },
+    "C4": {
+      "production": 88.9,
+      "refit": 76.2,
+      "delta": -12.7,
+      "required": ">= -5",
+      "pass": false
+    }
+  },
+  "decision": "FAILED (C2, C3, C4). Wiring removed from telestrate_live; tools kept (kit recorder, team_refit, refit_team_frames, eye-label evaluator); code and criteria unchanged after the result.",
+  "findings": [
+    "production team assignment on clear colours at this venue: 92.9% (control) / 97.1% (dev); the earlier 'team assignment does not work here' claim was wrong",
+    "the development failure (all 15 pale boxes -> one team, 5 of them blue-tinted) did not reproduce on the held-out frames: production got 14/16 decidable pale boxes right",
+    "at night the first principal component of per-track chromaticity is not the kit axis: production team 0 and team 1 projections overlap (medians -0.3 vs +1.4 on seg 30.0), so the refit splits on something else and collapses most tracks into one team (agreement 0.748 -> 0.538)",
+    "the refit also leaves more tracks unassigned (assigned share 88.9 -> 76.2%)"
+  ]
+}

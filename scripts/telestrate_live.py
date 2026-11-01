@@ -140,6 +140,8 @@ def process(video: Path, frames_json: Path, stem: str, out: Path, calib: PitchCa
         payload = json.loads(frames_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return  # takip hâlâ yazıyor olabilir; sonraki turda yeniden dene
+    # Takım yeniden ataması (app.tracking.team_refit) burada BİLEREK yok: ön kayıtlı
+    # kontrolde gece maçında takım uyumunu %75 → %54'e düşürdü (docs/TAKIM-AYRIMI-GUNES.md).
     candidates = frames_json.parent.parent / "ball_candidates" / frames_json.name
     if candidates.exists():
         ball = refine_segment(payload.get("frames", []), json.loads(candidates.read_text(encoding="utf-8")), calib)

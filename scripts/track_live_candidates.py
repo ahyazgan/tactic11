@@ -8,7 +8,10 @@ yalnız güveni eşiği (0,3) geçen en güvenli topu tutar. 117092'de dokunuş 
 - dedektörü `CANDIDATE_THRESHOLD` ile kurar, hatta yine üretim eşiğinin üstünü
   verir (`RecordingDetector`) — takip girdisi değişmez;
 - her örneklenen karede eşik altı dahil bütün top adaylarını
-  `<watch>/ball_candidates/<segment>.json` dosyasına yazar.
+  `<watch>/ball_candidates/<segment>.json` dosyasına yazar;
+- takip kutularından forma rengi özelliklerini (`app.tracking.kit_features`)
+  takip başına `<watch>/kit_colors/<segment>.json` dosyasına yazar (takım
+  atamasını sonradan parlaktan bağımsız yeniden kurmak için).
 
 Ek GPU işi yok: adaylar takibin zaten yaptığı tespitten gelir. Argümanlar
 `track_live` ile aynıdır.
@@ -73,12 +76,17 @@ def install(candidate_threshold: float = CANDIDATE_THRESHOLD) -> None:
         det = kwargs.get("detector")
         if not isinstance(det, RecordingDetector):
             return collect(video_path, cfg, *args, **kwargs)
+        from app.tracking.identity_namespace import SegmentIdentityNamespace
+        from app.tracking.kit_features import KitRecorder
+
         rows: list[dict[str, Any]] = []
+        kits = KitRecorder()
         inner_hook = kwargs.get("observation_hook")
 
         def hook(rgb: np.ndarray, all_det: Any, sample: Any) -> None:
             rows.append({"order": sample.order, "frame_idx": sample.frame_idx,
                          "seconds": round(float(sample.seconds), 4), "balls": det.last_balls()})
+            kits.observe(rgb, sample.persons)
             if inner_hook is not None:
                 inner_hook(rgb, all_det, sample)
 
@@ -91,6 +99,13 @@ def install(candidate_threshold: float = CANDIDATE_THRESHOLD) -> None:
         tmp.write_text(json.dumps({"video": video.name, "threshold": candidate_threshold,
                                    "production_threshold": det.threshold, "samples": rows}), encoding="utf-8")
         tmp.replace(out)
+        kit_out = video.parent / "kit_colors" / f"{video.stem}.json"
+        kit_out.parent.mkdir(parents=True, exist_ok=True)
+        tmp = kit_out.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps({"video": video.name,
+                                   "namespace": SegmentIdentityNamespace(cfg.period, cfg.clip_offset_minutes).namespace,
+                                   "tracks": kits.summary()}), encoding="utf-8")
+        tmp.replace(kit_out)
         return result
 
     detect.make_detector = recording_make_detector

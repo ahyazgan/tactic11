@@ -1,0 +1,43 @@
+{
+  "written": "2026-11-01 commit c7038aa carries the exact time (the clock estimate written here was wrong), after development on 990721/990722 (117092, 600-960 and 1200-1560 s) and before any control window was evaluated",
+  "question": "Do derived passes improve when extracted from the refined ball with actors/possession recomputed (app.tracking.ball_track.recompute_actors + passes.extract_passes), compared with the production derived passes?",
+  "method_frozen": "refine_segment (ball track, default config) -> recompute_actors (build_frame rule, ACTOR_RADIUS_M) -> extract_passes on the segment's frames; passes are compared per segment window exactly as production does",
+  "ground_truth": "SoccerTrack player_nodes touches with passSucceeded/passFailed (117092 mapping; 132877 mapping docs/measurements/ball-events-mapping-132877.json); a derived pass matches an event pass if |t| <= 1.5 s and start position within 6 m, one-to-one greedy by time",
+  "development_result": {
+    "990721": {
+      "production": {
+        "derived": 21,
+        "matched": 6,
+        "gt": 67
+      },
+      "refined": {
+        "derived": 70,
+        "matched": 20,
+        "gt": 67
+      }
+    },
+    "990722": {
+      "production": {
+        "derived": 11,
+        "matched": 1,
+        "gt": 49
+      },
+      "refined": {
+        "derived": 97,
+        "matched": 18,
+        "gt": 49
+      }
+    },
+    "note": "refined ball without actor recompute gives exactly the production passes (actors stale), so the actor recompute is the active ingredient"
+  },
+  "control": {
+    "A": "990723: 117092 1800-2400 s (night), production frames vs frames_ball (already produced; actors recomputed by the frozen function at evaluation)",
+    "B": "990741: 132877 600-1200 s (daylight), same"
+  },
+  "criteria_each_window": {
+    "P1": "recall (matched / gt passes): refined >= 2 x production",
+    "P2": "precision (matched / derived): refined >= production - 3 points",
+    "P3": "defending-team accuracy (eval_defending_events / eval_telestration possession) with recomputed possession: refined >= refined-without-recompute - 3 points"
+  },
+  "decision": "all pass in both windows -> telestrate_live re-derives passes from refined frames and the ingest replaces the segment's earlier video_passes/video_defensive_actions in the DB. Any failure -> actor recompute kept only where it does not harm (reported), passes not re-derived; code and criteria unchanged after the result."
+}

@@ -1,0 +1,81 @@
+{
+  "measured": "2026-11-01 see git history (clock estimate wrong), once, after plan 17ddf5f",
+  "plan": "docs/measurements/pass-refined-ball-plan-2.json",
+  "windows": {
+    "C_990731_night": {
+      "production": {
+        "derived": 2,
+        "matched": 0,
+        "gt_passes": 49,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "refined": {
+        "derived": 21,
+        "matched": 5,
+        "gt_passes": 49,
+        "precision": 0.238,
+        "recall": 0.102
+      },
+      "refined_no_recompute": {
+        "derived": 2,
+        "matched": 0,
+        "gt_passes": 49,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "D_132831_daylight": {
+      "production": {
+        "derived": 29,
+        "matched": 11,
+        "gt_passes": 234,
+        "precision": 0.379,
+        "recall": 0.047
+      },
+      "refined": {
+        "derived": 40,
+        "matched": 12,
+        "gt_passes": 234,
+        "precision": 0.3,
+        "recall": 0.051
+      },
+      "refined_no_recompute": {
+        "derived": 40,
+        "matched": 12,
+        "gt_passes": 234,
+        "precision": 0.3,
+        "recall": 0.051
+      }
+    }
+  },
+  "Q4_990731": {
+    "without": 63.8,
+    "with": 42.1,
+    "delta": -21.7,
+    "frames_in_possession": 231
+  },
+  "criteria": {
+    "Q1_recall_noninferior": {
+      "C": 10.2,
+      "D": 0.4,
+      "pass": true
+    },
+    "Q2_precision": {
+      "C": 23.8,
+      "D": -7.9,
+      "required": ">= -3 each",
+      "pass": false
+    },
+    "Q3_gain_somewhere": {
+      "C_recall_gain": 10.2,
+      "pass": true
+    },
+    "Q4_defending": {
+      "delta": -21.7,
+      "pass": false
+    }
+  },
+  "decision": "FAILED (Q2 in D: precision 37.9 -> 30.0; Q4: defending 63.8 -> 42.1). Not wired. recompute_actors removed from refine_segment and kept as a tool.",
+  "reading": "recomputing the actor from the refined ball multiplies derived passes at night (0 -> 15 matched of 97) but at the cost of precision in daylight and of the telestrator's possession estimate: the telestrator's own nearest-player rule on frames whose possession field is empty is better than a per-frame actor at 2.5 m."
+}

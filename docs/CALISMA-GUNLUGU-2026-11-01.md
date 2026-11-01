@@ -137,3 +137,27 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Bulunan veri tutarsızlığı: aday izi topu değiştirirken aktör/sahip alanı eski topta kalıyor;
   yeniden hesaplamak geliştirmede fark yaratmadı → değiştirilmedi.
 
+## 20:10–21:05 — Takım ayrımı (132831): teşhis doğru, çözüm kontrolü geçmedi
+- Göz etiketli 98 kutu: üretim net renkte %97 doğru; "takım ayrımı çalışmıyor" iddiası
+  düzeltildi. Hata güneşte beyaza dönen uzak oyuncularda (15/15 tek takım, 5'i mavi tonlu).
+- Çözüm: takip başına gövde ortanca rengi kaydı (frozen koda dokunmadan) + renk oranı
+  ana ekseninde yeniden atama; geliştirmede soluk 5 maviyi düzeltti.
+- Ön kayıt (c00188d) → kontrol: 1/4 geçti. Soluk hata kontrol karelerinde tekrarlamadı
+  (üretim 14/16), gece uyumu 0,75 → 0,54 çöktü, atanan payı −13 puan. Canlıdan çıkarıldı,
+  araçlar kaldı.
+- Tuzak: taze takip koşusunda ev/deplasman adı ilk segmentin küme büyüklüğünden
+  geliyor; 990753'te mavi "ev" oldu, etiket eşlemesi buna göre not edildi.
+
+## 21:10–22:05 — Pas listesi düzeltilmiş topla: iki ön kayıt, ikisi de geçmedi
+- Geliştirmede aktörü yeni topa göre kurmak eşleşen pası 6→20 / 1→18 yaptı.
+- Plan 1: gece 0→15 eşleşme ama "≥2×" şartı %68 tabanlı gündüzde ulaşılamazdı (tasarım
+  hatası, gevşetilmedi) ve sahiplik yeniden kurulunca savunan takım −4,2.
+- Plan 2 (taze pencereler, aşağı yönlü olmama): 132831'de kesinlik −7,9, 990731'de savunan
+  takım −21,7 → geçmedi. recompute_actors canlı yoldan çıkarıldı, araç olarak kaldı.
+
+## 22:05–22:30 — Kalibrasyon ön kontrolü, temizlik
+- `canli_mac --telestration` başlamadan kalibrasyonu telestrasyon kapısından geçiriyor;
+  geçmeyen kalibrasyonla başlamıyor (`--allow-unverified-calibration` ile zorlanır).
+- Ölçüm dosyalarındaki saat tahminleri yanlıştı; commit zamanına işaret edecek şekilde düzeltildi.
+- Tam paket 3274 test yeşil. PR #323 CI bekliyor (takım + pas sonuçları + ön kontrol).
+

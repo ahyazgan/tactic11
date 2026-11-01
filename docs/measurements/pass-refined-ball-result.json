@@ -1,0 +1,101 @@
+{
+  "measured": "2026-11-01 see git history (clock estimate wrong), once, after plan c7038aa",
+  "plan": "docs/measurements/pass-refined-ball-plan.json",
+  "windows": {
+    "A_990723_night": {
+      "production": {
+        "derived": 3,
+        "matched": 0,
+        "gt_passes": 97,
+        "precision": 0.0,
+        "recall": 0.0
+      },
+      "refined": {
+        "derived": 131,
+        "matched": 15,
+        "gt_passes": 97,
+        "precision": 0.115,
+        "recall": 0.155
+      },
+      "refined_no_recompute": {
+        "derived": 3,
+        "matched": 0,
+        "gt_passes": 97,
+        "precision": 0.0,
+        "recall": 0.0
+      }
+    },
+    "B_990741_daylight": {
+      "production": {
+        "derived": 143,
+        "matched": 99,
+        "gt_passes": 146,
+        "precision": 0.692,
+        "recall": 0.678
+      },
+      "refined": {
+        "derived": 148,
+        "matched": 100,
+        "gt_passes": 146,
+        "precision": 0.676,
+        "recall": 0.685
+      },
+      "refined_no_recompute": {
+        "derived": 143,
+        "matched": 99,
+        "gt_passes": 146,
+        "precision": 0.692,
+        "recall": 0.678
+      }
+    }
+  },
+  "P3_defending_with_recomputed_possession": {
+    "990723": {
+      "without": 68.1,
+      "with": 63.9,
+      "delta": -4.2
+    },
+    "990741": {
+      "without": 81.3,
+      "with": 81.2,
+      "delta": -0.1
+    }
+  },
+  "criteria": {
+    "A": {
+      "P1_recall_2x": {
+        "production": 0.0,
+        "refined": 0.155,
+        "pass": true
+      },
+      "P2_precision": {
+        "production": 0.0,
+        "refined": 0.115,
+        "pass": true
+      },
+      "P3": {
+        "delta": -4.2,
+        "pass": false
+      }
+    },
+    "B": {
+      "P1_recall_2x": {
+        "production": 0.678,
+        "refined": 0.685,
+        "required": ">= 1.356",
+        "pass": false,
+        "note": "criterion unattainable at a 68% baseline; design error in the plan, not relaxed"
+      },
+      "P2_precision": {
+        "production": 0.692,
+        "refined": 0.676,
+        "pass": true
+      },
+      "P3": {
+        "delta": -0.1,
+        "pass": true
+      }
+    }
+  },
+  "decision": "FAILED (A-P3, B-P1). Not wired. A second plan with non-inferiority criteria was pre-registered on fresh windows (pass-refined-ball-plan-2.json)."
+}

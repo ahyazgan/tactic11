@@ -177,3 +177,25 @@ def test_resolve_weights_v2_only_for_static_camera(tmp_path: Path) -> None:
     for camera in ("auto", "broadcast", "operated"):
         assert resolve_weights(None, camera, model) is None
     assert resolve_weights("x/mixed", "static", model) == "x/mixed"
+
+
+def test_check_calibration_applies_the_telestration_gate(tmp_path: Path) -> None:
+    import json
+
+    from scripts.canli_mac import check_calibration
+
+    corners = [{"image": [100, 50], "pitch": [0, 0]}, {"image": [1150, 50], "pitch": [105, 0]},
+               {"image": [1150, 730], "pitch": [105, 68]}, {"image": [100, 730], "pitch": [0, 68]}]
+    base = {"image_size": [1300, 800], "pitch_length_m": 105.0, "pitch_width_m": 68.0, "method": "homography",
+            "points": corners, "meta": {}}
+    four = tmp_path / "four.json"
+    four.write_text(json.dumps(base), encoding="utf-8")
+    assert "doğrulanmamış" in (check_calibration(four) or "")           # 4 nokta: hata ölçülemez
+    verified = tmp_path / "ok.json"
+    verified.write_text(json.dumps({**base, "meta": {"line_validation_error_m": 1.4}}), encoding="utf-8")
+    assert check_calibration(verified) is None
+    loose = tmp_path / "loose.json"
+    loose.write_text(json.dumps({**base, "meta": {"line_validation_error_m": 2.7}}), encoding="utf-8")
+    assert "2.7 m > 2.0 m" in (check_calibration(loose) or "")
+    assert "okunamadı" in (check_calibration(tmp_path / "yok.json") or "")
+    assert check_calibration(Path("data/tracking/calibrations/soccertrack_v2_117092_landmarks.json")) is None

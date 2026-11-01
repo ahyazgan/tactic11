@@ -58,6 +58,14 @@ gecikme, atlanan segment, kaynak bitti mi, yazılma zamanı). API bunu canlı
 telestrasyon yanıtına ekler; panel kartı koçun gördüğü resmin kaç saniye eski
 olduğunu gösterir.
 
+## Kalibrasyon ön kontrolü (`--telestration`)
+
+Telestrasyonun çizgi/etiket kapısı bağımsız doğrulanmamış ya da 2,0 m'den hatalı
+kalibrasyonla hiç çizmez; operatör bunu ancak maç başladıktan sonra "neden çizgi
+yok" diye fark ederdi. Başlamadan önce aynı kapı çalıştırılır; geçmiyorsa akış
+başlamaz ve ne yapılacağı yazılır (`--allow-unverified-calibration` yalnız halka
+isteyen operatör için).
+
 ## Veritabanı ön kontrolü
 
 Kareler ana ortamın ingest süreciyle veritabanına yazılır; yazılamayan segment
@@ -285,6 +293,28 @@ DB_CHECK = (
 )
 
 
+def check_calibration(calibration: Path) -> str | None:
+    """Telestrasyon kapısının başlangıçta uygulanması: sorun varsa operatöre tek cümle, yoksa None."""
+    from app.tracking.calibration import PitchCalibration  # noqa: PLC0415 — numpy yalnız bu yolda
+    from app.tracking.telestration import (  # noqa: PLC0415
+        MAX_REPROJECTION_M,
+        calibration_validation,
+    )
+
+    try:
+        calib = PitchCalibration.load(calibration)
+    except (OSError, ValueError, KeyError) as exc:
+        return f"kalibrasyon okunamadı: {exc}"
+    source, error = calibration_validation(calib)
+    if source == "unverified":
+        return ("kalibrasyon bağımsız doğrulanmamış (noktalar saha işareti değil ya da çizgi doğrulaması yok); "
+                "telestrasyon çizgi/etiket çizmez. Saha işaretleriyle (≥5 nokta) yeniden kalibre edin.")
+    if error is None or error > MAX_REPROJECTION_M:
+        return (f"kalibrasyon doğrulama hatası {error if error is None else round(error, 2)} m > {MAX_REPROJECTION_M} m; "
+                "telestrasyon çizgi/etiket çizmez. Noktaları kontrol edip yeniden kalibre edin.")
+    return None
+
+
 def check_database(ingest_python: str, database_url: str | None, timeout_s: float = 30.0) -> str | None:
     """Ingest ortamında veritabanı bağlantısını dene → None (tamam) ya da hata metninin son satırı."""
     env = dict(os.environ, PYTHONIOENCODING="utf-8")
@@ -397,9 +427,19 @@ def main() -> int:
                    help="telestrasyon: bu dakikadan sonra hücum yönünü ters çevir (ikinci yarı, ör. 45)")
     p.add_argument("--home-attack", default="auto", choices=["auto", "x+", "x-"],
                    help="telestrasyon: ev sahibi kalibrasyonun saha x'i artan/azalan yöne hücum eder")
+    p.add_argument("--allow-unverified-calibration", action="store_true",
+                   help="telestrasyon kapısını geçmeyen kalibrasyonla yine başla (yalnız halkalar çizilir)")
     args = p.parse_args()
     if args.telestration and not args.calibration:
         p.error("--telestration sabit kamera kalibrasyonu ister (--calibration)")
+    if args.telestration:
+        calib_error = check_calibration(Path(args.calibration))
+        if calib_error is not None and not args.allow_unverified_calibration:
+            print(f"[canlı] {calib_error}")
+            print("[canlı] yine de başlamak için --allow-unverified-calibration.")
+            return 2
+        if calib_error is not None:
+            print(f"[canlı] uyarı: {calib_error}")
 
     kind = classify_source(args.source, realtime_file=not args.no_realtime)
     if not kind.is_stream and not Path(args.source).is_file():
