@@ -1,0 +1,16 @@
+{
+  "measured": "2026-11-02 (see git history), descriptive — EA FC 26 gameplay video (clean game picture, no camera) through the broadcast (moving-camera) path",
+  "source": "YouTube UQZ-nb4o2uc 'FC 26 - Canada vs Qatar | PS5 [FHD60]' (Action Gamer), section 180–540 s, 1080p60, 232 MB at data/tracking/videos/fc26_dl/; standard YouTube licence — internal test only, never for marketing",
+  "picture": "default FC 26 broadcast camera: centre circle, halfway line and far touchline clearly visible at 30 s; camera pans and zooms with play",
+  "runs": [
+    {"clip": "0–60 s, automatic anchor", "anchor_searches": 56, "anchors_found": 0, "landmark_inlier_at_frame0": 0.49, "calibrated_frames": "0 / 834"},
+    {"clip": "0–60 s, hand anchor from the 30 s frame (6 points: centre circle 4 extremes, centre spot, halfway ∩ far touchline; reprojection 0.17 m; overlay verified on the markings)", "frame0_reason": "çizgi oturması zayıf (inlier 27% < 45%) — camera at 0 s is panned right and wider than at 30 s", "reacquire": "33 attempts, inlier 24–46% < 85%", "calibrated_frames": "0 / 834", "replays_dropped": 66},
+    {"clip": "30–90 s (starts on the anchor frame), hand anchor", "frame0_reason": "takip zayıf (inlier 73% < 85%)", "reacquire": "12 attempts, inlier 24–62% < 85%", "cuts": 1, "calibrated_frames": "0 / 319"},
+    {"clip": "30–90 s, hand anchor, --camera operated (per-frame calibration from the anchor, no cut/replay filter; the mode that gave ≥91% calibrated segments on the VLSC tactical-view match)", "calibrated_frames": "21 / 900 (2.3%) — the first second, then lost", "reacquire": "28 attempts below 85%; 2 'no pitch line found'; 2 degenerate homographies", "players_written": 0}
+  ],
+  "propose_calibration_on_30s_frame": {"candidates": 303, "best_inlier": 0.43, "coverage": 0.0, "accepted": false, "preview": "proposed circle far too large — wrong scale"},
+  "reading": "the broadcast per-frame calibration, with its gates tuned on real TV footage (track ≥ 85% inlier, anchor landmark ≥ 70%), does not accept the FC 26 picture even when the starting homography is verified correct (0.17 m). The game's lines are thinner and the line-pixel map differs from real broadcast; the fit scores 73% on the exact anchor frame. Loosening the gates for game footage would be pipeline tuning against a synthetic source and is not done here.",
+  "consequence": "FC 26 cannot be shown in the panel through the moving-camera path today. The static-camera path needs a fixed camera, which FC 26's broadcast view is not. Game footage remains a detector check only (players detected well: see fc26-x5-screen-capture.json).",
+  "what_would_work": ["an FC 26 camera preset that does not move (e.g. 'Tele Broadcast' with zoom/height fixed at the maximum and no auto-follow — not available in the game as far as known)", "a real match from a fixed camera (the system's design target; SoccerTrack rehearsals 990731/990741 show the full chain)"],
+  "artifacts": {"hand_anchor": "data/tracking/calibrations/fc26_canada_qatar_kaba.json", "overlay_check": "scratchpad only"}
+}
