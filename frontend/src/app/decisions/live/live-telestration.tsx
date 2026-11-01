@@ -16,6 +16,19 @@ interface LiveTelestration {
     label: string | null;
     codec: string;
   };
+  // canli_mac'in ölçtüğü gecikme (<watch>/status.json); canlı mod kapalıysa null
+  status: {
+    lag_seconds: number;
+    skipped_segments: number;
+    keep_up: boolean;
+    source_ended: boolean;
+  } | null;
+}
+
+function lagText(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const sec = Math.round(seconds % 60);
+  return m > 0 ? `${m} dk ${sec} sn` : `${sec} sn`;
 }
 
 const REFRESH_MS = 5000;
@@ -59,6 +72,7 @@ export function LiveTelestrationCard({ matchId, live }: { matchId: number; live:
 
   const missing = error instanceof ApiError && error.status === 404;
   const s = data?.summary;
+  const st = data?.status;
   return (
     <div className="rc" style={{ marginBottom: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
@@ -69,6 +83,15 @@ export function LiveTelestrationCard({ matchId, live }: { matchId: number; live:
         {s && (
           <span style={{ fontSize: 10, color: "var(--muted)" }}>
             {data?.segment.replace(/_m[\d.]+$/, "")} · {s.start_minute.toFixed(1)}&apos; · çizilen kare %{Math.round(100 * s.drawn_ratio)}
+            {st && (
+              <>
+                {" · "}
+                <span title="Koçun gördüğü resim akışın bu kadar gerisinde">
+                  {st.source_ended ? "akış bitti" : `gecikme ${lagText(st.lag_seconds)}`}
+                </span>
+                {st.skipped_segments > 0 && ` · atlanan ${st.skipped_segments} segment`}
+              </>
+            )}
           </span>
         )}
       </div>

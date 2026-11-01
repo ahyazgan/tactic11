@@ -513,6 +513,30 @@ def _live_tele_dir(match_id: int) -> Path:
     return data_root() / "live" / str(match_id) / "tele"
 
 
+# canli_mac'in status.json'undan yalnız bunlar yanıta geçer
+LIVE_STATUS_FIELDS = {"updated": str, "stream_minute": float, "processed_minute": float, "lag_seconds": float,
+                      "skipped_segments": int, "keep_up": bool, "source_ended": bool}
+
+
+def _live_status(match_id: int) -> dict[str, Any] | None:
+    """`canli_mac`'in gecikme durumu; yoksa ya da bozuksa None (telestrasyon yine gösterilir)."""
+    path = _live_tele_dir(match_id).parent / "status.json"
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(raw, dict):
+        return None
+    out: dict[str, Any] = {}
+    for key, kind in LIVE_STATUS_FIELDS.items():
+        value = raw.get(key)
+        if kind is float and isinstance(value, int | float) and not isinstance(value, bool):
+            out[key] = float(value)
+        elif kind is not float and isinstance(value, kind) and (kind is bool or not isinstance(value, bool)):
+            out[key] = value
+    return out if len(out) == len(LIVE_STATUS_FIELDS) else None
+
+
 @router.get("/live/{match_id}/telestration", summary="Canlı telestrasyonun son segmenti")
 def live_telestration(match_id: int, _user: models.User = Depends(get_current_user)) -> dict[str, Any]:
     """`canli_mac --telestration` işçisinin yazdığı `tele/latest.json` + oynatma yolu.
@@ -528,7 +552,8 @@ def live_telestration(match_id: int, _user: models.User = Depends(get_current_us
     segment = str(latest.get("segment", ""))
     if not LIVE_SEGMENT.match(segment):
         raise HTTPException(status_code=502, detail="telestrasyon kaydı bozuk")
-    return {**latest, "video_url": f"/tracking/live/{match_id}/telestration/{segment}.mp4"}
+    return {**latest, "video_url": f"/tracking/live/{match_id}/telestration/{segment}.mp4",
+            "status": _live_status(match_id)}
 
 
 @router.get("/live/{match_id}/telestration/{segment}.mp4", summary="Canlı telestrasyon segment videosu")

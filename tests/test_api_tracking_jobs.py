@@ -310,3 +310,19 @@ def test_live_telestration_keep_up_segment_name(client, env):
     assert body["video_url"] == "/tracking/live/990205/telestration/seg_0007_m13.500.mp4"
     assert client.get(body["video_url"]).status_code == 200
     assert client.get("/tracking/live/990205/telestration/seg_0007_m13.5x.mp4").status_code == 422
+
+
+def test_live_telestration_includes_lag_status(client, env):
+    _live_tele(env, 990206, json.dumps({"segment": "seg_0002"}), ("seg_0002",))
+    assert client.get("/tracking/live/990206/telestration").json()["status"] is None
+    status = {"updated": "2026-11-01T09:00:00+00:00", "stream_minute": 13.0, "processed_minute": 11.5,
+              "lag_seconds": 90, "skipped_segments": 2, "keep_up": True, "source_ended": False, "extra": "x"}
+    (env / "live" / "990206" / "status.json").write_text(json.dumps(status), encoding="utf-8")
+    got = client.get("/tracking/live/990206/telestration").json()["status"]
+    assert got["lag_seconds"] == 90.0 and got["skipped_segments"] == 2 and got["keep_up"] is True
+    assert "extra" not in got
+    # bozuk/eksik durum telestrasyonu düşürmez
+    (env / "live" / "990206" / "status.json").write_text(json.dumps({**status, "skipped_segments": True}),
+                                                         encoding="utf-8")
+    r = client.get("/tracking/live/990206/telestration")
+    assert r.status_code == 200 and r.json()["status"] is None

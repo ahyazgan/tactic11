@@ -70,7 +70,8 @@ venv-cv\Scripts\python.exe -m scripts.canli_mac --source rtsp://kamera/stream --
 
 **Maç-içi Karar** (`/decisions/live`): maçı seç, **Canlı mod** kutusunu işaretle (5 sn'de bir yenilenir).
 "Canlı Telestrasyon" kartı son işlenen segmenti oynatır; başlıkta faz etiketi,
-segment dakikası ve çizilen kare oranı görünür.
+segment dakikası, çizilen kare oranı ve gecikme (koçun gördüğü resim akışın kaç saniye
+gerisinde; `--keep-up` ile atlanan segment sayısı) görünür.
 
 ## Sorun giderme
 
