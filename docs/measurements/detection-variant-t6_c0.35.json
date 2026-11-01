@@ -1,0 +1,112 @@
+{
+  "cache": "data\\tracking\\bench\\det_t6_c0.35",
+  "start_seconds": 600.0,
+  "stride": 4,
+  "calibration": "data\\tracking\\calibrations\\soccertrack_v2_117092_landmarks.json",
+  "delta": 9,
+  "detections": 5388,
+  "detection_share": {
+    "good": 0.514,
+    "ghost": 0.365,
+    "projection": 0.106,
+    "duplicate": 0.015
+  },
+  "box_height_median_px": {
+    "good": 44.1,
+    "projection": 51.6,
+    "duplicate": 44.3,
+    "ghost": 51.8
+  },
+  "projection_error_m": {
+    "median": 4.1,
+    "p90": 6.57
+  },
+  "gt_players": 5300,
+  "recall": 0.617,
+  "by_zone": {
+    "orta/bant0": {
+      "detections": 824,
+      "ghost_share": 0.166,
+      "projection_share": 0.033,
+      "gt": 905,
+      "recall": 0.729
+    },
+    "orta/bant1": {
+      "detections": 966,
+      "ghost_share": 0.064,
+      "projection_share": 0.077,
+      "gt": 1196,
+      "recall": 0.837
+    },
+    "orta/bant2": {
+      "detections": 883,
+      "ghost_share": 0.279,
+      "projection_share": 0.279,
+      "gt": 985,
+      "recall": 0.528
+    },
+    "orta/bant3": {
+      "detections": 523,
+      "ghost_share": 0.849,
+      "projection_share": 0.038,
+      "gt": 140,
+      "recall": 0.114
+    },
+    "sag/bant0": {
+      "detections": 293,
+      "ghost_share": 0.628,
+      "projection_share": 0.181,
+      "gt": 120,
+      "recall": 0.433
+    },
+    "sag/bant1": {
+      "detections": 628,
+      "ghost_share": 0.317,
+      "projection_share": 0.092,
+      "gt": 630,
+      "recall": 0.73
+    },
+    "sag/bant2": {
+      "detections": 420,
+      "ghost_share": 0.452,
+      "projection_share": 0.171,
+      "gt": 454,
+      "recall": 0.498
+    },
+    "sag/bant3": {
+      "detections": 139,
+      "ghost_share": 0.59,
+      "projection_share": 0.007,
+      "gt": 129,
+      "recall": 0.419
+    },
+    "sol/bant0": {
+      "detections": 51,
+      "ghost_share": 0.039,
+      "projection_share": 0.0,
+      "gt": 63,
+      "recall": 0.905
+    },
+    "sol/bant1": {
+      "detections": 408,
+      "ghost_share": 0.772,
+      "projection_share": 0.034,
+      "gt": 153,
+      "recall": 0.641
+    },
+    "sol/bant2": {
+      "detections": 159,
+      "ghost_share": 0.579,
+      "projection_share": 0.05,
+      "gt": 288,
+      "recall": 0.167
+    },
+    "sol/bant3": {
+      "detections": 94,
+      "ghost_share": 0.128,
+      "projection_share": 0.0,
+      "gt": 237,
+      "recall": 0.325
+    }
+  }
+}
