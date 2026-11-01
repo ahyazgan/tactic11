@@ -95,3 +95,21 @@ def test_frames_without_possession_are_not_counted() -> None:
     rep = compute_shape_watch(frames, home_team_external_id=HOME, away_team_external_id=AWAY,
                               my_team_external_id=HOME, minute=30.0).value
     assert rep.teams[0].baseline_samples == 0 and rep.findings == []
+
+
+def test_operator_direction_replaces_inference_and_flips_at_half_time() -> None:
+    frames = _frames(recent_back=28.0)
+    # kaleciler silinince çıkarım belirsiz kalabilir; operatör yönü yine ölçüm üretir
+    no_keepers = [f.model_copy(update={"players": tuple(p for p in f.players if p.player_external_id not in (1, 100))})
+                  for f in frames]
+    rep = compute_shape_watch(no_keepers, home_team_external_id=HOME, away_team_external_id=AWAY,
+                              my_team_external_id=HOME, minute=30.0, home_attack=1).value
+    assert rep.teams[0].metrics["block_depth"].recent == 28.0
+    second_half = [f.model_copy(update={"period": 2}) for f in no_keepers]
+    rep2 = compute_shape_watch(second_half, home_team_external_id=HOME, away_team_external_id=AWAY,
+                               my_team_external_id=HOME, minute=30.0, home_attack=-1).value
+    assert rep2.teams[0].metrics["block_depth"].recent == 28.0   # 2. yarıda ters: -1 → +1
+    import pytest
+    with pytest.raises(ValueError):
+        compute_shape_watch(frames, home_team_external_id=HOME, away_team_external_id=AWAY,
+                            my_team_external_id=HOME, minute=30.0, home_attack=2)

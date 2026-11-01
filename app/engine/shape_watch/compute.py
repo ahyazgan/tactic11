@@ -17,8 +17,11 @@ Normal = son `RECENT_MIN` dakikadan ÖNCEKİ `BASELINE_MIN` dakikanın medyanı;
 şimdi = son `RECENT_MIN` dakikanın medyanı. Fark eşiği aşar ve iki pencerede de
 yeterli kare varsa bulgu üretilir. Medyan, tek tük hayalet tespitine dayanıklıdır.
 
-Hücum yönü devre başına kaleci/en derin oyuncudan çıkarılır (space_map kuralı);
-belirsizse o devrenin kareleri sayılmaz. Eşikler (blok 6 m, genişlik 6 m, hat
+Hücum yönü operatörden gelir (`home_attack`: ev sahibinin 1. devredeki yönü, ikinci
+devrede ters) ya da devre başına kaleci/en derin oyuncudan çıkarılır (space_map
+kuralı); belirsizse o devrenin kareleri sayılmaz. Ölçüldü: 132877 gündüz klibinde
+kaleciler görünmediği için çıkarım 0 döndü ve hiç ölçüm üretilmedi — gerçek
+görüntüde operatör girdisi asıl yoldur (telestrasyonla aynı kural). Eşikler (blok 6 m, genişlik 6 m, hat
 aralığı 4 m, boy 6 m) antrenörlük sezgisinden alınmıştır, etiketli maçla
 ayarlanmadı; ölçümü ve kalibrasyonu doğruluk karnesinin işidir.
 """
@@ -141,12 +144,17 @@ def sample_frame(frame: TrackingFrame, team: int, direction: int) -> ShapeSample
         length=round(max(kept) - centers[0], 2), players=len(kept))
 
 
-def _directions(frames: list[TrackingFrame], home: int, away: int) -> dict[tuple[int, int], int]:
-    """(devre, takım) → hücum yönü; devre başına bir kez çıkarılır."""
+def _directions(frames: list[TrackingFrame], home: int, away: int,
+                home_attack: int = 0) -> dict[tuple[int, int], int]:
+    """(devre, takım) → hücum yönü. `home_attack` (±1) verilirse ev sahibinin 1. ve 3.
+    devredeki yönüdür, 2. ve 4. devrede ters; yoksa devre başına çıkarılır."""
     out: dict[tuple[int, int], int] = {}
     for period in sorted({f.period for f in frames}):
         part = [f for f in frames if f.period == period]
-        d_home, _ = infer_attack_direction(part, home, away)
+        if home_attack:
+            d_home = home_attack if period % 2 == 1 else -home_attack
+        else:
+            d_home, _ = infer_attack_direction(part, home, away)
         out[(period, home)] = d_home
         out[(period, away)] = -d_home
     return out
@@ -181,6 +189,7 @@ def compute_shape_watch(
     my_team_external_id: int | None, minute: float,
     recent_min: float = RECENT_MIN, baseline_min: float = BASELINE_MIN,
     thresholds_m: dict[str, float] | None = None, min_samples: int = MIN_SAMPLES,
+    home_attack: int = 0,
 ) -> EngineResult[ShapeWatchReport]:
     """Savunma şeklinin normalden sapması. `frames` en az baseline+recent penceresini kapsamalı."""
     thr = {**THRESHOLDS_M, **(thresholds_m or {})}
@@ -188,7 +197,9 @@ def compute_shape_watch(
     base = (max(0.0, minute - recent_min - baseline_min), recent[0])
     frames = [f for f in frames if base[0] <= f.minute <= minute]
     home, away = home_team_external_id, away_team_external_id
-    dirs = _directions(frames, home, away) if frames else {}
+    if home_attack not in (-1, 0, 1):
+        raise ValueError("home_attack -1, 0 veya 1 olmalı")
+    dirs = _directions(frames, home, away, home_attack) if frames else {}
     samples: list[ShapeSample] = []
     visible: list[int] = []
     for f in frames:
@@ -231,7 +242,8 @@ def compute_shape_watch(
         subject_id=frames[0].match_external_id if frames else 0, metric="shape_watch",
         value=_jsonable(report),
         inputs={"frames": len(frames), "defending_samples": len(samples), "recent_min": recent_min,
-                "baseline_min": baseline_min, "min_samples": min_samples, "thresholds_m": thr},
+                "baseline_min": baseline_min, "min_samples": min_samples, "thresholds_m": thr,
+                "home_attack": home_attack},
         formula=("defending frames only (possession from frame); per-period attack direction; "
                  "block_depth = deepest line mean distance to own goal; width = y-range without keeper; "
                  "line_gap = 2nd − 1st line; length = front − back line; median recent vs median baseline"),

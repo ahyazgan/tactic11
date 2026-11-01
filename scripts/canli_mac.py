@@ -35,8 +35,17 @@ segment sayısı). Fark = koçun gördüğü resmin kaç saniye eski olduğu. Ek
   ve 60-80. dk kararları için yeterli, 89. dk için değil.
 - Sabit kamera için kalibrasyon JSON'u gerekir (`scripts.propose_calibration`);
   verilmezse çapa görüntüden aranır (TV kuralı) — sabit kamerada yanlış olabilir.
-- Skor ve dakika videodan okunmaz; dakika segment sırasından türetilir
+- Skor ve dakika videodan okunmaz. Servis yoksa dakika segment sırasından türetilir
   (`--start-minute`), skor panelde şut olaylarından gelir.
+
+## Maç saati (`--service sportmonks --service-fixture <id>`)
+
+Dakika ve devre canlı servisin devre başlangıçlarından türetilir
+(`app.tracking.match_clock`): `clock.json` başta yazılır, ikinci yarı başlayınca
+güncellenir; devre arası segmentleri işlenmez. Yayın gecikmesi `--stream-delay-s`
+ile verilir ya da 0 bırakılırsa devre başındaki başlama vuruşu dizilişinden
+çapalanır (`clock_anchor.json`; sezgisel, makul aralık dışında alınmaz). Panel
+skoru için WS'e `service=` / `service_fixture=` verilir.
 
 ## Canlı kalma (`--keep-up`)
 
@@ -263,6 +272,26 @@ def keep_up_choice(closed: list[str], promoted: list[str], processed: set[str]) 
     return max(newer, key=segment_index) if newer else None
 
 
+def to_promote(closed: list[str], promoted: list[str], processed: set[str], *, keep_up: bool) -> list[str]:
+    """İzlenen klasöre bu turda alınacak `incoming` segmentleri.
+
+    `--keep-up`: takip boşsa yalnız en yenisi (aradakiler atlanır). Aksi halde (maç
+    saati kipinde segmentler yine `incoming`'den geçer) kapanan her segment sırayla."""
+    if keep_up:
+        choice = keep_up_choice(closed, promoted, processed)
+        return [choice] if choice is not None else []
+    last = max((segment_index(n) for n in promoted), default=-1)
+    return [n for n in closed if segment_index(n) > last]
+
+
+def clocked_target(clock, index: int) -> tuple[str, int] | None:
+    """Maç saatine göre izlenen klasördeki ad ve devre; oyun yoksa (başlamadı/devre arası) None."""
+    state = clock.segment_state(index)
+    if state.status != "in_play" or state.minute is None or state.period is None:
+        return None
+    return f"seg_{index:04d}_m{state.minute:.3f}.mp4", state.period
+
+
 def closed_segments(incoming: Path, source_ended: bool) -> list[str]:
     """ffmpeg'in kapattığı segmentler: yazılan son dosya, kaynak bitmedikçe hâlâ açıktır."""
     names = sorted(p.name for p in incoming.glob("seg_*.mp4"))
@@ -395,6 +424,63 @@ def _telestration_backlog(watch: Path) -> int:
                if not (tele / f"{f.stem}.mp4").exists() and not (tele / f"{f.stem}.error.json").exists())
 
 
+CLOCK_REFRESH_S = 60.0
+
+
+def load_watch_clock(watch: Path):
+    from app.tracking.match_clock import load_watch_clock as _load  # noqa: PLC0415
+
+    return _load(watch)
+
+
+def try_kickoff_anchor(watch: Path, clock, incoming_name: str, target: str | None,
+                       args: argparse.Namespace) -> str | None:
+    """İşlenmiş devre başı segmentinde başlama vuruşu → yayın gecikmesi (`clock_anchor.json`).
+
+    Dondurulmuş takip koduna dokunmadan: takip işçisinin yazdığı kare JSON'u okunur."""
+    if target is None or clock is None:
+        return None
+    from app.domain import TrackingFrame  # noqa: PLC0415
+    from app.tracking.match_clock import kickoff_anchor, save_anchor  # noqa: PLC0415
+
+    frames_json = watch / "frames" / f"{Path(target).stem}.json"
+    if not frames_json.is_file():
+        return None
+    index = segment_index(incoming_name)
+    state = clock.segment_state(index)
+    payload = json.loads(frames_json.read_text(encoding="utf-8"))
+    frames = [TrackingFrame.model_validate(f) for f in payload.get("frames", [])]
+    if not frames:
+        return None
+    anchored = kickoff_anchor(clock, state, index, frames[0].minute, frames, args.home_team, args.away_team)
+    if anchored is None:
+        return None
+    save_anchor(watch, anchored)
+    return (f"maç saati: {state.period}. devre başlama vuruşu bulundu — yayın gecikmesi "
+            f"{anchored.delay_s:.0f} sn (önceki {clock.delay_s:.0f} sn)")
+
+
+def service_clock(snapshot, *, started_at: datetime, segment_seconds: float, delay_s: float):
+    """Servisin devre başlangıçlarından maç saati (track_live `clock.json`'dan okur)."""
+    from app.tracking.match_clock import MatchClock  # noqa: PLC0415
+
+    return MatchClock(period_starts=tuple(snapshot.period_starts), delay_s=delay_s,
+                      stream_started_at=started_at, segment_seconds=segment_seconds)
+
+
+def refresh_service_clock(watch: Path, snapshot) -> bool:
+    """Yeni devre başladıysa `clock.json`'u güncelle; değiştiyse True."""
+    from app.tracking.match_clock import CLOCK_FILE, MatchClock  # noqa: PLC0415
+
+    path = watch / CLOCK_FILE
+    clock = MatchClock.load(path)
+    starts = tuple(sorted(snapshot.period_starts))
+    if not starts or starts == clock.period_starts:
+        return False
+    clock.with_period_starts(starts).save(path)
+    return True
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Canlı maç modu: kaynak → segment → takip → panel")
     p.add_argument("--source", required=True, help="video dosyası | rtsp://... | http(s)://... (HLS)")
@@ -429,7 +515,16 @@ def main() -> int:
                    help="telestrasyon: ev sahibi kalibrasyonun saha x'i artan/azalan yöne hücum eder")
     p.add_argument("--allow-unverified-calibration", action="store_true",
                    help="telestrasyon kapısını geçmeyen kalibrasyonla yine başla (yalnız halkalar çizilir)")
+    p.add_argument("--service", default=None, choices=["sportmonks", "api_football"],
+                   help="maç saati canlı servisten: segment dakikası/devresi devre başlangıçlarından "
+                        "türetilir, devre arası işlenmez (--start-minute yerine)")
+    p.add_argument("--service-fixture", type=int, default=None, help="servisteki fikstür kimliği")
+    p.add_argument("--stream-delay-s", type=float, default=0.0,
+                   help="yayının stadyumdan gecikmesi (sn); bilinmiyorsa 0 bırakın, başlama "
+                        "vuruşundan otomatik çapalanır")
     args = p.parse_args()
+    if bool(args.service) != bool(args.service_fixture):
+        p.error("--service ve --service-fixture birlikte verilmeli")
     if args.telestration and not args.calibration:
         p.error("--telestration sabit kamera kalibrasyonu ister (--calibration)")
     if args.telestration:
@@ -449,7 +544,8 @@ def main() -> int:
     if args.fresh and watch.exists():
         shutil.rmtree(watch)
     watch.mkdir(parents=True, exist_ok=True)
-    seg_dir = watch / "incoming" if args.keep_up else watch
+    clocked = args.service is not None
+    seg_dir = watch / "incoming" if args.keep_up or clocked else watch
     seg_dir.mkdir(exist_ok=True)
 
     # track_live ile aynı ingest yorumlayıcısı
@@ -477,7 +573,7 @@ def main() -> int:
         "--tiles", str(args.tiles), "--track-fps", f"{args.track_fps:g}",
         "--backend", args.backend, "--poll-seconds", f"{POLL_SECONDS:g}",
     ]
-    if args.keep_up:
+    if args.keep_up or clocked:
         track_cmd += ["--minute-from-name", KEEP_UP_MINUTE_PATTERN]
     weights = resolve_weights(args.weights, args.camera)
     for flag, val in (("--calibration", args.calibration), ("--weights", weights),
@@ -491,6 +587,25 @@ def main() -> int:
           f"{' · yeniden kodlama' if transcode or args.height else ' · kopya'}")
     print(f"[canlı] panel: /admin/matches/{args.match_id}/live-decision?my_team_id={args.home_team}"
           f"&current_minute=<işlenen dk>")
+    poller = None
+    if args.service:
+        from app.data.sources.live_service import (  # noqa: PLC0415
+            LiveServicePoller,
+            make_live_service,
+        )
+
+        poller = LiveServicePoller(make_live_service(args.service), args.service_fixture,
+                                   interval_s=CLOCK_REFRESH_S)
+        poller.poll()
+        if poller.snapshot is None:
+            print(f"[canlı] servis yanıt vermedi: {poller.last_error}")
+            return 2
+        snap = poller.snapshot
+        service_clock(snap, started_at=datetime.now(UTC), segment_seconds=args.segment_seconds,
+                      delay_s=args.stream_delay_s).save(watch / "clock.json")
+        print(f"[canlı] maç saati: {args.service} · {snap.home_name} – {snap.away_name} · durum {snap.status}"
+              f" · başlamış devre {len(snap.period_starts)} · gecikme {args.stream_delay_s:g} sn"
+              f"{' (başlama vuruşundan çapalanacak)' if not args.stream_delay_s else ''}")
     t0 = time.time()
     seg_proc = subprocess.Popen(seg_cmd, cwd=str(PROJECT_ROOT))  # noqa: S603
     calibration = args.calibration
@@ -514,36 +629,71 @@ def main() -> int:
         tele_proc = subprocess.Popen(tele_cmd, cwd=str(PROJECT_ROOT),  # noqa: S603
                                      env=dict(os.environ, PYTHONIOENCODING="utf-8"))
         print(f"[canlı] telestrasyon: {watch / 'tele'} (latest.json)")
-    promoted: list[str] = []   # --keep-up: incoming adları, alınış sırasıyla
+    promoted: list[str] = []   # --keep-up / maç saati: incoming adları, alınış sırasıyla
+    target_of: dict[str, str | None] = {}   # incoming adı → izlenen klasördeki ad (None: oyun yok, atlandı)
+    track_period = 1
+    anchor_checked: set[str] = set()
     skipped_total = 0
     try:
         while True:
             time.sleep(POLL_SECONDS)
             source_ended = seg_proc.poll() is not None
             elapsed = (time.time() - t0) if kind.realtime else None
-            if args.keep_up:
-                processed = {n for n in promoted
-                             if keep_up_name(segment_index(n), start_minute=args.start_minute,
-                                             segment_seconds=args.segment_seconds) in _processed_names(watch)}
+            if poller is not None and poller.due():
+                poller.poll()
+                if poller.snapshot is not None and refresh_service_clock(watch, poller.snapshot):
+                    print(f"[canlı] maç saati: {len(poller.snapshot.period_starts)}. devre başladı", flush=True)
+            if args.keep_up or clocked:
+                done_names = _processed_names(watch)
+                processed = {n for n in promoted if target_of.get(n) is None or target_of[n] in done_names}
                 closed = closed_segments(seg_dir, source_ended)
-                choice = keep_up_choice(closed, promoted, processed)
-                if choice is not None:
+                clock = load_watch_clock(watch) if clocked else None
+                for choice in to_promote(closed, promoted, processed, keep_up=args.keep_up):
                     skipped = [n for n in closed
                                if max((segment_index(m) for m in promoted), default=-1)
                                < segment_index(n) < segment_index(choice)]
-                    target = keep_up_name(segment_index(choice), start_minute=args.start_minute,
-                                          segment_seconds=args.segment_seconds)
+                    if clock is not None:
+                        planned = clocked_target(clock, segment_index(choice))
+                        if planned is None:
+                            # maç saati: başlamadı / devre arası → takibe verilmez
+                            promoted.append(choice)
+                            target_of[choice] = None
+                            processed.add(choice)
+                            continue
+                        target, period = planned
+                        if period != track_period:
+                            # yeni devre: takip işçisi kuyruğu bitirince --period ile yeniden başlar
+                            if len(processed) < len(promoted):
+                                break
+                            track_proc.terminate()
+                            track_proc.wait(timeout=30)
+                            track_period = period
+                            track_proc = subprocess.Popen(  # noqa: S603
+                                [*track_cmd, "--period", str(period)], cwd=str(PROJECT_ROOT),
+                                env=dict(os.environ, PYTHONIOENCODING="utf-8"))
+                            print(f"[canlı] maç saati: {period}. devre — takip işçisi yeniden başladı", flush=True)
+                    else:
+                        target = keep_up_name(segment_index(choice), start_minute=args.start_minute,
+                                              segment_seconds=args.segment_seconds)
                     # kopya: incoming tam kayıt olarak kalır; .part uzantısı takibe yarım dosya göstermez
                     shutil.copy2(seg_dir / choice, watch / f"{target}.part")
                     os.replace(watch / f"{target}.part", watch / target)
                     promoted.append(choice)
+                    target_of[choice] = target
                     skipped_total += len(skipped)
                     print(f"[canlı] işlenecek: {target}"
                           f"{f' · atlandı {len(skipped)} segment' if skipped else ''}", flush=True)
+                if clock is not None:
+                    for name in sorted(processed - anchor_checked):
+                        anchor_checked.add(name)
+                        note = try_kickoff_anchor(watch, clock, name, target_of.get(name), args)
+                        if note:
+                            print(f"[canlı] {note}", flush=True)
+                            clock = load_watch_clock(watch)
                 done = max((segment_index(n) + 1 for n in processed), default=0)
                 written = len(closed)
                 caught_up = source_ended and len(processed) == len(promoted) and \
-                    keep_up_choice(closed, promoted, processed) is None
+                    not to_promote(closed, promoted, processed, keep_up=args.keep_up)
             else:
                 done, written = _processed_count(watch), _written_count(watch)
                 caught_up = source_ended and done >= written

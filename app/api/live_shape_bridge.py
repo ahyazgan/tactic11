@@ -22,7 +22,7 @@ MAX_FRAMES = 1500
 
 def shape_watch_for(
     session: Session, match_id: int, *, home_team_id: int, away_team_id: int, my_team_id: int,
-    minute: float,
+    minute: float, home_attack: int = 0,
 ) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
     """(snapshot bloğu, pano uyarıları); sürekli takip karesi yoksa (None, [])."""
     frames = frames_in_window(session, match_id, minute - RECENT_MIN - BASELINE_MIN, minute,
@@ -31,7 +31,7 @@ def shape_watch_for(
         return None, []
     report = compute_shape_watch(
         frames, home_team_external_id=home_team_id, away_team_external_id=away_team_id,
-        my_team_external_id=my_team_id, minute=minute).value
+        my_team_external_id=my_team_id, minute=minute, home_attack=home_attack).value
     alerts = [{
         "type": f"shape_{f.metric}", "severity": f.severity, "message": f.message,
         "dedup_key": f"shape:{f.team_external_id}:{f.metric}:{'+' if f.delta_m > 0 else '-'}",
