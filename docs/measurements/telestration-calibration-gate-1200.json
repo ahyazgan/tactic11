@@ -1,0 +1,78 @@
+{
+  "cache": "data\\tracking\\bench\\team_tele_ctrl_v1",
+  "start_seconds": 1200.0,
+  "stride": 3,
+  "calibration_gate": true,
+  "frames": 1500,
+  "gt_home_attack_direction": 1,
+  "calibrations": {
+    "soccertrack_v2_117092.json": {
+      "frames": 1500,
+      "ref_label_counts": {},
+      "majority_baseline_pct": null,
+      "block_balanced_pct": null,
+      "block_confusion": {},
+      "drawn_ref": 0,
+      "drawn_test": 0,
+      "drawn_both": 0,
+      "test_only": 0,
+      "ref_only": 0,
+      "label_n": 0,
+      "label_exact_pct": null,
+      "block_match_pct": null,
+      "press_agree_pct": null,
+      "def_line_error": null,
+      "line_gap_error": null,
+      "test_gates": {
+        "calibration_unverified": 1500
+      },
+      "loo_error_m": 0.76
+    },
+    "soccertrack_v2_117092_landmarks.json": {
+      "frames": 1500,
+      "ref_label_counts": {
+        "Yüksek blok": 456,
+        "Alçak blok": 135,
+        "Orta blok": 214
+      },
+      "majority_baseline_pct": 56.6,
+      "block_balanced_pct": 83.0,
+      "block_confusion": {
+        "Alçak blok -> Alçak blok": 125,
+        "Alçak blok -> Orta blok": 10,
+        "Orta blok -> Alçak blok": 8,
+        "Orta blok -> Orta blok": 143,
+        "Orta blok -> Yüksek blok": 63,
+        "Yüksek blok -> Alçak blok": 14,
+        "Yüksek blok -> Orta blok": 34,
+        "Yüksek blok -> Yüksek blok": 408
+      },
+      "drawn_ref": 1485,
+      "drawn_test": 858,
+      "drawn_both": 851,
+      "test_only": 7,
+      "ref_only": 634,
+      "label_n": 805,
+      "label_exact_pct": 83.5,
+      "block_match_pct": 84.0,
+      "press_agree_pct": 96.9,
+      "def_line_error": {
+        "n": 851,
+        "median_m": 4.43,
+        "p90_m": 18.93
+      },
+      "line_gap_error": {
+        "n": 92,
+        "median_m": 2.18,
+        "p90_m": 6.36
+      },
+      "test_gates": {
+        "possession": 5,
+        "drawn": 858,
+        "players": 618,
+        "lines": 19
+      },
+      "loo_error_m": 1.76
+    }
+  }
+}

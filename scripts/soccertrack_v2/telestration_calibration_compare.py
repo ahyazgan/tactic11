@@ -55,11 +55,13 @@ def main() -> int:
     p.add_argument("--stride", type=int, default=3, help="Önbellek örnek adımı (12,5 fps / 3 ≈ 4,2 fps)")
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--ignore-calibration-gate", action="store_true",
-                   help="Telestrasyonun kalibrasyon hatası kapısını (LOO ≤ 1,5 m) kapat: LOO, oyuncudan "
-                        "türetilmiş kalibrasyonda kendi noktalarına göre ölçülür ve çizgi hatasını yansıtmaz")
+                   help="Telestrasyonun kalibrasyon kapısını kapat (doğrulama kaynağı ve hata eşiği); "
+                        "yalnız konum etkisini karşılaştırmak için")
     args = p.parse_args()
     if args.ignore_calibration_gate:
+        # hem hata eşiği hem "doğrulanmamış" kararı atlanır: yalnız konumlar karşılaştırılır
         telestration.MAX_REPROJECTION_M = float("inf")
+        telestration.calibration_validation = lambda _calib: ("ignored", 0.0)
 
     gt = gt_index(np.load(args.gt))
     anchor_payload = json.loads((args.anchor_cache / "seg_0000.json").read_text(encoding="utf-8"))

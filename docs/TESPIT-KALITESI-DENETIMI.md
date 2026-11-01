@@ -78,6 +78,26 @@ geçirdi. Oyuncudan türetilmiş kalibrasyonun LOO'su kendi uydurulduğu noktala
 ölçülür ve çizgi hatasını (10,71 m) yansıtmaz: kapı yanlış ölçütle yanlış
 kalibrasyonu ödüllendiriyor. Karşılaştırma `--ignore-calibration-gate` ile yapıldı.
 
+## Kapı düzeltmesi
+
+`app/tracking/telestration.py` → `calibration_validation`. Kapı artık hatayı
+bağımsız bir doğrulamadan alır: kalibrasyon meta'sındaki çizgi doğrulaması
+(`line_validation_error_m`) ya da noktalarının ≥%80'i saha işareti (çizgi, ceza/kale
+sahası, orta yuvarlak, penaltı/orta noktası; 0,5 m tolerans) üzerinde olan
+kalibrasyonun LOO'su. İkisi de yoksa "doğrulanmamış": çizgi ve etiket çizilmez,
+`gate_counts["calibration_unverified"]` sayılır, `telestrate_video` uyarır. Eşik
+1,5 m → 2,0 m (çizgi kalibrasyonunun 1,76 m'si görüldükten sonra; gerekçe kodda).
+
+Depodaki kalibrasyonlar: 117092 üretim → doğrulanmamış; 117092 çizgi 1,76 m,
+117093 çizgi 1,43 m, TeamTrack 0,04 m, VLSC 0,08 m → işaret tabanlı, geçer.
+Kare başına (yayın) kalibrasyonların noktaları homografiden üretilmiş yapay
+ızgaradır, doğrulanmamış sayılır; telestrasyon zaten yalnız sabit kamerayı
+destekler, kare başına entegrasyon çizgi uyum kalitesini meta'ya yazmalıdır.
+
+Gerçek kapıyla (`telestration-calibration-gate-{600,1200}.json`): üretim
+kalibrasyonu iki dilimde 0/1500 kare çizer; çizgi kalibrasyonu 1146 ve 858 kare,
+savunma hattı hatası medyanı 5,96 ve 4,43 m (kapısız karşılaştırmayla aynı).
+
 ## Dedektör çalışma ayarları — kazanç yok
 
 `scripts/soccertrack_v2/detection_variants.py`: dondurulmuş takip koduna dokunmadan
@@ -110,8 +130,7 @@ segmentleriyle ayrık kontrol gerekir.
 - Bu kamerada üretim kalibrasyonu oyuncu konumlarını uçlarda metrelerce kaydırıyor;
   bu, önceki takım ve telestrasyon ölçümlerinin bir kısmını etkiler. Kazanç
   telestrasyonda beklenenden küçük: asıl darboğaz tespit kapsaması (%51–55).
-- Kalibrasyon kapısı LOO yerine bağımsız çizgi doğrulaması kullanmalı (çizgi
-  noktaları yoksa kapı "doğrulanmamış" demeli). Ayrı bir değişiklik olarak önerilir.
+- Kapı düzeltildi (aşağıda): bağımsız doğrulama yoksa kalibrasyon "doğrulanmamış".
 - Çizgi kalibrasyonunu 117092'nin varsayılanı yapmak önceki dondurulmuş ölçümlerin
   tekrarlanabilirliğini etkiler (dosya yoluyla referans verilirler); ayrı karar.
 - Tespit kapsaması dondurulmuş koda dokunmadan sınanabilir: dedektörün dilim

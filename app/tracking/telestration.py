@@ -16,10 +16,12 @@ hattına dokunmadan hem kayıtlı videoda hem canlı segmentlerde çalışır.
 İzdüşüm: homografide kapalı biçimde ters; TPS'de ileri modelin sayısal tersi,
 yalnız destek bölgesinde (bkz. `_Projector`).
 
-Kapılar (yanlış çizim, hiç çizim olmamasından kötüdür): kalibrasyon hatası
-eşik üstündeyse, sahiplik bilinmiyorsa, hücum yönü belirsizse veya savunan
-takımdan yeterli oyuncu görünmüyorsa çizgi ve etiket üretilmez; nedeni
-`Telestrator.gate_counts` sayar. Halkalar yine çizilir.
+Kapılar (yanlış çizim, hiç çizim olmamasından kötüdür): kalibrasyon bağımsız
+doğrulanmamışsa (`calibration_validation`: çizgi doğrulaması ya da saha
+işareti noktalı kalibrasyonun LOO'su) veya hatası eşik üstündeyse, sahiplik
+bilinmiyorsa, hücum yönü belirsizse ya da savunan takımdan yeterli oyuncu
+görünmüyorsa çizgi ve etiket üretilmez; nedeni `Telestrator.gate_counts` sayar.
+Halkalar yine çizilir.
 
 Sınır: blok eşikleri (30 / 45 m) yaygın antrenörlük kullanımından alınmış
 sezgisel değerlerdir, etiketli maçla ayarlanmadı. Konumlar ayak/top zemin
@@ -52,6 +54,7 @@ from app.tracking.person_filter import (
     annotated_boundary,
     inside_boundary,
 )
+from app.tracking.pitch_model import PITCH_LENGTH_M, PITCH_WIDTH_M, pitch_segments
 
 LOW_BLOCK_MAX_M = 30.0       # savunma hattı kendi kalesine < 30 m → alçak blok
 MID_BLOCK_MAX_M = 45.0       # 30–45 m → orta blok; üstü yüksek blok
@@ -60,7 +63,17 @@ PRESS_MIN_PLAYERS = 2        # ... ve 5 m içinde en az 2 savunan
 POSSESSION_MAX_M = 4.0       # topa bu mesafeden uzak en yakın oyuncu sahiplik oyu vermez
 RING_RADIUS_M = 0.9
 MIN_TEAM_PLAYERS = 6         # çizgi/etiket için savunan takımdan görünür oyuncu
-MAX_REPROJECTION_M = 1.5     # kalibrasyon hatası bunun üstündeyse çizgi/etiket yok
+# Kalibrasyon kapısı. Hata, kalibrasyonun kendi uydurma noktalarında değil BAĞIMSIZ
+# doğrulamada ölçülmeli: oyuncu konumlarından türetilmiş bir kalibrasyon kendi
+# noktalarında 0,76 m LOO verip saha çizgilerinde 10,7 m sapabilir
+# (docs/TESPIT-KALITESI-DENETIMI.md). Bu yüzden kabul edilen kaynaklar:
+# meta'daki çizgi doğrulaması, ya da noktaları saha işaretleri üzerinde olan
+# kalibrasyonun LOO'su (o zaman her bırakılan nokta bağımsız bir saha işaretidir).
+# 2,0 m: 15 m'lik blok bantlarının ve ölçülen ~4–6 m'lik hat hatasının çok altında.
+# (1,5 m'den, çizgi kalibrasyonunun 1,76 m LOO'su görüldükten sonra yükseltildi.)
+MAX_REPROJECTION_M = 2.0
+LANDMARK_TOLERANCE_M = 0.5   # nokta bir saha işaretine bu kadar yakınsa işaret üzerindedir
+LANDMARK_SHARE = 0.8         # noktaların bu payı işaret üzerindeyse kalibrasyon işaret tabanlıdır
 DIRECTION_WINDOW_S = 10.0
 POSSESSION_WINDOW_S = 1.0
 LABEL_HOLD_S = 1.0           # etiket ancak bu süre kararlıysa değişir
@@ -157,6 +170,40 @@ def _support_polygon(calib: PitchCalibration) -> np.ndarray | None:
     return _convex_hull(np.array([p.image for p in calib.points]))
 
 
+def _on_marking(points: np.ndarray, tolerance: float = LANDMARK_TOLERANCE_M) -> np.ndarray:
+    """Saha noktaları (N×2 m) standart bir saha işaretinin (çizgi, ceza/kale sahası,
+    orta yuvarlak, penaltı ve orta noktası) üzerinde mi."""
+    segs = np.array(pitch_segments(), dtype=float)
+    a, b = segs[:, :2], segs[:, 2:]
+    edge = b - a
+    delta = points[:, None, :] - a[None]
+    t = np.clip(np.sum(delta * edge, axis=2) / np.maximum(np.sum(edge * edge, axis=1), 1e-12), 0.0, 1.0)
+    to_line = np.linalg.norm(delta - t[:, :, None] * edge[None], axis=2).min(axis=1)
+    spots = np.array([[11.0, PITCH_WIDTH_M / 2], [PITCH_LENGTH_M - 11.0, PITCH_WIDTH_M / 2],
+                      [PITCH_LENGTH_M / 2, PITCH_WIDTH_M / 2]])
+    to_spot = np.linalg.norm(points[:, None, :] - spots[None], axis=2).min(axis=1)
+    return np.minimum(to_line, to_spot) <= tolerance
+
+
+def calibration_validation(calib: PitchCalibration) -> tuple[str, float | None]:
+    """Kapının kullanacağı bağımsız hata: (kaynak, metre).
+
+    - `line_validation`: `meta["line_validation_error_m"]` (saha çizgisi noktalarında ölçülmüş)
+    - `landmark_loo`: noktaların ≥%80'i saha işareti üzerinde → LOO hatası
+    - `unverified`: ikisi de yok (oyuncudan türetilmiş, yapay ızgara, standart dışı ölçü)
+    """
+    meta = calib.meta if isinstance(calib.meta, dict) else {}
+    value = meta.get("line_validation_error_m")
+    if isinstance(value, (int, float)) and np.isfinite(value):
+        return "line_validation", float(value)
+    standard = (abs(calib.pitch_length_m - PITCH_LENGTH_M) < 1e-6
+                and abs(calib.pitch_width_m - PITCH_WIDTH_M) < 1e-6)
+    pts = np.array([p.pitch for p in calib.points], dtype=float)
+    if standard and len(pts) and float(_on_marking(pts).mean()) >= LANDMARK_SHARE:
+        return "landmark_loo", calib.reprojection_error_m
+    return "unverified", None
+
+
 class _Projector:
     """Saha metresi → görüntü pikseli.
 
@@ -178,6 +225,13 @@ class _Projector:
         self.boundary = _support_polygon(calib) if calib.method == "tps" else None
         self.tolerance_px = BOUNDARY_TOLERANCE_HEIGHT * h
         self.usable = calib.method == "homography" or self.boundary is not None
+        self._validation: tuple[str, float | None] | None = None
+
+    @property
+    def validation(self) -> tuple[str, float | None]:
+        if self._validation is None:
+            self._validation = calibration_validation(self.calib)
+        return self._validation
 
     def forward(self, q: np.ndarray) -> np.ndarray:
         """Vektörel `image_to_pitch_m` (N×2 piksel → N×2 m). calibration.py ölçülmüş
@@ -365,9 +419,11 @@ class Telestrator:
         direction, _method = infer_attack_direction(frames, team, 1 - team)
         return direction
 
-    def _gate(self, calib: PitchCalibration) -> str | None:
-        # reprojection_error_m nesne üstünde önbelleklidir (cached_property)
-        if calib.reprojection_error_m > MAX_REPROJECTION_M:
+    def _gate(self, proj: _Projector) -> str | None:
+        source, error = proj.validation
+        if source == "unverified":
+            return "calibration_unverified"
+        if error is None or error > MAX_REPROJECTION_M:
             return "calibration"
         return None if self._owners else "possession"
 
@@ -428,7 +484,7 @@ class Telestrator:
         defending: int | None = None
         pressers: set[int] = set()
         candidate: str | None = None
-        gate = self._gate(proj.calib)
+        gate = self._gate(proj)
         if gate is None:
             defending = 1 - Counter(self._owners).most_common(1)[0][0]
             direction = self._direction(defending)
