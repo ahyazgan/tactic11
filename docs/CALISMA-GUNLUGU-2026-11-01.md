@@ -68,23 +68,23 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
   dakika segment adından okunur. API segment adı kuralı genişletildi.
 - Sorun (çözüldü): arka plan komutu `frontend/` klasöründen çalıştı, göreli yollar bulunamadı.
 
-## 10:05 — Canlı kalma provası (PR #309, birleşti)
+## 10:00 — Canlı kalma provası (PR #309, birleşti)
 - `--keep-up` ile aynı 6 dk: 5/12 segment işlendi, gecikme 96–116 sn'de sabit (önce 824 sn'ye
   büyüyordu), dakikalar adlarla birebir. `docs/CANLI-HIZ-VE-PROVA.md`.
 
-## 10:30 — Paralel işçi ölçümü
+## 10:03 — Paralel işçi ölçümü
 - Tek takip işçisinde GPU ort. %76 (p90 %88), 3,4/8 GB → ikinci işçi en çok ~1,3×; denenmedi.
 
-## 10:40 — Gecikme panelde (PR #310)
+## 10:05 — Gecikme panelde (PR #310)
 - `canli_mac` `status.json` yazar; API telestrasyon yanıtına beyaz listeli `status` ekler;
   kart "gecikme 1 dk 45 sn · atlanan 2 segment" gösterir.
 - Kayıt: panel görsel doğrulaması yapılmadı (yerel kurulum demo modunda; kart demo modda gizli).
 
-## 10:55 — Atlama sonrası telestrasyon durumu (PR #311)
+## 10:09 — Atlama sonrası telestrasyon durumu (PR #311)
 - Atlanan segmentten sonra telestratör sıfırlanır (> 2 sn boşluk). Yeniden işlemede
   sıfırlama yalnız üç boşlukta oldu; bedeli ~1 sn sahiplik bekleme.
 
-## 11:05 — Sorun: Next.js kritik güvenlik açığı (PR #312)
+## 10:12 — Sorun: Next.js kritik güvenlik açığı (PR #312)
 - CI e2e `npm audit` adımında düştü: next 16.0–16.4.0 için yeni kritik danışmalar (RCE).
   Benim değişikliğimden değil; frontend'e dokunan bütün PR'ları bekletiyordu.
   next + eslint-config-next 16.4.3; yerelde audit 0, tsc/eslint/build temiz.
