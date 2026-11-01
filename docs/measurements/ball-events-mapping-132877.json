@@ -1,0 +1,56 @@
+{
+  "nodes": "data/tracking/datasets/soccertrack_v2/132877/132877_player_nodes.csv",
+  "flip": {
+    "12623": false,
+    "34317": true
+  },
+  "video_offset_s": -0.28,
+  "team_side": {
+    "12623": 1,
+    "34317": 0
+  },
+  "derived_from": "tracked player positions only (no ball, no possession)",
+  "padding_base_s": 0.0,
+  "offset_search_best_s": -0.2,
+  "near_share": 0.522,
+  "touches_used": 299,
+  "second_best": [
+    [
+      0.51,
+      300,
+      [
+        false,
+        true
+      ],
+      0.2
+    ],
+    [
+      0.51,
+      300,
+      [
+        false,
+        true
+      ],
+      0.4
+    ],
+    [
+      0.5083612040133779,
+      299,
+      [
+        false,
+        true
+      ],
+      -0.0
+    ]
+  ],
+  "team_votes": {
+    "12623->30799": 57,
+    "34317->30798": 56,
+    "12623->30798": 19,
+    "34317->30799": 18,
+    "12623->None": 5,
+    "34317->None": 1
+  },
+  "player_derived_offset_s": -0.2,
+  "offset_rule": "fixed in advance (plan addendum): -0.28 s as measured on 117092; the player-derived best is kept for transparency only"
+}
