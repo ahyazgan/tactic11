@@ -1,0 +1,19 @@
+{
+  "measured": "2026-11-01 16:56-17:03, after PRs #318/#319 merged",
+  "command": "canli_mac --source 117092_panorama_1st_half.mp4 --start-seconds 2400 --match-id 990731 --start-minute 40 --calibration soccertrack_v2_117092_landmarks.json --camera static --telestration --home-attack x+ --keep-up --fresh --database-url sqlite:///<proje>/demo.db (realtime, v2 default weights)",
+  "purpose": "integration check of the whole live chain: segmenting, keep-up, track_live_candidates, ball refinement, DB re-ingest after tracking ingest, telestration, panel status",
+  "result": {
+    "exit_code": 0,
+    "stream_minutes": "40.0-45.0 (end of half)",
+    "segments_processed": ["seg_0000_m40.000", "seg_0003_m41.500", "seg_0007_m43.500", "seg_0009_m44.500"],
+    "skipped_segments": 6,
+    "lag_while_streaming_s": [50, 180, 60],
+    "every_processed_segment_has": ["frames", "ball_candidates", "frames_ball + .ingested marker", "tele mp4 + marks"],
+    "telestration_reset_after_skip": "logged for seg_0007 and seg_0009",
+    "errors_in_log": 0,
+    "db_frames": 480,
+    "db_frames_with_ball": 411,
+    "db_ball_at_offpitch_light_share": 0.002,
+    "panel_card_header": "seg_0009 · 44.5' · çizilen kare %77 · akış bitti · atlanan 6 segment (live mode, port 3100, seed admin login)"
+  }
+}
