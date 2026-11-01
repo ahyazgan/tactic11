@@ -164,6 +164,7 @@
 - [x] Takım ataması, renk oranıyla yeniden atama: ön kayıtlı kontrol 1/4 — GEÇMEDİ, canlıya bağlanmadı; üretim net renkte %93–97 doğru (docs/TAKIM-AYRIMI-GUNES.md).
 - [x] Takım: 132831 GSR'ye karşı ölçüldü — takım uyumu %76,7; sınır tespit/konum (9,1 eşleşen oyuncu/kare, 3,4 m).
 - [x] Yeni sahada tespit kapsaması: 132831 MOT klibinde v2 %96,1 — tespit sorun değil; düşük GSR eşleşmesi referans geometrisi (2–3 m en kayması).
-- [ ] GSR referansı ile saha işareti kalibrasyonu arasındaki 2–3 m en kaymasını bağımsız bir cetvelle çöz (örn. çizgi üstündeki oyuncu anları, kale direği); GSR tabanlı hat hatası ve eşleşme sayıları o zamana kadar referans payı taşır.
+- [x] GSR–kalibrasyon 2–3 m en kayması çözüldü: resmî saha işaretlerine karşı GSR dönüşümü 5–9 m sapıyor, bizimki 1,5 m → kayma GSR tarafında (gsr-reference-geometry.json).
+- [ ] GSR tabanlı konum ölçütlerini (eşleşen oyuncu, hat hatası) GSR'yi saha işaretlerine göre düzelterek yeniden hesapla ya da karnede yalnız etiket uyumunu kullan.
 - [ ] Aday izi 132831'de yanlış topu +5 puan artırdı (ön kayıtlı sınır +2): yeni sahada adayları seçicilik ayarı, yeni ön kayıtla.
 - [ ] Aday izi sonrası aktör/sahip alanları eski topta kalıyor (veri tutarlılığı; ölçülen etki yok).
