@@ -170,3 +170,11 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - 132831 GSR (base 3917000000, hizalama −21): takım %76,7, blok dengeli %64,3, hat 5,2 m,
   karede eşleşen oyuncu 9,1. Sınır takım rengi değil tespit/konum. Karne güncellendi.
 
+## 23:30–00:20 — 132831: tespit mi geometri mi?
+- MOT klibi indirildi (0,6 GB). v2 tespit %96,1 / kesinlik %91,6 (karma %91,0 / %75,5);
+  küçük kutuda (<30 px) %80,6. Panoramada karede 22,4 takip edilen oyuncu (GSR 22).
+- GSR'ye karşı 9,1/kare eşleşme referans geometrisinden: kalibrasyon ile GSR konumları
+  arasında uzak yarıda en boyunca 2–3 m sistemli kayma (132877'de de +2,1 m). 6 m
+  yarıçapta %82–96 eşleşiyor. #325'teki "sınır tespit" okuması düzeltildi.
+- Organizatörün homography.npy'si farklı birim/uzayda; hakemlik için kullanılamadı.
+

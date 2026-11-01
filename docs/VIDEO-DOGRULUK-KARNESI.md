@@ -36,11 +36,14 @@ sahte top adayları en zor durum.
 
 **Başka stadyum (132831, gündüz, GSR'ye karşı 10 dk):** takım rengi %76,7, blok
 etiketi dengeli %64,3 / tam %70,8, savunma hattı medyan 5,2 m, pres %96, kapsama %97;
-top dokunuşta %42,2, pas uçuşunda %71,4. Bu sahada sınır tespit/konum: karede
-eşleşen oyuncu 9,1 (132877'de 15,2), takip–GSR uzaklığı medyan 3,4 m (2,4 m), hat
-hatası 2,7 kat. Göz etiketli net renkli kutularda takım ataması %93–97
+top dokunuşta %42,2, pas uçuşunda %71,4. Oyuncu tespiti bu sahada iyi: MOT etiketli
+klipte v2 tespit oranı %96,1, kesinlik %91,6; panoramada karede 22,4 takip edilen oyuncu
+(GSR'de 22). GSR'ye karşı eşleşmenin düşük görünmesi (karede 9,1) referans
+geometrisinden: saha işareti kalibrasyonu ile GSR konumları arasında uzak yarıda
+sahanın eni boyunca sistemli 2–3 m kayma var; 6 m yarıçapta oyuncuların %82–96'sı
+eşleşiyor. Göz etiketli net renkli kutularda takım ataması %93–97
 (`docs/TAKIM-AYRIMI-GUNES.md`; renk oranıyla yeniden atama ön kayıtlı kontrolde geçmedi).
-Ayrıntı: `docs/measurements/venue-132831-gsr-telestration.json`, `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
+Ayrıntı: `docs/measurements/venue-132831-detector-and-geometry.json`, `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
 
 Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 `docs/measurements/ball-track-control.json`, `docs/measurements/daylight-132877-gsr-telestration.json`,
@@ -65,8 +68,14 @@ Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 ## Bilinen sınırlar
 
 - Üç maç: iki maç aynı üniversite sahasında (bir gece, bir gündüz); üçüncü,
-  başka bir stadyum (132831), tespit kapsaması ve konum hatasıyla belirgin daha zayıf
-  (GSR'ye karşı yukarıda).
+  başka bir stadyum (132831), referans konumlara karşı daha zayıf görünüyor ama
+  tespit orada iyi; fark büyük ölçüde referans geometrisinden (aşağıdaki madde).
+- GSR referansı ile saha işareti kalibrasyonumuz arasında, iki gündüz maçında da,
+  sahanın eni boyunca sistemli 2–3 m kayma ölçüldü (`venue-132831-detector-and-geometry.json`).
+  Hangisinin doğru olduğu bu dosyalardan anlaşılamaz; kalibrasyonumuz resmî saha
+  işaretleriyle doğrulanmış (1,5 m). Bu yüzden GSR'ye karşı "eşleşen oyuncu" ve
+  "savunma hattı hatası" sayıları bir referans payı taşır; takım ve blok etiketi
+  uyumu daha az etkilenir (kayma en boyunca, blok derinliği boy boyunca).
 - Savunan takım üç karenin birinde hâlâ yanlış olabilir; çıktı bir ikinci göz olarak
   okunmalı, kesin hüküm olarak değil.
 - Takipten çıkarılan pas listesi ham topla hesaplanır; top düzeltmesi yalnız kare

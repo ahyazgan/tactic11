@@ -127,6 +127,24 @@ dışı bir ürün kararıdır, sınav sonucu değişmedi.
 - Geri dönüş: `--weights data/tracking/models/rfdetr_mixed_small` ya da
   `TRACKING_WEIGHTS`.
 
+## Başka stadyum klibi (132831) — v2 bu kamera açısında da iyi
+
+MOT etiketli 4 dk klip (3840×1504, 240 kare, ayak noktası eşlemesi, `--tiles 3`);
+`docs/measurements/detector-mot-132831-v2.json`, `-mixed.json`:
+
+| | Eski karma | v2 |
+|---|---:|---:|
+| Tespit oranı | %91,0 | %96,1 |
+| Kesinlik | %75,5 | %91,6 |
+| Kutu < 30 px tespit | %63,3 | %80,6 |
+| Kutu 30–45 px | %90,7 | %97,0 |
+| Sağ/uzak bölge | %62,9 | %74,3 |
+
+117092 klibinde aynı kutu-boyu kırılımı (`detector-mot-117092-*-heightbins.json`):
+v2 < 30 px %51,6, 30–45 px %76,2, ≥ 60 px %94,5 — gece ve küçük kutu asıl kayıp.
+132831 panoramasında GSR'ye karşı düşük eşleşme tespit değil referans geometrisi
+sorunudur (`venue-132831-detector-and-geometry.json`).
+
 ## Sıradaki adımlar
 
 - Top sorununu ayırmak: oyuncu tespiti için ince ayarlı, top için eski modeli

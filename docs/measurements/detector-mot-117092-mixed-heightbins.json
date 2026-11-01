@@ -1,0 +1,50 @@
+{
+  "clip": "data\\tracking\\datasets\\soccertrack_mot\\117092",
+  "weights": "data/tracking/models/rfdetr_mixed_small",
+  "tiles": 3,
+  "threshold": 0.35,
+  "every": 25,
+  "match": "foot",
+  "iou": null,
+  "foot_radius": 0.5,
+  "frames": 240,
+  "recall": 0.7504,
+  "precision": 0.8515,
+  "ball_frame_share": 1.0,
+  "seconds_per_frame": 0.136,
+  "by_region_recall": {
+    "orta/uzak": 0.8008,
+    "orta/yakin": 0.909,
+    "sag/uzak": 0.7574,
+    "sag/yakin": 0.7758,
+    "sol/uzak": 0.25,
+    "sol/yakin": 0.5169
+  },
+  "frame_size": [
+    3840,
+    1906
+  ],
+  "gt_height_px": {
+    "median": 41.0,
+    "p10": 29.7,
+    "p90": 67.0
+  },
+  "by_height_recall": {
+    "<30": {
+      "recall": 0.4577,
+      "gt": 568
+    },
+    "<45": {
+      "recall": 0.6808,
+      "gt": 2657
+    },
+    ">=60": {
+      "recall": 0.958,
+      "gt": 761
+    },
+    "<60": {
+      "recall": 0.8995,
+      "gt": 1294
+    }
+  }
+}

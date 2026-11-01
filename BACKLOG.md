@@ -163,6 +163,7 @@
 - [x] Panel gerçek modda doğrulandı: Canlı Telestrasyon kartı videoyu gösteriyor; genel bakıştaki yanlış 'backend bağlı değil' uyarısı düzeltildi.
 - [x] Takım ataması, renk oranıyla yeniden atama: ön kayıtlı kontrol 1/4 — GEÇMEDİ, canlıya bağlanmadı; üretim net renkte %93–97 doğru (docs/TAKIM-AYRIMI-GUNES.md).
 - [x] Takım: 132831 GSR'ye karşı ölçüldü — takım uyumu %76,7; sınır tespit/konum (9,1 eşleşen oyuncu/kare, 3,4 m).
-- [ ] Yeni sahada tespit kapsaması: 132831'de karede 9,1 eşleşen oyuncu (132877: 15,2); dedektörü bu kamera açısında ölç (MOT GT 132831 klibi mevcut).
+- [x] Yeni sahada tespit kapsaması: 132831 MOT klibinde v2 %96,1 — tespit sorun değil; düşük GSR eşleşmesi referans geometrisi (2–3 m en kayması).
+- [ ] GSR referansı ile saha işareti kalibrasyonu arasındaki 2–3 m en kaymasını bağımsız bir cetvelle çöz (örn. çizgi üstündeki oyuncu anları, kale direği); GSR tabanlı hat hatası ve eşleşme sayıları o zamana kadar referans payı taşır.
 - [ ] Aday izi 132831'de yanlış topu +5 puan artırdı (ön kayıtlı sınır +2): yeni sahada adayları seçicilik ayarı, yeni ön kayıtla.
 - [ ] Aday izi sonrası aktör/sahip alanları eski topta kalıyor (veri tutarlılığı; ölçülen etki yok).

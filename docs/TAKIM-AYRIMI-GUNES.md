@@ -92,5 +92,6 @@ Ne öğrenildi:
 - Sonradan GSR'ye karşı ölçüldü (`docs/measurements/venue-132831-gsr-telestration.json`):
   üretim takım uyumu %76,7 (gece 117092 ile aynı düzey); yeniden atama 4 kontrol
   segmentinde %77,8 ama çizilen kare %10 daha az — kontrol sonucunu değiştirmez.
-  Bu sahadaki asıl sınır takım rengi değil tespit/konum (karede 9,1 eşleşen oyuncu,
-  takip–GSR uzaklığı medyan 3,4 m).
+  Bu sahada tespit iyi (MOT klibinde v2 %96,1; karede 22,4 takip edilen oyuncu);
+  GSR'ye karşı düşük eşleşme (9,1/kare) referans geometrisindeki 2–3 m kaymadan
+  (`docs/measurements/venue-132831-detector-and-geometry.json`).
