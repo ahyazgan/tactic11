@@ -1,0 +1,23 @@
+{
+  "measured": "2026-11-01, after the v2 report (3a9f38e); descriptive, not a pre-registered promotion test",
+  "why": "telestration coverage is limited by detection ('players' gate); does v2 change the coach-facing output?",
+  "contamination_check": "v2 trained on 117093, 118575, 118576, 118577; 117092 not in training; 117092 was used to judge v1/v2 detection, so it is not a fresh test; this telestration metric was not used for any selection",
+  "method": "identical track_live command per window, only --weights differs; eval_telestration --reference-default against SoccerTrack v2 GSR",
+  "windows": [
+    {
+      "window": "600-960 s, 12 segments, 1080p rehearsal segments (990601 old = live rehearsal run, 990611 v2)",
+      "calibration": "landmark calibration scaled to 2176x1080",
+      "old": {"drawn_pct": 70.9, "block_balanced_pct": 67.3, "label_exact_pct": 69.6, "def_line_median_m": 5.86, "def_line_p90_m": 23.0, "matched_players_per_frame": 8.11, "team_agreement": 0.734},
+      "v2":  {"drawn_pct": 73.1, "block_balanced_pct": 77.2, "label_exact_pct": 77.7, "def_line_median_m": 2.60, "def_line_p90_m": 15.82, "matched_players_per_frame": 9.16, "team_agreement": 0.786}
+    },
+    {
+      "window": "1200-1560 s, first 6 segments (20.0-23.0 min), 4K (990421 old, 990422 v2, both run now)",
+      "calibration": "data/tracking/calibrations/soccertrack_v2_117092_landmarks.json",
+      "old": {"drawn_pct": 48.4, "block_balanced_pct": 53.0, "label_exact_pct": 73.9, "def_line_median_m": 6.39, "def_line_p90_m": 64.03, "matched_players_per_frame": 8.18, "team_agreement": 0.556},
+      "v2":  {"drawn_pct": 70.4, "block_balanced_pct": 82.1, "label_exact_pct": 97.3, "def_line_median_m": 1.94, "def_line_p90_m": 10.59, "matched_players_per_frame": 9.35, "team_agreement": 0.712}
+    }
+  ],
+  "team_agreement_definition": "share of matched tracked players whose team equals the GT team under the best home mapping (team_pairs diagonal / total)",
+  "limits": "one match, two windows, 2250 frames; the 1200 window uses 6 of 12 segments; the old-model 1200 result here (53.0) is lower than the earlier 12-segment run (79.4, settings not recorded)",
+  "production": "unchanged; promoting v2 remains the user's decision"
+}
