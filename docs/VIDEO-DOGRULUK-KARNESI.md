@@ -32,6 +32,12 @@ oyuncu konumları da.
 Gündüz ve aydınlık sahada sistem belirgin biçimde daha güvenilir; gece ışıklarla
 sahte top adayları en zor durum.
 
+**Başka stadyum (132831, gündüz, ön kayıtlı, sınav geçmedi):** top dokunuşta %42,2,
+pas uçuşunda %71,4 doğru yerde; ama **takım ataması bu sahada çalışmadı** (iki
+takım tutarlı ayrılamadı), bu yüzden savunan takım ve blok etiketi bu sahada
+güvenilir değil ve ölçülemedi. Yeni bir stadyumda kullanmadan önce takım renk
+ayrımının kontrol edilmesi gerekir. Ayrıntı: `docs/TOP-TESPITI-OLAY-OLCUMU.md` §6.
+
 Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 `docs/measurements/ball-track-control.json`, `docs/OTOMATIK-TELESTRASYON.md`,
 `docs/DEDEKTOR-INCE-AYAR-SONUCLARI.md`.
@@ -54,8 +60,8 @@ Kaynaklar: `docs/TOP-TESPITI-OLAY-OLCUMU.md` (ön kayıt + kontrol),
 
 ## Bilinen sınırlar
 
-- İki maç (bir gece, bir gündüz), aynı üniversite sahası ve aynı kamera sistemi;
-  başka stadyumlarda ölçülmedi.
+- Üç maç: iki maç aynı üniversite sahasında (bir gece, bir gündüz); üçüncü,
+  başka bir stadyum (132831), takım ayrımında başarısız oldu.
 - Savunan takım üç karenin birinde hâlâ yanlış olabilir; çıktı bir ikinci göz olarak
   okunmalı, kesin hüküm olarak değil.
 - Takipten çıkarılan pas listesi ham topla hesaplanır; top düzeltmesi yalnız kare

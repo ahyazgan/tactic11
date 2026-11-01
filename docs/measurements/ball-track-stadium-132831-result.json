@@ -1,0 +1,85 @@
+{
+  "measured": "2026-11-01 20:05, once, after plan 60e7b47",
+  "plan": "docs/measurements/ball-track-stadium-132831-plan.json",
+  "mapping": "docs/measurements/ball-events-mapping-132831.json",
+  "window": "990751: 132831 first half, video 600-1200 s, 20 segments",
+  "calibration": "soccertrack_v2_132831_landmarks.json, 65 landmarks, leave-one-out 1.57 m",
+  "arms": {
+    "baseline": {
+      "ball_frame_pct": 65.0,
+      "touch": {
+        "hit": 120,
+        "wrong": 122,
+        "missing": 97,
+        "events": 339,
+        "hit_pct": 35.4,
+        "wrong_pct": 36.0,
+        "missing_pct": 28.6
+      },
+      "flight": {
+        "hit": 46,
+        "wrong": 15,
+        "missing": 9,
+        "events": 70,
+        "hit_pct": 65.7,
+        "wrong_pct": 21.4,
+        "missing_pct": 12.9
+      },
+      "touch_error_median_m": 5.03
+    },
+    "candidate": {
+      "ball_frame_pct": 81.1,
+      "touch": {
+        "hit": 143,
+        "wrong": 139,
+        "missing": 57,
+        "events": 339,
+        "hit_pct": 42.2,
+        "wrong_pct": 41.0,
+        "missing_pct": 16.8
+      },
+      "flight": {
+        "hit": 50,
+        "wrong": 14,
+        "missing": 6,
+        "events": 70,
+        "hit_pct": 71.4,
+        "wrong_pct": 20.0,
+        "missing_pct": 8.6
+      },
+      "touch_error_median_m": 4.88
+    }
+  },
+  "criteria": {
+    "D1": {
+      "delta": 6.8,
+      "required": ">= -2",
+      "pass": true
+    },
+    "D2": {
+      "delta": 5.0,
+      "required": "<= +2",
+      "pass": false
+    },
+    "D3": {
+      "delta": 5.7,
+      "required": ">= -5",
+      "pass": true
+    },
+    "D4": {
+      "pass": null,
+      "status": "not evaluable: event-team to tracked-team mapping failed (both event teams vote for the same tracked team; votes inconsistent per segment)"
+    },
+    "D5": {
+      "pass": null,
+      "status": "not evaluable: event-team to tracked-team mapping failed (both event teams vote for the same tracked team; votes inconsistent per segment)"
+    }
+  },
+  "decision": "FAILED (D2: wrong-ball share +5.0 > +2). Per plan: reported as a limit, backlog item opened; code and criteria unchanged.",
+  "findings": [
+    "candidate fills more frames: missing 28.6 -> 16.8%, hits +23 touches, wrong +17 touches",
+    "team assignment does not separate the teams consistently at this venue (kits clustered as near-white vs light blue; frames with 12+ players on one team 8-65% per segment); telestration's defending team is therefore not trustworthy here",
+    "only 23.5% of touches have a tracked player within 2 m (132877: 52%, 117092: 30%); touch error median ~5 m"
+  ],
+  "limits": "one venue, 10 minutes, no GSR"
+}

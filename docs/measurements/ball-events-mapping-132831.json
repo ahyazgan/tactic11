@@ -1,0 +1,57 @@
+{
+  "nodes": "data/tracking/datasets/soccertrack_v2/132831/132831_player_nodes.csv",
+  "flip": {
+    "15370": false,
+    "30798": true
+  },
+  "video_offset_s": -0.28,
+  "team_side": {
+    "15370": 1,
+    "30798": 1
+  },
+  "derived_from": "tracked player positions only (no ball, no possession)",
+  "padding_base_s": 0.0,
+  "offset_search_best_s": -0.0,
+  "near_share": 0.235,
+  "touches_used": 340,
+  "second_best": [
+    [
+      0.22418879056047197,
+      339,
+      [
+        false,
+        true
+      ],
+      -0.2
+    ],
+    [
+      0.21470588235294116,
+      340,
+      [
+        false,
+        true
+      ],
+      0.4
+    ],
+    [
+      0.21176470588235294,
+      340,
+      [
+        false,
+        true
+      ],
+      0.2
+    ]
+  ],
+  "team_votes": {
+    "15370->30799": 27,
+    "30798->30799": 19,
+    "15370->30798": 18,
+    "30798->30798": 9,
+    "30798->None": 5,
+    "15370->None": 2
+  },
+  "player_derived_offset_s": 0.0,
+  "offset_rule": "fixed in advance: -0.28 s (117092 lag)",
+  "team_side_status": "INVALID: both event teams map to the same tracked team (votes 27:18 and 19:9, inconsistent per segment); defending-team metrics cannot be evaluated with this mapping"
+}

@@ -129,6 +129,37 @@ Okuma: gündüzde üretim topu zaten iyi; aday izi kazandırmıyor, kaybettirmiy
 Gecedeki kazanç (+22 puan savunan takım) ışık gibi sahte adayları ayıklamaktan
 geliyordu. Aday izi varsayılan kalır. Sonuç: `docs/measurements/ball-track-daylight-132877-result.json`.
 
+## 6. Başka stadyum (132831): ön kayıtlı sınav — geçmedi
+
+132831 SoccerTrack Challenge maçı: başka saha, başka kamera yerleşimi, gündüz, 3840×1504.
+Ön kayıt `docs/measurements/ball-track-stadium-132831-plan.json` (60e7b47) indirmeden önce.
+Kalibrasyon 65 işaret, bir-dışarıda 1,57 m. Olay eşlemesi oyunculardan: eksen
+çevirmesi bulundu, ama **takım tarafı bulunamadı** — iki olay takımı da takibin aynı
+takımına oy verdi (27:18, 19:9) ve oylar segmentten segmente tutarsız.
+
+| 600–1200 sn (20 segment) | Üretim topu | Aday izi | Şart | Sonuç |
+|---|---:|---:|---|---|
+| Dokunuşta top ≤ 5 m (339 dokunuş) | %35,4 | %42,2 | ≥ −2 | geçti |
+| Dokunuşta yanlış top | %36,0 | %41,0 | ≤ +2 | **kaldı (+5,0)** |
+| Pas uçuşunda top ≤ 5 m (70 pas) | %65,7 | %71,4 | ≥ −5 | geçti |
+| Savunan takım (D4, D5) | — | — | ≥ −2 | **ölçülemedi** |
+
+Karar (plan gereği): sınav geçmedi; kod ve ölçüt değişmedi, sınır olarak yazıldı.
+Aday izi bu sahada daha çok kareye top koyuyor (kayıp %28,6 → %16,8): 23 dokunuş
+daha isabetli, 17 dokunuş daha yanlış.
+
+Bulgular:
+- **Takım ataması bu sahada çalışmıyor**: formalar "beyaza yakın" ve "açık mavi"
+  kümelendi; segment başına karelerin %8–65'inde bir takıma 12+ oyuncu atandı. Bu
+  sahada telestrasyonun "savunan takım"ı güvenilir değildir.
+- Dokunuşların yalnız %23,5'inde 2 m içinde takip edilen oyuncu var (132877: %52,
+  117092: %30); dokunuş hatası medyanı ~5 m.
+
+Ayrıca geliştirmede görüldü (sınav dışı): aday izi topu değiştirirken karedeki
+"topu tutan oyuncu" ve sahip takım alanları eski topa göre kalıyor. Yeniden hesaplamak
+ölçülebilir fark yaratmadı (gece %77,0 → %77,7 ve %73,8 → %71,4; gündüz %81,3 → %81,2);
+davranış değiştirilmedi, veri tutarsızlığı olarak iş listesinde.
+
 ## Sınırlar
 
 - Gece: tek maç, 10 dk kontrol. Gündüz: tek maç (132877), 10 dk; uçtan uca blok
