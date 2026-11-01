@@ -1,0 +1,55 @@
+"""Read existing consumed captures only; do not run detection or change calibration."""
+from pathlib import Path
+import hashlib
+import json
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import numpy as np
+from app.tracking.calibration import PitchCalibration
+from app.tracking.person_filter import annotated_boundary, inside_boundary
+
+cases = {}
+for group, name in (
+    ('day_3', 'data/tracking/bench/identity_day_detections/seg_0003.json'),
+    ('consumed_night_84', 'data/tracking/bench/consensus_palette_control_v1/night/raw/seg_0084.json'),
+):
+    path = Path(name)
+    data = json.loads(path.read_text(encoding='utf-8'))
+    cal = PitchCalibration.from_dict(data['calibration'])
+    polygon = annotated_boundary(cal)
+    assert polygon is not None
+    tolerance = max(1., cal.image_size[1] * .002)
+    balls = [s for s in data['samples'] if s['ball'] is not None]
+    points = np.asarray([s['ball'][:2] for s in balls])
+    inside = inside_boundary(points, polygon, tolerance)
+    rejected = []
+    for sample, valid in zip(balls, inside, strict=True):
+        if valid:
+            continue
+        point = np.asarray(sample['ball'][:2])
+        edges = np.roll(polygon, -1, axis=0) - polygon
+        delta = point - polygon
+        t = np.clip(np.sum(delta * edges, axis=1) / np.sum(edges * edges, axis=1), 0, 1)
+        distance = float(np.sqrt(np.min(np.sum((delta - t[:, None] * edges) ** 2, axis=1))))
+        rejected.append(dict(frame_idx=sample['frame_idx'], seconds=sample['seconds'],
+            ball_source=sample['ball_source'], source_pixel=sample['ball'],
+            distance_from_annotated_boundary_px=distance,
+            pitch_m=cal.image_to_pitch_m(*point),
+            normalized_unclamped=cal.image_to_normalized(*point, clamp=False),
+            accepted_by_current_projection_gate=cal.is_on_pitch(*point, margin_m=1.)))
+    cases[group] = dict(source_capture=name, source_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+        calibration_method=cal.method, samples=len(data['samples']), ball_samples=len(balls),
+        boundary_tolerance_px=tolerance, outside_annotated_boundary=len(rejected), examples=rejected)
+
+report = dict(driver_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    scope='Read-only diagnosis of consumed development data. No new guarded controls or new model inference.',
+    production_changed=False, false_ball_labels_confirmed=False,
+    limitation='Outside the image annotation is a geometry discrepancy, not by itself a false-ball label or a safe rule for airborne balls.',
+    cases=cases)
+out = Path('.cache/consumed-ball-boundary-diagnosis-20261010.json')
+with out.open('x', encoding='utf-8') as stream:
+    json.dump(report, stream, indent=2)
+for group, case in cases.items():
+    print(group, {k: case[k] for k in ('samples', 'ball_samples', 'outside_annotated_boundary')})
+    print('frame240', [r for r in case['examples'] if r['frame_idx'] == 240])

@@ -119,3 +119,12 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
   aktarılmış/çizilmiş; panel başlığı "akış bitti · atlanan 6 segment".
 - `docs/VIDEO-DOGRULUK-KARNESI.md`: kulübe verilecek tek sayfalık doğruluk özeti.
 
+## 17:15–18:50 — Gündüz sınavı (görülmemiş maç 132877)
+- Disk 6,2 GB boştu; kullanıcı onayıyla gereksiz 12 test klasörü silindi (→ 15 GB).
+- Drive küçük resimleriyle 4 kullanılmamış maçın dördünün de gündüz olduğu görüldü;
+  132877 seçildi, yalnız ilk yarı + olay dosyaları indirildi (3,3 GB).
+- Ön kayıt (44758cb) takipten önce; indirince videonun başlama vuruşundan başladığı
+  görüldü → zaman varsayımı sonuçtan önce ek olarak düzeltildi.
+- 5/5 geçti (aşağı yönlü değil): savunan takım %82,7 → %81,3, dokunuş %71,9 → %73,2.
+  Gündüzde sistem çok daha iyi; top izinin gece kazancı ışık adaylarından.
+
