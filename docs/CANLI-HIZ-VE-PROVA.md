@@ -70,6 +70,11 @@ Kare dakikaları segment adlarıyla birebir tuttu (ör. `seg_0007_m13.500` → 1
 Koçun gördüğü resim her an yaklaşık 2 dakika eskidir; buna karşılık maçın %40 kadarı
 işlenir.
 
+Atlamadan sonra telestratör durumu (hat yumuşatma, etiket bekletme, sahiplik penceresi)
+sıfırlanır: aynı beş segment yeniden işlendiğinde sıfırlama yalnız üç boşlukta oldu,
+ardışık 10→11'de olmadı. Bedeli segment başında 9–33 karelik (~1 sn) "sahiplik
+bekleniyor" süresi; karşılığında 1,5 dk önceki sahiplik ve hat yeni resme karışmıyor.
+
 ## Sınırlar
 
 - Tek GPU (RTX 5060 8 GB), tek maç, sabit panorama kamerası. Daha güçlü GPU ya da

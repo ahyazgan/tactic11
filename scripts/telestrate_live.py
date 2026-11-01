@@ -8,8 +8,10 @@
 - `<watch>/tele/seg_XXXX.marks.json` — kare başına çizim öğeleri (panel katmanı)
 - `<watch>/tele/latest.json` — panelin okuyacağı son segment özeti
 
-Telestratör durumu (hücum yönü, sahiplik, hat yumuşatma, etiket) segmentler
-arasında korunur. `--swap-at-minute 45`: segment başlangıç dakikası bu değere
+Telestratör durumu (hücum yönü, sahiplik, hat yumuşatma, etiket) ardışık segmentler
+arasında korunur; yeni segment öncekinin bittiği yerden başlamıyorsa (`canli_mac
+--keep-up` aradakileri atladı, > `CONTINUITY_GAP_S`) durum sıfırlanır, çünkü bir
+buçuk dakika önceki hat ve sahiplik yeni resme karışmamalı. `--swap-at-minute 45`: segment başlangıç dakikası bu değere
 ulaşınca ev sahibinin hücum yönü kendiliğinden ters çevrilir (ikinci yarı). Bir segment hata verirse `seg_XXXX.error.json` yazılır ve
 sonrakine geçilir; yarım yazılmış takip JSON'u hata sayılmaz, sonraki turda
 yeniden denenir. Dondurulmuş takip koduna dokunmaz; `canli_mac --telestration`
@@ -24,6 +26,7 @@ import argparse
 import json
 import time
 import traceback
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -58,14 +61,39 @@ def segment_attack(payload: dict, home_attack: int, swap_at_minute: float | None
     return -home_attack
 
 
+CONTINUITY_GAP_S = 2.0  # önceki segmentin son karesiyle bu segmentin ilk karesi arası en çok
+
+
+@dataclass
+class LiveState:
+    """Segmentler arası taşınan durum: telestratör ve işlenen son karenin maç dakikası."""
+    tele: Telestrator | None = None
+    end_minute: float | None = None
+
+
+def continues(previous_end: float | None, payload: dict) -> bool:
+    """Segment öncekinin bittiği yerden mi başlıyor (aradaki boşluk ≤ CONTINUITY_GAP_S)?"""
+    minutes = [float(f["minute"]) for f in payload.get("frames", []) if "minute" in f]
+    if previous_end is None or not minutes:
+        return True
+    return (min(minutes) - previous_end) * 60.0 <= CONTINUITY_GAP_S
+
+
 def process(video: Path, frames_json: Path, stem: str, out: Path, calib: PitchCalibration,
-            tele: Telestrator | None, *, home_attack: int, width: int, h264: bool,
-            swap_at_minute: float | None = None) -> Telestrator | None:
+            state: LiveState, *, home_attack: int, width: int, h264: bool,
+            swap_at_minute: float | None = None) -> None:
     try:
         payload = json.loads(frames_json.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
-        return tele  # takip hâlâ yazıyor olabilir; sonraki turda yeniden dene
+        return  # takip hâlâ yazıyor olabilir; sonraki turda yeniden dene
+    if state.tele is not None and not continues(state.end_minute, payload):
+        print(f"[telestrasyon] {stem}: önceki segmentle süreklilik yok — durum sıfırlandı", flush=True)
+        state.tele = None
+    minutes = [float(f["minute"]) for f in payload.get("frames", []) if "minute" in f]
+    if minutes:
+        state.end_minute = max(minutes)
     home_attack = segment_attack(payload, home_attack, swap_at_minute)
+    tele = state.tele
     if tele is not None:
         tele.set_home_attack(home_attack)
     partial = out / f"{stem}.tmp.mp4"  # uzantı .mp4 kalmalı: yazıcılar biçimi uzantıdan seçer
@@ -77,14 +105,15 @@ def process(video: Path, frames_json: Path, stem: str, out: Path, calib: PitchCa
         write_json(out / f"{stem}.error.json", {"segment": stem, "error": repr(exc),
                                                 "traceback": traceback.format_exc()})
         print(f"[telestrasyon] {stem}: hata, atlandı ({exc})", flush=True)
-        return tele
+        state.tele = tele
+        return
+    state.tele = tele
     partial.replace(out / f"{stem}.mp4")
     write_json(out / f"{stem}.marks.json", {"summary": summary, "frames": log})
     write_json(out / "latest.json", {"segment": stem, "video": f"{stem}.mp4", "marks": f"{stem}.marks.json",
                                      "summary": summary, "updated": datetime.now(UTC).isoformat()})
     print(f"[telestrasyon] {stem}: {summary['frames_written']} kare · çizilen %{100 * summary['drawn_ratio']:.0f}"
           f" · etiket {summary['label'] or '-'}", flush=True)
-    return tele
 
 
 def main() -> int:
@@ -104,11 +133,11 @@ def main() -> int:
     warn_calibration(calib)
     out = args.watch / "tele"
     out.mkdir(parents=True, exist_ok=True)
-    tele: Telestrator | None = None
+    state = LiveState()
     while True:
         for video, frames_json, stem in pending(args.watch, out):
-            tele = process(video, frames_json, stem, out, calib, tele, home_attack=HOME_ATTACK[args.home_attack],
-                           width=args.width, h264=not args.no_h264, swap_at_minute=args.swap_at_minute)
+            process(video, frames_json, stem, out, calib, state, home_attack=HOME_ATTACK[args.home_attack],
+                    width=args.width, h264=not args.no_h264, swap_at_minute=args.swap_at_minute)
         if args.once:
             return 0
         time.sleep(args.poll_seconds)
