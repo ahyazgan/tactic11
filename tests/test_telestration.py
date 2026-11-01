@@ -33,8 +33,9 @@ def img(x: float, y: float) -> tuple[float, float]:
 def calib(noise: float = 0.0) -> PitchCalibration:
     rng = np.random.default_rng(1)
     pts = []
-    for x in (0.0, 30.0, 52.5, 75.0, 105.0):
-        for y in (0.0, 34.0, 68.0):
+    # saha işaretleri üzerindeki noktalar (taç/kale çizgisi, ceza sahası, orta çizgi)
+    for x in (0.0, 16.5, 52.5, 88.5, 105.0):
+        for y in (0.0, 13.84, 34.0, 54.16, 68.0):
             u, v = img(x, y)
             pts.append(CalibrationPoint(image=(u + rng.normal(0, noise), v + rng.normal(0, noise)), pitch=(x, y)))
     return PitchCalibration(points=tuple(pts), image_size=(2000, 1200))
@@ -49,8 +50,8 @@ def barrel(x: float, y: float) -> tuple[float, float]:
 
 
 def tps_calib(*, with_corners: bool = True) -> PitchCalibration:
-    xs = (0.0, 17.5, 35.0, 52.5, 70.0, 87.5, 105.0)
-    ys = (0.0, 17.0, 34.0, 51.0, 68.0)
+    xs = (0.0, 5.5, 16.5, 52.5, 88.5, 99.5, 105.0)
+    ys = (0.0, 13.84, 24.84, 34.0, 43.16, 54.16, 68.0)
     corners = {(0.0, 0.0), (105.0, 0.0), (0.0, 68.0), (105.0, 68.0)}
     pts = [CalibrationPoint(image=barrel(x, y), pitch=(x, y)) for x in xs for y in ys
            if with_corners or (x, y) not in corners]
@@ -305,3 +306,40 @@ def test_median_line_depth_resists_one_outlier() -> None:
     players = [(30.0, 10.0), (31.0, 20.0), (32.0, 30.0), (37.5, 40.0)]
     assert _lines(players, "mean")[0].depth == pytest.approx(32.625)
     assert _lines(players, "median")[0].depth == pytest.approx(31.5)
+
+
+def test_player_derived_calibration_is_unverified() -> None:
+    from app.tracking.telestration import calibration_validation
+
+    rng = np.random.default_rng(3)
+    pitch = rng.uniform([8, 8], [97, 60], size=(30, 2))      # oyuncu konumları: saha işareti değil
+    pts = tuple(CalibrationPoint(image=img(x, y), pitch=(float(x), float(y))) for x, y in pitch)
+    cal = PitchCalibration(points=pts, image_size=(2000, 1200))
+    assert cal.reprojection_error_m < 0.01                    # kendi noktalarında kusursuz görünür
+    assert calibration_validation(cal) == ("unverified", None)
+    t = Telestrator(fps=5)
+    marks = run(t, cal)
+    assert t.gate_counts["calibration_unverified"] == 10
+    assert not any(m.kind in ("line", "label") for m in marks)
+
+
+def test_line_validation_in_meta_is_used() -> None:
+    from app.tracking.telestration import calibration_validation
+
+    base = calib()
+    good = PitchCalibration(points=base.points, image_size=base.image_size,
+                            meta={"line_validation_error_m": 1.2})
+    bad = PitchCalibration(points=base.points, image_size=base.image_size,
+                           meta={"line_validation_error_m": 9.0})
+    assert calibration_validation(good) == ("line_validation", 1.2)
+    t = Telestrator(fps=5)
+    run(t, bad)
+    assert t.gate_counts["calibration"] == 10
+
+
+def test_landmark_calibrations_use_loo() -> None:
+    from app.tracking.telestration import calibration_validation
+
+    source, error = calibration_validation(calib())
+    assert source == "landmark_loo" and error is not None and error < 0.01
+    assert calibration_validation(tps_calib())[0] == "landmark_loo"
