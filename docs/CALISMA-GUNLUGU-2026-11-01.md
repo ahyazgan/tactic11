@@ -41,5 +41,15 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
   (önceden var olan durum) — gerçek karede çizgi doğrulaması gösterilemedi.
 - `docs/CANLI-MOD-KILAVUZU.md` eklendi.
 
+## 07:50 — Dedektör v2 sonucu
+- 7 şartın 6'sı geçti: top kaybı çözüldü (olay anında top %35 → %38; v1 %16), 128058
+  kesinlik %71,9 → %90,8, panorama tespit %60,7 → %61,9. Kalan: 128058 tespit +2,08
+  (şart +3). Ön kayıt gereği kabul edilmedi; üretim değişmedi.
+- Sorun (çözüldü): değerlendirme zinciri yanlış dalda çalıştı (evaluate_ball.py yoktu);
+  dal değiştirilip eksik ölçümler tekrarlandı.
+
 ## Bekleyen kullanıcı kararları
-- (yok)
+- Dedektör v2'yi (rfdetr_soccertrack_ft_v2) üretime almak: ön kayıt dışı ürün kararı.
+  Lehine: kesinlik +19 puan, top korunuyor, panorama/klip her eksende daha iyi.
+  Aleyhine: bağımsız maçta tespit artışı +2,1 (+3 istenmişti). Alternatif: yeni bir
+  bağımsız maçla (Drive'da Challenge/Test klipleri; indirme izni gerekir) yeniden sına.

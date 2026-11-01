@@ -1,0 +1,8 @@
+{
+  "cache": "data\\tracking\\bench\\det_ft2_t4",
+  "in_play_events": 37,
+  "events_with_ball": 14,
+  "event_ball_rate": 0.3784,
+  "frames": 1125,
+  "ball_frame_share": 0.1476
+}
