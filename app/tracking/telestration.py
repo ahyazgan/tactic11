@@ -74,6 +74,10 @@ MIN_TEAM_PLAYERS = 6         # çizgi/etiket için savunan takımdan görünür 
 MAX_REPROJECTION_M = 2.0
 LANDMARK_TOLERANCE_M = 0.5   # nokta bir saha işaretine bu kadar yakınsa işaret üzerindedir
 LANDMARK_SHARE = 0.8         # noktaların bu payı işaret üzerindeyse kalibrasyon işaret tabanlıdır
+LINE_CHECK_NEAR_PX = 18.0    # çizgi doğrulaması: model noktası en çok bu kadar uzaktaki çizgiyle eşleşir
+LINE_CHECK_MIN_COVERAGE = 0.5  # görünür model noktalarının en az bu payı bir çizgiyle eşleşmeli
+LINE_CHECK_MIN_POINTS = 30
+MIN_HOMOGRAPHY_LANDMARKS = 5   # 4 noktalık homografi o noktalara tam oturur: hata 0, bir şey ölçmez
 DIRECTION_WINDOW_S = 10.0
 POSSESSION_WINDOW_S = 1.0
 LABEL_HOLD_S = 1.0           # etiket ancak bu süre kararlıysa değişir
@@ -185,11 +189,75 @@ def _on_marking(points: np.ndarray, tolerance: float = LANDMARK_TOLERANCE_M) -> 
     return np.minimum(to_line, to_spot) <= tolerance
 
 
+def _line_groups(step_m: float = 1.0) -> tuple[np.ndarray, np.ndarray]:
+    """Saha modeli noktaları ve yön grubu: 0 = sabit x (kale/orta/ceza dikeyleri),
+    1 = sabit y (taç, ceza/kale yatayları), 2 = eğri (orta yuvarlak)."""
+    pts: list[tuple[float, float]] = []
+    groups: list[int] = []
+    for x1, y1, x2, y2 in pitch_segments():
+        group = 0 if abs(x2 - x1) < 1e-6 else 1 if abs(y2 - y1) < 1e-6 else 2
+        n = max(2, int(float(np.hypot(x2 - x1, y2 - y1)) / step_m) + 1)
+        for t in np.linspace(0.0, 1.0, n):
+            pts.append((x1 + (x2 - x1) * t, y1 + (y2 - y1) * t))
+            groups.append(group)
+    return np.asarray(pts, dtype=float), np.asarray(groups)
+
+
+def line_validation_error(h_img_to_pitch: np.ndarray, dist_map: np.ndarray) -> tuple[float | None, float]:
+    """Homografiyi görüntüdeki beyaz saha çizgilerine karşı doğrula → (hata m | None, kapsama).
+
+    Saha modelinin çizgi noktaları (1 m aralık) görüntüye izdüşürülür; görüntü
+    içindekilerin en yakın çizgi pikseline uzaklığı (`dist_map`, px) o noktadaki
+    yerel ölçekle (piksel başına metre, homografi Jacobian'ının geometrik ortalaması)
+    metreye çevrilir; ≤ `LINE_CHECK_NEAR_PX` uzaklıktakiler eşleşmiş sayılır.
+    Noktalar yönlerine göre gruplanır (sabit-x çizgiler, sabit-y çizgiler, eğri):
+    tek bir medyan, çizgi yönündeki kaymayı göremez (x'te 3 m kayan oturmada yatay
+    çizgiler yine üst üste düşer). Hata, ≥10 görünür noktası olan grupların
+    eşleşmiş medyanlarının en büyüğüdür; böyle bir grupta eşleşme yarının altındaysa
+    (çizgi örtülü ya da yanlış oturma) None döner ve kalibrasyon doğrulanmamış kalır.
+    Kapsama tüm görünür noktaların eşleşen payıdır. Oturtma da bu çizgilere
+    yapıldığından değer örneklem içidir: uyum kalitesini ölçer, bağımsız saha
+    doğruluğunu değil (yine de oyuncudan türetilmiş LOO gibi çizgilerden kopuk değildir)."""
+    h, w = dist_map.shape[:2]
+    pts, groups = _line_groups()
+    inv = np.linalg.inv(h_img_to_pitch)
+    q = np.c_[pts, np.ones(len(pts))] @ inv.T
+    ok = q[:, 2] > 1e-9
+    uv = q[:, :2] / np.where(ok, q[:, 2], 1.0)[:, None]
+    ok &= (uv[:, 0] >= 0) & (uv[:, 0] < w - 1) & (uv[:, 1] >= 0) & (uv[:, 1] < h - 1)
+    if int(ok.sum()) < LINE_CHECK_MIN_POINTS:
+        return None, 0.0
+    uv, groups = uv[ok], groups[ok]
+    d_px = dist_map[uv[:, 1].astype(int), uv[:, 0].astype(int)].astype(float)
+    near = d_px <= LINE_CHECK_NEAR_PX
+    coverage = float(near.mean())
+
+    def to_pitch(p: np.ndarray) -> np.ndarray:
+        r = np.c_[p, np.ones(len(p))] @ h_img_to_pitch.T
+        return r[:, :2] / r[:, 2:3]
+
+    base = to_pitch(uv)
+    dx = to_pitch(uv + [1.0, 0.0]) - base
+    dy = to_pitch(uv + [0.0, 1.0]) - base
+    error_m = d_px * np.sqrt(np.abs(dx[:, 0] * dy[:, 1] - dx[:, 1] * dy[:, 0]))
+    worst: float | None = None
+    for g in (0, 1, 2):
+        member = groups == g
+        if int(member.sum()) < 10:
+            continue
+        if float(near[member].mean()) < LINE_CHECK_MIN_COVERAGE:
+            return None, coverage
+        group_error = float(np.median(error_m[member & near]))
+        worst = group_error if worst is None else max(worst, group_error)
+    return worst, coverage
+
+
 def calibration_validation(calib: PitchCalibration) -> tuple[str, float | None]:
     """Kapının kullanacağı bağımsız hata: (kaynak, metre).
 
     - `line_validation`: `meta["line_validation_error_m"]` (saha çizgisi noktalarında ölçülmüş)
-    - `landmark_loo`: noktaların ≥%80'i saha işareti üzerinde → LOO hatası
+    - `landmark_loo`: noktaların ≥%80'i saha işareti üzerinde → LOO hatası (homografide
+      en az 5 nokta: 4 noktaya her homografi kusursuz oturur, hata bir şey söylemez)
     - `unverified`: ikisi de yok (oyuncudan türetilmiş, yapay ızgara, standart dışı ölçü)
     """
     meta = calib.meta if isinstance(calib.meta, dict) else {}
@@ -199,7 +267,8 @@ def calibration_validation(calib: PitchCalibration) -> tuple[str, float | None]:
     standard = (abs(calib.pitch_length_m - PITCH_LENGTH_M) < 1e-6
                 and abs(calib.pitch_width_m - PITCH_WIDTH_M) < 1e-6)
     pts = np.array([p.pitch for p in calib.points], dtype=float)
-    if standard and len(pts) and float(_on_marking(pts).mean()) >= LANDMARK_SHARE:
+    enough = calib.method == "tps" or len(pts) >= MIN_HOMOGRAPHY_LANDMARKS
+    if standard and enough and len(pts) and float(_on_marking(pts).mean()) >= LANDMARK_SHARE:
         return "landmark_loo", calib.reprojection_error_m
     return "unverified", None
 
