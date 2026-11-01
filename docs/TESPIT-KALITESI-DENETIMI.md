@@ -78,6 +78,33 @@ geçirdi. Oyuncudan türetilmiş kalibrasyonun LOO'su kendi uydurulduğu noktala
 ölçülür ve çizgi hatasını (10,71 m) yansıtmaz: kapı yanlış ölçütle yanlış
 kalibrasyonu ödüllendiriyor. Karşılaştırma `--ignore-calibration-gate` ile yapıldı.
 
+## Dedektör çalışma ayarları — kazanç yok
+
+`scripts/soccertrack_v2/detection_variants.py`: dondurulmuş takip koduna dokunmadan
+`collect_observations` farklı `DetectorConfig` ile çağrıldı; geliştirme segmentleri
+1, 5, 9 (600–960 sn; kötü ve iyi segment karışık), `detection_audit` saha çizgisi
+kalibrasyonuyla. Raporlar: `docs/measurements/detection-variant-*.json`.
+
+| Ayar | GT tespit oranı | Hayalet | Uçlar | Uzak bant (2–3) | Süre / 30 sn |
+|---|---:|---:|---:|---:|---:|
+| 4 dilim, eşik 0,35 (canlı mod) | %60,7 | %34,1 | %53,9 | %44,2 | 92–102 sn |
+| 6 dilim, eşik 0,35 | %61,7 | %36,5 | %51,7 | %42,2 | 181–197 sn |
+| 4 dilim, eşik 0,25 | %61,1 | %34,3 | %54,0 | %44,3 | 110–126 sn |
+| 8 dilim | — | — | — | — | 8 GB GPU belleğine sığmadı (bellek dolu, kullanım %0, 16 dk'da segment bitmedi; durduruldu) |
+
+Bütün ayarlar ±1 puan içinde; sorunlu bölgeler (uçlar, uzak bant) hiçbirinde
+düzelmedi. Daha çok dilim yalnız süreyi ikiye katladı. Kontrol dilimine aday
+çıkmadı. Mevcut ayar bile bu makinede (RTX 5060 Laptop, 8 GB) 4K panoramada
+gerçek zamanın ~3,3 katı yavaş.
+
+Yorum: kaçırılan oyuncu, oyuncunun görüntüdeki boyutundan (dilim) ya da güven
+eşiğinden değil, modelin bu görüntüleri tanımamasından geliyor. Model
+`rfdetr_mixed_small` 512 çözünürlükte, 8 epoch, TeamTrack verisiyle eğitildi
+(`data/tracking/models/rfdetr_mixed_small/meta.json`); gece panoramasının uçlarındaki
+küçük, karanlık, bozulmuş oyuncuları eğitimde görmedi. Sıradaki gerçek kaldıraç
+bu tür görüntülerle (SoccerTrack v2 GT'si mevcut) ince ayar; başka maçların
+segmentleriyle ayrık kontrol gerekir.
+
 ## Sonuç ve sıradaki adımlar
 
 - Bu kamerada üretim kalibrasyonu oyuncu konumlarını uçlarda metrelerce kaydırıyor;
