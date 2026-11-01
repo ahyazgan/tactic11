@@ -52,9 +52,10 @@ venv-cv\Scripts\python.exe -m scripts.canli_mac --source rtsp://kamera/stream --
   yöne hücum ediyor. `--swap-at-minute 45` verilirse ikinci yarı segmentlerinde
   yön kendiliğinden ters çevrilir (yeniden başlatma gerekmez).
   `auto` çoğu zaman karar veremez (kaleciler görünmüyor).
-- `--height 1080`: segmentleri 1080p'ye indirir (video kodlama ve disk için); tespit
-  süresini kısaltmaz, çünkü dilim sayısı aynı kalır. Kalibrasyon ilk segmentin boyutuna
-  otomatik ölçeklenir (`<watch>/calibration_<g>x<y>.json`).
+- `--height 1080`: segmentleri 1080p'ye indirir. Geniş açılı panoramada **önerilmez**:
+  tespit süresi aynı kalır (dilim sayısı değişmez), çizilen kare ~7 puan düşer (ölçüldü:
+  `docs/measurements/live-resolution-4k-vs-1080p.json`). Yalnız disk/ağ darsa kullanın.
+  Kalibrasyon ilk segmentin boyutuna otomatik ölçeklenir (`<watch>/calibration_<g>x<y>.json`).
 - `--keep-up`: takip yetişemezse aradaki segmentleri atlar, hep en yenisini işler.
   Gecikme büyümez ama maçın bir kısmı görülmez; atlanan segmentler
   `<watch>/incoming/` içinde kalır (maç sonu tam işlenebilir). Ölçüm:

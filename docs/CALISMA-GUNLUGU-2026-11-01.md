@@ -84,6 +84,10 @@ otonom oturum 2026-11-01". Her kayıt saat + ne yapıldı + sonuç/sorun.
 - Açık soru: 1080p provasında eski model (%67,3) 4K koşusundan (%73,2) düşük; ayarları
   kaydedilmemiş koşuyla karşılaştırma temiz değil.
 
+## 11:05–11:28 — 4K ve 1080p (PR #316)
+- Aynı model ve komut: 4K çizilen kare %78,2 / 1080p %70,9; süre aynı (~99 / ~96 sn).
+  Panoramada 1080p önerisi kaldırıldı; README'deki "serbest kazanç" sonucu drone klibine ait.
+
 ## Bekleyen kullanıcı kararları
 - Dedektör v2'yi (rfdetr_soccertrack_ft_v2) üretime almak: ön kayıt dışı ürün kararı.
   Lehine: kesinlik +19 puan, top korunuyor, panorama/klip her eksende daha iyi.

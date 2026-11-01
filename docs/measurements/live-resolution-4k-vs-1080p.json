@@ -1,0 +1,9 @@
+{
+  "measured": "2026-11-01 11:26, RTX 5060",
+  "question": "Does --height 1080 cost accuracy on the SoccerTrack panorama, given that it does not speed up detection?",
+  "method": "same track_live settings (rfdetr_mixed_small, tiles 4, track-fps 15, static camera); 1080p = live rehearsal 990601 (landmark calibration scaled to 2176x1080), 4K = 990612 (same source segments, 3840x1906, landmark calibration); eval_telestration --reference-default, 600-960 s, 1500 frames",
+  "4k":    {"drawn_pct": 78.2, "block_balanced_pct": 68.5, "label_exact_pct": 73.3, "def_line_median_m": 5.44, "def_line_p90_m": 28.56, "matched_players_per_frame": 8.75, "team_agreement": 0.729, "track_seconds_per_segment": "~99 (seg 1: 98)"},
+  "1080p": {"drawn_pct": 70.9, "block_balanced_pct": 67.3, "label_exact_pct": 69.6, "def_line_median_m": 5.86, "def_line_p90_m": 23.0, "matched_players_per_frame": 8.11, "team_agreement": 0.734, "track_seconds_per_segment": "~96"},
+  "verdict": "on this panorama 1080p loses 7.3 points of drawn frames and some accuracy for no detection speed-up; keep native resolution. The earlier '1080p is free' result came from a TeamTrack drone clip and does not transfer.",
+  "limits": "one window of one match; segment boundaries differ slightly (copy vs re-encode)"
+}

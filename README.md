@@ -619,7 +619,12 @@ kimliği renge göre eşler (`TeamAssigner.fit(anchor_colors)`).
 | 4K | `tiles 4`, `track-fps 5`, sıcak model | 19 / 15 sn | ~2.3–3.0× | 11.5–14.3 ✗ |
 | **1080p** | **`tiles 4`, `track-fps 15`, sıcak model** | **35 / 22 sn** | **~4.2–4.4×** | **21.7** |
 
-**Önerilen canlı ön ayar: 1080p girdi + `--tiles 4 --track-fps 15`.** Başlangıç
+> **Geniş açılı panorama için geçerli değil (ölçüldü 2026-11-01, SoccerTrack 117092):**
+> orada 1080p tespiti hızlandırmıyor ve çizilen kareyi ~7 puan düşürüyor; dilim
+> azaltmak oyuncu kaybettiriyor; gerçek zaman yerine `canli_mac --keep-up` ile gecikme
+> sınırlanıyor. Ayrıntı: `docs/CANLI-HIZ-VE-PROVA.md`. Aşağıdaki tablo üstten (drone) klibe aittir.
+
+**Önerilen canlı ön ayar (üstten klip): 1080p girdi + `--tiles 4 --track-fps 15`.** Başlangıç
 noktasına göre **~2 kat hızlı, tespit kalitesi aynı** (22.0 → 21.7 oyuncu/kare).
 1080p'ye inerken kalibrasyon piksel noktaları da yarıya bölünmeli.
 
