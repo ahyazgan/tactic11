@@ -29,8 +29,10 @@ from app.domain import TrackingFrame
 from app.tracking.calibration import PitchCalibration
 from app.tracking.telestration import (
     INTERPOLATE_MAX_GAP_S,
+    MAX_REPROJECTION_M,
     PlayerSpot,
     Telestrator,
+    calibration_validation,
     interpolate_point,
     interpolate_spots,
     render,
@@ -131,6 +133,13 @@ def main() -> int:
     spots = [spots_from_frame(f, home, away, calib) for f in frames]
     plan = schedule(seconds, spots, [f.continuity_id for f in frames], src_fps, interpolate)
     tele = Telestrator(out_fps, HOME_ATTACK[args.home_attack])
+    source, error = calibration_validation(calib)
+    if source == "unverified":
+        print("uyarı: kalibrasyon bağımsız doğrulanmamış (noktalar saha işareti değil, çizgi doğrulaması "
+              "yok); yalnız halkalar çizilecek. Saha çizgisi noktalarıyla kalibrasyon kurun.", file=sys.stderr)
+    elif error is not None and error > MAX_REPROJECTION_M:
+        print(f"uyarı: kalibrasyon hatası {error:.2f} m > {MAX_REPROJECTION_M} m; yalnız halkalar çizilecek.",
+              file=sys.stderr)
     log: list[dict] = []
     position = 0
     written = 0
