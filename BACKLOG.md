@@ -168,3 +168,6 @@
 - [x] GSR referansı saha işaretlerine göre düzeltildi (correct_gsr_positions); gündüz ve üçüncü saha karnesi yeniden hesaplandı. Gece (117092) GSR görüntüsü panorama kırpımı değil — düzeltilemedi.
 - [ ] Aday izi 132831'de yanlış topu +5 puan artırdı (ön kayıtlı sınır +2): yeni sahada adayları seçicilik ayarı, yeni ön kayıtla.
 - [ ] Aday izi sonrası aktör/sahip alanları eski topta kalıyor (veri tutarlılığı; ölçülen etki yok).
+- [x] Şekil bekçisi eşikleri referansa karşı ölçüldü: blok 6 m ve hat aralığı 4 m güvenilir; genişlik 6 m ve boy 6 m gürültü içinde (SEKIL-BEKCISI-OLCUMU.md).
+- [ ] (diğer oturum) genişlik → %10–90 aralığı + eşik 8 m; boy → p90 derinlik − geri hat; sonra aynı araçla yeniden ölç.
+
