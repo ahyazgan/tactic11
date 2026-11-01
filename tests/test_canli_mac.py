@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
+
 from scripts.canli_mac import (
     classify_source,
     ffmpeg_segment_command,
@@ -73,3 +75,27 @@ def test_latency_freezes_stream_clock_when_source_ended() -> None:
     lat = latency(10, 12, segment_seconds=30.0, start_minute=0.0, elapsed_seconds=1200.0,
                   source_ended=True)
     assert lat.stream_minute == 6.0 and lat.lag_seconds == 60.0
+
+
+def test_scale_calibration_keeps_pitch_and_validation(tmp_path: Path) -> None:
+    import json
+
+    from app.tracking.calibration import PitchCalibration
+    from app.tracking.telestration import calibration_validation
+    from scripts.canli_mac import scale_calibration
+
+    src = Path("data/tracking/calibrations/teamtrack_soccer_top_D_20220220.json")
+    original = PitchCalibration.load(src)
+    out = scale_calibration(src, (1920, 1080), tmp_path)
+    scaled = PitchCalibration.load(out)
+    assert scaled.image_size == (1920, 1080)
+    assert [p.pitch for p in scaled.points] == [p.pitch for p in original.points]
+    u, v = original.points[2].image
+    assert scaled.points[2].image == (u * 1920 / original.image_size[0], v * 1080 / original.image_size[1])
+    assert json.loads(out.read_text(encoding="utf-8"))["meta"]["scaled_from"] == list(original.image_size)
+    assert calibration_validation(scaled)[0] == calibration_validation(original)[0] == "landmark_loo"
+    # aynı nokta iki çözünürlükte aynı saha konumuna düşer
+    assert np.allclose(scaled.image_to_pitch_m(u * 0.5, v * 0.5),
+                       original.image_to_pitch_m(u * 0.5 * original.image_size[0] / 1920,
+                                                 v * 0.5 * original.image_size[1] / 1080), atol=1e-6)
+    assert scale_calibration(src, original.image_size, tmp_path) == src

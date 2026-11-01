@@ -52,7 +52,8 @@ venv-cv\Scripts\python.exe -m scripts.canli_mac --source rtsp://kamera/stream --
   yöne hücum ediyor. `--swap-at-minute 45` verilirse ikinci yarı segmentlerinde
   yön kendiliğinden ters çevrilir (yeniden başlatma gerekmez).
   `auto` çoğu zaman karar veremez (kaleciler görünmüyor).
-- `--height 1080`: segmentleri 1080p'ye indirir; hız için ilk denenecek ayar.
+- `--height 1080`: segmentleri 1080p'ye indirir; hız için ilk denenecek ayar. Kalibrasyon
+  ilk segmentin boyutuna otomatik ölçeklenir (`<watch>/calibration_<g>x<y>.json`).
 - Provada `--source mac.mp4` dosyayı gerçek hızda akıtır: "sisteme kaç dakika
   geriden gelir" sorusunun dürüst cevabı budur.
 
