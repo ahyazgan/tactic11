@@ -1,0 +1,24 @@
+{
+  "measured": "2026-11-02 (see git history), descriptive — first run of the USB camera source after PR #333",
+  "command": "canli_mac --source \"dshow:Insta360 X5\" --device-fps 30 --match-id 990771 --home-team 30798 --away-team 30799 --camera static --segment-seconds 30 --fresh --database-url sqlite:///<proje>/demo.db (no calibration; camera pointed at a room, not a pitch)",
+  "camera": {
+    "model": "Insta360 X5 in USB webcam mode",
+    "dshow_modes": ["mjpeg 1920x1080 @30", "mjpeg 2880x1440 @30"],
+    "observed": "requesting 1920x1080 still delivered 2880x1440 (mode is chosen on the camera, not by the command); first seconds emit MJPEG 'EOI missing' warnings, then clean frames; ~2 s start-up"
+  },
+  "result": {
+    "segmenting": "ok — 30 s H.264 segments of 2880x1440 @ 30 fps, 23–29 MB each, four written in 2 minutes",
+    "database_preflight": "ok",
+    "detector_startup": "ok — rfdetr_soccertrack_ft_v2 on cuda",
+    "tracking": "no frames written: without --calibration the pipeline falls back to per-frame automatic calibration, which looks for pitch structures in the image; a room has none, so every frame is skipped ('çapa bulunamadı, inlier %26'). This is the intended behaviour: positions are never invented without a pitch.",
+    "db_frames": 0,
+    "panel": "match 990771 therefore shows nothing; the panel view was checked with the earlier rehearsal 990731 instead (telestration card: 'seg_0009 · 44.5' · çizilen kare %77 · akış bitti · atlanan 6 segment', video renders)",
+    "disk": "segments deleted after the run (84 MB)"
+  },
+  "verified": ["USB camera → ffmpeg dshow → segments → track_live start → detector on GPU → DB preflight"],
+  "not_verified": ["frame writing, telestration and panel update from a USB camera — needs the camera on a real pitch with a calibration (or at least visible markings for the automatic anchor)"],
+  "panel_findings_for_product_session": [
+    "decisions/live minute slider is min=50 max=95; all live rehearsals so far are at minute 10–45, so 'Saha Overlay' cannot reach their frames from the slider. In live mode the minute should follow the tracking status (processed_minute) instead of the slider.",
+    "/tracking/live/<id>/telestration answers 401 without a session cookie; the card then shows 'Telestrasyon okunamadı — yeniden denenecek' with no hint that a login is needed."
+  ]
+}
