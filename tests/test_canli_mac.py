@@ -270,3 +270,24 @@ def test_try_kickoff_anchor_reads_tracker_output(tmp_path: Path) -> None:
     assert note is not None and "42 sn" in note
     merged = load_watch_clock(tmp_path)
     assert merged is not None and merged.delay_s == 42.0
+
+
+def test_classify_device_and_segment_command(tmp_path: Path) -> None:
+    from scripts.canli_mac import device_name, parse_device_list
+
+    kind = classify_source("dshow:Integrated Camera", realtime_file=True)
+    assert kind.is_device and kind.is_stream and not kind.realtime
+    assert device_name("dshow: Integrated Camera ") == "Integrated Camera"
+    cmd = ffmpeg_segment_command("ffmpeg", "dshow:Integrated Camera", kind, tmp_path, segment_seconds=30.0,
+                                 start_seconds=90.0, device_size="1920x1080", device_fps=30)
+    assert cmd[cmd.index("-f") + 1] == "dshow" and "-rtbufsize" in cmd
+    assert cmd[cmd.index("-video_size") + 1] == "1920x1080" and cmd[cmd.index("-framerate") + 1] == "30"
+    assert cmd[cmd.index("-i") + 1] == "video=Integrated Camera"
+    assert cmd[cmd.index("-c:v") + 1] == "libx264"            # ham kare: kopya olamaz
+    assert "-ss" not in cmd and "-re" not in cmd              # canlı aygıtta ileri sarma/gerçek hız yok
+    assert cmd.index("-f") < cmd.index("-i")                  # giriş biçimi girişten önce
+    plain = ffmpeg_segment_command("ffmpeg", "dshow:Cam", kind, tmp_path, segment_seconds=30.0)
+    assert "-video_size" not in plain and "-framerate" not in plain
+    stderr = ('[dshow @ 0x1] "Integrated Camera" (video)\n[dshow @ 0x1]   Alternative name "@device_pnp_x"\n'
+              '[dshow @ 0x1] "OBS Virtual Camera" (video)\n[dshow @ 0x1] "Mikrofon (Realtek)" (audio)\n')
+    assert parse_device_list(stderr) == ["Integrated Camera", "OBS Virtual Camera"]

@@ -57,7 +57,16 @@ venv-cv\Scripts\python.exe -m scripts.canli_mac --source rtsp://kamera/stream --
 ```
 
 - `--source`: video dosyası (gerçek hızda prova), `rtsp://…` (stadyum/kulüp
-  kamerası) ya da `https://…/index.m3u8` (canlı yayın).
+  kamerası), `https://…/index.m3u8` (canlı yayın) ya da `dshow:<kamera adı>`
+  (bilgisayara USB ile takılı kamera). Kamera adları: `--source dshow:` yazar ve
+  çıkar. Takılı kamera ham kare verdiğinden segmentler her zaman H.264'e kodlanır;
+  kameranın kipi `--device-size 3840x2160 --device-fps 30` ile seçilir (kamera o kipi
+  desteklemiyorsa ffmpeg açılışta durur). Doğrulandı: dahili kamera, 10 sn'lik
+  segmentler 2592x1944 @ 30 fps, 300 kare/segment. Sahada belirleyici olan kameradır:
+  tüm sahayı tek karede, uzak yarıda oyuncu ≥ 30 piksel boyunda görecek kadar geniş
+  açı ve çözünürlük yoksa dedektör uzak yarıyı kaybeder; ilk maçta 4K kayıt + dosyadan
+  işleme daha güvenli. OBS kurulu makinede OBS'nin gördüğü her kaynak
+  `dshow:OBS Virtual Camera` adıyla girer.
 - `--home-attack x+` / `x-`: ev sahibi kalibrasyonun saha x ekseninde hangi
   yöne hücum ediyor. `--swap-at-minute 45` verilirse ikinci yarı segmentlerinde
   yön kendiliğinden ters çevrilir (yeniden başlatma gerekmez).
