@@ -34,9 +34,14 @@ kullanabilir.
   çizilir: işaretli saha sınırı, yoksa kontrol noktalarının görüntüdeki dışbükey
   zarfı. Zarf dışı ekstrapolasyondur; gece kaydındaki top hatası buradan doğmuştu
   (`docs/TOP-SINIR-UYUSMAZLIGI-TANI.md`). Destek dışındaki top ve oyuncu sayılmaz.
-- Çizgi ve etiket yalnız şu koşullarda: kalibrasyon hatası ≤1,5 m, sahiplik
+- Çizgi ve etiket yalnız şu koşullarda: kalibrasyon bağımsız doğrulanmış ve
+  hatası ≤2,0 m (`calibration_validation`: meta'daki çizgi doğrulaması ya da
+  noktalarının ≥%80'i saha işareti üzerinde olan kalibrasyonun LOO'su; oyuncudan
+  türetilmiş ya da yapay noktalı kalibrasyon "doğrulanmamış"), sahiplik
   biliniyor, yön biliniyor, savunan takımdan ≥6 oyuncu görünür. Her kare için
-  çizilmeme nedeni `gate_counts` içinde sayılır.
+  çizilmeme nedeni `gate_counts` içinde sayılır. (İlk sürümde kapı kalibrasyonun
+  kendi noktalarındaki LOO ≤1,5 m idi; bu bölümdeki ölçümler o kapıyla alındı.
+  Değişikliğin nedeni: `docs/TESPIT-KALITESI-DENETIMI.md`.)
 
 ## Ölçüm: SoccerTrack v2 117092, ilk 30 sn (gece, sabit panoramik kamera)
 
