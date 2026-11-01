@@ -40,7 +40,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 from threadpoolctl import threadpool_limits
 
@@ -500,3 +500,42 @@ def delete_job(job_id: str, _user: models.User = Depends(get_current_user)) -> d
     _job_path(job["id"]).unlink(missing_ok=True)
     shutil.rmtree(_dir("frames") / job["id"], ignore_errors=True)
     return {"deleted": job["id"]}
+
+
+# --- Canlı telestrasyon (scripts.telestrate_live çıktısı) ------------------- #
+
+LIVE_SEGMENT = re.compile(r"^seg_\d{4}$")
+LIVE_VIDEO_HEADERS = {"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"}
+
+
+def _live_tele_dir(match_id: int) -> Path:
+    return data_root() / "live" / str(match_id) / "tele"
+
+
+@router.get("/live/{match_id}/telestration", summary="Canlı telestrasyonun son segmenti")
+def live_telestration(match_id: int, _user: models.User = Depends(get_current_user)) -> dict[str, Any]:
+    """`canli_mac --telestration` işçisinin yazdığı `tele/latest.json` + oynatma yolu.
+
+    Video `<video src>` ile değil yetkili istekle (blob) alınmalı: uç kimlik doğrulama ister."""
+    path = _live_tele_dir(match_id) / "latest.json"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="bu maç için canlı telestrasyon yok")
+    try:
+        latest = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise HTTPException(status_code=503, detail="telestrasyon yazılıyor; yeniden deneyin") from exc
+    segment = str(latest.get("segment", ""))
+    if not LIVE_SEGMENT.match(segment):
+        raise HTTPException(status_code=502, detail="telestrasyon kaydı bozuk")
+    return {**latest, "video_url": f"/tracking/live/{match_id}/telestration/{segment}.mp4"}
+
+
+@router.get("/live/{match_id}/telestration/{segment}.mp4", summary="Canlı telestrasyon segment videosu")
+def live_telestration_video(match_id: int, segment: str,
+                            _user: models.User = Depends(get_current_user)) -> FileResponse:
+    if not LIVE_SEGMENT.match(segment):
+        raise HTTPException(status_code=422, detail=f"geçersiz segment: {segment!r}")
+    path = _live_tele_dir(match_id) / f"{segment}.mp4"
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="segment videosu yok")
+    return FileResponse(path, media_type="video/mp4", headers=LIVE_VIDEO_HEADERS)
