@@ -68,7 +68,7 @@ export function LiveTelestrationCard({ matchId, live }: { matchId: number; live:
         </h3>
         {s && (
           <span style={{ fontSize: 10, color: "var(--muted)" }}>
-            {data?.segment} · {s.start_minute.toFixed(1)}&apos; · çizilen kare %{Math.round(100 * s.drawn_ratio)}
+            {data?.segment.replace(/_m[\d.]+$/, "")} · {s.start_minute.toFixed(1)}&apos; · çizilen kare %{Math.round(100 * s.drawn_ratio)}
           </span>
         )}
       </div>
