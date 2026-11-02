@@ -1,6 +1,6 @@
 {
   "title": "Yayın çapası: çizgi ailesi eşleştirme, ön kayıt",
-  "status": "ONAYLI ve DONDURULDU (kullanıcı, 2026-11-02). Kontrol maçları seçildi, indirilemedi: YouTube bot doğrulaması. Görüntü açılmadı.",
+  "status": "KAPANDI: kör kontrol KALDI (2026-11-02), docs/measurements/broadcast-anchor-control-result.json. Aynı kontrolle ikinci deneme yok.",
   "written": "2026-11-02, yeni kontrol karelerinin hiçbiri açılmadan",
   "evidence": "docs/measurements/daylight-calibration-funnel.json",
   "hypothesis": {

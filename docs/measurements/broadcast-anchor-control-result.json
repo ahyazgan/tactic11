@@ -1,0 +1,113 @@
+{
+ "title": "Yayın çapası kör kontrol sınavı: sonuç",
+ "date": "2026-11-02",
+ "verdict": "KALDI",
+ "verdict_detail": "C1 karşılanmadı: main kabul 51/172 = %29,7 < %30. Geçmek için 52 gerekiyordu. Diğer dört ölçüt karşılandı. Plan gereği aynı kontrolle ikinci deneme yok; yeni deneme yeni kontrol maçı ister.",
+ "plan": "docs/measurements/broadcast-anchor-preregistration.json",
+ "labels": "docs/measurements/broadcast-anchor-labels-control.json",
+ "truth_points": "docs/measurements/broadcast-anchor-truth-points-control.json",
+ "order_evidence": "Sıra commit geçmişinde: kod dondurma, maç seçimi, etiketler (8f5eb0d), gerçek duruşlar (db20920), sonra tek koşu. Eşik ve kod değişmedi, kare dökümü üretilmedi.",
+ "command": "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam control-run --labels docs/measurements/broadcast-anchor-labels-control.json --points docs/measurements/broadcast-anchor-truth-points-control.json --out docs/measurements/broadcast-anchor-control-result.json",
+ "criteria": {
+  "C1_main_acceptance": "toplam ≥%30, her maçta ≥%20",
+  "C2_accuracy": "işaretli kabullerde medyan hata ≤2,0 m",
+  "C3_wrong_accept_main": "işaretli kabullerin en çok %5'inde hata >5 m",
+  "C4_wrong_accept_other": "other kabul ≤%5",
+  "C5_minimum_sample": "en az 15 işaretli kabul",
+  "all_required": true
+ },
+ "result": {
+  "per_match": {
+   "chiba_tokushima": {
+    "main": {
+     "accepted": 26,
+     "n": 92,
+     "rate": 0.283,
+     "wilson95": [
+      0.201,
+      0.382
+     ]
+    },
+    "other": {
+     "accepted": 1,
+     "n": 28,
+     "rate": 0.036,
+     "wilson95": [
+      0.006,
+      0.177
+     ]
+    }
+   },
+   "kashiwa_machida": {
+    "main": {
+     "accepted": 25,
+     "n": 80,
+     "rate": 0.312,
+     "wilson95": [
+      0.222,
+      0.421
+     ]
+    },
+    "other": {
+     "accepted": 1,
+     "n": 40,
+     "rate": 0.025,
+     "wilson95": [
+      0.004,
+      0.129
+     ]
+    }
+   }
+  },
+  "total": {
+   "main": {
+    "accepted": 51,
+    "n": 172,
+    "rate": 0.297,
+    "wilson95": [
+     0.233,
+     0.369
+    ]
+   },
+   "other": {
+    "accepted": 2,
+    "n": 68,
+    "rate": 0.029,
+    "wilson95": [
+     0.008,
+     0.101
+    ]
+   }
+  },
+  "truth_accepted": 25,
+  "median_error_m": 0.93,
+  "wrong_gt_5m": 1,
+  "worst_error_m": 12.34,
+  "checks": {
+   "C1_main_acceptance": false,
+   "C2_accuracy": true,
+   "C3_wrong_accept_main": true,
+   "C4_wrong_accept_other": true,
+   "C5_minimum_sample": true
+  },
+  "verdict": "KALDI"
+ },
+ "development_vs_control": {
+  "main_acceptance": "geliştirme 172/391 (%44,0), kontrol 51/172 (%29,7)",
+  "other_acceptance": "geliştirme 8/209 (%3,8), kontrol 2/68 (%2,9)",
+  "accuracy": "geliştirme 8 karede medyan 0,70 m, kontrol 25 karede medyan 0,93 m",
+  "note": "Kabul oranı düştü, doğruluk ve yanlış kabul tuttu. Geliştirme iyimserdi."
+ },
+ "label_sensitivity": "Kararsız kareler (chiba 89-91; kashiwa 51-52, 106-109) kural gereği other sayıldı. Bu 9 kare main sayılsa payda büyür; hepsi kabul edilmiş olsa bile oran 60/181 = %33,1 olurdu, hiçbiri kabul edilmemişse 51/181 = %28,2. Kare dökümü üretilmediği için hangisi olduğu bilinmiyor; karar kural gereği etiketlerle verilir ve değişmez.",
+ "mark_corrections_before_run": "Yeniden izdüşüm denetimi iki hatayı yöntem koşulmadan yakaladı: kashiwa 57'de bir nokta yanlış model noktasına atanmıştı, düzeltildi; kashiwa 98'de üç nokta doğrusaldı, kare boş bırakıldı.",
+ "limits": [
+  "Yanlış kabul C3: 25 işaretli kabulün 1'i >5 m, en kötü 12,34 m. 25 kare az; oranın gerçek değeri %5'in üstünde olabilir.",
+  "Doğruluk yalnız işaretli 50 kareye düşen 25 kabulde ölçüldü. Kalan 26 main kabulün hatası bilinmiyor.",
+  "60 kareden 10'unda 4 bağımsız nokta yoktu; bu zor kareler doğruluk ölçümünün dışında kaldı.",
+  "Gerçek duruşları tek değerlendirici işaretledi; kare içi medyan yeniden izdüşüm yaklaşık 5 px, en kötü nokta 27 px. Yöntem hatasında bu kadar belirsizlik var.",
+  "İki maç da bulutlu, sert gölge yok. Geliştirmedeki gölgeli kyoto ve verdy kabulü en düşüktü; sonuç gölgeli gündüze genellenemez.",
+  "Wilson aralıkları iyimserdir: kareler aynı çekimlerden geliyor, bağımsız değil.",
+  "Tek kare çapa ölçüldü, takip kaybı çözülmedi. Tek lig, tek yayın kuruluşu, 2 maç, maç başına 6 dakika. Yanlış yarı çizgiden ayırt edilemez."
+ ],
+ "status": "Üretime BAĞLANMADI. chiba_tokushima ve kashiwa_machida artık görülmüş kontroldür, sonraki deneme için kullanılamaz."
+}
