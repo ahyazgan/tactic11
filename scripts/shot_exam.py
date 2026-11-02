@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from bisect import bisect_right
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -100,6 +101,28 @@ def wilson(hits: int, total: int, z: float = 1.96) -> tuple[float, float]:
     return float(max(0.0, centre - margin)), float(min(1.0, centre + margin))
 
 
+def replay_times(video: Path) -> list[tuple[float, bool]]:
+    """Videoyu WIPE_SAMPLE_FPS ile tarar: (saniye, tekrar mı) dizisi."""
+    from app.tracking.shot_filter import WIPE_SAMPLE_FPS, ReplayTracker, red_ratio  # noqa: PLC0415
+
+    cap = cv2.VideoCapture(str(video))
+    fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+    step = max(1, round(fps / WIPE_SAMPLE_FPS))
+    tracker = ReplayTracker()
+    out: list[tuple[float, bool]] = []
+    idx = 0
+    while cap.grab():
+        if idx % step == 0:
+            ok, frame = cap.retrieve()
+            if not ok:
+                break
+            t = idx / fps
+            out.append((t, tracker.update(t, red_ratio(frame))))
+        idx += 1
+    cap.release()
+    return out
+
+
 def evaluate(group: str, labels_path: Path, misses: bool) -> int:
     from app.tracking.shot_filter import classify_shot  # noqa: PLC0415
 
@@ -109,13 +132,18 @@ def evaluate(group: str, labels_path: Path, misses: bool) -> int:
         others = set(labels[name]["other"])
         per = {"main": [0, 0], "other": [0, 0]}
         wrong: list[tuple[int, str]] = []
+        replay = replay_times(video)
+        times = [r[0] for r in replay]
         for i, frame in sampled_frames(video):
             truth = "other" if i in others else "main"
             verdict = classify_shot(frame)
-            per[truth][0] += int(verdict.is_main)
+            at = bisect_right(times, i * STEP_S) - 1
+            in_replay = at >= 0 and replay[at][1]
+            is_main = verdict.is_main and not in_replay
+            per[truth][0] += int(is_main)
             per[truth][1] += 1
-            if verdict.is_main != (truth == "main"):
-                wrong.append((i, verdict.reason))
+            if is_main != (truth == "main"):
+                wrong.append((i, "tekrar" if in_replay else verdict.reason))
         for key in total:
             total[key][0] += per[key][0]
             total[key][1] += per[key][1]

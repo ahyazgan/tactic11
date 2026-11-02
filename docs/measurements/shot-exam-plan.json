@@ -6,13 +6,29 @@
   "source": "J.LEAGUE International resmi YouTube yayınları, 1080p, yalnız iç test, yeniden dağıtım yok; videolar repoda değil",
   "matches": {
     "development": {
-      "gamba_kashiwa": {"file": "data/tracking/videos/jleague_dl/j1_gamba_kashiwa_20251018_720_1080.mp4", "youtube": "Y5zMUMGqcQk", "note": "önceden görüldü"},
-      "kashima_marinos": {"file": "data/tracking/videos/jleague_dl/j1_kashima_marinos_20251206_1200_1560.mp4", "youtube": "AE9n1DjS6ao"},
-      "kyoto_kobe": {"file": "data/tracking/videos/jleague_dl/j1_kyoto_kobe_20251206_1200_1560.mp4", "youtube": "U00UrjcpWEE"}
+      "gamba_kashiwa": {
+        "file": "data/tracking/videos/jleague_dl/j1_gamba_kashiwa_20251018_720_1080.mp4",
+        "youtube": "Y5zMUMGqcQk",
+        "note": "önceden görüldü"
+      },
+      "kashima_marinos": {
+        "file": "data/tracking/videos/jleague_dl/j1_kashima_marinos_20251206_1200_1560.mp4",
+        "youtube": "AE9n1DjS6ao"
+      },
+      "kyoto_kobe": {
+        "file": "data/tracking/videos/jleague_dl/j1_kyoto_kobe_20251206_1200_1560.mp4",
+        "youtube": "U00UrjcpWEE"
+      }
     },
     "control": {
-      "verdy_kashima": {"file": "data/tracking/videos/jleague_dl/j1_verdy_kashima_20251130_1200_1560.mp4", "youtube": "OzU-wAAL4IU"},
-      "niigata_kashiwa": {"file": "data/tracking/videos/jleague_dl/j1_niigata_kashiwa_20251130_1200_1560.mp4", "youtube": "QDSPc5vHxUY"}
+      "verdy_kashima": {
+        "file": "data/tracking/videos/jleague_dl/j1_verdy_kashima_20251130_1200_1560.mp4",
+        "youtube": "OzU-wAAL4IU"
+      },
+      "niigata_kashiwa": {
+        "file": "data/tracking/videos/jleague_dl/j1_niigata_kashiwa_20251130_1200_1560.mp4",
+        "youtube": "QDSPc5vHxUY"
+      }
     },
     "split_rule": "Kontrol maçları farklı stadyumlardan seçildi. Kashima ve Kashiwa takımları iki grupta da var, stadyumlar farklı. Ayrım indirme öncesi seçilen listenin son ikisi."
   },
@@ -40,5 +56,32 @@
     "Tek lig ve tek yayın kuruluşu, başka yayın stilleri kapsanmaz",
     "Ayırıcı kalibrasyonu çözmez, yalnız yanlış kareleri dışarıda bırakır; otomatik çapa ayrı sorun",
     "Dondurulmuş kod değişmez, pitch_lines.py ve pipeline.py'ye bağlanmaz; ayırıcı ayrı modül"
-  ]
+  ],
+  "freeze_before_control": {
+    "date": "2026-11-02",
+    "control_pixels_opened": false,
+    "code": "app/tracking/shot_filter.py",
+    "code_sha256_lf": "0d2efb3c2d5c189f57fd92a07a38c88331a41dfba246e43fbf73b8855c98b122",
+    "single_frame": {
+      "MIN_GRASS_RATIO": 0.7,
+      "MAX_FIELD_TOP": 0.3,
+      "MAX_OBJECT_HEIGHT": 0.2,
+      "MAX_OBJECT_AREA": 0.02
+    },
+    "replay_wipe": {
+      "WIPE_SAMPLE_FPS": 5.0,
+      "WIPE_RED_RATIO": 0.08,
+      "WIPE_MIN_PEAK": 0.15,
+      "WIPE_MAX_S": 1.2,
+      "MAX_REPLAY_S": 60.0
+    },
+    "plan_change": "Tekrar penceresi ön kayıtta yoktu; geliştirme verisi görülerek eklendi, kontrol görülmeden donduruldu. Geçme ölçütleri değişmedi.",
+    "development_result_optimistic": {
+      "other_leak": "1/132 (Wilson %0,1–%4,2)",
+      "main_recall": "209/228 (Wilson %87,4–%94,6)",
+      "note": "Eşikler bu karelerle seçildi. Kyoto 8–10 main etiketli ama geçiş penceresinde, büyük olasılıkla tekrar; etiket değiştirilmedi."
+    },
+    "scope_limit": "Geçiş işareti J.League yayınına özgü. Takip hattına bağlı değil.",
+    "control_command": "scripts.shot_exam eval --group control --labels docs/measurements/shot-exam-labels-control.json"
+  }
 }
