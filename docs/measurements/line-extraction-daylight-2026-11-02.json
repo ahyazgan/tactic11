@@ -1,0 +1,163 @@
+{
+  "title": "Çizgi çıkarımı ADAYI: mutlak eşik → yerel kontrast (gündüz / sert gölge) — ölçüldü, üretime alınmadı",
+  "date": "2026-11-02",
+  "rule": "Kullanıcı kuralı (2026-11-02): gece/karanlık maçta test ve ölçüm YOK. Bu dosyadaki her sayı gündüz görüntüsünden; birincil kaynak profesyonel yayın.",
+  "change": {
+    "file": "aday; üretimde DEĞİL (bkz. decision). app/tracking/pitch_lines.py:extract_lines",
+    "before": "ince yapı (gri − 9 px açma) → GLOBAL Otsu eşiği; ayrıca mutlak taban gri ≥ 140",
+    "after": "oran = ince yapı / yerel çim parlaklığı (61 px @1280 pencere, açılmış görüntü ortalaması); eşik = max(0.10, 0.55 × Otsu(oran, saha içi)); ayrıca ince yapı ≥ 12, gri ≥ 60; maske / saha pikseli > 0.08 ise kare ÇİZGİSİZ sayılır (doyma bekçisi)",
+    "constants": {
+      "LINE_CONTRAST_RATIO": 0.1,
+      "LINE_OTSU_FRACTION": 0.55,
+      "LINE_MIN_CONTRAST": 12,
+      "LOCAL_BG_WINDOW_PX": 61,
+      "WHITE_MIN_VALUE": "140 → 60",
+      "MAX_LINE_DENSITY": 0.08
+    },
+    "design_iterations": [
+      {
+        "variant": "sabit oran 0.10",
+        "jleague_135_anchor_inlier": 0.68,
+        "problem": "gündüz sentetik bench'te (grenli suni çim + mp4v gürültüsü) maske sahanın ~%50'si → her duruş %97–100 inlier → 22–43 m hata KABUL (yanlış kabul)"
+      },
+      {
+        "variant": "Otsu(oran) × 1.0 + doyma bekçisi",
+        "jleague_135_anchor_inlier": 0.57,
+        "bench_day": "50/50 kare bekçiyle çizgisiz (0 yanlış kabul)"
+      },
+      {
+        "variant": "Otsu(oran) × kesir taraması",
+        "jleague_135_anchor_inlier": {
+          "1.0": 0.57,
+          "0.85": 0.57,
+          "0.7": 0.59,
+          "0.55": 0.63,
+          "0.4": 0.68
+        },
+        "bench_day_guard": "her kesirde tetiklendi",
+        "chosen": 0.55
+      }
+    ],
+    "why": "profesyonel gündüz yayınında sert güneş/gölge ayrımı: gölgedeki çizgi grisi ~110–130, mutlak 140 tabanı gölgedeki HER çizgiyi atıyordu (orta çizgi maskede gölge sınırında kesiliyor); global Otsu da güneşli yarının kontrastına göre oturup gölgedekini kaçırıyordu"
+  },
+  "sources": {
+    "jleague": {
+      "what": "J.LEAGUE International resmi YouTube yayını, Gamba Osaka v Kashiwa Reysol, 2025-10-18 14:00 JST (Y5zMUMGqcQk), kesit 12:00–18:00, 1920x1080 @30",
+      "file": "data/tracking/videos/jleague_dl/j1_gamba_kashiwa_20251018_720_1080.mp4 (178 MB, repoda yok)",
+      "license": "standart YouTube lisansı — yalnız iç test, yeniden dağıtım yok",
+      "anchor": "data/tracking/calibrations/jleague_gamba_kashiwa_20251018_kaba.json (6 nokta, 135 s karesi, 0.32 m)",
+      "lighting": "gündüz; sahanın ~%40'ı tribün gölgesinde, sınır keskin"
+    },
+    "vlsc": {
+      "what": "VLSC U19 2019-08-25 gündüz taktik kamera (CC BY), vlsc_u19_sample_540_900.mp4",
+      "anchor": "vlsc_u19_20190825_kaba.json (5 nokta, 60 s karesi)"
+    },
+    "bench_day": {
+      "what": "scripts.bench_calibration make — SoccerTrack 117093 GÜNDÜZ sabit panorama (4096x1080) + soccertrack_v2_117093_landmarks.json → data/tracking/bench_day (pan_zoom.mp4, 750 kare)",
+      "caveat": "landmarks kalibrasyonu 1.43 m hatalı ve panorama tam homografi değil → 'gerçek' homografi kendisi çizgilere %49 inlier alıyor; bench mutlak doğruluk için değil, önce/sonra kıyası için kullanıldı"
+    }
+  },
+  "metric_preregistered": "çapa karesinde (a) elle çapanın inlier'ı, (b) çapadan iyileştirilmiş inlier, (c) iyileştirilmişin çapadan saha sapması (m); uçtan uca: PerFrameCalibrator çapasız (TV kuralı, yeniden yakalama açık) kalibre kare sayısı ve göz kontrolüyle yanlış kabul",
+  "anchor_frame_results": {
+    "jleague_135s": {
+      "before": {
+        "anchor_inlier": 0.47,
+        "refined_inlier": 0.48,
+        "drift_m": 0.14,
+        "line_px": 17184
+      },
+      "after": {
+        "anchor_inlier": 0.68,
+        "refined_inlier": 0.68,
+        "drift_m": 0.14,
+        "line_px": 42657
+      }
+    },
+    "jleague_other_times_note": "120–150 s ve 225–315 s'de kamera başka duruşta; çapa oradan oturmaz (beklenen). İyileştirilmiş inlier 0.23–0.48, sapma 2–11 m: çapa dışı karelerde skor tek başına ayırt etmiyor — süreklilik/sıçrama kapıları bu yüzden var.",
+    "vlsc_60s": {
+      "before": {
+        "anchor_inlier": 0.37,
+        "refined_inlier": 0.5,
+        "drift_m": 33.4
+      },
+      "after": {
+        "anchor_inlier": 0.59,
+        "refined_inlier": 0.7,
+        "drift_m": 8.4
+      },
+      "note": "VLSC'de kalan sorun çim maskesinin ağaç örtüsünü içine alması (maske 20k → 139k px); ayrı iş"
+    },
+    "ceiling_note": "J.League çapa karesinde 0.68'in üstü bu çapayla mümkün değil: elle çapa yakın taç çizgisini kadraj içine düşürüyor (gerçekte kadraj dışı) → o model noktaları yapısal olarak kaçak. Kapı %85 için çapanın daha iyi olması gerekir (operatör onaylı öneri)."
+  },
+  "end_to_end": {
+    "method": "PerFrameCalibrator tek başına (dedektör yok), 15 fps, 5395 kare, J.League 6 dk; 'çapasız' = TV kuralı otomatik çapa; 'çapalı' = elle çapa + yeniden yakalama açık; kabul edilen saniyelerin ham karelerine bakılarak sınıflandı",
+    "anchorless": {
+      "before": {
+        "calibrated": 0,
+        "anchor_attempts": 304,
+        "anchors_found": 0
+      },
+      "after": {
+        "calibrated": 0,
+        "anchor_attempts": 326,
+        "anchors_found": 0
+      },
+      "note": "otomatik çapa (ANCHOR_VIEW_LENGTHS/TV kuralı) profesyonel gündüz yayınında hiç çapa bulamıyor: 'ayırt edici yapılar oturmadı' 297/322"
+    },
+    "anchored": {
+      "before": {
+        "calibrated_frames": 23,
+        "ratio": 0.004,
+        "seconds": [
+          243,
+          244,
+          286,
+          356
+        ],
+        "inlier_median": 1.0,
+        "classification": "356 s yüz yakın çekimi → YANLIŞ; 243 s kadrajda ~10 model noktasıyla %100 → doğrulanamaz; 286 s geniş kamera (olası doğru)"
+      },
+      "after": {
+        "calibrated_frames": 32,
+        "ratio": 0.006,
+        "seconds": [
+          38,
+          43,
+          198,
+          200,
+          206,
+          207,
+          330,
+          331,
+          332
+        ],
+        "inlier_median": 0.93,
+        "classification": "38/43 s kale arkası kamera, 198–207 s kale yakın çekimleri → YANLIŞ (bindirme: model çizgisi file üzerinde, %86); 330–332 s geniş ana kamera orta yuvarlak (olası doğru)"
+      },
+      "no_lines_frames": {
+        "before": 847,
+        "after": 506,
+        "note": "gölgedeki kareler artık çizgili sayılıyor"
+      },
+      "anchor_pose_frames_135s": "iki çıkarıcıda da ÜRETİLMEDİ: çapadan yeniden yakalama %85 ister, bu çapayla tavan ~0.70"
+    },
+    "verdict": "Hareketli kamera (yayın) yolu profesyonel GÜNDÜZ yayınında iki çıkarıcıyla da çalışmıyor: doğrulanabilir kalibrasyon ≈0, buna karşılık yakın çekim/ikinci kamerada YANLIŞ KABUL var (eski 1–2 sn, yeni ~7 sn). Çıkarıcı değişikliği bileşen düzeyinde ölçülü kazanç (çapa karesi %47→%63, gölge çizgileri geri) ama uçtan uca sonucu değiştirmiyor; asıl engel çapa/kapı tasarımı (kesme sonrası az model noktalı karede yüksek inlier) — BACKLOG'a yazıldı. PR #221'in 'gece sentetikte 0 yanlış kabul' iddiası gündüz profesyonel yayına TAŞINMAZ."
+  },
+  "bench_day_table": {
+    "before": "0/50 her ayarda",
+    "after_fixed_ratio_0.10": "32/50 ama 7–24 m hata (yanlış kabul)",
+    "after_final": "0/50 (bekçi: doku doyması → çizgisiz) — yanlış kabul yok"
+  },
+  "tests": "Aday üzerinde: test_find_anchor + test_per_frame_calibrator 35/35, test_person_filter 23/23. CI'da test_guarded_control hash koruması düştü; bu yüzden aday geri alındı.",
+  "not_measured": "gece bench'i (data/tracking/bench/pan_zoom.mp4, 117092) kullanıcı kuralı gereği YENİDEN KOŞULMADI; gece davranışı bu değişiklikle doğrulanmamış sayılmalı",
+  "decision": {
+    "landed": false,
+    "why": [
+      "app/tracking/pitch_lines.py, identity-guarded / palette / consensus dondurulmuş kararlarının hash'li ölçülen kodu; kör kontroller henüz açılmadı (tests/test_guarded_control.py korur). Hash güncellemek bekleyen sınavı geçersiz kılardı.",
+      "Uçtan uca kazanç yok: doğrulanabilir kare ≈0 kaldı, yakın çekimde yanlış kabul 1–2 sn → ~7 sn oldu."
+    ],
+    "candidate_commit": "34c98e3dd6e6273ca7a5ba1a4b34edce4a2afc35",
+    "candidate_file": "commit içindeki app/tracking/pitch_lines.py (extract_lines); deney için bu commit'ten alınır",
+    "correction": "İlk PR metni dosyayı 'dondurulmuş değil' diye yazmıştı; yalnız joint-identity listesine bakılmıştı. Yanlıştı, CI yakaladı."
+  }
+}

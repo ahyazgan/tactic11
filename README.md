@@ -833,6 +833,15 @@ karenin **gerçek** homografisi analitik hesaplanır; hata metre cinsinden ölç
 > Sentetik hareket düzgündür (gerçek kameramanın ani düzeltmeleri yoktur) ve
 > sıkıştırma bozulmaları azdır — bu sayılar **iyimser taraftadır** ve gerçek yayın
 > görüntüsünde doğrulanması gerekir.
+
+> **Gündüz uyarısı (2026-11-02).** Yukarıdaki tablo gece (floodlight) kaynağından
+> üretilmişti. Gündüz kaynakla (SoccerTrack 117093) aynı bench 0/50 kare verdi ve
+> profesyonel gündüz yayınında (J.League, sert güneş/gölge) gölgedeki çizgiler
+> çıkarımda tamamen kayboluyor. Yerel kontrastlı aday çıkarıcı ölçüldü ama üretime
+> ALINMADI: bileşen düzeyinde kazandırdı, uçtan uca kazandırmadı ve
+> `app/tracking/pitch_lines.py` dondurulmuş kontrollerin ölçtüğü koddur. Ölçüm ve
+> sınırlar: `docs/measurements/line-extraction-daylight-2026-11-02.json`. Yeni ölçümler
+> gündüz/profesyonel görüntüyle yapılır; gece bench'i yeniden koşulmadı.
 >
 > **Tablo 60 karelik ölçümdür.** 500 karede (17 sn, aynı elle çapa) ölçüldü: hata
 > ort **0.32 m**, %90 0.98 m, en kötü **1.95 m**. Kayma kadrajda az çizgi göründüğü

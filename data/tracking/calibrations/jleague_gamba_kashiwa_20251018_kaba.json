@@ -1,0 +1,20 @@
+{
+  "image_size": [1920, 1080],
+  "pitch_length_m": 105,
+  "pitch_width_m": 68,
+  "points": [
+    {"image": [1456.0, 112.0], "pitch": [52.5, 0.0], "label": "orta çizgi ∩ uzak taç"},
+    {"image": [1040.0, 395.0], "pitch": [43.35, 34.0], "label": "orta yuvarlak sol uç"},
+    {"image": [1878.0, 415.0], "pitch": [61.65, 34.0], "label": "orta yuvarlak sağ uç"},
+    {"image": [1490.0, 303.0], "pitch": [52.5, 24.85], "label": "orta yuvarlak uzak tepe"},
+    {"image": [1430.0, 524.0], "pitch": [52.5, 43.15], "label": "orta yuvarlak yakın tepe"},
+    {"image": [1439.0, 405.0], "pitch": [52.5, 34.0], "label": "orta nokta (yuvarlak uçlarından türetildi)"}
+  ],
+  "meta": {
+    "source": "J.LEAGUE International resmi YouTube yayını, Gamba Osaka v Kashiwa Reysol, 2025-10-18 14:00 JST (Y5zMUMGqcQk), kesit 12:00–18:00; iç test, yeniden dağıtım yok",
+    "frame_seconds_in_clip": 135,
+    "camera": "broadcast_main",
+    "lighting": "gündüz, sert güneş/gölge ayrımı",
+    "note": "elle okunan kaba çapa (2× büyütülmüş ızgaralı kareden); Panasonic Stadium Suita 105x68 varsayıldı"
+  }
+}
