@@ -9,6 +9,7 @@ from app.tracking.broadcast_anchor import (
     find_broadcast_anchor,
     line_conic_points,
     line_from_points,
+    ridge_share,
     solve_pitch_to_image,
     split_families,
 )
@@ -62,6 +63,16 @@ def test_batch_solver_matches_general_dlt_and_marks_degenerate_as_nan():
     assert solved / solved[2, 2] == pytest.approx(expected / expected[2, 2], rel=1e-6)
     collapsed = np.repeat(image[:1], 4, axis=0)[None]
     assert np.isnan(solve_pitch_to_image(collapsed, pitch[None])).all()
+
+
+def test_ridge_share_accepts_bright_line_and_rejects_shadow_edge():
+    line = line_from_points(np.array([20.0, 50.0]), np.array([180.0, 50.0]))
+    bright = np.full((100, 200), 80, dtype=np.uint8)
+    bright[49:52, :] = 200
+    assert ridge_share(bright, line) == pytest.approx(1.0)
+    edge = np.full((100, 200), 60, dtype=np.uint8)
+    edge[50:, :] = 160
+    assert ridge_share(edge, line) == pytest.approx(0.0)
 
 
 def test_image_line_angle_is_folded_to_half_circle():
