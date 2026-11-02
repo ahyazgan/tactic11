@@ -125,7 +125,7 @@ def line_from_points(p1: np.ndarray, p2: np.ndarray) -> ImageLine:
     length = float(np.hypot(*direction))
     a, b = -direction[1] / length, direction[0] / length
     c = -(a * p1[0] + b * p1[1])
-    return ImageLine((float(a), float(b), float(c)), tuple(map(float, p1)), tuple(map(float, p2)), length)
+    return ImageLine((float(a), float(b), float(c)), (float(p1[0]), float(p1[1])), (float(p2[0]), float(p2[1])), length)
 
 
 def merge_segments(segments: np.ndarray) -> list[ImageLine]:
@@ -513,18 +513,20 @@ def find_broadcast_anchor(mask: np.ndarray, tolerance_px: float | None = None) -
         refined.append((inlier * explained, pose, inlier, explained))
     refined.sort(key=lambda item: -item[0])
     best_key, best, inlier, explained = refined[0]
-    common = {"inlier": round(inlier, 3), "explained": round(explained, 3),
-              "hypotheses": total, "best_homography": best}
+
+    def reject(note: str) -> BroadcastAnchor:
+        return BroadcastAnchor(None, False, note, round(inlier, 3), round(explained, 3), total, best)
+
     runner = next((k for k, h, _i, _e in refined[1:] if _distance(h, best, size) >= DISTINCT_M), 0.0)
     _s, lm_inlier, lm_visible = score_homography(best, dist_map, pts_m=model_points(1.0, "landmark"), tolerance_px=tol)
     if lm_visible < MIN_LANDMARK_VISIBLE:
-        return BroadcastAnchor(None, False, f"ayırt edici yapı görünmüyor ({lm_visible} nokta)", **common)
+        return reject(f"ayırt edici yapı görünmüyor ({lm_visible} nokta)")
     if lm_inlier < MIN_LANDMARK_INLIER:
-        return BroadcastAnchor(None, False, f"ayırt edici yapı oturmadı (%{lm_inlier * 100:.0f})", **common)
+        return reject(f"ayırt edici yapı oturmadı (%{lm_inlier * 100:.0f})")
     if inlier < MIN_INLIER:
-        return BroadcastAnchor(None, False, f"inlier düşük (%{inlier * 100:.0f})", **common)
+        return reject(f"inlier düşük (%{inlier * 100:.0f})")
     if explained < MIN_EXPLAINED:
-        return BroadcastAnchor(None, False, f"doğruların açıklanan payı düşük (%{explained * 100:.0f})", **common)
+        return reject(f"doğruların açıklanan payı düşük (%{explained * 100:.0f})")
     if runner > 0.0 and best_key < runner * WIN_MARGIN:
-        return BroadcastAnchor(None, False, "sahne belirsiz: uzak rakip belirgin geçilemedi", **common)
-    return BroadcastAnchor(best, True, "kabul", **common)
+        return reject("sahne belirsiz: uzak rakip belirgin geçilemedi")
+    return BroadcastAnchor(best, True, "kabul", round(inlier, 3), round(explained, 3), total, best)
