@@ -26,9 +26,7 @@ CUT_MIN_HIST_CORR = 0.7
 LINE_GATE = 0.70
 SEARCH_STEP_PX = 12.0
 MAX_JUMP_M = 5.0               # düzeltme taşınan duruştan bundan fazla oynatamaz
-MAX_COAST_FRAMES = 90          # 15 fps'te 6 sn; duruşu yalnız köprünün iki ucu doğrulanırsa üretir
-MAX_WALK_BACK_COAST_FRAMES = 15   # geriye takipte ikinci uç doğrulaması yok, kısa kalır
-MAX_BRIDGE_CLOSURE_M = 3.0     # köprü sonunda akış duruşu ile çizgi duruşu arasındaki fark
+MAX_COAST_FRAMES = 15          # 15 fps'te 1 sn; üretim takibinin COAST_FRAMES değeriyle aynı
 ANCHOR_EVERY_FRAMES = 5        # çapa araması pahalı; ama kapsama kaybının çoğu çapa beklerken (ilk koşu)
 REPLAY_EVERY_FRAMES = 3        # ReplayTracker 5 fps ile beslenmeli, takip 15 fps koşar
 BASE_WIDTH_PX = 1280.0
@@ -158,7 +156,6 @@ class TrackFrame:
     inlier: float = 0.0
     carried: np.ndarray | None = None   # kapıdan geçmeyen karede akışla taşınan duruş
     origin: str = "anchor"              # duruş zinciri çapadan mı yeniden konumlanmadan mı geliyor
-    closure_m: float = 0.0              # kapıdan geçen karede akış duruşu ile çizgi duruşunun farkı
 
 
 class BroadcastTracker:
@@ -217,8 +214,7 @@ class BroadcastTracker:
             # Yeniden konumlanma zinciri anahtar üretmez: hata kendi üstüne birikmesin
             if self._origin == "anchor" and self._count % KEY_EVERY_FRAMES == 0:
                 self._reloc.add(gray, fit[0])
-            closure = pose_shift_m(fit[0], carried, (bgr.shape[1], bgr.shape[0]))
-            return TrackFrame(fit[0], "tracked", fit[1], origin=self._origin, closure_m=closure)
+            return TrackFrame(fit[0], "tracked", fit[1], origin=self._origin)
         return self._coasted(carried, "gate")
 
     def _coasted(self, carried: np.ndarray | None, state: str) -> TrackFrame:
@@ -257,8 +253,7 @@ class BackfillingTracker:
 
     Maç sonrası çözümleme içindir: geriye dolan kare, çapa bulunduğu ana kadar gecikir.
     Kareler bellekte JPEG tutulur; kesme, tekrar ve ana kamera dışı kare tamponu boşaltır.
-    Kapıyı kaçıran veya ana kamera sayılmayan kesintisiz kareler, takip kapıdan yeniden geçer ve
-    akış duruşu çizgi duruşuyla kapanırsa akış duruşuyla köprülenir.
+    Kapıyı kısa süre kaçıran kareler, takip kapıdan yeniden geçerse akış duruşuyla köprülenir.
     """
 
     def __init__(self, fps: float = 15.0) -> None:
@@ -272,10 +267,10 @@ class BackfillingTracker:
 
         result = self._forward.step(bgr)
         out = [(k, result)]
-        if result.state in {"gate", "not_main"} and result.carried is not None:
+        if result.state == "gate" and result.carried is not None:
             self._gap.append((k, result.carried))
         else:
-            if result.state == "tracked" and result.closure_m <= MAX_BRIDGE_CLOSURE_M:
+            if result.state == "tracked":
                 out += [(gap_k, TrackFrame(pose, "bridged", origin=result.origin)) for gap_k, pose in self._gap]
             self._gap = []
         if result.state in {"anchored", "relocalized"} and result.homography is not None:
@@ -310,7 +305,7 @@ class BackfillingTracker:
                 filled.append((k, TrackFrame(fit[0], "backfilled", fit[1], origin=origin)))
             else:
                 h, coast = carried, coast + 1
-                if coast > MAX_WALK_BACK_COAST_FRAMES:
+                if coast > MAX_COAST_FRAMES:
                     break
             next_gray, next_hist = gray, hist
         return filled

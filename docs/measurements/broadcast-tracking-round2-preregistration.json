@@ -1,6 +1,6 @@
 {
   "title": "Yayın takibi 2. tur: ön kayıt",
-  "status": "GELİŞTİRMEDE (kullanıcı 2026-11-03: \"Geliştirmeye devam et\"). Kör kontrol ayrı onay ister; maç seçilmedi.",
+  "status": "GELİŞTİRMEDE KALDI (2026-11-03): D1 %59,5 < %70. Kontrol açılmadı. Sonuç: docs/measurements/broadcast-track-round2-development-result.json.",
   "previous": "docs/measurements/broadcast-track-control-result.json: KALDI, main 79/159 = %49,7, şart %50. O sonuç değişmez.",
   "evidence": "Önceki tasarımda geliştirmede duruşsuz 77 main örnek: 45 çapa beklerken, 16 ana kamera sayılmadı, 13 çizgi kapısında, 3 tekrar. Görüntüden yeniden konumlanma çoğu çapa bekleyen örnekte eşleşme bulamıyor. Hiroshima ve Kashiwa kontrol maçları bu teşhiste kullanılmadı.",
   "hypothesis": "Akış duruşu 3 sn içinde çoğunlukla doğru. Kapı kaçırılan veya ana kamera sayılmayan kesintisiz bölümler, iki ucu çizgi kapısından geçer ve akış duruşu sonda çizgi duruşuyla ≤3 m kapanırsa üretilirse kapsama artar, doğruluk tutar.",

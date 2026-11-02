@@ -1,0 +1,145 @@
+{
+ "title": "Yayın takibi 2. tur: uzun köprü geliştirme sonucu",
+ "date": "2026-11-03",
+ "verdict": "D1 KALDI: main 184/309 = %59,5 (şart %70), en düşük maç kyoto %44,6 (şart %50). Plan gereği kontrol AÇILMADI.",
+ "plan": "docs/measurements/broadcast-tracking-round2-preregistration.json",
+ "tested_code": "commit cadd49a (bu commit sonrası kod önceki tasarıma geri alındı)",
+ "command": "cadd49a üzerinde: venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_track_exam run --match <maç> --out <klasör>; gates --dir <klasör>",
+ "same_three_matches": {
+  "before": "151/228 = %66,2: gamba 62, kashima 52, kyoto 37",
+  "after": "137/228 = %60,1: gamba 62, kashima 42, kyoto 33",
+  "note": "Değişiklik kapsamayı artırmadı, düşürdü."
+ },
+ "why_worse": "Üç maçta \"gate\" durumundaki main örnek 12'den 38'e çıktı, köprülenen örnek 10 kaldı. Duruş 6 sn taşınırken çapa ve yeniden konumlanma araması çalışmıyor; kapıyı geçemeyen taşınan duruş aramayı engelliyor. Bu okuma durum sayılarından çıkarıldı, ayrıca karşı-deneyle sınanmadı.",
+ "gates": {
+  "D1": false,
+  "D2": true,
+  "D3": true
+ },
+ "D2_bridged": "Ölçülmedi: D1 kaldığı için köprülenen 15 main örnek işaretlenmedi. Köprülerin doğruluğu bilinmiyor; D2 eski işaretli karelerle hesaplandı ve köprü kanıtı içermez.",
+ "D4": "Geçti: birim test.",
+ "result": {
+  "per_match": {
+   "gamba_kashiwa": {
+    "main_posed": 62,
+    "main": 76,
+    "other_posed": 0,
+    "other": 44,
+    "frames": 5400,
+    "produced": 2933,
+    "states": {
+     "anchored": 13,
+     "tracked": 2047,
+     "gate": 1038,
+     "bridged": 422,
+     "gate_lost": 8,
+     "backfilled": 451,
+     "not_main": 1581,
+     "cut": 37,
+     "no_anchor": 19,
+     "searching": 66,
+     "replay": 591
+    },
+    "fps": 5.13
+   },
+   "kashima_marinos": {
+    "main_posed": 42,
+    "main": 78,
+    "other_posed": 0,
+    "other": 42,
+    "frames": 5400,
+    "produced": 1933,
+    "states": {
+     "anchored": 13,
+     "tracked": 1389,
+     "not_main": 1610,
+     "bridged": 167,
+     "cut": 25,
+     "replay": 543,
+     "no_anchor": 135,
+     "searching": 537,
+     "backfilled": 362,
+     "gate": 1135,
+     "gate_lost": 11,
+     "relocalized": 2
+    },
+    "fps": 4.92
+   },
+   "kyoto_kobe": {
+    "main_posed": 33,
+    "main": 74,
+    "other_posed": 0,
+    "other": 46,
+    "frames": 5400,
+    "produced": 1438,
+    "states": {
+     "no_anchor": 208,
+     "searching": 822,
+     "not_main": 1994,
+     "anchored": 14,
+     "backfilled": 240,
+     "tracked": 1091,
+     "cut": 55,
+     "replay": 495,
+     "bridged": 91,
+     "gate": 712,
+     "gate_lost": 7,
+     "relocalized": 2
+    },
+    "fps": 4.78
+   },
+   "verdy_kashima": {
+    "main_posed": 47,
+    "main": 81,
+    "other_posed": 2,
+    "other": 39,
+    "frames": 5400,
+    "produced": 2227,
+    "states": {
+     "anchored": 11,
+     "tracked": 1649,
+     "gate": 548,
+     "not_main": 1298,
+     "bridged": 252,
+     "gate_lost": 4,
+     "no_anchor": 90,
+     "searching": 355,
+     "backfilled": 313,
+     "cut": 42,
+     "replay": 1398,
+     "not_main_lost": 3,
+     "relocalized": 2
+    },
+    "fps": 4.61
+   }
+  },
+  "main_posed": 184,
+  "main": 309,
+  "main_rate": 0.595,
+  "other_posed": 2,
+  "other": 171,
+  "other_rate": 0.012,
+  "marked_produced": 53,
+  "marked_total": 70,
+  "median_m": 0.48,
+  "wrong_over_5m": 0,
+  "worst_median_m": 1.92,
+  "derived_marked_produced": 24,
+  "derived_median_m": 0.535,
+  "derived_wrong_over_5m": 0,
+  "reloc_marked_produced": 13,
+  "reloc_median_m": 0.55,
+  "reloc_wrong_over_5m": 0,
+  "main_posed_by_reloc": 19,
+  "D1": false,
+  "D2": true,
+  "D2_derived": true,
+  "D3": true
+ },
+ "limits": [
+  "Geliştirme verisi, 4 maç, maç başına 6 dk. Verdy önceki tasarımda koşulmadı; karşılaştırma yalnız aynı 3 maçta yapıldı.",
+  "Verdy other 2/81 üretti, önceki tasarımda 3 maçta 0/132 idi; toplam %1,2 şart içinde ama köprü other sızıntısı yaratmış olabilir.",
+  "Paralel koşuda 4,6-5,1 fps."
+ ],
+ "status": "Üretime BAĞLANMADI. Kod geri alındı. Sonraki adım kullanıcı kararı."
+}
