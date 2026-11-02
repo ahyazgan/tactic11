@@ -1,7 +1,7 @@
 {
   "title": "Yayın takibi: ön kayıt",
   "date": "2026-11-02",
-  "status": "DONDURULDU (2026-11-02): kullanıcı \"Evet, kontrole geç\" dedi. Kontrol maçı henüz seçilmedi, indirilmedi, görüntü açılmadı.",
+  "status": "DONDURULDU, maçlar üst veriyle seçildi (2026-11-02). Görüntü açılmadı.",
   "hypothesis": "Yayın çapası kare başına ancak %30 civarı kabul alsa da, çapadan sonra görüntü akışıyla taşınan duruş yerel kontrast çizgileriyle düzeltilip 0,70 kapısından geçirilirse ana kamera süresinin çoğu doğru duruşla kaplanır.",
   "why_new_exam_not_retry": "Kalan sınav kare başına çapa kabulünü ölçtü. Bu sınav çapa+takip sisteminin ana kamera kapsamasını ölçer ve yeni maçlarda koşar. Kalan sonuç değişmez, eşikleri gevşetilmez.",
   "code": "Yeni ayrı modül, üretime bağlanmaz. pitch_lines.py, pipeline.py ve *frozen-decision.json dosyalarına dokunulmaz. Çapa eşikleri aynen kalır.",
@@ -20,7 +20,20 @@
     "C5_minimum_sample": "en az 15 işaretli üretim",
     "all_required": true
   },
-  "control_matches": "Daha önce görülmemiş 2 J.League gündüz maçı, en az biri sert gölgeli (kontrol öncesi yalnız maç saati ve hava kaydıyla seçilir; görüntü açılmadan). Kod ve eşikler önce hash ile dondurulur, etiketler ve gerçek duruşlar koşudan önce commit edilir, tek koşu.",
+  "control_matches": {
+    "hiroshima_kyoto": {
+      "file": "data/tracking/videos/jleague_dl/j1_hiroshima_kyoto_20241103_1200_1560.mp4",
+      "source": "https://www.youtube.com/watch?v=OU9mJgdHehM",
+      "title": "Sanfrecce Hiroshima v Kyoto Sanga, 2024 J1 League, 2024-11-03, yayın 12:55 JST",
+      "why": "Sert gölge kuralı: listede bulut ≤%30 olan ilk uygun maç. Open-Meteo saatlik bulut %4 ve %1, doğrudan ışınım 526 ve 514 W/m²."
+    },
+    "kashiwa_hiroshima_final": {
+      "file": "data/tracking/videos/jleague_dl/levain_kashiwa_hiroshima_20251101_1200_1560.mp4",
+      "source": "https://www.youtube.com/watch?v=OUtaPdOvH-s",
+      "title": "Kashiwa Reysol v Sanfrecce Hiroshima, YBC Levain Cup finali, Ulusal Stadyum, 2025-11-01, yayın 12:59 JST",
+      "why": "İkinci maç kuralı: en yeni uygun maç. Bulut %97."
+    }
+  },
   "unseen_required": "chiba_tokushima, kashiwa_machida, verdy_kashima, niigata_kashiwa görülmüş sayılır.",
   "numbers_note": "D ve C eşikleri taslak öneridir. D1 ve C1, bu geliştirme ölçümü görüldükten sonra yazıldı.",
   "metric_definitions": {
@@ -100,7 +113,12 @@
     "cut": "1200-1560. saniye, 1080p, https biçimi.",
     "daylight_check": "control-inspect yalnız parlaklık sayısı üretir; gece çıkarsa maç atlanır, sonraki uygun alınır.",
     "handling": "Yalnız iç test, yeniden dağıtılmaz, repoya girmez.",
-    "shadow_limit": "Hava kaydı sert gölgeyi garanti etmez; etiketleme sırasında gölge olup olmadığı not edilir, koşudan önce commit edilir."
+    "shadow_limit": "Hava kaydı sert gölgeyi garanti etmez; etiketleme sırasında gölge olup olmadığı not edilir, koşudan önce commit edilir.",
+    "applied": {
+      "listing": "Yayın listesi 553 kayıt. Öneki 16:06 başlayan ALL-STAR (2026-06-13) ve 14:00 sonrası tüm maçlar elendi.",
+      "skipped_for_shadow": "2025-05-31 ile 2024-12-01 arası 11 uygun maçta başlangıç veya sonraki saatte bulut %30 üstü. Levain finali ikinci maç oldu.",
+      "note": "Kyoto bu seçimde deplasman takımıdır, stadyum görülmemiştir. Kashiwa ve Hiroshima kadroları görülmüş olabilir; kural stadyuma bakar."
+    }
   },
   "control_order": [
     "Kod dondurulur, bu dosya commit edilir",
