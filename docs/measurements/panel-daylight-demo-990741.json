@@ -1,0 +1,39 @@
+{
+  "title": "Gündüz panel demosu: 990741 (SoccerTrack v2 132877, sabit kamera) telestrasyonla panelde",
+  "date": "2026-11-02",
+  "why": "Kullanıcı kuralı: gece maçında test ve gösterim yok. Panelde gösterilen 990731 gece provasıydı; yerine gündüz maçı kondu.",
+  "source": {
+    "match": "SoccerTrack v2 132877 ilk yarı, video 600-1200 s (20 segment, 30 sn), gündüz, University of Tsukuba sahası",
+    "license": "CC BY 4.0, SoccerTrack v2, Atom Scott et al.",
+    "not_professional": "Üniversite maçı, profesyonel maç değil.",
+    "locked_controls": "Kör kontroller 117093 kaynağını kullanıyor; 132877 kilitli değil, kontrol pikseli açılmadı."
+  },
+  "what_ran": "scripts.telestrate_live --once, mevcut takip çıktısı üstünde. Takip bu koşuda tekrarlanmadı, GPU ve indirme yok. Canlı akış değil, kayıtlı takipten üretim.",
+  "command": "scripts.telestrate_live --watch data/tracking/live/990741 --calibration data/tracking/calibrations/soccertrack_v2_132877_landmarks.json --home-attack x- --once --match-id 990741 --tenant t-default",
+  "direction_finding": {
+    "home_attack_auto": {"mean_drawn_ratio": 0.287, "frames_blocked_by_direction_gate": 10686, "frames_total": 14980, "segments_with_zero_drawn": 5, "labels": {"yok": 15, "Yüksek blok": 4, "Alçak blok": 1}},
+    "home_attack_known_x_minus": {"mean_drawn_ratio": 1.0, "error_segments": 0, "labels": {"Yüksek blok": 16, "Orta blok": 3, "Alçak blok": 1}},
+    "direction_source": "x- GSR kaleci konumlarından türetildi (gt_attack_direction). Sahada bu bilgi kaleciler görülerek başlama vuruşunda operatörden gelir.",
+    "reading": "Otomatik hücum yönü bu maçta karelerin %71'ini kesiyor. Çizilmeyen karelerin tamamı bu kapıdan. Bilinen yönle kapı boşalıyor. Bu tek maçlık gözlem; otomatik yönün doğruluğu ölçülmedi."
+  },
+  "accuracy_reference": {
+    "from": "docs/measurements/daylight-132877-gsr-telestration.json, aynı pencere, GSR'ye karşı, bilinen yönle",
+    "block_balanced_pct": 80.8,
+    "label_exact_pct": 85.0,
+    "majority_baseline_pct": 63.5,
+    "press_agree_pct": 93.8,
+    "def_line_median_m": 1.9,
+    "def_line_p90_m": 11.68,
+    "limit": "Tek maç, hizalama aynı pencereden türetildi. Bu koşuda yeniden ölçülmedi; panel görüntüsü doğruluk kanıtı değildir."
+  },
+  "panel_check": {
+    "route": "/decisions/live, gerçek mod, maç 990741",
+    "result": "Telestrasyon kartı başlığı 'Orta blok', video elementi 1280x338 oynuyor (auto koşusunda doğrulandı), seg_0019 19.5'",
+    "defects_seen": [
+      "AI brief kartı STUB metin gösteriyor ve dakika kaydıracından 80' okuyor; telestrasyon 19.5'. Aynı ekranda iki farklı maç anı.",
+      "'Kapanış reçetesi' gibi kartlar 80' varsayımıyla 'son 15 dk' önerisi veriyor; 19. dakikadaki maç için anlamsız.",
+      "'Saha Overlay' kartı StatsBomb 360 ister ve bu maçta boş kalır."
+    ]
+  },
+  "artifacts": "data/tracking/live/990741/tele (196 MB, repoda yok), karşılaştırma: tele_auto_yon/*.marks.json"
+}
