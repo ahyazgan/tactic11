@@ -1,6 +1,7 @@
 """Çapa+takip sınavı (venv-cv). Ön kayıt: docs/measurements/broadcast-tracking-preregistration.json.
 
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam run --match kyoto_kobe --out <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam sample-grids --dir <klasör> --out <klasör>
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam gates --dir <klasör>
 
 Elle çapa verilmez, sistem çapayı kendisi bulur. Görüntüler repoda değildir.
@@ -26,11 +27,13 @@ END_OFFSET = 44             # tracking_funnel uç karesi
 MAX_SAMPLES = 120
 START_POINTS = Path("docs/measurements/daylight-calibration-truth-points.json")
 END_POINTS = Path("docs/measurements/tracking-funnel-end-truth-points.json")
+DERIVED_POINTS = Path("docs/measurements/broadcast-track-derived-truth-points.json")
 D1_MIN_MAIN = 0.60
 D2_MAX_MEDIAN_M = 2.0
 WRONG_M = 5.0
 D2_MAX_WRONG = 0.05
 D3_MAX_OTHER = 0.05
+DERIVED_STATES = {"backfilled", "bridged"}
 
 
 def timed_frames(video: Path) -> Iterator[tuple[int, np.ndarray]]:
@@ -59,7 +62,9 @@ def timed_frames(video: Path) -> Iterator[tuple[int, np.ndarray]]:
 def marked_frames(match: str) -> dict[int, list[dict]]:
     """15 fps ızgara no → el noktaları: klip başı ve klip sonu işaretleri."""
     marks: dict[int, list[dict]] = {}
-    for path, offset in ((START_POINTS, 0), (END_POINTS, END_OFFSET)):
+    for path, offset in ((START_POINTS, 0), (END_POINTS, END_OFFSET), (DERIVED_POINTS, 0)):
+        if not path.exists():
+            continue
         frames = json.loads(path.read_text(encoding="utf-8"))["frames"].get(match, {})
         for sample, spec in frames.items():
             if spec.get("points"):
@@ -95,22 +100,51 @@ def run(match: str, out: Path) -> int:
         if k % 450 == 0:
             print(match, k, dict(states), flush=True)
     seconds = time.perf_counter() - start
-    samples, evidence = [], []
-    for k in sorted(kept):
-        result = kept[k]
-        if k % SAMPLE_EVERY == 0:
-            i = k // SAMPLE_EVERY
-            samples.append({"sample": i, "label": "other" if i in others else "main",
-                            "posed": result.homography is not None, "state": result.state})
-        if k in marks and result.homography is not None:
-            errors = mark_errors(result.homography, marks[k])
-            evidence.append({"k": k, "median_m": round(float(np.median(errors)), 2),
-                             "worst_m": round(float(errors.max()), 2), "state": result.state})
+    samples = [{"sample": k // SAMPLE_EVERY, "label": "other" if k // SAMPLE_EVERY in others else "main",
+                "posed": result.homography is not None, "state": result.state,
+                "pose": result.homography.tolist() if result.homography is not None else None}
+               for k, result in sorted(kept.items()) if k % SAMPLE_EVERY == 0]
+    poses = {str(k): {"state": result.state, "pose": result.homography.tolist()}
+             for k, result in kept.items() if result.homography is not None}
     record = {"match": match, "frames": total, "produced": len(produced), "states": dict(states), "size": size,
-              "seconds": round(seconds, 1), "samples": samples, "evidence": evidence,
-              "marked_frames": len(marks)}
+              "seconds": round(seconds, 1), "samples": samples, "poses": poses}
     (out / f"{match}.json").write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
     return 0
+
+
+def attach_evidence(record: dict) -> None:
+    """İşaretli karelerde kayıtlı duruşun hatası; işaret dosyası koşudan sonra da eklenebilir."""
+    marks = marked_frames(record["match"])
+    record["marked_frames"] = len(marks)
+    record["evidence"] = []
+    for k, points in sorted(marks.items()):
+        kept = record["poses"].get(str(k))
+        if kept is not None:
+            errors = mark_errors(np.array(kept["pose"]), points)
+            record["evidence"].append({"k": k, "median_m": round(float(np.median(errors)), 2),
+                                       "worst_m": round(float(errors.max()), 2), "state": kept["state"]})
+
+
+def sample_grids(folder: Path, out: Path) -> int:
+    """Türetilmiş duruşlu (geriye dolan, köprülenen) tüm main örneklerin ızgaralı karesi. Duruş çizilmez."""
+    import cv2
+
+    from scripts.calibration_funnel import draw_grid
+    from scripts.shot_exam import sampled_frames
+
+    out.mkdir(parents=True, exist_ok=True)
+    for path in sorted(folder.glob("*.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        wanted = {s["sample"] for s in record["samples"]
+                  if s["label"] == "main" and s["state"] in DERIVED_STATES}
+        for i, frame in sampled_frames(video_of(record["match"])):
+            if i in wanted:
+                cv2.imwrite(str(out / f"{record['match']}_{i}.jpg"), draw_grid(frame), [cv2.IMWRITE_JPEG_QUALITY, 85])
+    return 0
+
+
+def _median(values: list[float]) -> float | None:
+    return float(np.median(values)) if values else None
 
 
 def evaluate(records: list[dict]) -> dict:
@@ -138,6 +172,9 @@ def evaluate(records: list[dict]) -> dict:
         "marked_produced": len(medians), "marked_total": sum(r["marked_frames"] for r in records),
         "median_m": median, "wrong_over_5m": wrong,
         "worst_median_m": max(medians) if medians else None,
+        "derived_marked_produced": sum(e["state"] in DERIVED_STATES for e in evidence),
+        "derived_median_m": _median([e["median_m"] for e in evidence if e["state"] in DERIVED_STATES]),
+        "derived_wrong_over_5m": sum(e["state"] in DERIVED_STATES and e["median_m"] > WRONG_M for e in evidence),
         "D1": main_rate >= D1_MIN_MAIN,
         "D2": median is not None and median <= D2_MAX_MEDIAN_M and wrong_rate is not None and wrong_rate <= D2_MAX_WRONG,
         "D3": other_rate <= D3_MAX_OTHER,
@@ -146,6 +183,8 @@ def evaluate(records: list[dict]) -> dict:
 
 def gates(folder: Path) -> int:
     records = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(folder.glob("*.json"))]
+    for record in records:
+        attach_evidence(record)
     result = evaluate(records)
     print(json.dumps(result, ensure_ascii=False, indent=1))
     print("evidence", [(r["match"][:5], e["k"], e["median_m"], e["worst_m"], e["state"]) for r in records for e in r["evidence"]])
@@ -160,8 +199,15 @@ def main() -> int:
     r.add_argument("--out", type=Path, required=True)
     g = sub.add_parser("gates")
     g.add_argument("--dir", type=Path, required=True)
+    a = sub.add_parser("sample-grids")
+    a.add_argument("--dir", type=Path, required=True)
+    a.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
-    return run(args.match, args.out) if args.cmd == "run" else gates(args.dir)
+    if args.cmd == "run":
+        return run(args.match, args.out)
+    if args.cmd == "sample-grids":
+        return sample_grids(args.dir, args.out)
+    return gates(args.dir)
 
 
 if __name__ == "__main__":

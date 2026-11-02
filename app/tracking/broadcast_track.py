@@ -91,6 +91,7 @@ class TrackFrame:
     homography: np.ndarray | None   # görüntü → saha; kapıdan geçmeyen karede None
     state: str
     inlier: float = 0.0
+    carried: np.ndarray | None = None   # kapıdan geçmeyen karede akışla taşınan duruş
 
 
 class BroadcastTracker:
@@ -154,7 +155,7 @@ class BroadcastTracker:
             self._drop()
             return TrackFrame(None, f"{state}_lost")
         self._h = carried
-        return TrackFrame(None, state)
+        return TrackFrame(None, state, carried=carried)
 
     def _search(self, mask: np.ndarray, gray: np.ndarray) -> TrackFrame:
         self._since_search += 1
@@ -173,11 +174,13 @@ class BackfillingTracker:
 
     Maç sonrası çözümleme içindir: geriye dolan kare, çapa bulunduğu ana kadar gecikir.
     Kareler bellekte JPEG tutulur; kesme, tekrar ve ana kamera dışı kare tamponu boşaltır.
+    Kapıyı kısa süre kaçıran kareler, takip kapıdan yeniden geçerse akış duruşuyla köprülenir.
     """
 
     def __init__(self, fps: float = 15.0) -> None:
         self._forward = BroadcastTracker(fps)
         self._buffer: deque[tuple[int, np.ndarray]] = deque(maxlen=BACKFILL_FRAMES)
+        self._gap: list[tuple[int, np.ndarray]] = []
 
     def feed(self, k: int, bgr: np.ndarray) -> list[tuple[int, TrackFrame]]:
         """(kare no, sonuç) listesi: bu kare ve varsa geriye dolan kareler."""
@@ -185,6 +188,12 @@ class BackfillingTracker:
 
         result = self._forward.step(bgr)
         out = [(k, result)]
+        if result.state == "gate" and result.carried is not None:
+            self._gap.append((k, result.carried))
+        else:
+            if result.state == "tracked":
+                out += [(gap_k, TrackFrame(pose, "bridged")) for gap_k, pose in self._gap]
+            self._gap = []
         if result.state == "anchored" and result.homography is not None:
             out += self._walk_back(result.homography, bgr)
         if result.state == "cut" or result.state not in BUFFERED_STATES:

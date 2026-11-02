@@ -37,7 +37,8 @@
     "anchor_every_frames": 5,
     "fps": 15,
     "shot_guard": "shot_filter.classify_shot ve ReplayTracker değiştirilmeden kullanılır",
-    "backfill": "Çapa bulununca en çok 30 sn geriye takip; yalnız maç sonrası çözümleme"
+    "backfill": "Çapa bulununca en çok 30 sn geriye takip; yalnız maç sonrası çözümleme",
+    "bridge": "Kapıyı en çok 15 kare kaçıran kareler, takip kapıdan yeniden geçerse akış duruşuyla üretilir; yalnız maç sonrası"
   },
   "development_iterations": [
     {
@@ -49,7 +50,15 @@
     {
       "run": 2,
       "design": "Çapa araması 5 karede bir + çapadan geriye takip. Çapa eşikleri ve D kapıları aynı.",
-      "note": "Değişiklik 1. koşu sonucu görülerek yapıldı; bu yüzden geliştirme iyimser sayılır, karar kontrolde verilir."
+      "note": "Değişiklik 1. koşu sonucu görülerek yapıldı; bu yüzden geliştirme iyimser sayılır, karar kontrolde verilir.",
+      "result": "D1 KALDI: main 133/228 (%58,3; 137 gerekiyordu). D2 geçti: 19 işaretli üretimde medyan 0,40 m, >5 m yok; ama bunların hiçbiri geriye dolan kare değildi. D3 geçti: other 0/132.",
+      "loss": "Duruşsuz 95 main örneğin 62'si çapa beklerken, 16'sı ana kamera sayılmadı, 14'ü kapıda, 3'ü tekrar."
+    },
+    {
+      "run": 3,
+      "design": "Köprüleme eklendi. Bu SON tasarım turu: D1 yine kalırsa sonuç olduğu gibi yazılır, kontrol açılmaz, kullanıcıya sorulur.",
+      "note": "D1 eşiği %60 olarak kalır.",
+      "derived_accuracy": "Geriye dolan ve köprülenen tüm main örnekleri koşudan sonra durum listesiyle seçilir, duruş bindirilmeden elle işaretlenir, D2 onlarla birlikte hesaplanır: broadcast-track-derived-truth-points.json. Türetilmiş duruşlarda ayrıca medyan ≤2 m ve >5 m ≤%5 aranır."
     }
   ]
 }

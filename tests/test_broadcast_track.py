@@ -139,6 +139,35 @@ def test_backfill_stops_at_a_cut(tracker, monkeypatch):
     assert min(filled) >= 4
 
 
+def test_gate_gap_is_bridged_only_when_tracking_passes_again(tracker, monkeypatch):
+    def refine(ratio):
+        return lambda h, _d, step_px, tolerance_px: SimpleNamespace(homography=h, accepted=True, inlier_ratio=ratio)
+
+    fill = bt.BackfillingTracker()
+    fill.feed(0, textured(1))
+    monkeypatch.setattr(bt, "refine_homography", refine(0.5))
+    missed = fill.feed(1, textured(1)) + fill.feed(2, textured(1))
+    assert all(r.homography is None for _, r in missed)
+    monkeypatch.setattr(bt, "refine_homography", refine(0.9))
+    results = fill.feed(3, textured(1))
+    assert [(k, r.state) for k, r in results] == [(3, "tracked"), (1, "bridged"), (2, "bridged")]
+    assert all(r.homography is not None for _, r in results)
+
+
+def test_gate_gap_is_not_bridged_when_the_pose_is_lost(tracker, monkeypatch):
+    monkeypatch.setattr(
+        bt, "refine_homography",
+        lambda h, _d, step_px, tolerance_px: SimpleNamespace(homography=h, accepted=True, inlier_ratio=0.5),
+    )
+    fill = bt.BackfillingTracker()
+    fill.feed(0, textured(1))
+    results = []
+    for k in range(1, bt.MAX_COAST_FRAMES + 2):
+        results += fill.feed(k, textured(1))
+    assert not [r for _, r in results if r.state == "bridged"]
+    assert fill._gap == []
+
+
 def test_evaluate_applies_development_gates():
     samples = [{"label": "main", "posed": i < 7} for i in range(10)] + [{"label": "other", "posed": False}] * 5
     record = {"match": "m", "samples": samples, "frames": 10, "produced": 7, "states": {}, "seconds": 2.0,
