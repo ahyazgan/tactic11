@@ -1,0 +1,88 @@
+{
+  "title": "Gündüz huni teşhisi: elle işaretli gerçek duruş noktaları",
+  "date": "2026-11-02",
+  "selection": "scripts.calibration_funnel pick --per-match 6: geliştirme maçlarının main etiketli örneklerinden eşit aralıklı 6 kare, görüntüye bakmadan",
+  "method": "Izgaralı 1080p kareden elle okundu (image px → pitch m, y=68 yakın taç, görüntü solu küçük x). Tek değerlendirici. Çapa adayları ve üretim çıktısı görülmeden işaretlendi.",
+  "pitch_constants_m": {"length": 105, "width": 68, "penalty_depth": 16.5, "penalty_far_y": 13.84, "penalty_near_y": 54.16, "goal_area_depth": 5.5, "goal_area_far_y": 24.84, "goal_area_near_y": 43.16, "circle_radius": 9.15, "arc_on_box_y": [26.69, 41.31]},
+  "frames": {
+    "gamba_kashiwa": {
+      "19": {"points": [
+        {"image": [1021, 85], "pitch": [52.5, 0]}, {"image": [1009, 1000], "pitch": [52.5, 68]},
+        {"image": [1020, 224], "pitch": [52.5, 24.85]}, {"image": [1017, 412], "pitch": [52.5, 43.15]},
+        {"image": [683, 315], "pitch": [43.35, 34]}, {"image": [1358, 320], "pitch": [61.65, 34]}]},
+      "32": {"points": [
+        {"image": [1515, 103], "pitch": [105, 0]}, {"image": [1245, 205], "pitch": [88.5, 13.84]},
+        {"image": [1443, 295], "pitch": [88.5, 26.69]}, {"image": [1770, 437], "pitch": [88.5, 41.31]},
+        {"image": [463, 475], "pitch": [61.65, 34]}]},
+      "44": {"points": [
+        {"image": [355, 20], "pitch": [0, 0]}, {"image": [598, 108], "pitch": [16.5, 13.84]},
+        {"image": [425, 190], "pitch": [16.5, 26.69]}, {"image": [140, 313], "pitch": [16.5, 41.31]},
+        {"image": [1720, 90], "pitch": [52.5, 0]}, {"image": [1697, 258], "pitch": [52.5, 24.85]},
+        {"image": [1672, 487], "pitch": [52.5, 43.15]}, {"image": [1283, 345], "pitch": [43.35, 34]}]},
+      "78": {"points": [
+        {"image": [140, 162], "pitch": [52.5, 0]}, {"image": [152, 332], "pitch": [52.5, 24.85]},
+        {"image": [183, 565], "pitch": [52.5, 43.15]}, {"image": [588, 420], "pitch": [61.65, 34]},
+        {"image": [1295, 185], "pitch": [88.5, 13.84]}, {"image": [1473, 267], "pitch": [88.5, 26.69]},
+        {"image": [1765, 398], "pitch": [88.5, 41.31]}, {"image": [1543, 95], "pitch": [105, 0]}]},
+      "99": {"points": [
+        {"image": [905, 30], "pitch": [0, 0]}, {"image": [1135, 123], "pitch": [16.5, 13.84]},
+        {"image": [955, 200], "pitch": [16.5, 26.69]}, {"image": [690, 312], "pitch": [16.5, 41.31]},
+        {"image": [335, 456], "pitch": [16.5, 54.16]}, {"image": [675, 152], "pitch": [5.5, 24.84]},
+        {"image": [282, 277], "pitch": [5.5, 43.16]}]},
+      "111": {"points": [
+        {"image": [295, 265], "pitch": [52.5, 0]}, {"image": [305, 462], "pitch": [52.5, 24.85]},
+        {"image": [322, 733], "pitch": [52.5, 43.15]}, {"image": [790, 572], "pitch": [61.65, 34]},
+        {"image": [1640, 305], "pitch": [88.5, 13.84]}, {"image": [1870, 408], "pitch": [88.5, 26.69]}]}
+    },
+    "kashima_marinos": {
+      "14": {"points": [], "not_markable": "orta çizgi + yarım yuvarlak: 3 nokta doğrusal, 4 bağımsız nokta yok"},
+      "29": {"points": [], "not_markable": "dar kadraj: orta çizgi ve yuvarlağın sol ucu, 4 bağımsız nokta yok"},
+      "43": {"points": [
+        {"image": [835, 160], "pitch": [0, 0]}, {"image": [1360, 358], "pitch": [16.5, 13.84]},
+        {"image": [495, 272], "pitch": [0, 13.84]}, {"image": [437, 417], "pitch": [5.5, 24.84]},
+        {"image": [135, 385], "pitch": [0, 24.84]}, {"image": [1045, 510], "pitch": [16.5, 26.69]},
+        {"image": [565, 740], "pitch": [16.5, 41.31]}]},
+      "56": {"points": [
+        {"image": [712, 222], "pitch": [52.5, 0]}, {"image": [725, 498], "pitch": [52.5, 24.85]},
+        {"image": [738, 835], "pitch": [52.5, 43.15]}, {"image": [68, 670], "pitch": [43.35, 34]},
+        {"image": [1370, 660], "pitch": [61.65, 34]}]},
+      "69": {"points": [
+        {"image": [1030, 268], "pitch": [0, 0]}, {"image": [700, 378], "pitch": [0, 13.84]},
+        {"image": [1557, 460], "pitch": [16.5, 13.84]}, {"image": [350, 488], "pitch": [0, 24.84]},
+        {"image": [642, 518], "pitch": [5.5, 24.84]}, {"image": [1235, 612], "pitch": [16.5, 26.69]},
+        {"image": [760, 835], "pitch": [16.5, 41.31]}]},
+      "82": {"points": [], "not_markable": "kadrajda ceza sahası köşesi ve yuvarlağın sol kenarı, 4 bağımsız nokta yok"}
+    },
+    "kyoto_kobe": {
+      "8": {"points": [
+        {"image": [858, 200], "pitch": [16.5, 13.84]}, {"image": [870, 600], "pitch": [16.5, 54.16]},
+        {"image": [125, 618], "pitch": [0, 54.16]}, {"image": [462, 440], "pitch": [5.5, 43.16]},
+        {"image": [265, 447], "pitch": [0, 43.16]}, {"image": [555, 268], "pitch": [5.5, 24.84]},
+        {"image": [865, 410], "pitch": [16.5, 41.31]}, {"image": [1667, 300], "pitch": [43.35, 34]}],
+        "note": "geçiş penceresinde, büyük olasılıkla tekrar; etiket değişmedi"},
+      "32": {"points": [
+        {"image": [1148, 290], "pitch": [52.5, 0]}, {"image": [1143, 545], "pitch": [52.5, 24.85]},
+        {"image": [1138, 890], "pitch": [52.5, 43.15]}, {"image": [553, 708], "pitch": [43.35, 34]},
+        {"image": [1748, 725], "pitch": [61.65, 34]}]},
+      "59": {"points": [
+        {"image": [600, 92], "pitch": [88.5, 13.84]}, {"image": [975, 42], "pitch": [105, 13.84]},
+        {"image": [1360, 400], "pitch": [88.5, 54.16]}, {"image": [1835, 290], "pitch": [105, 54.16]},
+        {"image": [770, 162], "pitch": [88.5, 26.69]}, {"image": [1035, 268], "pitch": [88.5, 41.31]},
+        {"image": [1030, 110], "pitch": [99.5, 24.84]}, {"image": [1390, 227], "pitch": [99.5, 43.16]}]},
+      "72": {"points": [
+        {"image": [295, 233], "pitch": [16.5, 13.84]}, {"image": [95, 330], "pitch": [16.5, 26.69]},
+        {"image": [1505, 190], "pitch": [52.5, 0]}, {"image": [1493, 380], "pitch": [52.5, 24.85]},
+        {"image": [1477, 635], "pitch": [52.5, 43.15]}, {"image": [1055, 480], "pitch": [43.35, 34]}]},
+      "87": {"points": [
+        {"image": [1680, 122], "pitch": [16.5, 13.84]}, {"image": [632, 530], "pitch": [16.5, 54.16]},
+        {"image": [1160, 62], "pitch": [0, 13.84]}, {"image": [1435, 218], "pitch": [16.5, 26.69]},
+        {"image": [1110, 357], "pitch": [16.5, 41.31]}, {"image": [1090, 150], "pitch": [5.5, 24.84]},
+        {"image": [600, 298], "pitch": [5.5, 43.16]}, {"image": [422, 260], "pitch": [0, 43.16]}]},
+      "105": {"points": [
+        {"image": [1305, 78], "pitch": [105, 0]}, {"image": [1080, 170], "pitch": [88.5, 13.84]},
+        {"image": [1253, 250], "pitch": [88.5, 26.69]}, {"image": [1535, 377], "pitch": [88.5, 41.31]},
+        {"image": [1900, 542], "pitch": [88.5, 54.16]}, {"image": [1535, 208], "pitch": [99.5, 24.84]},
+        {"image": [407, 425], "pitch": [61.65, 34]}]}
+    }
+  }
+}
