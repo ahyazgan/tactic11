@@ -1,0 +1,60 @@
+{
+  "title": "VLSC U19 (CC BY) 6 dk örneği, operatörlü kamera yolu, kare başına kalibrasyon kapılarıyla (PR #221 sonrası) — panel provası",
+  "date": "2026-11-02",
+  "match_id": 990774,
+  "source": {
+    "video": "data/tracking/videos/vlsc_u19_sample_540_900.mp4",
+    "origin": "VLSC U19 CCL 2019-08-25 tactical view (YouTube 9J8nUZ0Dd3s, CC BY, Bil Kleb)",
+    "resolution": "1920x1080 @ 59.94",
+    "calibration": "data/tracking/calibrations/vlsc_u19_20190825_kaba.json (5 nokta, 600 s karesi, kendi noktalarında 0.082 m)"
+  },
+  "command": "scripts.canli_mac --camera operated --calibration <kaba> --tiles 2 --segment-seconds 30 --start-minute 50 --no-realtime --fresh",
+  "why_start_minute_50": "paneldeki dakika kaydıracı 50–95 aralığında; 6 dk örnek 50–56'ya eşlendi (içerik değişmez, yalnız etiket)",
+  "result": {
+    "segments_processed": 3,
+    "frames_written": 0,
+    "calibrated_ratio": 0.0,
+    "per_segment": [
+      {"seg": "seg_0000", "frames": 0, "calibrated": 0.0, "seconds": 221, "note": "ısınma 68 sn hariç 152 sn; çapa araması 26, bulunan 0"},
+      {"seg": "seg_0001", "frames": 0, "calibrated": 0.0, "seconds": 235, "note": "çapa araması 54, bulunan 0"},
+      {"seg": "seg_0002", "frames": 0, "calibrated": 0.0, "seconds": 133, "note": "çapa karesini (60 s) içerir; çapa araması 81, bulunan 0"}
+    ],
+    "skip_reasons_top": "yeniden yakalama için oturma zayıf: inlier %37–%64 < %85 (70 atlama 3 segmentte)",
+    "first_frame": "kare 0: çapa homografisi 'dejenere' diye reddedildi (görüntü ızgarası sahada 0.1×0.2 m) — çapa karesinden 60 s önceki duruş çok farklı; beklenen davranış",
+    "stopped_by": "ben, 3 segment sonra (çapa karesi dahil hiçbir kare üretilmedi; kalan 10 segment aynı rejimde)"
+  },
+  "anchor_probe": {
+    "what": "elle çapa homografisinin kendisi ve ondan iyileştirilmiş oturma, örneğin 10 anında (score_homography / refine_homography, tolerans 9 px @1920)",
+    "rows_t_s__line_px__grass__anchor_inlier__refined_inlier": [
+      [0, 16293, 0.76, 0.10, 0.34],
+      [15, 25039, 0.69, 0.07, 0.50],
+      [30, 12989, 0.73, 0.06, 0.39],
+      [45, 21816, 0.76, 0.07, 0.41],
+      [58, 23587, 0.67, 0.25, 0.41],
+      [60, 19999, 0.64, 0.37, 0.50],
+      [62, 18675, 0.60, 0.09, 0.57],
+      [75, 24920, 0.79, 0.04, 0.14],
+      [90, 24319, 0.78, 0.05, 0.50],
+      [120, 22762, 0.76, 0.09, 0.39]
+    ],
+    "reading": "çapa KENDİ karesinde %37 inlier alıyor; iyileştirme hiçbir anda %57'yi geçmiyor. Takip kapısı (TRACK_MIN_INLIER 0.85) ve yeniden yakalama kapısı (REACQUIRE_MIN_INLIER 0.85) bu görüntüde ulaşılamaz."
+  },
+  "diagnosis": {
+    "line_mask_60s": "çıkarılan çizgi maskesinde: uzak TAÇ ÇİZGİSİ yerine arkasındaki beyaz ÇİT KORKULUĞU (keskin, sürekli) çıkıyor; orta çizgi çıkıyor; orta yuvarlak çok kısmi; YAKIN yarının çizgileri (yakın taç, yakın yarım daire) hiç çıkmıyor (güneşte solgun, 1080p'de ince). Seyirciler/direkler/ağaç kenarları gürültü.",
+    "consequence": "oturtucu çit korkuluğuna kayıyor (iyileştirilmiş homografi çapadan uzaklaşıyor); doğru duruş bile düşük inlier alıyor çünkü model noktalarının yarısı için görüntüde çizgi yok.",
+    "september_contrast": "Eylül 2026'da aynı örnek ve çapa ile '9/12 segment ≥%91 kalibre' ölçülmüştü — o sonuç köşe-DLT hatalı kalibrasyon koduyla alındı (commit 07dd97a öncesi, 'kalibre %99 ama konumlar köşeye yapışık'); geçerli sayılmamalı. Bu dosya onun yerine geçer.",
+    "not_a_gate_bug": "Kapılar gerçek TV yayınında '0 yanlış kabul' ile ayarlandı (PR #221). Bu görüntü için gevşetmek, konumu doğrulanmamış kare üretmek olur; yapılmadı."
+  },
+  "speed": "segment başına 133–235 sn (30 sn video) — çapa araması her çizgili karede denendiği için (kayıp rejimi) kalibre rejimden 2–3× yavaş; makinede boş RAM 110 MB / pagefile 5.4 GB (panel + API + takip + tarayıcı birlikte) → sayılar bu yükle alındı",
+  "what_would_fix": [
+    "çizgi çıkarımında saha-dışı beyazları (çit, tribün) çim bölgesinin DIŞINDA kaldığı için elemek: pitch_region maskesi 25 px kapanışla çiti içine alıyor; daha sıkı saha bölgesi (çimin dış hull'u, kenardan erozyon) denenmeli",
+    "yakın yarı çizgileri için düşük kontrast modu (yerel kontrast normalizasyonu) — ölçülmeden açılmamalı",
+    "bu görüntüde kalibrasyonsuz 'tespit-yalnız' kip (oyuncu sayımı, takım dengesi) — konum üretmeden; ürün kararı"
+  ],
+  "panel": "990774 panelde görünmez (kare yok). Sistemi gerçek maçta görmek için geçerli kayıtlar: 990731 (SoccerTrack gece provası, sabit kamera, telestrasyon kartı) ve 990741.",
+  "artifacts": {
+    "log": "data/tracking/live/canli_990774_vlsc.log",
+    "probe_script": "oturum çalışma alanı (vlsc_anchor_probe.py); yeniden üretim: PitchCalibration.load → extract_lines → score_homography/refine_homography, tolerance_px = 6 × (1920/1280)"
+  },
+  "license_note": "VLSC U19 görüntüsü CC BY 4.0 — kullanımda Bil Kleb / VLSC atfı gerekir"
+}
