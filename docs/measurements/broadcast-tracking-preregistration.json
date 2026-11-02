@@ -1,7 +1,7 @@
 {
   "title": "Yayın takibi: ön kayıt",
   "date": "2026-11-02",
-  "status": "DONDURULDU, maçlar üst veriyle seçildi (2026-11-02). Görüntü açılmadı.",
+  "status": "DONDURULDU, kesitler indirildi, etiketler yazıldı. Yöntem bu videolarda koşmadı.",
   "hypothesis": "Yayın çapası kare başına ancak %30 civarı kabul alsa da, çapadan sonra görüntü akışıyla taşınan duruş yerel kontrast çizgileriyle düzeltilip 0,70 kapısından geçirilirse ana kamera süresinin çoğu doğru duruşla kaplanır.",
   "why_new_exam_not_retry": "Kalan sınav kare başına çapa kabulünü ölçtü. Bu sınav çapa+takip sisteminin ana kamera kapsamasını ölçer ve yeni maçlarda koşar. Kalan sonuç değişmez, eşikleri gevşetilmez.",
   "code": "Yeni ayrı modül, üretime bağlanmaz. pitch_lines.py, pipeline.py ve *frozen-decision.json dosyalarına dokunulmaz. Çapa eşikleri aynen kalır.",
@@ -100,10 +100,11 @@
       "app/tracking/broadcast_anchor.py": "4dd99d4162d183522602723757d083b3d1f6bd92f90533a34b9ac2db13fa7a7a",
       "app/tracking/shot_filter.py": "0d2efb3c2d5c189f57fd92a07a38c88331a41dfba246e43fbf73b8855c98b122",
       "app/tracking/homography_fit.py": "eb1f3b71e3228d4099926852ae2eeae43bb36dec0c60ac5b189e7646ccf6b9ec",
-      "scripts/broadcast_track_exam.py": "d1b11149e337f0952464d6726f5d3b5e22a0685b92f4979d8cc0511515e4e2eb",
+      "scripts/broadcast_track_exam.py": "5df91edeb688b2b92d77454819b072650739ee3b4b262c1caf3596f916045ffc",
       "scripts/tracking_funnel.py": "7dde7e369fe71bbce55bdf5c24c6521c1e5f5acf41cb10d59306f5313bb7516c"
     },
-    "rule": "control-run hash tutmazsa koşmaz. Sonuç dosyası varsa ikinci kez koşmaz. Eşik ve kod sonuç görüldükten sonra değişmez."
+    "rule": "control-run hash tutmazsa koşmaz. Sonuç dosyası varsa ikinci kez koşmaz. Eşik ve kod sonuç görüldükten sonra değişmez.",
+    "refreeze_note": "Etiket sayfası sabiti 6x5 yanlıştı; write_sheet 5x4 çizdiği için her sayfada 10 kare düşüyordu. Sabit düzeltildi, hash yenilendi. Düşen kareler ayrı sayfada etiketlendi. Değişiklik yalnız bu sabittir; yöntem o ana kadar bu videolarda koşmadı."
   },
   "control_selection": {
     "source": "J.LEAGUE International resmi YouTube arşivi, yalnız üst veri: başlık, tarih, başlama saati. Görüntü ve küçük resim açılmaz.",
@@ -127,5 +128,7 @@
     "control-pick ile maç başına 30 main kare seçilir, gerçek duruşları işaretlenir, commit edilir",
     "control-run tek kez koşar"
   ],
-  "control_report": "Geriye dolan ve yeniden konumlanma duruşları ayrıca raporlanır, ölçüt değildir. C1-C5 aynen, tek değişiklik yok."
+  "control_report": "Geriye dolan ve yeniden konumlanma duruşları ayrıca raporlanır, ölçüt değildir. C1-C5 aynen, tek değişiklik yok.",
+  "control_inspect": "hiroshima_kyoto: 120 örnek, parlaklık medyan 118, en düşük 39, en yüksek 175. kashiwa_hiroshima_final: 120 örnek, medyan 127, en düşük 73, en yüksek 140. İkisi de gündüz.",
+  "download_note": "Plan 1200-1560. saniye dediği gibi indirildi; --force-keyframes-at-cuts kullanılmadı, kesit başı önceki anahtar kareden başlayabilir."
 }
