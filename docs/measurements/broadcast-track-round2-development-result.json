@@ -138,7 +138,7 @@
  },
  "limits": [
   "Geliştirme verisi, 4 maç, maç başına 6 dk. Verdy önceki tasarımda koşulmadı; karşılaştırma yalnız aynı 3 maçta yapıldı.",
-  "Verdy other 2/81 üretti, önceki tasarımda 3 maçta 0/132 idi; toplam %1,2 şart içinde ama köprü other sızıntısı yaratmış olabilir.",
+  "Verdy other 2/39 üretti, önceki tasarımda 3 maçta 0/132 idi; toplam 2/171 = %1,2 şart içinde ama köprü other sızıntısı yaratmış olabilir.",
   "Paralel koşuda 4,6-5,1 fps."
  ],
  "status": "Üretime BAĞLANMADI. Kod geri alındı. Sonraki adım kullanıcı kararı."
