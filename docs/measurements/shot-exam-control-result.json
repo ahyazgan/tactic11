@@ -1,0 +1,49 @@
+{
+  "title": "Çekim ayırıcı kör kontrol sınavı: sonuç",
+  "date": "2026-11-02",
+  "verdict": "KALDI",
+  "verdict_detail": "İki ölçüt de karşılanmadı: other sızıntı %5,2 > %5 ve main geçme %58,3 < %85. Plan gereği aynı kontrolle ikinci deneme yok; yeni deneme yeni kontrol maçı ister.",
+  "plan": "docs/measurements/shot-exam-plan.json",
+  "labels": "docs/measurements/shot-exam-labels-control.json",
+  "code": "app/tracking/shot_filter.py",
+  "code_sha256_lf": "0d2efb3c2d5c189f57fd92a07a38c88331a41dfba246e43fbf73b8855c98b122",
+  "order_evidence": "Etiketler commit fc99567 ile ayırıcı kontrol karelerinde koşmadan önce yazıldı. Sınav tek kez koşuldu, --show-misses kullanılmadı, eşik ve kod değişmedi.",
+  "command": "venv-cv/Scripts/python.exe -X utf8 -m scripts.shot_exam eval --group control --labels docs/measurements/shot-exam-labels-control.json",
+  "pass_criteria": {
+    "other_leak_max": 0.05,
+    "main_recall_min": 0.85,
+    "both_required": true
+  },
+  "per_match": {
+    "verdy_kashima": {
+      "main_recall": {"passed": 58, "n": 81, "rate": 0.716, "wilson95": [0.610, 0.803]},
+      "other_leak": {"leaked": 3, "n": 39, "rate": 0.077, "wilson95": [0.027, 0.203]}
+    },
+    "niigata_kashiwa": {
+      "main_recall": {"passed": 37, "n": 82, "rate": 0.451, "wilson95": [0.348, 0.559]},
+      "other_leak": {"leaked": 1, "n": 38, "rate": 0.026, "wilson95": [0.005, 0.135]}
+    }
+  },
+  "total": {
+    "main_recall": {"passed": 95, "n": 163, "rate": 0.583, "wilson95": [0.506, 0.656], "criterion_met": false},
+    "other_leak": {"leaked": 4, "n": 77, "rate": 0.052, "wilson95": [0.020, 0.126], "criterion_met": false}
+  },
+  "development_vs_control": {
+    "main_recall": "geliştirme 209/228 (%91,7), kontrol 95/163 (%58,3)",
+    "other_leak": "geliştirme 1/132 (%0,8), kontrol 4/77 (%5,2)",
+    "note": "Geliştirme sonucu eşikler o karelerle seçildiği için iyimserdi; kontrol farkı bunu doğruluyor."
+  },
+  "label_sensitivity": {
+    "borderline_frames": "verdy_kashima 71-73 (küçük istatistik grafiği) ve 102-105 (büyük olasılıkla ana kameraya benzer açılı tekrar) kararsız kuralıyla other sayıldı; toplam 7 kare.",
+    "main_recall": "Bu 7 kare main sayılıp hepsi geçmiş olsa bile en iyi durum 102/170 = %60,0; main ölçütünün kalması etikete bağlı değil.",
+    "other_leak": "Sızıntı eşiğin hemen üstünde. Bu 7 kare other dışında sayılsa oran 4/70 ile 0/70 arasında olurdu; hangilerinin sızdığı görülmediği için sızıntı ölçütünün kalması bu kararsız etiketlere duyarlı olabilir. Karar değişmez, çünkü iki ölçüt birlikte gerekli ve main ölçütü kalıyor."
+  },
+  "limits": [
+    "Wilson aralıkları iyimserdir: kareler aynı çekimlerden geliyor, bağımsız değil; gerçek belirsizlik daha geniş.",
+    "Geçiş işareti (kırmızı J.League geçiş efekti) yalnız J.League yayınına özgüdür; tekrar penceresi başka yayınlara taşınmaz.",
+    "Tek lig, tek yayın kuruluşu, 2 maç, maç başına 6 dakika. Başka yayın stilleri kapsanmaz.",
+    "Etiketleri tek değerlendirici verdi, ayrı bir etiketleyiciyle uyum ölçülmedi.",
+    "Hatalı karelerin listesi kontrolde bilinçli olarak üretilmedi; hata nedeni bu sınavdan okunamaz."
+  ],
+  "status": "Ayırıcı takip hattına BAĞLANMADI. Kontrol maçları artık görüldü; sonraki deneme için kullanılamaz."
+}
