@@ -1,7 +1,7 @@
 {
   "title": "Yayın takibi: ön kayıt",
   "date": "2026-11-02",
-  "status": "GELİŞTİRMEDE KALDI: D1 %58,3 < %60 (2026-11-02). Kontrol açılmadı. Sonuç: docs/measurements/broadcast-track-development-result.json.",
+  "status": "GELİŞTİRMEDE: kullanıcı \"Çapa aramasını güçlendir\" dedi (2026-11-02). 4. tur koşuluyor. Kontrol açılmadı, maç seçilmedi.",
   "hypothesis": "Yayın çapası kare başına ancak %30 civarı kabul alsa da, çapadan sonra görüntü akışıyla taşınan duruş yerel kontrast çizgileriyle düzeltilip 0,70 kapısından geçirilirse ana kamera süresinin çoğu doğru duruşla kaplanır.",
   "why_new_exam_not_retry": "Kalan sınav kare başına çapa kabulünü ölçtü. Bu sınav çapa+takip sisteminin ana kamera kapsamasını ölçer ve yeni maçlarda koşar. Kalan sonuç değişmez, eşikleri gevşetilmez.",
   "code": "Yeni ayrı modül, üretime bağlanmaz. pitch_lines.py, pipeline.py ve *frozen-decision.json dosyalarına dokunulmaz. Çapa eşikleri aynen kalır.",
@@ -38,7 +38,19 @@
     "fps": 15,
     "shot_guard": "shot_filter.classify_shot ve ReplayTracker değiştirilmeden kullanılır",
     "backfill": "Çapa bulununca en çok 30 sn geriye takip; yalnız maç sonrası çözümleme",
-    "bridge": "Kapıyı en çok 15 kare kaçıran kareler, takip kapıdan yeniden geçerse akış duruşuyla üretilir; yalnız maç sonrası"
+    "bridge": "Kapıyı en çok 15 kare kaçıran kareler, takip kapıdan yeniden geçerse akış duruşuyla üretilir; yalnız maç sonrası",
+    "relocalization": {
+      "idea": "Ana kamera sabit noktada döner. Çapa zincirinden 3 sn arayla duruşlu kare özellikleri saklanır, çapa bulamayan kare bunlarla eşleştirilip duruş taşınır, çizgi kapısı 0,70 yine aranır.",
+      "min_ransac_inliers": 200,
+      "orb_features": 2500,
+      "ratio": 0.75,
+      "ransac_px": 3.0,
+      "try_every_searches": 3,
+      "key_every_frames": 45,
+      "max_keys": 300,
+      "no_compounding": "Yeniden konumlanma zinciri anahtar üretmez.",
+      "choice_evidence": "Geliştirme örneklerinde bırakma sınaması: 200 eşleşme + 0,70: 57 sınama, medyan 2,11 m, en kötü 5,99 m, >5 m 1; kayıp örneklerden 16 kazanç (kaba tahmin %65,4). 0,85 kapısı kazancı 6'ya düşürdü, seçilmedi. Ölçek ızgara farkıdır, D2 metriğinden sert."
+    }
   },
   "development_iterations": [
     {
@@ -60,6 +72,12 @@
       "note": "D1 eşiği %60 olarak kalır.",
       "derived_accuracy": "Geriye dolan ve köprülenen tüm main örnekleri koşudan sonra durum listesiyle seçilir, duruş bindirilmeden elle işaretlenir, D2 onlarla birlikte hesaplanır: broadcast-track-derived-truth-points.json. Türetilmiş duruşlarda ayrıca medyan ≤2 m ve >5 m ≤%5 aranır.",
       "result": "D1 KALDI: main 133/228 (%58,3). D2 geçti: 37 işaretli üretim, medyan 0.51 m, >5 m 0. Türetilmiş: 18 geriye dolan kare, medyan 0.515 m, >5 m 0. D3 geçti: other 0/132. Köprüleme örnek kazandırmadı."
+    },
+    {
+      "run": 4,
+      "design": "Yeniden konumlanma eklendi. Çapa eşikleri, D kapıları ve %60 değişmedi.",
+      "derived_accuracy": "Yeniden konumlanmadan gelen ve yeni geriye dolan tüm main örnekleri koşudan sonra listeden seçilir, duruş görülmeden elle işaretlenir.",
+      "note": "Tasarım ve seçim geliştirme verisiyle yapıldı; karar kontrolde verilir."
     }
   ]
 }

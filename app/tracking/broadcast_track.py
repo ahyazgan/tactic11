@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 
@@ -31,6 +32,16 @@ REPLAY_EVERY_FRAMES = 3        # ReplayTracker 5 fps ile beslenmeli, takip 15 fp
 BASE_WIDTH_PX = 1280.0
 BACKFILL_FRAMES = 450          # 15 fps'te 30 sn: çapa bulununca geriye bu kadar kare takip edilir
 BUFFER_JPEG_QUALITY = 95
+# Görüntüden yeniden konumlanma: ana kamera sabit noktada döner, kesmeden sonra aynı görüşe gelir.
+# Bırakma sınaması (88 duruşlu örnek): 200 eşleşme altı 5 m üstü sapmayı 5'ten 1'e indiriyor.
+RELOC_MIN_INLIERS = 200
+RELOC_FEATURES = 2500
+RELOC_RATIO = 0.75
+RELOC_RANSAC_PX = 3.0
+RELOC_EVERY_SEARCHES = 3       # eşleştirme anahtar sayısıyla büyür, her aramada denenmez
+KEY_EVERY_FRAMES = 45          # 3 sn
+MAX_KEYS = 300
+OVERLAY_BOXES = ((0.044, 0.046, 0.284, 0.106), (0.914, 0.875, 0.953, 0.949))   # skor grafiği, yayıncı logosu
 BUFFERED_STATES = {"gate", "gate_lost", "searching", "no_anchor", "cut"}
 
 
@@ -86,12 +97,65 @@ def corrected_pose(carried: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, f
     return None
 
 
+class Relocalizer:
+    """Çapadan gelen duruşlu karelerin görüntü özelliklerini tutar, kayıp kareye duruş taşır."""
+
+    def __init__(self) -> None:
+        self._orb: Any = None
+        self._matcher: Any = None
+        self._keys: deque[tuple[np.ndarray, np.ndarray, np.ndarray]] = deque(maxlen=MAX_KEYS)
+
+    def _features(self, gray: np.ndarray) -> tuple[np.ndarray, np.ndarray | None]:
+        import cv2
+
+        if self._orb is None:
+            self._orb = cv2.ORB_create(RELOC_FEATURES)
+            self._matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
+        height, width = gray.shape
+        mask = np.full(gray.shape, 255, np.uint8)
+        for x0, y0, x1, y1 in OVERLAY_BOXES:
+            mask[int(y0 * height):int(y1 * height), int(x0 * width):int(x1 * width)] = 0
+        points, descriptors = self._orb.detectAndCompute(gray, mask)
+        return np.array([kp.pt for kp in points], dtype=np.float32), descriptors
+
+    def add(self, gray: np.ndarray, pose: np.ndarray) -> None:
+        points, descriptors = self._features(gray)
+        if descriptors is not None:
+            self._keys.append((points, descriptors, pose))
+
+    def locate(self, gray: np.ndarray) -> np.ndarray | None:
+        """En çok RANSAC eşleşmesi alan anahtarın duruşu bu kareye taşınır; yetersizse None."""
+        import cv2
+
+        if not self._keys:
+            return None
+        points, descriptors = self._features(gray)
+        if descriptors is None:
+            return None
+        best_count, best_pose = 0, None
+        for key_points, key_descriptors, pose in self._keys:
+            pairs = self._matcher.knnMatch(key_descriptors, descriptors, k=2)
+            good = [p[0] for p in pairs if len(p) == 2 and p[0].distance < RELOC_RATIO * p[1].distance]
+            if len(good) < RELOC_MIN_INLIERS:
+                continue
+            source = key_points[[m.queryIdx for m in good]]
+            target = points[[m.trainIdx for m in good]]
+            t, inliers = cv2.findHomography(source, target, cv2.RANSAC, RELOC_RANSAC_PX)
+            if t is None or inliers is None:
+                continue
+            count = int(inliers.sum())
+            if count >= RELOC_MIN_INLIERS and count > best_count:
+                best_count, best_pose = count, pose @ np.linalg.inv(t)
+        return best_pose
+
+
 @dataclass
 class TrackFrame:
     homography: np.ndarray | None   # görüntü → saha; kapıdan geçmeyen karede None
     state: str
     inlier: float = 0.0
     carried: np.ndarray | None = None   # kapıdan geçmeyen karede akışla taşınan duruş
+    origin: str = "anchor"              # duruş zinciri çapadan mı yeniden konumlanmadan mı geliyor
 
 
 class BroadcastTracker:
@@ -107,6 +171,9 @@ class BroadcastTracker:
         self._prev_hist: np.ndarray | None = None
         self._replay = ReplayTracker()
         self._in_replay = False
+        self._reloc = Relocalizer()
+        self._origin = "anchor"
+        self._searches = 0
 
     def _drop(self) -> None:
         self._h = None
@@ -144,7 +211,10 @@ class BroadcastTracker:
         fit = corrected_pose(carried, mask)
         if fit is not None:
             self._h, self._coast = fit[0], 0
-            return TrackFrame(fit[0], "tracked", fit[1])
+            # Yeniden konumlanma zinciri anahtar üretmez: hata kendi üstüne birikmesin
+            if self._origin == "anchor" and self._count % KEY_EVERY_FRAMES == 0:
+                self._reloc.add(gray, fit[0])
+            return TrackFrame(fit[0], "tracked", fit[1], origin=self._origin)
         return self._coasted(carried, "gate")
 
     def _coasted(self, carried: np.ndarray | None, state: str) -> TrackFrame:
@@ -155,7 +225,7 @@ class BroadcastTracker:
             self._drop()
             return TrackFrame(None, f"{state}_lost")
         self._h = carried
-        return TrackFrame(None, state, carried=carried)
+        return TrackFrame(None, state, carried=carried, origin=self._origin)
 
     def _search(self, mask: np.ndarray, gray: np.ndarray) -> TrackFrame:
         self._since_search += 1
@@ -163,10 +233,19 @@ class BroadcastTracker:
             return TrackFrame(None, "searching")
         self._since_search = 0
         res = find_broadcast_anchor(mask, gray)
-        if not res.accepted or res.homography is None:
+        if res.accepted and res.homography is not None:
+            self._h, self._coast, self._origin = res.homography, 0, "anchor"
+            self._reloc.add(gray, res.homography)
+            return TrackFrame(res.homography, "anchored", res.inlier)
+        self._searches += 1
+        if self._searches % RELOC_EVERY_SEARCHES != 0:
             return TrackFrame(None, "no_anchor")
-        self._h, self._coast = res.homography, 0
-        return TrackFrame(res.homography, "anchored", res.inlier)
+        located = self._reloc.locate(gray)
+        fit = None if located is None else corrected_pose(located, mask)
+        if fit is None:
+            return TrackFrame(None, "no_anchor")
+        self._h, self._coast, self._origin = fit[0], 0, "reloc"
+        return TrackFrame(fit[0], "relocalized", fit[1], origin="reloc")
 
 
 class BackfillingTracker:
@@ -192,10 +271,10 @@ class BackfillingTracker:
             self._gap.append((k, result.carried))
         else:
             if result.state == "tracked":
-                out += [(gap_k, TrackFrame(pose, "bridged")) for gap_k, pose in self._gap]
+                out += [(gap_k, TrackFrame(pose, "bridged", origin=result.origin)) for gap_k, pose in self._gap]
             self._gap = []
-        if result.state == "anchored" and result.homography is not None:
-            out += self._walk_back(result.homography, bgr)
+        if result.state in {"anchored", "relocalized"} and result.homography is not None:
+            out += self._walk_back(result.homography, bgr, result.origin)
         if result.state == "cut" or result.state not in BUFFERED_STATES:
             self._buffer.clear()
         if result.state in BUFFERED_STATES:
@@ -204,7 +283,7 @@ class BackfillingTracker:
                 self._buffer.append((k, encoded))
         return out
 
-    def _walk_back(self, anchor_pose: np.ndarray, anchor_bgr: np.ndarray) -> list[tuple[int, TrackFrame]]:
+    def _walk_back(self, anchor_pose: np.ndarray, anchor_bgr: np.ndarray, origin: str) -> list[tuple[int, TrackFrame]]:
         import cv2
 
         filled: list[tuple[int, TrackFrame]] = []
@@ -223,7 +302,7 @@ class BackfillingTracker:
             fit = corrected_pose(carried, daylight_line_mask(bgr))
             if fit is not None:
                 h, coast = fit[0], 0
-                filled.append((k, TrackFrame(fit[0], "backfilled", fit[1])))
+                filled.append((k, TrackFrame(fit[0], "backfilled", fit[1], origin=origin)))
             else:
                 h, coast = carried, coast + 1
                 if coast > MAX_COAST_FRAMES:

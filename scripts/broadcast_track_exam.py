@@ -36,6 +36,11 @@ D3_MAX_OTHER = 0.05
 DERIVED_STATES = {"backfilled", "bridged"}
 
 
+def is_derived(item: dict) -> bool:
+    """Tek kare çapası ya da ondan ileri takip dışında üretilmiş duruş mu?"""
+    return item["state"] in DERIVED_STATES or item.get("origin") == "reloc"
+
+
 def timed_frames(video: Path) -> Iterator[tuple[int, np.ndarray]]:
     """(15 fps ızgara no, kare): sıralı okur, her kareyi aramaz."""
     import cv2
@@ -101,10 +106,10 @@ def run(match: str, out: Path) -> int:
             print(match, k, dict(states), flush=True)
     seconds = time.perf_counter() - start
     samples = [{"sample": k // SAMPLE_EVERY, "label": "other" if k // SAMPLE_EVERY in others else "main",
-                "posed": result.homography is not None, "state": result.state,
+                "posed": result.homography is not None, "state": result.state, "origin": result.origin,
                 "pose": result.homography.tolist() if result.homography is not None else None}
                for k, result in sorted(kept.items()) if k % SAMPLE_EVERY == 0]
-    poses = {str(k): {"state": result.state, "pose": result.homography.tolist()}
+    poses = {str(k): {"state": result.state, "origin": result.origin, "pose": result.homography.tolist()}
              for k, result in kept.items() if result.homography is not None}
     record = {"match": match, "frames": total, "produced": len(produced), "states": dict(states), "size": size,
               "seconds": round(seconds, 1), "samples": samples, "poses": poses}
@@ -122,7 +127,8 @@ def attach_evidence(record: dict) -> None:
         if kept is not None:
             errors = mark_errors(np.array(kept["pose"]), points)
             record["evidence"].append({"k": k, "median_m": round(float(np.median(errors)), 2),
-                                       "worst_m": round(float(errors.max()), 2), "state": kept["state"]})
+                                       "worst_m": round(float(errors.max()), 2), "state": kept["state"],
+                                       "origin": kept.get("origin", "anchor")})
 
 
 def sample_grids(folder: Path, out: Path) -> int:
@@ -135,8 +141,10 @@ def sample_grids(folder: Path, out: Path) -> int:
     out.mkdir(parents=True, exist_ok=True)
     for path in sorted(folder.glob("*.json")):
         record = json.loads(path.read_text(encoding="utf-8"))
+        marks = marked_frames(record["match"])
         wanted = {s["sample"] for s in record["samples"]
-                  if s["label"] == "main" and s["state"] in DERIVED_STATES}
+                  if s["label"] == "main" and s["posed"] and is_derived(s)
+                  and s["sample"] * SAMPLE_EVERY not in marks}
         for i, frame in sampled_frames(video_of(record["match"])):
             if i in wanted:
                 cv2.imwrite(str(out / f"{record['match']}_{i}.jpg"), draw_grid(frame), [cv2.IMWRITE_JPEG_QUALITY, 85])
@@ -179,12 +187,16 @@ def evaluate(records: list[dict]) -> dict:
         "marked_produced": len(medians), "marked_total": sum(r["marked_frames"] for r in records),
         "median_m": median, "wrong_over_5m": wrong,
         "worst_median_m": max(medians) if medians else None,
-        "derived_marked_produced": sum(e["state"] in DERIVED_STATES for e in evidence),
-        "derived_median_m": _median([e["median_m"] for e in evidence if e["state"] in DERIVED_STATES]),
-        "derived_wrong_over_5m": sum(e["state"] in DERIVED_STATES and e["median_m"] > WRONG_M for e in evidence),
+        "derived_marked_produced": sum(is_derived(e) for e in evidence),
+        "derived_median_m": _median([e["median_m"] for e in evidence if is_derived(e)]),
+        "derived_wrong_over_5m": sum(is_derived(e) and e["median_m"] > WRONG_M for e in evidence),
+        "reloc_marked_produced": sum(e.get("origin") == "reloc" for e in evidence),
+        "reloc_median_m": _median([e["median_m"] for e in evidence if e.get("origin") == "reloc"]),
+        "reloc_wrong_over_5m": sum(e.get("origin") == "reloc" and e["median_m"] > WRONG_M for e in evidence),
+        "main_posed_by_reloc": sum(s["posed"] and s.get("origin") == "reloc" for s in main),
         "D1": main_rate >= D1_MIN_MAIN,
         "D2": _accurate(medians),
-        "D2_derived": _accurate([e["median_m"] for e in evidence if e["state"] in DERIVED_STATES]),
+        "D2_derived": _accurate([e["median_m"] for e in evidence if is_derived(e)]),
         "D3": other_rate <= D3_MAX_OTHER,
     }
 
