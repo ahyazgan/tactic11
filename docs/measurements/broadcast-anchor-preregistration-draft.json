@@ -1,0 +1,89 @@
+{
+  "title": "Yayın çapası: çizgi ailesi eşleştirme, ön kayıt TASLAĞI",
+  "status": "TASLAK. Kullanıcı onayı yok, kod yazılmadı, kontrol maçı seçilmedi ve indirilmedi. Onaylanınca bu dosya ilk commit'i zaman kanıtı olacak şekilde ön kayda dönüşür.",
+  "written": "2026-11-02, yeni kontrol karelerinin hiçbiri açılmadan",
+  "evidence": "docs/measurements/daylight-calibration-funnel.json",
+  "hypothesis": {
+    "statement": "Izgara aday araması yerine görüntüdeki doğru parçalarını iki aileye ayırıp model çizgileriyle eşleştiren ve homografiyi bu karşılıklardan DLT ile çözen bir çapa, gündüz yayınının ana kamera karelerinde doğru çapa üretir ve yanlış kareleri kabul etmez.",
+    "why_this_one": [
+      "Kusursuz çizgide bile ızgara araması 0/15 kabul etti, hata 14,6-72,1 m; en yakın aday 4,6-15,5 m uzakta. Sorun önce arama.",
+      "Çıkarıcıyı tek başına düzeltmek yetmez: yerel kontrast adayı doğru duruşta inlier'ı 0,47'den 0,84'e çıkarıyor ama maskeyi 4,5 kat büyütüyor, 8 m yanlış duruş bile %34 alıyor. Doğru parçası uydurmak dağınık pikselleri eler, mesafe haritası elemez.",
+      "Eşleştirme aday ızgarasına bağlı değildir, kaymalı ve eğik kadrajı doğrudan çözer."
+    ],
+    "rejected_alternatives": {
+      "aday ızgarasını sıklaştırmak": "Havzaya girmek için 3 m altı aralık ve eğik kadraj boyutları gerekir; aday sayısı patlar, çapa zaten pahalı.",
+      "yalnız yerel kontrast": "Karşı-durum B: kusursuz çizgide de 0/15.",
+      "yalnız kapı gevşetmek": "Karşı-durum C: en iyi duruş zaten 7,3-73,9 m yanlış."
+    }
+  },
+  "scope": {
+    "new_code_only": "app/tracking/broadcast_anchor.py ve scripts/broadcast_anchor_exam.py",
+    "frozen_untouched": "app/tracking/pitch_lines.py, app/tracking/pipeline.py, docs/measurements/*frozen-decision.json. pitch_model ve homography_fit yalnız içe aktarılır.",
+    "out_of_scope": "Üretim hattına bağlama, kare başına takip, çekim ayırıcı bağlama. Bu sınav yalnız tek kare çapayı sınar. Takip kaybı (675 karede 3) çapa geçerse ayrı ön kayıtla ele alınır."
+  },
+  "method_initial_thresholds": {
+    "note": "Bunlar başlangıç değerleridir. Yalnız geliştirme verisiyle değişebilir, kontrol açılmadan koddaki hash ile dondurulur.",
+    "line_mask": "Yerel kontrast oranı, tek başına skor için değil, doğru uydurma girdisi olarak",
+    "segments": "Olasılıksal Hough veya LSD, en kısa parça kare genişliğinin %5'i",
+    "families": "Açıya göre 2 aile; ailede en az 2 doğru veya bir aile + yuvarlak/yay",
+    "assignment": "TV kuralı (y=68 yakın taç, görüntü solu küçük x) altında aile içi sıra korunarak model çizgilerine atama",
+    "min_correspondences": "Birbirinden bağımsız en az 4 kesişim veya doğru, en az biri ceza sahası ya da orta yuvarlak",
+    "fit_gate": "Eşleşen doğrularda medyan yeniden izdüşüm ≤6 px (1080p)",
+    "distinct_gate": "En iyi çözüm skoru ≥1,25 × 8 m'den uzak en iyi rakip",
+    "physical_gate": "Görüntü içi sonda noktaları saha sınırı +5 m içinde, homografi yönü korunuyor",
+    "shot_gate": "Kare çim oranı ≥0,50; çekim ayırıcı kullanılmaz çünkü kör sınavı kaldı"
+  },
+  "development_control_split": {
+    "development": {
+      "matches": ["gamba_kashiwa", "kashima_marinos", "kyoto_kobe", "verdy_kashima", "niigata_kashiwa"],
+      "note": "verdy_kashima ve niigata_kashiwa görülmüş kontroldür, yeni kontrol sayılmaz, geliştirmede serbest",
+      "truth": "daylight-calibration-truth-points.json içindeki 15 kare; geliştirmede yeni kare işaretlenebilir, aynı dosyaya eklenir"
+    },
+    "control": {
+      "selection_rule": "J.LEAGUE International resmi YouTube arşivinden, tarihe göre en yeni, başlama saati 14:00 JST veya daha erken olan, 5 geliştirme maçının stadyumlarında oynanmamış 2 maç. Seçim yalnız üst veriyle yapılır, sıradaki ilk iki uygun maç alınır, görüntüye bakılmaz.",
+      "cut": "12:00-18:00 kesiti, 1080p, geliştirmedeki gibi",
+      "daylight_check": "Üst veri + kesit başına yalnız sayı üreten parlaklık özeti. Gece çıkarsa maç atlanır, sonraki uygun maç alınır, görüntü açılmaz.",
+      "handling": "Yalnız iç test, yeniden dağıtılmaz, repoya girmez"
+    },
+    "order": [
+      "Kullanıcı bu taslağı onaylar",
+      "Geliştirmede yöntemi kur, geliştirme durdurma kapılarını geç",
+      "Eşikleri dondur, kod hash'ini bu dosyaya yaz, commit et",
+      "Kontrol maçlarını üst veriyle seç, indir",
+      "Kontrol karelerini main/other etiketle, yöntem çıktısı görmeden, commit et",
+      "Maç başına 30 eşit aralıklı main karede gerçek duruş işaretle, yöntem çıktısı görmeden, commit et",
+      "Kontrolü tek kez koş, hata dökümü üretme, eşik değiştirme"
+    ]
+  },
+  "development_stop_gates": {
+    "note": "Biri geçilmezse kontrol açılmaz, sonuç yazılır ve yöntem kullanıcıya geri döner. Geliştirme sonucu iyimserdir, başarı sayılmaz.",
+    "G1_perfect_lines": "15 kusursuz çizgi karesinde en az 13 kabul, medyan hata ≤1,0 m, hiçbiri >5 m. Mevcut: 0 kabul.",
+    "G2_real_lines": "15 gerçek karede en az 5 kabul, medyan hata ≤2,0 m, hiçbiri >5 m. Mevcut: 0 kabul.",
+    "G3_other_frames": "209 other karede kabul ≤%5, yani en çok 10. Mevcut: 0, ama hiçbir şey kabul edilmediği için bilgi vermez."
+  },
+  "pass_criteria_on_control": {
+    "all_required": true,
+    "unit": "Hata: görüntü içi 9 sonda noktasında en büyük saha farkı. Örnekleme 3 saniyede bir, kesit başına en çok 120 kare.",
+    "C1_main_acceptance": "main karelerin en az %30'unda çapa kabul edilir, her maçta ayrı ayrı en az %20. Karşılığı ortalama 10 saniyede bir çapa.",
+    "C2_accuracy": "Gerçek duruşu işaretli kabul edilen karelerde medyan hata ≤2,0 m.",
+    "C3_wrong_accept_main": "Gerçek duruşu işaretli kabul edilen karelerin en çok %5'inde hata >5 m. Yanlış yarı buraya sayılır.",
+    "C4_wrong_accept_other": "other karelerin en çok %5'inde çapa kabul edilir.",
+    "C5_minimum_sample": "Gerçek duruşu işaretli kabul edilen kare sayısı en az 15. Altında kalırsa sonuç KALDI sayılır, belirsiz denmez.",
+    "report": "Oranlar Wilson %95 aralığıyla, maç başına ayrı. Kareler bağımsız değil, aralık iyimserdir.",
+    "on_fail": "Sonuç olduğu gibi yazılır, aynı kontrolle ikinci deneme yapılmaz; yeni deneme yeni kontrol maçı ister.",
+    "on_pass": "Yalnız tek kare çapanın çalıştığını gösterir. Üretime alma kararı kullanıcınındır ve takip ölçümü olmadan verilmez."
+  },
+  "baseline": {
+    "command": "scripts.calibration_funnel funnel + truth",
+    "production_auto_anchor_on_main": "0/391",
+    "production_on_other": "0/209",
+    "production_on_truth_frames": "0/15"
+  },
+  "limits": [
+    "Tek lig ve tek yayın kuruluşu; başka yayın stilleri kapsanmaz",
+    "180° ikiliği çizgiden çözülmez, TV kuralı varsayılır; karşı açılı canlı kamera yakalanamaz",
+    "Yakın taç kadraj dışındaysa ve yalnız orta çizgi + yarım yuvarlak görünüyorsa 4 bağımsız nokta olmayabilir; bu kareler kabul edilmemeli, C1 tavanını düşürür",
+    "Gerçek duruşları tek değerlendirici işaretler, hatası birkaç piksel ile sınırlı değil; 2 m altı doğruluk bu sınavla iddia edilemez",
+    "Gece maçı test edilmez"
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "title": "Gündüz yayınında kalibrasyon kaybı: aşama hunisi ve karşı-durumlar",
+  "date": "2026-11-02",
+  "question": "Profesyonel gündüz yayınında ana kamera karelerinde kalibrasyon hangi aşamada kayboluyor?",
+  "verdict": {
+    "bottleneck": "Çapa eşleşmesi. 391 ana kamera karesinin 0'ı kabul edildi; 387'si ilk olarak ayırt edici yapı kapısında düştü. Gerçek duruşu işaretli 15 karede aramanın en iyi duruşu 7,3-73,9 m yanlış. Kusursuz çizgi verilince bile arama 0/15 kabul etti, en iyi duruşun hatası 14,6-72,1 m.",
+    "second_independent_blocker": "Çizgi çıkarımı. Doğru duruşta bile üretim maskesi model noktalarının medyan %46,8'ini görüyor; 15 karenin 1'i inlier ≥0,85 kapısını geçiyor. Doğru duruştan başlatılan takip 675 karede 3 kare üretti.",
+    "not_the_bottleneck": "Saha maskesi. Ana karelerde çim oranı medyan 0,85; doğru duruşta kadraja düşen model noktalarının %2,2'si maske dışında kaldı.",
+    "gate": "Doğrulama kapısına üretim akışında hiçbir ana kare ulaşmadı. Doğru duruş sorulduğunda kapsama kapısı (≥0,60) 15 karenin 14'ünü reddediyor, dolayısıyla arama düzelse de kapı olduğu gibi kalamaz.",
+    "implication": "Tek başına çıkarıcıyı veya tek başına aramayı düzeltmek yetmez: iki karşı-durum da 0/15. Önce arama değişmeli çünkü kusursuz çizgide bile çalışmıyor; çıkarıcı onun girdisi olarak birlikte ölçülmeli."
+  },
+  "tool": "scripts/calibration_funnel.py",
+  "commands": [
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.calibration_funnel funnel --match <maç> --out <klasör>",
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.calibration_funnel summary --dir <klasör>",
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.calibration_funnel pick --per-match 6",
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.calibration_funnel truth --points docs/measurements/daylight-calibration-truth-points.json --out <klasör>",
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.calibration_funnel candidate --points docs/measurements/daylight-calibration-truth-points.json"
+  ],
+  "inputs": {
+    "videos": "data/tracking/videos/jleague_dl/ altında 5 J.League gündüz kesiti, 1080p, repoda yok, yalnız iç test, yeniden dağıtılmaz; dosya listesi docs/measurements/shot-exam-plan.json",
+    "frame_labels": "docs/measurements/shot-exam-labels-development.json ve shot-exam-labels-control.json",
+    "sampling": "scripts.shot_exam.sampled_frames: kesit başına 3 saniyede bir, en çok 120 kare",
+    "truth_points": "docs/measurements/daylight-calibration-truth-points.json",
+    "production_code": "app/tracking/pitch_lines.py ve homography_fit.py değiştirilmeden çağrıldı: extract_lines, find_anchor (assume_camera_side=True), tolerans 6 px × 1920/1280 = 9 px",
+    "code_changed": "Dondurulmuş dosyalara dokunulmadı; yalnız yeni araç ve test eklendi"
+  },
+  "funnel_main_frames": {
+    "scope": "5 maç, main etiketli her örnek kare, tek kare çapa araması",
+    "per_stage": [
+      {"stage": "Ana kamera karesi", "in": 391, "out": 391, "lost": 0},
+      {"stage": "Saha maskesi", "in": 391, "out": 386, "lost": 5, "rule": "çim oranı ≥0,50; bu eşik teşhis içindir, üretimde saha maskesi kapısı yok", "median_grass_ratio": 0.85, "min_grass_ratio": 0.316, "note": "Kayıp 5 kare maskeyle elenmez; üretim yolunda sonraki aşamaya gider. Aşağıdaki sayılar 391 üzerindendir."},
+      {"stage": "Çizgi çıkarımı", "in": 391, "out": 391, "lost": 0, "rule": "üretim kapısı line_pixels ≥400", "median_line_pixels": 16247, "note": "Kapı sayıca geçiliyor ama nitelik ölçmüyor; nitelik kaybı truth_counterfactuals bölümünde"},
+      {"stage": "Çapa eşleşmesi: ayırt edici yapı görünür (≥25 nokta)", "in": 391, "out": 387, "lost": 4},
+      {"stage": "Çapa eşleşmesi: ayırt edici yapı oturur (inlier ≥0,70)", "in": 387, "out": 0, "lost": 387},
+      {"stage": "Doğrulama: inlier ≥0,90, rakibe üstünlük, kapsama ≥0,60", "in": 0, "out": 0, "lost": 0, "note": "Hiç kare ulaşmadı"}
+    ],
+    "accepted": 0,
+    "best_pose_medians": {"inlier": 0.214, "landmark_inlier": 0.195, "coverage": 0.258},
+    "independent_gate_pass_on_best_pose": {"landmark_visible_ge25": 387, "landmark_inlier_ge070": 1, "inlier_ge090": 0, "coverage_ge060": 1},
+    "per_match": {
+      "gamba_kashiwa": {"group": "development", "main": 76, "line_gate": 76, "median_grass": 0.857, "median_line_pixels": 14873, "landmark_not_visible": 1, "landmark_inlier_fail": 75, "accepted": 0},
+      "kashima_marinos": {"group": "development", "main": 78, "line_gate": 78, "median_grass": 0.835, "median_line_pixels": 17204, "landmark_not_visible": 2, "landmark_inlier_fail": 76, "accepted": 0},
+      "kyoto_kobe": {"group": "development", "main": 74, "line_gate": 74, "median_grass": 0.843, "median_line_pixels": 5876, "landmark_not_visible": 0, "landmark_inlier_fail": 74, "accepted": 0},
+      "verdy_kashima": {"group": "seen_control", "main": 81, "line_gate": 81, "median_grass": 0.921, "median_line_pixels": 16829, "landmark_not_visible": 1, "landmark_inlier_fail": 80, "accepted": 0},
+      "niigata_kashiwa": {"group": "seen_control", "main": 82, "line_gate": 82, "median_grass": 0.792, "median_line_pixels": 20431, "landmark_not_visible": 0, "landmark_inlier_fail": 82, "accepted": 0}
+    }
+  },
+  "funnel_other_frames": {
+    "frames": 209,
+    "pass_line_gate": 102,
+    "first_failed_gate": {"landmark_not_visible": 2, "landmark_inlier": 99, "inlier": 1},
+    "accepted": 0,
+    "note": "Otomatik çapa yolunda yanlış kabul yok çünkü hiçbir şey kabul edilmiyor. Daha önce görülen yakın çekim yanlış kabulleri elle çapa + yeniden yakalama yolundan geliyordu (line-extraction-daylight-2026-11-02.json) ve burada yeniden üretilmedi."
+  },
+  "truth_counterfactuals": {
+    "scope": "Geliştirme maçlarından görüntüsüz seçilen 18 main karenin 15'i işaretlenebildi, 3'ünde 4 bağımsız nokta yok ve dışarıda kaldı",
+    "pose_note": "Gerçek duruş = el noktalarından DLT, üretim çizgilerine yerel oturtma (hareket 0-1,58 m). Bu, sonucu üretim çıkarıcısı lehine çeker; çıkarıcı kaybı olduğundan az görünüyor olabilir.",
+    "A_real_lines_at_truth_pose": {
+      "meaning": "Üretim çizgileri, doğru duruş: kapılar doğruyu kabul eder mi?",
+      "medians": {"inlier": 0.468, "landmark_inlier": 0.688, "coverage": 0.45},
+      "pass_of_15": {"landmark_visible_ge25": 15, "landmark_inlier_ge070": 7, "inlier_ge090": 1, "track_inlier_ge085": 1, "coverage_ge060": 1, "all_anchor_gates": 0}
+    },
+    "B_perfect_lines_search": {
+      "meaning": "Doğru duruştan çizilmiş kusursuz çizgi haritası, üretim araması: arama tek başına çalışır mı?",
+      "accepted_of_15": 0,
+      "first_failed_gate": {"landmark_inlier": 13, "inlier": 2},
+      "best_pose_error_m_sorted": [14.6, 17.5, 17.9, 26.3, 30.7, 36.3, 38.2, 38.5, 39.1, 42.5, 42.5, 44.7, 49.5, 55.6, 72.1]
+    },
+    "C_real_lines_search": {
+      "accepted_of_15": 0,
+      "first_failed_gate": {"landmark_inlier": 15},
+      "best_pose_error_m_sorted": [7.3, 18.9, 19.9, 24.2, 29.9, 30.3, 32.6, 38.5, 39.2, 42.1, 48.4, 50.4, 56.9, 61.4, 73.9]
+    },
+    "D_candidate_space": {
+      "meaning": "En yakın aday duruşun doğru duruşa uzaklığı (görüntü içi 9 sonda noktasında en büyük saha farkı)",
+      "nearest_candidate_m_sorted": [4.6, 4.6, 5.0, 5.9, 6.3, 7.0, 7.8, 8.0, 8.1, 8.8, 9.1, 9.7, 10.0, 12.2, 15.5],
+      "median_m": 8.0,
+      "reading": "Önceki teşhiste refine_homography havzası ~3 m ölçülmüştü (gece bench); 15 karenin hiçbirinde en yakın aday bu aralıkta değil. Adaylar simetrik yamuk; yayın karelerinde kamera çevrilince saha çizgileri eğik ve kaymalı görünüyor. Havza gündüz yayınında ayrıca ölçülmedi."
+    },
+    "E_tracking_from_truth": {
+      "meaning": "Doğru duruş üretim kalibratörüne çapa verildi (allow_reacquire açık), sonraki 3 sn 15 fps",
+      "produced_frames": 3,
+      "total_frames": 675,
+      "miss_reasons": {"yeniden yakalama inlier <0,85": 424, "çizgi oturması inlier <0,45": 127, "takip inlier <0,85": 117, "kadrajda az model noktası": 4},
+      "note": "Bu 3 saniyelerin bir kısmı kesme içerebilir; kesme ayrı sayılmadı."
+    },
+    "F_line_miss_causes": {
+      "meaning": "Doğru duruşta kadraja düşen 3078 model noktası, 9 px içinde çizgi maskesi var mı, yoksa neden?",
+      "hit": 1301,
+      "below_otsu_threshold": 819,
+      "below_white_floor_140": 807,
+      "outside_pitch_mask": 67,
+      "both_pass_apart": 84,
+      "shares": {"hit": 0.423, "below_otsu_threshold": 0.266, "below_white_floor_140": 0.262, "outside_pitch_mask": 0.022, "both_pass_apart": 0.027},
+      "reading": "Kaybın neredeyse tamamı iki eşikte: global Otsu ve mutlak gri 140 tabanı. Gölge payı ayrıca sayılmadı; gri 140 kaybının en yüksek olduğu kareler (kyoto 59, 105) bindirmede çoğunlukla gölgede."
+    },
+    "G_rejected_candidate_extractor": {
+      "meaning": "PR #339'dan geri alınan yerel kontrast adayı (commit 34c98e3), aynı duruşlarda. Yalnız ölçüm, üretime girmedi.",
+      "medians": {
+        "production": {"inlier": 0.468, "landmark_inlier": 0.688, "coverage": 0.45, "line_pixels": 10134, "inlier_shifted_8m": 0.091},
+        "candidate": {"inlier": 0.84, "landmark_inlier": 0.942, "coverage": 0.453, "line_pixels": 45983, "inlier_shifted_8m": 0.34}
+      },
+      "pass_of_15": {
+        "production": {"inlier_ge085": 1, "inlier_ge090": 1, "coverage_ge060": 1},
+        "candidate": {"inlier_ge085": 6, "inlier_ge090": 3, "coverage_ge060": 0}
+      },
+      "reading": "Aday gölgedeki çizgileri geri getiriyor ama maskeyi 4,5 kat büyütüyor: 8 m yanlış duruş bile medyan %34 inlier alıyor. Yani yoğun maske + mesafe haritası skoru doğru-yanlış ayrımını zayıflatıyor. Aday olduğu gibi çözüm değil."
+    },
+    "per_frame": [
+      {"match": "gamba_kashiwa", "frame": 19, "inlier": 0.516, "landmark_inlier": 0.942, "coverage": 0.636, "nearest_candidate_m": 5.0, "perfect_lines_error_m": 17.9, "track_produced": 0},
+      {"match": "gamba_kashiwa", "frame": 32, "inlier": 0.394, "landmark_inlier": 0.446, "coverage": 0.268, "nearest_candidate_m": 7.8, "perfect_lines_error_m": 17.5, "track_produced": 0},
+      {"match": "gamba_kashiwa", "frame": 44, "inlier": 0.554, "landmark_inlier": 0.822, "coverage": 0.509, "nearest_candidate_m": 7.0, "perfect_lines_error_m": 38.5, "track_produced": 0},
+      {"match": "gamba_kashiwa", "frame": 78, "inlier": 0.447, "landmark_inlier": 0.796, "coverage": 0.472, "nearest_candidate_m": 5.9, "perfect_lines_error_m": 44.7, "track_produced": 0},
+      {"match": "gamba_kashiwa", "frame": 99, "inlier": 0.673, "landmark_inlier": 0.862, "coverage": 0.542, "nearest_candidate_m": 8.1, "perfect_lines_error_m": 26.3, "track_produced": 0},
+      {"match": "gamba_kashiwa", "frame": 111, "inlier": 0.566, "landmark_inlier": 0.761, "coverage": 0.585, "nearest_candidate_m": 4.6, "perfect_lines_error_m": 30.7, "track_produced": 0},
+      {"match": "kashima_marinos", "frame": 43, "inlier": 0.764, "landmark_inlier": 0.88, "coverage": 0.338, "nearest_candidate_m": 9.7, "perfect_lines_error_m": 55.6, "track_produced": 0},
+      {"match": "kashima_marinos", "frame": 56, "inlier": 0.513, "landmark_inlier": 0.688, "coverage": 0.286, "nearest_candidate_m": 8.0, "perfect_lines_error_m": 38.2, "track_produced": 0},
+      {"match": "kashima_marinos", "frame": 69, "inlier": 0.91, "landmark_inlier": 1.0, "coverage": 0.45, "nearest_candidate_m": 15.5, "perfect_lines_error_m": 49.5, "track_produced": 3},
+      {"match": "kyoto_kobe", "frame": 8, "inlier": 0.148, "landmark_inlier": 0.231, "coverage": 0.268, "nearest_candidate_m": 6.3, "perfect_lines_error_m": 14.6, "track_produced": 0},
+      {"match": "kyoto_kobe", "frame": 32, "inlier": 0.465, "landmark_inlier": 0.344, "coverage": 0.401, "nearest_candidate_m": 12.2, "perfect_lines_error_m": 39.1, "track_produced": 0},
+      {"match": "kyoto_kobe", "frame": 59, "inlier": 0.145, "landmark_inlier": 0.189, "coverage": 0.288, "nearest_candidate_m": 10.0, "perfect_lines_error_m": 36.3, "track_produced": 0},
+      {"match": "kyoto_kobe", "frame": 72, "inlier": 0.468, "landmark_inlier": 0.466, "coverage": 0.514, "nearest_candidate_m": 4.6, "perfect_lines_error_m": 42.5, "track_produced": 0},
+      {"match": "kyoto_kobe", "frame": 87, "inlier": 0.027, "landmark_inlier": 0.019, "coverage": 0.054, "nearest_candidate_m": 8.8, "perfect_lines_error_m": 72.1, "track_produced": 0},
+      {"match": "kyoto_kobe", "frame": 105, "inlier": 0.159, "landmark_inlier": 0.061, "coverage": 0.51, "nearest_candidate_m": 9.1, "perfect_lines_error_m": 42.5, "track_produced": 0}
+    ]
+  },
+  "limits": [
+    "Tek lig, tek yayın kuruluşu, 5 maç, maç başına 6 dakika. Karşı-durumlar yalnız 15 karede ve 3 geliştirme maçında.",
+    "Gerçek duruşlar elle işaretlendi, tek değerlendirici; el noktalarının yeniden izdüşüm hatası kare içi medyan 2,2-11,2 px, en kötü nokta 24 px. Yuvarlağın sol/sağ uç noktaları elipste tam model noktasına denk gelmez, bu sapma beklenir.",
+    "6 karenin bindirmesine bakıldı (gamba 32, kashima 69, kyoto 8, 59, 87, 105): yakın çizgiler oturuyor. kyoto 8 uzak kenarda kayıyor ve büyük olasılıkla tekrar; en zayıf gerçek duruş bu. Kalan 9 kare yalnız sayıyla doğrulandı.",
+    "İşaretlenemeyen 3 kare (dar kadraj, az yapı) karşı-durum dışında; bu kareler zor sınıf olduğu için karşı-durum sonucu iyimser.",
+    "Otomatik çapa tek kare olarak ölçüldü, PerFrameCalibrator'ın 15 karede bir arama ritmi uygulanmadı. Önceki uçtan uca ölçüm de 0/326 çapa bulmuştu.",
+    "Etiketler önceki sınavdan, tek değerlendirici. verdy_kashima ve niigata_kashiwa görülmüş kontroldür, burada yalnız teşhis için kullanıldı.",
+    "Sonda hatası görüntü içi 9 noktada en büyük saha farkıdır; saha geneli hata değildir.",
+    "Gece maçı ölçülmedi. Gece davranışı hakkında bu dosyadan sonuç çıkmaz."
+  ],
+  "next": "docs/measurements/broadcast-anchor-preregistration-draft.json"
+}
