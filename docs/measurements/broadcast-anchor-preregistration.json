@@ -1,6 +1,6 @@
 {
   "title": "Yayın çapası: çizgi ailesi eşleştirme, ön kayıt",
-  "status": "ONAYLI (kullanıcı, 2026-11-02). Kod bu commit sonrası yazılır. Kontrol maçı seçilmedi ve indirilmedi; üç geliştirme kapısı geçilmeden seçilmez.",
+  "status": "ONAYLI ve DONDURULDU (kullanıcı, 2026-11-02). Kontrol maçı bu commit sonrası seçilir.",
   "written": "2026-11-02, yeni kontrol karelerinin hiçbiri açılmadan",
   "evidence": "docs/measurements/daylight-calibration-funnel.json",
   "hypothesis": {
@@ -35,7 +35,13 @@
   },
   "development_control_split": {
     "development": {
-      "matches": ["gamba_kashiwa", "kashima_marinos", "kyoto_kobe", "verdy_kashima", "niigata_kashiwa"],
+      "matches": [
+        "gamba_kashiwa",
+        "kashima_marinos",
+        "kyoto_kobe",
+        "verdy_kashima",
+        "niigata_kashiwa"
+      ],
       "note": "verdy_kashima ve niigata_kashiwa görülmüş kontroldür, yeni kontrol sayılmaz, geliştirmede serbest",
       "truth": "daylight-calibration-truth-points.json içindeki 15 kare; geliştirmede yeni kare işaretlenebilir, aynı dosyaya eklenir"
     },
@@ -85,5 +91,35 @@
     "Yakın taç kadraj dışındaysa ve yalnız orta çizgi + yarım yuvarlak görünüyorsa 4 bağımsız nokta olmayabilir; bu kareler kabul edilmemeli, C1 tavanını düşürür",
     "Gerçek duruşları tek değerlendirici işaretler, hatası birkaç piksel ile sınırlı değil; 2 m altı doğruluk bu sınavla iddia edilemez",
     "Gece maçı test edilmez"
-  ]
+  ],
+  "freeze_before_control": {
+    "date": "2026-11-02",
+    "control_pixels_opened": false,
+    "code_sha256_lf": {
+      "app/tracking/broadcast_anchor.py": "f19ea97fb46c83e68757375935f8ecf96368ca9ea8d6684024ef206a389dd796",
+      "app/tracking/homography_fit.py": "eb1f3b71e3228d4099926852ae2eeae43bb36dec0c60ac5b189e7646ccf6b9ec",
+      "app/tracking/pitch_model.py": "cb8cfb97189c5ff9b33276e862007ef7a2f2a7857cb9adbebcd1fa0ec7bddf8d"
+    },
+    "thresholds_in_code": {
+      "MIN_INLIER": 0.75,
+      "MIN_EXPLAINED": 0.6,
+      "MIN_LANDMARK_VISIBLE": 25,
+      "MIN_LANDMARK_INLIER": 0.7,
+      "WIN_MARGIN": 1.25,
+      "DISTINCT_M": 8.0,
+      "PHYSICAL_MARGIN_M": 5.0,
+      "RIDGE_MIN_SHARE": 0.5,
+      "RIDGE_MIN_RELATIVE": 0.08,
+      "VANISHING_SINE": 0.03,
+      "MIN_GRASS_RATIO": 0.5
+    },
+    "plan_changes_from_draft": [
+      "Doğru parçası çıkarımına sırt sınaması ve kaçış noktasıyla aile ayrımı eklendi; ikisi de geliştirme verisiyle kuruldu.",
+      "Medyan yeniden izdüşüm kapısı yerine model inlier ≥0,75 ve doğruların açıklanan payı ≥0,60 kullanılıyor.",
+      "Geçme ölçütleri C1-C5 değişmedi."
+    ],
+    "development_result_optimistic": "docs/measurements/broadcast-anchor-development-result.json",
+    "truth_pose_rule": "Gerçek duruş = el noktalarından DLT, scripts.calibration_funnel.refined_pose ile yerel oturtma; geliştirmedeki kuralın aynısı.",
+    "control_command": "scripts.broadcast_anchor_exam control-run --labels docs/measurements/broadcast-anchor-labels-control.json --points docs/measurements/broadcast-anchor-truth-points-control.json --out docs/measurements/broadcast-anchor-control-result.json"
+  }
 }
