@@ -3,57 +3,61 @@
   "date": "2026-11-02",
   "plan": "docs/measurements/broadcast-anchor-preregistration.json",
   "code": "app/tracking/broadcast_anchor.py, scripts/broadcast_anchor_exam.py",
-  "status": "Üç geliştirme kapısı geçti. Eşikler DONDURULMADI, kontrol maçı seçilmedi, üretime bağlı değil. Geliştirme sonucu iyimserdir, başarı sayılmaz.",
+  "status": "Üç geliştirme kapısı geçti, ana kare kabulü kontrol şartının üstünde. Eşikler DONDURULMADI, kontrol maçı seçilmedi, üretime bağlı değil. Geliştirme sonucu iyimserdir, başarı sayılmaz.",
   "commands": [
     "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam g1",
     "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam g2",
     "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam frames --match <maç> --out <klasör>",
     "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam tally --dir <klasör>",
-    "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam audit --dir <klasör> --out <klasör>"
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam audit --dir <klasör> --out <klasör> --per-label 22"
   ],
   "gates": {
     "G1_perfect_lines": {"accepted": "15/15", "median_error_m": 0.12, "worst_error_m": 3.49, "criterion": "≥13 kabul, medyan ≤1,0 m, hiçbiri >5 m", "passed": true, "baseline": "0/15, 14,6-72,1 m"},
-    "G2_real_lines": {"accepted": "6/15", "median_error_m": 0.51, "worst_error_m": 1.12, "criterion": "≥5 kabul, medyan ≤2,0 m, hiçbiri >5 m", "passed": true, "baseline": "0/15"},
-    "G3_other_frames": {"accepted": "3/209", "rate": 0.014, "wilson95": [0.005, 0.041], "criterion": "≤%5", "passed": true, "baseline": "0/209"}
+    "G2_real_lines": {"accepted": "8/15", "median_error_m": 0.7, "worst_error_m": 1.41, "criterion": "≥5 kabul, medyan ≤2,0 m, hiçbiri >5 m", "passed": true, "baseline": "0/15"},
+    "G3_other_frames": {"accepted": "8/209", "rate": 0.038, "wilson95": [0.020, 0.074], "criterion": "≤%5", "passed": true, "baseline": "0/209"}
   },
   "main_acceptance_vs_control_criterion": {
     "criterion_C1": "toplam ≥%30, her maçta ≥%20",
-    "total": {"accepted": 101, "n": 391, "rate": 0.258, "wilson95": [0.217, 0.304], "met": false},
+    "total": {"accepted": 172, "n": 391, "rate": 0.44, "wilson95": [0.392, 0.489], "met": true},
     "per_match": {
-      "gamba_kashiwa": {"accepted": 31, "n": 76, "rate": 0.408, "met": true},
-      "kashima_marinos": {"accepted": 17, "n": 78, "rate": 0.218, "met": true},
-      "kyoto_kobe": {"accepted": 12, "n": 74, "rate": 0.162, "met": false},
-      "verdy_kashima": {"accepted": 11, "n": 81, "rate": 0.136, "met": false},
-      "niigata_kashiwa": {"accepted": 30, "n": 82, "rate": 0.366, "met": true}
+      "gamba_kashiwa": {"accepted": 52, "n": 76, "rate": 0.684, "met": true},
+      "kashima_marinos": {"accepted": 35, "n": 78, "rate": 0.449, "met": true},
+      "kyoto_kobe": {"accepted": 18, "n": 74, "rate": 0.243, "met": true},
+      "verdy_kashima": {"accepted": 24, "n": 81, "rate": 0.296, "met": true},
+      "niigata_kashiwa": {"accepted": 43, "n": 82, "rate": 0.524, "met": true}
     },
     "baseline": "0/391",
-    "reading": "Yöntem bugünkü haliyle kontrolde büyük olasılıkla C1'den kalır. Eşikler bu karelerle henüz ayarlanmadı ama yine de geliştirme verisi."
+    "before_ridge_filter": "101/391, other 3/209"
   },
   "main_rejection_reasons": {
-    "accepted": 101,
-    "landmark_inlier": 102,
-    "explained_share": 89,
-    "no_physical_hypothesis": 31,
-    "landmark_not_visible": 31,
-    "inlier": 30,
+    "accepted": 172,
+    "landmark_inlier": 96,
+    "no_physical_hypothesis": 44,
+    "landmark_not_visible": 28,
+    "inlier": 17,
+    "explained_share": 17,
+    "ambiguous": 10,
     "grass_ratio": 5,
-    "ambiguous": 2
+    "no_hypothesis": 2
   },
   "visual_audit": {
-    "method": "Kabul edilen 101 main kareden eşit aralıklı 30'u ve 3 other kabulün tümü, model bindirmesi 640 px küçültülmüş sayfalarda gözle",
-    "main": "30/30 çizgiler oturuyor görünüyor, belirgin yanlış duruş veya yanlış yarı görülmedi",
-    "other": "3/3 (gamba 61, 63; kyoto 44) yüksek açılı tekrar veya geniş kare; geometri oturuyor görünüyor. Duruş doğru olsa da tekrar karesi canlı zaman çizgisine yazılmamalı, tek kare çapa bunu ayıramaz.",
-    "limit": "Bu çözünürlükte birkaç metrelik hata görülmez. Doğruluk iddiası yalnız G2'nin 6 karesi içindir; kalan 71 kabul edilmiş main kareye hiç bakılmadı."
+    "method": "Kabul edilen 172 main kareden eşit aralıklı 22'si ve 8 other kabulün tümü, model bindirmesi 640 px küçültülmüş sayfalarda gözle",
+    "main": "22/22 çizgiler oturuyor görünüyor, belirgin yanlış duruş veya yanlış yarı görülmedi",
+    "other": "gamba 61-64, kyoto 44, verdy 105 yüksek açılı tekrar; gamba 74 ana açı + skor grafiği. Bu 7 karede geometri oturuyor görünüyor. kyoto 42 bu ölçekte ayırt edilemedi.",
+    "other_threshold_reading": "Other kabulleri main'den ayrışmıyor (explained medyan 0,90'a karşı 0,86, inlier 0,96'ya karşı 0,94). Eşik yükseltmek main'i daha hızlı düşürüyor; eşik değiştirilmedi. Tek kare çapa yüksek açılı tekrarı ayıramaz.",
+    "limit": "Bu çözünürlükte birkaç metrelik hata görülmez. Doğruluk iddiası yalnız G2'nin 8 karesi içindir; kalan 142 kabul edilmiş main kareye hiç bakılmadı."
   },
   "development_trials": [
     "Açı boşluğuyla aile ayrımı: G1 12/15. Yelpazelenen enine doğruları bölüyordu. Kaçış noktası ayrımı: 15/15. Korundu.",
     "Yakın taç fiziksel payını 5 m'den 25 m'ye çıkarmak: main 101 → 95, kyoto 59 düzelmedi. Geri alındı.",
-    "İlk koşuda sıralama hatası (sınır değerinin işareti taştı) bütün kareleri reddediyordu. Düzeltildi, sonuçlara etkisi yok."
+    "İlk koşuda sıralama hatası (sınır değerinin işareti taştı) bütün kareleri reddediyordu. Düzeltildi, sonuçlara etkisi yok.",
+    "Teşhis: 15 karede bulunan 397 doğrunun 297'si model çizgisi değildi. Sırt sınaması (eşik 0,5) gerçek doğruların %94'ünü tutuyor, sahtelerin %43'ünü atıyor. Main 101 → 172, other 3 → 8, G2 6 → 8. Korundu; other artışı bedelidir."
   ],
   "limits": [
-    "G1 ve G2 yalnız 15 karede ve 3 maçta, işaretler tek değerlendiricinin. Kusursuz çizgi haritası da aynı işaretlerden çizildi.",
-    "G2'de yöntem tüm eşikler bu 15 kare görülerek kuruldu; 6/15 iyimser. kyoto 59 hâlâ fiziksel kapıda düşüyor, sebebi bulunmadı.",
-    "G1'deki 3,49 m (kyoto 87) kusursuz çizgide bile doğruya ulaşamadı, sebebi araştırılmadı.",
+    "G1 ve G2 yalnız 15 karede ve 3 maçta, işaretler tek değerlendiricinin. Sırt eşiği de aynı 15 kare görülerek seçildi; kabul oranları iyimser.",
+    "Other kabulü %3,8, Wilson üst sınırı %7,4: kontrolde %5 şartı (C4) gerçek risk altında. Önceki çekim ayırıcı sınavında geliştirme-kontrol farkı büyüktü.",
+    "kyoto_kobe %24,3 ve verdy_kashima %29,6 ile maç başına %20 şartına yakın; ikisi de güçlü gölgeli.",
+    "kyoto 59 artık kabul ediliyor ama kashima 56 ve kyoto 32 fiziksel kapıda düşüyor; 44 main karede aynı ret, sebebi araştırılmadı. G1'deki 3,49 m (kyoto 87) da araştırılmadı.",
     "Yalnız tek kare çapa ölçüldü. Takip kaybı (daylight-calibration-funnel.json: 675 karede 3) çözülmedi.",
     "Tek lig, tek yayın kuruluşu, 5 maç. Yanlış yarı çizgiden ayırt edilemez, TV kuralı varsayılır.",
     "Gece maçı test edilmedi."
