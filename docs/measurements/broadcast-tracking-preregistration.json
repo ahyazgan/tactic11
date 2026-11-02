@@ -1,7 +1,7 @@
 {
   "title": "Yayın takibi: ön kayıt",
   "date": "2026-11-02",
-  "status": "ONAYLANDI 2026-11-02 (kullanıcı: \"Onay, geliştirmeye geç\"). Geliştirme aşamasında; kontrol maçı seçilmedi, indirilmedi, görüntüsü açılmadı.",
+  "status": "GELİŞTİRMEDE KALDI: D1 %58,3 < %60 (2026-11-02). Kontrol açılmadı. Sonuç: docs/measurements/broadcast-track-development-result.json.",
   "hypothesis": "Yayın çapası kare başına ancak %30 civarı kabul alsa da, çapadan sonra görüntü akışıyla taşınan duruş yerel kontrast çizgileriyle düzeltilip 0,70 kapısından geçirilirse ana kamera süresinin çoğu doğru duruşla kaplanır.",
   "why_new_exam_not_retry": "Kalan sınav kare başına çapa kabulünü ölçtü. Bu sınav çapa+takip sisteminin ana kamera kapsamasını ölçer ve yeni maçlarda koşar. Kalan sonuç değişmez, eşikleri gevşetilmez.",
   "code": "Yeni ayrı modül, üretime bağlanmaz. pitch_lines.py, pipeline.py ve *frozen-decision.json dosyalarına dokunulmaz. Çapa eşikleri aynen kalır.",
@@ -58,7 +58,8 @@
       "run": 3,
       "design": "Köprüleme eklendi. Bu SON tasarım turu: D1 yine kalırsa sonuç olduğu gibi yazılır, kontrol açılmaz, kullanıcıya sorulur.",
       "note": "D1 eşiği %60 olarak kalır.",
-      "derived_accuracy": "Geriye dolan ve köprülenen tüm main örnekleri koşudan sonra durum listesiyle seçilir, duruş bindirilmeden elle işaretlenir, D2 onlarla birlikte hesaplanır: broadcast-track-derived-truth-points.json. Türetilmiş duruşlarda ayrıca medyan ≤2 m ve >5 m ≤%5 aranır."
+      "derived_accuracy": "Geriye dolan ve köprülenen tüm main örnekleri koşudan sonra durum listesiyle seçilir, duruş bindirilmeden elle işaretlenir, D2 onlarla birlikte hesaplanır: broadcast-track-derived-truth-points.json. Türetilmiş duruşlarda ayrıca medyan ≤2 m ve >5 m ≤%5 aranır.",
+      "result": "D1 KALDI: main 133/228 (%58,3). D2 geçti: 37 işaretli üretim, medyan 0.51 m, >5 m 0. Türetilmiş: 18 geriye dolan kare, medyan 0.515 m, >5 m 0. D3 geçti: other 0/132. Köprüleme örnek kazandırmadı."
     }
   ]
 }

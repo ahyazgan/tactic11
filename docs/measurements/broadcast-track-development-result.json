@@ -1,0 +1,262 @@
+{
+ "title": "Yayın takibi: uçtan uca geliştirme sonucu",
+ "date": "2026-11-02",
+ "verdict": "D1 KALDI: main 133/228 = %58,3 (şart %60, 137 gerekiyordu). Plan gereği kontrol AÇILMADI.",
+ "plan": "docs/measurements/broadcast-tracking-preregistration.json",
+ "command": [
+  "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_track_exam run --match <maç> --out <klasör>",
+  "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_track_exam gates --dir <klasör>"
+ ],
+ "data": "gamba_kashiwa, kashima_marinos, kyoto_kobe; maç başına 6 dk, 5400 kare, 15 fps. Elle çapa yok. Görüntüler repoda yok, yalnız iç test.",
+ "runs": [
+  {
+   "run": 1,
+   "design": "yalnız ileri takip, 15 karede bir çapa araması",
+   "main": "98/228 (%43,0)",
+   "other": "0/132",
+   "marked": "17 üretim, medyan 0,43 m, >5 m yok"
+  },
+  {
+   "run": 2,
+   "design": "+ çapadan geriye takip, 5 karede bir arama",
+   "main": "133/228 (%58,3)",
+   "other": "0/132",
+   "marked": "19 üretim, medyan 0,40 m, >5 m yok; hiçbiri geriye dolan değil"
+  },
+  {
+   "run": 3,
+   "design": "+ kapı boşluğunu köprüleme (son tur)",
+   "main": "133/228 (%58,3)",
+   "other": "0/132",
+   "marked": "37 üretim, medyan 0.51 m, >5 m 0"
+  }
+ ],
+ "gates": {
+  "D1": false,
+  "D2": true,
+  "D2_derived": true,
+  "D3": true
+ },
+ "D4": "Geçti: birim test, kesme ve tekrar duruşu siler (tests/test_broadcast_track.py).",
+ "result": {
+  "per_match": {
+   "gamba_kashiwa": {
+    "main_posed": 61,
+    "main": 76,
+    "other_posed": 0,
+    "other": 44,
+    "frames": 5400,
+    "produced": 2951,
+    "states": {
+     "anchored": 26,
+     "tracked": 2413,
+     "gate": 387,
+     "bridged": 87,
+     "gate_lost": 20,
+     "backfilled": 425,
+     "no_anchor": 71,
+     "searching": 274,
+     "not_main": 1579,
+     "cut": 37,
+     "replay": 591,
+     "not_main_lost": 2
+    },
+    "fps": 6.0
+   },
+   "kashima_marinos": {
+    "main_posed": 42,
+    "main": 78,
+    "other_posed": 0,
+    "other": 42,
+    "frames": 5400,
+    "produced": 1939,
+    "states": {
+     "anchored": 23,
+     "tracked": 1626,
+     "not_main": 1609,
+     "cut": 25,
+     "replay": 543,
+     "no_anchor": 251,
+     "searching": 1002,
+     "backfilled": 264,
+     "gate": 301,
+     "gate_lost": 19,
+     "bridged": 26,
+     "not_main_lost": 1
+    },
+    "fps": 6.01
+   },
+   "kyoto_kobe": {
+    "main_posed": 30,
+    "main": 74,
+    "other_posed": 0,
+    "other": 46,
+    "frames": 5400,
+    "produced": 1345,
+    "states": {
+     "no_anchor": 335,
+     "searching": 1328,
+     "not_main": 1991,
+     "anchored": 18,
+     "backfilled": 280,
+     "tracked": 1012,
+     "cut": 55,
+     "replay": 495,
+     "not_main_lost": 3,
+     "gate": 155,
+     "bridged": 35,
+     "gate_lost": 8
+    },
+    "fps": 5.77
+   }
+  },
+  "main_posed": 133,
+  "main": 228,
+  "main_rate": 0.583,
+  "other_posed": 0,
+  "other": 132,
+  "other_rate": 0.0,
+  "marked_produced": 37,
+  "marked_total": 47,
+  "median_m": 0.51,
+  "wrong_over_5m": 0,
+  "worst_median_m": 1.27,
+  "derived_marked_produced": 18,
+  "derived_median_m": 0.515,
+  "derived_wrong_over_5m": 0,
+  "D1": false,
+  "D2": true,
+  "D2_derived": true,
+  "D3": true
+ },
+ "backfilled_accuracy": {
+  "meaning": "3. koşuda geriye dolan 18 main örneğin tümü, duruş görülmeden elle işaretlendi: [maç, 15 fps kare, kare medyanı m, en kötü nokta m]",
+  "frames": [
+   [
+    "gamba",
+    90,
+    1.27,
+    1.41
+   ],
+   [
+    "gamba",
+    1530,
+    0.84,
+    2.05
+   ],
+   [
+    "gamba",
+    2115,
+    1.08,
+    3.78
+   ],
+   [
+    "gamba",
+    2205,
+    0.4,
+    2.27
+   ],
+   [
+    "gamba",
+    3285,
+    0.49,
+    1.56
+   ],
+   [
+    "kashi",
+    675,
+    0.8,
+    1.49
+   ],
+   [
+    "kashi",
+    2025,
+    0.52,
+    1.65
+   ],
+   [
+    "kashi",
+    2250,
+    0.79,
+    1.47
+   ],
+   [
+    "kashi",
+    2340,
+    0.64,
+    2.06
+   ],
+   [
+    "kashi",
+    3195,
+    0.48,
+    0.83
+   ],
+   [
+    "kashi",
+    3240,
+    0.13,
+    1.32
+   ],
+   [
+    "kyoto",
+    990,
+    0.51,
+    1.69
+   ],
+   [
+    "kyoto",
+    1080,
+    0.33,
+    0.87
+   ],
+   [
+    "kyoto",
+    1665,
+    0.48,
+    1.01
+   ],
+   [
+    "kyoto",
+    3195,
+    0.98,
+    1.55
+   ],
+   [
+    "kyoto",
+    4320,
+    0.89,
+    3.01
+   ],
+   [
+    "kyoto",
+    4950,
+    0.23,
+    1.06
+   ],
+   [
+    "kyoto",
+    5085,
+    0.08,
+    11.25
+   ]
+  ]
+ },
+ "loss_at_run_2_and_3": "Duruşsuz 95 main örnek: 62 çapa beklerken, 16 ana kamera sayılmadı, 14 kapıda, 3 tekrar. Darboğaz yine çapa araması.",
+ "reading": [
+  "Çapa+takip elle çapasız ilk kez uçtan uca çalıştı: 0 yanlış işaretli üretim, other 0/132.",
+  "Kapsama şartı karşılanmadı. Şart değiştirilmedi.",
+  "Geriye takip kapsamayı %43'ten %58'e çıkardı ve doğruluğu 18 karede tuttu. Köprüleme hiçbir örneğe denk gelmedi, kazanç getirmedi."
+ ],
+ "limits": [
+  "Geliştirme verisidir, tasarım sonuçlara bakılarak iki kez değişti. Çapa sınavında kabul geliştirmede %44 iken kontrolde %29,7 oldu; kapsama da kontrolde düşebilir.",
+  "İşaretli kare medyanı tek noktanın büyük hatasını gizler: kyoto 113 (5085. kare) kare medyanı 0,08 m, en kötü nokta 11,25 m. El işareti mi duruş mu hatalı ayrılmadı.",
+  "Köprülenen 148 karenin hiçbiri örneğe denk gelmedi; doğrulukları ölçülmedi.",
+  "İşaretler tek değerlendirici. Yeniden izdüşüm kare medyanı 1,5-21 px. Kyoto 24'te bir işaret hatası puanlamadan sonra düzeltildi.",
+  "Kapsama 3 sn örneklerle ölçüldü, etiketler tek değerlendirici.",
+  "Geriye takip yalnız maç sonrası çözümlemede kullanılabilir, canlıda kullanılamaz; ileri takip %43.",
+  "Hız 3 maç paralel koşarken 5,8-6,0 fps; gerçek zaman 15 fps gerektirir.",
+  "Tek lig, tek yayın kuruluşu, 3 maç, maç başına 6 dk."
+ ],
+ "status": "Üretime BAĞLANMADI. Kontrol maçı seçilmedi, indirilmedi. Sonraki adım kullanıcı kararı."
+}
