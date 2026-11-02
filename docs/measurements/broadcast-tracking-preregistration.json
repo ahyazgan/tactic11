@@ -1,7 +1,7 @@
 {
   "title": "Yayın takibi: ön kayıt",
   "date": "2026-11-02",
-  "status": "GELİŞTİRMEDE: kullanıcı \"Çapa aramasını güçlendir\" dedi (2026-11-02). 4. tur koşuluyor. Kontrol açılmadı, maç seçilmedi.",
+  "status": "GELİŞTİRME KAPILARI GEÇTİ (2026-11-02): D1 %66,2. Kör kontrol kullanıcı onayı bekliyor; kod dondurulmadı, maç seçilmedi, görüntü açılmadı.",
   "hypothesis": "Yayın çapası kare başına ancak %30 civarı kabul alsa da, çapadan sonra görüntü akışıyla taşınan duruş yerel kontrast çizgileriyle düzeltilip 0,70 kapısından geçirilirse ana kamera süresinin çoğu doğru duruşla kaplanır.",
   "why_new_exam_not_retry": "Kalan sınav kare başına çapa kabulünü ölçtü. Bu sınav çapa+takip sisteminin ana kamera kapsamasını ölçer ve yeni maçlarda koşar. Kalan sonuç değişmez, eşikleri gevşetilmez.",
   "code": "Yeni ayrı modül, üretime bağlanmaz. pitch_lines.py, pipeline.py ve *frozen-decision.json dosyalarına dokunulmaz. Çapa eşikleri aynen kalır.",
@@ -25,7 +25,7 @@
   "numbers_note": "D ve C eşikleri taslak öneridir. D1 ve C1, bu geliştirme ölçümü görüldükten sonra yazıldı.",
   "metric_definitions": {
     "coverage": "main etiketli 3 sn örnek anında tracker duruş üretti mi. Örnek anının 15 fps ızgaradaki karesi; kapıdan geçmeyen kare duruşsuz sayılır.",
-    "accuracy": "Elle işaretli karede, üretilen duruşla el noktalarının saha hatasının kare içi medyanı (m). Yanlış üretim: bu değer >5 m.",
+    "accuracy": "Elle işaretli karede, üretilen duruşla el noktalarının saha hatasının kare içi medyanı (m). Yanlış üretim: bu değer >5 m. Değerlendirme için en az 3 nokta yeterlidir, doğrusal olabilir (4. turda netleşti).",
     "evidence_development": "daylight-calibration-truth-points (klip başı) ve tracking-funnel-end-truth-points (klip sonu)",
     "fixed_before_first_run": "Bu tanımlar ve modül sabitleri ilk uçtan uca koşudan önce commit edildi."
   },
@@ -77,7 +77,8 @@
       "run": 4,
       "design": "Yeniden konumlanma eklendi. Çapa eşikleri, D kapıları ve %60 değişmedi.",
       "derived_accuracy": "Yeniden konumlanmadan gelen ve yeni geriye dolan tüm main örnekleri koşudan sonra listeden seçilir, duruş görülmeden elle işaretlenir.",
-      "note": "Tasarım ve seçim geliştirme verisiyle yapıldı; karar kontrolde verilir."
+      "note": "Tasarım ve seçim geliştirme verisiyle yapıldı; karar kontrolde verilir.",
+      "result": "D1 geçti: main 151/228 (%66,2). D2 geçti: 63 işaretli üretim, medyan 0.52 m, >5 m 0. Türetilmiş 43, medyan 0.51 m, >5 m 0; yeniden konumlanma 26, medyan 0.36 m. D3 geçti: other 0/132."
     }
   ]
 }

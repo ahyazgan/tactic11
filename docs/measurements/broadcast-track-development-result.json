@@ -1,7 +1,7 @@
 {
  "title": "Yayın takibi: uçtan uca geliştirme sonucu",
  "date": "2026-11-02",
- "verdict": "D1 KALDI: main 133/228 = %58,3 (şart %60, 137 gerekiyordu). Plan gereği kontrol AÇILMADI.",
+ "verdict": "GELİŞTİRME KAPILARI GEÇTİ (4. tur): main 151/228 = %66,2, şart %60. Kör kontrol henüz koşulmadı; karar orada verilir.",
  "plan": "docs/measurements/broadcast-tracking-preregistration.json",
  "command": [
   "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_track_exam run --match <maç> --out <klasör>",
@@ -29,10 +29,17 @@
    "main": "133/228 (%58,3)",
    "other": "0/132",
    "marked": "37 üretim, medyan 0.51 m, >5 m 0"
+  },
+  {
+   "run": 4,
+   "design": "+ görüntüden yeniden konumlanma",
+   "main": "151/228 (%66,2)",
+   "other": "0/132",
+   "marked": "63 üretim, medyan 0.52 m, >5 m 0"
   }
  ],
  "gates": {
-  "D1": false,
+  "D1": true,
   "D2": true,
   "D2_derived": true,
   "D3": true
@@ -41,222 +48,289 @@
  "result": {
   "per_match": {
    "gamba_kashiwa": {
-    "main_posed": 61,
+    "main_posed": 62,
     "main": 76,
     "other_posed": 0,
     "other": 44,
     "frames": 5400,
-    "produced": 2951,
+    "produced": 2955,
     "states": {
      "anchored": 26,
-     "tracked": 2413,
-     "gate": 387,
-     "bridged": 87,
-     "gate_lost": 20,
-     "backfilled": 425,
-     "no_anchor": 71,
-     "searching": 274,
+     "tracked": 2462,
+     "gate": 419,
+     "bridged": 89,
+     "gate_lost": 22,
+     "backfilled": 376,
+     "no_anchor": 54,
+     "searching": 206,
      "not_main": 1579,
      "cut": 37,
+     "relocalized": 2,
      "replay": 591,
      "not_main_lost": 2
     },
-    "fps": 6.0
+    "fps": 6.3
    },
    "kashima_marinos": {
-    "main_posed": 42,
+    "main_posed": 52,
     "main": 78,
     "other_posed": 0,
     "other": 42,
     "frames": 5400,
-    "produced": 1939,
+    "produced": 2314,
     "states": {
-     "anchored": 23,
-     "tracked": 1626,
-     "not_main": 1609,
+     "anchored": 22,
+     "tracked": 1836,
+     "not_main": 1608,
      "cut": 25,
      "replay": 543,
-     "no_anchor": 251,
-     "searching": 1002,
-     "backfilled": 264,
-     "gate": 301,
-     "gate_lost": 19,
-     "bridged": 26,
-     "not_main_lost": 1
+     "no_anchor": 189,
+     "searching": 754,
+     "backfilled": 395,
+     "gate": 394,
+     "gate_lost": 22,
+     "bridged": 56,
+     "not_main_lost": 2,
+     "relocalized": 5
     },
-    "fps": 6.01
+    "fps": 6.31
    },
    "kyoto_kobe": {
-    "main_posed": 30,
+    "main_posed": 37,
     "main": 74,
     "other_posed": 0,
     "other": 46,
     "frames": 5400,
-    "produced": 1345,
+    "produced": 1597,
     "states": {
-     "no_anchor": 335,
-     "searching": 1328,
+     "no_anchor": 284,
+     "searching": 1123,
      "not_main": 1991,
      "anchored": 18,
-     "backfilled": 280,
-     "tracked": 1012,
+     "backfilled": 324,
+     "tracked": 1203,
      "cut": 55,
      "replay": 495,
      "not_main_lost": 3,
-     "gate": 155,
-     "bridged": 35,
-     "gate_lost": 8
+     "gate": 214,
+     "bridged": 49,
+     "gate_lost": 11,
+     "relocalized": 3
     },
-    "fps": 5.77
+    "fps": 6.02
    }
   },
-  "main_posed": 133,
+  "main_posed": 151,
   "main": 228,
-  "main_rate": 0.583,
+  "main_rate": 0.662,
   "other_posed": 0,
   "other": 132,
   "other_rate": 0.0,
-  "marked_produced": 37,
-  "marked_total": 47,
-  "median_m": 0.51,
+  "marked_produced": 63,
+  "marked_total": 70,
+  "median_m": 0.52,
   "wrong_over_5m": 0,
-  "worst_median_m": 1.27,
-  "derived_marked_produced": 18,
-  "derived_median_m": 0.515,
+  "worst_median_m": 1.83,
+  "derived_marked_produced": 43,
+  "derived_median_m": 0.51,
   "derived_wrong_over_5m": 0,
-  "D1": false,
+  "reloc_marked_produced": 26,
+  "reloc_median_m": 0.36,
+  "reloc_wrong_over_5m": 0,
+  "main_posed_by_reloc": 25,
+  "D1": true,
   "D2": true,
   "D2_derived": true,
   "D3": true
  },
  "backfilled_accuracy": {
-  "meaning": "3. koşuda geriye dolan 18 main örneğin tümü, duruş görülmeden elle işaretlendi: [maç, 15 fps kare, kare medyanı m, en kötü nokta m]",
+  "meaning": "Tüm türetilmiş işaretli üretimler (geriye dolan veya yeniden konumlanma zinciri): [maç, 15 fps kare, kare medyanı m, en kötü nokta m, durum]",
   "frames": [
    [
     "gamba",
     90,
     1.27,
-    1.41
+    1.41,
+    "backfilled"
    ],
    [
     "gamba",
     1530,
     0.84,
-    2.05
+    2.05,
+    "backfilled"
    ],
    [
     "gamba",
     2115,
     1.08,
-    3.78
+    3.78,
+    "backfilled"
    ],
    [
     "gamba",
     2205,
-    0.4,
-    2.27
+    0.32,
+    1.0,
+    "backfilled"
    ],
    [
     "gamba",
     3285,
     0.49,
-    1.56
+    1.56,
+    "backfilled"
+   ],
+   [
+    "gamba",
+    5085,
+    0.76,
+    1.33,
+    "backfilled"
    ],
    [
     "kashi",
     675,
     0.8,
-    1.49
+    1.49,
+    "backfilled"
    ],
    [
     "kashi",
     2025,
     0.52,
-    1.65
+    1.65,
+    "backfilled"
    ],
    [
     "kashi",
     2250,
     0.79,
-    1.47
+    1.47,
+    "backfilled"
    ],
    [
     "kashi",
     2340,
     0.64,
-    2.06
+    2.06,
+    "backfilled"
+   ],
+   [
+    "kashi",
+    2475,
+    0.26,
+    1.29,
+    "backfilled"
+   ],
+   [
+    "kashi",
+    2610,
+    0.11,
+    1.29,
+    "backfilled"
    ],
    [
     "kashi",
     3195,
     0.48,
-    0.83
+    0.83,
+    "backfilled"
    ],
    [
     "kashi",
     3240,
     0.13,
-    1.32
+    1.32,
+    "backfilled"
+   ],
+   [
+    "kashi",
+    3555,
+    0.6,
+    1.59,
+    "backfilled"
+   ],
+   [
+    "kashi",
+    3600,
+    0.33,
+    1.5,
+    "backfilled"
+   ],
+   [
+    "kashi",
+    3645,
+    0.22,
+    1.54,
+    "backfilled"
    ],
    [
     "kyoto",
     990,
     0.51,
-    1.69
+    1.69,
+    "backfilled"
    ],
    [
     "kyoto",
     1080,
     0.33,
-    0.87
+    0.87,
+    "backfilled"
    ],
    [
     "kyoto",
-    1665,
-    0.48,
-    1.01
-   ],
-   [
-    "kyoto",
-    3195,
-    0.98,
-    1.55
+    1575,
+    1.26,
+    2.3,
+    "backfilled"
    ],
    [
     "kyoto",
     4320,
     0.89,
-    3.01
+    3.01,
+    "backfilled"
    ],
    [
     "kyoto",
     4950,
     0.23,
-    1.06
+    1.06,
+    "backfilled"
    ],
    [
     "kyoto",
     5085,
     0.08,
-    11.25
+    11.25,
+    "backfilled"
    ]
   ]
  },
- "loss_at_run_2_and_3": "Duruşsuz 95 main örnek: 62 çapa beklerken, 16 ana kamera sayılmadı, 14 kapıda, 3 tekrar. Darboğaz yine çapa araması.",
+ "loss_at_run_2_and_3": "Çapa bekleyen kayıp 4. turda azaldı; ayrıntı result.per_match.",
  "reading": [
-  "Çapa+takip elle çapasız ilk kez uçtan uca çalıştı: 0 yanlış işaretli üretim, other 0/132.",
-  "Kapsama şartı karşılanmadı. Şart değiştirilmedi.",
-  "Geriye takip kapsamayı %43'ten %58'e çıkardı ve doğruluğu 18 karede tuttu. Köprüleme hiçbir örneğe denk gelmedi, kazanç getirmedi."
+  "Kapsama %43 (ileri takip) → %58 (+geriye takip) → %66 (+yeniden konumlanma). Şart %60 değişmedi, çapa eşikleri değişmedi.",
+  "Maçlara göre: gamba_kashiwa 62/76, kashima_marinos 52/78, kyoto_kobe 37/74.",
+  "Yanlış üretim işaretli 63 karede yok; other 0/132."
  ],
  "limits": [
-  "Geliştirme verisidir, tasarım sonuçlara bakılarak iki kez değişti. Çapa sınavında kabul geliştirmede %44 iken kontrolde %29,7 oldu; kapsama da kontrolde düşebilir.",
-  "İşaretli kare medyanı tek noktanın büyük hatasını gizler: kyoto 113 (5085. kare) kare medyanı 0,08 m, en kötü nokta 11,25 m. El işareti mi duruş mu hatalı ayrılmadı.",
-  "Köprülenen 148 karenin hiçbiri örneğe denk gelmedi; doğrulukları ölçülmedi.",
-  "İşaretler tek değerlendirici. Yeniden izdüşüm kare medyanı 1,5-21 px. Kyoto 24'te bir işaret hatası puanlamadan sonra düzeltildi.",
+  "Geliştirme verisidir, tasarım sonuçlara bakılarak üç kez değişti, yeniden konumlanma eşiği aynı verilerle seçildi. Çapa sınavında kabul %44'ten %29,7'ye düşmüştü; kapsama da kontrolde düşebilir. C1 şartı %50.",
+  "İşaretler işaretsiz 3 doğrusal noktada da değerlendirilir: orta saha karelerinde yalnız orta çizgi ve daire noktaları var, bu karelerde hata çizgiye dik yönde daha iyi ölçülür.",
+  "Kare medyanı tek noktanın büyük hatasını gizler: kyoto 113 (5085. kare) medyan 0,08 m, en kötü nokta 11,25 m. İşaret mi duruş mu ayrılmadı.",
+  "70 işaretli kareden 7'si üretilmedi, doğruluk kanıtı yalnız üretilenlerde. 2 karede yeterli nokta yok.",
+  "İşaretler tek değerlendirici, yeniden izdüşüm kare medyanı 1,5-21 px. İşaretleme sırasında özet oranlar biliniyordu, kare bazlı duruş görülmedi.",
   "Kapsama 3 sn örneklerle ölçüldü, etiketler tek değerlendirici.",
-  "Geriye takip yalnız maç sonrası çözümlemede kullanılabilir, canlıda kullanılamaz; ileri takip %43.",
-  "Hız 3 maç paralel koşarken 5,8-6,0 fps; gerçek zaman 15 fps gerektirir.",
+  "Reklam panosu değişen stadyum ya da başka kamera konumu sınanmadı: yeniden konumlanma aynı maçın kendi kareleriyle çalışır, maç başında çapa ister. Skor grafiği ve logo kutuları bu yayıncıya göre.",
+  "Geriye takip ve köprüleme yalnız maç sonrası kullanılabilir. Hız 3 maç paralel koşarken 6,0-6,3 fps; gerçek zaman 15 fps gerektirir. 90 dakikada anahtar sınırı 300 (15 dk) test edilmedi.",
   "Tek lig, tek yayın kuruluşu, 3 maç, maç başına 6 dk."
  ],
- "status": "Üretime BAĞLANMADI. Kontrol maçı seçilmedi, indirilmedi. Sonraki adım kullanıcı kararı."
+ "status": "Üretime BAĞLANMADI. Kontrol maçı seçilmedi, indirilmedi. Sonraki adım kullanıcı kararı: kodu dondurup kör kontrol.",
+ "relocalization": {
+  "why": "Çapa bekleyen 62 main örneğin 61'inde tek kare yöntemi gerçekten reddediyor: 30 ayırt edici yapı oturmadı, 17 fizik kapısı, 8 yapı görünmüyor, 3 inlier, 2 hipotez yok, 1 açıklanan pay. Kaçan kabul yok, tek karede kanıt yok.",
+  "idea": "Ana kamera sabit noktada döner; reklam panoları ve tribün eşleştirmesiyle duruş taşınır, çizgi kapısı yine aranır.",
+  "choice": "Bırakma sınaması, ızgara farkı: 200 eşleşme + 0,70: 57 sınama, medyan 2,11 m, en kötü 5,99 m, >5 m 1. Eşiksiz: 88 sınama, >5 m 5, en kötü 10,51 m.",
+  "result": "main örneklerin 25'i yeniden konumlanma zincirinden; 26 işaretli üretimde medyan 0.36 m, >5 m 0."
+ }
 }
