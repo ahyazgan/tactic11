@@ -48,6 +48,14 @@ MAX_GAP_WIDTH_RATIO = 0.015
 MERGE_ANGLE_DEG = 2.0
 MERGE_OFFSET_PX = 8.0
 MAX_LINES_PER_FAMILY = 6
+# Sırt sınaması: saha çizgisi iki yanından parlak ince bir sırttır. Geliştirme 15 karede
+# bulunan 397 doğrunun 297'si model çizgisi değildi; 0,5 eşiği doğruların %94'ünü tutuyor,
+# sahtelerin %43'ünü atıyor.
+RIDGE_MIN_SHARE = 0.5
+RIDGE_MIN_RELATIVE = 0.08
+RIDGE_SIDE_PX = 7
+RIDGE_CENTRE_PX = 2
+RIDGE_STEP_PX = 4.0
 VANISHING_SINE = 0.03   # ~1,7° sapma
 MIN_ELLIPSE_AXIS_RATIO = 0.08
 MAX_ELLIPSE_RESIDUAL_PX = 3.0
@@ -153,6 +161,24 @@ def merge_segments(segments: np.ndarray) -> list[ImageLine]:
         along = (pts - centre) @ direction
         out.append(line_from_points(centre + along.min() * direction, centre + along.max() * direction))
     return sorted(out, key=lambda ln: -ln.length)
+
+
+def ridge_share(gray: np.ndarray, line: ImageLine) -> float:
+    """Doğru boyunca merkezi iki yanından belirgin parlak örneklerin payı (gölge kenarı sırt değildir)."""
+    start, end = np.array(line.p1), np.array(line.p2)
+    along = (end - start) / line.length
+    normal = np.array([-along[1], along[0]])
+    samples = start + np.arange(0.0, line.length, RIDGE_STEP_PX)[:, None] * along
+
+    def values(offset: int) -> np.ndarray:
+        at = samples + offset * normal
+        u = np.clip(at[:, 0].astype(int), 0, gray.shape[1] - 1)
+        v = np.clip(at[:, 1].astype(int), 0, gray.shape[0] - 1)
+        return gray[v, u].astype(float)
+
+    centre = np.max([values(o) for o in range(-RIDGE_CENTRE_PX, RIDGE_CENTRE_PX + 1)], axis=0)
+    sides = np.maximum(values(-RIDGE_SIDE_PX), values(RIDGE_SIDE_PX))
+    return float((((centre - sides) / np.maximum(sides, 1.0)) > RIDGE_MIN_RELATIVE).mean())
 
 
 def detect_lines(mask: np.ndarray) -> list[ImageLine]:
@@ -449,14 +475,21 @@ def _distance(h_a: np.ndarray, h_b: np.ndarray, size: tuple[int, int]) -> float:
     return float(np.hypot(*((a[:, :2] / a[:, 2:3]) - (b[:, :2] / b[:, 2:3])).T).max())
 
 
-def find_broadcast_anchor(mask: np.ndarray, tolerance_px: float | None = None) -> BroadcastAnchor:
-    """Çizgi maskesinden çapa. Kapılardan geçen tek kazanan yoksa homografi dönmez."""
+def find_broadcast_anchor(
+    mask: np.ndarray, gray: np.ndarray | None = None, tolerance_px: float | None = None,
+) -> BroadcastAnchor:
+    """Çizgi maskesinden çapa. Kapılardan geçen tek kazanan yoksa homografi dönmez.
+
+    `gray` verilirse sırt sınamasını geçmeyen doğrular elenir; kusursuz maskede gerekmez.
+    """
     import cv2
 
     shape = mask.shape[:2]
     size = (shape[1], shape[0])
     tol = tolerance_px if tolerance_px is not None else DEFAULT_TOLERANCE_PX * size[0] / 1280.0
     lines = detect_lines(mask)
+    if gray is not None:
+        lines = [ln for ln in lines if ridge_share(gray, ln) >= RIDGE_MIN_SHARE]
     if len(lines) < 2:
         return BroadcastAnchor(None, False, "yeterli doğru yok")
     fam_a, fam_b = split_families(lines, size)

@@ -62,6 +62,12 @@ C4_MAX_RATE = 0.05
 C5_MIN_SAMPLE = 15
 
 
+def to_gray(frame):
+    import cv2
+
+    return cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+
 def truth_frames():
     """(maç, kare no, BGR, gerçek duruş); işaretlenemeyen kareler atlanır."""
     spec = json.loads(POINTS.read_text(encoding="utf-8"))
@@ -109,7 +115,7 @@ def g2() -> int:
     for match, i, frame, pose in truth_frames():
         size = (frame.shape[1], frame.shape[0])
         start = time.perf_counter()
-        res = find_broadcast_anchor(daylight_line_mask(frame))
+        res = find_broadcast_anchor(daylight_line_mask(frame), to_gray(frame))
         rows.append(truth_row(match, i, res, pose, size, time.perf_counter() - start))
     gate("G2", rows, G2_MIN_ACCEPTED, G2_MAX_MEDIAN_M, G2_MAX_ANY_M)
     return 0
@@ -126,7 +132,7 @@ def frames(match: str, out: Path) -> int:
     for i, frame in sampled_frames(video_of(match)):
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         grass = float((cv2.inRange(hsv, np.array(GRASS_HSV_LOW), np.array(GRASS_HSV_HIGH)) > 0).mean())
-        res = None if grass < MIN_GRASS_RATIO else find_broadcast_anchor(daylight_line_mask(frame))
+        res = None if grass < MIN_GRASS_RATIO else find_broadcast_anchor(daylight_line_mask(frame), to_gray(frame))
         rows.append({"match": match, "frame": i, "label": "other" if i in others else "main",
                      "grass": round(grass, 3), "accepted": bool(res and res.accepted),
                      "note": res.note if res else "çim oranı düşük",
