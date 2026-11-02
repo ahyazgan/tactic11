@@ -1,0 +1,13 @@
+{
+  "written": "2026-11-02, yöntem bu karelerde koşulmadan, yalnız küçük kare sayfalarına bakılarak; tek değerlendirici",
+  "rule": "Listede olmayan kare main. Kararsız kare other, yanlış kabul daha pahalı.",
+  "lighting_note": "İki maç da bulutlu, sert gölge yok. Geliştirme maçlarından kolay ışık; sonuç gölgeli gündüze genellenemez.",
+  "chiba_tokushima": {
+    "other": [1, 2, 3, 4, 5, 6, 7, 25, 33, 34, 40, 74, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 102, 114, 115, 116, 117, 118],
+    "notes": "7 ve 88 geçiş efekti; 89-91 geçişten sonra ve kale arkası görüntülere bağlanıyor, büyük olasılıkla tekrar, kararsız; 92-93 kale arkası"
+  },
+  "kashiwa_machida": {
+    "other": [0, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 50, 51, 52, 53, 54, 55, 65, 80, 81, 82, 89, 90, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118],
+    "notes": "22-23 yakın; 51-52 alçak açılarla çevrili geniş kare, kararsız; 106-109 alçak açılar arasında, 116 geçişine bağlanıyor, büyük olasılıkla tekrar, kararsız; 116 geçiş efekti"
+  }
+}
