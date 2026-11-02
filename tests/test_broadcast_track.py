@@ -100,6 +100,45 @@ def test_replay_drops_pose_without_searching(tracker, monkeypatch):
     assert len(searches) == 1
 
 
+def test_backfill_walks_back_to_the_frames_waiting_for_an_anchor(tracker, monkeypatch):
+    calls = []
+
+    def anchor(_mask, _gray):
+        calls.append(1)
+        accepted = len(calls) >= 2
+        return SimpleNamespace(accepted=accepted, homography=POSE if accepted else None, inlier=0.9)
+
+    monkeypatch.setattr(bt, "find_broadcast_anchor", anchor)
+    fill = bt.BackfillingTracker()
+    results = []
+    for k in range(bt.ANCHOR_EVERY_FRAMES + 1):
+        results += fill.feed(k, textured(1, shift=k))
+    filled = [k for k, r in results if r.state == "backfilled"]
+    assert filled == list(range(bt.ANCHOR_EVERY_FRAMES - 1, -1, -1))
+    assert all(r.homography is not None for _, r in results if r.state == "backfilled")
+
+
+def test_backfill_stops_at_a_cut(tracker, monkeypatch):
+    calls = []
+
+    def anchor(_mask, _gray):
+        calls.append(1)
+        accepted = len(calls) >= 3
+        return SimpleNamespace(accepted=accepted, homography=POSE if accepted else None, inlier=0.9)
+
+    monkeypatch.setattr(bt, "find_broadcast_anchor", anchor)
+    fill = bt.BackfillingTracker()
+    results = []
+    for k in range(3):
+        results += fill.feed(k, textured(1, shift=k))
+    results += fill.feed(3, np.zeros((360, 640, 3), dtype=np.uint8))
+    for k in range(4, 4 + 2 * bt.ANCHOR_EVERY_FRAMES + 1):
+        results += fill.feed(k, textured(2, shift=k))
+    filled = [k for k, r in results if r.state == "backfilled"]
+    assert filled
+    assert min(filled) >= 4
+
+
 def test_evaluate_applies_development_gates():
     samples = [{"label": "main", "posed": i < 7} for i in range(10)] + [{"label": "other", "posed": False}] * 5
     record = {"match": "m", "samples": samples, "frames": 10, "produced": 7, "states": {}, "seconds": 2.0,

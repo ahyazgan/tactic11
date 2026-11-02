@@ -68,7 +68,7 @@ def marked_frames(match: str) -> dict[int, list[dict]]:
 
 
 def run(match: str, out: Path) -> int:
-    from app.tracking.broadcast_track import BroadcastTracker
+    from app.tracking.broadcast_track import BackfillingTracker, TrackFrame
 
     if MATCH_GROUP.get(match) != "development":
         print(f"{match}: geliştirme maçı değil", file=sys.stderr)
@@ -76,17 +76,28 @@ def run(match: str, out: Path) -> int:
     out.mkdir(parents=True, exist_ok=True)
     others = other_frames(match)
     marks = marked_frames(match)
-    tracker = BroadcastTracker(FPS)
+    tracker = BackfillingTracker(FPS)
     states: Counter = Counter()
-    samples, evidence, produced, total = [], [], 0, 0
+    kept: dict[int, TrackFrame] = {}
+    produced: set[int] = set()
+    total = 0
     size = (0, 0)
     start = time.perf_counter()
     for k, frame in timed_frames(video_of(match)):
         size = (frame.shape[1], frame.shape[0])
-        result = tracker.step(frame)
-        states[result.state] += 1
         total += 1
-        produced += result.homography is not None
+        for done_k, result in tracker.feed(k, frame):
+            states[result.state] += 1
+            if result.homography is not None:
+                produced.add(done_k)
+            if done_k % SAMPLE_EVERY == 0 or done_k in marks:
+                kept[done_k] = result
+        if k % 450 == 0:
+            print(match, k, dict(states), flush=True)
+    seconds = time.perf_counter() - start
+    samples, evidence = [], []
+    for k in sorted(kept):
+        result = kept[k]
         if k % SAMPLE_EVERY == 0:
             i = k // SAMPLE_EVERY
             samples.append({"sample": i, "label": "other" if i in others else "main",
@@ -94,12 +105,8 @@ def run(match: str, out: Path) -> int:
         if k in marks and result.homography is not None:
             errors = mark_errors(result.homography, marks[k])
             evidence.append({"k": k, "median_m": round(float(np.median(errors)), 2),
-                             "worst_m": round(float(errors.max()), 2), "state": result.state,
-                             "pose": result.homography.tolist()})
-        if k % 450 == 0:
-            print(match, k, dict(states), flush=True)
-    seconds = time.perf_counter() - start
-    record = {"match": match, "frames": total, "produced": produced, "states": dict(states), "size": size,
+                             "worst_m": round(float(errors.max()), 2), "state": result.state})
+    record = {"match": match, "frames": total, "produced": len(produced), "states": dict(states), "size": size,
               "seconds": round(seconds, 1), "samples": samples, "evidence": evidence,
               "marked_frames": len(marks)}
     (out / f"{match}.json").write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")

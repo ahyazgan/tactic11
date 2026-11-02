@@ -10,6 +10,7 @@ akış tek başına sürüklenir (ölçüldü: 3 sn'de 13 m).
 """
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
 
 import numpy as np
@@ -25,9 +26,12 @@ LINE_GATE = 0.70
 SEARCH_STEP_PX = 12.0
 MAX_JUMP_M = 5.0               # düzeltme taşınan duruştan bundan fazla oynatamaz
 MAX_COAST_FRAMES = 15          # 15 fps'te 1 sn; üretim takibinin COAST_FRAMES değeriyle aynı
-ANCHOR_EVERY_FRAMES = 15       # çapa araması pahalı
+ANCHOR_EVERY_FRAMES = 5        # çapa araması pahalı; ama kapsama kaybının çoğu çapa beklerken (ilk koşu)
 REPLAY_EVERY_FRAMES = 3        # ReplayTracker 5 fps ile beslenmeli, takip 15 fps koşar
 BASE_WIDTH_PX = 1280.0
+BACKFILL_FRAMES = 450          # 15 fps'te 30 sn: çapa bulununca geriye bu kadar kare takip edilir
+BUFFER_JPEG_QUALITY = 95
+BUFFERED_STATES = {"gate", "gate_lost", "searching", "no_anchor", "cut"}
 
 
 def gray_hist(gray: np.ndarray) -> np.ndarray:
@@ -70,6 +74,16 @@ def pose_shift_m(h_a: np.ndarray, h_b: np.ndarray, size: tuple[int, int]) -> flo
     pts = np.array([[w * fx, h * fy, 1.0] for fx in (0.25, 0.5, 0.75) for fy in (0.45, 0.6, 0.75)])
     a, b = pts @ h_a.T, pts @ h_b.T
     return float(np.hypot(*((a[:, :2] / a[:, 2:3]) - (b[:, :2] / b[:, 2:3])).T).max())
+
+
+def corrected_pose(carried: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, float] | None:
+    """Taşınan duruşu çizgilere oturt; kapıyı geçmezse None."""
+    height, width = mask.shape[:2]
+    tolerance = DEFAULT_TOLERANCE_PX * width / BASE_WIDTH_PX
+    fit = refine_homography(carried, distance_map(mask), step_px=SEARCH_STEP_PX, tolerance_px=tolerance)
+    if fit.accepted and fit.inlier_ratio >= LINE_GATE and pose_shift_m(fit.homography, carried, (width, height)) <= MAX_JUMP_M:
+        return fit.homography, fit.inlier_ratio
+    return None
 
 
 @dataclass
@@ -126,12 +140,10 @@ class BroadcastTracker:
         mask = daylight_line_mask(bgr)
         if carried is None:
             return self._search(mask, gray)
-        tolerance = DEFAULT_TOLERANCE_PX * bgr.shape[1] / BASE_WIDTH_PX
-        fit = refine_homography(carried, distance_map(mask), step_px=SEARCH_STEP_PX, tolerance_px=tolerance)
-        size = (bgr.shape[1], bgr.shape[0])
-        if fit.accepted and fit.inlier_ratio >= LINE_GATE and pose_shift_m(fit.homography, carried, size) <= MAX_JUMP_M:
-            self._h, self._coast = fit.homography, 0
-            return TrackFrame(fit.homography, "tracked", fit.inlier_ratio)
+        fit = corrected_pose(carried, mask)
+        if fit is not None:
+            self._h, self._coast = fit[0], 0
+            return TrackFrame(fit[0], "tracked", fit[1])
         return self._coasted(carried, "gate")
 
     def _coasted(self, carried: np.ndarray | None, state: str) -> TrackFrame:
@@ -154,3 +166,58 @@ class BroadcastTracker:
             return TrackFrame(None, "no_anchor")
         self._h, self._coast = res.homography, 0
         return TrackFrame(res.homography, "anchored", res.inlier)
+
+
+class BackfillingTracker:
+    """Çapa bulununca aynı çekimde çapayı bekleyen kareleri geriye doğru da takip eder.
+
+    Maç sonrası çözümleme içindir: geriye dolan kare, çapa bulunduğu ana kadar gecikir.
+    Kareler bellekte JPEG tutulur; kesme, tekrar ve ana kamera dışı kare tamponu boşaltır.
+    """
+
+    def __init__(self, fps: float = 15.0) -> None:
+        self._forward = BroadcastTracker(fps)
+        self._buffer: deque[tuple[int, np.ndarray]] = deque(maxlen=BACKFILL_FRAMES)
+
+    def feed(self, k: int, bgr: np.ndarray) -> list[tuple[int, TrackFrame]]:
+        """(kare no, sonuç) listesi: bu kare ve varsa geriye dolan kareler."""
+        import cv2
+
+        result = self._forward.step(bgr)
+        out = [(k, result)]
+        if result.state == "anchored" and result.homography is not None:
+            out += self._walk_back(result.homography, bgr)
+        if result.state == "cut" or result.state not in BUFFERED_STATES:
+            self._buffer.clear()
+        if result.state in BUFFERED_STATES:
+            ok, encoded = cv2.imencode(".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, BUFFER_JPEG_QUALITY])
+            if ok:
+                self._buffer.append((k, encoded))
+        return out
+
+    def _walk_back(self, anchor_pose: np.ndarray, anchor_bgr: np.ndarray) -> list[tuple[int, TrackFrame]]:
+        import cv2
+
+        filled: list[tuple[int, TrackFrame]] = []
+        h, coast = anchor_pose, 0
+        next_gray = cv2.cvtColor(anchor_bgr, cv2.COLOR_BGR2GRAY)
+        next_hist = gray_hist(next_gray)
+        for k, encoded in reversed(self._buffer):
+            bgr = cv2.imdecode(encoded, cv2.IMREAD_COLOR)
+            gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+            hist = gray_hist(gray)
+            motion, inliers, _ = flow_step(next_gray, gray)
+            corr = float(cv2.compareHist(next_hist, hist, cv2.HISTCMP_CORREL))
+            if motion is None or is_cut(inliers, corr):
+                break
+            carried = h @ np.linalg.inv(motion)
+            fit = corrected_pose(carried, daylight_line_mask(bgr))
+            if fit is not None:
+                h, coast = fit[0], 0
+                filled.append((k, TrackFrame(fit[0], "backfilled", fit[1])))
+            else:
+                h, coast = carried, coast + 1
+                if coast > MAX_COAST_FRAMES:
+                    break
+            next_gray, next_hist = gray, hist
+        return filled

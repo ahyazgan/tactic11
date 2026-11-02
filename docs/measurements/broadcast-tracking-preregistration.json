@@ -34,8 +34,22 @@
     "exam": "scripts/broadcast_track_exam.py",
     "gate": 0.7,
     "max_coast_frames": 15,
-    "anchor_every_frames": 15,
+    "anchor_every_frames": 5,
     "fps": 15,
-    "shot_guard": "shot_filter.classify_shot ve ReplayTracker değiştirilmeden kullanılır"
-  }
+    "shot_guard": "shot_filter.classify_shot ve ReplayTracker değiştirilmeden kullanılır",
+    "backfill": "Çapa bulununca en çok 30 sn geriye takip; yalnız maç sonrası çözümleme"
+  },
+  "development_iterations": [
+    {
+      "run": 1,
+      "design": "Yalnız ileri takip, çapa araması 15 karede bir",
+      "result": "D1 KALDI: main 98/228 (%43). D2 geçti: 17 işaretli üretimde medyan 0,43 m, >5 m yok. D3 geçti: other 0/132.",
+      "loss": "Duruşsuz 130 main örneğin 89'u çapa beklerken, 20'si kapıda, 16'sı ana kamera sayılmadı, 4'ü tekrar/kesme."
+    },
+    {
+      "run": 2,
+      "design": "Çapa araması 5 karede bir + çapadan geriye takip. Çapa eşikleri ve D kapıları aynı.",
+      "note": "Değişiklik 1. koşu sonucu görülerek yapıldı; bu yüzden geliştirme iyimser sayılır, karar kontrolde verilir."
+    }
+  ]
 }
