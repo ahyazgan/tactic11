@@ -171,4 +171,5 @@
 - [x] Şekil bekçisi eşikleri referansa karşı ölçüldü: blok 6 m ve hat aralığı 4 m gündüz güvenilir, gecede sınırda; genişlik 6 m ve boy 6 m gürültü içinde (SEKIL-BEKCISI-OLCUMU.md).
 - [ ] (diğer oturum) genişlik → %10–90 aralığı + eşik 8 m; boy → p90 derinlik − geri hat; hat aralığı eşiği 5 m; sonra aynı araçla yeniden ölç.
 - [x] USB kamera (Insta360 X5) ile canlı hat ilk koşu: segment/dedektör/DB ön kontrolü tamam; sahasız görüntüde kare yazılmaz (otomatik çapa bulunamaz, doğru davranış) — docs/measurements/live-rehearsal-990771-usb-camera.json
+- [x] Saha günü ön kontrolü `scripts/saha_hazirlik.py`: ffmpeg/kamera kipleri/disk bütçesi/GPU/DB/kalibrasyon tek komutta GEÇTİ-UYARI-KALDI; çıkış kodu 0/1/2 — docs/CANLI-MOD-KILAVUZU.md §0
 - [ ] (diğer oturum) decisions/live dakika kaydırıcısı 50–95: prova maçları 10–45. dakikada, canlı modda dakika takip durumundan (processed_minute) gelmeli; telestrasyon kartı 401'de 'giriş gerekli' demeli.
