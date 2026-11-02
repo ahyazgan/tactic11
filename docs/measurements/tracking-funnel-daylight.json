@@ -285,5 +285,5 @@
   "Başlangıç el çapasıdır: yayın çapasından (kontrolde medyan 0,93 m, %29,7 kabul) başlamak ölçülmedi.",
   "Tek lig, tek yayın kuruluşu, 3 maç, sabit 1080p. Hız ölçülmedi; kare başına çok sayıda arama canlı için pahalı olabilir."
  ],
- "status": "Geliştirme ölçümü. Üretime bağlı değil. Çözüm hipotezi: docs/measurements/broadcast-tracking-preregistration-draft.json (onay bekliyor)."
+ "status": "Geliştirme ölçümü. Üretime bağlı değil. Çözüm hipotezi: docs/measurements/broadcast-tracking-preregistration.json."
 }

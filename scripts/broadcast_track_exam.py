@@ -1,0 +1,222 @@
+"""Çapa+takip sınavı (venv-cv). Ön kayıt: docs/measurements/broadcast-tracking-preregistration.json.
+
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam run --match kyoto_kobe --out <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam sample-grids --dir <klasör> --out <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam gates --dir <klasör>
+
+Elle çapa verilmez, sistem çapayı kendisi bulur. Görüntüler repoda değildir.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from collections import Counter
+from collections.abc import Iterator
+from pathlib import Path
+
+import numpy as np
+
+from scripts.calibration_funnel import MATCH_GROUP, other_frames, video_of
+from scripts.tracking_funnel import mark_errors
+
+FPS = 15.0
+SAMPLE_EVERY = 45           # 3 sn: shot_exam örnek aralığı
+END_OFFSET = 44             # tracking_funnel uç karesi
+MAX_SAMPLES = 120
+START_POINTS = Path("docs/measurements/daylight-calibration-truth-points.json")
+END_POINTS = Path("docs/measurements/tracking-funnel-end-truth-points.json")
+DERIVED_POINTS = Path("docs/measurements/broadcast-track-derived-truth-points.json")
+D1_MIN_MAIN = 0.60
+D2_MAX_MEDIAN_M = 2.0
+WRONG_M = 5.0
+D2_MAX_WRONG = 0.05
+D3_MAX_OTHER = 0.05
+DERIVED_STATES = {"backfilled", "bridged"}
+
+
+def timed_frames(video: Path) -> Iterator[tuple[int, np.ndarray]]:
+    """(15 fps ızgara no, kare): sıralı okur, her kareyi aramaz."""
+    import cv2
+
+    cap = cv2.VideoCapture(str(video))
+    if not cap.isOpened():
+        raise SystemExit(f"video açılamadı: {video}")
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    index = 0
+    try:
+        for k in range(MAX_SAMPLES * SAMPLE_EVERY):
+            target = int(round(k / FPS * fps))
+            frame = None
+            while index <= target:
+                ok, frame = cap.read()
+                index += 1
+                if not ok:
+                    return
+            yield k, frame
+    finally:
+        cap.release()
+
+
+def marked_frames(match: str) -> dict[int, list[dict]]:
+    """15 fps ızgara no → el noktaları: klip başı ve klip sonu işaretleri."""
+    marks: dict[int, list[dict]] = {}
+    for path, offset in ((START_POINTS, 0), (END_POINTS, END_OFFSET), (DERIVED_POINTS, 0)):
+        if not path.exists():
+            continue
+        frames = json.loads(path.read_text(encoding="utf-8"))["frames"].get(match, {})
+        for sample, spec in frames.items():
+            if spec.get("points"):
+                marks[int(sample) * SAMPLE_EVERY + offset] = spec["points"]
+    return marks
+
+
+def run(match: str, out: Path) -> int:
+    from app.tracking.broadcast_track import BackfillingTracker, TrackFrame
+
+    if MATCH_GROUP.get(match) != "development":
+        print(f"{match}: geliştirme maçı değil", file=sys.stderr)
+        return 2
+    out.mkdir(parents=True, exist_ok=True)
+    others = other_frames(match)
+    marks = marked_frames(match)
+    tracker = BackfillingTracker(FPS)
+    states: Counter = Counter()
+    kept: dict[int, TrackFrame] = {}
+    produced: set[int] = set()
+    total = 0
+    size = (0, 0)
+    start = time.perf_counter()
+    for k, frame in timed_frames(video_of(match)):
+        size = (frame.shape[1], frame.shape[0])
+        total += 1
+        for done_k, result in tracker.feed(k, frame):
+            states[result.state] += 1
+            if result.homography is not None:
+                produced.add(done_k)
+            if done_k % SAMPLE_EVERY == 0 or done_k in marks:
+                kept[done_k] = result
+        if k % 450 == 0:
+            print(match, k, dict(states), flush=True)
+    seconds = time.perf_counter() - start
+    samples = [{"sample": k // SAMPLE_EVERY, "label": "other" if k // SAMPLE_EVERY in others else "main",
+                "posed": result.homography is not None, "state": result.state,
+                "pose": result.homography.tolist() if result.homography is not None else None}
+               for k, result in sorted(kept.items()) if k % SAMPLE_EVERY == 0]
+    poses = {str(k): {"state": result.state, "pose": result.homography.tolist()}
+             for k, result in kept.items() if result.homography is not None}
+    record = {"match": match, "frames": total, "produced": len(produced), "states": dict(states), "size": size,
+              "seconds": round(seconds, 1), "samples": samples, "poses": poses}
+    (out / f"{match}.json").write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
+    return 0
+
+
+def attach_evidence(record: dict) -> None:
+    """İşaretli karelerde kayıtlı duruşun hatası; işaret dosyası koşudan sonra da eklenebilir."""
+    marks = marked_frames(record["match"])
+    record["marked_frames"] = len(marks)
+    record["evidence"] = []
+    for k, points in sorted(marks.items()):
+        kept = record["poses"].get(str(k))
+        if kept is not None:
+            errors = mark_errors(np.array(kept["pose"]), points)
+            record["evidence"].append({"k": k, "median_m": round(float(np.median(errors)), 2),
+                                       "worst_m": round(float(errors.max()), 2), "state": kept["state"]})
+
+
+def sample_grids(folder: Path, out: Path) -> int:
+    """Türetilmiş duruşlu (geriye dolan, köprülenen) tüm main örneklerin ızgaralı karesi. Duruş çizilmez."""
+    import cv2
+
+    from scripts.calibration_funnel import draw_grid
+    from scripts.shot_exam import sampled_frames
+
+    out.mkdir(parents=True, exist_ok=True)
+    for path in sorted(folder.glob("*.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        wanted = {s["sample"] for s in record["samples"]
+                  if s["label"] == "main" and s["state"] in DERIVED_STATES}
+        for i, frame in sampled_frames(video_of(record["match"])):
+            if i in wanted:
+                cv2.imwrite(str(out / f"{record['match']}_{i}.jpg"), draw_grid(frame), [cv2.IMWRITE_JPEG_QUALITY, 85])
+    return 0
+
+
+def _median(values: list[float]) -> float | None:
+    return float(np.median(values)) if values else None
+
+
+def _accurate(medians: list[float]) -> bool:
+    """Kanıt yoksa geçmiş sayılmaz."""
+    if not medians:
+        return False
+    wrong = sum(m > WRONG_M for m in medians) / len(medians)
+    return float(np.median(medians)) <= D2_MAX_MEDIAN_M and wrong <= D2_MAX_WRONG
+
+
+def evaluate(records: list[dict]) -> dict:
+    samples = [s for r in records for s in r["samples"]]
+    main = [s for s in samples if s["label"] == "main"]
+    other = [s for s in samples if s["label"] == "other"]
+    evidence = [e for r in records for e in r["evidence"]]
+    medians = [e["median_m"] for e in evidence]
+    wrong = sum(m > WRONG_M for m in medians)
+    main_rate = sum(s["posed"] for s in main) / len(main) if main else 0.0
+    other_rate = sum(s["posed"] for s in other) / len(other) if other else 0.0
+    median = _median(medians)
+    return {
+        "per_match": {r["match"]: {
+            "main_posed": sum(s["posed"] for s in r["samples"] if s["label"] == "main"),
+            "main": sum(s["label"] == "main" for s in r["samples"]),
+            "other_posed": sum(s["posed"] for s in r["samples"] if s["label"] == "other"),
+            "other": sum(s["label"] == "other" for s in r["samples"]),
+            "frames": r["frames"], "produced": r["produced"], "states": r["states"],
+            "fps": round(r["frames"] / r["seconds"], 2) if r["seconds"] else None,
+        } for r in records},
+        "main_posed": sum(s["posed"] for s in main), "main": len(main), "main_rate": round(main_rate, 3),
+        "other_posed": sum(s["posed"] for s in other), "other": len(other), "other_rate": round(other_rate, 3),
+        "marked_produced": len(medians), "marked_total": sum(r["marked_frames"] for r in records),
+        "median_m": median, "wrong_over_5m": wrong,
+        "worst_median_m": max(medians) if medians else None,
+        "derived_marked_produced": sum(e["state"] in DERIVED_STATES for e in evidence),
+        "derived_median_m": _median([e["median_m"] for e in evidence if e["state"] in DERIVED_STATES]),
+        "derived_wrong_over_5m": sum(e["state"] in DERIVED_STATES and e["median_m"] > WRONG_M for e in evidence),
+        "D1": main_rate >= D1_MIN_MAIN,
+        "D2": _accurate(medians),
+        "D2_derived": _accurate([e["median_m"] for e in evidence if e["state"] in DERIVED_STATES]),
+        "D3": other_rate <= D3_MAX_OTHER,
+    }
+
+
+def gates(folder: Path) -> int:
+    records = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(folder.glob("*.json"))]
+    for record in records:
+        attach_evidence(record)
+    result = evaluate(records)
+    print(json.dumps(result, ensure_ascii=False, indent=1))
+    print("evidence", [(r["match"][:5], e["k"], e["median_m"], e["worst_m"], e["state"]) for r in records for e in r["evidence"]])
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="cmd", required=True)
+    r = sub.add_parser("run")
+    r.add_argument("--match", required=True)
+    r.add_argument("--out", type=Path, required=True)
+    g = sub.add_parser("gates")
+    g.add_argument("--dir", type=Path, required=True)
+    a = sub.add_parser("sample-grids")
+    a.add_argument("--dir", type=Path, required=True)
+    a.add_argument("--out", type=Path, required=True)
+    args = parser.parse_args()
+    if args.cmd == "run":
+        return run(args.match, args.out)
+    if args.cmd == "sample-grids":
+        return sample_grids(args.dir, args.out)
+    return gates(args.dir)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
