@@ -1,0 +1,289 @@
+{
+ "title": "Gündüz yayınında takip kaybı: aşamalara bölünmüş ölçüm",
+ "date": "2026-11-02",
+ "question": "Doğru duruştan başlayan üretim takibi neden 675 karede 3 kare üretiyor?",
+ "finding": "Sebep kesme ya da arama değil, çizgi çıkarımı: 15 klipte kesme yok, doğru duruşun çevresinde bile üretim çizgileriyle 0,85 kapısını 660 karenin 6'sı geçiyor. Yerel kontrast maskesi + görüntü akışı başlangıcı + 0,70 kapısı 660 karenin 511'ini üretiyor (%77); üretilen 9 uç karede medyan hata 0,26 m.",
+ "not_a_solution_yet": "Bu sonuç elle verilmiş çapadan başlar, geliştirme kareleridir, 0,70 kapısı üretim kapısından gevşektir. Üretime BAĞLANMADI; dondurulmuş dosyalara dokunulmadı.",
+ "reproduce": [
+  "venv-cv/Scripts/python.exe -X utf8 -m scripts.tracking_funnel run --points docs/measurements/daylight-calibration-truth-points.json --match <maç> --out <klasör>",
+  "venv-cv/Scripts/python.exe -X utf8 -m scripts.tracking_funnel summary --dir <klasör>",
+  "venv-cv/Scripts/python.exe -X utf8 -m scripts.tracking_funnel truth --dir <klasör> --marks docs/measurements/tracking-funnel-end-truth-points.json"
+ ],
+ "data": "gamba_kashiwa, kashima_marinos, kyoto_kobe geliştirme kesitleri; 15 elle işaretli çapadan 3 sn, 15 fps; çapa karesi hariç 660 kare. Görüntüler repoda yok, yalnız iç test.",
+ "variants": {
+  "prod_prev_085": "üretim çizgileri, önceki duruştan arama, kapı 0,85",
+  "day_prev_085": "yerel kontrast maskesi, önceki duruştan arama, kapı 0,85",
+  "day_flow_085": "yerel kontrast maskesi, akışla taşınan duruştan arama, kapı 0,85",
+  "day_flow_070": "yerel kontrast maskesi, akışla taşınan duruştan arama, kapı 0,70",
+  "reference": "yalnız görüntü akışı zinciri, çizgi yok",
+  "static": "çapada kalan sabit duruş"
+ },
+ "summary": {
+  "clips": 15,
+  "frames": 660,
+  "cut_frames": 0,
+  "uncut_frames": 660,
+  "uncut_not_main": 17,
+  "closure_m": [
+   0.09,
+   0.09,
+   0.45,
+   0.53,
+   0.57,
+   0.65,
+   0.96,
+   1.02,
+   1.07,
+   1.12,
+   1.18,
+   1.73,
+   2.22,
+   2.37,
+   2.85
+  ],
+  "reference_inlier_median": {
+   "production": 0.41,
+   "daylight": 0.803
+  },
+  "reference_pass_085": {
+   "production": 6,
+   "daylight": 262
+  },
+  "variants": {
+   "prod_prev_085": {
+    "losses": {
+     "line_extraction": 654,
+     "search": 6
+    },
+    "deviation_from_reference_m": {
+     "median": null,
+     "worst": null,
+     "over_5m": 0
+    }
+   },
+   "day_prev_085": {
+    "losses": {
+     "search": 45,
+     "produced": 286,
+     "line_extraction": 329
+    },
+    "deviation_from_reference_m": {
+     "median": 0.62,
+     "worst": 2.46,
+     "over_5m": 0
+    }
+   },
+   "day_flow_085": {
+    "losses": {
+     "produced": 320,
+     "line_extraction": 334,
+     "search": 6
+    },
+    "deviation_from_reference_m": {
+     "median": 0.5,
+     "worst": 2.17,
+     "over_5m": 0
+    }
+   },
+   "day_flow_070": {
+    "losses": {
+     "produced": 511,
+     "line_extraction": 143,
+     "search": 6
+    },
+    "deviation_from_reference_m": {
+     "median": 0.7,
+     "worst": 2.82,
+     "over_5m": 0
+    }
+   }
+  }
+ },
+ "end_frame_truth": {
+  "meaning": "Klip son karesinde her duruşun el noktalarındaki hatası: \"medyan/en kötü\" metre; * o karenin kapıdan geçip üretildiğini gösterir. Toplamlar yalnız üretilen uç kareleri sayar.",
+  "marks": "docs/measurements/tracking-funnel-end-truth-points.json",
+  "clips": [
+   {
+    "match": "gamba_kashiwa",
+    "frame": 19,
+    "static": "4.61/7.03",
+    "reference": "0.64/3.54",
+    "prod_prev_085": "4.61/7.03",
+    "day_prev_085": "1.18/1.6",
+    "day_flow_085": "0.69/2.98",
+    "day_flow_070": "0.54/2.3*"
+   },
+   {
+    "match": "gamba_kashiwa",
+    "frame": 32,
+    "static": "5.48/12.02",
+    "reference": "1.24/5.82",
+    "prod_prev_085": "5.48/12.02",
+    "day_prev_085": "5.48/12.02",
+    "day_flow_085": "1.24/5.82",
+    "day_flow_070": "0.3/5.21*"
+   },
+   {
+    "match": "gamba_kashiwa",
+    "frame": 44,
+    "static": "9.11/15.05",
+    "reference": "1.22/2.21",
+    "prod_prev_085": "9.11/15.05",
+    "day_prev_085": "9.11/15.05",
+    "day_flow_085": "1.39/2.88",
+    "day_flow_070": "1.05/2.3"
+   },
+   {
+    "match": "gamba_kashiwa",
+    "frame": 78,
+    "static": "7.29/9.49",
+    "reference": "1.29/1.51",
+    "prod_prev_085": "7.29/9.49",
+    "day_prev_085": "6.3/8.6",
+    "day_flow_085": "0.89/1.31",
+    "day_flow_070": "0.17/0.81*"
+   },
+   {
+    "match": "gamba_kashiwa",
+    "frame": 99,
+    "static": "9.76/14.48",
+    "reference": "0.62/1.6",
+    "prod_prev_085": "9.76/14.48",
+    "day_prev_085": "0.4/0.96*",
+    "day_flow_085": "0.17/0.25*",
+    "day_flow_070": "0.17/0.25*"
+   },
+   {
+    "match": "gamba_kashiwa",
+    "frame": 111,
+    "static": "9.75/14.88",
+    "reference": "1.05/1.39",
+    "prod_prev_085": "9.75/14.88",
+    "day_prev_085": "0.41/2.04*",
+    "day_flow_085": "0.7/1.77",
+    "day_flow_070": "0.7/1.79*"
+   },
+   {
+    "match": "kashima_marinos",
+    "frame": 43,
+    "static": "14.62/19.01",
+    "reference": "2.0/2.31",
+    "prod_prev_085": "14.62/19.01",
+    "day_prev_085": "1.08/1.89",
+    "day_flow_085": "0.2/0.41",
+    "day_flow_070": "0.15/0.42*"
+   },
+   {
+    "match": "kashima_marinos",
+    "frame": 69,
+    "static": "6.75/7.8",
+    "reference": "0.74/0.85",
+    "prod_prev_085": "6.75/7.8",
+    "day_prev_085": "0.62/0.96*",
+    "day_flow_085": "0.18/0.42*",
+    "day_flow_070": "0.18/0.42*"
+   },
+   {
+    "match": "kyoto_kobe",
+    "frame": 8,
+    "static": "2.96/6.29",
+    "reference": "0.5/1.17",
+    "prod_prev_085": "2.96/6.29",
+    "day_prev_085": "2.96/6.29",
+    "day_flow_085": "0.5/1.17",
+    "day_flow_070": "0.5/1.17"
+   },
+   {
+    "match": "kyoto_kobe",
+    "frame": 32,
+    "static": "0.79/1.09",
+    "reference": "1.06/1.27",
+    "prod_prev_085": "0.79/1.09",
+    "day_prev_085": "0.96/1.22*",
+    "day_flow_085": "0.98/1.25*",
+    "day_flow_070": "0.98/1.25*"
+   },
+   {
+    "match": "kyoto_kobe",
+    "frame": 59,
+    "static": "0.35/0.65",
+    "reference": "0.31/0.86",
+    "prod_prev_085": "0.35/0.65",
+    "day_prev_085": "0.21/0.51*",
+    "day_flow_085": "0.28/0.6*",
+    "day_flow_070": "0.26/0.58*"
+   },
+   {
+    "match": "kyoto_kobe",
+    "frame": 72,
+    "static": "34.55/53.09",
+    "reference": "12.99/16.94",
+    "prod_prev_085": "34.55/53.09",
+    "day_prev_085": "34.29/52.89",
+    "day_flow_085": "12.95/16.91",
+    "day_flow_070": "12.56/16.47"
+   },
+   {
+    "match": "kyoto_kobe",
+    "frame": 87,
+    "static": "15.08/21.49",
+    "reference": "2.0/7.18",
+    "prod_prev_085": "15.08/21.49",
+    "day_prev_085": "15.08/21.49",
+    "day_flow_085": "2.0/7.18",
+    "day_flow_070": "2.0/7.18"
+   },
+   {
+    "match": "kyoto_kobe",
+    "frame": 105,
+    "static": "17.68/24.63",
+    "reference": "5.0/7.14",
+    "prod_prev_085": "17.68/24.63",
+    "day_prev_085": "17.68/24.63",
+    "day_flow_085": "5.0/7.14",
+    "day_flow_070": "5.21/8.07"
+   }
+  ],
+  "produced_end_frames": {
+   "static": 14,
+   "reference": 14,
+   "day_flow_070": 9,
+   "day_prev_085": 5,
+   "day_flow_085": 4
+  },
+  "median_of_medians_m": {
+   "static": 8.2,
+   "reference": 1.14,
+   "day_flow_070": 0.26,
+   "day_prev_085": 0.41,
+   "day_flow_085": 0.23
+  },
+  "worst_median_m": {
+   "static": 34.55,
+   "reference": 12.99,
+   "day_flow_070": 0.98,
+   "day_prev_085": 0.96,
+   "day_flow_085": 0.98
+  }
+ },
+ "reading": [
+  "Üretim yolunda çizgi kaybı baskın: üretim maskesinde referans çevresi medyan inlier 0,41; yerel kontrast maskesinde 0,80.",
+  "Yalnız akış yetmez: medyan 1,14 m ama kyoto 72'de 12,99 m, kyoto 105'te 5,0 m. Çizgiler düzeltici olarak gerekli.",
+  "Kapı bu üç kyoto klibinin uç karesinde üretimi durdurdu: büyük hatalı uç kareler üretilmedi. Kyoto 8 ve 87 uzun gölgede hiç üretmiyor."
+ ],
+ "errors_in_this_measurement": [
+  "İlk koşu 85 kareyi kesme saydı. Kural akış oranı 0,3 altını da kesme sayıyordu; bu karelerde histogram benzerliği 1,0 idi. Oran ölçütü kaldırıldı, tekrar koşuldu: kesme 0. Kural sonuç görüldükten sonra değişti.",
+  "İlk koşu çizgi kaybını zincirin düzeltilmemiş duruşunda ölçüyordu; zincir kayması çizgi kaybı görünüyordu. best_near ile duruşun çevresindeki en iyi inlier ölçülüyor.",
+  "İlk doğruluk ölçütü ızgara farkıydı, az noktalı karede görüntünün işaretsiz bölgesine taşıyordu. Ölçüt işaretli noktalardaki saha hatasına çevrildi."
+ ],
+ "limits": [
+  "Doğruluk yalnız 14 uç karede ölçüldü; aradaki karelerin hatası el işaretiyle ölçülmedi, yalnız akış referansına göre biliniyor (en kötü 2,82 m) ve akış variantı bu referansla bağımsız değil.",
+  "0,70 kapısında üretilen 14 uç karenin 9'u; en kötü tek nokta 5,21 m (gamba 32).",
+  "Uç kare el işaretleri tek değerlendirici, medyan yeniden izdüşüm 2-10 px, kyoto 87 bir noktada 33 px. Kashima 56'da 4 bağımsız nokta yok, ölçüm dışı.",
+  "Uç kareler işaretlenirken özet oranlar biliniyordu, duruş çıktısı bindirilmedi.",
+  "Kesme yokluğu bu 15 klip için geçerli: kırpılmış 3 sn seçildi, tekrar ve kesme davranışı sınanmadı. Kesmede takibin durması ayrıca ölçülmeli.",
+  "Başlangıç el çapasıdır: yayın çapasından (kontrolde medyan 0,93 m, %29,7 kabul) başlamak ölçülmedi.",
+  "Tek lig, tek yayın kuruluşu, 3 maç, sabit 1080p. Hız ölçülmedi; kare başına çok sayıda arama canlı için pahalı olabilir."
+ ],
+ "status": "Geliştirme ölçümü. Üretime bağlı değil. Çözüm hipotezi: docs/measurements/broadcast-tracking-preregistration-draft.json (onay bekliyor)."
+}
