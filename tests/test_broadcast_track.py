@@ -171,9 +171,17 @@ def test_gate_gap_is_not_bridged_when_the_pose_is_lost(tracker, monkeypatch):
 def test_evaluate_applies_development_gates():
     samples = [{"label": "main", "posed": i < 7} for i in range(10)] + [{"label": "other", "posed": False}] * 5
     record = {"match": "m", "samples": samples, "frames": 10, "produced": 7, "states": {}, "seconds": 2.0,
-              "marked_frames": 3, "evidence": [{"median_m": 1.0}, {"median_m": 1.5}, {"median_m": 1.2}]}
+              "marked_frames": 3, "evidence": [{"median_m": 1.0, "state": "tracked"}, {"median_m": 1.5, "state": "tracked"},
+                           {"median_m": 1.2, "state": "tracked"}]}
     result = evaluate([record])
     assert result["main_rate"] == 0.7
     assert result["D1"] and result["D2"] and result["D3"]
-    record["evidence"].append({"median_m": 9.0})
-    assert evaluate([record])["D2"] is False
+    assert result["D2_derived"] is False    # türetilmiş kare işaretlenmemişse doğruluğu kanıtlanmış sayılmaz
+    record["evidence"].append({"median_m": 0.8, "state": "backfilled"})
+    result = evaluate([record])
+    assert result["D2_derived"] is True
+    assert result["derived_marked_produced"] == 1
+    record["evidence"].append({"median_m": 9.0, "state": "bridged"})
+    result = evaluate([record])
+    assert result["D2"] is False
+    assert result["D2_derived"] is False

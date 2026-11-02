@@ -147,6 +147,14 @@ def _median(values: list[float]) -> float | None:
     return float(np.median(values)) if values else None
 
 
+def _accurate(medians: list[float]) -> bool:
+    """Kanıt yoksa geçmiş sayılmaz."""
+    if not medians:
+        return False
+    wrong = sum(m > WRONG_M for m in medians) / len(medians)
+    return float(np.median(medians)) <= D2_MAX_MEDIAN_M and wrong <= D2_MAX_WRONG
+
+
 def evaluate(records: list[dict]) -> dict:
     samples = [s for r in records for s in r["samples"]]
     main = [s for s in samples if s["label"] == "main"]
@@ -156,8 +164,7 @@ def evaluate(records: list[dict]) -> dict:
     wrong = sum(m > WRONG_M for m in medians)
     main_rate = sum(s["posed"] for s in main) / len(main) if main else 0.0
     other_rate = sum(s["posed"] for s in other) / len(other) if other else 0.0
-    median = float(np.median(medians)) if medians else None
-    wrong_rate = wrong / len(medians) if medians else None
+    median = _median(medians)
     return {
         "per_match": {r["match"]: {
             "main_posed": sum(s["posed"] for s in r["samples"] if s["label"] == "main"),
@@ -176,7 +183,8 @@ def evaluate(records: list[dict]) -> dict:
         "derived_median_m": _median([e["median_m"] for e in evidence if e["state"] in DERIVED_STATES]),
         "derived_wrong_over_5m": sum(e["state"] in DERIVED_STATES and e["median_m"] > WRONG_M for e in evidence),
         "D1": main_rate >= D1_MIN_MAIN,
-        "D2": median is not None and median <= D2_MAX_MEDIAN_M and wrong_rate is not None and wrong_rate <= D2_MAX_WRONG,
+        "D2": _accurate(medians),
+        "D2_derived": _accurate([e["median_m"] for e in evidence if e["state"] in DERIVED_STATES]),
         "D3": other_rate <= D3_MAX_OTHER,
     }
 
