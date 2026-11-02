@@ -1,0 +1,44 @@
+{
+  "title": "Profesyonel gündüz sınav seti ve çekim ayırıcı: ön kayıt",
+  "written": "2026-11-02, kontrol kesitlerinin görüntüsüne bakılmadan; zaman kanıtı bu dosyanın ilk commit'i",
+  "question": "Bir yayın karesi ana geniş kameradan mı? Değilse kalibrasyona girmemeli.",
+  "why": "J.League ölçümünde kalibratör yüz ve kale yakın çekimlerinde %86-100 inlier ile yanlış kabul verdi (docs/measurements/line-extraction-daylight-2026-11-02.json).",
+  "source": "J.LEAGUE International resmi YouTube yayınları, 1080p, yalnız iç test, yeniden dağıtım yok; videolar repoda değil",
+  "matches": {
+    "development": {
+      "gamba_kashiwa": {"file": "data/tracking/videos/jleague_dl/j1_gamba_kashiwa_20251018_720_1080.mp4", "youtube": "Y5zMUMGqcQk", "note": "önceden görüldü"},
+      "kashima_marinos": {"file": "data/tracking/videos/jleague_dl/j1_kashima_marinos_20251206_1200_1560.mp4", "youtube": "AE9n1DjS6ao"},
+      "kyoto_kobe": {"file": "data/tracking/videos/jleague_dl/j1_kyoto_kobe_20251206_1200_1560.mp4", "youtube": "U00UrjcpWEE"}
+    },
+    "control": {
+      "verdy_kashima": {"file": "data/tracking/videos/jleague_dl/j1_verdy_kashima_20251130_1200_1560.mp4", "youtube": "OzU-wAAL4IU"},
+      "niigata_kashiwa": {"file": "data/tracking/videos/jleague_dl/j1_niigata_kashiwa_20251130_1200_1560.mp4", "youtube": "QDSPc5vHxUY"}
+    },
+    "split_rule": "Kontrol maçları farklı stadyumlardan seçildi. Kashima ve Kashiwa takımları iki grupta da var, stadyumlar farklı. Ayrım indirme öncesi seçilen listenin son ikisi."
+  },
+  "sampling": "Her kesitten 3 saniyede bir kare, kesit başına en çok 120 kare",
+  "labels": {
+    "main": "Ana yayın kamerası: yüksek açı, geniş kadraj, oyuncular küçük, taktik konum okunabilir",
+    "other": "Yakın çekim, kale arkası, alçak açı, tribün, tekrar, geçiş efekti, grafik kaplı kare",
+    "rule": "Etiket yalnız görüntüye bakılarak verilir, ayırıcı çıktısı görülmeden. Kararsız kare 'other' sayılır çünkü yanlış kabul daha pahalı."
+  },
+  "order": [
+    "Geliştirme karelerini etiketle",
+    "Ayırıcıyı yalnız geliştirme kareleriyle kur, eşikleri dondur, commit et",
+    "Sonra kontrol karelerini etiketle, ayırıcı çıktısını görmeden",
+    "Kontrolü tek kez koş, eşik değiştirme"
+  ],
+  "pass_criteria_on_control": {
+    "other_leak": "other karelerinin main diye geçme oranı en çok %5",
+    "main_recall": "main karelerinin geçme oranı en az %85",
+    "both_required": true,
+    "report": "Oranlar Wilson %95 aralığıyla, maç başına ayrı. Kareler aynı çekimden geldiği için bağımsız değil, aralık iyimserdir.",
+    "on_fail": "Sonuç olduğu gibi yazılır, aynı kontrolle ikinci deneme yapılmaz; yeni deneme yeni kontrol maçı ister."
+  },
+  "secondary_descriptive": "Kalibratörü yalnız ayırıcının geçirdiği karelerle koşup kabul edilen kareleri mevcut durumla kıyasla. Geçme ölçütü değildir.",
+  "limits": [
+    "Tek lig ve tek yayın kuruluşu, başka yayın stilleri kapsanmaz",
+    "Ayırıcı kalibrasyonu çözmez, yalnız yanlış kareleri dışarıda bırakır; otomatik çapa ayrı sorun",
+    "Dondurulmuş kod değişmez, pitch_lines.py ve pipeline.py'ye bağlanmaz; ayırıcı ayrı modül"
+  ]
+}
