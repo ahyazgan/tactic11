@@ -4,6 +4,7 @@
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_anchor_exam g2
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_anchor_exam frames --match gamba_kashiwa --out <klasör>
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_anchor_exam tally --dir <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_anchor_exam audit --dir <klasör> --out <klasör>
 
 G1: elle gerçek duruştan çizilmiş kusursuz çizgi maskesinde yöntem doğruyu buluyor mu?
 G2: aynı karelerde gerçek çizgi maskesiyle. `frames` + `tally`: 5 geliştirme maçında main kabul
@@ -109,7 +110,8 @@ def frames(match: str, out: Path) -> int:
         rows.append({"match": match, "frame": i, "label": "other" if i in others else "main",
                      "grass": round(grass, 3), "accepted": bool(res and res.accepted),
                      "note": res.note if res else "çim oranı düşük",
-                     "inlier": res.inlier if res else 0.0, "explained": res.explained if res else 0.0})
+                     "inlier": res.inlier if res else 0.0, "explained": res.explained if res else 0.0,
+                     "homography": res.homography.tolist() if res and res.accepted else None})
     (out / f"{match}.json").write_text(json.dumps(rows, ensure_ascii=False, indent=0), encoding="utf-8")
     print(f"{match}: {len(rows)} kare")
     return 0
@@ -135,6 +137,40 @@ def tally(folder: Path) -> int:
     return 0
 
 
+def audit(folder: Path, out: Path, per_label: int) -> int:
+    """Kabul edilen karelerden eşit aralıklı örnek: göz denetimi için model bindirmesi."""
+    import cv2
+    import numpy as np
+
+    from scripts.calibration_funnel import write_overlay
+
+    rows: list[dict] = []
+    for match in MATCH_GROUP:
+        rows += [r for r in json.loads((folder / f"{match}.json").read_text(encoding="utf-8")) if r["accepted"]]
+    mains = [r for r in rows if r["label"] == "main"]
+    picked = [mains[int((k + 0.5) * len(mains) / per_label)] for k in range(min(per_label, len(mains)))]
+    picked += [r for r in rows if r["label"] == "other"]
+    out.mkdir(parents=True, exist_ok=True)
+    tiles = []
+    for r in picked:
+        for i, frame in sampled_frames(video_of(r["match"])):
+            if i == r["frame"]:
+                path = out / f"{r['match']}_{i}.jpg"
+                write_overlay(path, frame, np.array(r["homography"]))
+                tile = cv2.resize(cv2.imread(str(path)), (640, 360))
+                cv2.putText(tile, f"{r['label']} {r['match'][:5]} {i}", (120, 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                tiles.append(tile)
+                break
+    tiles += [np.zeros_like(tiles[0])] * (-len(tiles) % 3)
+    for page in range(0, len(tiles), 12):
+        chunk = tiles[page:page + 12]
+        sheet = np.vstack([np.hstack(chunk[k:k + 3]) for k in range(0, len(chunk), 3)])
+        cv2.imwrite(str(out / f"sheet_{page // 12}.jpg"), sheet, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    print(f"{len(picked)} kare, {len(tiles) // 12 + bool(len(tiles) % 12)} sayfa")
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -145,7 +181,13 @@ def main() -> int:
     f.add_argument("--out", required=True)
     t = sub.add_parser("tally")
     t.add_argument("--dir", required=True)
+    u = sub.add_parser("audit")
+    u.add_argument("--dir", required=True)
+    u.add_argument("--out", required=True)
+    u.add_argument("--per-label", type=int, default=30)
     a = p.parse_args()
+    if a.cmd == "audit":
+        return audit(Path(a.dir), Path(a.out), a.per_label)
     if a.cmd == "g1":
         return g1()
     if a.cmd == "g2":

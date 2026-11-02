@@ -21,7 +21,6 @@ import numpy as np
 from app.tracking.homography_fit import (
     DEFAULT_TOLERANCE_PX,
     line_coverage,
-    project_to_image,
     refine_homography,
     score_homography,
 )
@@ -529,6 +528,3 @@ def find_broadcast_anchor(mask: np.ndarray, tolerance_px: float | None = None) -
     if runner > 0.0 and best_key < runner * WIN_MARGIN:
         return BroadcastAnchor(None, False, "sahne belirsiz: uzak rakip belirgin geçilemedi", **common)
     return BroadcastAnchor(best, True, "kabul", **common)
-
-
-__all__ = ["BroadcastAnchor", "ImageLine", "find_broadcast_anchor", "project_to_image"]
