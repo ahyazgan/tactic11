@@ -40,6 +40,7 @@ WRONG_M = 5.0
 D2_MAX_WRONG = 0.05
 D3_MAX_OTHER = 0.05
 DERIVED_STATES = {"backfilled", "bridged"}
+SHADOW_DEVELOPMENT_MATCH = "verdy_kashima"   # görülmüş kontrol, gölgeli; geliştirmede serbest
 PLAN = Path("docs/measurements/broadcast-tracking-preregistration.json")
 CONTROL_TRUTH_PER_MATCH = 30
 SHEET_COLS, SHEET_ROWS, TILE_W, TILE_H = 5, 4, 320, 180   # shot_exam.write_sheet yerleşimi
@@ -93,7 +94,7 @@ def marked_frames(match: str) -> dict[int, list[dict]]:
 
 
 def run(match: str, out: Path) -> int:
-    if MATCH_GROUP.get(match) != "development":
+    if MATCH_GROUP.get(match) != "development" and match != SHADOW_DEVELOPMENT_MATCH:
         print(f"{match}: geliştirme maçı değil", file=sys.stderr)
         return 2
     out.mkdir(parents=True, exist_ok=True)
