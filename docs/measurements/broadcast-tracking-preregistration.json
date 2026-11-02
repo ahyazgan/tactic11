@@ -1,7 +1,7 @@
 {
   "title": "Yayın takibi: ön kayıt",
   "date": "2026-11-02",
-  "status": "GELİŞTİRME KAPILARI GEÇTİ (2026-11-02): D1 %66,2. Kör kontrol kullanıcı onayı bekliyor; kod dondurulmadı, maç seçilmedi, görüntü açılmadı.",
+  "status": "KAPANDI: kör kontrol KALDI (2026-11-02), C1 79/159 = %49,7 < %50. docs/measurements/broadcast-track-control-result.json. Aynı kontrolle ikinci deneme yok.",
   "hypothesis": "Yayın çapası kare başına ancak %30 civarı kabul alsa da, çapadan sonra görüntü akışıyla taşınan duruş yerel kontrast çizgileriyle düzeltilip 0,70 kapısından geçirilirse ana kamera süresinin çoğu doğru duruşla kaplanır.",
   "why_new_exam_not_retry": "Kalan sınav kare başına çapa kabulünü ölçtü. Bu sınav çapa+takip sisteminin ana kamera kapsamasını ölçer ve yeni maçlarda koşar. Kalan sonuç değişmez, eşikleri gevşetilmez.",
   "code": "Yeni ayrı modül, üretime bağlanmaz. pitch_lines.py, pipeline.py ve *frozen-decision.json dosyalarına dokunulmaz. Çapa eşikleri aynen kalır.",
@@ -20,7 +20,20 @@
     "C5_minimum_sample": "en az 15 işaretli üretim",
     "all_required": true
   },
-  "control_matches": "Daha önce görülmemiş 2 J.League gündüz maçı, en az biri sert gölgeli (kontrol öncesi yalnız maç saati ve hava kaydıyla seçilir; görüntü açılmadan). Kod ve eşikler önce hash ile dondurulur, etiketler ve gerçek duruşlar koşudan önce commit edilir, tek koşu.",
+  "control_matches": {
+    "hiroshima_kyoto": {
+      "file": "data/tracking/videos/jleague_dl/j1_hiroshima_kyoto_20241103_1200_1560.mp4",
+      "source": "https://www.youtube.com/watch?v=OU9mJgdHehM",
+      "title": "Sanfrecce Hiroshima v Kyoto Sanga, 2024 J1 League, 2024-11-03, yayın 12:55 JST",
+      "why": "Sert gölge kuralı: listede bulut ≤%30 olan ilk uygun maç. Open-Meteo saatlik bulut %4 ve %1, doğrudan ışınım 526 ve 514 W/m²."
+    },
+    "kashiwa_hiroshima_final": {
+      "file": "data/tracking/videos/jleague_dl/levain_kashiwa_hiroshima_20251101_1200_1560.mp4",
+      "source": "https://www.youtube.com/watch?v=OUtaPdOvH-s",
+      "title": "Kashiwa Reysol v Sanfrecce Hiroshima, YBC Levain Cup finali, Ulusal Stadyum, 2025-11-01, yayın 12:59 JST",
+      "why": "İkinci maç kuralı: en yeni uygun maç. Bulut %97."
+    }
+  },
   "unseen_required": "chiba_tokushima, kashiwa_machida, verdy_kashima, niigata_kashiwa görülmüş sayılır.",
   "numbers_note": "D ve C eşikleri taslak öneridir. D1 ve C1, bu geliştirme ölçümü görüldükten sonra yazıldı.",
   "metric_definitions": {
@@ -80,5 +93,42 @@
       "note": "Tasarım ve seçim geliştirme verisiyle yapıldı; karar kontrolde verilir.",
       "result": "D1 geçti: main 151/228 (%66,2). D2 geçti: 63 işaretli üretim, medyan 0.52 m, >5 m 0. Türetilmiş 43, medyan 0.51 m, >5 m 0; yeniden konumlanma 26, medyan 0.36 m. D3 geçti: other 0/132."
     }
-  ]
+  ],
+  "freeze_before_control": {
+    "code_sha256_lf": {
+      "app/tracking/broadcast_track.py": "9fef38759d30739740e9008a66b7c43e376c911bbfefdf789e446afec0dcf645",
+      "app/tracking/broadcast_anchor.py": "4dd99d4162d183522602723757d083b3d1f6bd92f90533a34b9ac2db13fa7a7a",
+      "app/tracking/shot_filter.py": "0d2efb3c2d5c189f57fd92a07a38c88331a41dfba246e43fbf73b8855c98b122",
+      "app/tracking/homography_fit.py": "eb1f3b71e3228d4099926852ae2eeae43bb36dec0c60ac5b189e7646ccf6b9ec",
+      "scripts/broadcast_track_exam.py": "5df91edeb688b2b92d77454819b072650739ee3b4b262c1caf3596f916045ffc",
+      "scripts/tracking_funnel.py": "7dde7e369fe71bbce55bdf5c24c6521c1e5f5acf41cb10d59306f5313bb7516c"
+    },
+    "rule": "control-run hash tutmazsa koşmaz. Sonuç dosyası varsa ikinci kez koşmaz. Eşik ve kod sonuç görüldükten sonra değişmez.",
+    "refreeze_note": "Etiket sayfası sabiti 6x5 yanlıştı; write_sheet 5x4 çizdiği için her sayfada 10 kare düşüyordu. Sabit düzeltildi, hash yenilendi. Düşen kareler ayrı sayfada etiketlendi. Değişiklik yalnız bu sabittir; yöntem o ana kadar bu videolarda koşmadı."
+  },
+  "control_selection": {
+    "source": "J.LEAGUE International resmi YouTube arşivi, yalnız üst veri: başlık, tarih, başlama saati. Görüntü ve küçük resim açılmaz.",
+    "eligible": "Başlama 14:00 JST veya daha erken; görülen 7 maçın (gamba_kashiwa, kashima_marinos, kyoto_kobe, verdy_kashima, niigata_kashiwa, chiba_tokushima, kashiwa_machida) ev sahibi stadyumunda oynanmamış; kapalı çatılı değil; en yeniden eskiye.",
+    "hard_shadow_match": "Listede ilk uygun maçtan başlayıp Open-Meteo arşivinde başlama saati ve sonraki 1 saatte bulut örtüsü ≤%30 olan ilk maç. Üst veriyle seçilir.",
+    "second_match": "Birinci dışında kalan en yeni uygun maç; hava koşulu aranmaz.",
+    "cut": "1200-1560. saniye, 1080p, https biçimi.",
+    "daylight_check": "control-inspect yalnız parlaklık sayısı üretir; gece çıkarsa maç atlanır, sonraki uygun alınır.",
+    "handling": "Yalnız iç test, yeniden dağıtılmaz, repoya girmez.",
+    "shadow_limit": "Hava kaydı sert gölgeyi garanti etmez; etiketleme sırasında gölge olup olmadığı not edilir, koşudan önce commit edilir.",
+    "applied": {
+      "listing": "Yayın listesi 553 kayıt. Öneki 16:06 başlayan ALL-STAR (2026-06-13) ve 14:00 sonrası tüm maçlar elendi.",
+      "skipped_for_shadow": "2025-05-31 ile 2024-12-01 arası 11 uygun maçta başlangıç veya sonraki saatte bulut %30 üstü. Levain finali ikinci maç oldu.",
+      "note": "Kyoto bu seçimde deplasman takımıdır, stadyum görülmemiştir. Kashiwa ve Hiroshima kadroları görülmüş olabilir; kural stadyuma bakar."
+    }
+  },
+  "control_order": [
+    "Kod dondurulur, bu dosya commit edilir",
+    "Maçlar üst veriyle seçilir ve kesitler indirilir",
+    "control-sheets ile main/other etiketlenir, commit edilir",
+    "control-pick ile maç başına 30 main kare seçilir, gerçek duruşları işaretlenir, commit edilir",
+    "control-run tek kez koşar"
+  ],
+  "control_report": "Geriye dolan ve yeniden konumlanma duruşları ayrıca raporlanır, ölçüt değildir. C1-C5 aynen, tek değişiklik yok.",
+  "control_inspect": "hiroshima_kyoto: 120 örnek, parlaklık medyan 118, en düşük 39, en yüksek 175. kashiwa_hiroshima_final: 120 örnek, medyan 127, en düşük 73, en yüksek 140. İkisi de gündüz.",
+  "download_note": "Plan 1200-1560. saniye dediği gibi indirildi; --force-keyframes-at-cuts kullanılmadı, kesit başı önceki anahtar kareden başlayabilir."
 }

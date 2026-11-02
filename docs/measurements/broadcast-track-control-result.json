@@ -1,0 +1,116 @@
+{
+ "title": "Çapa+takip kör kontrol sınavı: sonuç",
+ "date": "2026-11-02",
+ "verdict": "KALDI",
+ "verdict_detail": "C1 karşılanmadı: main kapsama 79/159 = %49,7 < %50. Geçmek için 80 gerekiyordu. Diğer dört ölçüt karşılandı. Aynı kontrolle ikinci deneme yok; yeni deneme yeni maç ister.",
+ "plan": "docs/measurements/broadcast-tracking-preregistration.json",
+ "labels": "docs/measurements/broadcast-track-labels-control.json",
+ "truth_points": "docs/measurements/broadcast-track-truth-points-control.json",
+ "order_evidence": "Sıra commit geçmişinde: kod dondurma (2ef1c83), maç seçimi (cf1ea77), etiketler ve sabit düzeltmesiyle yeniden hash (c3197ea), gerçek duruşlar (bd05671), sonra tek koşu. Kare dökümü üretilmedi.",
+ "command": "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_track_exam control-run --labels docs/measurements/broadcast-track-labels-control.json --points docs/measurements/broadcast-track-truth-points-control.json --out docs/measurements/broadcast-track-control-result.json",
+ "criteria": {
+  "C1_coverage": "main kapsama toplam ≥%50, her maçta ≥%35",
+  "C2_accuracy": "işaretli üretimlerde medyan hata ≤2,0 m",
+  "C3_wrong_main": "işaretli üretimlerin en çok %5'inde kare medyanı >5 m",
+  "C4_wrong_other": "other üretim ≤%5",
+  "C5_minimum_sample": "en az 15 işaretli üretim",
+  "all_required": true
+ },
+ "result": {
+  "verdict": "KALDI",
+  "gates": {
+   "C1_coverage": false,
+   "C2_accuracy": true,
+   "C3_wrong_main": true,
+   "C4_wrong_other": true,
+   "C5_minimum_sample": true
+  },
+  "per_match": {
+   "hiroshima_kyoto": {
+    "main_posed": 30,
+    "main": 77,
+    "other_posed": 0,
+    "other": 43,
+    "frames": 5400,
+    "produced": 1297,
+    "states": {
+     "no_anchor": 279,
+     "searching": 1096,
+     "cut": 41,
+     "not_main": 1956,
+     "anchored": 22,
+     "backfilled": 297,
+     "tracked": 937,
+     "gate": 263,
+     "gate_lost": 15,
+     "replay": 780,
+     "relocalized": 3,
+     "bridged": 38,
+     "not_main_lost": 8
+    },
+    "fps": 9.25
+   },
+   "kashiwa_hiroshima_final": {
+    "main_posed": 49,
+    "main": 82,
+    "other_posed": 0,
+    "other": 38,
+    "frames": 5400,
+    "produced": 2204,
+    "states": {
+     "not_main": 2154,
+     "replay": 906,
+     "anchored": 28,
+     "tracked": 1802,
+     "not_main_lost": 10,
+     "no_anchor": 43,
+     "searching": 168,
+     "backfilled": 347,
+     "cut": 17,
+     "gate": 256,
+     "bridged": 26,
+     "gate_lost": 15,
+     "relocalized": 1
+    },
+    "fps": 11.99
+   }
+  },
+  "main_posed": 79,
+  "main": 159,
+  "main_rate": 0.497,
+  "other_posed": 0,
+  "other": 81,
+  "other_rate": 0.0,
+  "marked_produced": 30,
+  "marked_total": 57,
+  "median_m": 0.37,
+  "wrong_over_5m": 0,
+  "worst_median_m": 3.89,
+  "derived_marked_produced": 8,
+  "derived_median_m": 0.78,
+  "derived_wrong_over_5m": 0,
+  "reloc_marked_produced": 1,
+  "reloc_median_m": 0.21,
+  "reloc_wrong_over_5m": 0,
+  "main_posed_by_reloc": 5,
+  "worst_point_m": 14.77
+ },
+ "development_vs_control": {
+  "main_coverage": "geliştirme 151/228 (%66,2), kontrol 79/159 (%49,7)",
+  "other": "geliştirme 0/132, kontrol 0/81",
+  "accuracy": "geliştirme 63 karede medyan 0,52 m, kontrol 30 karede medyan 0,37 m; ikisinde de kare medyanı >5 m yok",
+  "note": "Geliştirme kapsamada iyimserdi, doğruluk ve yanlış üretim tuttu."
+ },
+ "per_match_reading": "Sert gölgeli güneşli maç hiroshima_kyoto 30/77 (%39,0), bulutlu kashiwa_hiroshima_final 49/82 (%59,8). Tek maç başına şart (%35) ikisinde de karşılandı.",
+ "limits": [
+  "Fark tek örnek: 80/159 geçerdi. Kural gereği sonuç KALDI, ama tek etiket farkı sonucu değiştirebilirdi; bu yöntemin sınırda olduğunu gösterir, geçtiğini değil.",
+  "Kare medyanı >5 m yok ama 0/30 için Wilson üst sınırı yaklaşık %11; gerçek oran %5 üstünde olabilir. Tek noktada en kötü hata 14,77 m, en kötü kare medyanı 3,89 m.",
+  "Doğruluk 57 işaretli karenin üretilen 30'unda ölçüldü. Duruşu olan diğer main örneklerin hatası bilinmiyor.",
+  "Türetilmiş kanıt az: geriye dolan/köprülenen/yeniden konumlanan yalnız 8 işaretli üretim, medyan 0,78 m; yeniden konumlanmadan 1 kare.",
+  "İşaretler tek değerlendirici; 49 karede yeniden izdüşüm medyanı 3,5 px, en kötü nokta 24,8 px. İki işaret hatası koşudan önce çıkarıldı.",
+  "Maç seçimi hava kaydına dayanır; görüntüde sert gölge görüldü, tek gölgeli maçla genellenemez.",
+  "Kare dökümü üretilmediği için kaybın örnek bazlı dağılımı bilinmiyor; yalnız kare durum sayıları var. Yeni tasarım için bu kontrol verisi kullanılmamalı.",
+  "Geriye takip yalnız maç sonrası. Sıralı koşuda 9,3-12,0 fps; gerçek zaman 15 fps ister. Tek lig, tek yayın biçimi, 2 maç, maç başına 6 dk."
+ ],
+ "status": "Üretime BAĞLANMADI. hiroshima_kyoto ve kashiwa_hiroshima_final artık görülmüş kontroldür."
+}
