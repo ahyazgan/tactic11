@@ -154,6 +154,38 @@ def test_gate_gap_is_bridged_only_when_tracking_passes_again(tracker, monkeypatc
     assert all(r.homography is not None for _, r in results)
 
 
+def test_bridge_needs_the_flow_pose_to_close_on_the_line_pose(tracker, monkeypatch):
+    fill = bt.BackfillingTracker()
+    fill.feed(0, textured(1))
+    monkeypatch.setattr(
+        bt, "refine_homography",
+        lambda h, _d, step_px, tolerance_px: SimpleNamespace(homography=h, accepted=True, inlier_ratio=0.5),
+    )
+    fill.feed(1, textured(1))
+
+    def far(h, _d, step_px, tolerance_px):
+        moved = h.copy()
+        moved[0, 2] += bt.MAX_BRIDGE_CLOSURE_M + 1.0
+        return SimpleNamespace(homography=moved, accepted=True, inlier_ratio=0.9)
+
+    monkeypatch.setattr(bt, "refine_homography", far)
+    results = fill.feed(2, textured(1))
+    assert [r.state for _, r in results] == ["tracked"]
+    assert fill._gap == []
+
+
+def test_not_main_frames_inside_a_continuous_shot_are_bridged(tracker, monkeypatch):
+    fill = bt.BackfillingTracker()
+    fill.feed(0, textured(1))
+    monkeypatch.setattr(bt, "classify_shot", lambda _f: SimpleNamespace(is_main=False))
+    missed = fill.feed(1, textured(1))
+    assert missed[0][1].state == "not_main"
+    assert missed[0][1].homography is None
+    monkeypatch.setattr(bt, "classify_shot", lambda _f: SimpleNamespace(is_main=True))
+    results = fill.feed(2, textured(1))
+    assert [(k, r.state) for k, r in results] == [(2, "tracked"), (1, "bridged")]
+
+
 def test_gate_gap_is_not_bridged_when_the_pose_is_lost(tracker, monkeypatch):
     monkeypatch.setattr(
         bt, "refine_homography",
