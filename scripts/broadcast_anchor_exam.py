@@ -8,11 +8,15 @@
 
 G1: elle gerçek duruştan çizilmiş kusursuz çizgi maskesinde yöntem doğruyu buluyor mu?
 G2: aynı karelerde gerçek çizgi maskesiyle. `frames` + `tally`: 5 geliştirme maçında main kabul
-oranı ve G3 (other karelerde kabul). Kontrol maçı bu araçla koşulmaz.
+oranı ve G3 (other karelerde kabul). `frames`, `tally` ve `audit` yalnız geliştirme maçlarını okur.
+
+Kontrol, ön kayıt sırasıyla: control-inspect, control-sheets, control-pick, control-grid, sonra bir
+kez control-run. control-run kod hash'i tutmazsa veya sonuç dosyası varsa koşmaz, kare dökümü üretmez.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import time
 from pathlib import Path
@@ -29,17 +33,33 @@ from scripts.calibration_funnel import (
     homography_from_points,
     ideal_dist_map,
     other_frames,
+    pick_frames,
     probe_distance_m,
     refined_pose,
     video_of,
 )
-from scripts.shot_exam import sampled_frames, wilson
+from scripts.shot_exam import (
+    SHEET_COLS,
+    SHEET_ROWS,
+    TILE_H,
+    TILE_W,
+    sampled_frames,
+    wilson,
+    write_sheet,
+)
 
 POINTS = Path("docs/measurements/daylight-calibration-truth-points.json")
 G1_MIN_ACCEPTED, G1_MAX_MEDIAN_M, G1_MAX_ANY_M = 13, 1.0, 5.0
 G2_MIN_ACCEPTED, G2_MAX_MEDIAN_M, G2_MAX_ANY_M = 5, 2.0, 5.0
 G3_MAX_OTHER_RATE = 0.05
 MIN_GRASS_RATIO = 0.50
+PLAN = Path("docs/measurements/broadcast-anchor-preregistration.json")
+CONTROL_TRUTH_PER_MATCH = 30
+C1_MIN_TOTAL, C1_MIN_PER_MATCH = 0.30, 0.20
+C2_MAX_MEDIAN_M = 2.0
+C3_WRONG_M, C3_MAX_RATE = 5.0, 0.05
+C4_MAX_RATE = 0.05
+C5_MIN_SAMPLE = 15
 
 
 def to_gray(frame):
@@ -177,6 +197,145 @@ def audit(folder: Path, out: Path, per_label: int) -> int:
     return 0
 
 
+def control_videos() -> dict[str, Path]:
+    plan = json.loads(PLAN.read_text(encoding="utf-8"))
+    return {name: Path(item["file"]) for name, item in plan["control_matches"].items()}
+
+
+def sha256_lf(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def verify_freeze() -> None:
+    frozen = json.loads(PLAN.read_text(encoding="utf-8"))["freeze_before_control"]["code_sha256_lf"]
+    for name, expected in frozen.items():
+        if sha256_lf(Path(name)) != expected:
+            raise SystemExit(f"dondurulmuş kod değişmiş: {name}; kontrol koşulmaz")
+
+
+def control_inspect() -> int:
+    """Yalnız sayı: görüntü yazmaz, gündüz kontrolü içindir."""
+    for name, video in control_videos().items():
+        grays = [float(to_gray(f).mean()) for _, f in sampled_frames(video)]
+        print(f"{name}: {len(grays)} örnek, parlaklık medyan {median(grays):.0f}, "
+              f"en düşük {min(grays):.0f}, en yüksek {max(grays):.0f}")
+    return 0
+
+
+def control_sheets(out: Path) -> int:
+    """Etiket sayfaları: numaralı küçük kareler, yöntem çıktısı içermez."""
+    import cv2
+    import numpy as np
+
+    out.mkdir(parents=True, exist_ok=True)
+    per_sheet = SHEET_COLS * SHEET_ROWS
+    for name, video in control_videos().items():
+        tiles: list[np.ndarray] = []
+        page = 0
+        for i, frame in sampled_frames(video):
+            tile = cv2.resize(frame, (TILE_W, TILE_H), interpolation=cv2.INTER_AREA)
+            cv2.rectangle(tile, (0, 0), (70, 34), (0, 0, 0), -1)
+            cv2.putText(tile, str(i), (6, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 255, 255), 2)
+            tiles.append(tile)
+            if len(tiles) == per_sheet:
+                write_sheet(out / f"{name}_{page:02d}.jpg", tiles)
+                page, tiles = page + 1, []
+        if tiles:
+            write_sheet(out / f"{name}_{page:02d}.jpg", tiles)
+    return 0
+
+
+def control_pick(labels_path: Path) -> int:
+    """Gerçek duruş işaretlenecek kareler: yalnız etiket dizisinden, maç başına 30."""
+    labels = json.loads(labels_path.read_text(encoding="utf-8"))
+    for name, video in control_videos().items():
+        count = sum(1 for _ in sampled_frames(video))
+        print(name, pick_frames(count, set(labels[name]["other"]), CONTROL_TRUTH_PER_MATCH))
+    return 0
+
+
+def control_grid(match: str, frame_no: int, out: Path) -> int:
+    import cv2
+
+    for i, frame in sampled_frames(control_videos()[match]):
+        if i == frame_no:
+            for x in range(0, frame.shape[1], 100):
+                cv2.line(frame, (x, 0), (x, frame.shape[0]), (0, 220, 220), 1)
+                cv2.putText(frame, str(x), (x + 2, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 255), 1)
+            for y in range(0, frame.shape[0], 100):
+                cv2.line(frame, (0, y), (frame.shape[1], y), (0, 220, 220), 1)
+                cv2.putText(frame, str(y), (2, y + 14), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 255), 1)
+            cv2.imwrite(str(out), frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            return 0
+    raise SystemExit("kare bulunamadı")
+
+
+def evaluate_control(rows: list[dict]) -> dict:
+    """Ön kayıttaki C1-C5. Satır: match, label, accepted, error_m (gerçek duruş yoksa None)."""
+    out: dict = {"per_match": {}}
+    for match in sorted({r["match"] for r in rows}):
+        sel = [r for r in rows if r["match"] == match]
+        out["per_match"][match] = rate_block(sel)
+    total = rate_block(rows)
+    errors = [r["error_m"] for r in rows if r["accepted"] and r["label"] == "main" and r["error_m"] is not None]
+    wrong = sum(e > C3_WRONG_M for e in errors)
+    med = median(errors) if errors else None
+    checks = {
+        "C1_main_acceptance": total["main"]["rate"] >= C1_MIN_TOTAL
+        and all(m["main"]["rate"] >= C1_MIN_PER_MATCH for m in out["per_match"].values()),
+        "C2_accuracy": med is not None and med <= C2_MAX_MEDIAN_M,
+        "C3_wrong_accept_main": bool(errors) and wrong / len(errors) <= C3_MAX_RATE,
+        "C4_wrong_accept_other": total["other"]["rate"] <= C4_MAX_RATE,
+        "C5_minimum_sample": len(errors) >= C5_MIN_SAMPLE,
+    }
+    out.update(total=total, truth_accepted=len(errors), median_error_m=med, wrong_gt_5m=wrong,
+               worst_error_m=max(errors) if errors else None, checks=checks,
+               verdict="GEÇTİ" if all(checks.values()) else "KALDI")
+    return out
+
+
+def rate_block(rows: list[dict]) -> dict:
+    block = {}
+    for label in ("main", "other"):
+        sel = [r for r in rows if r["label"] == label]
+        hits = sum(r["accepted"] for r in sel)
+        low, high = wilson(hits, len(sel))
+        block[label] = {"accepted": hits, "n": len(sel), "rate": round(hits / max(len(sel), 1), 3),
+                        "wilson95": [round(low, 3), round(high, 3)]}
+    return block
+
+
+def control_run(labels_path: Path, points_path: Path, out: Path) -> int:
+    """TEK koşu. Kare dökümü üretmez, yalnız toplamları yazar; aynı kontrolle ikinci deneme yoktur."""
+    import cv2
+    import numpy as np
+
+    verify_freeze()
+    if out.exists():
+        raise SystemExit(f"sonuç zaten var: {out}; kontrol ikinci kez koşulmaz")
+    labels = json.loads(labels_path.read_text(encoding="utf-8"))
+    points = json.loads(points_path.read_text(encoding="utf-8"))["frames"]
+    rows = []
+    for name, video in control_videos().items():
+        others = set(labels[name]["other"])
+        marked = {int(k): v["points"] for k, v in points[name].items() if v.get("points")}
+        for i, frame in sampled_frames(video):
+            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+            grass = float((cv2.inRange(hsv, np.array(GRASS_HSV_LOW), np.array(GRASS_HSV_HIGH)) > 0).mean())
+            res = None if grass < MIN_GRASS_RATIO else find_broadcast_anchor(daylight_line_mask(frame), to_gray(frame))
+            accepted = bool(res and res.accepted)
+            error = None
+            if accepted and i in marked:
+                pose = refined_pose(frame, homography_from_points(marked[i]))
+                error = round(probe_distance_m(res.homography, pose, (frame.shape[1], frame.shape[0])), 2)
+            rows.append({"match": name, "label": "other" if i in others else "main",
+                         "accepted": accepted, "error_m": error})
+    result = evaluate_control(rows)
+    out.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(json.dumps(result, ensure_ascii=False, indent=1))
+    return 0
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -191,7 +350,30 @@ def main() -> int:
     u.add_argument("--dir", required=True)
     u.add_argument("--out", required=True)
     u.add_argument("--per-label", type=int, default=30)
+    sub.add_parser("control-inspect")
+    cs = sub.add_parser("control-sheets")
+    cs.add_argument("--out", required=True)
+    cp = sub.add_parser("control-pick")
+    cp.add_argument("--labels", required=True)
+    cg = sub.add_parser("control-grid")
+    cg.add_argument("--match", required=True)
+    cg.add_argument("--frame", type=int, required=True)
+    cg.add_argument("--out", required=True)
+    cr = sub.add_parser("control-run")
+    cr.add_argument("--labels", required=True)
+    cr.add_argument("--points", required=True)
+    cr.add_argument("--out", required=True)
     a = p.parse_args()
+    if a.cmd == "control-inspect":
+        return control_inspect()
+    if a.cmd == "control-sheets":
+        return control_sheets(Path(a.out))
+    if a.cmd == "control-pick":
+        return control_pick(Path(a.labels))
+    if a.cmd == "control-grid":
+        return control_grid(a.match, a.frame, Path(a.out))
+    if a.cmd == "control-run":
+        return control_run(Path(a.labels), Path(a.points), Path(a.out))
     if a.cmd == "audit":
         return audit(Path(a.dir), Path(a.out), a.per_label)
     if a.cmd == "g1":
