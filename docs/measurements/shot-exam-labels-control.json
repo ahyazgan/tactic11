@@ -1,0 +1,10 @@
+{
+  "verdy_kashima": {
+    "other": [12, 18, 19, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 55, 65, 71, 72, 73, 77, 79, 80, 81, 82, 83, 100, 101, 102, 103, 104, 105, 106, 107, 108, 116, 117, 118],
+    "notes": "39, 79, 101 geçiş efekti; 36-38, 80-81, 106-108 tekrar, alçak açı veya kale arkası; 71-73 sol üstte küçük istatistik grafiği, saha okunuyor ama kararsız, kural gereği other; 102-105 ana kameraya benzer açı, 100 yakın çekimden sonra 101 geçişiyle açılıyor ve 106-108 kale arkasına bağlanıyor, büyük olasılıkla tekrar, kararsız, kural gereği other"
+  },
+  "niigata_kashiwa": {
+    "other": [14, 15, 16, 17, 18, 19, 20, 21, 22, 25, 26, 27, 28, 30, 31, 32, 33, 34, 38, 39, 42, 44, 45, 61, 62, 75, 76, 88, 89, 90, 91, 96, 97, 98, 99, 111, 112, 113],
+    "notes": "26 çözülme geçişi; 27-28 duvara yakınlaşma, oyuncular büyük; 23-24, 29, 35-37 serbest vuruşta geniş kadraj main; 88-89, 99 alçak açı"
+  }
+}
