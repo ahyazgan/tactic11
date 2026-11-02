@@ -182,6 +182,20 @@ def pick(per_match: int) -> int:
     return 0
 
 
+def draw_grid(frame: np.ndarray) -> np.ndarray:
+    """100 px ızgara, koordinat yazılı."""
+    import cv2
+
+    canvas = frame.copy()
+    for x in range(0, canvas.shape[1], 100):
+        cv2.line(canvas, (x, 0), (x, canvas.shape[0]), (0, 255, 255) if x % 500 == 0 else (0, 200, 200), 1)
+        cv2.putText(canvas, str(x), (x + 2, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 255), 1)
+    for y in range(0, canvas.shape[0], 100):
+        cv2.line(canvas, (0, y), (canvas.shape[1], y), (0, 255, 255) if y % 500 == 0 else (0, 200, 200), 1)
+        cv2.putText(canvas, str(y), (2, y + 14), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 255), 1)
+    return canvas
+
+
 def grid(match: str, frame_no: int, out: Path) -> int:
     """El işareti için kare: 100 px ızgara, koordinat yazılı (görüntü repoya girmez)."""
     import cv2
@@ -191,13 +205,7 @@ def grid(match: str, frame_no: int, out: Path) -> int:
     for i, frame in sampled_frames(video_of(match)):
         if i != frame_no:
             continue
-        canvas = frame.copy()
-        for x in range(0, canvas.shape[1], 100):
-            cv2.line(canvas, (x, 0), (x, canvas.shape[0]), (0, 255, 255) if x % 500 == 0 else (0, 200, 200), 1)
-            cv2.putText(canvas, str(x), (x + 2, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 255), 1)
-        for y in range(0, canvas.shape[0], 100):
-            cv2.line(canvas, (0, y), (canvas.shape[1], y), (0, 255, 255) if y % 500 == 0 else (0, 200, 200), 1)
-            cv2.putText(canvas, str(y), (2, y + 14), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 255), 1)
+        canvas = draw_grid(frame)
         cv2.imwrite(str(out), canvas, [cv2.IMWRITE_JPEG_QUALITY, 85])
         return 0
     raise SystemExit("kare bulunamadı")
