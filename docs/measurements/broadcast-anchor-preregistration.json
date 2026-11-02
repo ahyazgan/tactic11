@@ -1,6 +1,6 @@
 {
-  "title": "Yayın çapası: çizgi ailesi eşleştirme, ön kayıt TASLAĞI",
-  "status": "TASLAK. Kullanıcı onayı yok, kod yazılmadı, kontrol maçı seçilmedi ve indirilmedi. Onaylanınca bu dosya ilk commit'i zaman kanıtı olacak şekilde ön kayda dönüşür.",
+  "title": "Yayın çapası: çizgi ailesi eşleştirme, ön kayıt",
+  "status": "ONAYLI (kullanıcı, 2026-11-02). Kod bu commit sonrası yazılır. Kontrol maçı seçilmedi ve indirilmedi; üç geliştirme kapısı geçilmeden seçilmez.",
   "written": "2026-11-02, yeni kontrol karelerinin hiçbiri açılmadan",
   "evidence": "docs/measurements/daylight-calibration-funnel.json",
   "hypothesis": {

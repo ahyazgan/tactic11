@@ -135,5 +135,5 @@
     "Sonda hatası görüntü içi 9 noktada en büyük saha farkıdır; saha geneli hata değildir.",
     "Gece maçı ölçülmedi. Gece davranışı hakkında bu dosyadan sonuç çıkmaz."
   ],
-  "next": "docs/measurements/broadcast-anchor-preregistration-draft.json"
+  "next": "docs/measurements/broadcast-anchor-preregistration.json"
 }

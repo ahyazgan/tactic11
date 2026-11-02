@@ -1,0 +1,61 @@
+{
+  "title": "Yayın çapası: geliştirme kapıları sonucu",
+  "date": "2026-11-02",
+  "plan": "docs/measurements/broadcast-anchor-preregistration.json",
+  "code": "app/tracking/broadcast_anchor.py, scripts/broadcast_anchor_exam.py",
+  "status": "Üç geliştirme kapısı geçti. Eşikler DONDURULMADI, kontrol maçı seçilmedi, üretime bağlı değil. Geliştirme sonucu iyimserdir, başarı sayılmaz.",
+  "commands": [
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam g1",
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam g2",
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam frames --match <maç> --out <klasör>",
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam tally --dir <klasör>",
+    "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_anchor_exam audit --dir <klasör> --out <klasör>"
+  ],
+  "gates": {
+    "G1_perfect_lines": {"accepted": "15/15", "median_error_m": 0.12, "worst_error_m": 3.49, "criterion": "≥13 kabul, medyan ≤1,0 m, hiçbiri >5 m", "passed": true, "baseline": "0/15, 14,6-72,1 m"},
+    "G2_real_lines": {"accepted": "6/15", "median_error_m": 0.51, "worst_error_m": 1.12, "criterion": "≥5 kabul, medyan ≤2,0 m, hiçbiri >5 m", "passed": true, "baseline": "0/15"},
+    "G3_other_frames": {"accepted": "3/209", "rate": 0.014, "wilson95": [0.005, 0.041], "criterion": "≤%5", "passed": true, "baseline": "0/209"}
+  },
+  "main_acceptance_vs_control_criterion": {
+    "criterion_C1": "toplam ≥%30, her maçta ≥%20",
+    "total": {"accepted": 101, "n": 391, "rate": 0.258, "wilson95": [0.217, 0.304], "met": false},
+    "per_match": {
+      "gamba_kashiwa": {"accepted": 31, "n": 76, "rate": 0.408, "met": true},
+      "kashima_marinos": {"accepted": 17, "n": 78, "rate": 0.218, "met": true},
+      "kyoto_kobe": {"accepted": 12, "n": 74, "rate": 0.162, "met": false},
+      "verdy_kashima": {"accepted": 11, "n": 81, "rate": 0.136, "met": false},
+      "niigata_kashiwa": {"accepted": 30, "n": 82, "rate": 0.366, "met": true}
+    },
+    "baseline": "0/391",
+    "reading": "Yöntem bugünkü haliyle kontrolde büyük olasılıkla C1'den kalır. Eşikler bu karelerle henüz ayarlanmadı ama yine de geliştirme verisi."
+  },
+  "main_rejection_reasons": {
+    "accepted": 101,
+    "landmark_inlier": 102,
+    "explained_share": 89,
+    "no_physical_hypothesis": 31,
+    "landmark_not_visible": 31,
+    "inlier": 30,
+    "grass_ratio": 5,
+    "ambiguous": 2
+  },
+  "visual_audit": {
+    "method": "Kabul edilen 101 main kareden eşit aralıklı 30'u ve 3 other kabulün tümü, model bindirmesi 640 px küçültülmüş sayfalarda gözle",
+    "main": "30/30 çizgiler oturuyor görünüyor, belirgin yanlış duruş veya yanlış yarı görülmedi",
+    "other": "3/3 (gamba 61, 63; kyoto 44) yüksek açılı tekrar veya geniş kare; geometri oturuyor görünüyor. Duruş doğru olsa da tekrar karesi canlı zaman çizgisine yazılmamalı, tek kare çapa bunu ayıramaz.",
+    "limit": "Bu çözünürlükte birkaç metrelik hata görülmez. Doğruluk iddiası yalnız G2'nin 6 karesi içindir; kalan 71 kabul edilmiş main kareye hiç bakılmadı."
+  },
+  "development_trials": [
+    "Açı boşluğuyla aile ayrımı: G1 12/15. Yelpazelenen enine doğruları bölüyordu. Kaçış noktası ayrımı: 15/15. Korundu.",
+    "Yakın taç fiziksel payını 5 m'den 25 m'ye çıkarmak: main 101 → 95, kyoto 59 düzelmedi. Geri alındı.",
+    "İlk koşuda sıralama hatası (sınır değerinin işareti taştı) bütün kareleri reddediyordu. Düzeltildi, sonuçlara etkisi yok."
+  ],
+  "limits": [
+    "G1 ve G2 yalnız 15 karede ve 3 maçta, işaretler tek değerlendiricinin. Kusursuz çizgi haritası da aynı işaretlerden çizildi.",
+    "G2'de yöntem tüm eşikler bu 15 kare görülerek kuruldu; 6/15 iyimser. kyoto 59 hâlâ fiziksel kapıda düşüyor, sebebi bulunmadı.",
+    "G1'deki 3,49 m (kyoto 87) kusursuz çizgide bile doğruya ulaşamadı, sebebi araştırılmadı.",
+    "Yalnız tek kare çapa ölçüldü. Takip kaybı (daylight-calibration-funnel.json: 675 karede 3) çözülmedi.",
+    "Tek lig, tek yayın kuruluşu, 5 maç. Yanlış yarı çizgiden ayırt edilemez, TV kuralı varsayılır.",
+    "Gece maçı test edilmedi."
+  ]
+}
