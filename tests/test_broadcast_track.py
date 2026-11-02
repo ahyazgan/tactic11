@@ -168,6 +168,46 @@ def test_gate_gap_is_not_bridged_when_the_pose_is_lost(tracker, monkeypatch):
     assert fill._gap == []
 
 
+def gray_of(seed: int, shift: int = 0) -> np.ndarray:
+    return textured(seed, shift)[:, :, 0]
+
+
+def test_relocalizer_carries_pose_to_a_shifted_view(monkeypatch):
+    monkeypatch.setattr(bt, "RELOC_MIN_INLIERS", 20)
+    reloc = bt.Relocalizer()
+    reloc.add(gray_of(1), POSE)
+    located = reloc.locate(gray_of(1, shift=8))
+    assert located is not None
+    # Görüntüde sağa 8 px kayan nokta aynı saha konumuna düşer
+    expected = POSE @ np.array([[1.0, 0.0, -8.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    assert np.allclose(located / located[2, 2], expected / expected[2, 2], atol=0.02)
+
+
+def test_relocalizer_refuses_too_few_matches_and_unknown_views():
+    reloc = bt.Relocalizer()
+    assert reloc.locate(gray_of(1)) is None
+    reloc.add(gray_of(1), POSE)
+    assert reloc.locate(gray_of(2)) is None
+
+
+def test_relocalized_chain_makes_no_keys(tracker, monkeypatch):
+    track, _ = tracker
+    added = []
+    monkeypatch.setattr(bt, "find_broadcast_anchor",
+                        lambda _m, _g: SimpleNamespace(accepted=False, homography=None, inlier=0.0))
+    monkeypatch.setattr(track._reloc, "locate", lambda _g: POSE)
+    monkeypatch.setattr(track._reloc, "add", lambda _g, _p: added.append(1))
+    monkeypatch.setattr(bt, "RELOC_EVERY_SEARCHES", 1)
+    monkeypatch.setattr(bt, "KEY_EVERY_FRAMES", 1)
+    first = track.step(textured(1))
+    assert first.state == "relocalized"
+    assert first.origin == "reloc"
+    following = track.step(textured(1, shift=2))
+    assert following.state == "tracked"
+    assert following.origin == "reloc"
+    assert added == []
+
+
 def test_evaluate_applies_development_gates():
     samples = [{"label": "main", "posed": i < 7} for i in range(10)] + [{"label": "other", "posed": False}] * 5
     record = {"match": "m", "samples": samples, "frames": 10, "produced": 7, "states": {}, "seconds": 2.0,
