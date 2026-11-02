@@ -24,6 +24,20 @@ için adım adım yol. Tüm komutlar proje kökünden (`football-intelligence`).
   doğruluk %71–75, savunma hattı hatası medyan ~6 m; takım ataması ~%70.
   Ayrıntı: `docs/OTOMATIK-TELESTRASYON.md`, `docs/TESPIT-KALITESI-DENETIMI.md`.
 
+## 0. Saha günü ön kontrolü (maça çıkmadan)
+
+```powershell
+venv-cv\Scripts\python.exe -X utf8 -m scripts.saha_hazirlik --camera "Insta360 X5" --hours 2 --calibration data\tracking\calibrations\<stadyum>.json
+```
+
+Tek komut, altı satır: ffmpeg, kamera (bağlı mı, hangi kipler; 1440p altı UYARI),
+disk (2 saat için akış ~3,3 GB/saat + çıktı ~1 GB/saat + 5 GB pay ≈ 13,6 GB), GPU
+(CUDA ve ≥3 GB boş VRAM), veritabanı (`canli_mac` ile aynı kapı), kalibrasyon
+(aynı doğrulama). Çıkış kodu 0 = hazır, 1 = uyarılarla başlar, 2 = KALDI satırı var,
+`canli_mac` başlamaz. Evden çalıştırınca kamera satırı KALDI olur; sahada kamerayı
+takıp tekrar çalıştırın. Disk KALDI ise `data/tracking/live/` altındaki eski koşuları
+silin (segmentler en büyük kalem) ya da `--height 1080` ile akışı küçültün.
+
 ## 1. Başlat
 
 ```powershell
