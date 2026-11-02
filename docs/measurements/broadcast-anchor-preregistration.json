@@ -1,6 +1,6 @@
 {
   "title": "Yayın çapası: çizgi ailesi eşleştirme, ön kayıt",
-  "status": "ONAYLI ve DONDURULDU (kullanıcı, 2026-11-02). Kontrol maçı bu commit sonrası seçilir.",
+  "status": "ONAYLI ve DONDURULDU (kullanıcı, 2026-11-02). Kontrol maçları seçildi, indirilemedi: YouTube bot doğrulaması. Görüntü açılmadı.",
   "written": "2026-11-02, yeni kontrol karelerinin hiçbiri açılmadan",
   "evidence": "docs/measurements/daylight-calibration-funnel.json",
   "hypothesis": {
@@ -47,9 +47,10 @@
     },
     "control": {
       "selection_rule": "J.LEAGUE International resmi YouTube arşivinden, tarihe göre en yeni, başlama saati 14:00 JST veya daha erken olan, 5 geliştirme maçının stadyumlarında oynanmamış 2 maç. Seçim yalnız üst veriyle yapılır, sıradaki ilk iki uygun maç alınır, görüntüye bakılmaz.",
-      "cut": "12:00-18:00 kesiti, 1080p, geliştirmedeki gibi",
+      "cut": "1200-1560. saniye (20:00-26:00), 1080p",
       "daylight_check": "Üst veri + kesit başına yalnız sayı üreten parlaklık özeti. Gece çıkarsa maç atlanır, sonraki uygun maç alınır, görüntü açılmaz.",
-      "handling": "Yalnız iç test, yeniden dağıtılmaz, repoya girmez"
+      "handling": "Yalnız iç test, yeniden dağıtılmaz, repoya girmez",
+      "cut_correction": "Taslakta 12:00-18:00 yazıyordu ve \"geliştirmedeki gibi\" deniyordu; 5 geliştirme kesitinin 4'ü 1200-1560 saniyedir, yayın başı maç öncesi yayındır. Görüntü açılmadan düzeltildi."
     },
     "order": [
       "Kullanıcı bu taslağı onaylar",
@@ -122,5 +123,25 @@
     "truth_pose_rule": "Gerçek duruş = el noktalarından DLT, scripts.calibration_funnel.refined_pose ile yerel oturtma; geliştirmedeki kuralın aynısı.",
     "control_command": "scripts.broadcast_anchor_exam control-run --labels docs/measurements/broadcast-anchor-labels-control.json --points docs/measurements/broadcast-anchor-truth-points-control.json --out docs/measurements/broadcast-anchor-control-result.json",
     "correction": "İlk dondurma commit'i (2e686c2) sırt sınaması birleşmeden alınmıştı ve yanlış hash içeriyordu. Kontrol maçı seçilmeden ve görüntü açılmadan düzeltildi."
+  },
+  "control_matches": {
+    "chiba_tokushima": {
+      "file": "data/tracking/videos/jleague_dl/j1po_chiba_tokushima_20251213_1200_1560.mp4",
+      "youtube": "EdVGowo6tl4",
+      "kickoff": "2025-12-13 13:05 JST planlı, Fukuda Denshi Arena (jleague.jp/en/match/playoff/2025/121301)"
+    },
+    "kashiwa_machida": {
+      "file": "data/tracking/videos/jleague_dl/j1_kashiwa_machida_20251206_1200_1560.mp4",
+      "youtube": "_hqDALCua1o",
+      "kickoff": "2025-12-06 14:00 JST planlı (reysol.co.jp), jleague.jp fiili başlama 14:05; ev sahibi stadyumu Sankyo Frontier Kashiwa"
+    }
+  },
+  "control_selection": {
+    "method": "J.LEAGUE International /streams listesi yukarıdan aşağı, yalnız başlık ve açık maç takvimi; görüntü açılmadı.",
+    "skipped": {
+      "f_pioB9D9QE": "All-Star: tek maç değil, çok maçlı özel format",
+      "AE9n1DjS6ao": "Kashima ev sahibi: geliştirme stadyumu"
+    },
+    "rule_reading": "Başlama saati kuralı planlı saate göre okundu; Kashiwa-Machida için J.League sayfası fiili 14:05 yazıyor, kulüp 14:00 planlı. Yayın 14:00 sonrası gündüzdür; gündüz denetimi parlaklık özetiyle ayrıca yapılır."
   }
 }
