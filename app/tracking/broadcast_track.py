@@ -1,0 +1,156 @@
+"""Gündüz yayın takibi: yayın çapasından sonra duruşu görüntü akışı ve çizgilerle taşır.
+
+Üretime bağlı değildir; `pitch_lines.py` hash'li olduğu için ayrı durur. Ölçümler:
+docs/measurements/tracking-funnel-daylight.json, ön kayıt:
+docs/measurements/broadcast-tracking-preregistration.json.
+
+Duruş akışla taşınır, yerel kontrast çizgileriyle düzeltilir. Kare yalnız çizgi kapısını geçerse
+üretilir. Kesme ve tekrar duruşu siler; kapıyı uzun süre geçemeyen duruş da silinir, çünkü
+akış tek başına sürüklenir (ölçüldü: 3 sn'de 13 m).
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import numpy as np
+
+from app.tracking.broadcast_anchor import daylight_line_mask, find_broadcast_anchor
+from app.tracking.homography_fit import DEFAULT_TOLERANCE_PX, refine_homography
+from app.tracking.shot_filter import ReplayTracker, classify_shot, red_ratio
+
+FLOW_MAX_CORNERS = 400
+FLOW_MIN_INLIERS = 30          # bundan azı süreklilik kanıtı sayılmaz
+CUT_MIN_HIST_CORR = 0.7
+LINE_GATE = 0.70
+SEARCH_STEP_PX = 12.0
+MAX_JUMP_M = 5.0               # düzeltme taşınan duruştan bundan fazla oynatamaz
+MAX_COAST_FRAMES = 15          # 15 fps'te 1 sn; üretim takibinin COAST_FRAMES değeriyle aynı
+ANCHOR_EVERY_FRAMES = 15       # çapa araması pahalı
+REPLAY_EVERY_FRAMES = 3        # ReplayTracker 5 fps ile beslenmeli, takip 15 fps koşar
+BASE_WIDTH_PX = 1280.0
+
+
+def gray_hist(gray: np.ndarray) -> np.ndarray:
+    import cv2
+
+    return cv2.normalize(cv2.calcHist([gray], [0], None, [32], [0, 256]), None).flatten()
+
+
+def flow_step(prev_gray: np.ndarray, gray: np.ndarray) -> tuple[np.ndarray | None, int, float]:
+    """Önceki görüntüden şimdikine homografi. Yayın kamerası dönme+zoom olduğu için tek homografi yeter."""
+    import cv2
+
+    pts = cv2.goodFeaturesToTrack(prev_gray, FLOW_MAX_CORNERS, 0.01, 12)
+    if pts is None or len(pts) < FLOW_MIN_INLIERS:
+        return None, 0, 0.0
+    moved, status, _ = cv2.calcOpticalFlowPyrLK(prev_gray, gray, pts, None, winSize=(21, 21), maxLevel=3)
+    good = status.ravel() == 1
+    if good.sum() < FLOW_MIN_INLIERS:
+        return None, int(good.sum()), float(good.mean())
+    t, inliers = cv2.findHomography(pts[good], moved[good], cv2.RANSAC, 2.0)
+    if t is None or inliers is None:
+        return None, 0, 0.0
+    count = int(inliers.sum())
+    return t, count, count / len(pts)
+
+
+def is_cut(inliers: int, hist_corr: float) -> bool:
+    return inliers < FLOW_MIN_INLIERS or hist_corr < CUT_MIN_HIST_CORR
+
+
+def distance_map(mask: np.ndarray) -> np.ndarray:
+    import cv2
+
+    return cv2.distanceTransform((~mask.astype(bool)).astype(np.uint8), cv2.DIST_L2, 3)
+
+
+def pose_shift_m(h_a: np.ndarray, h_b: np.ndarray, size: tuple[int, int]) -> float:
+    """İki homografinin görüntü merkezindeki ızgarada en büyük saha farkı (m)."""
+    w, h = size
+    pts = np.array([[w * fx, h * fy, 1.0] for fx in (0.25, 0.5, 0.75) for fy in (0.45, 0.6, 0.75)])
+    a, b = pts @ h_a.T, pts @ h_b.T
+    return float(np.hypot(*((a[:, :2] / a[:, 2:3]) - (b[:, :2] / b[:, 2:3])).T).max())
+
+
+@dataclass
+class TrackFrame:
+    homography: np.ndarray | None   # görüntü → saha; kapıdan geçmeyen karede None
+    state: str
+    inlier: float = 0.0
+
+
+class BroadcastTracker:
+    """Kareleri zaman sırasıyla ve sabit sıklıkla alır; her kare için duruş ya da neden döner."""
+
+    def __init__(self, fps: float = 15.0) -> None:
+        self._fps = fps
+        self._h: np.ndarray | None = None
+        self._coast = 0
+        self._count = 0
+        self._since_search = ANCHOR_EVERY_FRAMES
+        self._prev_gray: np.ndarray | None = None
+        self._prev_hist: np.ndarray | None = None
+        self._replay = ReplayTracker()
+        self._in_replay = False
+
+    def _drop(self) -> None:
+        self._h = None
+        self._coast = 0
+        self._since_search = ANCHOR_EVERY_FRAMES
+
+    def _motion(self, gray: np.ndarray, hist: np.ndarray) -> tuple[np.ndarray | None, bool]:
+        import cv2
+
+        if self._prev_gray is None or self._prev_hist is None:
+            return None, False
+        motion, inliers, _ = flow_step(self._prev_gray, gray)
+        corr = float(cv2.compareHist(self._prev_hist, hist, cv2.HISTCMP_CORREL))
+        return motion, motion is None or is_cut(inliers, corr)
+
+    def step(self, bgr: np.ndarray) -> TrackFrame:
+        import cv2
+
+        gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+        hist = gray_hist(gray)
+        motion, cut = self._motion(gray, hist)
+        self._prev_gray, self._prev_hist = gray, hist
+        if self._count % REPLAY_EVERY_FRAMES == 0:
+            self._in_replay = self._replay.update(self._count / self._fps, red_ratio(bgr))
+        self._count += 1
+        if cut or self._in_replay:
+            self._drop()
+            return TrackFrame(None, "replay" if self._in_replay else "cut")
+        carried = None if self._h is None or motion is None else self._h @ np.linalg.inv(motion)
+        if not classify_shot(bgr).is_main:
+            return self._coasted(carried, "not_main")
+        mask = daylight_line_mask(bgr)
+        if carried is None:
+            return self._search(mask, gray)
+        tolerance = DEFAULT_TOLERANCE_PX * bgr.shape[1] / BASE_WIDTH_PX
+        fit = refine_homography(carried, distance_map(mask), step_px=SEARCH_STEP_PX, tolerance_px=tolerance)
+        size = (bgr.shape[1], bgr.shape[0])
+        if fit.accepted and fit.inlier_ratio >= LINE_GATE and pose_shift_m(fit.homography, carried, size) <= MAX_JUMP_M:
+            self._h, self._coast = fit.homography, 0
+            return TrackFrame(fit.homography, "tracked", fit.inlier_ratio)
+        return self._coasted(carried, "gate")
+
+    def _coasted(self, carried: np.ndarray | None, state: str) -> TrackFrame:
+        if carried is None:
+            return TrackFrame(None, state)
+        self._coast += 1
+        if self._coast > MAX_COAST_FRAMES:
+            self._drop()
+            return TrackFrame(None, f"{state}_lost")
+        self._h = carried
+        return TrackFrame(None, state)
+
+    def _search(self, mask: np.ndarray, gray: np.ndarray) -> TrackFrame:
+        self._since_search += 1
+        if self._since_search < ANCHOR_EVERY_FRAMES:
+            return TrackFrame(None, "searching")
+        self._since_search = 0
+        res = find_broadcast_anchor(mask, gray)
+        if not res.accepted or res.homography is None:
+            return TrackFrame(None, "no_anchor")
+        self._h, self._coast = res.homography, 0
+        return TrackFrame(res.homography, "anchored", res.inlier)

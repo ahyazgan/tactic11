@@ -24,6 +24,13 @@ from pathlib import Path
 
 import numpy as np
 
+from app.tracking.broadcast_track import (
+    FLOW_MIN_INLIERS,
+    distance_map,
+    flow_step,
+    gray_hist,
+    is_cut,
+)
 from scripts.calibration_funnel import (
     MATCH_GROUP,
     TRACK_FPS,
@@ -39,9 +46,6 @@ GATE = 0.85                 # üretimin TRACK_MIN_INLIER değeri
 LOW_GATE = 0.70
 MAX_JUMP_M = 5.0            # üretimin MAX_PITCH_JUMP_M değeri
 SEARCH_STEP_PX = 12.0       # üretimin ilk SEARCH_STEPS_PX değeri
-FLOW_MAX_CORNERS = 400
-FLOW_MIN_INLIERS = 30       # bundan azı süreklilik kanıtı sayılmaz
-CUT_MIN_HIST_CORR = 0.7
 NEAR_STEP_PX = 4.0
 NEAR_LIMIT_M = 3.0
 VARIANTS = ("prod_prev_085", "day_prev_085", "day_flow_085", "day_flow_070")
@@ -68,34 +72,6 @@ def clip_frames(video: Path, start_s: float) -> Iterator[np.ndarray]:
     cap.release()
 
 
-def gray_hist(gray: np.ndarray) -> np.ndarray:
-    import cv2
-
-    return cv2.normalize(cv2.calcHist([gray], [0], None, [32], [0, 256]), None).flatten()
-
-
-def flow_step(prev_gray: np.ndarray, gray: np.ndarray) -> tuple[np.ndarray | None, int, float]:
-    """Önceki görüntüden şimdikine homografi. Yayın kamerası dönme+zoom olduğu için tek homografi yeter."""
-    import cv2
-
-    pts = cv2.goodFeaturesToTrack(prev_gray, FLOW_MAX_CORNERS, 0.01, 12)
-    if pts is None or len(pts) < FLOW_MIN_INLIERS:
-        return None, 0, 0.0
-    moved, status, _ = cv2.calcOpticalFlowPyrLK(prev_gray, gray, pts, None, winSize=(21, 21), maxLevel=3)
-    good = status.ravel() == 1
-    if good.sum() < FLOW_MIN_INLIERS:
-        return None, int(good.sum()), float(good.mean())
-    t, inliers = cv2.findHomography(pts[good], moved[good], cv2.RANSAC, 2.0)
-    if t is None or inliers is None:
-        return None, 0, 0.0
-    count = int(inliers.sum())
-    return t, count, count / len(pts)
-
-
-def is_cut(inliers: int, hist_corr: float) -> bool:
-    return inliers < FLOW_MIN_INLIERS or hist_corr < CUT_MIN_HIST_CORR
-
-
 def best_near(h: np.ndarray, dist_map: np.ndarray, size: tuple[int, int], tolerance: float) -> float:
     """Referans duruşun hemen çevresinde ulaşılabilen inlier: zincirin küçük kayması çizgi kaybı sayılmaz."""
     from app.tracking.homography_fit import refine_homography, score_homography
@@ -113,12 +89,6 @@ def classify_loss(*, cut: bool, reference_inlier: float, produced: bool, gate: f
     if produced:
         return "produced"
     return "line_extraction" if reference_inlier < gate else "search"
-
-
-def distance_map(mask: np.ndarray) -> np.ndarray:
-    import cv2
-
-    return cv2.distanceTransform((~mask.astype(bool)).astype(np.uint8), cv2.DIST_L2, 3)
 
 
 class Variant:

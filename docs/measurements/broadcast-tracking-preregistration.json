@@ -1,7 +1,7 @@
 {
-  "title": "Yayın takibi: ön kayıt TASLAĞI",
+  "title": "Yayın takibi: ön kayıt",
   "date": "2026-11-02",
-  "status": "TASLAK: kullanıcı onayı bekliyor, kontrol maçı seçilmedi, indirilmedi, görüntüsü açılmadı.",
+  "status": "ONAYLANDI 2026-11-02 (kullanıcı: \"Onay, geliştirmeye geç\"). Geliştirme aşamasında; kontrol maçı seçilmedi, indirilmedi, görüntüsü açılmadı.",
   "hypothesis": "Yayın çapası kare başına ancak %30 civarı kabul alsa da, çapadan sonra görüntü akışıyla taşınan duruş yerel kontrast çizgileriyle düzeltilip 0,70 kapısından geçirilirse ana kamera süresinin çoğu doğru duruşla kaplanır.",
   "why_new_exam_not_retry": "Kalan sınav kare başına çapa kabulünü ölçtü. Bu sınav çapa+takip sisteminin ana kamera kapsamasını ölçer ve yeni maçlarda koşar. Kalan sonuç değişmez, eşikleri gevşetilmez.",
   "code": "Yeni ayrı modül, üretime bağlanmaz. pitch_lines.py, pipeline.py ve *frozen-decision.json dosyalarına dokunulmaz. Çapa eşikleri aynen kalır.",
@@ -22,5 +22,20 @@
   },
   "control_matches": "Daha önce görülmemiş 2 J.League gündüz maçı, en az biri sert gölgeli (kontrol öncesi yalnız maç saati ve hava kaydıyla seçilir; görüntü açılmadan). Kod ve eşikler önce hash ile dondurulur, etiketler ve gerçek duruşlar koşudan önce commit edilir, tek koşu.",
   "unseen_required": "chiba_tokushima, kashiwa_machida, verdy_kashima, niigata_kashiwa görülmüş sayılır.",
-  "numbers_note": "D ve C eşikleri taslak öneridir. D1 ve C1, bu geliştirme ölçümü görüldükten sonra yazıldı."
+  "numbers_note": "D ve C eşikleri taslak öneridir. D1 ve C1, bu geliştirme ölçümü görüldükten sonra yazıldı.",
+  "metric_definitions": {
+    "coverage": "main etiketli 3 sn örnek anında tracker duruş üretti mi. Örnek anının 15 fps ızgaradaki karesi; kapıdan geçmeyen kare duruşsuz sayılır.",
+    "accuracy": "Elle işaretli karede, üretilen duruşla el noktalarının saha hatasının kare içi medyanı (m). Yanlış üretim: bu değer >5 m.",
+    "evidence_development": "daylight-calibration-truth-points (klip başı) ve tracking-funnel-end-truth-points (klip sonu)",
+    "fixed_before_first_run": "Bu tanımlar ve modül sabitleri ilk uçtan uca koşudan önce commit edildi."
+  },
+  "fixed_design": {
+    "module": "app/tracking/broadcast_track.py",
+    "exam": "scripts/broadcast_track_exam.py",
+    "gate": 0.7,
+    "max_coast_frames": 15,
+    "anchor_every_frames": 15,
+    "fps": 15,
+    "shot_guard": "shot_filter.classify_shot ve ReplayTracker değiştirilmeden kullanılır"
+  }
 }
