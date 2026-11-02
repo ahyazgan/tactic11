@@ -9,7 +9,7 @@ import pytest
 pytest.importorskip("cv2")
 
 from app.tracking import broadcast_track as bt  # noqa: E402
-from scripts.broadcast_track_exam import evaluate  # noqa: E402
+from scripts.broadcast_track_exam import evaluate, evaluate_control  # noqa: E402
 
 POSE = np.array([[0.05, 0.0, 0.0], [0.0, 0.05, 0.0], [0.0, 0.0, 1.0]])
 
@@ -225,3 +225,32 @@ def test_evaluate_applies_development_gates():
     result = evaluate([record])
     assert result["D2"] is False
     assert result["D2_derived"] is False
+
+
+def control_record(name: str, posed: int, medians: list[float]) -> dict:
+    samples = [{"label": "main", "posed": i < posed} for i in range(100)] + [{"label": "other", "posed": False}] * 10
+    return {"match": name, "samples": samples, "frames": 110, "produced": posed, "states": {}, "seconds": 1.0,
+            "marked_frames": len(medians),
+            "evidence": [{"median_m": m, "worst_m": m + 1.0, "state": "tracked"} for m in medians]}
+
+
+def test_control_passes_only_when_every_criterion_holds():
+    good = [control_record("a", 60, [1.0] * 10), control_record("b", 45, [1.5] * 10)]
+    result = evaluate_control(good)
+    assert result["verdict"] == "GEÇTİ"
+    assert all(result["gates"].values())
+    assert "D1" not in result
+
+
+def test_control_fails_on_a_weak_match_even_if_total_is_enough():
+    result = evaluate_control([control_record("a", 80, [1.0] * 10), control_record("b", 30, [1.0] * 10)])
+    assert result["main_rate"] >= 0.5
+    assert result["gates"]["C1_coverage"] is False
+    assert result["verdict"] == "KALDI"
+
+
+def test_control_fails_on_too_little_evidence_and_on_wrong_poses():
+    assert evaluate_control([control_record("a", 60, [1.0] * 14)])["gates"]["C5_minimum_sample"] is False
+    wrong = evaluate_control([control_record("a", 60, [1.0] * 18 + [9.0, 9.0])])
+    assert wrong["gates"]["C3_wrong_main"] is False
+    assert evaluate_control([control_record("a", 60, [])])["gates"]["C2_accuracy"] is False

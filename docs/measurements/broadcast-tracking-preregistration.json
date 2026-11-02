@@ -1,7 +1,7 @@
 {
   "title": "Yayın takibi: ön kayıt",
   "date": "2026-11-02",
-  "status": "GELİŞTİRME KAPILARI GEÇTİ (2026-11-02): D1 %66,2. Kör kontrol kullanıcı onayı bekliyor; kod dondurulmadı, maç seçilmedi, görüntü açılmadı.",
+  "status": "DONDURULDU (2026-11-02): kullanıcı \"Evet, kontrole geç\" dedi. Kontrol maçı henüz seçilmedi, indirilmedi, görüntü açılmadı.",
   "hypothesis": "Yayın çapası kare başına ancak %30 civarı kabul alsa da, çapadan sonra görüntü akışıyla taşınan duruş yerel kontrast çizgileriyle düzeltilip 0,70 kapısından geçirilirse ana kamera süresinin çoğu doğru duruşla kaplanır.",
   "why_new_exam_not_retry": "Kalan sınav kare başına çapa kabulünü ölçtü. Bu sınav çapa+takip sisteminin ana kamera kapsamasını ölçer ve yeni maçlarda koşar. Kalan sonuç değişmez, eşikleri gevşetilmez.",
   "code": "Yeni ayrı modül, üretime bağlanmaz. pitch_lines.py, pipeline.py ve *frozen-decision.json dosyalarına dokunulmaz. Çapa eşikleri aynen kalır.",
@@ -80,5 +80,34 @@
       "note": "Tasarım ve seçim geliştirme verisiyle yapıldı; karar kontrolde verilir.",
       "result": "D1 geçti: main 151/228 (%66,2). D2 geçti: 63 işaretli üretim, medyan 0.52 m, >5 m 0. Türetilmiş 43, medyan 0.51 m, >5 m 0; yeniden konumlanma 26, medyan 0.36 m. D3 geçti: other 0/132."
     }
-  ]
+  ],
+  "freeze_before_control": {
+    "code_sha256_lf": {
+      "app/tracking/broadcast_track.py": "9fef38759d30739740e9008a66b7c43e376c911bbfefdf789e446afec0dcf645",
+      "app/tracking/broadcast_anchor.py": "4dd99d4162d183522602723757d083b3d1f6bd92f90533a34b9ac2db13fa7a7a",
+      "app/tracking/shot_filter.py": "0d2efb3c2d5c189f57fd92a07a38c88331a41dfba246e43fbf73b8855c98b122",
+      "app/tracking/homography_fit.py": "eb1f3b71e3228d4099926852ae2eeae43bb36dec0c60ac5b189e7646ccf6b9ec",
+      "scripts/broadcast_track_exam.py": "d1b11149e337f0952464d6726f5d3b5e22a0685b92f4979d8cc0511515e4e2eb",
+      "scripts/tracking_funnel.py": "7dde7e369fe71bbce55bdf5c24c6521c1e5f5acf41cb10d59306f5313bb7516c"
+    },
+    "rule": "control-run hash tutmazsa koşmaz. Sonuç dosyası varsa ikinci kez koşmaz. Eşik ve kod sonuç görüldükten sonra değişmez."
+  },
+  "control_selection": {
+    "source": "J.LEAGUE International resmi YouTube arşivi, yalnız üst veri: başlık, tarih, başlama saati. Görüntü ve küçük resim açılmaz.",
+    "eligible": "Başlama 14:00 JST veya daha erken; görülen 7 maçın (gamba_kashiwa, kashima_marinos, kyoto_kobe, verdy_kashima, niigata_kashiwa, chiba_tokushima, kashiwa_machida) ev sahibi stadyumunda oynanmamış; kapalı çatılı değil; en yeniden eskiye.",
+    "hard_shadow_match": "Listede ilk uygun maçtan başlayıp Open-Meteo arşivinde başlama saati ve sonraki 1 saatte bulut örtüsü ≤%30 olan ilk maç. Üst veriyle seçilir.",
+    "second_match": "Birinci dışında kalan en yeni uygun maç; hava koşulu aranmaz.",
+    "cut": "1200-1560. saniye, 1080p, https biçimi.",
+    "daylight_check": "control-inspect yalnız parlaklık sayısı üretir; gece çıkarsa maç atlanır, sonraki uygun alınır.",
+    "handling": "Yalnız iç test, yeniden dağıtılmaz, repoya girmez.",
+    "shadow_limit": "Hava kaydı sert gölgeyi garanti etmez; etiketleme sırasında gölge olup olmadığı not edilir, koşudan önce commit edilir."
+  },
+  "control_order": [
+    "Kod dondurulur, bu dosya commit edilir",
+    "Maçlar üst veriyle seçilir ve kesitler indirilir",
+    "control-sheets ile main/other etiketlenir, commit edilir",
+    "control-pick ile maç başına 30 main kare seçilir, gerçek duruşları işaretlenir, commit edilir",
+    "control-run tek kez koşar"
+  ],
+  "control_report": "Geriye dolan ve yeniden konumlanma duruşları ayrıca raporlanır, ölçüt değildir. C1-C5 aynen, tek değişiklik yok."
 }

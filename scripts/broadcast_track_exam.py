@@ -3,12 +3,18 @@
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam run --match kyoto_kobe --out <klasör>
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam sample-grids --dir <klasör> --out <klasör>
     venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam gates --dir <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam control-inspect
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam control-sheets --out <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam control-pick --labels <json>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam control-grids --labels <json> --out <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_exam control-run --labels <json> --points <json> --out <json>
 
 Elle çapa verilmez, sistem çapayı kendisi bulur. Görüntüler repoda değildir.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -34,6 +40,15 @@ WRONG_M = 5.0
 D2_MAX_WRONG = 0.05
 D3_MAX_OTHER = 0.05
 DERIVED_STATES = {"backfilled", "bridged"}
+PLAN = Path("docs/measurements/broadcast-tracking-preregistration.json")
+CONTROL_TRUTH_PER_MATCH = 30
+SHEET_COLS, SHEET_ROWS, TILE_W, TILE_H = 6, 5, 320, 180
+C1_MIN_MAIN = 0.50
+C1_MIN_MATCH = 0.35
+C2_MAX_MEDIAN_M = 2.0
+C3_MAX_WRONG = 0.05
+C4_MAX_OTHER = 0.05
+C5_MIN_MARKED = 15
 
 
 def is_derived(item: dict) -> bool:
@@ -78,14 +93,18 @@ def marked_frames(match: str) -> dict[int, list[dict]]:
 
 
 def run(match: str, out: Path) -> int:
-    from app.tracking.broadcast_track import BackfillingTracker, TrackFrame
-
     if MATCH_GROUP.get(match) != "development":
         print(f"{match}: geliştirme maçı değil", file=sys.stderr)
         return 2
     out.mkdir(parents=True, exist_ok=True)
-    others = other_frames(match)
-    marks = marked_frames(match)
+    record = track_video(match, video_of(match), other_frames(match), set(marked_frames(match)))
+    (out / f"{match}.json").write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
+    return 0
+
+
+def track_video(match: str, video: Path, others: set[int], marks: set[int]) -> dict:
+    from app.tracking.broadcast_track import BackfillingTracker, TrackFrame
+
     tracker = BackfillingTracker(FPS)
     states: Counter = Counter()
     kept: dict[int, TrackFrame] = {}
@@ -93,7 +112,7 @@ def run(match: str, out: Path) -> int:
     total = 0
     size = (0, 0)
     start = time.perf_counter()
-    for k, frame in timed_frames(video_of(match)):
+    for k, frame in timed_frames(video):
         size = (frame.shape[1], frame.shape[0])
         total += 1
         for done_k, result in tracker.feed(k, frame):
@@ -111,10 +130,8 @@ def run(match: str, out: Path) -> int:
                for k, result in sorted(kept.items()) if k % SAMPLE_EVERY == 0]
     poses = {str(k): {"state": result.state, "origin": result.origin, "pose": result.homography.tolist()}
              for k, result in kept.items() if result.homography is not None}
-    record = {"match": match, "frames": total, "produced": len(produced), "states": dict(states), "size": size,
-              "seconds": round(seconds, 1), "samples": samples, "poses": poses}
-    (out / f"{match}.json").write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
-    return 0
+    return {"match": match, "frames": total, "produced": len(produced), "states": dict(states), "size": size,
+            "seconds": round(seconds, 1), "samples": samples, "poses": poses}
 
 
 def attach_evidence(record: dict) -> None:
@@ -211,6 +228,138 @@ def gates(folder: Path) -> int:
     return 0
 
 
+def control_videos() -> dict[str, Path]:
+    plan = json.loads(PLAN.read_text(encoding="utf-8"))
+    return {name: Path(item["file"]) for name, item in plan["control_matches"].items()}
+
+
+def sha256_lf(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
+def verify_freeze() -> None:
+    frozen = json.loads(PLAN.read_text(encoding="utf-8"))["freeze_before_control"]["code_sha256_lf"]
+    for name, expected in frozen.items():
+        if sha256_lf(Path(name)) != expected:
+            raise SystemExit(f"dondurulmuş kod değişmiş: {name}; kontrol koşulmaz")
+
+
+def control_inspect() -> int:
+    """Yalnız sayı: görüntü yazmaz, gündüz kontrolü içindir."""
+    import cv2
+
+    from scripts.shot_exam import sampled_frames
+
+    for name, video in control_videos().items():
+        values = [float(cv2.cvtColor(f, cv2.COLOR_BGR2GRAY).mean()) for _, f in sampled_frames(video)]
+        print(f"{name}: {len(values)} örnek, parlaklık medyan {np.median(values):.0f}, "
+              f"en düşük {min(values):.0f}, en yüksek {max(values):.0f}")
+    return 0
+
+
+def control_sheets(out: Path) -> int:
+    """Etiket sayfaları: numaralı küçük kareler, yöntem çıktısı içermez."""
+    import cv2
+
+    from scripts.shot_exam import sampled_frames, write_sheet
+
+    out.mkdir(parents=True, exist_ok=True)
+    per_sheet = SHEET_COLS * SHEET_ROWS
+    for name, video in control_videos().items():
+        tiles: list[np.ndarray] = []
+        page = 0
+        for i, frame in sampled_frames(video):
+            tile = cv2.resize(frame, (TILE_W, TILE_H), interpolation=cv2.INTER_AREA)
+            cv2.rectangle(tile, (0, 0), (70, 34), (0, 0, 0), -1)
+            cv2.putText(tile, str(i), (6, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 255, 255), 2)
+            tiles.append(tile)
+            if len(tiles) == per_sheet:
+                write_sheet(out / f"{name}_{page:02d}.jpg", tiles)
+                page, tiles = page + 1, []
+        if tiles:
+            write_sheet(out / f"{name}_{page:02d}.jpg", tiles)
+    return 0
+
+
+def picked_frames(labels: dict, video: Path, name: str) -> list[int]:
+    """Gerçek duruş işaretlenecek kareler: yalnız etiket dizisinden, görüntüye bakmadan."""
+    from scripts.calibration_funnel import pick_frames
+    from scripts.shot_exam import sampled_frames
+
+    count = sum(1 for _ in sampled_frames(video))
+    return pick_frames(count, set(labels[name]["other"]), CONTROL_TRUTH_PER_MATCH)
+
+
+def control_pick(labels_path: Path) -> int:
+    labels = json.loads(labels_path.read_text(encoding="utf-8"))
+    for name, video in control_videos().items():
+        print(name, picked_frames(labels, video, name))
+    return 0
+
+
+def control_grids(labels_path: Path, out: Path) -> int:
+    """Seçilen karelerin ızgaralı hali. Yöntem koşulmaz, duruş çizilmez."""
+    import cv2
+
+    from scripts.calibration_funnel import draw_grid
+    from scripts.shot_exam import sampled_frames
+
+    out.mkdir(parents=True, exist_ok=True)
+    labels = json.loads(labels_path.read_text(encoding="utf-8"))
+    for name, video in control_videos().items():
+        wanted = set(picked_frames(labels, video, name))
+        for i, frame in sampled_frames(video):
+            if i in wanted:
+                cv2.imwrite(str(out / f"{name}_{i}.jpg"), draw_grid(frame), [cv2.IMWRITE_JPEG_QUALITY, 85])
+    return 0
+
+
+def evaluate_control(records: list[dict]) -> dict:
+    """Ön kayıttaki C1-C5. Türetilmiş duruşlar ayrıca raporlanır, ölçüt değildir."""
+    base = evaluate(records)
+    rates = [m["main_posed"] / m["main"] if m["main"] else 0.0 for m in base["per_match"].values()]
+    medians = [e["median_m"] for r in records for e in r["evidence"]]
+    wrong = base["wrong_over_5m"] / len(medians) if medians else 1.0
+    gates = {
+        "C1_coverage": base["main_rate"] >= C1_MIN_MAIN and min(rates) >= C1_MIN_MATCH,
+        "C2_accuracy": base["median_m"] is not None and base["median_m"] <= C2_MAX_MEDIAN_M,
+        "C3_wrong_main": wrong <= C3_MAX_WRONG,
+        "C4_wrong_other": base["other_rate"] <= C4_MAX_OTHER,
+        "C5_minimum_sample": len(medians) >= C5_MIN_MARKED,
+    }
+    for key in ("D1", "D2", "D2_derived", "D3"):
+        base.pop(key)
+    return {"verdict": "GEÇTİ" if all(gates.values()) else "KALDI", "gates": gates, **base,
+            "worst_point_m": max((e["worst_m"] for r in records for e in r["evidence"]), default=None)}
+
+
+def control_run(labels_path: Path, points_path: Path, out: Path) -> int:
+    """TEK koşu. Kare dökümü üretmez, yalnız toplamları yazar; aynı kontrolle ikinci deneme yoktur."""
+    verify_freeze()
+    if out.exists():
+        raise SystemExit(f"sonuç zaten var: {out}; kontrol ikinci kez koşulmaz")
+    labels = json.loads(labels_path.read_text(encoding="utf-8"))
+    points = json.loads(points_path.read_text(encoding="utf-8"))["frames"]
+    records = []
+    for name, video in control_videos().items():
+        marks = {int(k) * SAMPLE_EVERY: v["points"] for k, v in points[name].items() if v.get("points")}
+        record = track_video(name, video, set(labels[name]["other"]), set(marks))
+        record["marked_frames"] = len(marks)
+        record["evidence"] = []
+        for k, frame_points in sorted(marks.items()):
+            kept = record["poses"].get(str(k))
+            if kept is not None:
+                errors = mark_errors(np.array(kept["pose"]), frame_points)
+                record["evidence"].append({"median_m": round(float(np.median(errors)), 2),
+                                           "worst_m": round(float(errors.max()), 2),
+                                           "state": kept["state"], "origin": kept["origin"]})
+        records.append(record)
+    result = evaluate_control(records)
+    out.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(json.dumps(result, ensure_ascii=False, indent=1))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -222,9 +371,31 @@ def main() -> int:
     a = sub.add_parser("sample-grids")
     a.add_argument("--dir", type=Path, required=True)
     a.add_argument("--out", type=Path, required=True)
+    sub.add_parser("control-inspect")
+    c = sub.add_parser("control-sheets")
+    c.add_argument("--out", type=Path, required=True)
+    c = sub.add_parser("control-pick")
+    c.add_argument("--labels", type=Path, required=True)
+    c = sub.add_parser("control-grids")
+    c.add_argument("--labels", type=Path, required=True)
+    c.add_argument("--out", type=Path, required=True)
+    c = sub.add_parser("control-run")
+    c.add_argument("--labels", type=Path, required=True)
+    c.add_argument("--points", type=Path, required=True)
+    c.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     if args.cmd == "run":
         return run(args.match, args.out)
+    if args.cmd == "control-inspect":
+        return control_inspect()
+    if args.cmd == "control-sheets":
+        return control_sheets(args.out)
+    if args.cmd == "control-pick":
+        return control_pick(args.labels)
+    if args.cmd == "control-grids":
+        return control_grids(args.labels, args.out)
+    if args.cmd == "control-run":
+        return control_run(args.labels, args.points, args.out)
     if args.cmd == "sample-grids":
         return sample_grids(args.dir, args.out)
     return gates(args.dir)
