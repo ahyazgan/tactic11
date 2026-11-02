@@ -7,7 +7,14 @@ görüntüden almak gerekir. Burası o kısım:
    ve reklam panoları böylece elenir; sahanın dışındaki beyazlar çizgi sanılmaz.
 2. **Beyaz çizgi pikselleri** — çim içinde kalan, komşularından belirgin parlak
    olan ince yapılar. Oyuncuların beyaz formaları da parlaktır; morfolojik
-   açma (ince yapı filtresi) çizgileri bırakıp gövdeleri atar.
+   açma (ince yapı filtresi) çizgileri bırakıp gövdeleri atar. Eşik YERELDİR:
+   ince yapının parlaklığı, çevresindeki çimin parlaklığına oranlanır. Mutlak
+   eşik (eski: Otsu + "en az 140 parlaklık") gündüz maçında çöküyordu — sert
+   güneş/gölge ayrımında gölgedeki çizgiler ~110–130 parlaklıkta kalıp tamamen
+   atılıyordu (ölçüldü, J.League gündüz yayını, çapa karesi: elle çapanın
+   inlier'ı mutlak eşikle %47, yerel eşikle %68; VLSC gündüz taktik kamera %37 →
+   %59; gölgedeki orta çizgi maskede yeniden görünür. Ayrıntı ve uçtan uca
+   sayılar: docs/measurements/line-extraction-daylight-2026-11-02.json).
 3. **Mesafe dönüşümü** — her piksel için en yakın çizgi pikseline uzaklık.
    `homography_fit.score_homography` bunu okur.
 
@@ -40,8 +47,22 @@ GRASS_HSV_LOW = (30, 40, 40)
 GRASS_HSV_HIGH = (90, 255, 255)
 # Çizgi kalınlığı bu değerden ince yapılar çizgi sayılır (piksel, 720p ölçeğinde)
 LINE_THICKNESS_PX = 9
-WHITE_MIN_VALUE = 140          # çizgi pikseli en az bu parlaklıkta olmalı
+# Çizgi pikseli = ince yapı (gri − açma) yerel çim parlaklığının en az bu oranı
+# kadar parlak VE mutlak olarak en az LINE_MIN_CONTRAST kadar parlak. Oran gölge
+# ve güneşte aynı anda çalışır; mutlak taban düz çim dokusunun gürültüsünü keser.
+LINE_CONTRAST_RATIO = 0.10
+LINE_MIN_CONTRAST = 12
+# Oran haritasındaki Otsu eşiğinin bu katı kullanılır (1.0 = Otsu'nun kendisi).
+# Otsu iki sınıfı ayırırken solgun/gölgeli çizgileri gürültü tarafına atabiliyor;
+# kat <1 onları geri alır, doyma bekçisi (MAX_LINE_DENSITY) güvenliği korur.
+LINE_OTSU_FRACTION = 0.55      # ölçüldü (J.League çapa karesi): 1.0 → %57, 0.7 → %59, 0.55 → %63, 0.4 → %68 inlier
+# Yerel çim parlaklığı penceresi (1280 px genişlik ölçeğinde; genişlikle ölçeklenir)
+LOCAL_BG_WINDOW_PX = 61
+# Mutlak karanlık tabanı: bundan karanlık piksel çizgi olamaz. Eskiden 140 idi ve
+# gölgedeki çizgileri (110–130) atıyordu; 60 yalnız gece karanlığını/siyahı eler.
+WHITE_MIN_VALUE = 60
 MIN_LINE_PIXELS = 400          # bu kadar çizgi pikseli yoksa kalibrasyon denenmez
+MAX_LINE_DENSITY = 0.08        # maske / saha pikseli bundan fazlaysa çizgi değil doku → kare çizgisiz sayılır
 MIN_GRID_SPREAD_M = 8.0        # görüntü içi ızgaranın sahadaki yayılımı bundan azsa homografi çökmüş
 
 
@@ -70,11 +91,36 @@ def extract_lines(bgr: np.ndarray) -> LineExtraction:
     k = cv2.getStructuringElement(cv2.MORPH_RECT, (LINE_THICKNESS_PX, LINE_THICKNESS_PX))
     opened = cv2.morphologyEx(gray, cv2.MORPH_OPEN, k)
     thin = cv2.subtract(gray, opened)
-    _, lines = cv2.threshold(thin, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    lines = cv2.bitwise_and(lines, lines, mask=pitch_region)
-    lines[gray < WHITE_MIN_VALUE] = 0
-
-    mask = lines > 0
+    # Yerel zemin parlaklığı: açılmış görüntünün (çizgi ve oyuncu atılmış) geniş
+    # pencere ortalaması. Eşik buna ORANLANIR; böylece güneşteki ve gölgedeki
+    # çizgi aynı kuralla geçer. Global Otsu + mutlak 140 tabanı gölgede çöküyordu.
+    win = max(3, int(round(LOCAL_BG_WINDOW_PX * bgr.shape[1] / 1280.0)) | 1)
+    local_bg = cv2.blur(opened, (win, win)).astype(np.float32)
+    rel = thin.astype(np.float32) / np.maximum(local_bg, 1.0)
+    # Eşik, oran haritası üzerinde Otsu ile KAREYE uyarlanır: grenli çim/suni
+    # çim dokusunda oran gürültüsü yükselir, sabit 0.10 maskeyi doyurur (ölçüldü:
+    # gündüz sentetik bench'te maske sahanın yarısı, her duruş %100 inlier, 40 m
+    # hata KABUL). Otsu gürültü tabanının üstüne çıkar; LINE_CONTRAST_RATIO ise
+    # temiz görüntüde eşiğin anlamsızca düşmesini önleyen alt sınırdır.
+    inside = pitch_region > 0
+    rel_u8 = np.clip(rel * 255.0, 0, 255).astype(np.uint8)
+    otsu_ratio = 0.0
+    if int(inside.sum()) > 0:
+        otsu, _ = cv2.threshold(rel_u8[inside], 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        otsu_ratio = float(otsu) / 255.0
+    ratio_thr = max(LINE_CONTRAST_RATIO, LINE_OTSU_FRACTION * otsu_ratio)
+    mask = (
+        (rel >= ratio_thr)
+        & (thin >= LINE_MIN_CONTRAST)
+        & (gray >= WHITE_MIN_VALUE)
+        & inside
+    )
+    # Yoğunluk bekçisi: gerçek saha çizgileri saha piksellerinin ~%1–3'üdür.
+    # Daha yoğun bir maske çizgi değil dokudur; onunla oturtmak her duruşa
+    # yüksek inlier verir (yanlış kabul). Böyle karede çizgi YOK sayılır.
+    pitch_px = int(inside.sum())
+    if pitch_px > 0 and mask.sum() > MAX_LINE_DENSITY * pitch_px:
+        mask = np.zeros_like(mask)
     # Mesafe dönüşümü çizgi OLMAYAN pikseller için hesaplanır
     dist = cv2.distanceTransform((~mask).astype(np.uint8), cv2.DIST_L2, 3)
     return LineExtraction(
