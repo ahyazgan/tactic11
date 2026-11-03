@@ -1,0 +1,41 @@
+{
+ "title": "Yayın takibi 3. tur: ön kayıt",
+ "status": "KAPANDI: D1 KALDI, kod geri alındı (2026-11-03), docs/measurements/broadcast-track-round3-development-result.json. Kontrol açılmadı.",
+ "approval": {
+  "user_words": "Önerdipinle devam edelim ama öncesinden sistemi güçlendirelim doğru tanısın",
+  "relayed_by": "üst oturum local_5b2ad28e-0ec6-499a-b2cb-c7ddad810a6b; yorum: önce sistem yanlış çekimi ve yanlış duruşu tanısın. Takım ve hakem ayrımı kapsam dışı.",
+  "note": "Tanı raporundaki öneri önce çapayı ele almaktı; üst oturum onayı bu tura bağladı. Kullanıcı farklı kastettiyse sonuç raporunda sorulur. Kullanıcı koşu sürerken yönü düzeltti: Önce çapayı ele al."
+ },
+ "previous": "docs/measurements/broadcast-track-coverage-diagnosis.json. Önceki kontrol sonucu 79/159 değişmez.",
+ "evidence": {
+  "tuning_matches": "verdy_kashima, kashiwa_hiroshima_final, hiroshima_kyoto (filtresiz kol daha önce koşuldu).",
+  "leaks": "Verdy 4 other: 71, 72, 73 duruşu görünürde saha ile tutuyor ve aynı kamera konumundan açıklanıyor (artık 0,29-0,58 m), yani yanlış duruş değil, etiket other bir çekim; 105 farklı kameradan (artık 5,19 m). Etiketler değiştirilmedi.",
+  "rejected_candidates": "Ters çizgi oturması (görüntü çizgisi projeksiyonla açıklanıyor mu): boyalı çizgiye sınırlı en iyi hâlinde işaretli >2 m 3 örneğin 2'sini yakalarken iyi 44 işaretin 11'ini ve 195 main'in 26'sını kaybetti. Elendi.",
+  "fixed_camera_residual_at_2m": "Ana kamera sabit noktada döner. Maçın kamera konumu duruşlardan bulunur; duruş bu konumdan yalnız dönme+zoom ile açıklanamıyorsa reddedilir. 2,0 m: 195 main'den 16 red, işaretli ≤2 m 44'ün 2'si kaybolur, işaretli >2 m 3'ün 3'ü yakalanır, other 4'ün 1'i yakalanır.",
+  "tuning_warning": "Eşik bu 3 maçla ve 3 yanlış işaretle seçildi; bu maçlardaki sonuç İYİMSERDİR. Yanlış işaret sayısı çok az."
+ },
+ "hypothesis": "Çekim ayırıcı ve tekrar izleyici duruş üretimini engellemez, üretilen duruşu sabit kamera bekçisi doğrularsa kapsama artar, doğruluk ve sızıntı şartları korunur.",
+ "single_change": {
+  "shot_and_replay_filters": "duruş üretimini engellemez (BroadcastTracker filters=False)",
+  "fixed_camera_guard": {
+   "reject_above_m": 2.0,
+   "min_poses": 10,
+   "camera_search": "başlangıç duruşlardan çıkan konumların medyanı; en çok 40 eşit aralıklı duruşta medyan artığı azaltan eksen araması, adımlar 8, 4, 2, 1, 0,5 m; yükseklik >5 m",
+   "focal_grid": "800-16000 px, 90 geometrik adım",
+   "residual": "görüntüde 7x5 ızgara (x %10-90, y %40-95), saha noktalarına medyan uzaklık",
+   "scope": "yalnız üretilmiş duruşu reddeder; takibi, çapayı, kapıyı etkilemez. <10 duruşta hepsini reddeder."
+  },
+  "unchanged": "çapa eşikleri, çizgi kapısı 0,70, yeniden konumlanma, taşıma 15 kare, çekim ayırıcı eşikleri (kullanılmıyor, değişmiyor), dondurulmuş dosyalar"
+ },
+ "not_addressed": "Çapa eksikliği çözülmez; Hiroshima gibi maçlarda kapsama düşük kalabilir. Bekçi other etiketli aynı kamera çekimlerini tanımaz. Uzun taşıma + arama bu tura girmez.",
+ "development_gates": {
+  "matches": "gamba_kashiwa, kashima_marinos, kyoto_kobe, verdy_kashima, hiroshima_kyoto, kashiwa_hiroshima_final. Filtresiz koşu ilk üçünde bekçi sabitlendikten sonra ilk kez yapılır; sonuç ayar 3'ü ve yeni 3'ü diye ayrı da yazılır.",
+  "D1": "main kapsama toplam ≥%70, en düşük maç ≥%50.",
+  "D2": "İşaretli üretimlerde medyan ≤2 m, kare medyanı >5 m ≤%5.",
+  "D2_new": "Mevcut kodda duruşu olmayıp yeni üretilen main örneklerden en çok 30 tanesi eşit aralıklı seçilip duruş görülmeden işaretlenir; medyan ≤2 m, >5 m ≤%5, en az 10 kare.",
+  "D3": "other üretim ≤%5, toplam. Maç başına sızıntı ayrıca yazılır.",
+  "D4": "Birim test: filters=False çekim ve tekrar nedeniyle duruş kesmez; bekçi sabit kameradan gelen duruşu tutar, başka konumdan geleni reddeder; <10 duruşta reddeder.",
+  "rule": "Herhangi biri kalırsa kod geri alınır, sonuç olduğu gibi yazılır, kullanıcıya sorulur. Eşik sonuç görüldükten sonra değiştirilmez."
+ },
+ "control_plan_if_passed": "Önceki C1-C5 aynen, yeni 2 görülmemiş gündüz profesyonel maçı. Kullanıcıdan AYRI onay olmadan maç seçilmez, video indirilmez, kontrol açılmaz."
+}

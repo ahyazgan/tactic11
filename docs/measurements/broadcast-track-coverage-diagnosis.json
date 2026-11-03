@@ -113,5 +113,5 @@
   "long_block'un gamba ve verdy sayıları round2 sonucundan; diğer iki maçta aynı kod burada yeniden üretti.",
   "Görüntüler repoda değil; tanı örnek sayıları repodaki etiketlere dayanır."
  ],
- "next_decision": "Kullanıcı kararı: taslak docs/measurements/broadcast-tracking-round3-preregistration-draft.json onaylanırsa geliştirme açılır. Onaysız yöntem kodu yazılmaz, kontrol maçı seçilmez."
+ "next_decision": "3. tur kaldı: docs/measurements/broadcast-track-round3-development-result.json. Kullanıcı yönü: önce çapa. Kontrol maçı ayrı onay ister."
 }
