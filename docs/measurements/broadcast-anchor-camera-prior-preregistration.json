@@ -1,7 +1,7 @@
 {
- "title": "Yayın çapası: kamera konumu önseli, ön kayıt TASLAĞI",
- "status": "TASLAK, kullanıcı onayı bekliyor. Yöntem kodu yazılmadı, kontrol maçı seçilmedi, video indirilmedi.",
- "direction": {"user_words": "Önce çapayı ele al", "date": "2026-11-03", "note": "Bu söz yönü verir; aşağıdaki eşik ve kapılar kullanıcıya henüz gösterilmedi."},
+ "title": "Yayın çapası: kamera konumu önseli, ön kayıt",
+ "status": "ONAYLI, yöntem kodundan önce yazıldı (2026-11-03). Sonuç geçmezse kod geri alınır. Kontrol bu onaya dahil değil.",
+ "direction": {"user_words": "Önce çapayı ele al", "date": "2026-11-03", "approval_words": "Onay, geliştirmeye geç"},
  "evidence": {
   "status": "Geliştirme ölçümü, 6 görülmüş maç, tek kare. Eşikler bu sayılar görülerek önerildi, sonuçlar iyimserdir. Ölçüm betikleri repoda değil, bu yüzden aşağıdaki sayılar iddia değil, yön gösterir; onaylanırsa yöntemle birlikte yeniden üretilir.",
   "why_anchor_fails": {
@@ -41,8 +41,9 @@
  "single_change": "Çapa araması reddedince maçın kamera konumu önseliyle ikinci karar. Filtreler ve mevcut tek kare kabul aynen kalır.",
  "method": {
   "module": "app/tracking/camera_anchor.py (yeni). fixed_camera kodu 5b980fc'den geri gelir, bekçi olarak değil konum bulucu olarak.",
-  "pass_1": "Mevcut BackfillingTracker. Filtreler açık, üretilen duruşlardan kamera konumu.",
+  "pass_1": "Mevcut BackfillingTracker. Filtreler açık, üretilen duruşlardan kamera konumu. Geliştirme kapılarında 3 Kasım temel koşularının çıktısı kullanılır: takipçi, çapa ve uydurma kodu o koşulardan sonra değişmedi; betiğin first komutu aynı çıktıyı yeniden üretir.",
   "pass_2": "Aynı takipçi; çapa reddedince önce mevcut en iyi duruş, sonra ızgara kazananı aday kapısından geçerse çapa olur.",
+  "grid": "Ölçümdeki gibi: odak 1000-10000 px geometrik 20 adım, hedef adımı max(60*70/odak, 0,5) m, kaba tolerans 30 px, mevcut TOP_REFINED kadar iyileştirme. Sonuç görülünce değişmez.",
   "thresholds": {"max_residual_m": 1.0, "min_inlier": 0.6, "min_explained": 0.6, "min_poses_for_camera": 10},
   "untouched": "pitch_lines.py, pipeline.py, broadcast_anchor.py, broadcast_track.py, frozen-decision dosyaları ve hash'ler. Üretime ve ürün koduna bağlanmaz.",
   "offline_only": "Kamera konumu maçın kendisinden çıkar; yöntem yalnız maç sonrası çalışır, canlı değildir."
