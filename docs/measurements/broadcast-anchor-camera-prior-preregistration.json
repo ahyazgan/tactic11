@@ -1,6 +1,6 @@
 {
  "title": "Yayın çapası: kamera konumu önseli, ön kayıt",
- "status": "ONAYLI, yöntem kodundan önce yazıldı (2026-11-03). Sonuç geçmezse kod geri alınır. Kontrol bu onaya dahil değil.",
+ "status": "KAPANDI: D1 KALDI, main 307/468 = %65,6; kod geri alındı (2026-11-03), docs/measurements/broadcast-anchor-camera-prior-development-result.json. Kontrol açılmadı.",
  "direction": {"user_words": "Önce çapayı ele al", "date": "2026-11-03", "approval_words": "Onay, geliştirmeye geç"},
  "evidence": {
   "status": "Geliştirme ölçümü, 6 görülmüş maç, tek kare. Eşikler bu sayılar görülerek önerildi, sonuçlar iyimserdir. Ölçüm betikleri repoda değil, bu yüzden aşağıdaki sayılar iddia değil, yön gösterir; onaylanırsa yöntemle birlikte yeniden üretilir.",
