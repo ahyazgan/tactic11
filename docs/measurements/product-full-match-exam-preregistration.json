@@ -1,0 +1,39 @@
+{
+  "status": "frozen_before_full_run",
+  "date": "2026-11-03",
+  "question": "Kullanıcı 90 dakikalık maçı yükleme yolundan geçirirse ürün baştan sona çalışıyor ve kullanılır çıktı veriyor mu?",
+  "tool": "scripts/urun_mac_sinavi.py",
+  "path_under_test": "POST /tracking/jobs varsayılanları; giriş ekranı ve dosya yükleme HTTP adımı sınav dışı, dosya data/tracking/videos altında hazır",
+  "video": {
+    "file": "vlsc_u19_ccl_20190825_ccby.mp4",
+    "source": "YouTube 9J8nUZ0Dd3s, CC BY, VLSC U19 2019-08-25",
+    "seconds": 5652,
+    "calibration": "vlsc_u19_20190825_kaba",
+    "why": "Diskteki tek tam maç gündüz videosu"
+  },
+  "limits_declared_in_advance": [
+    "Amatör maç ve hafif pan/zoom kamera; profesyonel kalite kanıtı değil",
+    "Dedektör bu kamera tipine ayarlanmadı; kalibrasyon 5 noktalı kaba çapa",
+    "Canlı yol değil, maç sonrası yükleme yolu; canlı gecikme rakamlarını doğrulamaz"
+  ],
+  "automatic_gates": {
+    "job_done": "iş 'done' biter",
+    "ingest_complete": "status ucu kare sayısı çıktı kare sayısına eşit",
+    "processing_ratio": "işlem süresi / video süresi <= 5,0 (94 dk için yaklaşık 7,8 saat: gece bırak, sabah hazır)",
+    "minute_coverage": ">= 0,95 maç dakikasında kare var",
+    "median_players": "kare başına medyan oyuncu >= 16",
+    "frames_8plus_share": "karelerin >= 0,80'inde en az 8 oyuncu (sinyal motorunun alt sınırı)",
+    "shape_ok_share": "5 dakikada bir yoklanan şekil ucu, iki takım için dolu >= 0,90",
+    "free_disk": "boş disk hiç 3 GB altına inmez; inerse iş durdurulur ve sınav kalır"
+  },
+  "hand_review": {
+    "sample": "tohum 20261103 ile çıktı karelerinden 20 kare",
+    "method": "Tahminleri görmeden karede sahadaki oyuncular sayılır, sonra kutular kişi/hayalet diye işaretlenir",
+    "gates": {"min_recall": 0.70, "max_ghost_share": 0.20}
+  },
+  "rules": [
+    "Prova yalnız aracı doğrular; prova sonrası eşik, ayar ve video değişmez",
+    "Araç hatası düzeltilebilir ve kaydedilir; yöntem kodu ve varsayılanlar sınav için değiştirilmez",
+    "Kalan sonuç gizlenmez, aynen docs/measurements/product-full-match-exam-result.json dosyasına yazılır"
+  ]
+}
