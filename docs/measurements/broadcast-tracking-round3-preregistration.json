@@ -1,10 +1,10 @@
 {
  "title": "Yayın takibi 3. tur: ön kayıt",
- "status": "ONAYLI, yöntem kodundan önce yazıldı (2026-11-03). Sonuç geçmezse kod geri alınır. Kontrol bu onaya dahil değil.",
+ "status": "KAPANDI: D1 KALDI, kod geri alındı (2026-11-03), docs/measurements/broadcast-track-round3-development-result.json. Kontrol açılmadı.",
  "approval": {
   "user_words": "Önerdipinle devam edelim ama öncesinden sistemi güçlendirelim doğru tanısın",
   "relayed_by": "üst oturum local_5b2ad28e-0ec6-499a-b2cb-c7ddad810a6b; yorum: önce sistem yanlış çekimi ve yanlış duruşu tanısın. Takım ve hakem ayrımı kapsam dışı.",
-  "note": "Tanı raporundaki öneri önce çapayı ele almaktı; üst oturum onayı bu tura bağladı. Kullanıcı farklı kastettiyse sonuç raporunda sorulur."
+  "note": "Tanı raporundaki öneri önce çapayı ele almaktı; üst oturum onayı bu tura bağladı. Kullanıcı farklı kastettiyse sonuç raporunda sorulur. Kullanıcı koşu sürerken yönü düzeltti: Önce çapayı ele al."
  },
  "previous": "docs/measurements/broadcast-track-coverage-diagnosis.json. Önceki kontrol sonucu 79/159 değişmez.",
  "evidence": {

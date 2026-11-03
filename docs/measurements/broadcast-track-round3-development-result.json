@@ -1,0 +1,44 @@
+{
+ "title": "Yayın takibi 3. tur: filtre engellemez + sabit kamera bekçisi, geliştirme sonucu",
+ "date": "2026-11-03",
+ "verdict": "D1 KALDI: main 326/468 = %69,7 (şart %70), en düşük maç kashima_marinos %44,9 (şart %50). Plan gereği kod geri alındı, kontrol AÇILMADI.",
+ "plan": "docs/measurements/broadcast-tracking-round3-preregistration.json",
+ "tested_code": "commit 5b980fc (bu sonuçla birlikte revert edildi)",
+ "command": "5b980fc üzerinde: venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_track_round3 run --match <maç> --out <klasör>; gates --dir <klasör> --base <klasör>",
+ "gates": {
+  "D1": {"passed": false, "main": "326/468 = %69,7", "criterion": "toplam ≥%70 ve her maç ≥%50", "lowest_match": "kashima_marinos 35/78 = %44,9"},
+  "D2": {"passed": true, "marked": 81, "median_m": 0.64, "frame_median_over_5m": 0, "criterion": "medyan ≤2 m, >5 m ≤%5"},
+  "D2_new": {"passed": null, "marked": 0, "status": "KOŞULMADI. D1 sonucu belirlediği ve kullanıcı yönü çapaya çevirdiği için yeni kareler işaretlenmedi. Yeni üretilen karelerin doğruluğu ölçülmedi."},
+  "D3": {"passed": true, "other": "6/252 = %2,4", "criterion": "≤%5", "highest_match": "verdy_kashima 3/39 = %7,7"},
+  "D4": {"passed": true, "note": "Birim testler yöntem commit'inde geçti, kodla birlikte geri alındı."}
+ },
+ "per_match": {
+  "columns": ["base_main", "after_main", "main_n", "guard_rejected_main", "after_other", "other_n", "guard_rejected_other"],
+  "verdy_kashima": [50, 65, 81, 4, 3, 39, 1],
+  "kashiwa_hiroshima_final": [49, 75, 82, 5, 0, 38, 0],
+  "hiroshima_kyoto": [30, 41, 77, 5, 0, 43, 0],
+  "gamba_kashiwa": [62, 69, 76, 0, 1, 44, 7],
+  "kashima_marinos": [52, 35, 78, 20, 0, 42, 5],
+  "kyoto_kobe": [37, 41, 74, 1, 2, 46, 4]
+ },
+ "tuning_vs_unseen": {
+  "tuning_3": {"main": "181/240 = %75,4", "other": "3/120 = %2,5", "guard_rejected": "14 main, 1 other"},
+  "unseen_3": {"main": "145/228 = %63,6", "other": "3/132 = %2,3", "guard_rejected": "21 main, 16 other"},
+  "reading": "Eşiğin ayarlandığı maçlarda geçen sonuç, görülmeyen üç maçta düştü. Kapıyı kaçıran kayıp büyük ölçüde kashima_marinos."
+ },
+ "guard_findings": {
+  "without_guard": "Bekçisiz aynı koşu: main 361/468 = %77,1, other 23/252 = %9,1. Yani yalnız filtreleri kaldırmak D3'ü geçmez; bekçi other kaçağının 17/23'ünü tutuyor.",
+  "marked_rejections": "Bekçi işaretli karelerde 2 yanlış duruş (>2 m) yakaladı, 15 doğru duruşu attı; 12'si kashima_marinos.",
+  "kashima_marinos": "Bulunan kamera konumu (41,8; 84,2; 12,8) ve medyan artık 1,37 m; diğer beş maçta x 51,8-53,0, medyan artık 0,31-0,55 m. Kamera araması bu maçta yerel bir noktada kalmış olabilir ya da kamera gerçekten farklı; ayrıştırılmadı.",
+  "not_changed": "Sonuç görüldükten sonra eşik ve arama değiştirilmedi."
+ },
+ "limits": [
+  "Eşik 3 ayar maçında seçildi; ayar maçı sayıları iyimserdir. Tüm 6 maç görülmüş veridir, hiçbiri kör sınav değildir.",
+  "verdy_kashima işaretsiz; D2 bu maçı kapsamaz. Yanlış duruş örneği az, bekçinin yakalama gücü için sonuç çıkarılamaz.",
+  "Ayar maçlarında kod 14 main reddetti, ön kayıttaki deneme 16 demişti; deneme arama sırasında artığı yuvarlıyordu, bu yüzden yol biraz farklı.",
+  "Other etiketi çekim türüdür: verdy 71-73 duruşu tutuyor ve aynı kameradan açıklanıyor, ama etikete göre kaçak sayıldı. Etiketler değiştirilmedi.",
+  "Koşu süreleri geçersiz: makine yükü ve uyku yüzünden fps bu dosyadan okunmaz.",
+  "Üretim hattına ve ürün koduna bağlanmadı. Görüntüler repoda değil."
+ ],
+ "next_decision": "Kullanıcı yönü: 'Önce çapayı ele al'. Filtre ve bekçi bu sonuçla kapandı; çapa işi ayrı ön kayıtla yürür. Kontrol maçı ayrı onay ister."
+}
