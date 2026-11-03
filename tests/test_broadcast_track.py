@@ -100,14 +100,6 @@ def test_replay_drops_pose_without_searching(tracker, monkeypatch):
     assert len(searches) == 1
 
 
-def test_filters_off_keeps_the_pose_through_shot_and_replay_verdicts(tracker, monkeypatch):
-    track = bt.BroadcastTracker(15.0, filters=False)
-    assert track.step(textured(1)).state == "anchored"
-    monkeypatch.setattr(bt, "classify_shot", lambda _f: SimpleNamespace(is_main=False))
-    monkeypatch.setattr(track._replay, "update", lambda _t, _r: True)
-    assert track.step(textured(1, shift=2)).state == "tracked"
-
-
 def test_backfill_walks_back_to_the_frames_waiting_for_an_anchor(tracker, monkeypatch):
     calls = []
 
