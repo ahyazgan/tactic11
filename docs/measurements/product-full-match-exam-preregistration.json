@@ -29,11 +29,38 @@
   "hand_review": {
     "sample": "tohum 20261103 ile çıktı karelerinden 20 kare",
     "method": "Tahminleri görmeden karede sahadaki oyuncular sayılır, sonra kutular kişi/hayalet diye işaretlenir",
-    "gates": {"min_recall": 0.70, "max_ghost_share": 0.20}
+    "gates": {
+      "min_recall": 0.7,
+      "max_ghost_share": 0.2
+    }
   },
   "rules": [
     "Prova yalnız aracı doğrular; prova sonrası eşik, ayar ve video değişmez",
     "Araç hatası düzeltilebilir ve kaydedilir; yöntem kodu ve varsayılanlar sınav için değiştirilmez",
     "Kalan sonuç gizlenmez, aynen docs/measurements/product-full-match-exam-result.json dosyasına yazılır"
+  ],
+  "attempts": [
+    {
+      "n": 1,
+      "date": "2026-11-03",
+      "result": "product-full-match-exam-result.json",
+      "outcome": "kaldı: boş disk 3 GB altına indi, ürün çıktısı yok"
+    },
+    {
+      "n": 2,
+      "date": "2026-11-13",
+      "result": "product-full-match-exam-result-attempt2.json",
+      "code": "14eb4b4",
+      "changed_since_attempt_1": [
+        "Yöntem kodu değişti: tekrar süzgeci 900 ardışık kareden sonra yeniden ısınır",
+        "Sıfır kareli iş artık 'failed' biter"
+      ],
+      "status": "Kör değil: video 1. denemede ve 15 dk tanıda görüldü, artık geliştirme verisi. Şartlar ve eşikler aynı.",
+      "known_before_run": [
+        "Kamera 'broadcast' sınıflanıyor, şekil analizi kapalı: shape_ok_share şartının kalması bekleniyor",
+        "Tanıda karelerin yaklaşık yarısı tekrar sayıldı",
+        "Başlangıçta ayrılabilir bellek 7,5 GB, işçi yaklaşık 10 GB ister; kullanıcı riski bilerek başlattı"
+      ]
+    }
   ]
 }
