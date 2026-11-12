@@ -76,6 +76,31 @@ def test_chunks_are_merged_in_order_and_segment_files_removed(tmp_path):
     assert "--team-anchor-json" not in run.calls[0] and "--team-anchor-json" in run.calls[1]
 
 
+@pytest.mark.parametrize("start", [304.320667, 603.553, 608.607633, 5399.994933, 0.0004])
+def test_frame_time_boundaries_get_an_offset_the_identity_namespace_accepts(start):
+    """Gerçek koşuda (iş 0bd6447d5c) 59,94 fps sınırları ikinci parçadan itibaren işçiyi düşürdü."""
+    from app.tracking.identity_namespace import segment_namespace
+
+    with pytest.raises(ValueError, match="whole millisecond"):
+        segment_namespace(1, 304.320667 / 60.0)
+    minutes = chunked.snapped_offset_minutes(start)
+    assert segment_namespace(1, float(repr(minutes))) == round(start * 1000)
+    assert abs(minutes * 60.0 - start) <= 0.0005
+
+
+def test_real_boundaries_reach_the_worker_snapped(tmp_path):
+    from app.tracking.identity_namespace import segment_namespace
+
+    for i in range(2):
+        (tmp_path / f"seg_{i:04d}.mp4").write_bytes(b"x")
+    run = _Runner()
+    chunked.process_chunks([("seg_0000.mp4", 0.0, 304.320667), ("seg_0001.mp4", 304.320667, 603.553)],
+                           tmp_path, ["w"], out=str(tmp_path / "o.json"), preview=None, max_seconds=None,
+                           video="mac.mp4", run=run)
+    sent = float(run.calls[1][run.calls[1].index("--clip-offset-minutes") + 1])
+    assert segment_namespace(1, sent) == 304321
+
+
 def test_failed_chunk_is_recorded_and_the_rest_survive(tmp_path):
     out = tmp_path / "out.json"
     summary = chunked.process_chunks(_segments(tmp_path), tmp_path, ["w"], out=str(out), preview=None,

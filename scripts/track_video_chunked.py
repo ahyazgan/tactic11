@@ -62,6 +62,16 @@ def usable_team_anchor(summary: dict[str, Any] | None) -> list[list[float]] | No
     return colors
 
 
+def snapped_offset_minutes(start_seconds: float) -> float:
+    """Parça başlangıcı, tam milisaniyeye oturtulmuş dakika olarak.
+
+    ffmpeg sınırları kare zamanıdır (59,94 fps'te 304.320667 sn gibi); kimlik ad alanı ise
+    milisaniye altı başlangıcı reddeder (`identity_namespace.segment_namespace`). Yuvarlama
+    kare zamanını en çok 0,5 ms kaydırır; ayrı parçalar yine ayrı ad alanı alır.
+    """
+    return round(start_seconds * 1000.0) / 60_000.0
+
+
 def chunk_args(base: list[str], *, video: str, out: str, offset_minutes: float,
                anchor: list[list[float]] | None, preview: str | None, max_seconds: float | None) -> list[str]:
     cmd = [*base, "--video", video, "--out", out, "--clip-offset-minutes", repr(offset_minutes)]
@@ -117,7 +127,7 @@ def process_chunks(segments: list[tuple[str, float, float]], seg_dir: Path, base
             continue
         part_out = seg_dir / f"part_{index:04d}.json"
         limit = max_seconds - start if max_seconds is not None and end > max_seconds else None
-        rc = run(chunk_args(base, video=str(seg_path), out=str(part_out), offset_minutes=start / 60.0,
+        rc = run(chunk_args(base, video=str(seg_path), out=str(part_out), offset_minutes=snapped_offset_minutes(start),
                             anchor=anchor, preview=preview if index == 0 else None, max_seconds=limit))
         record: dict[str, Any] = {"index": index, "start_seconds": round(start, 3), "end_seconds": round(end, 3)}
         if rc == 0 and part_out.exists():
