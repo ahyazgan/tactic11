@@ -99,6 +99,24 @@ def _free_gb(path: Path) -> float:
     return shutil.disk_usage(path).free / 1e9
 
 
+def system_memory_mb() -> dict[str, float] | None:
+    """Boş fiziksel bellek ve ayrılabilir (commit) pay; Windows dışında ölçülmez, uydurulmaz."""
+    if os.name != "nt":
+        return None
+    import ctypes
+
+    class _Status(ctypes.Structure):
+        _fields_ = [("length", ctypes.c_ulong), ("load", ctypes.c_ulong), *[
+            (name, ctypes.c_ulonglong) for name in
+            ("total_phys", "avail_phys", "total_commit", "avail_commit", "total_virtual", "avail_virtual", "ext")]]
+
+    status = _Status()
+    status.length = ctypes.sizeof(_Status)
+    if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):  # type: ignore[attr-defined]
+        return None
+    return {"avail_phys_mb": round(status.avail_phys / 1e6), "avail_commit_mb": round(status.avail_commit / 1e6)}
+
+
 def _kill_tree() -> None:
     if os.name == "nt":
         subprocess.run(["taskkill", "/T", "/F", "/PID", str(os.getpid())], check=False)  # noqa: S603, S607
@@ -120,11 +138,16 @@ def run_exam(client: Any, args: argparse.Namespace, data_dir: Path) -> dict[str,
     created.raise_for_status()
     job_id = created.json()["id"]
     free = _free_gb(data_dir)
+    memory_start = system_memory_mb()
+    memory_min = dict(memory_start) if memory_start else None
     job: dict[str, Any] = created.json()
     while job.get("state") not in TERMINAL:
         time.sleep(args.poll_seconds)
         job = client.get(f"/tracking/jobs/{job_id}").json()
         free = min(free, _free_gb(data_dir))
+        now = system_memory_mb()
+        if now and memory_min:
+            memory_min = {k: min(memory_min[k], v) for k, v in now.items()}
         if free < GATES["min_free_disk_gb"]:
             result.update(job_state="aborted_low_disk", min_free_disk_gb=free)
             _write(args.out, result)
@@ -134,6 +157,7 @@ def run_exam(client: Any, args: argparse.Namespace, data_dir: Path) -> dict[str,
         job_id=job_id, job_state=job.get("state"), job_error=job.get("error"), elapsed_seconds=round(elapsed, 1),
         processing_ratio=round(elapsed / expected, 3), min_free_disk_gb=round(free, 2),
         job_summary=job.get("summary"), log_tail=(job.get("log_tail") or [])[-5:],
+        job_warning=job.get("warning"), system_memory_start=memory_start, system_memory_min=memory_min,
     )
     out_json = data_dir / "out" / f"job_{job_id}_frames.json"
     if job.get("state") == "done" and out_json.exists():

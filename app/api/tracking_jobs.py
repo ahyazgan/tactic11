@@ -56,6 +56,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SAFE_NAME = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".avi", ".m4v"}
 LOG_TAIL_LINES = 30
+# Uzun video bu uzunlukta parçalarla, parça başına ayrı süreçte işlenir (bellek her
+# parçada sıfırlanır). Kısa klip tek parça kalır. Bkz. scripts/track_video_chunked.py.
+CHUNK_SECONDS = 300.0
 _jobs_lock = threading.Lock()
 _calibration_summary_lock = threading.Lock()
 
@@ -401,6 +404,10 @@ def _run_job(job: dict[str, Any]) -> None:
             payload = json.load(f)
         job["summary"] = payload.get("summary")
         job["frames"] = len(payload.get("frames", []))
+        failed_chunks = (job["summary"] or {}).get("chunks_failed") or 0
+        if failed_chunks:
+            total = len(job["summary"].get("chunks") or [])
+            job["warning"] = f"{failed_chunks}/{total} parça işlenemedi; o dakikalar çıktıda yok"
         if job["frames"] == 0:
             job["state"] = "failed"
             job["error"] = empty_output_error(job["summary"])
@@ -439,7 +446,8 @@ def create_job(body: JobCreate, user: models.User = Depends(get_current_user)) -
     out_json = out_dir / f"job_{job_id}_frames.json"
     preview = out_dir / f"job_{job_id}_preview.mp4" if body.preview else None
     cmd = [
-        *worker_cmd("scripts.track_video"),
+        *worker_cmd("scripts.track_video_chunked"),
+        "--chunk-seconds", str(CHUNK_SECONDS),
         "--video", str(video),
         *(["--calibration", str(calib_path)] if calib_path else []),
         "--out", str(out_json),

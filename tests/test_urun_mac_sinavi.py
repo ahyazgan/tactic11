@@ -118,3 +118,18 @@ def test_run_exam_failed_job_keeps_error(tmp_path):
     result = exam.run_exam(_Client(state="failed"), _args(tmp_path), tmp_path)
     assert result["job_state"] == "failed" and result["job_error"] == "x"
     assert result["verdict"]["automatic_gates_passed"] is False
+
+
+def test_system_memory_is_measured_or_absent_never_invented():
+    memory = exam.system_memory_mb()
+    assert memory is None or (memory["avail_phys_mb"] > 0 and memory["avail_commit_mb"] > 0)
+
+
+def test_run_exam_records_memory_alongside_the_result(tmp_path, monkeypatch):
+    _write_output(tmp_path)
+    readings = iter([{"avail_phys_mb": 900.0, "avail_commit_mb": 5000.0},
+                     {"avail_phys_mb": 400.0, "avail_commit_mb": 7000.0}])
+    monkeypatch.setattr(exam, "system_memory_mb", lambda: next(readings))
+    result = exam.run_exam(_Client(), _args(tmp_path), tmp_path)
+    assert result["system_memory_start"] == {"avail_phys_mb": 900.0, "avail_commit_mb": 5000.0}
+    assert result["system_memory_min"] == {"avail_phys_mb": 400.0, "avail_commit_mb": 5000.0}

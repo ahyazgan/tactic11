@@ -276,6 +276,29 @@ def test_job_without_usable_frames_fails_with_reason(client, env, monkeypatch):
     assert ingested == []
 
 
+def test_job_reports_chunks_that_could_not_be_processed(client, env, monkeypatch):
+    """Parça kaybı sessiz kalmamalı: iş biter ama eksik dakikalar söylenir."""
+    monkeypatch.setattr(tracking_jobs, "run_ingest", lambda *a, **k: {"frames_written": 3})
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "partial.mp4").write_bytes(b"x")
+    client.post("/tracking/calibrations", json={"name": "saha-a", "calibration": CALIB})
+    r = client.post("/tracking/jobs", json={"video": "partial.mp4", "calibration": "saha-a"})
+    done = _wait_done(client, r.json()["id"])
+    assert done["state"] == "done" and done["warning"].startswith("1/2 parça işlenemedi")
+
+
+def test_job_runs_the_chunked_worker(client, env, monkeypatch):
+    seen = []
+    monkeypatch.setattr(tracking_jobs, "enqueue_job", lambda job: seen.append(job["command"]) or 0)
+    monkeypatch.delenv("TRACKING_WORKER_CMD")
+    monkeypatch.setenv("TRACKING_WORKER_PYTHON", __file__)
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "clip.mp4").write_bytes(b"x")
+    client.post("/tracking/calibrations", json={"name": "saha-a", "calibration": CALIB})
+    assert client.post("/tracking/jobs", json={"video": "clip.mp4", "calibration": "saha-a"}).status_code == 202
+    assert seen[0][1:5] == ["-m", "scripts.track_video_chunked", "--chunk-seconds", "300.0"]
+
+
 def test_empty_output_error_without_counters_admits_unknown_reason():
     assert "işçi sebep bildirmedi" in tracking_jobs.empty_output_error(None)
 
