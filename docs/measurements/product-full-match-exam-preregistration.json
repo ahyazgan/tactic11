@@ -60,7 +60,8 @@
         "Kamera 'broadcast' sınıflanıyor, şekil analizi kapalı: shape_ok_share şartının kalması bekleniyor",
         "Tanıda karelerin yaklaşık yarısı tekrar sayıldı",
         "Başlangıçta ayrılabilir bellek 7,5 GB, işçi yaklaşık 10 GB ister; kullanıcı riski bilerek başlattı"
-      ]
+      ],
+      "outcome": "kaldı: 50 dakika sonra işçi çıkış kodu 1; kök hata numpy ArrayMemoryError (5,93 MiB ayrılamadı), örnek kare 30563 (videoda yaklaşık 34. dk). Boş disk en az 3,21 GB. Ürün çıktısı yok, el kontrolü yapılamadı. İşçinin kendi belleği bu koşuda ölçülmedi: makinenin dar belleği mi, işçinin yavaş büyümesi mi ayrılamıyor."
     }
   ]
 }
