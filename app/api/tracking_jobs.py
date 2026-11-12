@@ -368,6 +368,18 @@ def run_ingest(out_json: str, tenant_id: str, match_id: int) -> dict[str, Any]:
     return ingest_json(path=out_json, tenant_id=tenant_id, match_id=match_id)
 
 
+def empty_output_error(summary: dict[str, Any] | None) -> str:
+    """Kare çıkmayan iş başarı değildir; sebebi işçinin kendi sayaçlarından söyle."""
+    stats = (summary or {}).get("calibration_stats") or {}
+    reasons = []
+    if stats.get("frames_rejected"):
+        reasons.append(f"{stats['frames_rejected']} kare saha çizgilerine oturmadı")
+    if stats.get("replays_dropped"):
+        reasons.append(f"{stats['replays_dropped']} kare tekrar görüntüsü sayıldı")
+    detail = "; ".join(reasons) or "işçi sebep bildirmedi"
+    return f"videodan kullanılabilir kare çıkmadı ({detail}). Kalibrasyonu ve kamera açısını kontrol edin."
+
+
 def _run_job(job: dict[str, Any]) -> None:
     log_path = Path(job["log"])
     try:
@@ -389,6 +401,11 @@ def _run_job(job: dict[str, Any]) -> None:
             payload = json.load(f)
         job["summary"] = payload.get("summary")
         job["frames"] = len(payload.get("frames", []))
+        if job["frames"] == 0:
+            job["state"] = "failed"
+            job["error"] = empty_output_error(job["summary"])
+            _write_job(job)
+            return
         job["state"] = "ingesting"
         _write_job(job)
         job["ingest"] = run_ingest(job["out_json"], job["tenant_id"], int(job["match_id"]))

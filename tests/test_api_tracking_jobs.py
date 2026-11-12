@@ -262,6 +262,24 @@ def test_job_failure_is_reported(client, env, monkeypatch):
     assert done["state"] == "failed" and "3" in done["error"]
 
 
+def test_job_without_usable_frames_fails_with_reason(client, env, monkeypatch):
+    """Sıfır kare 'bitti' görünmemeli: kullanıcı boş sonucu başarı sanar."""
+    ingested = []
+    monkeypatch.setattr(tracking_jobs, "run_ingest", lambda *a, **k: ingested.append(a) or {})
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "empty.mp4").write_bytes(b"x")
+    client.post("/tracking/calibrations", json={"name": "saha-a", "calibration": CALIB})
+    r = client.post("/tracking/jobs", json={"video": "empty.mp4", "calibration": "saha-a"})
+    done = _wait_done(client, r.json()["id"])
+    assert done["state"] == "failed" and done["frames"] == 0
+    assert "319 kare saha çizgilerine oturmadı" in done["error"] and "581 kare tekrar" in done["error"]
+    assert ingested == []
+
+
+def test_empty_output_error_without_counters_admits_unknown_reason():
+    assert "işçi sebep bildirmedi" in tracking_jobs.empty_output_error(None)
+
+
 def test_job_validation_errors(client, env):
     assert client.post("/tracking/jobs", json={"video": "yok.mp4", "calibration": "saha-a"}).status_code == 404
     (env / "videos").mkdir(parents=True, exist_ok=True)
