@@ -14,7 +14,7 @@ test.describe("Sayfa smoke render", () => {
     });
     // / artık Genel Bakış konsolunu render eder (tam-ekran fixed; body değil
     // konsol içeriği kontrol edilir).
-    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+    await expect(page.locator("text=Ana Sayfa").first()).toBeVisible({
       timeout: 10_000,
     });
   });
@@ -22,7 +22,7 @@ test.describe("Sayfa smoke render", () => {
   test("/ home page render olur", async ({ page }) => {
     await page.goto("/");
     // Ana sayfa Genel Bakış konsoludur (kart launcher kaldırıldı).
-    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+    await expect(page.locator("text=Ana Sayfa").first()).toBeVisible({
       timeout: 10_000,
     });
   });

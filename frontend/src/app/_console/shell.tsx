@@ -5,8 +5,7 @@
  * Tile & Card sistemi, üstte navbar, sol ince sidebar, beyaz yüzeyler.
  * Inter font, 8-12px border-radius, pill badge'ler, temiz boşluk.
  *
- * DEMO_MODE: navbar + sidebar maçın ritmine göre sadeleşir (Maç Öncesi / Maç Günü
- * / Asistan), kulüp "Beşiktaş" olur. DEMO kapalı: tam navigasyon geri gelir.
+ * Gezinme: kısa sabit ana liste + arama + "Tüm araçlar" (bkz. MAIN_NAV / MORE_NAV).
  *
  * NOT: Sayfalar eski değişken adlarını (--panel/--line/--header/--grad ...) hâlâ
  * kullanıyor; aşağıdaki .ovroot bloğunda yeni FM26 paletine alias'lanır.
@@ -14,6 +13,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { DEMO_MODE } from "@/lib/demo-mode";
 import { DataSourceStrip, type SourceId } from "@/lib/data-source";
@@ -23,88 +23,98 @@ import { demoLive } from "@/lib/demo-data";
 // Demo: canlı maç ekranına markasız sabit hedef (id "demo" → sayfa mock gösterir).
 const DEMO_LIVE_HREF = "/matches/demo/live";
 
-const FULL_BTABS = [
-  { ic: "ti-home",             label: "Portal",  href: "/overview" },
-  { ic: "ti-users",            label: "Kadro",   href: "/squad" },
-  { ic: "ti-activity",         label: "Perf",    href: "/physical-tests" },
-  { ic: "ti-ball-football",    label: "Maç",     href: "/matches" },
-  { ic: "ti-search",           label: "Scout",   href: "/scout" },
+// Telefon alt çubuğu — en sık kullanılan 5 ekran.
+const BTABS = [
+  { ic: "ti-home",             label: "Ana Sayfa", href: "/overview" },
+  { ic: "ti-file-analytics",   label: "Rakip",     href: "/opponent" },
+  { ic: "ti-ball-football",    label: "Canlı",     href: DEMO_LIVE_HREF },
+  { ic: "ti-users",            label: "Kadro",     href: "/squad" },
+  { ic: "ti-report-analytics", label: "Rapor",     href: "/weekly-report" },
 ];
 
-const BTABS = FULL_BTABS;
-
-// Yapı, kullanıcının "Yardımcı Antrenör" menü mockup'ından (IA) alındı; görsel
-// dil mevcut FM26 açık temasıdır. Rozetler: live (CANLI), new (YENİ), ai (AI),
-// count (sayı). "Fiziksel Durum" sayısı dinamik (navBadge prop'u) ile dolar.
-type BadgeKind = "live" | "new" | "ai" | "count";
-interface NavItem { label: string; href: string; icon: string; badge?: string | number; badgeKind?: BadgeKind }
+interface NavItem { label: string; href: string; icon: string; live?: boolean }
 interface NavGroup { grp: string; items: NavItem[] }
 
-// IA YENİDEN DÜZENLENDİ (2026-06): antrenörün iş-akışına göre 5 görünür grup +
-// dipte kapalı "Arşiv". Odak teknik-taktik + maç karar zekâsı; transfer/takvim/eski
-// kalıntı sayfalar Arşiv'e taşındı (URL'leri korunur, hiçbiri silinmedi).
-const FULL_NAV: NavGroup[] = [
-  { grp: "Maç Hazırlık", items: [
-    { label: "Maç Merkezi",      href: "/live-data",      icon: "ti-plug-connected", badge: "CANLI", badgeKind: "live" },
-    { label: "Rakip Analizi",    href: "/opponent",       icon: "ti-file-analytics" },
-    { label: "Maç Öncesi Plan",  href: "/match-plan",     icon: "ti-clipboard-list" },
-    { label: "Taktik Tahtası",   href: "/tactics-board",  icon: "ti-soccer-field", badge: "YENİ", badgeKind: "new" },
-    { label: "Gerçek Veri Analizi", href: "/tactical-real", icon: "ti-database", badge: "GERÇEK", badgeKind: "ai" },
-    { label: "Video Analiz",      href: "/video-tracking", icon: "ti-video", badge: "YENİ", badgeKind: "new" },
+// SADE GEZİNME (2026-11): menü iki katman.
+//  1) MAIN_NAV — antrenörün haftalık akışı (hazırlık → maç → takım → rapor); hep
+//     açık, 13 öğe, süs rozeti yok.
+//  2) MORE_NAV — geri kalan her ekran tek bir kapalı "Tüm araçlar" bölümünde.
+// Hiçbir sayfa/URL silinmedi; üstteki arama kutusu iki katmanı birlikte tarar.
+const MAIN_NAV: NavGroup[] = [
+  { grp: "", items: [
+    { label: "Ana Sayfa",        href: "/overview",       icon: "ti-home" },
   ]},
-  { grp: "Maç Günü", items: [
-    { label: "Maç Öncesi Modu", href: "/prematch-mode",  icon: "ti-clipboard-check", badge: "HAZIRLIK", badgeKind: "new" },
-    { label: "Canlı Maç",      href: DEMO_LIVE_HREF,     icon: "ti-ball-football", badge: "CANLI", badgeKind: "live" },
-    { label: "Maç Modu",       href: "/match-mode",      icon: "ti-device-mobile", badge: "KENAR", badgeKind: "live" },
-    { label: "Devre Arası Modu", href: "/halftime-mode", icon: "ti-clock-pause", badge: "15dk", badgeKind: "live" },
+  { grp: "Maç", items: [
+    { label: "Rakip Analizi",    href: "/opponent",       icon: "ti-file-analytics" },
+    { label: "Maç Planı",        href: "/match-plan",     icon: "ti-clipboard-list" },
+    { label: "Canlı Maç",        href: DEMO_LIVE_HREF,    icon: "ti-ball-football", live: true },
+    { label: "Devre Arası",      href: "/halftime-mode",  icon: "ti-clock-pause" },
     { label: "Maç Değerlendirmesi", href: "/match-review", icon: "ti-checkup-list" },
+    { label: "Video Analiz",     href: "/video-tracking", icon: "ti-video" },
   ]},
   { grp: "Takım", items: [
     { label: "Kadro",            href: "/squad",          icon: "ti-users" },
     { label: "Fiziksel Durum",   href: "/physical-tests", icon: "ti-activity" },
     { label: "Sakatlık & Sağlık",href: "/medical",        icon: "ti-heart-rate-monitor" },
-    { label: "Yük Takibi",       href: "/workload",       icon: "ti-chart-area-line" },
-    { label: "Antrenman Odağı",  href: "/training-focus", icon: "ti-target-arrow", badge: "AI", badgeKind: "ai" },
     { label: "Antrenman Planı",  href: "/training",       icon: "ti-run" },
   ]},
-  { grp: "Zekâ & Rapor", items: [
-    { label: "Kontrol Paneli",   href: "/overview",       icon: "ti-layout-dashboard" },
-    { label: "Komuta Merkezi",   href: "/command",        icon: "ti-brain", badge: "AI", badgeKind: "ai" },
-    { label: "Teknik Direktör",  href: "/coach",          icon: "ti-user-star", badge: "STRATEJİ", badgeKind: "ai" },
-    { label: "AI Asistan",       href: "/chat",           icon: "ti-robot", badge: "AI", badgeKind: "ai" },
-    { label: "Performans Analizi", href: "/xg",           icon: "ti-chart-line" },
+  { grp: "Rapor", items: [
     { label: "Haftalık Rapor",   href: "/weekly-report",  icon: "ti-report-analytics" },
-    { label: "Klipli Maç Raporu", href: "/match-reports", icon: "ti-video", badge: "YENİ", badgeKind: "new" },
-  ]},
-  { grp: "Sistem", items: [
-    { label: "Bildirimler",    href: "/notifications", icon: "ti-bell", badge: 5, badgeKind: "count" },
-    { label: "Kalibrasyon",    href: "/calibration",   icon: "ti-adjustments" },
-    { label: "Sportmonks Planı", href: "/sportmonks-plan", icon: "ti-plug-connected" },
-    { label: "Ayarlar",        href: "/admin",         icon: "ti-settings" },
-  ]},
-  // ARŞİV — odak-dışı / eski sayfalar (transfer, takvim, eski kalıntı, yan araçlar).
-  // Sidebar'da dipte kapalı durur; URL'leri korunur, sayfalar erişilebilir.
-  { grp: "Arşiv", items: [
-    { label: "Oyuncu Keşif",     href: "/scout",          icon: "ti-binoculars" },
-    { label: "Skaut Raporları",  href: "/scout-reports",  icon: "ti-file-text" },
-    { label: "Transfer",         href: "/transfer",       icon: "ti-arrows-exchange" },
-    { label: "Fikstür",          href: "/matches",        icon: "ti-calendar-event" },
-    { label: "Kararlar",            href: "/decisions",           icon: "ti-brain" },
-    { label: "Maç-içi Karar",       href: "/decisions/live",      icon: "ti-bolt" },
-    { label: "Karar Takip",         href: "/decisions/track",     icon: "ti-chart-histogram" },
-    { label: "Kafa Kafaya",         href: "/h2h",                 icon: "ti-swords" },
-    { label: "Ligler",              href: "/leagues",             icon: "ti-trophy" },
-    { label: "Takımlar",            href: "/teams",               icon: "ti-shield" },
-    { label: "Sözleşmeler",         href: "/contracts",           icon: "ti-file-text" },
-    { label: "TD Performansı",      href: "/manager-performance", icon: "ti-target" },
-    { label: "Veri Girişi & Batarya",href: "/performance",        icon: "ti-clipboard-data" },
-    { label: "Test Hesaplayıcı", href: "/physical-tests/derive", icon: "ti-calculator" },
-    { label: "Yoklama",          href: "/attendance",     icon: "ti-checklist" },
-    { label: "Erişim Denetimi",  href: "/compliance",     icon: "ti-lock" },
+    { label: "AI Asistan",       href: "/chat",           icon: "ti-robot" },
   ]},
 ];
 
-const NAV = FULL_NAV;
+const MORE_NAV: NavGroup[] = [
+  { grp: "Maç araçları", items: [
+    { label: "Maç Merkezi",      href: "/live-data",      icon: "ti-plug-connected" },
+    { label: "Maç Öncesi Modu",  href: "/prematch-mode",  icon: "ti-clipboard-check" },
+    { label: "Maç Modu (saha kenarı)", href: "/match-mode", icon: "ti-device-mobile" },
+    { label: "Taktik Tahtası",   href: "/tactics-board",  icon: "ti-soccer-field" },
+    { label: "Gerçek Veri Analizi", href: "/tactical-real", icon: "ti-database" },
+    { label: "Klipli Maç Raporu", href: "/match-reports", icon: "ti-video" },
+    { label: "Fikstür",          href: "/matches",        icon: "ti-calendar-event" },
+    { label: "Kafa Kafaya",      href: "/h2h",            icon: "ti-swords" },
+  ]},
+  { grp: "Takım araçları", items: [
+    { label: "Yük Takibi",       href: "/workload",       icon: "ti-chart-area-line" },
+    { label: "Antrenman Odağı",  href: "/training-focus", icon: "ti-target-arrow" },
+    { label: "Veri Girişi & Batarya", href: "/performance", icon: "ti-clipboard-data" },
+    { label: "Test Hesaplayıcı", href: "/physical-tests/derive", icon: "ti-calculator" },
+    { label: "Yoklama",          href: "/attendance",     icon: "ti-checklist" },
+  ]},
+  { grp: "Analiz & karar", items: [
+    { label: "Komuta Merkezi",   href: "/command",        icon: "ti-brain" },
+    { label: "Teknik Direktör",  href: "/coach",          icon: "ti-user-star" },
+    { label: "Performans Analizi", href: "/xg",           icon: "ti-chart-line" },
+    { label: "Kararlar",         href: "/decisions",      icon: "ti-brain" },
+    { label: "Maç-içi Karar",    href: "/decisions/live", icon: "ti-bolt" },
+    { label: "Karar Takip",      href: "/decisions/track", icon: "ti-chart-histogram" },
+    { label: "TD Performansı",   href: "/manager-performance", icon: "ti-target" },
+  ]},
+  { grp: "Scout & kulüp", items: [
+    { label: "Oyuncu Keşif",     href: "/scout",          icon: "ti-binoculars" },
+    { label: "Skaut Raporları",  href: "/scout-reports",  icon: "ti-file-text" },
+    { label: "Transfer",         href: "/transfer",       icon: "ti-arrows-exchange" },
+    { label: "Sözleşmeler",      href: "/contracts",      icon: "ti-file-text" },
+    { label: "Ligler",           href: "/leagues",        icon: "ti-trophy" },
+    { label: "Takımlar",         href: "/teams",          icon: "ti-shield" },
+  ]},
+  { grp: "Sistem", items: [
+    { label: "Bildirimler",      href: "/notifications",  icon: "ti-bell" },
+    { label: "Kalibrasyon",      href: "/calibration",    icon: "ti-adjustments" },
+    { label: "Sportmonks Planı", href: "/sportmonks-plan", icon: "ti-plug-connected" },
+    { label: "Erişim Denetimi",  href: "/compliance",     icon: "ti-lock" },
+    { label: "Ayarlar",          href: "/admin",          icon: "ti-settings" },
+  ]},
+];
+
+const ALL_ITEMS: NavItem[] = [...MAIN_NAV, ...MORE_NAV].flatMap((g) => g.items);
+const MORE_COUNT = MORE_NAV.reduce((n, g) => n + g.items.length, 0);
+
+// Arama eşleştirmesi: Türkçe küçük harf + şapka/aksan farkını yok say.
+function fold(s: string): string {
+  return s.toLocaleLowerCase("tr-TR").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ı/g, "i");
+}
 
 export interface ConsoleShellProps {
   active: string;
@@ -181,6 +191,12 @@ export function ConsoleShell({
         </div>
 
         <div className="nav-right">
+          <Link href="/notifications" className={`nav-ic${active === "/notifications" ? " active" : ""}`} aria-label="Bildirimler" title="Bildirimler">
+            <i className="ti ti-bell" aria-hidden="true" />
+          </Link>
+          <Link href="/admin" className={`nav-ic${active === "/admin" ? " active" : ""}`} aria-label="Ayarlar" title="Ayarlar">
+            <i className="ti ti-settings" aria-hidden="true" />
+          </Link>
           {DEMO_MODE && (
             <Link href={DEMO_LIVE_HREF} className="live-strip" title={`Canlı maç — konsola git`}>
               <span className="ls-dot" aria-hidden="true" />
@@ -241,78 +257,96 @@ export function ConsoleShell({
 }
 
 /* ─────────────────────────────────────────────
-   Sol sidebar — açılır/kapanır gruplar
-   Kapalı gruplar localStorage'da tutulur; aktif öğe içeren grup daima açık.
+   Sol sidebar — sabit ana liste + arama + tek "Tüm araçlar" bölümü
 ───────────────────────────────────────────── */
-// v2: IA yeniden gruplandı (2026-06); eski kayıtlı grup adları artık geçersiz, yeni
-// anahtar = temiz varsayılan (hepsi kapalı, aktif grup açık).
-const SIDEBAR_COLLAPSE_KEY = "manager2_console_sidebar_collapsed_v2";
+const SIDEBAR_MORE_KEY = "manager2_console_sidebar_more_v1";
+
+function NavLink({ it, active, navBadge }: { it: NavItem; active: string; navBadge?: number }) {
+  return (
+    <Link href={it.href} className={`sni${it.href === active ? " active" : ""}`} aria-current={it.href === active ? "page" : undefined}>
+      <i className={`ti ${it.icon}`} aria-hidden="true" />
+      <span className="sni-label">{it.label}</span>
+      {it.live && <span className="nbadge live">Canlı</span>}
+      {it.href === "/physical-tests" && navBadge != null && navBadge > 0 && (
+        <span className="nbadge count" title={`${navBadge} riskli oyuncu`}>{navBadge}</span>
+      )}
+    </Link>
+  );
+}
 
 function SidebarNav({ active, navBadge }: { active: string; navBadge?: number }) {
-  // Varsayılan: TÜM gruplar kapalı (aktif sayfanın grubu hasActive ile açık kalır).
-  // 46 item birden yerine yalnız ilgili grup görünür; kullanıcı tercihi localStorage'da.
-  const [collapsed, setCollapsed] = React.useState<Set<string>>(() => new Set(NAV.map((g) => g.grp)));
+  const router = useRouter();
+  const [query, setQuery] = React.useState("");
+  const [moreOpen, setMoreOpen] = React.useState(false);
 
   React.useEffect(() => {
     try {
-      const saved = window.localStorage.getItem(SIDEBAR_COLLAPSE_KEY);
-      if (saved) setCollapsed(new Set(JSON.parse(saved) as string[]));
+      if (window.localStorage.getItem(SIDEBAR_MORE_KEY) === "1") setMoreOpen(true);
     } catch {
       /* yok say */
     }
   }, []);
 
-  const toggle = React.useCallback((grp: string) => {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(grp)) next.delete(grp);
-      else next.add(grp);
+  const toggleMore = React.useCallback(() => {
+    setMoreOpen((prev) => {
       try {
-        window.localStorage.setItem(SIDEBAR_COLLAPSE_KEY, JSON.stringify([...next]));
+        window.localStorage.setItem(SIDEBAR_MORE_KEY, prev ? "0" : "1");
       } catch {
         /* yok say */
       }
-      return next;
+      return !prev;
     });
   }, []);
 
+  // Aktif sayfa "Tüm araçlar" içindeyse bölüm kapalı olsa da açık görünür.
+  const activeInMore = MORE_NAV.some((g) => g.items.some((it) => it.href === active));
+  const showMore = moreOpen || activeInMore;
+
+  const q = fold(query.trim());
+  const results = q ? ALL_ITEMS.filter((it) => fold(it.label).includes(q)) : [];
+
   return (
     <nav className="sidebar" aria-label="Yan navigasyon">
-      {NAV.map((g) => {
-        const hasActive = g.items.some((it) => it.href === active);
-        // Aktif sayfa içeren grup, kullanıcı kapatmış olsa da açık kalır.
-        const open = !collapsed.has(g.grp) || hasActive;
-        return (
-          <React.Fragment key={g.grp}>
-            <button
-              type="button"
-              className="sgrp"
-              aria-expanded={open}
-              onClick={() => toggle(g.grp)}
-            >
-              <span>{g.grp}</span>
-              <i className={`ti ti-chevron-down sgrp-chev${open ? "" : " closed"}`} aria-hidden="true" />
-            </button>
-            {open &&
-              g.items.map((it) => (
-                <Link
-                  key={it.href}
-                  href={it.href}
-                  className={`sni${it.href === active ? " active" : ""}`}
-                >
-                  <i className={`ti ${it.icon}`} aria-hidden="true" />
-                  <span className="sni-label">{it.label}</span>
-                  {it.badge != null && (
-                    <span className={`nbadge ${it.badgeKind ?? "count"}`}>{it.badge}</span>
-                  )}
-                  {it.label === "Fiziksel Durum" && navBadge != null && navBadge > 0 && (
-                    <span className="nbadge count">{navBadge}</span>
-                  )}
-                </Link>
-              ))}
-          </React.Fragment>
-        );
-      })}
+      <div className="ssearch">
+        <i className="ti ti-search" aria-hidden="true" />
+        <input
+          type="search"
+          value={query}
+          placeholder="Ekran ara…"
+          aria-label="Ekran ara"
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && results[0]) { router.push(results[0].href); setQuery(""); }
+            if (e.key === "Escape" && query) { e.stopPropagation(); setQuery(""); }
+          }}
+        />
+      </div>
+
+      {q ? (
+        results.length > 0
+          ? results.map((it) => <NavLink key={it.href} it={it} active={active} navBadge={navBadge} />)
+          : <div className="snone">&ldquo;{query.trim()}&rdquo; için ekran bulunamadı.</div>
+      ) : (
+        <>
+          {MAIN_NAV.map((g) => (
+            <React.Fragment key={g.grp || "home"}>
+              {g.grp && <div className="sgrp">{g.grp}</div>}
+              {g.items.map((it) => <NavLink key={it.href} it={it} active={active} navBadge={navBadge} />)}
+            </React.Fragment>
+          ))}
+
+          <button type="button" className="smore" aria-expanded={showMore} onClick={toggleMore}>
+            <span>Tüm araçlar <span className="smore-n">{MORE_COUNT}</span></span>
+            <i className={`ti ti-chevron-down sgrp-chev${showMore ? "" : " closed"}`} aria-hidden="true" />
+          </button>
+          {showMore && MORE_NAV.map((g) => (
+            <React.Fragment key={g.grp}>
+              <div className="sgrp">{g.grp}</div>
+              {g.items.map((it) => <NavLink key={it.href} it={it} active={active} navBadge={navBadge} />)}
+            </React.Fragment>
+          ))}
+        </>
+      )}
     </nav>
   );
 }
@@ -445,24 +479,53 @@ const CSS = `
 .ovroot .sidebar::-webkit-scrollbar{width:4px}
 .ovroot .sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
+.ovroot .ssearch{
+  display:flex;align-items:center;gap:7px;
+  background:var(--surface);border:1px solid var(--border);border-radius:9px;
+  padding:0 9px;margin:0 0 8px;color:var(--dim);
+}
+.ovroot .ssearch:focus-within{border-color:var(--accent);background:var(--white)}
+.ovroot .ssearch i{font-size:15px;flex-shrink:0}
+.ovroot .ssearch input{
+  flex:1;min-width:0;height:32px;border:0;outline:0;background:transparent;
+  font:inherit;font-size:12.5px;color:var(--ink);
+}
+.ovroot .ssearch input::placeholder{color:var(--dim)}
+.ovroot .snone{padding:10px;font-size:12px;color:var(--dim);line-height:1.5}
+
 .ovroot .sgrp{
-  display:flex;align-items:center;justify-content:space-between;
-  width:100%;
   font-size:10.5px;font-weight:600;
   text-transform:uppercase;letter-spacing:1px;
   color:var(--dim);
   padding:14px 10px 5px;
-  background:transparent;border:0;
-  font-family:inherit;cursor:pointer;
+}
+.ovroot .smore{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;margin-top:12px;
+  padding:10px 10px;border:0;border-top:1px solid var(--border);
+  background:transparent;font-family:inherit;cursor:pointer;
+  font-size:12.5px;font-weight:600;color:var(--muted);
   transition:color .08s;
 }
-.ovroot .sgrp:hover{color:var(--muted)}
-.ovroot .sgrp:first-child{padding-top:5px}
+.ovroot .smore:hover{color:var(--ink)}
+.ovroot .smore-n{
+  margin-left:5px;font-size:10.5px;font-weight:700;color:var(--dim);
+  background:var(--surface2);border-radius:10px;padding:1px 7px;
+}
 .ovroot .sgrp-chev{
   font-size:14px;line-height:1;
   transition:transform .15s ease;
 }
 .ovroot .sgrp-chev.closed{transform:rotate(-90deg)}
+
+.ovroot .nav-ic{
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:9px;
+  color:var(--muted);font-size:19px;text-decoration:none;
+  transition:background .12s,color .12s;
+}
+.ovroot .nav-ic:hover{background:var(--surface2);color:var(--ink)}
+.ovroot .nav-ic.active{background:var(--accent-lt);color:var(--accent)}
 
 .ovroot .sni{
   display:flex;align-items:center;gap:9px;
@@ -481,15 +544,13 @@ const CSS = `
   padding:2px 6px;border-radius:10px;
   min-width:20px;text-align:center;
 }
-/* Nav rozetleri (mockup IA): live / new / ai / count */
+/* Nav rozetleri: live / count */
 .ovroot .nbadge{
   margin-left:auto;flex-shrink:0;
   font-size:9.5px;font-weight:700;letter-spacing:.4px;
   padding:2px 7px;border-radius:20px;line-height:1.5;
 }
 .ovroot .nbadge.live{background:var(--low-bg);color:var(--low);text-transform:uppercase}
-.ovroot .nbadge.new{background:var(--accent-lt);color:var(--accent);text-transform:uppercase}
-.ovroot .nbadge.ai{background:#e6efff;color:#2563eb;letter-spacing:.6px}
 .ovroot .nbadge.count{
   background:var(--mid-bg);color:var(--mid);
   min-width:18px;text-align:center;padding:2px 6px;border-radius:10px;
@@ -536,6 +597,30 @@ const CSS = `
 .ovroot .kpi .kn .pct{font-size:15px;color:var(--dim);font-weight:500}
 .ovroot .kpi .kd{font-size:11.5px;color:var(--dim);margin-top:6px}
 .ovroot .kpi .kd .u{color:var(--low);font-weight:600}
+
+.ovroot .kpis.k3{grid-template-columns:repeat(3,1fr)}
+
+/* Hızlı başlangıç kartları (ana sayfa) */
+.ovroot .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.ovroot .quick.q3{grid-template-columns:repeat(3,1fr)}
+.ovroot .quick .qcard{position:relative;margin:0;padding:16px 18px}
+.ovroot .qcard .qn{
+  position:absolute;top:14px;right:16px;
+  font-size:11px;font-weight:700;color:var(--dim);font-variant-numeric:tabular-nums;
+}
+.ovroot .qcard .qt{
+  display:flex;align-items:center;gap:8px;
+  font-size:14px;font-weight:700;color:var(--ink);letter-spacing:-.2px;margin-bottom:6px;
+}
+.ovroot .qcard .qt i{font-size:19px;color:var(--accent);flex-shrink:0}
+.ovroot .qcard .qd{font-size:12px;color:var(--muted);line-height:1.45}
+@media (max-width:1024px){
+  .ovroot .quick{grid-template-columns:repeat(2,1fr)}
+  .ovroot .quick.q3{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:767px){
+  .ovroot .quick.q3{grid-template-columns:1fr}
+}
 
 /* Card container */
 .ovroot .st{display:flex;align-items:center;justify-content:space-between;margin:30px 0 14px}
@@ -798,7 +883,10 @@ const CSS = `
 @media (pointer:coarse){
   .ovroot .sni{padding:11px 12px;font-size:13.5px;min-height:44px}
   .ovroot .sni i{font-size:18px}
-  .ovroot .sgrp{padding:16px 12px 7px;min-height:34px}
+  .ovroot .sgrp{padding:16px 12px 7px}
+  .ovroot .smore{min-height:44px}
+  .ovroot .ssearch input{height:40px;font-size:14px}
+  .ovroot .nav-ic{width:44px;height:44px}
   .ovroot .ntab{padding:10px 14px;min-height:40px}
   .ovroot .seg button{min-height:38px;padding:8px 14px}
   .ovroot tbody td{padding:13px 14px}
