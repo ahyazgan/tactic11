@@ -17,7 +17,8 @@ concurrency:
 
 jobs:
   e2e:
-    runs-on: ubuntu-latest
+    # Playwright 1.60 ubuntu 26.04'te tarayıcı kuramıyor; ubuntu-latest oraya geçince iş kuruluşta kalıyordu.
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
@@ -67,7 +68,8 @@ jobs:
           retention-days: 7
 
   live_auth:
-    runs-on: ubuntu-latest
+    # Playwright 1.60 ubuntu 26.04'te tarayıcı kuramıyor; ubuntu-latest oraya geçince iş kuruluşta kalıyordu.
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
