@@ -31,7 +31,7 @@ MIN_FORMATION_SUPPORT = 0.5  # karelerin yarısından azında görülen yerleşi
 DEPTH_DELTA_M = WIDTH_DELTA_M
 
 LIMITS = (
-    "Saha yönü bilinmez: centroid_x ham saha yüzdesidir, blok yüksekliği olarak okunmaz.",
+    "Saha yönü bilinmediği için savunma hattı ve blok yüksekliği verilmez.",
     "Takım ayrımı forma rengine dayanır; yanlış takıma düşen oyuncu genişlik ve derinliği büyütür.",
     "Dilimler video dakikasıdır; devre arası ve uzatma ayrılmaz.",
     "Pres yalnız top görünürken ve rakip topa sahipken sayılır.",

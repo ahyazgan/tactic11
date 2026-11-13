@@ -26,6 +26,7 @@ import {
 import { ConsoleShell } from "../_console/shell";
 import { TrackIdentityPanel } from "../_console/track-identity-panel";
 import { TrackingOverlayCard } from "../_console/tracking-pitch";
+import { MatchReportCard } from "../_console/match-report-card";
 import { TrackingShapeCard } from "../_console/tracking-shape-card";
 import { VideoJobPanel } from "../_console/video-job-panel";
 
@@ -209,6 +210,7 @@ export default function VideoTrackingPage() {
       {!DEMO_MODE && match && (
         <>
           <TrackingShapeCard matchId={match.match_id} minute={minute} ourSide={side} windowMin={windowMin} />
+          <MatchReportCard matchId={match.match_id} ourSide={side} />
           {isVideo && <TrackIdentityPanel matchId={match.match_id} ourTeamId={ourTeamId} onSaved={() => { refreshFrames(); }} />}
         </>
       )}
