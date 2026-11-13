@@ -202,7 +202,8 @@
 - [x] PR aç, CI yeşilse birleştir. (tactic11#354)
 - [x] Sınav 3. deneme: 117093 ilk 1800 sn, maç 990806, iş 11747bcb4e. KALDI: 7/8 şart, süre oranı 5,307 > 5,0. Sonuç docs/measurements/product-full-match-exam-result-attempt3.json; rapor docs/GECE-RAPORU-2026-11-13.md.
 - [ ] El kontrolü (kullanıcı): data/tracking/out/el_kontrol_attempt3/ altındaki 20 kare; el-kontrol.json doldurulacak.
-- [ ] Hız: panoramada parça başına 5,1–5,5 kat neden (önceki ölçüm 3,3 kat)? Ayrıştır, ölç.
+- [x] Hız: panoramada parça başına 5,1–5,5 kat neden (önceki ölçüm 3,3 kat)? Gerileme yok: dilim başına 7,1 ms aynı, bu geometri 30 yerine 55 dilim/kare. docs/measurements/panorama-speed-attribution-2026-11-13.json
+- [ ] Panoramada süre şartı: 3 dilim ya da düşük takip hızı doğruluğa karşı ön kayıtlı ölçülsün, ya da şart gevşetilsin (kullanıcı kararı).
   Done when: sebep ölçümle gösterildi; düzeltme varsa ön kayıtlı yeni denemede süre şartı sınandı.
 - [ ] Bellek kapısı panoramada düşük: işçi ~12,5 GB istiyor, eşik 11 GB. Görüntü boyutuna göre eşik.
 - [ ] 132877 ve tam maç: kullanıcıdan HF_TOKEN gerekli.
