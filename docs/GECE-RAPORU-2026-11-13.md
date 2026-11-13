@@ -49,8 +49,8 @@ ve makinede token yok. Diskteki tek sabit kamera uzun video 117093 ilk yarısıy
 Ayrıca: el kontrol aracı (`scripts/urun_mac_el_kontrol.py`, `5a9c940`), dört README'nin gerçek
 duruma göre yeniden yazılması (`855172c`), kullanımdan kalkan çağrıların temizliği (`31eed5e`).
 
-Doğrulama: pytest 3384 geçti / 0 kaldı (dilim ve el kontrol testleri eklenmeden önceki tam koşu;
-sonraki değişikliklerde ilgili dosyalar ve CI koşuldu), ruff ve mypy temiz, CI 11/11 yeşil.
+Doğrulama (son commit, sınav bittikten sonra): pytest 3397 geçti / 106 atlandı / 0 kaldı, ruff
+temiz, mypy temiz (631 dosya), CI 11/11 yeşil.
 
 ## Açık kalanlar
 
