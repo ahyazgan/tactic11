@@ -1,0 +1,40 @@
+{
+  "status": "frozen_before_any_run_on_132877",
+  "written": "2026-11-13, 132877 videosu ve etiketleri indirilirken; hiçbir kare ya da etiket açılmadan",
+  "decided_by": "Kullanıcı 'tarayıcıya bağlan ve sen çöz' ve 'onayla ve indir' dedi (2026-11-13); pencere, şartlar ve eşikler Claude'un",
+  "question": "Ürünün yükleme yolu, hiç görülmemiş bir gündüz maçında oyuncuları gerçek konumlarına ve doğru takıma ne kadar yakın veriyor?",
+  "why": "Bugüne kadarki ürün sınavları gerçek konuma karşı değildi: 4. deneme yalnız çalışırlığı, el kontrolü kaba isabeti gösterdi; takım rengi ölçümü insan etiketine değil renk kuralına dayandı.",
+  "data": {
+    "match": "SoccerTrack v2 132877, ilk yarı panoraması (CC BY 4.0), Hugging Face atomscott/soccertrack-v2",
+    "window_seconds": [600, 900],
+    "dev_seconds": 60,
+    "held_out_seconds": 240,
+    "ground_truth": "gsr/132877/132877_1st.json: oyuncu ve kaleci saha konumları (metre) ve takım (left/right)",
+    "calibration": "raw/132877/132877_keypoints.json'dan scripts/soccertrack_v2/calibration_from_keypoints.py ile; oyuncu ya da GT konumu kullanılmaz",
+    "seen_before": "Bu maçın videosu ve GSR etiketleri hiçbir ölçümde, eğitimde ya da gözle incelemede kullanılmadı. Yalnız keypoints.json metni indirme sırasında tarayıcıda göründü (saha köşe pikselleri; oyuncu verisi değil). Dedektör ağırlıklarının (rfdetr_soccertrack_ft_v2) eğitim verisinde bu maç var mı bilinmiyor; ağırlık SoccerTrack Challenge kliplerinden eğitildi."
+  },
+  "run": {
+    "path": "POST /tracking/jobs varsayılanları (scripts/urun_mac_sinavi.py ile), kesilmiş 300 sn'lik klip, kalibrasyon adı verilerek",
+    "clip": "ffmpeg -ss 600 -t 300 akış kopyası; başlangıç anahtar kareye oturduğu için birkaç saniye kayabilir, kare kayması aramasıyla soğurulur",
+    "tool": "scripts/soccertrack_v2/product_vs_gt.py: hizalama (saha yönü, kare kayması, takım numarası eşlemesi) yalnız ilk 60 sn'den öğrenilir ve dondurulur; şartlar kalan 240 sn'de ölçülür"
+  },
+  "gates_on_held_out": {
+    "recall": ">= 0,80 (GT oyuncularının 3 m içinde bire bir eşi olanların payı)",
+    "precision": ">= 0,80 (ürün işaretlerinin 3 m içinde GT eşi olanların payı)",
+    "median_distance_m": "<= 2,0",
+    "team_agreement": ">= 0,85 (eşleşen ve iki tarafta takımı olan çiftlerde)",
+    "matched_without_team_share": "<= 0,15"
+  },
+  "expectation_declared": "Takım şartının kalması bekleniyor: 117093'te renk kuralına karşı uyum %78,3 idi. Konum şartları için beklenti yok; kalibrasyon bu maçta hiç denenmedi.",
+  "decision": {
+    "if_all_pass": "'Görülmemiş gündüz maçında 5 dakikada konum ve takım gerçek veriye karşı doğrulandı' denebilir; tam maç iddiası değildir.",
+    "if_any_fails": "Kalan şart ürün sınırı olarak aynen yazılır. Bu pencerede ayar yapılmaz; pencere tüketilmiş sayılır ve sonraki deneme 132877'nin başka bir penceresinde ya da ikinci yarısında sınanır."
+  },
+  "limits": [
+    "Tek maç, 5 dakika; geliştirme 60 sn, ölçüm 240 sn",
+    "Kare kayması her karede +-60 kare içinde en iyi uyan seçilerek aranır: konum hatası bir miktar iyimser çıkar",
+    "Eşleme yarıçapı 3 m: 3 m'den büyük konum hatası kaçırma ve sahte işaret olarak iki kez sayılır",
+    "GSR etiketlerinin kendi hatası ölçülmedi; hakemler ve top değerlendirme dışı",
+    "Süre ölçülmez (4. denemede ölçüldü)"
+  ]
+}
