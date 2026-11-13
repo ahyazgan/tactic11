@@ -19,9 +19,17 @@ interface TeamSlice {
 interface Summary { width_m: number; depth_m: number; compactness_m: number; press_index: number | null; reliable_slices: number }
 interface Finding { side: Side; from_minute: number; to_minute: number; metric: string; delta: number; text: string }
 interface ReportSlice { from_minute: number; to_minute: number; frames: number; home: TeamSlice; away: TeamSlice }
+interface LoadRates { player_minutes: number; m_per_player_min: number | null; hsr_share: number | null; sprint_share: number | null }
+interface LoadSlice extends LoadRates { reliable: boolean; coverage: number }
+interface PhysicalReport {
+  teams: Record<Side, LoadRates | null>;
+  slices: ({ from_minute: number; to_minute: number } & Record<Side, LoadSlice>)[];
+  limits: string[];
+}
 interface ReportResponse {
   teams: Record<Side, { team_external_id: number; summary: Summary | null }>;
   slices: ReportSlice[]; findings: Finding[]; limits: string[];
+  physical: PhysicalReport;
 }
 
 const SLICE_OPTIONS = [5, 10, 15] as const;
@@ -33,6 +41,39 @@ const CELL: React.CSSProperties = { padding: "5px 6px", textAlign: "right", font
 
 const num = (v: number | null | undefined, digits = 1) => (v == null ? "—" : v.toFixed(digits));
 const unitOf = (metric: string) => (metric === "press_index" ? "" : " m");
+const pct = (v: number | null | undefined) => (v == null ? "—" : `%${(v * 100).toFixed(1)}`);
+
+function LoadSummary({ name, color, load }: { name: string; color: string; load: LoadRates | null }) {
+  return (
+    <div style={{ flex: "1 1 220px", minWidth: 0 }}>
+      <div style={{ ...HEAD, color }}>{name}</div>
+      {load ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8, marginTop: 4 }}>
+          {[["Tempo (oyuncu başına)", `${num(load.m_per_player_min)} m/dk`], ["Yüksek hız", pct(load.hsr_share)], ["Sprint", pct(load.sprint_share)]].map(([label, value]) => (
+            <div key={label}>
+              <div style={{ fontFamily: MONO, fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>{value}</div>
+              <div style={{ fontSize: 10, color: "var(--muted)" }}>{label}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4 }}>Güvenilir dilim yok; özet verilmiyor.</div>
+      )}
+    </div>
+  );
+}
+
+function LoadCells({ t }: { t: LoadSlice }) {
+  const style = { ...CELL, color: t.reliable ? "var(--ink)" : "var(--dim)" };
+  return (
+    <>
+      <td style={style}>%{Math.round(t.coverage * 100)}</td>
+      <td style={style}>{num(t.m_per_player_min)}</td>
+      <td style={style}>{pct(t.hsr_share)}</td>
+      <td style={style}>{pct(t.sprint_share)}</td>
+    </>
+  );
+}
 
 function SummaryBlock({ name, color, summary }: { name: string; color: string; summary: Summary | null }) {
   return (
@@ -145,6 +186,43 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
           <div style={{ ...HEAD, marginTop: 14 }}>Bu raporu okurken</div>
           <ul style={{ margin: "4px 0 0", paddingLeft: 16, fontSize: 10.5, color: "var(--muted)", lineHeight: 1.6 }}>
             {data.limits.map((limit) => <li key={limit}>{limit}</li>)}
+          </ul>
+
+          <h3 style={{ margin: "18px 0 0" }}>Fiziksel yük <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 11 }}>· takım düzeyi, oyuncu bazında değil</span></h3>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginTop: 10 }}>
+            <LoadSummary name="Biz · güvenilir dilimler" color={US} load={data.physical.teams[ourSide]} />
+            <LoadSummary name="Rakip · güvenilir dilimler" color={THEM} load={data.physical.teams[theirSide]} />
+          </div>
+          <div style={{ overflowX: "auto", marginTop: 12 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
+              <thead>
+                <tr>
+                  <th style={{ ...HEAD, textAlign: "left", padding: "4px 6px" }} rowSpan={2}>Dakika</th>
+                  <th style={{ ...HEAD, color: US, textAlign: "center", padding: "4px 6px" }} colSpan={4}>Biz</th>
+                  <th style={{ ...HEAD, color: THEM, textAlign: "center", padding: "4px 6px", borderLeft: "1px solid var(--line)" }} colSpan={4}>Rakip</th>
+                </tr>
+                <tr>
+                  {[ourSide, theirSide].flatMap((side) => ["Kapsama", "m/dk", "Y. hız", "Sprint"].map((c) => (
+                    <th key={`${side}-${c}`} style={{ ...HEAD, textAlign: "right", padding: "2px 6px" }}>{c}</th>
+                  )))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.physical.slices.map((s) => (
+                  <tr key={s.from_minute} style={{ borderTop: "1px solid var(--line)" }}>
+                    <td style={{ ...CELL, textAlign: "left", color: "var(--muted)" }}>
+                      {s.from_minute}–{s.to_minute}&apos;
+                      {!(s[ourSide].reliable && s[theirSide].reliable) && <span title="İzlenen oyuncu-zaman yetersiz" style={{ color: "var(--high)", marginLeft: 6 }}>güvenilmez</span>}
+                    </td>
+                    <LoadCells t={s[ourSide]} />
+                    <LoadCells t={s[theirSide]} />
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <ul style={{ margin: "8px 0 0", paddingLeft: 16, fontSize: 10.5, color: "var(--muted)", lineHeight: 1.6 }}>
+            {data.physical.limits.map((limit) => <li key={limit}>{limit}</li>)}
           </ul>
         </>
       )}

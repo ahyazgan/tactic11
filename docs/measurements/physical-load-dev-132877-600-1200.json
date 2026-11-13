@@ -1,0 +1,28 @@
+{
+  "gates": {
+    "m_per_player_min_relative": 0.15,
+    "hsr_share_abs": 0.015,
+    "sprint_share_abs": 0.0075
+  },
+  "product": {
+    "player_minutes": 216.4,
+    "m_per_player_min": 121.7,
+    "hsr_share": 0.0342,
+    "sprint_share": 0.0094
+  },
+  "ground_truth": {
+    "player_minutes": 222.9,
+    "m_per_player_min": 121.1,
+    "hsr_share": 0.0295,
+    "sprint_share": 0.0078
+  },
+  "m_per_player_min_relative_error": 0.005,
+  "hsr_share_error": 0.0047,
+  "sprint_share_error": 0.0016,
+  "checks": {
+    "m_per_player_min": true,
+    "hsr_share": true,
+    "sprint_share": true
+  },
+  "passed": true
+}

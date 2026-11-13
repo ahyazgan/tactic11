@@ -523,6 +523,7 @@ def tracking_match_report(
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     from app.engine.tracking.match_report import build_match_report
+    from app.engine.tracking.physical_load import compute_physical_load
 
     match = _match_or_404(session, match_id)
     first, last = session.execute(
@@ -539,5 +540,28 @@ def tracking_match_report(
         end = start + slice_minutes
         slices.append((start, end, frames_in_window(session, match_id, start, end - 1e-6, spread=True)))
         start = end
+    home, away = match.home_team_external_id, match.away_team_external_id
     return {"match_id": match_id, "slice_minutes": slice_minutes, "frames_per_slice_cap": SHAPE_MAX_FRAMES,
-            **build_match_report(match.home_team_external_id, match.away_team_external_id, slices)}
+            **build_match_report(home, away, slices),
+            "physical": compute_physical_load(_track_samples(session, match_id), home, away,
+                                              [(start, end) for start, end, _frames in slices])}
+
+
+def _track_samples(session: Session, match_id: int) -> dict[int, list[tuple[float, float, float, int | None]]]:
+    """Maçın tüm kareleri iz başına (saniye, x m, y m, takım) örneklerine açılır; kare sınırı uygulanmaz."""
+    from app.engine.tracking.compute import PITCH_LENGTH_M, PITCH_WIDTH_M
+
+    tracks: dict[int, list[tuple[float, float, float, int | None]]] = {}
+    rows = session.execute(
+        select(models.TrackingFrameRow.minute, models.TrackingFrameRow.players_json).where(
+            models.TrackingFrameRow.sport == football.SPORT_NAME,
+            models.TrackingFrameRow.match_external_id == match_id,
+        ).order_by(models.TrackingFrameRow.minute)
+    )
+    for minute, players_json in rows:
+        for p in json.loads(players_json):
+            if p.get("is_keeper"):
+                continue
+            tracks.setdefault(int(p["player_external_id"]), []).append(
+                (minute * 60.0, p["x"] / 100.0 * PITCH_LENGTH_M, p["y"] / 100.0 * PITCH_WIDTH_M, p.get("team_external_id")))
+    return tracks
