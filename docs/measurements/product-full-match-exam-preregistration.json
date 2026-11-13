@@ -129,6 +129,14 @@
       "known_before_run": [
         "3. denemede oran 5,307; aynı işin süresi koşudan koşuya yaklaşık %10 oynuyor, yani 6,0 şartı büyük olasılıkla geçer ama garanti değil",
         "Koşu sırasında bu makinede başka ağır iş çalıştırılmayacak"
+      ],
+      "code": "8223399",
+      "outcome": "geçti (otomatik şartlar): 8/8. İşlem/video oranı 5,958 (sınır 6,0; 10724 sn / 1800 sn). İş 'done', 6/6 parça, 7496 kare, 30/30 dakika dolu, kare başına medyan 22 oyuncu, karelerin %100'ünde en az 8 oyuncu, şekil yoklaması tam, boş disk en az 8,17 GB. Top karelerin %62,7'sinde (şart değil). El kontrolü hâlâ yapılmadı; o olmadan sınav bütün olarak geçmiş sayılmaz.",
+      "observed": [
+        "Süre payı çok dar: 5,958 ile 6,0. Aynı iş 3. denemede 5,307 sürmüştü; bu koşu %12 daha yavaş. Sebep ayrıştırılmadı (gündüz, masaüstü oturumu açık; parça parça veritabanına alma eklendi). Aynı ayarla bir sonraki koşu 6,0'ı aşabilir.",
+        "Kare sayısı (7496) ve iz sayısı (1624) 3. denemeyle aynı: çıktı tekrarlanabilir.",
+        "Süre eşiği sonuç görüldükten sonra değiştirildi (gate_change.honesty); 5,0 şartına göre bu koşu da kalırdı.",
+        "İlk iki başlatma iş açılmadan durdu (veritabanı yolu, sonra işçi yorumlayıcı yolu); ölçüm üretmedi."
       ]
     }
   ]
