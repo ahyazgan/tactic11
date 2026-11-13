@@ -203,9 +203,10 @@
 - [x] Sınav 3. deneme: 117093 ilk 1800 sn, maç 990806, iş 11747bcb4e. KALDI: 7/8 şart, süre oranı 5,307 > 5,0. Sonuç docs/measurements/product-full-match-exam-result-attempt3.json; rapor docs/GECE-RAPORU-2026-11-13.md.
 - [ ] El kontrolü (kullanıcı): data/tracking/out/el_kontrol_attempt3/ altındaki 20 kare; el-kontrol.json doldurulacak.
 - [x] Hız: panoramada parça başına 5,1–5,5 kat neden (önceki ölçüm 3,3 kat)? Gerileme yok: dilim başına 7,1 ms aynı, bu geometri 30 yerine 55 dilim/kare. docs/measurements/panorama-speed-attribution-2026-11-13.json
-- [ ] Panoramada süre şartı: 3 dilim ya da düşük takip hızı doğruluğa karşı ön kayıtlı ölçülsün, ya da şart gevşetilsin (kullanıcı kararı).
+- [x] 3 dilim, 4 dilime karşı ön kayıtlı ölçüldü: KALDI (%96,3, şart %97); varsayılan değişmedi. docs/measurements/panorama-tiles-3-vs-4-result.json
+- [ ] Panoramada süre şartı hâlâ açık (kullanıcı kararı): şartı gevşet, takip hızını düşür (ölçülmedi), ya da saha dışı dilimleri atla (dedektör dilimleme kodu dondurulmuş).
   Done when: sebep ölçümle gösterildi; düzeltme varsa ön kayıtlı yeni denemede süre şartı sınandı.
-- [ ] Bellek kapısı panoramada düşük: işçi ~12,5 GB istiyor, eşik 11 GB. Görüntü boyutuna göre eşik.
+- [x] Bellek kapısı 1080p'den büyük karede 14 GB; işçi tarafındaki ret sebebiyle gösterilir. (a63fe75)
 - [ ] 132877 ve tam maç: kullanıcıdan HF_TOKEN gerekli.
 - [x] Eskimiş README'ler (app/ai, app/agents, app/engine, app/api) gerçek durumu anlatsın. (855172c)
 - [x] Panorama yüklemesinde 6 dilim GPU belleğini taşırıyordu; dilim sayısı kare başına 50 dilim sınırıyla düşürülür. (db6508e)
