@@ -17,7 +17,7 @@ Context: {
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import or_, select
@@ -106,7 +106,7 @@ class LineupRecommendationAgent(Agent):
             ).limit(1)
         ).scalar_one_or_none()
         ref_tz = sample_app.kickoff.tzinfo if sample_app else None
-        now = datetime.now(ref_tz) if ref_tz else datetime.utcnow()
+        now = datetime.now(ref_tz) if ref_tz else datetime.now(UTC).replace(tzinfo=None)
         loads: dict[int, dict[str, Any]] = {}
         for pid in candidate_ids:
             apps_for_pid = list(

@@ -373,7 +373,7 @@ def _derive_or_422(fn: Any, *args: Any, **kwargs: Any) -> Any:
     try:
         return fn(*args, **kwargs)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        raise HTTPException(status_code=422,
                             detail=str(e)) from e
 
 
@@ -1046,7 +1046,7 @@ def create_session_load(
     if payload.source == "srpe":
         if payload.rpe is None or payload.duration_min is None:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=422,
                 detail="sRPE için rpe + duration_min gerekli")
         load_au = _derive_or_422(srpe_session_load, payload.rpe, payload.duration_min)
     elif payload.total_distance_m is not None or payload.player_load is not None:
@@ -1064,7 +1064,7 @@ def create_session_load(
         load_au = payload.load_au
     else:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=422,
             detail=f"source={payload.source} için load_au veya GPS metrikleri gerekli")
 
     record = SessionLoad(

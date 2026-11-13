@@ -411,9 +411,10 @@ def test_weekly_digest_endpoint_404_on_missing_league(session, client):
 
 
 def test_congestion_risk_endpoint(client):
+    from datetime import UTC as _utc
     from datetime import datetime as _dt
     from datetime import timedelta as _td
-    base = _dt.utcnow() + _td(days=1)
+    base = _dt.now(_utc).replace(tzinfo=None) + _td(days=1)
     r = client.post(
         "/admin/teams/11/congestion-risk",
         json={

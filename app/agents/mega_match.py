@@ -17,7 +17,7 @@ Output bölümleri:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import or_, select
@@ -119,7 +119,7 @@ class MegaMatchAgent(Agent):
 
         # Schedule + fixture difficulty (home tarafı)
         ref_tz = match.kickoff.tzinfo
-        now = datetime.now(ref_tz) if ref_tz else datetime.utcnow()
+        now = datetime.now(ref_tz) if ref_tz else datetime.now(UTC).replace(tzinfo=None)
         schedule = compute_schedule(home_id, home_prior + [match], now=now, horizon_days=30)
 
         ratings_for_difficulty: dict[int, OpponentRating] = {}

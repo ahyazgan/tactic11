@@ -15,7 +15,7 @@ veri verir, bytes alır. Test edilebilir.
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from io import BytesIO
 from typing import Any
 
@@ -229,7 +229,7 @@ def build_performance_report_pdf(
     if isinstance(test_date, datetime):
         date_str = test_date.strftime("%Y-%m-%d")
     else:
-        date_str = test_date or datetime.utcnow().strftime("%Y-%m-%d")
+        date_str = test_date or datetime.now(UTC).replace(tzinfo=None).strftime("%Y-%m-%d")
 
     buf = BytesIO()
     doc = SimpleDocTemplate(
