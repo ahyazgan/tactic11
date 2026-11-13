@@ -128,6 +128,25 @@ def test_tile_reduction_is_written_into_the_merged_summary(tmp_path):
     assert summary["tiles_requested"] == 6 and summary["tiles_used"] == 4
 
 
+def test_finished_chunks_are_left_as_ready_files_for_the_job_endpoint(tmp_path):
+    chunked.process_chunks(_segments(tmp_path), tmp_path, ["w"], out=str(tmp_path / "o.json"), preview=None,
+                           max_seconds=None, video="mac.mp4", run=_Runner(fail_index=1))
+    ready = sorted(p.name for p in tmp_path.glob("ready_*.json"))
+    assert ready == ["ready_0000.json", "ready_0002.json"]  # çöken parça hazır dosya bırakmaz
+    assert json.loads((tmp_path / "ready_0002.json").read_text(encoding="utf-8"))["frames"] == [{"minute": 10.0}]
+
+
+def test_passes_and_defensive_actions_of_every_chunk_survive_the_merge():
+    """Yalnız ilk parçanınki kalıyordu: 5. dakikadan sonraki paslar tam çıktıda yoktu."""
+    first = {**_payload(0.0), "derived_passes": [{"minute": 1}], "derived_defensive_actions": []}
+    second = {**_payload(5.0), "derived_passes": [{"minute": 6}, {"minute": 7}],
+              "derived_defensive_actions": [{"minute": 8}]}
+    merged = chunked.merge_payloads([first, second], [{"state": "done"}, {"state": "done"}], "mac.mp4")
+    assert [p["minute"] for p in merged["derived_passes"]] == [1, 6, 7]
+    assert merged["derived_defensive_actions"] == [{"minute": 8}]
+    assert "derived_passes" not in chunked.merge_payloads([_payload(0.0)], [{"state": "done"}], "mac.mp4")
+
+
 def test_failed_chunk_is_recorded_and_the_rest_survive(tmp_path):
     out = tmp_path / "out.json"
     summary = chunked.process_chunks(_segments(tmp_path), tmp_path, ["w"], out=str(out), preview=None,

@@ -232,6 +232,58 @@ def test_memory_refusal_without_a_readable_reason_still_names_the_cause(tmp_path
     assert "bellek yetersiz" in tracking_jobs._memory_refusal(tmp_path / "yok.log")
 
 
+def test_finished_chunks_reach_the_database_while_the_worker_is_still_running(client, env, monkeypatch):
+    """Kullanıcı maçın ilk dakikalarını bütün video bitmeden görür; bitişte tam alım yine yapılır."""
+    events: list[tuple[str, bool | None]] = []
+    seen_running: list[dict] = []
+    write_job = tracking_jobs._write_job
+
+    def recording_write(job):
+        if job.get("state") == "running" and job.get("progress"):
+            seen_running.append(dict(job["progress"]))
+        write_job(job)
+
+    monkeypatch.setattr(tracking_jobs, "_write_job", recording_write)
+    monkeypatch.setattr(tracking_jobs, "PART_POLL_SECONDS", 0.2)
+    monkeypatch.setattr(tracking_jobs, "run_part_ingest",
+                        lambda part, tenant, match, *, append: events.append((Path(part).name, append)) or {})
+    monkeypatch.setattr(tracking_jobs, "run_ingest", lambda *a, **k: events.append(("full", None)) or {"frames_written": 3})
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "progressive.mp4").write_bytes(b"\x00" * 10)
+    job = client.post("/tracking/jobs", json={"video": "progressive.mp4", "match_id": 990781}).json()
+    done = _wait_done(client, job["id"])
+    assert done["state"] == "done", done
+    # İlk parça eski kareleri siler (append=False), ikincisi ekler; tam alım en sonda gelir.
+    assert events == [("ready_0000.json", False), ("ready_0001.json", True), ("full", None)]
+    # İş sürerken yazılan son ilerleme iki parçayı da gösterir; iş bitince ilerleme alanı kalkar.
+    assert seen_running[-1] == {"chunks_ready": 2, "chunks_total": 2, "chunks_ingested": 2,
+                                "frames_ready": 2, "minutes_ready": 5.5, "ingest_errors": 0}
+    assert "progress" not in done and done["frames"] == 3
+    assert not tracking_jobs.chunk_dir(done["out_json"]).exists()
+
+
+def test_part_ingest_skips_empty_parts_and_survives_a_failing_one(tmp_path, env, monkeypatch):
+    job = {"id": "j1", "tenant_id": "t-default", "match_id": 7, "out_json": str(tmp_path / "job_j1_frames.json"),
+           "log": str(tmp_path / "j1.log")}
+    folder = tracking_jobs.chunk_dir(job["out_json"])
+    folder.mkdir()
+    (folder / "ready_0000.json").write_text(json.dumps({"frames": []}), encoding="utf-8")
+    (folder / "ready_0001.json").write_text(json.dumps({"frames": [{"minute": 6.2}]}), encoding="utf-8")
+    (folder / "ready_0002.json").write_text("{bozuk", encoding="utf-8")
+    calls: list[bool] = []
+    monkeypatch.setattr(tracking_jobs, "run_part_ingest", lambda *a, append: calls.append(append) or {})
+    monkeypatch.setattr(tracking_jobs, "_write_job", lambda job: None)
+    seen: set[str] = set()
+    tracking_jobs._ingest_ready_parts(job, seen)
+    # Boş parça alınmaz; ilk GERÇEK alım yine eski kareleri siler (append=False).
+    assert calls == [False]
+    assert job["progress"]["chunks_ready"] == 3 and job["progress"]["chunks_ingested"] == 1
+    assert job["progress"]["minutes_ready"] == 6.2 and job["progress"]["ingest_errors"] == 1
+    assert job["progress"]["chunks_total"] is None
+    tracking_jobs._ingest_ready_parts(job, seen)
+    assert calls == [False]  # aynı parça ikinci kez alınmaz
+
+
 def test_job_without_calibration_runs_anchorless(client, env, monkeypatch):
     """Kalibrasyon verilmezse iş ÇAPASIZ başlar: işçiye --calibration geçilmez,
     kalibratör çapayı saha çizgilerinden bulur (TV kuralı)."""

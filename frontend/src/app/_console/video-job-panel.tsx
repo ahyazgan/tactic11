@@ -19,6 +19,20 @@ export interface TrackingJob {
   created_at: string; video: string; calibration: string | null; auto_anchor?: boolean; label?: string | null;
   match_id: number; frames?: number; error?: string | null; warning?: string | null;
   summary?: Record<string, unknown> | null; log_tail?: string[];
+  // Uzun video parça parça işlenir; biten parçalar iş sürerken veritabanına alınır.
+  progress?: { chunks_ready: number; chunks_total: number | null; frames_ready: number; minutes_ready: number } | null;
+}
+
+/** İş sürerken açılabilecek kadar veri var mı: en az bir parça veritabanına alınmış olmalı. */
+export function partialReady(job: TrackingJob): boolean {
+  return job.state === "running" && (job.progress?.frames_ready ?? 0) > 0;
+}
+
+export function progressLabel(job: TrackingJob): string | null {
+  const p = job.progress;
+  if (job.state !== "running" || !p || p.chunks_ready === 0) return null;
+  const parts = p.chunks_total ? `${p.chunks_ready}/${p.chunks_total} parça` : `${p.chunks_ready} parça`;
+  return p.frames_ready > 0 ? `ilk ${Math.floor(p.minutes_ready)} dk hazır · ${parts}` : `${parts} işlendi`;
 }
 interface JobsList { jobs: TrackingJob[]; total: number; worker_available: boolean; default_weights: string | null; worker_python: string }
 
@@ -193,7 +207,8 @@ export function VideoJobPanel({ onDone }: { onDone: (matchId: number) => void })
                 <span>#{j.match_id}</span>
                 {j.frames != null && <span>{j.frames} kare</span>}
                 {j.summary && typeof j.summary.tracks === "number" && <span>{String(j.summary.tracks)} takip</span>}
-                {j.state === "done" && <button type="button" onClick={() => onDone(j.match_id)} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 10, padding: 0 }}>aç →</button>}
+                {progressLabel(j) && <span style={{ color: "var(--ink)" }}>{progressLabel(j)}</span>}
+                {(j.state === "done" || partialReady(j)) && <button type="button" onClick={() => onDone(j.match_id)} style={{ background: "none", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: 10, padding: 0 }}>{j.state === "done" ? "aç →" : "hazır kısmı aç →"}</button>}
                 <button type="button" onClick={() => setOpenLog(openLog === j.id ? null : j.id)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 10, padding: 0 }}>{openLog === j.id ? "logu kapat" : "log"}</button>
               </div>
               {j.error && <div style={{ color: "var(--crit)", fontSize: 10 }}>{j.error}</div>}

@@ -1,0 +1,28 @@
+{
+  "measured": "2026-11-13, RTX 5060 8 GB, kod f5c88e4",
+  "question": "Uzun videoda biten parça, iş hâlâ çalışırken panelin okuduğu uçta görünüyor mu?",
+  "method": "POST /tracking/jobs (sınav aracının istemcisi, ayrı SQLite), 117093 ilk yarı, max_seconds 460 (iki parça: 300 + 160 sn), önizleme kapalı. Her 15 saniyede iş durumu ve GET /tracking/matches/990807/status kaydedildi; yalnız değişen satırlar tutuldu.",
+  "timeline": [
+    {"t_seconds": 0, "state": "running", "progress": null, "status_http": 404, "status_frames": null},
+    {"t_seconds": 1623, "state": "running", "progress": {"chunks_ready": 1, "chunks_total": 2, "chunks_ingested": 1, "frames_ready": 1250, "minutes_ready": 5.0, "ingest_errors": 0}, "status_http": 200, "status_frames": 1250},
+    {"t_seconds": 2496, "state": "done", "status_http": 200, "status_frames": 1913}
+  ],
+  "result": {
+    "partial_data_visible_while_running": true,
+    "first_five_minutes_available_after_seconds": 1623,
+    "whole_job_seconds": 2496,
+    "frames_final": 1913,
+    "shape_endpoint_minute_3_http": 200,
+    "events_in_database": {"total": 63, "minute_below_5": 43, "minute_5_or_later": 20}
+  },
+  "reading": [
+    "İlk 5 dakika, iş bitmeden 873 saniye önce (yaklaşık 14,5 dakika) açılabilir hale geldi. 90 dakikalık maçta ilk parça yine yaklaşık 27 dakikada gelir, tamamı ise saatler sonra.",
+    "5. dakikadan sonraki olaylar veritabanında var: birleştirmede yalnız ilk parçanın pasları kalıyordu, düzeltme gerçek çıktıda da görülüyor.",
+    "Son parça işçi çıkışıyla aynı anda bittiği için ara alıma yetişmedi; ilerleme 1/2'de kaldı ve tam alım kareleri tamamladı. Bu yüzden biten işte ilerleme alanı kaldırıldı (sonraki commit)."
+  ],
+  "limits": [
+    "Tek koşu, iki parça. Toplam süre değişmedi; değişen yalnız ilk verinin ne zaman geldiği.",
+    "Paneldeki yeni satır tarayıcıda gözle denenmedi; yalnız tip denetimi ve lint'ten geçti.",
+    "Ara veri ile son veri arasında kimlik numaraları parça sınırında yeniden başlar (parçalı işlemenin bilinen sınırı)."
+  ]
+}

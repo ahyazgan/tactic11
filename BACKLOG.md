@@ -204,6 +204,9 @@
 - [ ] El kontrolü (kullanıcı): data/tracking/out/el_kontrol_attempt3/ altındaki 20 kare; el-kontrol.json doldurulacak.
 - [x] Hız: panoramada parça başına 5,1–5,5 kat neden (önceki ölçüm 3,3 kat)? Gerileme yok: dilim başına 7,1 ms aynı, bu geometri 30 yerine 55 dilim/kare. docs/measurements/panorama-speed-attribution-2026-11-13.json
 - [x] 3 dilim, 4 dilime karşı ön kayıtlı ölçüldü: KALDI (%96,3, şart %97); varsayılan değişmedi. docs/measurements/panorama-tiles-3-vs-4-result.json
+- [x] Parça parça sonuç: biten parça iş sürerken DB'ye alınır, panel ilerlemeyi gösterir; gerçek koşuda ilk 5 dk 1623. sn'de göründü (iş 2496 sn). docs/measurements/progressive-ingest-verification-2026-11-13.json
+- [x] Parçalı birleştirmede yalnız ilk parçanın pasları kalıyordu; hepsi birleştirilir.
+- [ ] Paneldeki ilerleme satırı tarayıcıda gözle denenmedi.
 - [ ] Panoramada süre şartı hâlâ açık (kullanıcı kararı): şartı gevşet, takip hızını düşür (ölçülmedi), ya da saha dışı dilimleri atla (dedektör dilimleme kodu dondurulmuş).
   Done when: sebep ölçümle gösterildi; düzeltme varsa ön kayıtlı yeni denemede süre şartı sınandı.
 - [x] Bellek kapısı 1080p'den büyük karede 14 GB; işçi tarafındaki ret sebebiyle gösterilir. (a63fe75)

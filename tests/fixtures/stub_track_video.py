@@ -51,6 +51,19 @@ payload = {
     "home_team_external_id": a.home_team, "away_team_external_id": a.away_team,
     "video": a.video, "summary": summary,
 }
+if a.video and a.video.endswith("progressive.mp4"):
+    # Parçalı işçi gibi: önce hazır parçaları bırakır, bir süre çalışır, sonra tam çıktıyı yazar.
+    import time
+    from pathlib import Path
+
+    folder = Path(a.out).with_suffix("").with_name(Path(a.out).stem + "_chunks")
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "plan.json").write_text(json.dumps({"chunks_total": 2}), encoding="utf-8")
+    for index in range(2):
+        part = {**payload, "frames": [{**frames[0], "minute": index * 5 + 0.5}]}
+        (folder / f"part_{index}.tmp").write_text(json.dumps(part), encoding="utf-8")
+        (folder / f"part_{index}.tmp").replace(folder / f"ready_{index:04d}.json")
+        time.sleep(1.0)
 with open(a.out, "w", encoding="utf-8") as f:
     json.dump(payload, f)
 print("stub: ok")

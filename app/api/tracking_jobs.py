@@ -54,6 +54,7 @@ from app.core.system_resources import (
 )
 from app.db import models
 from app.tracking.calibration import CalibrationError, PitchCalibration
+from app.tracking.chunk_layout import PLAN_FILE, READY_PREFIX, chunk_dir
 
 log = get_logger(__name__)
 router = APIRouter(prefix="/tracking", tags=["tracking"])
@@ -65,6 +66,8 @@ LOG_TAIL_LINES = 30
 # Uzun video bu uzunlukta parçalarla, parça başına ayrı süreçte işlenir (bellek her
 # parçada sıfırlanır). Kısa klip tek parça kalır. Bkz. scripts/track_video_chunked.py.
 CHUNK_SECONDS = 300.0
+# Koşu sürerken hazır parçalara bakma aralığı.
+PART_POLL_SECONDS = 5.0
 _jobs_lock = threading.Lock()
 _calibration_summary_lock = threading.Lock()
 
@@ -389,6 +392,53 @@ def empty_output_error(summary: dict[str, Any] | None) -> str:
     return f"videodan kullanılabilir kare çıkmadı ({detail}). Kalibrasyonu ve kamera açısını kontrol edin."
 
 
+def run_part_ingest(part_json: str, tenant_id: str, match_id: int, *, append: bool) -> dict[str, Any]:
+    """Tek parçayı DB'ye al — testlerde monkeypatch edilir."""
+    from scripts.ingest_tracking_json import ingest_json
+
+    return ingest_json(path=part_json, tenant_id=tenant_id, match_id=match_id, append=append)
+
+
+def _ingest_ready_parts(job: dict[str, Any], seen: set[str]) -> None:
+    """Hazır parçaları sırayla DB'ye alır ve işin `progress` alanını günceller.
+
+    İlk alınan parça maçın eski karelerini siler (aynı maç yeniden işleniyorsa), sonrakiler
+    eklenir. Bir parçanın alımı başarısız olursa iş düşmez: bitişteki tam alım onu da kapsar,
+    hata `progress.ingest_errors` içinde sayılır.
+    """
+    folder = chunk_dir(job["out_json"])
+    progress = job.setdefault("progress", {"chunks_ready": 0, "chunks_total": None, "chunks_ingested": 0,
+                                           "frames_ready": 0, "minutes_ready": 0.0, "ingest_errors": 0})
+    changed = False
+    for part in sorted(folder.glob(f"{READY_PREFIX}*.json")):
+        if part.name in seen:
+            continue
+        seen.add(part.name)
+        changed = True
+        try:
+            with open(part, encoding="utf-8") as f:
+                frames = json.load(f).get("frames", [])
+            if frames:
+                run_part_ingest(str(part), job["tenant_id"], int(job["match_id"]),
+                                append=progress["chunks_ingested"] > 0)
+                progress["chunks_ingested"] += 1
+                progress["frames_ready"] += len(frames)
+                minutes = [float(fr["minute"]) for fr in frames if fr.get("minute") is not None]
+                progress["minutes_ready"] = round(max([progress["minutes_ready"], *minutes]), 1)
+        except Exception:  # noqa: BLE001 — ara alım en iyi çaba; tam alım bitişte yapılır
+            log.exception("tracking job %s: parça alınamadı: %s", job["id"], part.name)
+            progress["ingest_errors"] += 1
+    if not changed:
+        return
+    progress["chunks_ready"] = len(seen)
+    try:
+        with open(folder / PLAN_FILE, encoding="utf-8") as f:
+            progress["chunks_total"] = json.load(f).get("chunks_total")
+    except (OSError, ValueError):
+        pass
+    _write_job(job)
+
+
 def _memory_refusal(log_path: Path) -> str:
     """İşçi sarmalayıcısının yazdığı bellek sebebi; bulunamazsa çıkış kodunu olduğu gibi söyler."""
     try:
@@ -416,7 +466,16 @@ def _run_job(job: dict[str, Any]) -> None:
                 job["command"], stdout=lf, stderr=subprocess.STDOUT,
                 env=_worker_env(), cwd=str(PROJECT_ROOT),
             )
-            rc = proc.wait()
+            # Koşu sürerken biten parçalar veritabanına alınır: kullanıcı maçın ilk dakikalarını
+            # bütün video bitmeden görür. Bitişteki tam alım hepsini son haliyle yeniden yazar.
+            seen: set[str] = set()
+            while True:
+                try:
+                    rc = proc.wait(timeout=PART_POLL_SECONDS)
+                    break
+                except subprocess.TimeoutExpired:
+                    _ingest_ready_parts(job, seen)
+        shutil.rmtree(chunk_dir(job["out_json"]), ignore_errors=True)
         if rc != 0 or not Path(job["out_json"]).exists():
             job["state"] = "failed"
             job["error"] = _memory_refusal(log_path) if rc == EXIT_MEMORY_SHORT else f"işçi çıkış kodu {rc}"
@@ -444,6 +503,9 @@ def _run_job(job: dict[str, Any]) -> None:
         job["state"] = "ingesting"
         _write_job(job)
         job["ingest"] = run_ingest(job["out_json"], job["tenant_id"], int(job["match_id"]))
+        # Ara ilerleme artık geçersiz: son parça çoğu kez işçi çıkışıyla aynı anda biter ve ara
+        # alıma yetişmez (gerçek koşuda 1/2'de kaldı). Biten işin sayısı `frames` alanıdır.
+        job.pop("progress", None)
         job["state"] = "done"
         job["finished_at"] = datetime.now(UTC).isoformat()
         _write_job(job)
