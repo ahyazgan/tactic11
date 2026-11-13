@@ -199,8 +199,12 @@
   Done when: tüm pytest yeşil, ruff + mypy temiz, davranış testleri yeni modüle taşındı. (1cb311c; 3384 geçti, 0 kaldı)
 - [x] İş başlamadan bellek/disk ön kontrolü: yetmiyorsa iş açık sebeple reddedilir.
   Done when: test var; eşik ölçülen işçi isteğine (10 GB commit) dayanır ve belgelidir. (3d036bb; disk kapısı parçalı işlemede zaten vardı)
-- [ ] PR aç, CI yeşilse birleştir.
-- [ ] Tam maç sınavı 3. deneme: sabit kamera, gündüz, SoccerTrack 132877 ilk yarı (indiriliyor: data/tracking/datasets/soccertrack_v2/_dl). Ön kayıt koşudan önce commit; kör değil (600–1200 sn daha önce görüldü), yalnız ilk yarı (süre sınırı).
+- [ ] PR aç, CI yeşilse birleştir. (tactic11#354 açık; sınav sonucu commit edildikten ve CI yeşil olduktan sonra birleştir)
+- [ ] Sınav 3. deneme KOŞUYOR (03:36'da başladı, ~05:20 biter): 117093 ilk 1800 sn, maç 990806, iş 11747bcb4e, sınav PID scratchpad/sinav3.pid, log football-intelligence/data/tracking/jobs/11747bcb4e.log. 132877 indirilemedi (HF token yok). KOŞU SÜRERKEN app/tracking ve scripts/track_video* dosyalarına dokunma.
+  Bitince: sonuç JSON'unu aynen commit et; `venv-cv python -m scripts.urun_mac_el_kontrol` ile 20 kareyi üret (çıktı data/tracking/out altına); sonucu ön kayıttaki 3. denemeye `outcome` olarak yaz.
   Done when: sonuç docs/measurements/product-full-match-exam-result-attempt3.json'a aynen yazıldı; 20 karelik el kontrol sayfası hazır.
-- [ ] Eskimiş README'ler (app/ai, app/agents, app/engine, app/api) gerçek durumu anlatsın.
+- [x] Eskimiş README'ler (app/ai, app/agents, app/engine, app/api) gerçek durumu anlatsın. (855172c)
+- [x] Panorama yüklemesinde 6 dilim GPU belleğini taşırıyordu; dilim sayısı kare başına 50 dilim sınırıyla düşürülür. (db6508e)
+- [x] El kontrol sayfası aracı: scripts/urun_mac_el_kontrol.py (5a9c940)
+- [x] Kullanımdan kalkan utcnow / 422 sabiti temizlendi. (31eed5e)
 - [ ] Sabah raporu: docs/GECE-RAPORU-2026-11-13.md
