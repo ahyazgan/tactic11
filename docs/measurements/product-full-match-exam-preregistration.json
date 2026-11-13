@@ -62,6 +62,39 @@
         "Başlangıçta ayrılabilir bellek 7,5 GB, işçi yaklaşık 10 GB ister; kullanıcı riski bilerek başlattı"
       ],
       "outcome": "kaldı: 50 dakika sonra işçi çıkış kodu 1; kök hata numpy ArrayMemoryError (5,93 MiB ayrılamadı), örnek kare 30563 (videoda yaklaşık 34. dk). Boş disk en az 3,21 GB. Ürün çıktısı yok, el kontrolü yapılamadı. İşçinin kendi belleği bu koşuda ölçülmedi: makinenin dar belleği mi, işçinin yavaş büyümesi mi ayrılamıyor."
+    },
+    {
+      "n": 3,
+      "date": "2026-11-13",
+      "registered_before_run": true,
+      "result": "product-full-match-exam-result-attempt3.json",
+      "code": "db6508e",
+      "decided_by": "Kullanıcı gece çalışmasını devretti (2026-11-13); video ve kapsam kararı Claude'un, sabah raporunda açık yazılır",
+      "video": {
+        "file": "soccertrack_117093_1st_half.mp4",
+        "source": "SoccerTrack v2 117093 ilk yarı panoraması, CC BY 4.0, 4096x1080 @25 fps, sabit kamera, gündüz",
+        "seconds_used": 1800,
+        "calibration": "soccertrack_v2_117093_landmarks",
+        "why": "Diskteki tek sabit kamera uzun video. 1. ve 2. denemenin videosu (VLSC) kaydıran kamera; ürünün sabit kamera senaryosunu temsil etmiyor. 132877 indirilemedi: veri seti HF token istiyor, makinede token yok."
+      },
+      "deviations_declared_in_advance": [
+        "TAM MAÇ DEĞİL: yalnız ilk 1800 saniye (30 dk). Sebep: 1800. saniyeden sonraki kesitler (60-72. segmentler) dondurulmuş kimlik kontrollerinin açılmamış kontrol verisi; onlara dokunulmaz. Araçta --max-seconds 'yalnız prova' diye yazılı; burada bilerek sınav kapsamı olarak kullanılıyor.",
+        "Bu koşu geçse bile 'tam maç geçti' denemez; iddia '30 dakika kesintisiz, sabit kamera, ürün yolu' ile sınırlıdır.",
+        "Kör değil: 117093'ün 0-210. saniyeleri (segment 0, 3, 6) geliştirmede kullanıldı; gündüz kalibrasyon bench'i bu maçtan.",
+        "Kalibrasyon kaba: landmark geri-izdüşüm hatası 1,43 m (fisheye panorama). Konum doğruluğu bu koşuyla iddia edilmez.",
+        "Dilim sayısı: iş varsayılanı 6 istenir, ürün bu görüntü boyutunda 4'e indirir (bu dalda eklendi). 6 dilimle 30 saniyelik ön deneme 13 dakikada 8 saniyeden az video işledi; yani eski varsayılanla bu sınav süre şartından kalırdı."
+      ],
+      "changed_since_attempt_2": [
+        "Parça başlangıcı milisaniyeye yuvarlanır (ikinci parçadan itibaren işçi çöküyordu)",
+        "Tekrar süzgecinin yeniden ısınması dondurulmuş dosyadan çıkarıldı, ürün işçisinde bağlanır",
+        "İş başlamadan bellek kapısı",
+        "Dilim sayısı kare başına 50 dilim sınırına göre düşürülür"
+      ],
+      "gates": "1. denemeyle aynı eşikler; kapsama ve şekil yoklaması 1800 saniyeye göre hesaplanır",
+      "known_before_run": [
+        "30 saniyelik ön deneme (dilim 4): 126 kare, kare başına ortalama 22,4 oyuncu, 172 sn",
+        "Beklenen süre yaklaşık 100 dakika (gerçek zamanın 3,2-3,5 katı)"
+      ]
     }
   ]
 }
