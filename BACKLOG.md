@@ -199,12 +199,15 @@
   Done when: tüm pytest yeşil, ruff + mypy temiz, davranış testleri yeni modüle taşındı. (1cb311c; 3384 geçti, 0 kaldı)
 - [x] İş başlamadan bellek/disk ön kontrolü: yetmiyorsa iş açık sebeple reddedilir.
   Done when: test var; eşik ölçülen işçi isteğine (10 GB commit) dayanır ve belgelidir. (3d036bb; disk kapısı parçalı işlemede zaten vardı)
-- [ ] PR aç, CI yeşilse birleştir. (tactic11#354 açık; sınav sonucu commit edildikten ve CI yeşil olduktan sonra birleştir)
-- [ ] Sınav 3. deneme KOŞUYOR (03:36'da başladı, ~05:20 biter): 117093 ilk 1800 sn, maç 990806, iş 11747bcb4e, sınav PID scratchpad/sinav3.pid, log football-intelligence/data/tracking/jobs/11747bcb4e.log. 132877 indirilemedi (HF token yok). KOŞU SÜRERKEN app/tracking ve scripts/track_video* dosyalarına dokunma.
-  Bitince: sonuç JSON'unu aynen commit et; `venv-cv python -m scripts.urun_mac_el_kontrol` ile 20 kareyi üret (çıktı data/tracking/out altına); sonucu ön kayıttaki 3. denemeye `outcome` olarak yaz.
-  Done when: sonuç docs/measurements/product-full-match-exam-result-attempt3.json'a aynen yazıldı; 20 karelik el kontrol sayfası hazır.
+- [x] PR aç, CI yeşilse birleştir. (tactic11#354)
+- [x] Sınav 3. deneme: 117093 ilk 1800 sn, maç 990806, iş 11747bcb4e. KALDI: 7/8 şart, süre oranı 5,307 > 5,0. Sonuç docs/measurements/product-full-match-exam-result-attempt3.json; rapor docs/GECE-RAPORU-2026-11-13.md.
+- [ ] El kontrolü (kullanıcı): data/tracking/out/el_kontrol_attempt3/ altındaki 20 kare; el-kontrol.json doldurulacak.
+- [ ] Hız: panoramada parça başına 5,1–5,5 kat neden (önceki ölçüm 3,3 kat)? Ayrıştır, ölç.
+  Done when: sebep ölçümle gösterildi; düzeltme varsa ön kayıtlı yeni denemede süre şartı sınandı.
+- [ ] Bellek kapısı panoramada düşük: işçi ~12,5 GB istiyor, eşik 11 GB. Görüntü boyutuna göre eşik.
+- [ ] 132877 ve tam maç: kullanıcıdan HF_TOKEN gerekli.
 - [x] Eskimiş README'ler (app/ai, app/agents, app/engine, app/api) gerçek durumu anlatsın. (855172c)
 - [x] Panorama yüklemesinde 6 dilim GPU belleğini taşırıyordu; dilim sayısı kare başına 50 dilim sınırıyla düşürülür. (db6508e)
 - [x] El kontrol sayfası aracı: scripts/urun_mac_el_kontrol.py (5a9c940)
 - [x] Kullanımdan kalkan utcnow / 422 sabiti temizlendi. (31eed5e)
-- [ ] Sabah raporu: docs/GECE-RAPORU-2026-11-13.md
+- [x] Sabah raporu: docs/GECE-RAPORU-2026-11-13.md

@@ -1,0 +1,160 @@
+{
+  "started_at": "2026-11-13T00:36:03.404454+00:00",
+  "video": "soccertrack_117093_1st_half.mp4",
+  "calibration": "soccertrack_v2_117093_landmarks",
+  "expected_seconds": 1800.0,
+  "gates": {
+    "max_processing_ratio": 5.0,
+    "min_minute_coverage": 0.95,
+    "min_median_players": 16.0,
+    "min_frames_8plus_share": 0.8,
+    "min_shape_ok_share": 0.9,
+    "min_free_disk_gb": 3.0
+  },
+  "job_id": "11747bcb4e",
+  "job_state": "done",
+  "job_error": null,
+  "elapsed_seconds": 9551.9,
+  "processing_ratio": 5.307,
+  "min_free_disk_gb": 16.57,
+  "job_summary": {
+    "frames_written": 7496,
+    "tracks": 1624,
+    "team_colors": [
+      [
+        110.8,
+        148.1,
+        210.2
+      ],
+      [
+        208.5,
+        217.2,
+        240.4
+      ]
+    ],
+    "calibration_stats": {
+      "tracker_resets": 0
+    },
+    "chunked": true,
+    "chunks": [
+      {
+        "index": 0,
+        "start_seconds": 0.0,
+        "end_seconds": 300.979,
+        "state": "done",
+        "frames": 1250
+      },
+      {
+        "index": 1,
+        "start_seconds": 300.979,
+        "end_seconds": 600.979,
+        "state": "done",
+        "frames": 1250
+      },
+      {
+        "index": 2,
+        "start_seconds": 600.979,
+        "end_seconds": 900.979,
+        "state": "done",
+        "frames": 1250
+      },
+      {
+        "index": 3,
+        "start_seconds": 900.979,
+        "end_seconds": 1200.979,
+        "state": "done",
+        "frames": 1250
+      },
+      {
+        "index": 4,
+        "start_seconds": 1200.979,
+        "end_seconds": 1500.979,
+        "state": "done",
+        "frames": 1250
+      },
+      {
+        "index": 5,
+        "start_seconds": 1500.979,
+        "end_seconds": 1800.019,
+        "state": "done",
+        "frames": 1246
+      }
+    ],
+    "chunks_failed": 0,
+    "identity_scope": {
+      "cross_segment_person_identity": false
+    },
+    "tiles_requested": 6,
+    "tiles_used": 4
+  },
+  "log_tail": [
+    "  team_colors: [[110.8, 148.1, 210.2], [208.5, 217.2, 240.4]]",
+    "  elapsed_seconds: 1557.8",
+    "  out: C:\\Users\\Yazgan\\Desktop\\manager 2\\football-intelligence\\data\\tracking\\out\\job_11747bcb4e_frames_chunks\\part_0005.json",
+    "parça 6/6: done (1246 kare, 25.0-30.0. dk)",
+    "parçalı işleme bitti: 7496 kare, 0/6 parça başarısız"
+  ],
+  "job_warning": "dilim sayısı 6 yerine 4 kullanıldı (bu görüntü boyutunda GPU belleği sınırı)",
+  "system_memory_start": {
+    "avail_phys_mb": 13597,
+    "avail_commit_mb": 17569
+  },
+  "system_memory_min": {
+    "avail_phys_mb": 10605,
+    "avail_commit_mb": 5059
+  },
+  "metrics": {
+    "frames": 7496,
+    "expected_minutes": 30,
+    "covered_minutes": 30,
+    "minute_coverage": 1.0,
+    "median_players": 22.0,
+    "frames_8plus_share": 1.0,
+    "ball_share": 0.6272678762006404
+  },
+  "review_minutes": [
+    1.788,
+    2.928,
+    3.748,
+    4.376,
+    4.704,
+    5.3283,
+    5.3563,
+    5.8563,
+    6.3763,
+    8.3363,
+    14.8523,
+    16.6723,
+    17.3403,
+    17.3723,
+    20.1803,
+    20.3243,
+    22.3243,
+    23.0483,
+    24.2523,
+    26.7523
+  ],
+  "outputs_mb": {
+    "job_11747bcb4e_frames.json": 32.8,
+    "job_11747bcb4e_preview.mp4": 41.8
+  },
+  "status_http": 200,
+  "status_frames": 7496,
+  "shape_probes": 6,
+  "shape_error_codes": [],
+  "shape_ok_share": 1.0,
+  "finished_at": "2026-11-13T03:15:16.306758+00:00",
+  "verdict": {
+    "checks": {
+      "job_done": true,
+      "ingest_complete": true,
+      "processing_ratio": false,
+      "minute_coverage": true,
+      "median_players": true,
+      "frames_8plus_share": true,
+      "shape_ok_share": true,
+      "free_disk": true
+    },
+    "automatic_gates_passed": false
+  }
+}

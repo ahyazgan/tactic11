@@ -94,6 +94,12 @@
       "known_before_run": [
         "30 saniyelik ön deneme (dilim 4): 126 kare, kare başına ortalama 22,4 oyuncu, 172 sn",
         "Beklenen süre yaklaşık 100 dakika (gerçek zamanın 3,2-3,5 katı)"
+      ],
+      "outcome": "kaldı: 8 otomatik şarttan 7'si geçti, süre şartı kaldı (işlem/video oranı 5,307; sınır 5,0). İş 'done' bitti, 6/6 parça tamam, 7496 kare, 30/30 dakika dolu, kare başına medyan 22 oyuncu, karelerin %100'ünde en az 8 oyuncu, şekil yoklaması 6/6, boş disk en az 16,57 GB. Top karelerin %62,7'sinde var (şart değil). El kontrolü henüz yapılmadı: 20 kare üretildi, kullanıcı bekleniyor.",
+      "observed": [
+        "Parça süreleri 1641 ve 1541 sn (300 sn video için); daha önce ölçülen 4K hızı 30 sn için ~99 sn idi. Fark ayrıştırılmadı.",
+        "Koşunun ilk dakikalarında aynı makinede test paketi ve lint çalıştırıldı; etkisi ölçülmedi.",
+        "Ayrılabilir bellek 17,6 GB'tan en az 5,1 GB'a indi: işçi bu görüntüde yaklaşık 12,5 GB istiyor, 11 GB'lık kapı eşiği panorama için düşük kalıyor."
       ]
     }
   ]
