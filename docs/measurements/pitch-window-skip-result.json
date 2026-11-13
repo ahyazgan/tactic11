@@ -1,0 +1,117 @@
+{
+  "preregistration": "docs/measurements/pitch-window-skip-preregistration.json (b568261, yöntem koşulmadan önce)",
+  "measured": "2026-11-13, RTX 5060 8 GB, yöntem kodu 989b69d",
+  "verdict": {
+    "checks": {
+      "overall_recall_vs_reference": true,
+      "every_window_recall": true,
+      "every_band_recall": true,
+      "overall_extra_share": true,
+      "speed": false
+    },
+    "passed": false,
+    "outcome": "kaldı: çıktı birebir aynı (16453/16453 oyuncu gözlemi eşleşti, fazladan yok) ama süre yalnız %4 kısaldı (şart en az %15). Ön kayıt gereği yöntem ürüne bağlanmadı; kodu geri alındı."
+  },
+  "windows_processed": {
+    "kept": 47,
+    "total": 55
+  },
+  "elapsed_seconds": {
+    "reference_tiles_4": [
+      326.0,
+      350.8,
+      319.4
+    ],
+    "candidate": [
+      298.8,
+      315.1,
+      341.2
+    ],
+    "reference_mean": 332.1,
+    "candidate_mean": 318.4,
+    "ratio": 0.959
+  },
+  "reading": [
+    "Dondurulan kural (2 m saha payı, yana %15, aşağıya bir pencere boyu) 55 pencereden yalnız 8'ini attı. Ön sayımda en dar kural 23 pencere atıyordu; güvenli tarafta kalan kural kazancın çoğunu bıraktı.",
+    "8 pencere dedektör işinin %15'i; ölçülen kazanç %4. Adayda kamera analizi iki kez koşuyor (ürün girişi ve işçi) ve üçüncü pencere referanstan yavaş çıktı; tek koşuluk süre ölçümünün oynaklığı bu farktan büyük olabilir, ayrıştırılmadı.",
+    "Çıktının birebir aynı çıkması yöntemin fikrini doğruluyor: atlanan pencerelerde ürünün kullandığı hiçbir oyuncu yoktu. Daha dar bir kural daha çok kazandırabilir ama yeni ön kayıt ve yeni ölçüm ister."
+  ],
+  "match_radius_m": 3.0,
+  "windows": [
+    {
+      "frames_compared": 250,
+      "reference_frames": 250,
+      "reference_players": 5332,
+      "candidate_players": 5332,
+      "matched": 5332,
+      "recall_vs_reference": 1.0,
+      "extra_share": 0.0,
+      "band_recall": {
+        "y_0_33": 1.0,
+        "y_33_67": 1.0,
+        "y_67_100": 1.0
+      },
+      "band_reference_players": {
+        "y_0_33": 2952,
+        "y_33_67": 2028,
+        "y_67_100": 352
+      },
+      "reference": "w420_t4.json",
+      "candidate": "w420_saha.json"
+    },
+    {
+      "frames_compared": 250,
+      "reference_frames": 250,
+      "reference_players": 5542,
+      "candidate_players": 5542,
+      "matched": 5542,
+      "recall_vs_reference": 1.0,
+      "extra_share": 0.0,
+      "band_recall": {
+        "y_0_33": 1.0,
+        "y_33_67": 1.0,
+        "y_67_100": 1.0
+      },
+      "band_reference_players": {
+        "y_0_33": 1703,
+        "y_33_67": 2666,
+        "y_67_100": 1173
+      },
+      "reference": "w900_t4.json",
+      "candidate": "w900_saha.json"
+    },
+    {
+      "frames_compared": 250,
+      "reference_frames": 250,
+      "reference_players": 5579,
+      "candidate_players": 5579,
+      "matched": 5579,
+      "recall_vs_reference": 1.0,
+      "extra_share": 0.0,
+      "band_recall": {
+        "y_0_33": 1.0,
+        "y_33_67": 1.0,
+        "y_67_100": 1.0
+      },
+      "band_reference_players": {
+        "y_0_33": 733,
+        "y_33_67": 3235,
+        "y_67_100": 1611
+      },
+      "reference": "w1380_t4.json",
+      "candidate": "w1380_saha.json"
+    }
+  ],
+  "overall": {
+    "reference_players": 16453,
+    "candidate_players": 16453,
+    "matched": 16453,
+    "recall_vs_reference": 1.0,
+    "extra_share": 0.0,
+    "band_recall": {
+      "y_0_33": 1.0,
+      "y_33_67": 1.0,
+      "y_67_100": 1.0
+    }
+  }
+}

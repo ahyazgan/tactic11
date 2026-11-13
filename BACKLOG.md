@@ -206,7 +206,8 @@
 - [x] 3 dilim, 4 dilime karşı ön kayıtlı ölçüldü: KALDI (%96,3, şart %97); varsayılan değişmedi. docs/measurements/panorama-tiles-3-vs-4-result.json
 - [x] Parça parça sonuç: biten parça iş sürerken DB'ye alınır, panel ilerlemeyi gösterir; gerçek koşuda ilk 5 dk 1623. sn'de göründü (iş 2496 sn). docs/measurements/progressive-ingest-verification-2026-11-13.json
 - [x] Parçalı birleştirmede yalnız ilk parçanın pasları kalıyordu; hepsi birleştirilir.
-- [ ] Paneldeki ilerleme satırı tarayıcıda gözle denenmedi.
+- [x] Paneldeki ilerleme satırı gerçek işle tarayıcıda doğrulandı (iş 7bb3b379bb, maç 990808: "ilk 5 dk hazır · 1/3 parça").
+- [x] Saha dışı dilim pencerelerini atlama ön kayıtlı ölçüldü: KALDI. Çıktı birebir aynı (16453/16453) ama 55 pencereden yalnız 8'i atıldı, süre %4 kısaldı (şart %15); kod geri alındı. docs/measurements/pitch-window-skip-result.json
 - [ ] Panoramada süre şartı hâlâ açık (kullanıcı kararı): şartı gevşet, takip hızını düşür (ölçülmedi), ya da saha dışı dilimleri atla (dedektör dilimleme kodu dondurulmuş).
   Done when: sebep ölçümle gösterildi; düzeltme varsa ön kayıtlı yeni denemede süre şartı sınandı.
 - [x] Bellek kapısı 1080p'den büyük karede 14 GB; işçi tarafındaki ret sebebiyle gösterilir. (a63fe75)
