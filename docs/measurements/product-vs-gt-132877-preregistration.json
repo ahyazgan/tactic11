@@ -1,21 +1,24 @@
 {
-  "status": "frozen_before_any_run_on_132877",
+  "status": "frozen_before_any_run_of_this_measurement (düzeltildi, bkz. correction)",
   "written": "2026-11-13, 132877 videosu ve etiketleri indirilirken; hiçbir kare ya da etiket açılmadan",
   "decided_by": "Kullanıcı 'tarayıcıya bağlan ve sen çöz' ve 'onayla ve indir' dedi (2026-11-13); pencere, şartlar ve eşikler Claude'un",
   "question": "Ürünün yükleme yolu, hiç görülmemiş bir gündüz maçında oyuncuları gerçek konumlarına ve doğru takıma ne kadar yakın veriyor?",
   "why": "Bugüne kadarki ürün sınavları gerçek konuma karşı değildi: 4. deneme yalnız çalışırlığı, el kontrolü kaba isabeti gösterdi; takım rengi ölçümü insan etiketine değil renk kuralına dayandı.",
   "data": {
     "match": "SoccerTrack v2 132877, ilk yarı panoraması (CC BY 4.0), Hugging Face atomscott/soccertrack-v2",
-    "window_seconds": [600, 900],
+    "window_seconds": [
+      1800,
+      2100
+    ],
     "dev_seconds": 60,
     "held_out_seconds": 240,
     "ground_truth": "gsr/132877/132877_1st.json: oyuncu ve kaleci saha konumları (metre) ve takım (left/right)",
-    "calibration": "raw/132877/132877_keypoints.json'dan scripts/soccertrack_v2/calibration_from_keypoints.py ile; oyuncu ya da GT konumu kullanılmaz",
-    "seen_before": "Bu maçın videosu ve GSR etiketleri hiçbir ölçümde, eğitimde ya da gözle incelemede kullanılmadı. Yalnız keypoints.json metni indirme sırasında tarayıcıda göründü (saha köşe pikselleri; oyuncu verisi değil). Dedektör ağırlıklarının (rfdetr_soccertrack_ft_v2) eğitim verisinde bu maç var mı bilinmiyor; ağırlık SoccerTrack Challenge kliplerinden eğitildi."
+    "calibration": "data/tracking/calibrations/soccertrack_v2_132877_landmarks.json (2026-11-01'de aynı keypoints dosyasından kuruldu; bugün indirilen dosyayla yeniden kurulup işaret noktalarında 1e-11 m farkla aynı çıktığı görüldü)",
+    "seen_before": "bkz. correction_before_run"
   },
   "run": {
     "path": "POST /tracking/jobs varsayılanları (scripts/urun_mac_sinavi.py ile), kesilmiş 300 sn'lik klip, kalibrasyon adı verilerek",
-    "clip": "ffmpeg -ss 600 -t 300 akış kopyası; başlangıç anahtar kareye oturduğu için birkaç saniye kayabilir, kare kayması aramasıyla soğurulur",
+    "clip": "ffmpeg -ss 1800 -t 300 akış kopyası; başlangıç anahtar kareye oturduğu için birkaç saniye kayabilir, kare kayması aramasıyla soğurulur",
     "tool": "scripts/soccertrack_v2/product_vs_gt.py: hizalama (saha yönü, kare kayması, takım numarası eşlemesi) yalnız ilk 60 sn'den öğrenilir ve dondurulur; şartlar kalan 240 sn'de ölçülür"
   },
   "gates_on_held_out": {
@@ -35,6 +38,22 @@
     "Kare kayması her karede +-60 kare içinde en iyi uyan seçilerek aranır: konum hatası bir miktar iyimser çıkar",
     "Eşleme yarıçapı 3 m: 3 m'den büyük konum hatası kaçırma ve sahte işaret olarak iki kez sayılır",
     "GSR etiketlerinin kendi hatası ölçülmedi; hakemler ve top değerlendirme dışı",
-    "Süre ölçülmez (4. denemede ölçüldü)"
-  ]
+    "Süre ölçülmez (4. denemede ölçüldü)",
+    "Konum şartı düzeltilmiş referansa göredir: kalibrasyonun kendi hatası (işaretlerde 1,5 m) bu ölçümde görünmez"
+  ],
+  "correction_before_run": {
+    "when": "2026-11-13, dosyalar indikten sonra, hiçbir GSR satırı ya da 132877 karesi bu ölçüm için açılmadan",
+    "what_was_wrong": "İlk yazımda (341868b) 132877 'hiçbir ölçümde kullanılmadı' dendi. Yanlış: 2026-11-01'de 132877'nin 600-1200 sn penceresi canlı yolla (maç 990741) GSR'ye karşı ölçüldü (docs/CALISMA-GUNLUGU-2026-11-01.md, docs/measurements/daylight-132877-gsr-telestration.json). Kalibrasyon da o gün kuruldu.",
+    "known_from_that_day": [
+      "Takım rengi GSR'ye karşı %91,6; referans düzeltilince %93,4 (canlı yol, o günkü kod)",
+      "GSR saha koordinatları resmî saha işaretlerine göre sahanın eninde 2-3 m kayık; ayak pikselleri doğru (docs/measurements/gsr-reference-geometry.json)",
+      "GSR kare sayacı kayması yaklaşık -24 kare"
+    ],
+    "changes": [
+      "Pencere 600-900 yerine 1800-2100 sn: 132877'nin 600-1200 dışındaki kısmı hiçbir ölçümde kullanılmadı",
+      "Referans: GSR saha konumları scripts/soccertrack_v2/correct_gsr_positions.py ile ayak pikselinden mevcut işaret kalibrasyonu (soccertrack_v2_132877_landmarks) üzerinden yeniden kurulur. Şartlar bu düzeltilmiş referansa göre ölçülür; ham GSR sonucu da yanında yazılır.",
+      "Araç: konumu NaN olan GT satırları atılır (düzeltme aracı ayak pikseli olmayan satıra NaN yazar)"
+    ],
+    "consequence": "Maç 'hiç görülmemiş' değil, 'bu pencere görülmemiş'. Kalibrasyon ve dedektör ayarı bu maçta daha önce çalıştırıldı ama bu maça göre ayarlanmadı (dedektör eğitim maçları: 117093, 118575, 118576, 118577). Düzeltilmiş referans ürünle AYNI kalibrasyonu kullandığı için konum şartı kalibrasyon hatasını ölçmez; yalnız tespit ve ayak noktası hatasını ölçer."
+  }
 }

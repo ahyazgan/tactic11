@@ -59,9 +59,9 @@ def match(ours: np.ndarray, truth: np.ndarray, radius_m: float = MATCH_RADIUS_M)
 
 
 def gt_by_frame(rows: np.ndarray) -> Truth:
-    """Kare -> (saha noktaları metre 0..105/0..68, takım); yalnız oyuncu ve kaleci."""
+    """Kare -> (saha noktaları metre 0..105/0..68, takım); yalnız konumu olan oyuncu ve kaleci."""
     out: Truth = {}
-    keep = rows[np.isin(rows[:, 3], PLAYER_CATEGORIES)]
+    keep = rows[np.isin(rows[:, 3], PLAYER_CATEGORIES) & np.isfinite(rows[:, 6:8]).all(axis=1)]
     for frame in np.unique(keep[:, 0]):
         part = keep[keep[:, 0] == frame]
         out[int(frame)] = (np.column_stack([part[:, 6] + 52.5, part[:, 7] + 34.0]), part[:, 2].astype(int))

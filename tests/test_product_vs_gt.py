@@ -55,6 +55,6 @@ def test_match_respects_the_radius_and_is_one_to_one():
 
 def test_gt_by_frame_keeps_only_players_and_keepers():
     rows = np.array([(5, 0, 0, 1, 0, 0, 0.0, 0.0, 1, 1), (5, 1, -1, 3, 0, 0, 1.0, 1.0, 1, 1),
-                     (5, 2, 1, 2, 0, 0, -52.5, -34.0, 1, 1)], dtype=float)
+                     (5, 2, 1, 2, 0, 0, -52.5, -34.0, 1, 1), (5, 3, 0, 1, 0, 0, np.nan, 0.0, 1, 1)], dtype=float)
     points, teams = tool.gt_by_frame(rows)[5]
     assert points.tolist() == [[52.5, 34.0], [0.0, 0.0]] and teams.tolist() == [0, 1]
