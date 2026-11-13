@@ -514,3 +514,30 @@ def tracking_shape(
         out["teams"][side] = {"team_external_id": tid, "shape": shape["value"], "pressure": press["value"],
                               "formula": {"shape": shape.get("audit", {}).get("formula"), "pressure": press.get("audit", {}).get("formula")}}
     return out
+
+
+@router.get("/matches/{match_id}/report", summary="Maç raporu: dilim dilim takım şekli + pres ve sapmalar")
+def tracking_match_report(
+    match_id: int,
+    slice_minutes: float = Query(15.0, ge=5, le=45),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    from app.engine.tracking.match_report import build_match_report
+
+    match = _match_or_404(session, match_id)
+    first, last = session.execute(
+        select(func.min(models.TrackingFrameRow.minute), func.max(models.TrackingFrameRow.minute)).where(
+            models.TrackingFrameRow.sport == football.SPORT_NAME,
+            models.TrackingFrameRow.match_external_id == match_id,
+        )
+    ).one()
+    if first is None:
+        raise HTTPException(status_code=404, detail=f"match {match_id} için takip karesi yok")
+    slices = []
+    start = float(first) // slice_minutes * slice_minutes
+    while start <= last:
+        end = start + slice_minutes
+        slices.append((start, end, frames_in_window(session, match_id, start, end - 1e-6, spread=True)))
+        start = end
+    return {"match_id": match_id, "slice_minutes": slice_minutes, "frames_per_slice_cap": SHAPE_MAX_FRAMES,
+            **build_match_report(match.home_team_external_id, match.away_team_external_id, slices)}
