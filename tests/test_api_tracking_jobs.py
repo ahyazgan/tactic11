@@ -218,6 +218,20 @@ def test_job_is_refused_before_the_worker_starts_when_memory_is_short(client, en
     assert not any("stub" in ln for ln in done.get("log_tail") or [])
 
 
+def test_worker_side_memory_refusal_reaches_the_user_as_a_reason_not_an_exit_code(client, env):
+    """Büyük karede işçi sarmalayıcısı kendi eşiğiyle reddeder; kullanıcı 'çıkış kodu 5' değil sebebi görür."""
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "bigframe.mp4").write_bytes(b"\x00" * 10)
+    job = client.post("/tracking/jobs", json={"video": "bigframe.mp4", "match_id": 990780}).json()
+    done = _wait_done(client, job["id"])
+    assert done["state"] == "failed"
+    assert done["error"].startswith("bellek yetersiz") and "14 GB" in done["error"]
+
+
+def test_memory_refusal_without_a_readable_reason_still_names_the_cause(tmp_path):
+    assert "bellek yetersiz" in tracking_jobs._memory_refusal(tmp_path / "yok.log")
+
+
 def test_job_without_calibration_runs_anchorless(client, env, monkeypatch):
     """Kalibrasyon verilmezse iş ÇAPASIZ başlar: işçiye --calibration geçilmez,
     kalibratör çapayı saha çizgilerinden bulur (TV kuralı)."""
