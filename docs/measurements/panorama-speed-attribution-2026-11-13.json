@@ -1,0 +1,38 @@
+{
+  "measured": "2026-11-13 sabah, RTX 5060 8 GB, GPU'da başka iş yok",
+  "question": "3. ürün sınavında parçalar gerçek zamanın 5,1-5,5 katı sürdü; daha önce 4K için ölçülen hız 3,3 kattı. Fark nereden geliyor?",
+  "answer": "Hız gerilemesi yok. Dilim başına süre aynı; bu görüntüde kare başına dilim sayısı önceki ölçümdekinin 1,83 katı. Önceki ölçüm 2:1 oranlı yeniden kodlanmış görüntüde (30 dilim), sınav ise 3,8:1 oranlı doğal panoramada (55 dilim) yapıldı.",
+  "method": "Aynı kesit (117093 ilk yarı, 0-40 sn, 501 takip karesi, etkin 12,5 fps), aynı ağırlık (rfdetr_soccertrack_ft_v2, çözünürlük 512), scripts.track_video doğrudan; tek değişken dilim sayısı. Süre işçinin kendi elapsed_seconds değeri (model yükleme dahil).",
+  "trials": [
+    {"tiles": 4, "grid": "9x4", "windows_per_frame": 55, "sampled_frames": 501, "elapsed_seconds": 227.2, "players_per_frame_mean": 22.2},
+    {"tiles": 3, "grid": "6x3", "windows_per_frame": 28, "sampled_frames": 501, "elapsed_seconds": 131.5, "players_per_frame_mean": 22.0}
+  ],
+  "derived": {
+    "ms_per_window": 7.07,
+    "how": "(227,2 - 131,5) / (501 x (55 - 28))",
+    "fixed_seconds": 32,
+    "fixed_how": "227,2 - 501 x 55 x 0,00707; model yükleme ve dedektör dışı işler"
+  },
+  "geometry": [
+    {"what": "3. sınav, 117093 doğal panorama", "size": "4096x1080", "tiles": 4, "windows_per_frame": 55},
+    {"what": "önceki ölçüm, canlı prova 990601", "size": "2176x1080", "tiles": 4, "windows_per_frame": 30},
+    {"what": "önceki ölçüm, 990612", "size": "3840x1906", "tiles": 4, "windows_per_frame": 30},
+    {"what": "16:9 yükleme varsayılanı", "size": "1920x1080", "tiles": 6, "windows_per_frame": 49}
+  ],
+  "cross_checks": [
+    "Önceki ölçüm (live-speed-results.json, torch, 4 dilim): 30 sn'lik segment ortalama 89,3 sn. 450 kare x 30 dilim varsayımıyla 6,6 ms/dilim; bugünkü 7,07 ile %7 içinde. 450 kare varsayımdır (15 fps x 30 sn), kayıtta kare sayısı yok.",
+    "Sınav parçası tahmini: 3750 kare x 55 dilim x 7,07 ms + 32 sn = 1490 sn. Ölçülen 1541 sn (2. parça); model farkın %97'sini açıklıyor.",
+    "İki ağırlık klasörünün model boyutu ve çözünürlüğü aynı (small, 512); fark ağırlıktan gelmiyor."
+  ],
+  "consequence": "Doğal 4096x1080 panoramada, 4 dilim ve etkin 12,5 fps ile yalnız dedektör işlem/video oranı 12,5 x 55 x 0,00707 = 4,86'dır. Model yükleme, bölme, önizleme ve veritabanına alım eklenince 5,0 sınırı bu ayarla geçilemez; 3. denemedeki 5,31 bu yüzden beklenen değerdir.",
+  "options_not_tested": [
+    "3 dilim (28 dilim/kare): dedektör oranı yaklaşık 2,5. Önceki ölçümde GT oyuncu tespiti 5,8 puan düşmüştü (başka geometri); bu panoramada doğruluğa karşı ölçülmedi. Bu 40 saniyede kare başına ortalama oyuncu 22,2'ye karşı 22,0; bu bir doğruluk ölçüsü değildir.",
+    "Takip hızını düşürmek (ör. 10 fps): oran doğrusal düşer; takip ve top kalitesine etkisi ölçülmedi.",
+    "Süre şartını maç sonrası kullanım için gevşetmek: kullanıcı kararı."
+  ],
+  "limits": [
+    "Tek maç, tek 40 saniyelik kesit, her ayar bir kez koşuldu; tekrar değişkenliği ölçülmedi.",
+    "GPU ve CPU kullanımı ayrı ölçülemedi (örnekleme betiği çalışmadı); dilim başına sürenin ne kadarının GPU çıkarımı, ne kadarının CPU ön işleme olduğu bilinmiyor.",
+    "Sabit pay iki noktadan türetildi; üçüncü bir dilim sayısıyla doğrusallık sınanmadı."
+  ]
+}

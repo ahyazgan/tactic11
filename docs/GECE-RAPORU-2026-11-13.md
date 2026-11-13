@@ -55,9 +55,12 @@ temiz, mypy temiz (631 dosya), CI 11/11 yeşil.
 ## Açık kalanlar
 
 1. **Süre şartı.** Parçalar 300 saniyelik video için 1541–1641 saniye sürdü (5,1–5,5 kat). Daha
-   önce 4K için ölçülen hız 3,3 kattı. Fark ayrıştırılmadı. Koşunun ilk dakikalarında aynı
-   makinede test paketi çalıştırıldı; etkisi ölçülmedi ama sonraki parçalar da yavaştı, yani
-   tek sebep bu değil.
+   önce ölçülen 3,3 katla fark sonradan ayrıştırıldı
+   (`docs/measurements/panorama-speed-attribution-2026-11-13.json`): hız gerilemesi yok. Dilim
+   başına süre aynı (7,1 ms; eski ölçümde 6,6 ms); eski ölçüm 2:1 oranlı görüntüde kare başına
+   30 dilimle, sınav 3,8:1 oranlı doğal panoramada 55 dilimle yapıldı. Bu ayarla yalnız dedektör
+   4,86 kat tutuyor; yükleme, bölme ve alımla 5,0 sınırı geçilemez. Seçenekler (3 dilim, daha
+   düşük takip hızı, şartı gevşetmek) doğruluğa karşı ölçülmedi.
 2. **Bellek kapısı panorama için düşük.** Ayrılabilir bellek koşuda 17,6 → 5,1 GB'a indi; işçi
    bu görüntüde yaklaşık 12,5 GB istiyor, kapı eşiği 11 GB (1080p'de ölçülmüştü).
 3. **Ürün süzgeci çalışma anında değiştiriliyor.** `pipeline.py` dondurulmuş olduğu için tekrar
