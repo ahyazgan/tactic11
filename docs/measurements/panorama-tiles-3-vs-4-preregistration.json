@@ -1,0 +1,43 @@
+{
+  "status": "frozen_before_any_run",
+  "written": "2026-11-13, karşılaştırma koşularından önce",
+  "decided_by": "Kullanıcı 'çalışır hale getirelim' dedi (2026-11-13); yöntem ve eşikler Claude'un",
+  "question": "Doğal 4096x1080 panoramada 3 dilim, 4 dilimin bulduğu oyuncuları kaybetmeden kullanılabilir mi?",
+  "why": "3. ürün sınavı yalnız süre şartından kaldı (5,31 > 5,0). Ölçüm: 4 dilim kare başına 55 pencere, yalnız dedektör 4,86 kat; 3 dilim 28 pencere, yaklaşık 2,5 kat (panorama-speed-attribution-2026-11-13.json).",
+  "what_this_is_not": "Doğruluk ölçüsü değil. Referans gerçek konum değil, 4 dilim çıktısıdır. Gündüz gerçek konum verisi (132877 GSR) diskte var ama videosu yok: SoccerTrack videoları Hugging Face token'ı ister, makinede token yok. Gece maçındaki (117092) gerçek konum verisi kullanıcı kuralı gereği kullanılmaz. 4 dilimin kendi doğruluğu bu ölçümle söylenmez; o, bekleyen 20 karelik el kontrolünün işidir.",
+  "data": {
+    "video": "SoccerTrack v2 117093 ilk yarı panoraması (gündüz, sabit kamera, 4096x1080 @25 fps)",
+    "windows_start_seconds": [420, 900, 1380],
+    "window_seconds": 60,
+    "cut": "ffmpeg -ss <başlangıç> -t 60 -c copy; iki ayar aynı kesilmiş dosyayı işler",
+    "why_these": "1800. saniyenin altında (üstü dondurulmuş kontrol kesitleri), geliştirmede kullanılan 0-210 saniyenin dışında, birbirinden 8 dakika aralı. 3. sınav bu aralığı 4 dilimle işledi; çıktısına kare düzeyinde bakılmadı.",
+    "seen_before": "0-40 sn kesitinde iki ayarın yalnız ortalama oyuncu sayısı görüldü (22,2 ve 22,0); bu kesit ölçüme dahil değil"
+  },
+  "runs": {
+    "worker": "scripts.track_video (dondurulmuş ölçüm işçisi), doğrudan",
+    "fixed": "--fps 5 --track-fps 15 --threshold 0.3 --ball-threshold 0.3 --weights rfdetr_soccertrack_ft_v2 --calibration soccertrack_v2_117093_landmarks",
+    "variable": "--tiles 4 (referans) ve --tiles 3 (aday)"
+  },
+  "metric": {
+    "tool": "scripts/soccertrack_v2/tile_agreement.py",
+    "matching": "aynı dakikalı çıktı karelerinde oyuncu konumları, Macar eşleme, sahada en çok 3,0 m",
+    "recall_vs_reference": "4 dilimin oyuncu gözlemlerinden 3 dilimde eşi olanların payı",
+    "extra_share": "3 dilimin oyuncu gözlemlerinden 4 dilimde eşi olmayanların payı",
+    "bands": "saha enine göre üç bant (y 0-33, 33-67, 67-100); kameraya uzak bantta küçük oyuncular kaybolabilir"
+  },
+  "gates": {
+    "overall_recall_vs_reference": ">= 0,97",
+    "every_window_recall": ">= 0,95",
+    "every_band_recall": ">= 0,95",
+    "overall_extra_share": "<= 0,03"
+  },
+  "decision": {
+    "if_all_pass": "Ürün yükleme yolunda kare başına pencere sınırı, bu panoramada 3 dilim seçilecek şekilde düşürülür; 16:9 kaynakta varsayılan (6 dilim, 49 pencere) değişmez. Ardından ürün sınavı 4. deneme olarak yeniden ön kaydedilir.",
+    "if_any_fails": "Varsayılan değişmez. Sonuç aynen kaydedilir; süre şartı için kalan yollar (takip hızı, şartı gevşetmek) kullanıcı kararıdır."
+  },
+  "limits": [
+    "Tek maç, üç dakika; hava ve ışık tek koşul",
+    "Her ayar pencere başına bir kez koşulur; tekrar değişkenliği ölçülmez",
+    "Geçse bile iddia şudur: '3 dilim, bu panoramada 4 dilimin gördüğünü görüyor'. '3 dilim doğru' değildir."
+  ]
+}
