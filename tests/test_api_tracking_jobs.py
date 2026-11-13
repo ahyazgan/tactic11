@@ -235,6 +235,15 @@ def test_memory_refusal_without_a_readable_reason_still_names_the_cause(tmp_path
 def test_finished_chunks_reach_the_database_while_the_worker_is_still_running(client, env, monkeypatch):
     """Kullanıcı maçın ilk dakikalarını bütün video bitmeden görür; bitişte tam alım yine yapılır."""
     events: list[tuple[str, bool | None]] = []
+    seen_running: list[dict] = []
+    write_job = tracking_jobs._write_job
+
+    def recording_write(job):
+        if job.get("state") == "running" and job.get("progress"):
+            seen_running.append(dict(job["progress"]))
+        write_job(job)
+
+    monkeypatch.setattr(tracking_jobs, "_write_job", recording_write)
     monkeypatch.setattr(tracking_jobs, "PART_POLL_SECONDS", 0.2)
     monkeypatch.setattr(tracking_jobs, "run_part_ingest",
                         lambda part, tenant, match, *, append: events.append((Path(part).name, append)) or {})
@@ -246,8 +255,10 @@ def test_finished_chunks_reach_the_database_while_the_worker_is_still_running(cl
     assert done["state"] == "done", done
     # İlk parça eski kareleri siler (append=False), ikincisi ekler; tam alım en sonda gelir.
     assert events == [("ready_0000.json", False), ("ready_0001.json", True), ("full", None)]
-    assert done["progress"] == {"chunks_ready": 2, "chunks_total": 2, "chunks_ingested": 2,
+    # İş sürerken yazılan son ilerleme iki parçayı da gösterir; iş bitince ilerleme alanı kalkar.
+    assert seen_running[-1] == {"chunks_ready": 2, "chunks_total": 2, "chunks_ingested": 2,
                                 "frames_ready": 2, "minutes_ready": 5.5, "ingest_errors": 0}
+    assert "progress" not in done and done["frames"] == 3
     assert not tracking_jobs.chunk_dir(done["out_json"]).exists()
 
 

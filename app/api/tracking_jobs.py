@@ -503,6 +503,9 @@ def _run_job(job: dict[str, Any]) -> None:
         job["state"] = "ingesting"
         _write_job(job)
         job["ingest"] = run_ingest(job["out_json"], job["tenant_id"], int(job["match_id"]))
+        # Ara ilerleme artık geçersiz: son parça çoğu kez işçi çıkışıyla aynı anda biter ve ara
+        # alıma yetişmez (gerçek koşuda 1/2'de kaldı). Biten işin sayısı `frames` alanıdır.
+        job.pop("progress", None)
         job["state"] = "done"
         job["finished_at"] = datetime.now(UTC).isoformat()
         _write_job(job)
