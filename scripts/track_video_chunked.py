@@ -1,4 +1,4 @@
-"""Uzun videoyu parçalara bölüp her parçayı ayrı `scripts.track_video` süreciyle işler (venv-cv).
+"""Uzun videoyu parçalara bölüp her parçayı ayrı ürün işçisi (`scripts.track_video_product`) süreciyle işler (venv-cv).
 
 Neden: tek süreç 94 dakikalık maçta belleği bitirdi (ArrayMemoryError, ölçüm
 docs/measurements/product-full-match-exam-result-attempt2.json). Parça başına ayrı süreç
@@ -166,7 +166,7 @@ def _split_known(argv: list[str]) -> tuple[argparse.Namespace, list[str]]:
 
 def main(argv: list[str] | None = None) -> int:
     own, passthrough = _split_known(list(sys.argv[1:] if argv is None else argv))
-    worker = [sys.executable, "-m", "scripts.track_video"]
+    worker = [sys.executable, "-m", "scripts.track_video_product"]
     from app.tracking.pipeline import video_info
 
     info = video_info(own.video)

@@ -166,10 +166,6 @@ def overlay_change_ratio(frame_gray, reference_gray, mask, *, tol: float = 12.0)
 BOOTSTRAP_FRAMES = 30
 # Canlı medyan penceresi — sınırsız büyümesin ve aydınlanma değişimine uysun.
 MOTION_HISTORY = 600
-# Bindirme bu kadar ardışık karede "kalkmış" görünüyorsa tekrar değildir: tekrar
-# saniyeler sürer. Referans eskimiştir (açılış yazısı bitti, grafik değişti) ve
-# süzgeç yeniden ısınır. 15 fps'te 900 kare = 60 sn; gerçek yayınla ayarlanmadı.
-MAX_REPLAY_RUN_FRAMES = 900
 
 
 class ReplayFilter:
@@ -187,23 +183,14 @@ class ReplayFilter:
     `classify_frame` HİÇBİR kareyi tekrar saymaz. Yani süzgecin başarısızlığı
     veri kaybına değil, süzmemeye yol açar.
 
-    **Eskiyen referans:** bindirme `max_replay_run` ardışık karede kalkmış
-    görünürse süzgeç yeniden ısınır ve sonraki kareler canlı sayılır. Yoksa kalıcı
-    olarak kalkan bir yazı (açılış altyazısı) maçın geri kalanını tekrar saydırır;
-    ölçüldü: 94 dakikalık videoda 83. kareden sonra 27 bin kare ardı ardına atıldı.
-
     `motion` dışarıdan verilir (kareler arası global kayma); faz korelasyonunu
     `camera.CutDetector` zaten hesaplıyor, ikinci kez hesaplamak israf olur.
     """
 
     def __init__(self, *, thresholds: ReplayThresholds | None = None,
-                 bootstrap: int = BOOTSTRAP_FRAMES,
-                 max_replay_run: int = MAX_REPLAY_RUN_FRAMES):
+                 bootstrap: int = BOOTSTRAP_FRAMES):
         self._t = thresholds or ReplayThresholds()
         self._bootstrap = max(bootstrap, MIN_BASELINE_SAMPLES)
-        self._max_run = max_replay_run
-        self._run = 0
-        self.relearns = 0
         self._motions: list[float] = []
         self._boot: list = []          # ısınma karelerinin gri kopyaları
         # Isınmanın bittiğini AYRI bir bayrak tutar. `len(self._boot)` ile
@@ -238,14 +225,7 @@ class ReplayFilter:
                                  overlay_change=change, thresholds=self._t)
         if verdict.is_replay:
             self.replays += 1
-            self._run += 1
-            if self._run >= self._max_run:
-                self._ready = False
-                self._mask = self._reference = None
-                self._run = 0
-                self.relearns += 1
         else:
-            self._run = 0
             # Canlı medyan yalnız CANLI karelerden beslenmeli; tekrar kareleri
             # yavaş olduğu için medyanı aşağı çeker ve süzgeç kendi kendini kör eder.
             self._motions.append(motion)

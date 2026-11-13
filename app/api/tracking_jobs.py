@@ -7,7 +7,7 @@ GET  /tracking/videos/{name}/frame        — kalibrasyon için tek kare (JPEG, 
 POST /tracking/jobs                       — video → TrackingFrame işi başlat
 GET  /tracking/jobs, /tracking/jobs/{id}  — durum + log
 
-İşçi: ayrı `venv-cv` yorumlayıcısı (torch) alt süreç olarak `scripts.track_video`
+İşçi: ayrı `venv-cv` yorumlayıcısı (torch) alt süreç olarak `scripts.track_video_chunked` (o da `scripts.track_video_product`)
 çalıştırır; bitince kareler ana süreçte `ingest_tracking_json` ile DB'ye alınır.
 İşler TEK işçiyle sırayla koşar (kuyruk): iki iş aynı anda GPU'ya binmez.
 Kalibrasyon isteğe bağlı — verilmezse çapa görüntüden bulunur (TV kuralı).
