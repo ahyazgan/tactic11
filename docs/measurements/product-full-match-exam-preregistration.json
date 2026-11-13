@@ -137,7 +137,13 @@
         "Kare sayısı (7496) ve iz sayısı (1624) 3. denemeyle aynı: çıktı tekrarlanabilir.",
         "Süre eşiği sonuç görüldükten sonra değiştirildi (gate_change.honesty); 5,0 şartına göre bu koşu da kalırdı.",
         "İlk iki başlatma iş açılmadan durdu (veritabanı yolu, sonra işçi yorumlayıcı yolu); ölçüm üretmedi."
-      ]
+      ],
+      "hand_review": {
+        "result": "product-full-match-exam-hand-review-attempt4.json",
+        "reviewer": "Claude (yapay zekâ), insan değil; kullanıcı 'sen yap' dedi",
+        "outcome": "şartlar tuttu: isabet 0,959 (şart >= 0,70), hayalet payı 0,028 (şart <= 0,20); hakem işaretleri hayalet sayılırsa 0,034.",
+        "limits": "Kör sıra tam uygulanmadı, 5-20. karelerde oyuncu sayısı 22 varsayıldı, kalabalık bölgelerde bire bir eşleme yapılamadı. Bağımsız insan incelemesi yapılmadı; bu sonuç onun yerine geçmez, yalnız kaba bir sağlamadır."
+      }
     }
   ]
 }

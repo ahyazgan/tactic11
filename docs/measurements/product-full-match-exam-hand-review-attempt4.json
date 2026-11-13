@@ -1,0 +1,242 @@
+{
+  "attempt": 4,
+  "job_id": "0b9979c312",
+  "date": "2026-11-13",
+  "reviewer": "Claude (yapay zekâ); insan gözden geçirmesi DEĞİL. Kullanıcı 'sen yap' dedi (2026-11-13).",
+  "preregistered_gates": {
+    "min_recall": 0.7,
+    "max_ghost_share": 0.2
+  },
+  "verdict": {
+    "complete": true,
+    "recall": 0.9591,
+    "ghost_share": 0.0276,
+    "passed": true
+  },
+  "verdict_if_official_marks_count_as_ghosts": {
+    "complete": true,
+    "recall": 0.9591,
+    "ghost_share": 0.0343,
+    "passed": true
+  },
+  "definitions": {
+    "hand_count": "sahadaki oyuncu sayısı (hakemler hariç). 1-4. karelerde tahminsiz karede tek tek sayıldı: 22. Kalan karelerde 22 varsayıldı; tek tek sayılmadı.",
+    "predictions_on_a_person": "ayrı bir oyuncunun ayağında (yaklaşık bir oyuncu boyu içinde) duran işaret",
+    "predictions_on_an_official": "hakem ya da yan hakem üstündeki işaret; ne isabet ne hayalet sayıldı (ikinci hükümde hayalet sayıldı)",
+    "ghosts": "yanında kimse olmayan işaret + aynı oyuncuda ikinci işaret + görüntü dışına düşen tahmin (doğrulanamadığı için hayalet sayıldı)"
+  },
+  "deviations_from_method": [
+    "Kör sıra tam uygulanmadı: tahmin sayıları (predicted_players) sayımdan önce görüldü; 5-20. karelerde oyuncular ayrıca sayılmadı.",
+    "1-6. kareler aracın hatalı (yaklaşık 0,5 sn erken) karesiyle incelendi; o karelerde işaret/oyuncu eşlemesi kaba, sayılar tahmin sayısından ve belirgin hayalet aranarak çıkarıldı. 7-20. kareler düzeltilmiş araçla incelendi.",
+    "Uzak kenardaki kalabalık bölgelerde işaretler oyuncularla bire bir eşlenemedi; oyuncuya yakın her işaret isabet sayıldı. Bu, isabet oranını olduğundan yüksek gösterebilir.",
+    "Kareler 4096x1080 panoramadan kesilip tam çözünürlükte incelendi; uzak oyuncular 30-40 piksel boyunda."
+  ],
+  "observations_outside_the_gates": [
+    "Hakem ve yan hakem çoğu karede işaretlenmiyor (beklenen); 3 karede işaretlenmiş.",
+    "Takım rengi sık sık yanlış: beyaz formalı oyuncuda kırmızı, mavi formalıda mavi işaret; 4. karede bir yarı sahadaki hemen herkes aynı takım renginde. Bu şartlarda ölçülmüyor ama takım şekli ve pas analizini doğrudan etkiler.",
+    "İki karede kaleci çift işaretlenmiş (2 ve 14).",
+    "İnceleme aracı OpenCV zaman aramasıyla yaklaşık yarım saniye erken kare veriyordu; ürünün zaman damgası doğru (ffmpeg ile +0,0 sn'de işaretler ayakta). Araç düzeltildi."
+  ],
+  "rows": [
+    {
+      "n": 1,
+      "minute": 1.788,
+      "predicted_players": 23,
+      "hand_count": 22,
+      "predictions_on_a_person": 22,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 1
+    },
+    {
+      "n": 2,
+      "minute": 2.928,
+      "predicted_players": 23,
+      "hand_count": 22,
+      "predictions_on_a_person": 22,
+      "ghosts": 1,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 3,
+      "minute": 3.748,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 22,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 4,
+      "minute": 4.376,
+      "predicted_players": 21,
+      "hand_count": 22,
+      "predictions_on_a_person": 21,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 5,
+      "minute": 4.704,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 21,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 1
+    },
+    {
+      "n": 6,
+      "minute": 5.3283,
+      "predicted_players": 21,
+      "hand_count": 22,
+      "predictions_on_a_person": 21,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 7,
+      "minute": 5.3563,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 22,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 8,
+      "minute": 5.8563,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 22,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 9,
+      "minute": 6.3763,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 22,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 10,
+      "minute": 8.3363,
+      "predicted_players": 21,
+      "hand_count": 22,
+      "predictions_on_a_person": 21,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 11,
+      "minute": 14.8523,
+      "predicted_players": 21,
+      "hand_count": 22,
+      "predictions_on_a_person": 21,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 12,
+      "minute": 16.6723,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 20,
+      "ghosts": 2,
+      "predictions_off_image": 1,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 13,
+      "minute": 17.3403,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 20,
+      "ghosts": 2,
+      "predictions_off_image": 1,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 14,
+      "minute": 17.3723,
+      "predicted_players": 23,
+      "hand_count": 22,
+      "predictions_on_a_person": 19,
+      "ghosts": 4,
+      "predictions_off_image": 3,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 15,
+      "minute": 20.1803,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 22,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 16,
+      "minute": 20.3243,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 21,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 1
+    },
+    {
+      "n": 17,
+      "minute": 22.3243,
+      "predicted_players": 20,
+      "hand_count": 22,
+      "predictions_on_a_person": 19,
+      "ghosts": 1,
+      "predictions_off_image": 1,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 18,
+      "minute": 23.0483,
+      "predicted_players": 22,
+      "hand_count": 22,
+      "predictions_on_a_person": 21,
+      "ghosts": 1,
+      "predictions_off_image": 1,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 19,
+      "minute": 24.2523,
+      "predicted_players": 23,
+      "hand_count": 22,
+      "predictions_on_a_person": 22,
+      "ghosts": 1,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    },
+    {
+      "n": 20,
+      "minute": 26.7523,
+      "predicted_players": 21,
+      "hand_count": 22,
+      "predictions_on_a_person": 21,
+      "ghosts": 0,
+      "predictions_off_image": 0,
+      "predictions_on_an_official": 0
+    }
+  ]
+}

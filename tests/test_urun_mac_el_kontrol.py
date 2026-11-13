@@ -50,3 +50,12 @@ def test_verdict_waits_for_every_row_and_then_applies_both_gates():
     rows[1]["ghosts"] = 12
     assert review.review_verdict(rows, 0.7, 0.2)["passed"] is False
     assert review.review_verdict([], 0.7, 0.2) == {"complete": False}
+
+
+def test_frame_command_seeks_before_input_for_frame_accuracy():
+    from pathlib import Path
+
+    cmd = review.frame_command("ffmpeg", "mac.mp4", 107.28, Path("01_ham.jpg"))
+    assert cmd.index("-ss") < cmd.index("-i")
+    assert cmd[cmd.index("-ss") + 1] == "107.280"
+    assert cmd[-1] == "01_ham.jpg"

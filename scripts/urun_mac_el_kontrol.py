@@ -9,6 +9,10 @@ dönüşümü ızgara üzerinde tersine çevrilerek görüntüye geri düşürü
 (varsayılan 12 px) kadardır, kalibrasyonun kendi hatası buna eklenir. İşaret oyuncunun
 ayak noktasını gösterir, gövdesini değil.
 
+Kare ffmpeg ile okunur (`-ss` girişten önce: kare hassasiyetinde). OpenCV'nin zaman
+araması bu videoda yaklaşık yarım saniye erken kare veriyordu; koşan oyuncunun işareti
+birkaç metre kayıyordu (2026-11-13, 117093, 9. örnek karede ölçüldü).
+
 Kullanım:
     venv-cv\\Scripts\\python.exe -m scripts.urun_mac_el_kontrol --result sonuc.json \\
         --frames job_x_frames.json --video mac.mp4 --calibration calib.json --out-dir klasor
@@ -17,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
@@ -86,6 +91,12 @@ def review_verdict(rows: Sequence[dict[str, Any]], min_recall: float, max_ghost_
             "passed": recall >= min_recall and ghost_share <= max_ghost_share}
 
 
+def frame_command(ffmpeg: str, video: str, seconds: float, out: Path) -> list[str]:
+    """Videonun verilen saniyesindeki kareyi yazan ffmpeg komutu (giriş araması: kare hassasiyetinde)."""
+    return [ffmpeg, "-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-ss", f"{seconds:.3f}",
+            "-i", video, "-frames:v", "1", "-q:v", "2", str(out)]
+
+
 def _team_color(player: dict[str, Any], home: Any, away: Any) -> tuple[int, int, int]:
     team = player.get("team_external_id")
     return HOME_BGR if team == home else AWAY_BGR if team == away else OTHER_BGR
@@ -98,30 +109,29 @@ def render(video: str, frames_payload: dict[str, Any], rows: list[dict[str, Any]
     out_dir.mkdir(parents=True, exist_ok=True)
     lookup = inverse_lookup(calibration)
     home, away = frames_payload.get("home_team_external_id"), frames_payload.get("away_team_external_id")
-    cap = cv2.VideoCapture(video)
-    try:
-        for row in rows:
-            frame = nearest_frame(frames_payload["frames"], row["minute"])
-            cap.set(cv2.CAP_PROP_POS_MSEC, float(frame["minute"]) * 60_000.0)
-            ok, image = cap.read()
-            if not ok:
-                raise RuntimeError(f"video karesi okunamadı: {frame['minute']:.2f}. dakika")
-            cv2.imwrite(str(out_dir / f"{row['n']:02d}_ham.jpg"), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
-            off_image = 0
-            for player in frame.get("players") or []:
-                at = lookup(float(player["x"]), float(player["y"]))
-                if at is None:
-                    off_image += 1
-                    continue
-                cv2.circle(image, at, 16, _team_color(player, home, away), 3)
-            ball = frame.get("ball")
-            ball_at = lookup(float(ball["x"]), float(ball["y"])) if ball else None
-            if ball_at:
-                cv2.circle(image, ball_at, 8, BALL_BGR, 2)
-            row["predictions_off_image"] = off_image
-            cv2.imwrite(str(out_dir / f"{row['n']:02d}_tahmin.jpg"), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
-    finally:
-        cap.release()
+    from scripts.canli_mac import find_ffmpeg
+
+    ffmpeg = find_ffmpeg()
+    for row in rows:
+        frame = nearest_frame(frames_payload["frames"], row["minute"])
+        raw = out_dir / f"{row['n']:02d}_ham.jpg"
+        subprocess.run(frame_command(ffmpeg, video, float(frame["minute"]) * 60.0, raw), check=True)  # noqa: S603
+        image = cv2.imread(str(raw))
+        if image is None:
+            raise RuntimeError(f"video karesi okunamadı: {frame['minute']:.2f}. dakika")
+        off_image = 0
+        for player in frame.get("players") or []:
+            at = lookup(float(player["x"]), float(player["y"]))
+            if at is None:
+                off_image += 1
+                continue
+            cv2.circle(image, at, 16, _team_color(player, home, away), 3)
+        ball = frame.get("ball")
+        ball_at = lookup(float(ball["x"]), float(ball["y"])) if ball else None
+        if ball_at:
+            cv2.circle(image, ball_at, 8, BALL_BGR, 2)
+        row["predictions_off_image"] = off_image
+        cv2.imwrite(str(out_dir / f"{row['n']:02d}_tahmin.jpg"), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
 
 
 def main() -> int:
