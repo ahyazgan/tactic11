@@ -189,3 +189,18 @@
 - [ ] (diğer oturum) Otomatik hücum yönü gündüz 990741'de karelerin %71'ini kesiyor (çizilen %29; bilinen yönle %100): canlı başlangıçta operatör yön seçimi (`--home-attack` panele) ya da otomatik yönün doğruluğunu ölçüp kapıyı düzeltme
 - [ ] (diğer oturum) Panelde AI brief ve kapanış reçetesi kaydırıcıdan 80' okuyor, telestrasyon 19,5': aynı ekranda iki maç anı; canlı modda hepsi takip dakikasından gelmeli; brief hâlâ STUB
 - [ ] (diğer oturum) decisions/live dakika kaydırıcısı 50–95: prova maçları 10–45. dakikada, canlı modda dakika takip durumundan (processed_minute) gelmeli; telestrasyon kartı 401'de 'giriş gerekli' demeli.
+
+
+### Gece 2026-11-13 (03:00–07:00, kullanıcı devretti; kararlar bende) — dal exam/urun-tam-mac
+
+- [x] Parça çökmesi: ffmpeg kare-zamanı sınırı kimlik ad alanını düşürüyordu; başlangıç ms'ye yuvarlanır. (c3ed6ba)
+  Done when: gerçek videoda ikinci parça ve sonrası çalışır. (150 sn / 60 sn: 3/3 parça bitti)
+- [x] Dondurulmuş `app/tracking/replay.py` 14eb4b4'te değişti, `test_guarded_control` kırmızı. Karar: dosyayı dondurulmuş haline döndür, yeniden ısınmayı ayrı modüle taşı, ürün işçisinde bağla.
+  Done when: tüm pytest yeşil, ruff + mypy temiz, davranış testleri yeni modüle taşındı. (1cb311c; 3384 geçti, 0 kaldı)
+- [x] İş başlamadan bellek/disk ön kontrolü: yetmiyorsa iş açık sebeple reddedilir.
+  Done when: test var; eşik ölçülen işçi isteğine (10 GB commit) dayanır ve belgelidir. (3d036bb; disk kapısı parçalı işlemede zaten vardı)
+- [ ] PR aç, CI yeşilse birleştir.
+- [ ] Tam maç sınavı 3. deneme: sabit kamera, gündüz, SoccerTrack 132877 ilk yarı (indiriliyor: data/tracking/datasets/soccertrack_v2/_dl). Ön kayıt koşudan önce commit; kör değil (600–1200 sn daha önce görüldü), yalnız ilk yarı (süre sınırı).
+  Done when: sonuç docs/measurements/product-full-match-exam-result-attempt3.json'a aynen yazıldı; 20 karelik el kontrol sayfası hazır.
+- [ ] Eskimiş README'ler (app/ai, app/agents, app/engine, app/api) gerçek durumu anlatsın.
+- [ ] Sabah raporu: docs/GECE-RAPORU-2026-11-13.md
