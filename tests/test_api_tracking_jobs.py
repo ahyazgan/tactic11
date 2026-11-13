@@ -24,6 +24,8 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("TRACKING_DATA_DIR", str(tmp_path))
     monkeypatch.setenv("TRACKING_WORKER_CMD", json.dumps([sys.executable, str(STUB)]))
     monkeypatch.delenv("TRACKING_WEIGHTS", raising=False)
+    # Sahte işçi bellek istemez; testler makinenin o anki boş belleğine bağlı kalmasın.
+    monkeypatch.setenv("TRACKING_MIN_COMMIT_MB", "0")
     return tmp_path
 
 
@@ -203,6 +205,19 @@ def test_job_end_to_end_with_stub_worker(client, env, monkeypatch):
     assert client.get(f"/tracking/jobs/{job['id']}").status_code == 404
 
 
+def test_job_is_refused_before_the_worker_starts_when_memory_is_short(client, env, monkeypatch):
+    """50 dakika çalışıp çökmek yerine: bellek yetmiyorsa işçi hiç başlamaz, sebep kullanıcıya yazılır."""
+    monkeypatch.setenv("TRACKING_MIN_COMMIT_MB", "11000")
+    monkeypatch.setattr(tracking_jobs, "system_memory_mb", lambda: {"avail_phys_mb": 4000, "avail_commit_mb": 7500})
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "clip.mp4").write_bytes(b"\x00" * 10)
+    job = client.post("/tracking/jobs", json={"video": "clip.mp4", "match_id": 990779}).json()
+    done = _wait_done(client, job["id"])
+    assert done["state"] == "failed"
+    assert "bellek yetersiz" in done["error"] and "7.5 GB" in done["error"] and "11 GB" in done["error"]
+    assert not any("stub" in ln for ln in done.get("log_tail") or [])
+
+
 def test_job_without_calibration_runs_anchorless(client, env, monkeypatch):
     """Kalibrasyon verilmezse iş ÇAPASIZ başlar: işçiye --calibration geçilmez,
     kalibratör çapayı saha çizgilerinden bulur (TV kuralı)."""
@@ -260,6 +275,47 @@ def test_job_failure_is_reported(client, env, monkeypatch):
     assert r.status_code == 202
     done = _wait_done(client, r.json()["id"])
     assert done["state"] == "failed" and "3" in done["error"]
+
+
+def test_job_without_usable_frames_fails_with_reason(client, env, monkeypatch):
+    """Sıfır kare 'bitti' görünmemeli: kullanıcı boş sonucu başarı sanar."""
+    ingested = []
+    monkeypatch.setattr(tracking_jobs, "run_ingest", lambda *a, **k: ingested.append(a) or {})
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "empty.mp4").write_bytes(b"x")
+    client.post("/tracking/calibrations", json={"name": "saha-a", "calibration": CALIB})
+    r = client.post("/tracking/jobs", json={"video": "empty.mp4", "calibration": "saha-a"})
+    done = _wait_done(client, r.json()["id"])
+    assert done["state"] == "failed" and done["frames"] == 0
+    assert "319 kare saha çizgilerine oturmadı" in done["error"] and "581 kare tekrar" in done["error"]
+    assert ingested == []
+
+
+def test_job_reports_chunks_that_could_not_be_processed(client, env, monkeypatch):
+    """Parça kaybı sessiz kalmamalı: iş biter ama eksik dakikalar söylenir."""
+    monkeypatch.setattr(tracking_jobs, "run_ingest", lambda *a, **k: {"frames_written": 3})
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "partial.mp4").write_bytes(b"x")
+    client.post("/tracking/calibrations", json={"name": "saha-a", "calibration": CALIB})
+    r = client.post("/tracking/jobs", json={"video": "partial.mp4", "calibration": "saha-a"})
+    done = _wait_done(client, r.json()["id"])
+    assert done["state"] == "done" and done["warning"].startswith("1/2 parça işlenemedi")
+
+
+def test_job_runs_the_chunked_worker(client, env, monkeypatch):
+    seen = []
+    monkeypatch.setattr(tracking_jobs, "enqueue_job", lambda job: seen.append(job["command"]) or 0)
+    monkeypatch.delenv("TRACKING_WORKER_CMD")
+    monkeypatch.setenv("TRACKING_WORKER_PYTHON", __file__)
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "clip.mp4").write_bytes(b"x")
+    client.post("/tracking/calibrations", json={"name": "saha-a", "calibration": CALIB})
+    assert client.post("/tracking/jobs", json={"video": "clip.mp4", "calibration": "saha-a"}).status_code == 202
+    assert seen[0][1:5] == ["-m", "scripts.track_video_chunked", "--chunk-seconds", "300.0"]
+
+
+def test_empty_output_error_without_counters_admits_unknown_reason():
+    assert "işçi sebep bildirmedi" in tracking_jobs.empty_output_error(None)
 
 
 def test_job_validation_errors(client, env):

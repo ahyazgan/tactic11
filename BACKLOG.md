@@ -189,3 +189,25 @@
 - [ ] (diğer oturum) Otomatik hücum yönü gündüz 990741'de karelerin %71'ini kesiyor (çizilen %29; bilinen yönle %100): canlı başlangıçta operatör yön seçimi (`--home-attack` panele) ya da otomatik yönün doğruluğunu ölçüp kapıyı düzeltme
 - [ ] (diğer oturum) Panelde AI brief ve kapanış reçetesi kaydırıcıdan 80' okuyor, telestrasyon 19,5': aynı ekranda iki maç anı; canlı modda hepsi takip dakikasından gelmeli; brief hâlâ STUB
 - [ ] (diğer oturum) decisions/live dakika kaydırıcısı 50–95: prova maçları 10–45. dakikada, canlı modda dakika takip durumundan (processed_minute) gelmeli; telestrasyon kartı 401'de 'giriş gerekli' demeli.
+
+
+### Gece 2026-11-13 (03:00–07:00, kullanıcı devretti; kararlar bende) — dal exam/urun-tam-mac
+
+- [x] Parça çökmesi: ffmpeg kare-zamanı sınırı kimlik ad alanını düşürüyordu; başlangıç ms'ye yuvarlanır. (c3ed6ba)
+  Done when: gerçek videoda ikinci parça ve sonrası çalışır. (150 sn / 60 sn: 3/3 parça bitti)
+- [x] Dondurulmuş `app/tracking/replay.py` 14eb4b4'te değişti, `test_guarded_control` kırmızı. Karar: dosyayı dondurulmuş haline döndür, yeniden ısınmayı ayrı modüle taşı, ürün işçisinde bağla.
+  Done when: tüm pytest yeşil, ruff + mypy temiz, davranış testleri yeni modüle taşındı. (1cb311c; 3384 geçti, 0 kaldı)
+- [x] İş başlamadan bellek/disk ön kontrolü: yetmiyorsa iş açık sebeple reddedilir.
+  Done when: test var; eşik ölçülen işçi isteğine (10 GB commit) dayanır ve belgelidir. (3d036bb; disk kapısı parçalı işlemede zaten vardı)
+- [x] PR aç, CI yeşilse birleştir. (tactic11#354)
+- [x] Sınav 3. deneme: 117093 ilk 1800 sn, maç 990806, iş 11747bcb4e. KALDI: 7/8 şart, süre oranı 5,307 > 5,0. Sonuç docs/measurements/product-full-match-exam-result-attempt3.json; rapor docs/GECE-RAPORU-2026-11-13.md.
+- [ ] El kontrolü (kullanıcı): data/tracking/out/el_kontrol_attempt3/ altındaki 20 kare; el-kontrol.json doldurulacak.
+- [ ] Hız: panoramada parça başına 5,1–5,5 kat neden (önceki ölçüm 3,3 kat)? Ayrıştır, ölç.
+  Done when: sebep ölçümle gösterildi; düzeltme varsa ön kayıtlı yeni denemede süre şartı sınandı.
+- [ ] Bellek kapısı panoramada düşük: işçi ~12,5 GB istiyor, eşik 11 GB. Görüntü boyutuna göre eşik.
+- [ ] 132877 ve tam maç: kullanıcıdan HF_TOKEN gerekli.
+- [x] Eskimiş README'ler (app/ai, app/agents, app/engine, app/api) gerçek durumu anlatsın. (855172c)
+- [x] Panorama yüklemesinde 6 dilim GPU belleğini taşırıyordu; dilim sayısı kare başına 50 dilim sınırıyla düşürülür. (db6508e)
+- [x] El kontrol sayfası aracı: scripts/urun_mac_el_kontrol.py (5a9c940)
+- [x] Kullanımdan kalkan utcnow / 422 sabiti temizlendi. (31eed5e)
+- [x] Sabah raporu: docs/GECE-RAPORU-2026-11-13.md

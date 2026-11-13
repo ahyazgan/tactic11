@@ -1,0 +1,16 @@
+{
+  "started_at": "2026-11-03T20:38:45.616997+00:00",
+  "video": "vlsc_u19_ccl_20190825_ccby.mp4",
+  "calibration": "vlsc_u19_20190825_kaba",
+  "expected_seconds": 5652.0,
+  "gates": {
+    "max_processing_ratio": 5.0,
+    "min_minute_coverage": 0.95,
+    "min_median_players": 16.0,
+    "min_frames_8plus_share": 0.8,
+    "min_shape_ok_share": 0.9,
+    "min_free_disk_gb": 3.0
+  },
+  "job_state": "aborted_low_disk",
+  "min_free_disk_gb": 2.989162496
+}

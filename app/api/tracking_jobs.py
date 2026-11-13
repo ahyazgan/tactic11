@@ -7,7 +7,7 @@ GET  /tracking/videos/{name}/frame        — kalibrasyon için tek kare (JPEG, 
 POST /tracking/jobs                       — video → TrackingFrame işi başlat
 GET  /tracking/jobs, /tracking/jobs/{id}  — durum + log
 
-İşçi: ayrı `venv-cv` yorumlayıcısı (torch) alt süreç olarak `scripts.track_video`
+İşçi: ayrı `venv-cv` yorumlayıcısı (torch) alt süreç olarak `scripts.track_video_chunked` (o da `scripts.track_video_product`)
 çalıştırır; bitince kareler ana süreçte `ingest_tracking_json` ile DB'ye alınır.
 İşler TEK işçiyle sırayla koşar (kuyruk): iki iş aynı anda GPU'ya binmez.
 Kalibrasyon isteğe bağlı — verilmezse çapa görüntüden bulunur (TV kuralı).
@@ -46,6 +46,7 @@ from threadpoolctl import threadpool_limits
 
 from app.api.auth import get_current_user
 from app.core.logging import get_logger
+from app.core.system_resources import min_commit_mb, system_memory_mb, worker_memory_error
 from app.db import models
 from app.tracking.calibration import CalibrationError, PitchCalibration
 
@@ -56,6 +57,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SAFE_NAME = re.compile(r"^[A-Za-z0-9_.-]{1,120}$")
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".avi", ".m4v"}
 LOG_TAIL_LINES = 30
+# Uzun video bu uzunlukta parçalarla, parça başına ayrı süreçte işlenir (bellek her
+# parçada sıfırlanır). Kısa klip tek parça kalır. Bkz. scripts/track_video_chunked.py.
+CHUNK_SECONDS = 300.0
 _jobs_lock = threading.Lock()
 _calibration_summary_lock = threading.Lock()
 
@@ -368,9 +372,27 @@ def run_ingest(out_json: str, tenant_id: str, match_id: int) -> dict[str, Any]:
     return ingest_json(path=out_json, tenant_id=tenant_id, match_id=match_id)
 
 
+def empty_output_error(summary: dict[str, Any] | None) -> str:
+    """Kare çıkmayan iş başarı değildir; sebebi işçinin kendi sayaçlarından söyle."""
+    stats = (summary or {}).get("calibration_stats") or {}
+    reasons = []
+    if stats.get("frames_rejected"):
+        reasons.append(f"{stats['frames_rejected']} kare saha çizgilerine oturmadı")
+    if stats.get("replays_dropped"):
+        reasons.append(f"{stats['replays_dropped']} kare tekrar görüntüsü sayıldı")
+    detail = "; ".join(reasons) or "işçi sebep bildirmedi"
+    return f"videodan kullanılabilir kare çıkmadı ({detail}). Kalibrasyonu ve kamera açısını kontrol edin."
+
+
 def _run_job(job: dict[str, Any]) -> None:
     log_path = Path(job["log"])
     try:
+        shortage = worker_memory_error(system_memory_mb(), min_commit_mb())
+        if shortage:
+            job["state"] = "failed"
+            job["error"] = shortage
+            _write_job(job)
+            return
         job["state"] = "running"
         job["started_at"] = datetime.now(UTC).isoformat()
         _write_job(job)
@@ -389,6 +411,21 @@ def _run_job(job: dict[str, Any]) -> None:
             payload = json.load(f)
         job["summary"] = payload.get("summary")
         job["frames"] = len(payload.get("frames", []))
+        summary = job["summary"] or {}
+        notes = []
+        failed_chunks = summary.get("chunks_failed") or 0
+        if failed_chunks:
+            notes.append(f"{failed_chunks}/{len(summary.get('chunks') or [])} parça işlenemedi; o dakikalar çıktıda yok")
+        if summary.get("tiles_used") is not None:
+            notes.append(f"dilim sayısı {summary.get('tiles_requested')} yerine {summary['tiles_used']} kullanıldı "
+                         "(bu görüntü boyutunda GPU belleği sınırı)")
+        if notes:
+            job["warning"] = "; ".join(notes)
+        if job["frames"] == 0:
+            job["state"] = "failed"
+            job["error"] = empty_output_error(job["summary"])
+            _write_job(job)
+            return
         job["state"] = "ingesting"
         _write_job(job)
         job["ingest"] = run_ingest(job["out_json"], job["tenant_id"], int(job["match_id"]))
@@ -422,7 +459,8 @@ def create_job(body: JobCreate, user: models.User = Depends(get_current_user)) -
     out_json = out_dir / f"job_{job_id}_frames.json"
     preview = out_dir / f"job_{job_id}_preview.mp4" if body.preview else None
     cmd = [
-        *worker_cmd("scripts.track_video"),
+        *worker_cmd("scripts.track_video_chunked"),
+        "--chunk-seconds", str(CHUNK_SECONDS),
         "--video", str(video),
         *(["--calibration", str(calib_path)] if calib_path else []),
         "--out", str(out_json),

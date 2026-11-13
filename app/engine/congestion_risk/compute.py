@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 from app.audit import AuditRecord, EngineResult
 
@@ -105,7 +105,7 @@ def compute_congestion_risk(
     window_days: analiz edilecek gelecek gün penceresi.
     now: 'şimdi' overrideable (test'ler için); default datetime.utcnow.
     """
-    ref = now or datetime.utcnow()
+    ref = now or datetime.now(UTC).replace(tzinfo=None)
     horizon = ref + timedelta(days=window_days)
     flist = sorted(
         [f for f in fixtures if ref <= f.kickoff <= horizon],

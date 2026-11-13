@@ -6,7 +6,8 @@ import sys
 p = argparse.ArgumentParser()
 for flag in ("--video", "--calibration", "--weights", "--preview"):
     p.add_argument(flag)
-for flag in ("--fps", "--track-fps", "--threshold", "--ball-threshold", "--clip-offset-minutes", "--max-seconds"):
+for flag in ("--fps", "--track-fps", "--threshold", "--ball-threshold", "--clip-offset-minutes", "--max-seconds",
+             "--chunk-seconds"):
     p.add_argument(flag, type=float)
 for flag in ("--home-team", "--away-team", "--tiles"):
     p.add_argument(flag, type=int)
@@ -36,10 +37,16 @@ frames = [
     }
     for i in range(3)
 ]
+summary = {"frames_written": 3, "tracks": 1}
+if a.video and a.video.endswith("partial.mp4"):
+    summary = {**summary, "chunks_failed": 1, "chunks": [{"state": "done"}, {"state": "failed"}]}
+if a.video and a.video.endswith("empty.mp4"):
+    frames = []
+    summary = {"frames_written": 0, "calibration_stats": {"frames_rejected": 319, "replays_dropped": 581}}
 payload = {
     "match_external_id": a.match_id, "source": "video_tracking", "frames": frames,
     "home_team_external_id": a.home_team, "away_team_external_id": a.away_team,
-    "video": a.video, "summary": {"frames_written": 3, "tracks": 1},
+    "video": a.video, "summary": summary,
 }
 with open(a.out, "w", encoding="utf-8") as f:
     json.dump(payload, f)

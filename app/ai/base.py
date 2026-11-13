@@ -1,4 +1,4 @@
-"""Commentator arayüzü — [BOŞ İSKELET, Faz 3'te doldurulacak].
+"""Commentator arayüzü; somut uygulaması `commentator.py`.
 
 Engine'in ürettiği sayısal sonuçları insan diliyle açıklayan katmanın sözleşmesi.
 Şimdilik sadece imza; mantık yok.

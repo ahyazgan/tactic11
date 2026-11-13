@@ -17,7 +17,7 @@ interface CalibItem { name: string; points: number; reprojection_error_m: number
 export interface TrackingJob {
   id: string; state: "queued" | "running" | "ingesting" | "done" | "failed";
   created_at: string; video: string; calibration: string | null; auto_anchor?: boolean; label?: string | null;
-  match_id: number; frames?: number; error?: string | null;
+  match_id: number; frames?: number; error?: string | null; warning?: string | null;
   summary?: Record<string, unknown> | null; log_tail?: string[];
 }
 interface JobsList { jobs: TrackingJob[]; total: number; worker_available: boolean; default_weights: string | null; worker_python: string }
@@ -197,6 +197,7 @@ export function VideoJobPanel({ onDone }: { onDone: (matchId: number) => void })
                 <button type="button" onClick={() => setOpenLog(openLog === j.id ? null : j.id)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 10, padding: 0 }}>{openLog === j.id ? "logu kapat" : "log"}</button>
               </div>
               {j.error && <div style={{ color: "var(--crit)", fontSize: 10 }}>{j.error}</div>}
+              {j.warning && <div style={{ color: "var(--high)", fontSize: 10 }}>{j.warning}</div>}
               {openLog === j.id && (
                 <pre style={{ fontSize: 9.5, background: "var(--panel2)", padding: 6, borderRadius: 4, marginTop: 4, maxHeight: 160, overflow: "auto", whiteSpace: "pre-wrap" }}>
                   {(openJob?.log_tail ?? j.log_tail ?? []).join("\n") || "(log yok)"}
