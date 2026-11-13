@@ -1,0 +1,43 @@
+{
+  "status": "frozen_before_any_run_of_the_method",
+  "written": "2026-11-13, yöntem kodu çalıştırılmadan önce",
+  "decided_by": "Kullanıcı 'diğer önerilerine geçelim' dedi (2026-11-13); yöntem ve eşikler Claude'un",
+  "question": "Sabit kamerada sahayı hiç görmeyen dilim pencerelerini atlamak, 4 dilimin çıktısını değiştirmeden süreyi kısaltıyor mu?",
+  "why": "3. ürün sınavı yalnız süre şartından kaldı (5,31 > 5,0). 3 dilim, 4 dilimin oyuncularının %3,7'sini kaybettiği için reddedildi (panorama-tiles-3-vs-4-result.json). Bu yöntem dilim geometrisini değiştirmez; yalnız saha dışına düşen pencereleri işlemez.",
+  "known_before_writing": "Yöntem çalıştırılmadı. Yalnız pencere sayımı yapıldı (117093 kalibrasyonu, 4 dilim, 55 pencere): saha payı 0 m ve pencere payı yokken 32, pay 3 m iken 43, pay 3 m + her yöne %15 pencere payı ile 48 pencere sahayı görüyor. En alt satırın (y >= 810) tamamı saha dışında.",
+  "method": {
+    "where": "app/tracking/pitch_windows.py; dondurulmuş detect.py ve pipeline.py değişmez, ürün işçisi çalışırken bağlar",
+    "when_applied": "yalnız sabit kamera + verilmiş kalibrasyon + torch dedektörü + dilim > 1; kare boyutu kalibrasyonla aynı değilse uygulanmaz",
+    "keep_rule": "Pencere, şu bölgede sahaya (2,0 m pay) düşen en az bir görüntü noktası varsa tutulur: pencerenin kendisi, yanlara pencere eninin %15'i, AŞAĞIYA bir pencere boyu. Aşağı pay: ayağı pencerenin altında kalan oyuncunun gövdesi bu pencerededir.",
+    "frozen_parameters": {"pitch_margin_m": 2.0, "side_pad_ratio": 0.15, "below_pad_ratio": 1.0, "grid_step_px": 16},
+    "batch": "tutulan pencereler iki dengeli gruba bölünür; derlenmiş model bu grup boyutuyla hazırlanır"
+  },
+  "data": {
+    "video": "SoccerTrack v2 117093 ilk yarı panoraması (gündüz, sabit kamera, 4096x1080 @25 fps)",
+    "windows_start_seconds": [420, 900, 1380],
+    "window_seconds": 60,
+    "reference": "aynı kesilmiş dosyalarda scripts.track_video --tiles 4 çıktıları (3'e karşı 4 dilim ölçümünde üretildi, süreleri 326,0 / 350,8 / 319,4 sn)",
+    "seen_before": "Bu pencerelerin 4 dilim çıktısı 3 dilimle toplam düzeyde karşılaştırıldı. Yöntemin kendisi bu pencerelerde de başka yerde de koşulmadı."
+  },
+  "runs": {
+    "candidate": "scripts.track_video_product, referansla aynı argümanlar (--tiles 4), yöntem açık",
+    "metric_tool": "scripts/soccertrack_v2/tile_agreement.py (aynı dakikalı karelerde oyuncu konumları, Macar eşleme, en çok 3,0 m)"
+  },
+  "gates": {
+    "overall_recall_vs_reference": ">= 0,995",
+    "every_window_recall": ">= 0,99",
+    "every_band_recall": ">= 0,99",
+    "overall_extra_share": "<= 0,01",
+    "speed": "üç pencerenin ortalama elapsed_seconds değeri referans ortalamasının (332,1 sn) en çok 0,85 katı"
+  },
+  "decision": {
+    "if_all_pass": "Yöntem ürün işçisinde açık kalır. Ürün sınavı 4. deneme olarak yeniden ön kaydedilir.",
+    "if_any_fails": "Yöntem ürün işçisine bağlanmaz (kod kalırsa kapalı kalır). Sonuç aynen kaydedilir."
+  },
+  "limits": [
+    "Doğruluk ölçüsü değil: referans 4 dilim çıktısıdır, gerçek konum değil",
+    "Tek maç, tek kamera yerleşimi, üç dakika; başka stadyumda saha dışı pencere sayısı farklı olur",
+    "Süre ölçümü her pencere için tek koşu; referans süreleri başka saatte ölçüldü",
+    "Saha dışında duran kişiler (yedekler, hakem yardımcıları, top toplayıcılar) atlanan pencerelerde görülmez; ürün bunları zaten saha çevresi süzgeciyle atıyor"
+  ]
+}
