@@ -1,0 +1,34 @@
+{
+  "status": "frozen_before_the_held_out_run",
+  "written": "2026-11-13, 132877 1800-2100 sn ürün koşusu henüz yapılmadan (bellek engeli); bu pencerenin GT hız ya da mesafe değerleri hiç hesaplanmadan",
+  "question": "Yükleme yolunun çıktısından hesaplanan takım düzeyi koşu temposu ve hız bölgesi payları gerçek konum verisindekine ne kadar yakın?",
+  "method": {
+    "engine": "app/engine/tracking/physical_load.py: konum 1,0 sn kayan ortalama, 1 sn üstü boşlukta iz bölünür, 12 m/sn üstü adım atılır; yüksek hız > 5,5, sprint > 7,0 m/sn",
+    "tool": "scripts/soccertrack_v2/physical_load_vs_gt.py: iki taraf aynı hesapla ölçülür; ürün tarafında yalnız takım atanmış izler, GT tarafında oyuncu + kaleci",
+    "smoothing_choice": "1,0 sn ayarlanmadı; keşifte 0,5-3 sn tarandı ve GT'nin kendi değeri de pencereye duyarlı çıktı (0,5 sn: 127,5; 1 sn: 121,1; 2 sn: 113,7 m/dk). 'Gerçek' değer bu yüzden tanıma bağlıdır; iki tarafta aynı tanım kullanılır."
+  },
+  "development": {
+    "data": "132877 600-1200 sn, canlı yol (maç 990741, demo.db), düzeltilmiş GSR; 2026-11-01'de tüketilmiş pencere",
+    "result_file": "docs/measurements/physical-load-dev-132877-600-1200.json",
+    "result": "ürün 121,7 m/dk, yüksek hız %3,42, sprint %0,94; GT 121,1 m/dk, %2,95, %0,78",
+    "honesty": "Eşikler bu sonuç görüldükten sonra yazıldı. Bu yüzden geliştirme sonucu kanıt sayılmaz; kanıt aşağıdaki görülmemiş koşudur. Canlı yol 12,5 kare/sn, yükleme yolu yaklaşık 4,2 kare/sn: sonucun taşınacağı varsayılmıyor."
+  },
+  "held_out": {
+    "data": "132877 1800-2100 sn, yükleme yolu; docs/measurements/product-vs-gt-132877-preregistration.json ile aynı ürün koşusu, düzeltilmiş GSR (bench/gsr_132877_1800_2100_corrected.npy)",
+    "gates": {
+      "m_per_player_min": "ürün / GT - 1 mutlak değeri <= 0,15",
+      "hsr_share": "mutlak fark <= 0,015 (1,5 puan)",
+      "sprint_share": "mutlak fark <= 0,0075 (0,75 puan)"
+    }
+  },
+  "decision": {
+    "if_all_pass": "'Takım düzeyi koşu temposu ve hız bölgeleri bir gündüz maçının 5 dakikasında gerçek veriye karşı doğrulandı' denebilir; rapordaki 'doğrulanmadı' sınırı buna göre güncellenir.",
+    "if_any_fails": "Kalan şart rapor sınırı olarak yazılır; bu pencerede ayar yapılmaz."
+  },
+  "limits": [
+    "Tek maç, 5 dakika, takım ayırmadan toplam oran; takım bazında ve dilim bazında doğruluk ölçülmez",
+    "Oyuncu bazında hiçbir iddia yok",
+    "GSR konumlarının kendi titremesi ölçülmedi; düzeltilmiş referans ürünle aynı kalibrasyonu kullanır",
+    "Ürün kaleciyi ayıramaz, GT'de kaleci dahildir; ürün tarafında takıma karışmış hakem olabilir"
+  ]
+}

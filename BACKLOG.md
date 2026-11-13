@@ -225,3 +225,5 @@
 - [x] Maç raporu ekranı: Video Analiz sayfasında rapor kartı (özet, öne çıkanlar, dilim tablosu, sınırlar; dilim 5/10/15 dk). 990809 verisiyle tarayıcıda doğrulandı.
 - [ ] Maç raporunda saha yönü: hücum yönü bilinmeden blok yüksekliği ve geri hat verilemiyor; yön kaynağı (operatör seçimi ya da ölçülmüş otomatik yön) bağlanınca eklenir.
 - [ ] Maç raporu bulgu eşikleri (2,5 m / 4 m / 0,15) canlı sinyal motorundan alındı, dilim ortalamaları için ölçülmedi; gerçek konum verisinde (132877) yanlış alarm payı ölçülmeli.
+- [x] Fiziksel yük (takım düzeyi): maç raporunda oyuncu-dakika başına metre, yüksek hız ve sprint payı, kapsama ve güvenilirlik; ham hız yerine 1 sn düzeltilmiş konum (ham hızda yükleme yolunda oyuncu-zamanın %8,5'i sprint görünüyordu). Geliştirme (canlı yol, 132877 600-1200): 121,7 vs GT 121,1 m/dk.
+- [ ] Fiziksel yük görülmemiş doğrulama: 132877 1800-2100 yükleme yolu koşusu sonrası `physical_load_vs_gt` (ön kayıt: docs/measurements/physical-load-vs-gt-132877-preregistration.json). Engel: bellek (14 GB boş commit).
