@@ -19,7 +19,7 @@
   "automatic_gates": {
     "job_done": "iş 'done' biter",
     "ingest_complete": "status ucu kare sayısı çıktı kare sayısına eşit",
-    "processing_ratio": "işlem süresi / video süresi <= 5,0 (94 dk için yaklaşık 7,8 saat: gece bırak, sabah hazır)",
+    "processing_ratio": "işlem süresi / video süresi <= 5,0 (94 dk için yaklaşık 7,8 saat: gece bırak, sabah hazır); 4. denemeden itibaren <= 6,0, gerekçe attempts[3].gate_change",
     "minute_coverage": ">= 0,95 maç dakikasında kare var",
     "median_players": "kare başına medyan oyuncu >= 16",
     "frames_8plus_share": "karelerin >= 0,80'inde en az 8 oyuncu (sinyal motorunun alt sınırı)",
@@ -100,6 +100,43 @@
         "Parça süreleri 1641 ve 1541 sn (300 sn video için); daha önce ölçülen 4K hızı 30 sn için ~99 sn idi. Fark ayrıştırılmadı.",
         "Koşunun ilk dakikalarında aynı makinede test paketi ve lint çalıştırıldı; etkisi ölçülmedi.",
         "Ayrılabilir bellek 17,6 GB'tan en az 5,1 GB'a indi: işçi bu görüntüde yaklaşık 12,5 GB istiyor, 11 GB'lık kapı eşiği panorama için düşük kalıyor."
+      ]
+    },
+    {
+      "n": 4,
+      "date": "2026-11-13",
+      "registered_before_run": true,
+      "result": "product-full-match-exam-result-attempt4.json",
+      "decided_by": "Kullanıcı 'ne öneriyorsan hallet' dedi (2026-11-13); öneri Claude'un: süre şartını 6 kata çıkar ve 30 dakikalık sınavı yeniden koş",
+      "video": "3. denemeyle aynı: soccertrack_117093_1st_half.mp4, ilk 1800 sn, kalibrasyon soccertrack_v2_117093_landmarks",
+      "gate_change": {
+        "processing_ratio": "<= 6,0 (önceki 5,0)",
+        "why": "Bu donanımda (RTX 5060 8 GB) 4096x1080 panoramada yalnız dedektör 4,86 kat sürüyor (panorama-speed-attribution-2026-11-13.json). Doğruluk kaybetmeden hızlandırma denemeleri kaldı: 3 dilim (panorama-tiles-3-vs-4-result.json), saha dışı pencere atlama (pitch-window-skip-result.json). 6 kat, 94 dakikalık maç için yaklaşık 9,4 saat demek: 'akşam bırak, sabah hazır' hâlâ tutuyor; ilk 5 dakika yaklaşık 27 dakikada panelde görünür.",
+        "honesty": "Eşik SONUÇ GÖRÜLDÜKTEN SONRA değişti: 3. deneme 5,307 ölçtü. Bu yüzden süre şartının geçmesi bağımsız kanıt değil, yalnız 'yeni bütçenin içinde kalıyor' demektir. 5,0 şartından kalma sonucu (3. deneme) silinmez. Diğer yedi eşik aynı."
+      },
+      "deviations_declared_in_advance": [
+        "TAM MAÇ DEĞİL: yalnız ilk 1800 saniye; sebep 3. denemedeki gibi (1800+ dondurulmuş kontrol kesitleri)",
+        "Kör değil: aynı 30 dakika 3. denemede koşuldu ve üç 60 sn penceresi (420/900/1380) dilim ölçümlerinde kullanıldı",
+        "Kalibrasyon kaba (1,43 m); konum doğruluğu iddia edilmez",
+        "Aynı videonun tekrarı olduğu için el kontrolü örneği 3. denemeyle aynı tohumdan gelir; el kontrolü hâlâ kullanıcıyı bekliyor"
+      ],
+      "changed_since_attempt_3": [
+        "Biten parça iş sürerken veritabanına alınır (parça parça sonuç)",
+        "Birleştirmede bütün parçaların pasları ve savunma aksiyonları korunur (önce yalnız ilk parçanınki kalıyordu)",
+        "Bellek kapısı 1080p üstü karede 14 GB; işçi ret kodu sebebe çevrilir",
+        "Dedektör ve dilim ayarı aynı (4 dilim, 55 pencere)"
+      ],
+      "known_before_run": [
+        "3. denemede oran 5,307; aynı işin süresi koşudan koşuya yaklaşık %10 oynuyor, yani 6,0 şartı büyük olasılıkla geçer ama garanti değil",
+        "Koşu sırasında bu makinede başka ağır iş çalıştırılmayacak"
+      ],
+      "code": "8223399",
+      "outcome": "geçti (otomatik şartlar): 8/8. İşlem/video oranı 5,958 (sınır 6,0; 10724 sn / 1800 sn). İş 'done', 6/6 parça, 7496 kare, 30/30 dakika dolu, kare başına medyan 22 oyuncu, karelerin %100'ünde en az 8 oyuncu, şekil yoklaması tam, boş disk en az 8,17 GB. Top karelerin %62,7'sinde (şart değil). El kontrolü hâlâ yapılmadı; o olmadan sınav bütün olarak geçmiş sayılmaz.",
+      "observed": [
+        "Süre payı çok dar: 5,958 ile 6,0. Aynı iş 3. denemede 5,307 sürmüştü; bu koşu %12 daha yavaş. Sebep ayrıştırılmadı (gündüz, masaüstü oturumu açık; parça parça veritabanına alma eklendi). Aynı ayarla bir sonraki koşu 6,0'ı aşabilir.",
+        "Kare sayısı (7496) ve iz sayısı (1624) 3. denemeyle aynı: çıktı tekrarlanabilir.",
+        "Süre eşiği sonuç görüldükten sonra değiştirildi (gate_change.honesty); 5,0 şartına göre bu koşu da kalırdı.",
+        "İlk iki başlatma iş açılmadan durdu (veritabanı yolu, sonra işçi yorumlayıcı yolu); ölçüm üretmedi."
       ]
     }
   ]

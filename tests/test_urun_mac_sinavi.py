@@ -33,7 +33,7 @@ def test_frame_metrics_empty_is_zero_not_invented():
 
 def test_evaluate_passes_only_when_all_gates_hold():
     assert exam.evaluate(_passing())["automatic_gates_passed"] is True
-    verdict = exam.evaluate({**_passing(), "processing_ratio": 5.1})
+    verdict = exam.evaluate({**_passing(), "processing_ratio": 6.1})
     assert verdict["automatic_gates_passed"] is False and verdict["checks"]["processing_ratio"] is False
 
 

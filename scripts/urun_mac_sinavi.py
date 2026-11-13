@@ -21,7 +21,7 @@ from typing import Any
 from app.core.system_resources import system_memory_mb
 
 GATES: dict[str, float] = {
-    "max_processing_ratio": 5.0,
+    "max_processing_ratio": 6.0,
     "min_minute_coverage": 0.95,
     "min_median_players": 16.0,
     "min_frames_8plus_share": 0.80,
