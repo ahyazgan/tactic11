@@ -210,7 +210,8 @@
 - [x] Saha dışı dilim pencerelerini atlama ön kayıtlı ölçüldü: KALDI. Çıktı birebir aynı (16453/16453) ama 55 pencereden yalnız 8'i atıldı, süre %4 kısaldı (şart %15); kod geri alındı. docs/measurements/pitch-window-skip-result.json
 - [x] Ürün sınavı 4. deneme (süre şartı 6 kat, sonuç görüldükten sonra gevşetildi): otomatik şartlar 8/8, oran 5,958; el kontrolü bekliyor. (8223399, docs/measurements/product-full-match-exam-result-attempt4.json)
 - [x] 4. denemenin 20 karelik kontrolü (Claude yaptı, insan değil): isabet 0,959, hayalet 0,028; iki şart tuttu. İnceleme aracı yarım saniye erken kare okuyordu, ffmpeg ile düzeltildi. Bulgu: takım rengi sık sık yanlış.
-- [ ] Takım rengi ataması panoramada sık sık yanlış (el kontrolünde görüldü); ölç ve düzelt. Bitti sayılır: etiketli karelerde takım doğruluğu ölçülüp kayda geçince.
+- [x] Takım rengi ölçüldü (117093, 4. deneme çıktısı, 120 kare): renk kuralıyla etiketlenebilen 1510 işaretin %78,3'ü doğru takımda; parça başına %73–85, parçalar arası takım yer değiştirmesi yok; işaretlerin %11'inde takım yok. Araç scripts/soccertrack_v2/team_color_spot_check.py, kayıt docs/measurements/team-color-spot-check-117093-2026-11-13.json. Referans insan etiketi değil.
+- [ ] Takım atamasını düzelt. Engel: bağımsız etiketli gündüz verisi yok (HF token). Önceki üç ön kayıtlı deneme (çapa, kapılı çapa, iz içi oylama) kaldı; sebep iz içi kimlik kayması (docs/TAKIM-CAPA-DENEYI-SONUCLARI.md). Bitti sayılır: görülmemiş etiketli veride ön kayıtlı şart geçince.
 - [ ] Panoramada süre şartı hâlâ açık (kullanıcı kararı): şartı gevşet, takip hızını düşür (ölçülmedi), ya da saha dışı dilimleri atla (dedektör dilimleme kodu dondurulmuş).
   Done when: sebep ölçümle gösterildi; düzeltme varsa ön kayıtlı yeni denemede süre şartı sınandı.
 - [x] Bellek kapısı 1080p'den büyük karede 14 GB; işçi tarafındaki ret sebebiyle gösterilir. (a63fe75)

@@ -1,0 +1,58 @@
+{
+  "frames_sampled": 120,
+  "overall": {
+    "labelled": 1510,
+    "agree": 1182,
+    "agreement": 0.7828,
+    "home_kit": "blue"
+  },
+  "skipped": {
+    "unclear_kit": 759,
+    "off_image": 41,
+    "no_team": 297
+  },
+  "pairs": {
+    "away/blue": 131,
+    "away/white": 534,
+    "home/blue": 648,
+    "home/white": 197
+  },
+  "by_chunk": {
+    "0": {
+      "labelled": 186,
+      "agree": 139,
+      "agreement": 0.7473,
+      "home_kit": "blue"
+    },
+    "1": {
+      "labelled": 279,
+      "agree": 213,
+      "agreement": 0.7634,
+      "home_kit": "blue"
+    },
+    "2": {
+      "labelled": 258,
+      "agree": 219,
+      "agreement": 0.8488,
+      "home_kit": "blue"
+    },
+    "3": {
+      "labelled": 261,
+      "agree": 202,
+      "agreement": 0.7739,
+      "home_kit": "blue"
+    },
+    "4": {
+      "labelled": 282,
+      "agree": 231,
+      "agreement": 0.8191,
+      "home_kit": "blue"
+    },
+    "5": {
+      "labelled": 244,
+      "agree": 178,
+      "agreement": 0.7295,
+      "home_kit": "blue"
+    }
+  }
+}
