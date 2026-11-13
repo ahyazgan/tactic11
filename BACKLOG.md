@@ -222,6 +222,6 @@
 - [x] Kullanımdan kalkan utcnow / 422 sabiti temizlendi. (31eed5e)
 - [x] Sabah raporu: docs/GECE-RAPORU-2026-11-13.md
 - [x] Maç raporu ucu: `GET /tracking/matches/{id}/report` dilim dilim takım şekli + pres, güvenilir dilim özeti, ortalamadan sapma bulguları, sınırlar yanıtta. 4. deneme verisinde (990809, 5 dk dilim) 6/6 dilim güvenilir; yerleşim desteği %3–9 çıktığı için yerleşim yazılmıyor (eşik %50). Doğruluk ölçümü değildir.
-- [ ] Maç raporu ekranı: uç panelde tek sayfa olarak gösterilsin (dilim tablosu, bulgular, sınırlar). Bitti sayılır: yüklenen maç için rapor sayfası açılınca.
+- [x] Maç raporu ekranı: Video Analiz sayfasında rapor kartı (özet, öne çıkanlar, dilim tablosu, sınırlar; dilim 5/10/15 dk). 990809 verisiyle tarayıcıda doğrulandı.
 - [ ] Maç raporunda saha yönü: hücum yönü bilinmeden blok yüksekliği ve geri hat verilemiyor; yön kaynağı (operatör seçimi ya da ölçülmüş otomatik yön) bağlanınca eklenir.
 - [ ] Maç raporu bulgu eşikleri (2,5 m / 4 m / 0,15) canlı sinyal motorundan alındı, dilim ortalamaları için ölçülmedi; gerçek konum verisinde (132877) yanlış alarm payı ölçülmeli.
