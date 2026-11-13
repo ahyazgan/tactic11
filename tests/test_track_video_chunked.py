@@ -101,6 +101,33 @@ def test_real_boundaries_reach_the_worker_snapped(tmp_path):
     assert segment_namespace(1, sent) == 304321
 
 
+@pytest.mark.parametrize(("size", "requested", "used"), [
+    ((1920, 1080), 6, 6),   # 16:9: varsayılan aynen kalır (49 dilim)
+    ((3840, 2160), 6, 6),
+    ((4096, 1080), 6, 4),   # panorama: 98 dilim belleği taşırır, ölçülmüş 4'e (50) iner
+    ((4096, 1080), 4, 4),
+    ((6500, 1000), 6, 3),
+    ((4096, 1080), 1, 1),
+])
+def test_tiles_are_capped_by_window_count_not_by_the_number_typed(size, requested, used):
+    args, got_requested, got_used = chunked.cap_tiles(["--fps", "5.0", "--tiles", str(requested), "--threshold", "0.3"],
+                                                      *size)
+    assert (got_requested, got_used) == (requested, used)
+    assert args == ["--fps", "5.0", "--tiles", str(used), "--threshold", "0.3"]
+    assert chunked.nominal_tile_windows(used, *size) <= chunked.MAX_TILE_WINDOWS or used == 1
+
+
+def test_missing_tiles_argument_is_left_alone():
+    assert chunked.cap_tiles(["--fps", "5.0"], 4096, 1080) == (["--fps", "5.0"], None, None)
+
+
+def test_tile_reduction_is_written_into_the_merged_summary(tmp_path):
+    summary = chunked.process_chunks(_segments(tmp_path, 2), tmp_path, ["w"], out=str(tmp_path / "o.json"),
+                                     preview=None, max_seconds=None, video="mac.mp4", run=_Runner(),
+                                     extra_summary={"tiles_requested": 6, "tiles_used": 4})
+    assert summary["tiles_requested"] == 6 and summary["tiles_used"] == 4
+
+
 def test_failed_chunk_is_recorded_and_the_rest_survive(tmp_path):
     out = tmp_path / "out.json"
     summary = chunked.process_chunks(_segments(tmp_path), tmp_path, ["w"], out=str(out), preview=None,

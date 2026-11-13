@@ -27,6 +27,11 @@ DEFAULT_CHUNK_SECONDS = 300.0
 # Tek parça sayılacak üst sınır: bundan kısa video bölünmez (bölmenin kazancı yok).
 SINGLE_CHUNK_FACTOR = 1.5
 DISK_RESERVE_BYTES = 3 * 1024**3
+# Kare başına en çok dilim (örtüşmeli ızgara). Ölçülen: 4096x1080'de 4 dilim (50) 8 GB GPU'da
+# 3,4 GB ile çalışıyor (docs/CANLI-HIZ-VE-PROVA.md); 6 dilim (98) belleği taşırıp paylaşılan
+# belleğe düşüyor ve 13 dakikada 8 saniyeden az video işliyor (2026-11-13, RTX 5060 8 GB).
+# 1920x1080'de 6 dilim 49'dur, yani 16:9 kaynakta varsayılan değişmez.
+MAX_TILE_WINDOWS = 50
 SUMMED_CALIBRATION_STATS = ("frames_calibrated", "frames_rejected", "replays_dropped", "cuts",
                             "anchor_attempts", "anchors_found", "tracker_resets")
 
@@ -113,9 +118,33 @@ def merge_payloads(payloads: list[dict[str, Any]], chunks: list[dict[str, Any]],
     return merged
 
 
+def nominal_tile_windows(tiles: int, width: int, height: int) -> int:
+    """Dedektörün kare başına işleyeceği dilim sayısı (örtüşmeli ızgara, yaklaşık)."""
+    from app.tracking.detect import DetectorConfig
+
+    cols, rows = DetectorConfig(tiles=tiles).tile_grid(width, height)
+    return (cols + 1) * (rows + 1)
+
+
+def cap_tiles(passthrough: list[str], width: int, height: int) -> tuple[list[str], int | None, int | None]:
+    """İstenen dilim sayısı bu görüntüde GPU belleğini taşırıyorsa ölçülmüş sınıra indirir.
+
+    Dilim sayısı satır sayısıdır; sütun sayısı en-boy oranından gelir, yani panoramada aynı
+    `--tiles` çok daha fazla dilim demektir (1920x1080'de 6 → 49, 4096x1080'de 6 → 98).
+    Döner: (işçiye gidecek argümanlar, istenen, kullanılan); `--tiles` yoksa (…, None, None).
+    """
+    if "--tiles" not in passthrough:
+        return passthrough, None, None
+    at = passthrough.index("--tiles") + 1
+    requested = used = int(passthrough[at])
+    while used > 1 and nominal_tile_windows(used, width, height) > MAX_TILE_WINDOWS:
+        used -= 1
+    return [*passthrough[:at], str(used), *passthrough[at + 1:]], requested, used
+
+
 def process_chunks(segments: list[tuple[str, float, float]], seg_dir: Path, base: list[str], *, out: str,
                    preview: str | None, max_seconds: float | None, video: str,
-                   run: Runner) -> dict[str, Any]:
+                   run: Runner, extra_summary: dict[str, Any] | None = None) -> dict[str, Any]:
     """Parçaları sırayla işler; işlenen parça dosyası hemen silinir. Çöken parça kaydedilir, atlanır."""
     payloads: list[dict[str, Any]] = []
     chunks: list[dict[str, Any]] = []
@@ -144,6 +173,7 @@ def process_chunks(segments: list[tuple[str, float, float]], seg_dir: Path, base
         seg_path.unlink(missing_ok=True)
         part_out.unlink(missing_ok=True)
     merged = merge_payloads(payloads, chunks, video)
+    merged["summary"].update(extra_summary or {})
     with open(out, "w", encoding="utf-8") as f:
         json.dump(merged, f, ensure_ascii=False)
     return merged["summary"]
@@ -172,6 +202,12 @@ def main(argv: list[str] | None = None) -> int:
     info = video_info(own.video)
     duration = info["frames"] / info["fps"] if info["fps"] else 0.0
     effective = min(duration, own.max_seconds) if own.max_seconds else duration
+    passthrough, tiles_requested, tiles_used = cap_tiles(passthrough, info["width"], info["height"])
+    tiles_note: dict[str, Any] = {}
+    if tiles_used != tiles_requested:
+        tiles_note = {"tiles_requested": tiles_requested, "tiles_used": tiles_used}
+        print(f"dilim sayısı {tiles_requested} → {tiles_used}: {info['width']}x{info['height']} görüntüde "
+              f"{tiles_requested} dilim GPU belleğini taşırır (sınır kare başına {MAX_TILE_WINDOWS} dilim)", flush=True)
     if own.clip_offset_minutes or not needs_chunking(effective, own.chunk_seconds):
         # Kısa klip ya da zaten bir parçanın kendisi: tek süreç, eski davranış.
         return _run(chunk_args([*worker, *passthrough], video=own.video, out=own.out,
@@ -194,7 +230,8 @@ def main(argv: list[str] | None = None) -> int:
             return 4
         segments = parse_segment_list(seg_dir / "segments.csv")
         summary = process_chunks(segments, seg_dir, [*worker, *passthrough], out=own.out, preview=own.preview,
-                                 max_seconds=own.max_seconds, video=own.video, run=_run)
+                                 max_seconds=own.max_seconds, video=own.video, run=_run,
+                                 extra_summary=tiles_note)
     except ValueError as e:
         print(f"parçalı işleme başarısız: {e}", flush=True)
         return 1

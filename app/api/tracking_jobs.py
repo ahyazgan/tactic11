@@ -411,10 +411,16 @@ def _run_job(job: dict[str, Any]) -> None:
             payload = json.load(f)
         job["summary"] = payload.get("summary")
         job["frames"] = len(payload.get("frames", []))
-        failed_chunks = (job["summary"] or {}).get("chunks_failed") or 0
+        summary = job["summary"] or {}
+        notes = []
+        failed_chunks = summary.get("chunks_failed") or 0
         if failed_chunks:
-            total = len(job["summary"].get("chunks") or [])
-            job["warning"] = f"{failed_chunks}/{total} parça işlenemedi; o dakikalar çıktıda yok"
+            notes.append(f"{failed_chunks}/{len(summary.get('chunks') or [])} parça işlenemedi; o dakikalar çıktıda yok")
+        if summary.get("tiles_used") is not None:
+            notes.append(f"dilim sayısı {summary.get('tiles_requested')} yerine {summary['tiles_used']} kullanıldı "
+                         "(bu görüntü boyutunda GPU belleği sınırı)")
+        if notes:
+            job["warning"] = "; ".join(notes)
         if job["frames"] == 0:
             job["state"] = "failed"
             job["error"] = empty_output_error(job["summary"])
