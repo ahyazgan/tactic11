@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -29,6 +30,7 @@ from app.core.system_resources import (
     system_memory_mb,
     worker_memory_error,
 )
+from app.tracking.chunk_layout import PLAN_FILE, READY_PREFIX, chunk_dir
 
 DEFAULT_CHUNK_SECONDS = 300.0
 # Tek parça sayılacak üst sınır: bundan kısa video bölünmez (bölmenin kazancı yok).
@@ -39,6 +41,7 @@ DISK_RESERVE_BYTES = 3 * 1024**3
 # belleğe düşüyor ve 13 dakikada 8 saniyeden az video işliyor (2026-11-13, RTX 5060 8 GB).
 # 1920x1080'de 6 dilim 49'dur, yani 16:9 kaynakta varsayılan değişmez.
 MAX_TILE_WINDOWS = 50
+DERIVED_EVENT_LISTS = ("derived_passes", "derived_defensive_actions")
 SUMMED_CALIBRATION_STATS = ("frames_calibrated", "frames_rejected", "replays_dropped", "cuts",
                             "anchor_attempts", "anchors_found", "tracker_resets")
 
@@ -103,6 +106,10 @@ def merge_payloads(payloads: list[dict[str, Any]], chunks: list[dict[str, Any]],
     merged = dict(payloads[0])
     merged["video"] = video
     merged["frames"] = [fr for p in payloads for fr in p.get("frames", [])]
+    for key in DERIVED_EVENT_LISTS:
+        # Yalnız ilk parçanınki kalırsa sonraki dakikaların pasları ve savunma aksiyonları kaybolur.
+        if any(isinstance(p.get(key), list) for p in payloads):
+            merged[key] = [item for p in payloads for item in (p.get(key) or [])]
     stats: dict[str, Any] = {}
     for key in SUMMED_CALIBRATION_STATS:
         values = [(p.get("summary") or {}).get("calibration_stats", {}).get(key) for p in payloads]
@@ -152,7 +159,11 @@ def cap_tiles(passthrough: list[str], width: int, height: int) -> tuple[list[str
 def process_chunks(segments: list[tuple[str, float, float]], seg_dir: Path, base: list[str], *, out: str,
                    preview: str | None, max_seconds: float | None, video: str,
                    run: Runner, extra_summary: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Parçaları sırayla işler; işlenen parça dosyası hemen silinir. Çöken parça kaydedilir, atlanır."""
+    """Parçaları sırayla işler; biten parça `ready_NNNN.json` olarak bırakılır, çöken kaydedilip atlanır.
+
+    Hazır dosya, işçi çıkışından SONRA tek adımda yeniden adlandırılarak oluşur: iş ucu koşu
+    sürerken bu dosyaları veritabanına alır ve yarım yazılmış dosya görmemelidir.
+    """
     payloads: list[dict[str, Any]] = []
     chunks: list[dict[str, Any]] = []
     anchor: list[list[float]] | None = None
@@ -172,6 +183,7 @@ def process_chunks(segments: list[tuple[str, float, float]], seg_dir: Path, base
             payloads.append(payload)
             anchor = usable_team_anchor(payload.get("summary")) or anchor
             record.update(state="done", frames=len(payload.get("frames", [])))
+            os.replace(part_out, seg_dir / f"{READY_PREFIX}{index:04d}.json")
         else:
             record.update(state="failed", exit_code=rc)
         chunks.append(record)
@@ -229,7 +241,7 @@ def main(argv: list[str] | None = None) -> int:
 
     from scripts.canli_mac import find_ffmpeg
 
-    seg_dir = Path(own.out).with_suffix("").with_name(Path(own.out).stem + "_chunks")
+    seg_dir = chunk_dir(own.out)
     need = Path(own.video).stat().st_size + DISK_RESERVE_BYTES
     seg_dir.mkdir(parents=True, exist_ok=True)
     free = shutil.disk_usage(seg_dir).free
@@ -242,6 +254,9 @@ def main(argv: list[str] | None = None) -> int:
             print("ffmpeg videoyu bölemedi", flush=True)
             return 4
         segments = parse_segment_list(seg_dir / "segments.csv")
+        planned = sum(1 for _, start, _ in segments if own.max_seconds is None or start < own.max_seconds)
+        with open(seg_dir / PLAN_FILE, "w", encoding="utf-8") as f:
+            json.dump({"chunks_total": planned}, f)
         summary = process_chunks(segments, seg_dir, [*worker, *passthrough], out=own.out, preview=own.preview,
                                  max_seconds=own.max_seconds, video=own.video, run=_run,
                                  extra_summary=tiles_note)
