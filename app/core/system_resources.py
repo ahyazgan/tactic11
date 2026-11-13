@@ -14,6 +14,13 @@ import sys
 # Ölçülen işçi isteği 10 GB + %10 pay. Başka makinede `TRACKING_MIN_COMMIT_MB` ile
 # değiştirilir; 0 kapıyı kapatır.
 DEFAULT_MIN_COMMIT_MB = 11_000
+# 1080p'den büyük kare (ör. 4096x1080 panorama): 30 dakikalık koşuda ayrılabilir bellek
+# 17,6 GB'tan 5,1 GB'a indi, yani işçi yaklaşık 12,5 GB istedi
+# (docs/measurements/product-full-match-exam-result-attempt3.json). 12,5 GB + %10 pay.
+LARGE_FRAME_PIXELS = 1920 * 1080
+LARGE_FRAME_MIN_COMMIT_MB = 14_000
+# İşçi sarmalayıcısının "bellek yetmiyor, başlamadım" çıkış kodu; iş ucu bunu sebebe çevirir.
+EXIT_MEMORY_SHORT = 5
 MIN_COMMIT_ENV = "TRACKING_MIN_COMMIT_MB"
 
 
@@ -35,9 +42,18 @@ def system_memory_mb() -> dict[str, float] | None:
     return {"avail_phys_mb": round(status.avail_phys / 1e6), "avail_commit_mb": round(status.avail_commit / 1e6)}
 
 
-def min_commit_mb() -> int:
+def min_commit_mb(width: int | None = None, height: int | None = None) -> int:
+    """İşçinin isteyeceği ayrılabilir bellek; görüntü boyutu biliniyorsa ona göre.
+
+    İki ölçüm noktası var, aradaki boyutlar için tahmin yürütülmez: 1080p'ye kadar 11 GB,
+    daha büyük görüntüde `LARGE_FRAME_MIN_COMMIT_MB`. Ortam değişkeni ikisini de ezer.
+    """
     raw = os.environ.get(MIN_COMMIT_ENV, "").strip()
-    return int(raw) if raw.isdigit() else DEFAULT_MIN_COMMIT_MB
+    if raw.isdigit():
+        return int(raw)
+    if width and height and width * height > LARGE_FRAME_PIXELS:
+        return LARGE_FRAME_MIN_COMMIT_MB
+    return DEFAULT_MIN_COMMIT_MB
 
 
 def worker_memory_error(memory: dict[str, float] | None, required_mb: int) -> str | None:

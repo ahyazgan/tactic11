@@ -18,6 +18,9 @@ a = p.parse_args()
 if a.video and a.video.endswith("fail.mp4"):
     print("stub: kasıtlı hata")
     sys.exit(3)
+if a.video and a.video.endswith("bigframe.mp4"):
+    print("bellek yetersiz: video işçisi yaklaşık 14 GB ayrılabilir bellek ister, şu an 9.0 GB var.")
+    sys.exit(5)
 
 frames = [
     {

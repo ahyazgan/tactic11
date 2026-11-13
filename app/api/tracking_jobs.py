@@ -46,7 +46,12 @@ from threadpoolctl import threadpool_limits
 
 from app.api.auth import get_current_user
 from app.core.logging import get_logger
-from app.core.system_resources import min_commit_mb, system_memory_mb, worker_memory_error
+from app.core.system_resources import (
+    EXIT_MEMORY_SHORT,
+    min_commit_mb,
+    system_memory_mb,
+    worker_memory_error,
+)
 from app.db import models
 from app.tracking.calibration import CalibrationError, PitchCalibration
 
@@ -384,6 +389,16 @@ def empty_output_error(summary: dict[str, Any] | None) -> str:
     return f"videodan kullanılabilir kare çıkmadı ({detail}). Kalibrasyonu ve kamera açısını kontrol edin."
 
 
+def _memory_refusal(log_path: Path) -> str:
+    """İşçi sarmalayıcısının yazdığı bellek sebebi; bulunamazsa çıkış kodunu olduğu gibi söyler."""
+    try:
+        lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        lines = []
+    return next((ln.strip() for ln in reversed(lines) if ln.startswith("bellek yetersiz")),
+                f"işçi çıkış kodu {EXIT_MEMORY_SHORT} (bellek yetersiz)")
+
+
 def _run_job(job: dict[str, Any]) -> None:
     log_path = Path(job["log"])
     try:
@@ -404,7 +419,7 @@ def _run_job(job: dict[str, Any]) -> None:
             rc = proc.wait()
         if rc != 0 or not Path(job["out_json"]).exists():
             job["state"] = "failed"
-            job["error"] = f"işçi çıkış kodu {rc}"
+            job["error"] = _memory_refusal(log_path) if rc == EXIT_MEMORY_SHORT else f"işçi çıkış kodu {rc}"
             _write_job(job)
             return
         with open(job["out_json"], encoding="utf-8") as f:

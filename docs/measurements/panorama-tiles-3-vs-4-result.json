@@ -1,0 +1,109 @@
+{
+  "preregistration": "docs/measurements/panorama-tiles-3-vs-4-preregistration.json (c33cb32, koşulardan önce)",
+  "measured": "2026-11-13, RTX 5060 8 GB",
+  "verdict": {
+    "checks": {
+      "overall_recall_vs_reference": false,
+      "every_window_recall": true,
+      "every_band_recall": true,
+      "overall_extra_share": true
+    },
+    "passed": false,
+    "outcome": "kaldı: 3 dilim, 4 dilimin oyuncu gözlemlerinin %96,3'ünü buldu (şart %97). Diğer üç şart geçti. Ön kayıt gereği varsayılan değişmez."
+  },
+  "elapsed_seconds_per_60s_window": {
+    "tiles_4": [
+      326.0,
+      350.8,
+      319.4
+    ],
+    "tiles_3": [
+      177.9,
+      184.1,
+      177.4
+    ]
+  },
+  "reading": [
+    "Kayıp 3,7 puan; pencerelere göre 3,1 - 4,6 puan, bantlara göre 2,9 - 4,9 puan.",
+    "En büyük kayıp y 0-33 bandında (%95,1); eşiğin 0,1 puan üstünde, yani tek bir pencere daha bunu kaldırabilirdi.",
+    "Bu, 4 dilime göre kayıptır; gerçek oyunculara göre kayıp ölçülmedi. 4 dilimin fazladan gördüğü %3,7'nin ne kadarının gerçek oyuncu, ne kadarının yanlış işaret olduğu bilinmiyor."
+  ],
+  "match_radius_m": 3.0,
+  "windows": [
+    {
+      "frames_compared": 250,
+      "reference_frames": 250,
+      "reference_players": 5332,
+      "candidate_players": 5379,
+      "matched": 5146,
+      "recall_vs_reference": 0.9651162790697675,
+      "extra_share": 0.043316601598810185,
+      "band_recall": {
+        "y_0_33": 0.9515582655826558,
+        "y_33_67": 0.9817554240631163,
+        "y_67_100": 0.9829545454545454
+      },
+      "band_reference_players": {
+        "y_0_33": 2952,
+        "y_33_67": 2028,
+        "y_67_100": 352
+      },
+      "reference": "w420_t4.json",
+      "candidate": "w420_t3.json"
+    },
+    {
+      "frames_compared": 250,
+      "reference_frames": 250,
+      "reference_players": 5542,
+      "candidate_players": 5438,
+      "matched": 5371,
+      "recall_vs_reference": 0.9691447130999639,
+      "extra_share": 0.012320706141963957,
+      "band_recall": {
+        "y_0_33": 0.9418672930123312,
+        "y_33_67": 0.9816204051012754,
+        "y_67_100": 0.9803921568627451
+      },
+      "band_reference_players": {
+        "y_0_33": 1703,
+        "y_33_67": 2666,
+        "y_67_100": 1173
+      },
+      "reference": "w900_t4.json",
+      "candidate": "w900_t3.json"
+    },
+    {
+      "frames_compared": 250,
+      "reference_frames": 250,
+      "reference_players": 5579,
+      "candidate_players": 5365,
+      "matched": 5323,
+      "recall_vs_reference": 0.9541136404373544,
+      "extra_share": 0.00782851817334576,
+      "band_recall": {
+        "y_0_33": 0.9672578444747613,
+        "y_33_67": 0.9561051004636785,
+        "y_67_100": 0.9441340782122905
+      },
+      "band_reference_players": {
+        "y_0_33": 733,
+        "y_33_67": 3235,
+        "y_67_100": 1611
+      },
+      "reference": "w1380_t4.json",
+      "candidate": "w1380_t3.json"
+    }
+  ],
+  "overall": {
+    "reference_players": 16453,
+    "candidate_players": 16182,
+    "matched": 15840,
+    "recall_vs_reference": 0.9627423570169574,
+    "extra_share": 0.021134593993325918,
+    "band_recall": {
+      "y_0_33": 0.9506310319227914,
+      "y_33_67": 0.9712447975785092,
+      "y_67_100": 0.9620535714285714
+    }
+  }
+}

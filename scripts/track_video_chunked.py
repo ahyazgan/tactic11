@@ -23,6 +23,13 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from app.core.system_resources import (
+    EXIT_MEMORY_SHORT,
+    min_commit_mb,
+    system_memory_mb,
+    worker_memory_error,
+)
+
 DEFAULT_CHUNK_SECONDS = 300.0
 # Tek parça sayılacak üst sınır: bundan kısa video bölünmez (bölmenin kazancı yok).
 SINGLE_CHUNK_FACTOR = 1.5
@@ -202,6 +209,12 @@ def main(argv: list[str] | None = None) -> int:
     info = video_info(own.video)
     duration = info["frames"] / info["fps"] if info["fps"] else 0.0
     effective = min(duration, own.max_seconds) if own.max_seconds else duration
+    if not own.clip_offset_minutes:
+        # İş ucu görüntü boyutunu bilmeden 1080p eşiğiyle bakar; büyük karede burada yeniden bakılır.
+        shortage = worker_memory_error(system_memory_mb(), min_commit_mb(info["width"], info["height"]))
+        if shortage:
+            print(shortage, flush=True)
+            return EXIT_MEMORY_SHORT
     passthrough, tiles_requested, tiles_used = cap_tiles(passthrough, info["width"], info["height"])
     tiles_note: dict[str, Any] = {}
     if tiles_used != tiles_requested:
