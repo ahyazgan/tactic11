@@ -46,6 +46,7 @@ from threadpoolctl import threadpool_limits
 
 from app.api.auth import get_current_user
 from app.core.logging import get_logger
+from app.core.system_resources import min_commit_mb, system_memory_mb, worker_memory_error
 from app.db import models
 from app.tracking.calibration import CalibrationError, PitchCalibration
 
@@ -386,6 +387,12 @@ def empty_output_error(summary: dict[str, Any] | None) -> str:
 def _run_job(job: dict[str, Any]) -> None:
     log_path = Path(job["log"])
     try:
+        shortage = worker_memory_error(system_memory_mb(), min_commit_mb())
+        if shortage:
+            job["state"] = "failed"
+            job["error"] = shortage
+            _write_job(job)
+            return
         job["state"] = "running"
         job["started_at"] = datetime.now(UTC).isoformat()
         _write_job(job)

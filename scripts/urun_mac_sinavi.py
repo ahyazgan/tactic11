@@ -18,6 +18,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from app.core.system_resources import system_memory_mb
+
 GATES: dict[str, float] = {
     "max_processing_ratio": 5.0,
     "min_minute_coverage": 0.95,
@@ -97,24 +99,6 @@ def review_sample(frames: list[dict[str, Any]]) -> list[float]:
 
 def _free_gb(path: Path) -> float:
     return shutil.disk_usage(path).free / 1e9
-
-
-def system_memory_mb() -> dict[str, float] | None:
-    """Boş fiziksel bellek ve ayrılabilir (commit) pay; Windows dışında ölçülmez, uydurulmaz."""
-    if os.name != "nt":
-        return None
-    import ctypes
-
-    class _Status(ctypes.Structure):
-        _fields_ = [("length", ctypes.c_ulong), ("load", ctypes.c_ulong), *[
-            (name, ctypes.c_ulonglong) for name in
-            ("total_phys", "avail_phys", "total_commit", "avail_commit", "total_virtual", "avail_virtual", "ext")]]
-
-    status = _Status()
-    status.length = ctypes.sizeof(_Status)
-    if not ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(status)):  # type: ignore[attr-defined]
-        return None
-    return {"avail_phys_mb": round(status.avail_phys / 1e6), "avail_commit_mb": round(status.avail_commit / 1e6)}
 
 
 def _kill_tree() -> None:

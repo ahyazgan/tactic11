@@ -24,6 +24,8 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("TRACKING_DATA_DIR", str(tmp_path))
     monkeypatch.setenv("TRACKING_WORKER_CMD", json.dumps([sys.executable, str(STUB)]))
     monkeypatch.delenv("TRACKING_WEIGHTS", raising=False)
+    # Sahte işçi bellek istemez; testler makinenin o anki boş belleğine bağlı kalmasın.
+    monkeypatch.setenv("TRACKING_MIN_COMMIT_MB", "0")
     return tmp_path
 
 
@@ -201,6 +203,19 @@ def test_job_end_to_end_with_stub_worker(client, env, monkeypatch):
     assert d.status_code == 200
     assert not Path(done["out_json"]).exists()
     assert client.get(f"/tracking/jobs/{job['id']}").status_code == 404
+
+
+def test_job_is_refused_before_the_worker_starts_when_memory_is_short(client, env, monkeypatch):
+    """50 dakika çalışıp çökmek yerine: bellek yetmiyorsa işçi hiç başlamaz, sebep kullanıcıya yazılır."""
+    monkeypatch.setenv("TRACKING_MIN_COMMIT_MB", "11000")
+    monkeypatch.setattr(tracking_jobs, "system_memory_mb", lambda: {"avail_phys_mb": 4000, "avail_commit_mb": 7500})
+    (env / "videos").mkdir(parents=True, exist_ok=True)
+    (env / "videos" / "clip.mp4").write_bytes(b"\x00" * 10)
+    job = client.post("/tracking/jobs", json={"video": "clip.mp4", "match_id": 990779}).json()
+    done = _wait_done(client, job["id"])
+    assert done["state"] == "failed"
+    assert "bellek yetersiz" in done["error"] and "7.5 GB" in done["error"] and "11 GB" in done["error"]
+    assert not any("stub" in ln for ln in done.get("log_tail") or [])
 
 
 def test_job_without_calibration_runs_anchorless(client, env, monkeypatch):
