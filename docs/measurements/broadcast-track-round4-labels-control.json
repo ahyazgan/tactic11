@@ -71,6 +71,7 @@
    91,
    92,
    93,
+   94,
    95,
    96,
    97,
@@ -90,7 +91,7 @@
    118,
    119
   ],
-  "notes": "Uzun sakatlık duraklamaları; main yalnız 35/120. 85, 95, 96 ceza sahası hizasındaki ikinci yüksek kamera (18 çizgisi dikeye yakın), other sayıldı. 110-114 ana kameranın sağ köşeye yakın zoom'u, main sayıldı. 108-109 skor bandıyla main.",
+  "notes": "Uzun sakatlık duraklamaları; main yalnız 35/120. 85, 95, 96 ceza sahası hizasındaki ikinci yüksek kamera (18 çizgisi dikeye yakın), other sayıldı. 110-114 ana kameranın sağ köşeye yakın zoom'u, main sayıldı. 108-109 skor bandıyla main. Düzeltme (işaretleme sırasında, yöntem koşmadan): 94 main etiketlenmişti; 1080p ızgarada orta çizginin belirgin eğik olduğu görüldü, yani ceza sahası hizasındaki ikinci yüksek kamera. other yapıldı; main 34/120, seçilen 30 kare buna göre yeniden hesaplandı.",
   "light": "Güneşli; çatı kafesinin sert, dişli gölgesi main karelerin hemen hepsinde sahayı ikiye bölüyor. Sert gölge şartı karşılandı."
  },
  "kobe_shonan_2024": {
