@@ -1,6 +1,6 @@
 {
  "title": "Yayın takibi 4. tur: filtre engellemez + kamera önseli + filtreli geçişin kamerasıyla bekçi, ön kayıt",
- "status": "ONAYLI, koşu öncesi yazıldı (2026-11-16). Sonuç bu dosyaya değil ayrı sonuç dosyasına yazılır.",
+ "status": "GELİŞTİRME KAPILARI GEÇTİ (2026-11-16): main 362/468 = %77,4; docs/measurements/broadcast-track-round4-development-result.json. Ön kayıt koşudan önce yazıldı (commit 285f209). Kontrol açılmadı.",
  "direction": {"user_words": "Evet buna geçelim devam et", "date": "2026-11-16"},
  "why": {
   "round3": "Filtreler duruş kesmeyince main 361/468 = %77,1 oldu ama other %9,1; bekçi other'ı %2,4'e indirdi, main %69,7'de kaldı. Bekçinin attığı 35 main duruşun 20'si kashima_marinos: kamera konumu filtresiz, başka kameraları da içeren duruşlardan bulunmuştu (41,8; 84,2; 12,8).",
