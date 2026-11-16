@@ -418,7 +418,7 @@ export function MatchModeBody() {
     <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
       <AlertToast t={t} />
       {t >= 45 && (
-        <Link href="/halftime-mode" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, borderRadius: 10, border: "1.5px solid var(--accent)", background: "color-mix(in srgb, var(--accent) 8%, var(--panel))", padding: "11px 14px" }}>
+        <Link href="/match-day?asama=devre" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10, borderRadius: 10, border: "1.5px solid var(--accent)", background: "color-mix(in srgb, var(--accent) 8%, var(--panel))", padding: "11px 14px" }}>
           <span style={{ fontSize: 18 }}>⏸</span>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)" }}>Devre arası — soyunma odası okuması hazır</div>
@@ -452,7 +452,7 @@ export function MatchModeBody() {
 
       {/* Maç sonu → değerlendirme + veri kaynağı (seam) */}
       {live && (
-        <Link href="/match-review" style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 10, border: "1.5px solid var(--accent)", background: "color-mix(in srgb, var(--accent) 8%, var(--panel))", padding: "11px 14px" }}>
+        <Link href="/match-day?asama=sonu" style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 10, border: "1.5px solid var(--accent)", background: "color-mix(in srgb, var(--accent) 8%, var(--panel))", padding: "11px 14px" }}>
           <span style={{ fontSize: 16 }}>📋</span>
           <span style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)" }}>Maç sonu — uyarılar gerçekten oldu mu? Maç Değerlendirmesi →</span>
         </Link>

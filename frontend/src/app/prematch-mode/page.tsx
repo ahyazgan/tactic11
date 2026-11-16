@@ -1,22 +1,9 @@
-"use client";
-
 /**
- * Maç Öncesi Modu — maç günü hazırlık brifingi (karar-öncelikli). In-match
- * mode'ların pre-match kardeşi; matchday akışını başlatır → Maç Modu.
+ * Eski adres — içerik Maç Günü ekranının ilgili aşamasına taşındı.
  */
 
-import { ConsoleShell } from "../_console/shell";
-import { PrematchModeBody } from "../_console/prematch-mode";
+import { redirect } from "next/navigation";
 
-export default function PrematchModePage() {
-  return (
-    <ConsoleShell
-      active="/prematch-mode"
-      title="Maç Öncesi Modu"
-      sub="Maç günü · hazırlık brifingi"
-      desc="Maç sabahı tek bakışta: doğrulanmış tahmin, oyun planı, rakip zaafları, anahtar eşleşmeler, önerilen 11, ilkeler/pres ve senaryolar."
-    >
-      <PrematchModeBody />
-    </ConsoleShell>
-  );
+export default function PrematchModeRedirect() {
+  redirect("/match-day?asama=hazirlik");
 }

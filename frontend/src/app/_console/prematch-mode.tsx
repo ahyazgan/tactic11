@@ -293,7 +293,7 @@ export function PrematchModeBody() {
       </div>
 
       {/* Maç başlıyor → Maç Modu */}
-      <Link href="/match-mode" style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 10, border: "1.5px solid var(--accent)", background: "color-mix(in srgb, var(--accent) 8%, var(--panel))", padding: "11px 14px" }}>
+      <Link href="/match-day?asama=canli" style={{ textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 10, border: "1.5px solid var(--accent)", background: "color-mix(in srgb, var(--accent) 8%, var(--panel))", padding: "11px 14px" }}>
         <span style={{ fontSize: 16 }}>▶</span>
         <span style={{ fontSize: 13, fontWeight: 800, color: "var(--ink)" }}>Maç başlıyor — Maç Modu&apos;na geç</span>
       </Link>
