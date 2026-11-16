@@ -14,7 +14,7 @@ test.describe("Login akışı", () => {
       timeout: 10_000,
     });
     // / Genel Bakış konsolunu render eder (tam-ekran fixed).
-    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+    await expect(page.locator("text=Ana Sayfa").first()).toBeVisible({
       timeout: 10_000,
     });
   });
@@ -28,7 +28,7 @@ test.describe("Login akışı", () => {
     });
     await page.goto("/");
     // / Genel Bakış konsolunu render eder; konsol içeriği görünür olmalı.
-    await expect(page.locator("text=Genel Bakış").first()).toBeVisible({
+    await expect(page.locator("text=Ana Sayfa").first()).toBeVisible({
       timeout: 10_000,
     });
   });

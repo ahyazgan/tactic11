@@ -229,6 +229,17 @@ function FormTrendCardReal({ form, rating, href }: { form?: FormValue; rating?: 
   );
 }
 
+// Ana sayfanın "nereden başlarım" şeridi — maç haftasının dört adımı, sırayla.
+const QUICK_STEPS: { title: string; text: string; href: string; icon: string }[] = [
+  { title: "Rakibi incele",   text: "Rakibin oyun düzeni, güçlü ve zayıf yanları",  href: "/opponent",          icon: "ti-file-analytics" },
+  { title: "Maç planını kur", text: "İlk 11, oyun planı ve duran toplar",            href: "/match-plan",        icon: "ti-clipboard-list" },
+  { title: "Maçı canlı izle", text: "Skor, momentum ve anlık karar önerileri",       href: "/matches/demo/live", icon: "ti-ball-football" },
+  { title: "Maçı değerlendir", text: "Ne işledi, ne işlemedi; haftaya ne çalışılacak", href: "/match-review",     icon: "ti-checkup-list" },
+];
+
+// Ana sayfa tablosu yalnız en riskli oyuncuları gösterir; tam liste Fiziksel Durum'da.
+const RISK_TABLE_LIMIT = 8;
+
 const RISK_VAR: Record<string, string> = {
   Kritik: "var(--crit)",
   Yüksek: "var(--high)",
@@ -278,7 +289,7 @@ export default function OverviewConsolePage() {
   const offline = !isLoading && !!error;
   const empty = !isLoading && !error && players.length === 0;
   const total = players.length;
-  const totalTests = players.reduce((a, p) => a + p.test_count, 0);
+  const riskiest = [...players].sort((a, b) => b.risk_score - a.risk_score).slice(0, RISK_TABLE_LIMIT);
   const risky = players.filter((p) => p.risk_label === "Yüksek" || p.risk_label === "Kritik").length;
   const ready = players.filter((p) => p.risk_label === "Düşük").length;
   const avgCond = total
@@ -418,9 +429,8 @@ export default function OverviewConsolePage() {
   return (
     <ConsoleShell
       active="/overview"
-      title="Genel Bakış"
-      sub="Teknik ekip kontrol paneli"
-      desc="Kadro durumu ve yük-riski öncelikleri aşağıda. Sayılar canlı veriden."
+      title="Ana Sayfa"
+      desc="Maç haftasının dört adımı ve bugün bakman gereken oyuncular."
       navBadge={risky}
       right={right}
     >
@@ -452,9 +462,19 @@ export default function OverviewConsolePage() {
         </div>
       )}
 
-      <div className="kpis">
+      <div className="quick">
+        {QUICK_STEPS.map((q, i) => (
+          <ClickCard key={q.href} className="rc clickable qcard" href={q.href} label={`${q.title} — ${q.text}`}>
+            <span className="qn">{i + 1}</span>
+            <div className="qt"><i className={`ti ${q.icon}`} aria-hidden="true" />{q.title}</div>
+            <div className="qd">{q.text}</div>
+          </ClickCard>
+        ))}
+      </div>
+
+      <div className="kpis k3">
         {isLoading ? (
-          [0, 1, 2, 3, 4].map((i) => (
+          [0, 1, 2].map((i) => (
             <div className="kpi" key={i}>
               <div className="kl"><span className="sk sk-line" style={{ width: 56 }} /></div>
               <div className="kn"><span className="sk sk-kn" /></div>
@@ -463,31 +483,11 @@ export default function OverviewConsolePage() {
           ))
         ) : (
           <>
-            <ClickCard className="kpi clickable" href="/squad" label="Kadro ekranı"><div className="kl">Kadro</div><div className="kn">{total}</div><div className="kd"><span className="u">{ready} hazır</span> · {risky} riskli</div></ClickCard>
-            <ClickCard className="kpi clickable" href="/physical-tests" label="Fiziksel testler"><div className="kl">Toplam Test</div><div className="kn">{totalTests}</div><div className="kd">{total} oyuncu</div></ClickCard>
-            <ClickCard className="kpi clickable" href="/performance" label="Sezon performansı ve batarya"><div className="kl">Ort. Kondisyon</div><div className="kn">{avgCond}<span className="pct">%</span></div><div className="kd">risk skorundan</div></ClickCard>
-            <ClickCard className="kpi clickable" href="/medical" label="Tıbbi merkez — riskli oyuncular"><div className="kl">Kritik/Yüksek</div><div className="kn" style={{ color: risky ? "var(--high)" : "var(--low)" }}>{risky}</div><div className="kd">acil takip</div></ClickCard>
+            <ClickCard className="kpi clickable" href="/squad" label="Kadro ekranı"><div className="kl">Kadro</div><div className="kn">{total}</div><div className="kd">ort. kondisyon %{avgCond}</div></ClickCard>
             <ClickCard className="kpi clickable" href="/squad" label="Kadro — sahaya hazır oyuncular"><div className="kl">Hazır</div><div className="kn" style={{ color: "var(--low)" }}>{ready}</div><div className="kd">düşük risk</div></ClickCard>
+            <ClickCard className="kpi clickable" href="/medical" label="Tıbbi merkez — riskli oyuncular"><div className="kl">Riskli</div><div className="kn" style={{ color: risky ? "var(--high)" : "var(--low)" }}>{risky}</div><div className="kd">yakın takip gerekli</div></ClickCard>
           </>
         )}
-      </div>
-
-      <div className="rc" style={{ margin: "0 0 16px 0" }}>
-        <h3>Analist Modülleri <span className="tiny">manuel veri girişi + saf hesap motorları</span></h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginTop: 8 }}>
-          <ClickCard className="rc clickable" href="/mac-notla" label="Maçı Notla — 1-10 oyuncu notu giriş" style={{ margin: 0 }}>
-            <div className="kl">Maçı Notla</div>
-            <div className="kd" style={{ marginTop: 6 }}>Oyuncuları 1-10 notla + maç bağlamını işaretle → performans motorlarını besle</div>
-          </ClickCard>
-          <ClickCard className="rc clickable" href="/performans" label="Performans Analizi — 8 bölüm" style={{ margin: 0 }}>
-            <div className="kl">Performans Analizi</div>
-            <div className="kd" style={{ marginTop: 6 }}>Tutarlılık · trajectory · anomali · clutch · kadro formu · karşılaştırma</div>
-          </ClickCard>
-          <ClickCard className="rc clickable" href="/taktik-komuta" label="Taktik Komuta — maç planı + karar danışmanı" style={{ margin: 0 }}>
-            <div className="kl">Taktik Komuta</div>
-            <div className="kd" style={{ marginTop: 6 }}>Maç planı (H+I+K) · fırsat penceresi (L) · TD karar danışmanı (N)</div>
-          </ClickCard>
-        </div>
       </div>
 
       {DEMO_MODE ? (
@@ -512,7 +512,10 @@ export default function OverviewConsolePage() {
         </div>
       )}
 
-      <div className="st"><h2>Yük Riski — Kadro Durumu</h2><span className="ep">GET /physical-tests/players</span></div>
+      <div className="st">
+        <h2>En Riskli Oyuncular</h2>
+        <Link className="ep" href="/physical-tests" style={{ textDecoration: "none" }}>Tüm kadro ({total}) →</Link>
+      </div>
       <div className="tbl">
         <table>
           <thead><tr>
@@ -540,7 +543,7 @@ export default function OverviewConsolePage() {
                 </div>
               </td></tr>
             )}
-            {players.map((p, i) => {
+            {riskiest.map((p, i) => {
               const cond = Math.round(100 - p.risk_score * 100);
               const rv = RISK_VAR[p.risk_label] ?? "var(--dim)";
               return (
@@ -565,6 +568,22 @@ export default function OverviewConsolePage() {
             })}
           </tbody>
         </table>
+      </div>
+
+      <div className="st"><h2>Veri Girişi ve Analiz</h2></div>
+      <div className="quick q3">
+        <ClickCard className="rc clickable qcard" href="/mac-notla" label="Maçı Notla — oyunculara 1-10 not ver">
+          <div className="qt"><i className="ti ti-pencil" aria-hidden="true" />Maçı Notla</div>
+          <div className="qd">Maçtan sonra oyunculara 1-10 not ver</div>
+        </ClickCard>
+        <ClickCard className="rc clickable qcard" href="/performans" label="Performans Analizi — oyuncu formu ve tutarlılığı">
+          <div className="qt"><i className="ti ti-chart-line" aria-hidden="true" />Performans Analizi</div>
+          <div className="qd">Kim formda, kim düşüşte, kim tutarlı</div>
+        </ClickCard>
+        <ClickCard className="rc clickable qcard" href="/taktik-komuta" label="Taktik Komuta — maç planı ve karar danışmanı">
+          <div className="qt"><i className="ti ti-brain" aria-hidden="true" />Taktik Komuta</div>
+          <div className="qd">Maç planı ve maç içi karar danışmanı</div>
+        </ClickCard>
       </div>
     </ConsoleShell>
   );
