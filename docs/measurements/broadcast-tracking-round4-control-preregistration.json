@@ -1,6 +1,6 @@
 {
  "title": "Yayın takibi 4. tur: kör kontrol ön kaydı",
- "status": "ÖN KAYIT (2026-11-16). Maçlar seçildi, kod donduruldu; etiket, işaret ve koşu bu commit'ten sonra.",
+ "status": "KONTROL GEÇTİ (2026-11-16): main 82/101 = %81,2; docs/measurements/broadcast-track-round4-control-result.json. Ön kayıt koşudan önce yazıldı (commit 7d3ab08).",
  "direction": {
   "user_words": "Başla evet",
   "date": "2026-11-16",
