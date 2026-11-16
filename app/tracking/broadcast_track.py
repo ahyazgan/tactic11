@@ -161,8 +161,9 @@ class TrackFrame:
 class BroadcastTracker:
     """Kareleri zaman sırasıyla ve sabit sıklıkla alır; her kare için duruş ya da neden döner."""
 
-    def __init__(self, fps: float = 15.0) -> None:
+    def __init__(self, fps: float = 15.0, *, filters: bool = True) -> None:
         self._fps = fps
+        self._filters = filters         # False: çekim ayırıcı ve tekrar izleyici duruş kesmez (3. tur ön kaydı)
         self._h: np.ndarray | None = None
         self._coast = 0
         self._count = 0
@@ -196,14 +197,14 @@ class BroadcastTracker:
         hist = gray_hist(gray)
         motion, cut = self._motion(gray, hist)
         self._prev_gray, self._prev_hist = gray, hist
-        if self._count % REPLAY_EVERY_FRAMES == 0:
+        if self._filters and self._count % REPLAY_EVERY_FRAMES == 0:
             self._in_replay = self._replay.update(self._count / self._fps, red_ratio(bgr))
         self._count += 1
         if cut or self._in_replay:
             self._drop()
             return TrackFrame(None, "replay" if self._in_replay else "cut")
         carried = None if self._h is None or motion is None else self._h @ np.linalg.inv(motion)
-        if not classify_shot(bgr).is_main:
+        if self._filters and not classify_shot(bgr).is_main:
             return self._coasted(carried, "not_main")
         mask = daylight_line_mask(bgr)
         if carried is None:
@@ -256,8 +257,8 @@ class BackfillingTracker:
     Kapıyı kısa süre kaçıran kareler, takip kapıdan yeniden geçerse akış duruşuyla köprülenir.
     """
 
-    def __init__(self, fps: float = 15.0) -> None:
-        self._forward = BroadcastTracker(fps)
+    def __init__(self, fps: float = 15.0, *, filters: bool = True) -> None:
+        self._forward = BroadcastTracker(fps, filters=filters)
         self._buffer: deque[tuple[int, np.ndarray]] = deque(maxlen=BACKFILL_FRAMES)
         self._gap: list[tuple[int, np.ndarray]] = []
 

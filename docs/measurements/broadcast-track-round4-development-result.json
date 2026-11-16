@@ -1,0 +1,45 @@
+{
+ "title": "Yayın takibi 4. tur: filtre engellemez + kamera önseli + filtreli geçişin kamerasıyla bekçi, geliştirme sonucu",
+ "date": "2026-11-16",
+ "verdict": "GELİŞTİRME KAPILARI GEÇTİ: main 362/468 = %77,4 (şart %70), en düşük maç verdy_kashima %54,3 (şart %50). Kod kaldı. Bu kör sınav değildir; kontrol AÇILMADI.",
+ "plan": "docs/measurements/broadcast-tracking-round4-preregistration.json",
+ "tested_code": "commit 285f209",
+ "command": "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_track_round4 first --match <maç> --out <temel>; run --match <maç> --base <temel> --out <klasör>; pick ve gates --dir <klasör> --base <temel>",
+ "gates": {
+  "D1": {"passed": true, "main": "362/468 = %77,4", "criterion": "toplam ≥%70 ve her maç ≥%50", "lowest_match": "verdy_kashima 44/81 = %54,3"},
+  "D2": {"passed": true, "marked": 99, "median_m": 0.48, "frame_median_over_5m": 1, "criterion": "medyan ≤2 m, >5 m ≤%5"},
+  "D2_new": {"passed": true, "picked": 30, "scored": 26, "median_m": 0.46, "worst_m": 3.97, "frame_median_over_5m": 0, "criterion": "en az 10 kare, medyan ≤2 m, >5 m ≤%5", "marks": "docs/measurements/broadcast-track-round4-truth-points.json", "not_scored": "4 karede 4'ten az okunabilir nokta: hiroshima_kyoto 107, kashima_marinos 12 ve 27, verdy_kashima 62"},
+  "D3": {"passed": true, "other": "5/252 = %2,0", "criterion": "≤%5", "highest_match": "verdy_kashima 2/39 = %5,1"},
+  "D4": {"passed": true, "note": "tests/test_camera_anchor.py ve tests/test_broadcast_track.py geçti"}
+ },
+ "per_match": {
+  "columns": ["base_main", "after_main", "main_n", "guard_rejected_main", "after_other", "other_n", "guard_rejected_other", "anchor_single_frame", "anchor_best_pose", "anchor_grid", "first_seconds", "run_seconds"],
+  "gamba_kashiwa": [62, 70, 76, 0, 1, 44, 7, 16, 7, 8, 1791, 4482],
+  "kashima_marinos": [52, 65, 78, 1, 0, 42, 5, 19, 3, 12, 1857, 5590],
+  "kyoto_kobe": [37, 48, 74, 1, 2, 46, 4, 13, 10, 10, 1926, 2806],
+  "verdy_kashima": [50, 44, 81, 22, 2, 39, 1, 22, 2, 8, 1914, 5870],
+  "kashiwa_hiroshima_final": [49, 78, 82, 4, 0, 38, 0, 16, 0, 16, 1379, 3785],
+  "hiroshima_kyoto": [30, 57, 77, 2, 0, 43, 0, 12, 9, 30, 1773, 3307],
+  "total_main": "280 → 362 / 468; other 1 → 5 / 252"
+ },
+ "cameras_m": {
+  "gamba_kashiwa": [52.5, 94.2, 16.7], "kashima_marinos": [49.6, 97.4, 17.1], "kyoto_kobe": [51.9, 93.9, 17.9],
+  "verdy_kashima": [52.3, 100.2, 13.7], "kashiwa_hiroshima_final": [51.7, 124.3, 21.3], "hiroshima_kyoto": [52.1, 94.1, 15.6],
+  "note": "Birinci geçiş yeniden koşuldu; temel main sayıları (280) ve kamera konumları 3 Kasım ölçümleriyle aynı çıktı."
+ },
+ "open_findings": {
+  "verdy_kashima": "Tek gerileyen maç: 50 → 44. Bekçi 22 main duruşu attı; diğer beş maçta toplam 8. Bu maçın elle işareti yok, atılan duruşların yanlış mı doğru mu olduğu bilinmiyor. Kamera yüksekliği de (13,7 m) diğerlerinden düşük; nedeni ayrıştırılmadı.",
+  "worst_new_frame": "kashiwa_hiroshima_final 7: 3,97 m. Kapının altında ama yeni karelerin en kötüsü.",
+  "remaining_unposed_main": "Bekçi öncesi 76 kayıp: gate 27, searching 30, no_anchor 18, gate_lost 1; bekçi 30 daha attı."
+ },
+ "limits": [
+  "Bütün eşikler önceki turlarda aynı 6 maçta görülerek seçildi ve bu maçların hepsi görülmüş veridir: bu sonuç kör sınav değildir, yalnız kör kontrole aday yapar.",
+  "Yeni kare işaretleri tek değerlendiricinin ızgaradan okumasıdır, yaklaşık 10 px hassasiyet; duruş görülmeden yapıldı.",
+  "verdy_kashima eski işaretlerde yok; D2 bu maçı kapsamaz, D2_new'de 1 karesi var.",
+  "Filtreler duruş kesmediği için tekrar görüntüsündeki ana kamera kareleri de duruş alır; duruş geometrik olarak doğru olsa da karenin maç zamanına ait olmadığı ayrıca işaretlenmez.",
+  "İki geçiş gerekir ve yavaştır: 6 dakikalık kesit başına birinci geçiş 23-32 dk, ikinci geçiş 47-98 dk (aynı anda 2 koşu). Yalnız maç sonrası çalışır.",
+  "Üretim hattına ve ürün koduna bağlanmadı. Görüntüler ve koşu çıktıları repoda değil."
+ ],
+ "not_changed": "Sonuç görüldükten sonra eşik, ızgara ve kapı değiştirilmedi.",
+ "next_decision": "Kör kontrol: kod dondurulur, görülmemiş en az 2 maç (en az 1 sert gölgeli) meta veriden seçilir, etiket ve işaretler yöntem çıktısı görülmeden yapılır, tek koşu. Görülmüş 9 maç kullanılamaz."
+}
