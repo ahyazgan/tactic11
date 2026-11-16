@@ -9,7 +9,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { matchReview, VERDICT_LABEL, type ReviewVerdict } from "@/lib/match-review";
-import { loadActions, type ActionVerb } from "@/lib/action-log";
+import { loadActions, logAction, type ActionVerb } from "@/lib/action-log";
 import { commitMatchReview, isCommitted, removeGrade } from "@/lib/engine-record";
 
 const V_COLOR: Record<ReviewVerdict, string> = { validated: "var(--low)", monitoring: "var(--mid)", pending: "var(--dim)" };
@@ -59,6 +59,19 @@ export function MatchReviewBody() {
     setDecisions(map);
   }, []);
   const recs = r.items.map((i) => ({ minute: i.minute, verdict: i.verdict }));
+  const mark = (id: string, label: string, minute: number, verb: ActionVerb) => {
+    logAction(id, label, minute, verb);
+    setDecisions((d) => ({ ...d, [id]: verb }));
+  };
+
+  // Bu maçın dökümü: işaretlenebilir önerilerde uygulanan / uygulanmayan / cevapsız.
+  const markable = r.items.filter((i) => i.actionId);
+  const arm = (verb: ActionVerb) => {
+    const xs = markable.filter((i) => decisions[i.actionId as string] === verb);
+    return { n: xs.length, hit: xs.filter((i) => i.verdict === "validated").length };
+  };
+  const applied = arm("applied"), notApplied = arm("dismissed");
+  const unanswered = markable.length - applied.n - notApplied.n;
 
   const [committed, setCommitted] = React.useState(false);
   React.useEffect(() => { setCommitted(isCommitted(r.matchId)); }, [r.matchId]);
@@ -111,11 +124,45 @@ export function MatchReviewBody() {
                   {dec === "applied" ? <span style={{ color: "var(--low)" }}>✓ uygulandı</span>
                     : dec === "dismissed" ? <span style={{ color: "var(--dim)" }}>✕ atlandı</span>
                     : <span style={{ color: "var(--dim)", fontWeight: 400, fontStyle: "italic" }}>karar verilmedi</span>}
+                  {!dec && (
+                    <span style={{ marginLeft: 10, display: "inline-flex", gap: 6 }}>
+                      {([["applied", "✓ Uyguladım"], ["dismissed", "✗ Uygulamadım"]] as const).map(([verb, text]) => (
+                        <button key={verb} type="button" onClick={() => mark(it.actionId as string, it.recommendation, it.minute, verb)}
+                          style={{ background: "var(--panel)", color: "var(--ink)", border: "1px solid var(--line)", borderRadius: 6, padding: "3px 9px", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                          {text}
+                        </button>
+                      ))}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
           );
         })}
+      </div>
+
+      {/* Koç işareti — bu maçın uygulanan / uygulanmayan dökümü */}
+      <div className="rc" style={{ margin: 0 }} data-testid="review-marks">
+        <h3 style={{ margin: "0 0 8px" }}>Koç İşareti <span className="tiny">bu maç · uygulanan / uygulanmayan</span></h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+          {([["Uygulanan", applied, "var(--low)"], ["Uygulanmayan", notApplied, "var(--ink)"]] as const).map(([label, g, color]) => (
+            <div key={label}>
+              <div style={{ fontSize: 10, color: "var(--dim)", textTransform: "uppercase", letterSpacing: 0.4 }}>{label}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "JetBrains Mono", color }}>{g.n}</div>
+              <div style={{ fontSize: 10.5, color: "var(--muted)" }}>{g.n ? `${g.hit} uyarı doğrulandı` : "kayıt yok"}</div>
+            </div>
+          ))}
+          <div>
+            <div style={{ fontSize: 10, color: "var(--dim)", textTransform: "uppercase", letterSpacing: 0.4 }}>Cevapsız</div>
+            <div style={{ fontSize: 22, fontWeight: 900, fontFamily: "JetBrains Mono", color: unanswered ? "var(--mid)" : "var(--dim)" }}>{unanswered}</div>
+            <div style={{ fontSize: 10.5, color: "var(--muted)" }}>{unanswered ? "yukarıdan işaretle" : "hepsi cevaplandı"}</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 10.5, color: "var(--dim)", marginTop: 10, lineHeight: 1.5 }}>
+          Tek maç öneri etkisini ölçmez: kıyas, maçlar boyu biriken uygulanan ve uygulanmayan önerilerden,
+          karar öncesi duruma göre katmanlı yapılır.{" "}
+          <Link href="/decisions/track" style={{ color: "var(--accent)" }}>Karar Takibi&apos;nde öneri etkisi →</Link>
+        </div>
       </div>
 
       {/* Motor-bazlı isabet */}

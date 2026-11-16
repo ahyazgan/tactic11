@@ -262,7 +262,7 @@ export function AppliedActions() {
       </div>
       {!ready ? null : actions.length === 0 ? (
         <div style={{ fontSize: 12, color: "var(--dim)", lineHeight: 1.5 }}>
-          Henüz teyit edilmiş aksiyon yok. <b>Maç Modu</b>&apos;nda bir öneriyi <b>Uygula/Atla</b> ile işaretle — burada birikir.
+          Henüz teyit edilmiş aksiyon yok. <b>Maç Günü</b>&apos;nün Canlı aşamasında bir öneriyi <b>Uyguladım / Uygulamadım</b> ile işaretle — burada birikir.
         </div>
       ) : (
         <>
