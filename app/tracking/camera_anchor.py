@@ -5,6 +5,8 @@
 Ana kamera sabit bir noktada döner ve zoom yapar. Konum maçın kendi duruşlarından bulunduğu için yöntem
 yalnız maç sonrası çalışır. Konum bilinince duruş 3 serbestliktir: kadraj merkezinin sahadaki hedefi + odak.
 Tek kare çapanın kabulü değişmez; yalnız reddettiği karede aday kapısından geçen duruş çapa olur.
+4. turda (docs/measurements/broadcast-tracking-round4-preregistration.json) aynı konum, filtresiz takibin
+ürettiği duruşları da sınar: `explained_by_camera`.
 """
 from __future__ import annotations
 
@@ -38,6 +40,7 @@ MAX_RESIDUAL_M = 1.0
 MIN_INLIER = 0.6
 MIN_EXPLAINED = 0.6
 MIN_POSES = 10
+GUARD_MAX_RESIDUAL_M = 2.0
 
 SEARCH_POSES = 40
 SEARCH_STEPS_M = (8.0, 4.0, 2.0, 1.0, 0.5)
@@ -126,6 +129,12 @@ def locate_camera(poses: list[np.ndarray], size: tuple[int, int]) -> np.ndarray 
                     if value < best - 1e-3:
                         best, camera, moved = value, trial, True
     return camera
+
+
+def explained_by_camera(pose: np.ndarray, camera: np.ndarray, size: tuple[int, int]) -> bool:
+    """Üretilmiş duruş bu kameradan yalnız dönme+zoom ile açıklanıyor mu; açıklanmıyorsa başka kameradır."""
+    residual = pose_residual_m(pose, camera, size)
+    return residual is not None and residual <= GUARD_MAX_RESIDUAL_M
 
 
 def pose_grid(camera: np.ndarray, size: tuple[int, int]) -> np.ndarray:

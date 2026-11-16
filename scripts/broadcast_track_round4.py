@@ -1,13 +1,14 @@
-"""Yayın çapası kamera önseli geliştirme kapıları (venv-cv). Ürüne bağlı değil.
+"""Yayın takibi 4. tur geliştirme kapıları (venv-cv). Ürüne bağlı değil.
 
-Ön kayıt: docs/measurements/broadcast-anchor-camera-prior-preregistration.json. Görüntüler repoda değildir.
+Filtreler duruş kesmez; çapa reddedince kamera önseli; üretilen duruş filtreli geçişin kamerasıyla sınanır.
+Ön kayıt: docs/measurements/broadcast-tracking-round4-preregistration.json. Görüntüler repoda değildir.
 
-    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_anchor_prior first --match kyoto_kobe --out <klasör>
-    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_anchor_prior run --match kyoto_kobe --base <klasör> --out <klasör>
-    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_anchor_prior pick --dir <klasör> --base <klasör> --grids <klasör>
-    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_anchor_prior gates --dir <klasör> --base <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_round4 first --match kyoto_kobe --out <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_round4 run --match kyoto_kobe --base <klasör> --out <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_round4 pick --dir <klasör> --base <klasör> --grids <klasör>
+    venv-cv\\Scripts\\python.exe -X utf8 -m scripts.broadcast_track_round4 gates --dir <klasör> --base <klasör>
 
-`first` mevcut takipçiyle <maç>__base.json yazar; kamera konumu ve yeni örnek buna göre bulunur.
+`first` mevcut takipçiyle (filtreler açık) <maç>__base.json yazar; kamera konumu ve yeni örnek buna göre bulunur.
 """
 from __future__ import annotations
 
@@ -19,12 +20,12 @@ from pathlib import Path
 import numpy as np
 
 import app.tracking.broadcast_track as bt
-from app.tracking.camera_anchor import CameraPriorAnchor, locate_camera
-from scripts.broadcast_track_exam import track_video
+from app.tracking.camera_anchor import CameraPriorAnchor, explained_by_camera, locate_camera
+from scripts.broadcast_track_exam import FPS, track_video
 from scripts.coverage_diagnosis import marked_samples, source
 from scripts.tracking_funnel import mark_errors
 
-TRUTH_POINTS = Path("docs/measurements/broadcast-anchor-prior-truth-points.json")
+TRUTH_POINTS = Path("docs/measurements/broadcast-track-round4-truth-points.json")
 NEW_MARKS_MAX = 30
 NEW_MARKS_MIN = 10
 WRONG_M = 5.0
@@ -53,11 +54,23 @@ def run(match: str, base: Path, out: Path) -> int:
     print(match, "kamera", camera.round(1), flush=True)
     prior = CameraPriorAnchor(camera, size)
     bt.find_broadcast_anchor = prior  # type: ignore[assignment]
+    original = bt.BackfillingTracker
+    bt.BackfillingTracker = lambda fps=FPS: original(fps, filters=False)  # type: ignore[misc, assignment]
     video, others = source(match)
     record = track_video(match, video, others, set())
     record |= {"camera": camera.round(2).tolist(), "anchor_sources": prior.stats}
     (out / f"{match}.json").write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
     return 0
+
+
+def guarded(record: dict) -> list[dict]:
+    """Kamerayla açıklanmayan duruş üretilmemiş sayılır ve `guard_rejected` işaretlenir."""
+    camera, size = np.array(record["camera"]), tuple(record["size"])
+    out = []
+    for s in record["samples"]:
+        keep = s["posed"] and explained_by_camera(np.array(s["pose"]), camera, size)
+        out.append({**s, "posed": keep, "guard_rejected": s["posed"] and not keep})
+    return out
 
 
 def load(folder: Path, base: Path) -> dict[str, dict]:
@@ -66,7 +79,7 @@ def load(folder: Path, base: Path) -> dict[str, dict]:
         record = json.loads(path.read_text(encoding="utf-8"))
         match = record["match"]
         before = json.loads((base / f"{match}__base.json").read_text(encoding="utf-8"))
-        result[match] = {"samples": record["samples"], "base": {s["sample"]: s["posed"] for s in before["samples"]},
+        result[match] = {"samples": guarded(record), "base": {s["sample"]: s["posed"] for s in before["samples"]},
                          "camera": record["camera"], "anchor_sources": record["anchor_sources"]}
     return result
 
@@ -130,7 +143,9 @@ def group(samples: list[dict]) -> dict:
     return {"main": f"{sum(s['posed'] for s in main)}/{len(main)}",
             "main_rate": round(sum(s["posed"] for s in main) / len(main), 3),
             "other": f"{sum(s['posed'] for s in other)}/{len(other)}",
-            "other_rate": round(sum(s["posed"] for s in other) / len(other), 3)}
+            "other_rate": round(sum(s["posed"] for s in other) / len(other), 3),
+            "guard_rejected_main": sum(s["guard_rejected"] for s in main),
+            "guard_rejected_other": sum(s["guard_rejected"] for s in other)}
 
 
 def evaluate(data: dict[str, dict]) -> dict:

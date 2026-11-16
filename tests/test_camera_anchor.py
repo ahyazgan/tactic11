@@ -58,6 +58,12 @@ def test_residual_is_near_zero_from_the_true_camera_and_large_from_elsewhere():
     assert ca.pose_residual_m(pose, np.array([5.0, 40.0, 8.0]), SIZE) > 2.0
 
 
+def test_guard_keeps_the_main_camera_and_rejects_another():
+    pose = main_poses(1)[0]
+    assert ca.explained_by_camera(pose, CAMERA, SIZE)
+    assert not ca.explained_by_camera(pose, np.array([5.0, 40.0, 8.0]), SIZE)
+
+
 def test_camera_needs_enough_poses():
     assert ca.locate_camera(main_poses(ca.MIN_POSES - 1), SIZE) is None
     found = ca.locate_camera(main_poses(ca.MIN_POSES), SIZE)

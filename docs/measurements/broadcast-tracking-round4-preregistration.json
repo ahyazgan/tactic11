@@ -1,0 +1,30 @@
+{
+ "title": "Yayın takibi 4. tur: filtre engellemez + kamera önseli + filtreli geçişin kamerasıyla bekçi, ön kayıt",
+ "status": "ONAYLI, koşu öncesi yazıldı (2026-11-16). Sonuç bu dosyaya değil ayrı sonuç dosyasına yazılır.",
+ "direction": {"user_words": "Evet buna geçelim devam et", "date": "2026-11-16"},
+ "why": {
+  "round3": "Filtreler duruş kesmeyince main 361/468 = %77,1 oldu ama other %9,1; bekçi other'ı %2,4'e indirdi, main %69,7'de kaldı. Bekçinin attığı 35 main duruşun 20'si kashima_marinos: kamera konumu filtresiz, başka kameraları da içeren duruşlardan bulunmuştu (41,8; 84,2; 12,8).",
+  "camera_prior": "Filtreli duruşlardan bulunan konum kashima_marinos'ta (49,6; 97,4; 17,1), medyan artık 0,60 m. Önsel takip hattında main 280 → 307 yaptı; kalan 161 kaybın 94'ü filtrelerdeydi.",
+  "reading": "İki tur farklı kayıp sınıfına dokundu ve ikisi de tek başına kapının hemen altında kaldı. Birleşimi hiç koşulmadı; kazançların toplanacağı varsayılmıyor, ölçülecek olan budur."
+ },
+ "single_change": "Kamera konumu yalnız filtreli birinci geçişten bulunur ve üç yerde kullanılır: reddedilen çapada önsel, filtresiz ikinci geçişte üretilen her duruşta bekçi.",
+ "method": {
+  "pass_1": "Mevcut BackfillingTracker, filtreler açık. Üretilen duruşlardan kamera konumu (en az 10 duruş).",
+  "pass_2": "BackfillingTracker(filters=False) + CameraPriorAnchor(kamera). Kod 5b980fc ve d96d28d'den değişmeden geri geldi.",
+  "guard": "Örnek duruşu, kameradan dönme+zoom ile medyan artık ≤2,0 m açıklanmıyorsa üretilmemiş sayılır (3. turdaki eşik).",
+  "thresholds": {"guard_max_residual_m": 2.0, "prior_max_residual_m": 1.0, "prior_min_inlier": 0.6, "prior_min_explained": 0.6, "min_poses_for_camera": 10},
+  "untouched": "pitch_lines.py, pipeline.py, broadcast_anchor.py, shot_filter.py, frozen-decision dosyaları ve hash'ler. Üretime ve ürün koduna bağlanmaz.",
+  "offline_only": "İki geçiş ve maçın kendi kamerası gerekir; yalnız maç sonrası çalışır."
+ },
+ "gates": {
+  "matches": "gamba_kashiwa, kashima_marinos, kyoto_kobe, verdy_kashima, kashiwa_hiroshima_final, hiroshima_kyoto",
+  "D1": "main toplam ≥%70 ve her maç ≥%50",
+  "D2": "Daha önce işaretli kareler: medyan ≤2 m, kare medyanı >5 m ≤%5",
+  "D2_new": "En çok 30 eşit aralıklı yeni main örnek, duruş görülmeden işaretlenir: en az 10 kare, medyan ≤2 m, >5 m ≤%5",
+  "D3": "other toplamda ≤%5, maç başına yazılır",
+  "D4": "Birim testler",
+  "rule": "Biri geçmezse kod geri alınır, sonuç olduğu gibi yazılır. Sonuç görüldükten sonra eşik değişmez."
+ },
+ "bias": "Bütün eşikler önceki turlarda aynı 6 maçta görülerek seçildi; geçmek başarı sayılmaz, yalnız kör kontrole aday yapar. Kontrol yeni maç ister: görülmüş 9 maçın hiçbiri kullanılamaz.",
+ "run_limit": "Aynı anda en çok 2 maç."
+}
