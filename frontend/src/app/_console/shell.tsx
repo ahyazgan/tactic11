@@ -260,6 +260,23 @@ export function ConsoleShell({
    Sol sidebar — sabit ana liste + arama + tek "Tüm araçlar" bölümü
 ───────────────────────────────────────────── */
 const SIDEBAR_MORE_KEY = "manager2_console_sidebar_more_v1";
+const SIDEBAR_MORE_EVENT = "manager2:sidebar-more";
+
+function readMore(): boolean {
+  try {
+    return window.localStorage.getItem(SIDEBAR_MORE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function subscribeMore(onChange: () => void): () => void {
+  window.addEventListener(SIDEBAR_MORE_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(SIDEBAR_MORE_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
 
 function NavLink({ it, active, navBadge }: { it: NavItem; active: string; navBadge?: number }) {
   return (
@@ -277,25 +294,15 @@ function NavLink({ it, active, navBadge }: { it: NavItem; active: string; navBad
 function SidebarNav({ active, navBadge }: { active: string; navBadge?: number }) {
   const router = useRouter();
   const [query, setQuery] = React.useState("");
-  const [moreOpen, setMoreOpen] = React.useState(false);
-
-  React.useEffect(() => {
+  // Tercih localStorage'da; sunucu çıktısında (ve ilk boyamada) kapalı kabul edilir.
+  const moreOpen = React.useSyncExternalStore(subscribeMore, readMore, () => false);
+  const toggleMore = React.useCallback(() => {
     try {
-      if (window.localStorage.getItem(SIDEBAR_MORE_KEY) === "1") setMoreOpen(true);
+      window.localStorage.setItem(SIDEBAR_MORE_KEY, readMore() ? "0" : "1");
     } catch {
       /* yok say */
     }
-  }, []);
-
-  const toggleMore = React.useCallback(() => {
-    setMoreOpen((prev) => {
-      try {
-        window.localStorage.setItem(SIDEBAR_MORE_KEY, prev ? "0" : "1");
-      } catch {
-        /* yok say */
-      }
-      return !prev;
-    });
+    window.dispatchEvent(new Event(SIDEBAR_MORE_EVENT));
   }, []);
 
   // Aktif sayfa "Tüm araçlar" içindeyse bölüm kapalı olsa da açık görünür.
