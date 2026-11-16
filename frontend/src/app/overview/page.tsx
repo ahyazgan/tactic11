@@ -233,8 +233,8 @@ function FormTrendCardReal({ form, rating, href }: { form?: FormValue; rating?: 
 const QUICK_STEPS: { title: string; text: string; href: string; icon: string }[] = [
   { title: "Rakibi incele",   text: "Rakibin oyun düzeni, güçlü ve zayıf yanları",  href: "/opponent",          icon: "ti-file-analytics" },
   { title: "Maç planını kur", text: "İlk 11, oyun planı ve duran toplar",            href: "/match-plan",        icon: "ti-clipboard-list" },
-  { title: "Maçı canlı izle", text: "Skor, momentum ve anlık karar önerileri",       href: "/matches/demo/live", icon: "ti-ball-football" },
-  { title: "Maçı değerlendir", text: "Ne işledi, ne işlemedi; haftaya ne çalışılacak", href: "/match-review",     icon: "ti-checkup-list" },
+  { title: "Maçı canlı izle", text: "Skor, momentum ve anlık karar önerileri",       href: "/match-day?asama=canli", icon: "ti-ball-football" },
+  { title: "Maçı değerlendir", text: "Ne işledi, ne işlemedi; haftaya ne çalışılacak", href: "/match-day?asama=sonu", icon: "ti-checkup-list" },
 ];
 
 // Ana sayfa tablosu yalnız en riskli oyuncuları gösterir; tam liste Fiziksel Durum'da.

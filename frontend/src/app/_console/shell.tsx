@@ -27,7 +27,7 @@ const DEMO_LIVE_HREF = "/matches/demo/live";
 const BTABS = [
   { ic: "ti-home",             label: "Ana Sayfa", href: "/overview" },
   { ic: "ti-file-analytics",   label: "Rakip",     href: "/opponent" },
-  { ic: "ti-ball-football",    label: "Canlı",     href: DEMO_LIVE_HREF },
+  { ic: "ti-ball-football",    label: "Maç Günü",  href: "/match-day" },
   { ic: "ti-users",            label: "Kadro",     href: "/squad" },
   { ic: "ti-report-analytics", label: "Rapor",     href: "/weekly-report" },
 ];
@@ -37,7 +37,7 @@ interface NavGroup { grp: string; items: NavItem[] }
 
 // SADE GEZİNME (2026-11): menü iki katman.
 //  1) MAIN_NAV — antrenörün haftalık akışı (hazırlık → maç → takım → rapor); hep
-//     açık, 13 öğe, süs rozeti yok.
+//     açık, 11 öğe, süs rozeti yok.
 //  2) MORE_NAV — geri kalan her ekran tek bir kapalı "Tüm araçlar" bölümünde.
 // Hiçbir sayfa/URL silinmedi; üstteki arama kutusu iki katmanı birlikte tarar.
 const MAIN_NAV: NavGroup[] = [
@@ -47,9 +47,7 @@ const MAIN_NAV: NavGroup[] = [
   { grp: "Maç", items: [
     { label: "Rakip Analizi",    href: "/opponent",       icon: "ti-file-analytics" },
     { label: "Maç Planı",        href: "/match-plan",     icon: "ti-clipboard-list" },
-    { label: "Canlı Maç",        href: DEMO_LIVE_HREF,    icon: "ti-ball-football", live: true },
-    { label: "Devre Arası",      href: "/halftime-mode",  icon: "ti-clock-pause" },
-    { label: "Maç Değerlendirmesi", href: "/match-review", icon: "ti-checkup-list" },
+    { label: "Maç Günü",         href: "/match-day",      icon: "ti-ball-football", live: true },
     { label: "Video Analiz",     href: "/video-tracking", icon: "ti-video" },
   ]},
   { grp: "Takım", items: [
@@ -66,9 +64,8 @@ const MAIN_NAV: NavGroup[] = [
 
 const MORE_NAV: NavGroup[] = [
   { grp: "Maç araçları", items: [
-    { label: "Maç Merkezi",      href: "/live-data",      icon: "ti-plug-connected" },
-    { label: "Maç Öncesi Modu",  href: "/prematch-mode",  icon: "ti-clipboard-check" },
-    { label: "Maç Modu (saha kenarı)", href: "/match-mode", icon: "ti-device-mobile" },
+    { label: "Canlı Maç Konsolu", href: DEMO_LIVE_HREF,   icon: "ti-layout-dashboard" },
+    { label: "Canlı Veri (Sportmonks)", href: "/live-data", icon: "ti-plug-connected" },
     { label: "Taktik Tahtası",   href: "/tactics-board",  icon: "ti-soccer-field" },
     { label: "Gerçek Veri Analizi", href: "/tactical-real", icon: "ti-database" },
     { label: "Klipli Maç Raporu", href: "/match-reports", icon: "ti-video" },
@@ -627,6 +624,41 @@ const CSS = `
 }
 @media (max-width:767px){
   .ovroot .quick.q3{grid-template-columns:1fr}
+}
+
+/* Maç Günü aşama şeridi */
+.ovroot .phases{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px;
+  background:var(--white);border:1px solid var(--border);border-radius:14px;padding:6px;
+}
+.ovroot .phase{
+  display:flex;align-items:center;gap:8px;min-width:0;
+  padding:10px 12px;border-radius:10px;text-decoration:none;
+  font-size:13px;font-weight:600;color:var(--muted);
+  transition:background .12s,color .12s;
+}
+.ovroot .phase:hover{background:var(--surface2);color:var(--ink)}
+.ovroot .phase.on{background:var(--accent);color:#fff}
+.ovroot .phase i{font-size:18px;flex-shrink:0}
+.ovroot .phase .ph-n{font-size:11px;font-weight:700;opacity:.6;font-variant-numeric:tabular-nums}
+.ovroot .phase .ph-l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ovroot .phase .ph-now{
+  margin-left:auto;flex-shrink:0;
+  font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;
+  padding:2px 7px;border-radius:20px;background:var(--crit-bg);color:var(--crit);
+}
+.ovroot .phase.on .ph-now{background:rgba(255,255,255,.22);color:#fff}
+.ovroot .phase-more{
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;
+  padding:11px 14px;border-radius:10px;border:1px solid var(--border2);
+  background:var(--white);color:var(--muted);text-decoration:none;font-size:12.5px;font-weight:600;
+}
+.ovroot .phase-more:hover{border-color:var(--accent);color:var(--accent)}
+@media (max-width:767px){
+  .ovroot .phases{grid-template-columns:repeat(2,1fr)}
+}
+@media (pointer:coarse){
+  .ovroot .phase{min-height:44px}
 }
 
 /* Card container */
