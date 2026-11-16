@@ -5,6 +5,10 @@
  * Eski dört ayrı sayfanın (prematch-mode / match-mode / halftime-mode / match-review)
  * gövdelerini aynen kullanır; yalnız aralarındaki geçiş tek bir aşama şeridine indi.
  * Aşama `?asama=` ile seçilir; yoksa maçın o anki durumuna göre açılır.
+ *
+ * Canlı aşaması: demo modunda kayıtlı zaman-serisiyle kenar ekranı; canlı modda
+ * gerçek motor paneli. Koç işareti (Uyguladım / Uygulamadım) yalnız canlı modda
+ * karar defterine yazılır — motor oradan öğrenir.
  */
 
 import { Suspense } from "react";
@@ -12,11 +16,13 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 import { matchState, type MatchState } from "@/lib/command-brief";
+import { DEMO_MODE } from "@/lib/demo-mode";
 import { ConsoleShell } from "../_console/shell";
 import { PrematchModeBody } from "../_console/prematch-mode";
 import { MatchModeBody } from "../_console/match-mode";
 import { HalftimeModeBody } from "../_console/halftime-mode";
 import { MatchReviewBody } from "../_console/match-review";
+import { LiveDecisionPanel } from "../_console/live-decision";
 
 type PhaseId = "hazirlik" | "canli" | "devre" | "sonu";
 
@@ -40,8 +46,7 @@ function MatchDay() {
   const now = NOW_PHASE[matchState()];
   const phase = PHASES.find((p) => p.id === (isPhase(requested) ? requested : now)) ?? PHASES[0];
 
-  return (
-    <ConsoleShell active="/match-day" title="Maç Günü" sub={phase.label} desc={phase.desc}>
+  const nav = (
       <nav className="phases" aria-label="Maç aşamaları">
         {PHASES.map((p, i) => (
           <Link
@@ -58,6 +63,24 @@ function MatchDay() {
           </Link>
         ))}
       </nav>
+  );
+
+  if (phase.id === "canli" && !DEMO_MODE) {
+    return (
+      <LiveDecisionPanel
+        frame={({ sub, right, children }) => (
+          <ConsoleShell active="/match-day" title="Maç Günü" sub={sub ? `Canlı · ${sub}` : "Canlı"} desc={phase.desc} right={right}>
+            {nav}
+            {children}
+          </ConsoleShell>
+        )}
+      />
+    );
+  }
+
+  return (
+    <ConsoleShell active="/match-day" title="Maç Günü" sub={phase.label} desc={phase.desc}>
+      {nav}
 
       {phase.id === "hazirlik" && <PrematchModeBody />}
       {phase.id === "canli" && (

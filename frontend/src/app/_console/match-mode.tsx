@@ -17,7 +17,8 @@ import { demoWinProbCurve, demoWinProbNow, projectWithBoost } from "@/lib/live-w
 import { logAction, removeAction, actionFor, loadActions, type ActionVerb } from "@/lib/action-log";
 import { activeFeed } from "@/lib/live-feed";
 
-/** Uygula / Atla — analistin öneriye kararı, kanıt defterine kalıcı düşer. */
+/** Uyguladım / Uygulamadım — iki cevap da kayıttır: uygulanmayan öneri
+ *  karşı-olgudur, öneri etkisi ancak onunla ölçülür. Cevapsız öneri ölçüme girmez. */
 function ActionButtons({ id, label, minute, onChange }: { id: string; label: string; minute: number; onChange?: () => void }) {
   const [verb, setVerb] = React.useState<ActionVerb | null>(null);
   React.useEffect(() => { setVerb(actionFor(id)); }, [id]);
@@ -29,7 +30,7 @@ function ActionButtons({ id, label, minute, onChange }: { id: string; label: str
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
         <span style={{ fontSize: 11.5, fontWeight: 800, color: applied ? "var(--low)" : "var(--dim)" }}>
-          {applied ? "✓ Uygulandı" : "✕ Atlandı"} <span style={{ color: "var(--dim)", fontWeight: 400 }}>· kanıt defterine düştü</span>
+          {applied ? "✓ Uyguladım" : "✗ Uygulamadım"} <span style={{ color: "var(--dim)", fontWeight: 400 }}>· kaydedildi</span>
         </span>
         <button onClick={undo} style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--dim)", fontSize: 10.5, cursor: "pointer", textDecoration: "underline" }}>geri al</button>
       </div>
@@ -37,8 +38,8 @@ function ActionButtons({ id, label, minute, onChange }: { id: string; label: str
   }
   return (
     <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-      <button onClick={() => act("applied")} style={{ flex: 1, background: "var(--low)", color: "#fff", border: "none", borderRadius: 7, padding: "7px 0", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>Uygula</button>
-      <button onClick={() => act("dismissed")} style={{ flex: 1, background: "var(--panel)", color: "var(--muted)", border: "1px solid var(--line)", borderRadius: 7, padding: "7px 0", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Atla</button>
+      <button onClick={() => act("applied")} style={{ flex: 1, background: "var(--low)", color: "#fff", border: "none", borderRadius: 7, padding: "7px 0", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>✓ Uyguladım</button>
+      <button onClick={() => act("dismissed")} style={{ flex: 1, background: "var(--panel)", color: "var(--muted)", border: "1px solid var(--line)", borderRadius: 7, padding: "7px 0", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>✗ Uygulamadım</button>
     </div>
   );
 }
@@ -347,7 +348,7 @@ function AlertToast({ t }: { t: number }) {
 const TRIG_LABEL: Record<string, string> = { press_height: "Pres hattı", channel_shift: "Koridor kaydır", block_height: "Blok yüksekliği" };
 const TRIG_ICON: Record<string, string> = { press_height: "⬇️", channel_shift: "↔️", block_height: "📏" };
 
-/** Canlı taktik ayarlar — değişiklik DIŞI hamleler (pres/koridor), Uygula/Atla'lı. */
+/** Canlı taktik ayarlar — değişiklik DIŞI hamleler (pres/koridor), koç işaretli. */
 function TacticalAdjustments({ onChange }: { onChange?: () => void }) {
   const trigs = demoLive.tacticalTriggers;
   if (!trigs.length) return null;
@@ -391,6 +392,37 @@ function OpponentLiveRead() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+const noSubscribe = () => () => {};
+
+/** İşaret kapsaması — gösterilen önerilerin kaçı cevaplandı. Kapsama düşükse
+ *  uygulanan–uygulanmayan kıyası koçun kendi seçtiği örnekten gelir. */
+function MarkCoverage({ t, version }: { t: number; version: number }) {
+  const top = demoLive.subs.find((s) => s.urgency === "kritik") ?? demoLive.subs[0];
+  const shown = React.useMemo(() => [
+    ...LIVE_ALERTS.filter((a) => a.minute <= t).map((a) => `alert-${a.minute}`),
+    ...(top ? [`sub-${top.player_out}`] : []),
+    ...demoLive.tacticalTriggers.map((tr) => `tac-${tr.type}`),
+  ], [t, top]);
+  // localStorage dış depodur; `version` değişince yeniden okunur (sunucuda 0).
+  const marked = React.useSyncExternalStore(
+    noSubscribe,
+    () => { const ids = new Set(loadActions().map((a) => a.id)); return shown.filter((id) => ids.has(id)).length; },
+    () => 0,
+  );
+  void version;
+  if (!shown.length) return null;
+  const left = shown.length - marked;
+  return (
+    <div data-testid="mark-coverage" style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, color: "var(--muted)", borderRadius: 9, border: "1px solid var(--line)", background: "var(--panel)", padding: "9px 13px" }}>
+      <span style={{ fontFamily: "JetBrains Mono", fontWeight: 800, fontSize: 13, color: left ? "var(--mid)" : "var(--low)" }}>{marked}/{shown.length}</span>
+      <span style={{ lineHeight: 1.45 }}>
+        {left ? `öneri işaretlendi — ${left} öneri cevapsız.` : "önerinin hepsi işaretlendi."}{" "}
+        Uygulamadığını da işaretle; cevapsız öneri ölçüme girmez.
+      </span>
     </div>
   );
 }
@@ -443,6 +475,7 @@ export function MatchModeBody() {
       <NowAction onChange={bump} />
       <SubManager version={actionsVersion} />
       <TacticalAdjustments onChange={bump} />
+      <MarkCoverage t={t} version={actionsVersion} />
       <OpponentLiveRead />
 
       <div className="rc" style={{ margin: 0, borderLeft: "3px solid var(--accent)" }}>
@@ -463,6 +496,7 @@ export function MatchModeBody() {
       </div>
       <div style={{ fontSize: 11, color: "var(--dim)", textAlign: "center", lineHeight: 1.5 }}>
         Kenar ekranı · analist için. Sistem sahayı görmez — sayısal sinyalleri hatırlatır, kararı sen verirsin.
+        <br />Demo: işaretler bu tarayıcıda kalır. Canlı modda bu aşama motor panelidir ve işaretler karar defterine yazılır.
       </div>
     </div>
   );
