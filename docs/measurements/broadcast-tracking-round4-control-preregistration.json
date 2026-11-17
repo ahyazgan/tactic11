@@ -1,0 +1,66 @@
+{
+ "title": "Yayın takibi 4. tur: kör kontrol ön kaydı",
+ "status": "KONTROL GEÇTİ (2026-11-16): main 82/101 = %81,2; docs/measurements/broadcast-track-round4-control-result.json. Ön kayıt koşudan önce yazıldı (commit 7d3ab08).",
+ "direction": {
+  "user_words": "Başla evet",
+  "date": "2026-11-16",
+  "question": "Kör kontrol için görülmemiş iki maç (en az biri sert gölgeli) indirmem, karelerini elle etiketleyip tek sefer koşmam gerekiyor; birkaç saat sürer. Başlayayım mı, yoksa şimdilik burada duralım mı?"
+ },
+ "method": "docs/measurements/broadcast-tracking-round4-preregistration.json içindeki yöntem, değişmeden: filtreli 1. geçiş → kamera konumu (≥10 duruş); filtresiz 2. geçiş + kamera önseli; örnek duruşlarında bekçi (artık ≤2,0 m). Eşikler geliştirmedekiyle aynı.",
+ "control_matches": {
+  "kashima_machida_2024": {
+   "file": "data/tracking/videos/jleague_dl/j1_kashima_machida_20241208_1200_1560.mp4",
+   "source": "https://www.youtube.com/watch?v=cFoU9oARmvU",
+   "title": "Kashima Antlers v FC Machida Zelvia, 2024 J1 League MW 38, 2024-12-08, yayın 13:55 JST",
+   "why": "Sert gölge kuralı (önceki kontroldeki kural): bulut ≤%30. Open-Meteo arşivi 14:00 ve 15:00 JST bulut %4 ve %4, doğrudan ışınım 215 ve 180 W/m². Stadyum geliştirmede görüldü (kashima_marinos), maç görülmedi."
+  },
+  "kobe_shonan_2024": {
+   "file": "data/tracking/videos/jleague_dl/j1_kobe_shonan_20241208_1200_1560.mp4",
+   "source": "https://www.youtube.com/watch?v=1Qj2VwOg15Q",
+   "title": "Vissel Kobe v Shonan Bellmare, 2024 J1 League MW 38, 2024-12-08, yayın 13:55 JST",
+   "why": "Hiç görülmemiş stadyum. Open-Meteo 14:00 ve 15:00 JST bulut %94 ve %50."
+  }
+ },
+ "selection": {
+  "how": "Yalnız üst veriden: kanal yayın listesi, yayın zaman damgası (04:55 UTC = 13:55 JST gündüz), Open-Meteo saatlik bulut. Seçim anında hiçbir kareye bakılmadı. Kesit önceki bütün maçlardaki gibi yayının 1200–1560. saniyesi.",
+  "excluded_seen": "gamba_kashiwa, kashima_marinos, kyoto_kobe, verdy_kashima, niigata_kashiwa, chiba_tokushima, kashiwa_machida, hiroshima_kyoto, kashiwa_hiroshima_final",
+  "reserve": "Urawa v Hiroshima 2024-11-10 (aZb5bXvwkHg) indirildi, açılmadı, bu kontrolde kullanılmıyor; bulut %70–95.",
+  "shadow_fallback": "Etiketlerken kashima_machida_2024'te sert gölge görülmezse bu sonuçta 'gölge sınanmadı' diye yazılır; maç değiştirilmez, eklenmez."
+ },
+ "protocol": [
+  "1. Bu dosya ve hash'ler commit edilir.",
+  "2. sheets: numaralı küçük karelerden main/other etiketi; yöntem bu videolarda koşmadan. Tek değerlendirici.",
+  "3. pick + grids: main etiketli örneklerden maç başına eşit aralıklı 30 kare, ızgaralı 1080p; saha noktaları elle okunur. 4 noktadan azı sayılmaz.",
+  "4. Etiket ve işaret dosyaları commit edilir.",
+  "5. track: maç başına tek koşu. score: tek kez. Kare dökümü üretilmez, duruş çizilmez.",
+  "6. Sonuç olduğu gibi yazılır."
+ ],
+ "criteria": {
+  "C1_coverage": "main kapsama toplam ≥%50, her maçta ≥%35",
+  "C2_accuracy": "işaretli üretimlerde kare medyanlarının medyanı ≤2,0 m",
+  "C3_wrong_main": "işaretli üretimlerin en çok %5'inde kare medyanı >5 m",
+  "C4_wrong_other": "other üretim ≤%5",
+  "C5_minimum_sample": "en az 15 işaretli üretim",
+  "all_required": true,
+  "origin": "Önceki çapa+takip kontrolündeki ölçütler (broadcast-tracking-preregistration.json), değişmeden."
+ },
+ "camera_missing": "1. geçiş 10'dan az duruş üretirse o maçta kamera bulunamaz; maç duruşsuz sayılır ve paydada kalır.",
+ "freeze_before_control": {
+  "code_sha256_lf": {
+   "app/tracking/broadcast_track.py": "4dcd9ef5ebf92a395d80a6688795c5b2531f02248c6f87ee11b194b7ba913597",
+   "app/tracking/broadcast_anchor.py": "4dd99d4162d183522602723757d083b3d1f6bd92f90533a34b9ac2db13fa7a7a",
+   "app/tracking/camera_anchor.py": "4b9c27af9a3c11e6e7cabd1b6b488591de2b4257db62cc8b8032d12f6a016e9b",
+   "app/tracking/shot_filter.py": "0d2efb3c2d5c189f57fd92a07a38c88331a41dfba246e43fbf73b8855c98b122",
+   "app/tracking/homography_fit.py": "eb1f3b71e3228d4099926852ae2eeae43bb36dec0c60ac5b189e7646ccf6b9ec",
+   "scripts/broadcast_track_exam.py": "c22d5cecf1d25cd8d3d2a5d89a8b933d04cbf6363333d6502f42fded6ee2b4fa",
+   "scripts/broadcast_track_round4.py": "dc2ad553cb61b01c91e722264c3d5baf8f7f7a7a0e505f4c7507e92b7a9a7169",
+   "scripts/broadcast_track_round4_control.py": "787096dee66dd29e6eeb2db44b8f986fd69f0c1d90102835450ff5a93231d41f",
+   "scripts/tracking_funnel.py": "7dde7e369fe71bbce55bdf5c24c6521c1e5f5acf41cb10d59306f5313bb7516c",
+   "scripts/coverage_diagnosis.py": "d7300a92f3377d415d897eb05ace05bd26797be6b04e6e8466966d7f7ec95234",
+   "scripts/calibration_funnel.py": "b556832221841596d16a47aae62d86b78c568e191625672d559c953afc02eb10",
+   "scripts/shot_exam.py": "0adbad809fbeb0ce2994fafaf6183cdb63936e1932651e0a39b061b4b3b95486"
+  },
+  "rule": "track ve score hash tutmazsa koşmaz. Çıktı varsa ikinci kez koşmaz. Eşik ve kod sonuç görüldükten sonra değişmez."
+ },
+ "limits": "Tek değerlendirici. İki maç, tek yayıncı, tek lig, maç başına 6 dakika. Yöntem yalnız maç sonrası çalışır ve ürüne bağlı değildir; geçmek üretime alma kararı değildir. Gece sınanmaz."
+}

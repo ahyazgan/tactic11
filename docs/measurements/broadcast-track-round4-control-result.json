@@ -1,0 +1,121 @@
+{
+ "title": "Yayın takibi 4. tur kör kontrol: sonuç",
+ "date": "2026-11-16",
+ "verdict": "GEÇTİ",
+ "verdict_detail": "Beş ölçütün beşi karşılandı: main kapsama 82/101 = %81,2 (şart %50), en düşük maç kashima_machida_2024 22/34 = %64,7 (şart %35); 42 işaretli üretimde medyan 0,40 m, kare medyanı >5 m yok; other 1/139 = %0,7.",
+ "plan": "docs/measurements/broadcast-tracking-round4-control-preregistration.json",
+ "labels": "docs/measurements/broadcast-track-round4-labels-control.json",
+ "truth_points": "docs/measurements/broadcast-track-round4-truth-points-control.json",
+ "order_evidence": "Sıra commit geçmişinde: ön kayıt + kod dondurma (7d3ab08), etiketler, tek etiket düzeltmesi (Kashima 94; işaretleme sırasında, yöntem koşmadan), gerçek noktalar (ca123d7), sonra maç başına tek koşu ve tek puanlama. Kare dökümü üretilmedi, duruş çizilmedi.",
+ "commands": [
+  "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_track_round4_control track --match <maç> --work <klasör>",
+  "venv-cv/Scripts/python.exe -X utf8 -m scripts.broadcast_track_round4_control score --work <klasör>"
+ ],
+ "result": {
+  "verdict": "GEÇTİ",
+  "gates": {
+   "C1_coverage": true,
+   "C2_accuracy": true,
+   "C3_wrong_main": true,
+   "C4_wrong_other": true,
+   "C5_minimum_sample": true
+  },
+  "pooled": {
+   "main": "82/101",
+   "main_rate": 0.812,
+   "other": "1/139",
+   "other_rate": 0.007,
+   "guard_rejected_main": 2,
+   "guard_rejected_other": 6
+  },
+  "per_match": {
+   "kashima_machida_2024": {
+    "main": "22/34",
+    "main_rate": 0.647,
+    "other": "1/86",
+    "other_rate": 0.012,
+    "guard_rejected_main": 0,
+    "guard_rejected_other": 0,
+    "camera": [
+     51.77,
+     106.87,
+     19.9
+    ],
+    "anchor_sources": {
+     "single_frame": 6,
+     "best_pose": 2,
+     "grid": 10,
+     "rejected": 855
+    },
+    "states": {
+     "no_anchor": 853,
+     "searching": 3342,
+     "anchored": 18,
+     "backfilled": 148,
+     "tracked": 867,
+     "gate": 243,
+     "gate_lost": 13,
+     "bridged": 48,
+     "relocalized": 2,
+     "cut": 62
+    },
+    "marked": 26,
+    "marked_produced": 19,
+    "median_m": 0.4
+   },
+   "kobe_shonan_2024": {
+    "main": "60/67",
+    "main_rate": 0.896,
+    "other": "0/53",
+    "other_rate": 0.0,
+    "guard_rejected_main": 2,
+    "guard_rejected_other": 6,
+    "camera": [
+     52.1,
+     107.84,
+     17.61
+    ],
+    "anchor_sources": {
+     "single_frame": 13,
+     "best_pose": 1,
+     "grid": 24,
+     "rejected": 464
+    },
+    "states": {
+     "no_anchor": 464,
+     "searching": 1802,
+     "cut": 55,
+     "anchored": 38,
+     "backfilled": 298,
+     "tracked": 2521,
+     "gate": 494,
+     "gate_lost": 26,
+     "bridged": 103
+    },
+    "marked": 25,
+    "marked_produced": 23,
+    "median_m": 0.37
+   }
+  },
+  "marked_produced": 42,
+  "median_m": 0.4,
+  "wrong_over_5m": 0,
+  "worst_frame_median_m": 3.63,
+  "worst_point_m": 24.3
+ },
+ "development_vs_control": {
+  "main_coverage": "geliştirme 362/468 (%77,4), kontrol 82/101 (%81,2)",
+  "other": "geliştirme 5/252 (%2,0), kontrol 1/139 (%0,7)",
+  "accuracy": "geliştirme yeni kareler 26 karede medyan 0,46 m, kontrol 42 karede medyan 0,40 m; ikisinde de kare medyanı >5 m yok"
+ },
+ "previous_control": "Aynı ölçütlerle önceki çapa+takip kontrolü 79/159 = %49,7 ile kalmıştı (broadcast-track-control-result.json); maçlar farklı olduğu için fark yalnız yöntemden sayılamaz.",
+ "light": "kashima_machida_2024 güneşli, çatı kafesinin sert gölgesi main karelerin hemen hepsinde: %64,7. kobe_shonan_2024 düz ışık: %89,6.",
+ "limits": [
+  "İki maç, maç başına 6 dakika, tek yayıncı, tek lig. Kashima'da main yalnız 34 örnek (uzun sakatlık duraklamaları); %64,7'nin Wilson %95 aralığı kabaca %48–%79.",
+  "Tek değerlendirici; etiket ve işaretler aynı kişiden. İşaretlerin kendi iç tutarlılığı (≥5 noktalı karelerde homografi artığı) en kötü 1,8 m.",
+  "En kötü tek nokta 24,3 m, en kötü kare medyanı 3,63 m: ölçüt kare medyanına bakar, tekil nokta sapmaları ölçüt dışıdır ve incelenmedi.",
+  "Kashima stadyumu geliştirmede görülmüştü (başka maç). Kobe stadyumu hiç görülmedi.",
+  "Yöntem iki geçişlidir, yalnız maç sonrası çalışır; koşu maç başına yaklaşık 1,5–2 saat (6 dakikalık kesit). Ürüne bağlı değil; bu sonuç üretime alma kararı değildir.",
+  "Gece sınanmadı. Bu iki maç artık görülmüş kontrol; yeniden kontrol olamaz."
+ ]
+}
