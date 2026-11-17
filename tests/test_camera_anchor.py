@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from app.tracking import camera_anchor as ca
-from app.tracking.broadcast_anchor import BroadcastAnchor
+from app.tracking.broadcast_anchor import SCORE_STEP_M, BroadcastAnchor, score_batch
 from app.tracking.pitch_model import model_points
 
 SIZE = (1920, 1080)
@@ -123,3 +123,14 @@ def test_empty_mask_is_rejected_without_a_search(monkeypatch):
     monkeypatch.setattr(ca.CameraPriorAnchor, "_grid_winner", lambda *_a: pytest.fail("arama olmamalı"))
     prior = ca.CameraPriorAnchor(CAMERA, SIZE)
     assert not prior(np.zeros((SIZE[1], SIZE[0]), bool)).accepted
+
+
+def test_precomputed_grid_scores_equal_the_batch_scorer():
+    grid = ca.pose_grid(CAMERA, SIZE)[::37]
+    pts = model_points(SCORE_STEP_M)
+    dist_map = np.random.default_rng(7).uniform(0.0, 90.0, (SIZE[1], SIZE[0])).astype(np.float32)
+    hits, visible = score_batch(grid, dist_map, pts, ca.COARSE_TOLERANCE_PX)
+    flat, counted = ca.grid_index(grid, pts, SIZE)
+    assert np.array_equal(counted, visible)
+    assert np.array_equal(ca.grid_hits(dist_map, flat, counted, ca.COARSE_TOLERANCE_PX), hits)
+    assert hits.max() > 0
