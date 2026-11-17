@@ -9,6 +9,8 @@ Sınırlar (yanıtta `limits` olarak da döner):
   - Takım ayrımı renge dayanır; yanlış takıma düşen oyuncu genişlik ve derinliği büyütür.
   - Dilimler video dakikasıdır; devre arası ve uzatma ayrılmaz.
   - Pres yalnız top görünürken ve rakip topa sahipken sayılır; top izi zayıfsa boş kalır.
+  - Derinlik bulgu üretmez: gerçek konuma karşı iki gündüz sahasında derinlik bulgularının
+    22'sinden 6'sı doğru çıktı (docs/measurements/match-report-vs-gt.json). Sayı tabloda kalır.
 """
 from __future__ import annotations
 
@@ -28,7 +30,6 @@ from app.engine.tracking_signals.compute import (
 MIN_SLICE_FRAMES = 30
 MIN_PRESS_FRAMES = 20
 MIN_FORMATION_SUPPORT = 0.5  # karelerin yarısından azında görülen yerleşim yazılmaz
-DEPTH_DELTA_M = WIDTH_DELTA_M
 
 LIMITS = (
     "Saha yönü bilinmediği için savunma hattı ve blok yüksekliği verilmez.",
@@ -37,13 +38,16 @@ LIMITS = (
     "Pres yalnız top görünürken ve rakip topa sahipken sayılır.",
     f"Yerleşim yalnız karelerin en az %{MIN_FORMATION_SUPPORT * 100:.0f}'sinde aynı çıkarsa yazılır; gerçek maçta çoğu dilimde boş kalır.",
     f"Güvenilir dilim: en az {MIN_SLICE_FRAMES} kare ve ortalama {MIN_PLAYERS:g} görünür oyuncu.",
+    "Derinlik (takım boyu) bulgu üretmez: gerçek konuma karşı ölçümde bu bulguların çoğu yanlış çıktı; "
+    "tablodaki derinlik değeri 10 m'yi aşan hata taşıyabilir.",
+    "Gerçek konuma karşı (2 gündüz maçı, 10'ar dk, dakikalık dilim): pres ve genişlik bulgularının "
+    "yaklaşık 3'te 2'si doğru; genişliğin mutlak değeri 3–5 m sapar, dilimler arası değişimi daha güvenilirdir.",
 )
 
 _SHAPE_KEYS = ("width_m", "depth_m", "compactness_m", "centroid_x", "centroid_y")
 _FINDINGS = (
     ("compactness_m", COMPACTNESS_DELTA_M, "blok açıldı", "blok sıkıştı"),
     ("width_m", WIDTH_DELTA_M, "genişledi", "daraldı"),
-    ("depth_m", DEPTH_DELTA_M, "boyu uzadı", "boyu kısaldı"),
 )
 
 Slice = tuple[float, float, Sequence[TrackingFrame]]
@@ -121,6 +125,6 @@ def build_match_report(home_team_id: int, away_team_id: int, slices: Sequence[Sl
         ],
         "findings": sorted(findings, key=lambda f: (f["from_minute"], f["side"], f["metric"])),
         "thresholds": {"compactness_m": COMPACTNESS_DELTA_M, "width_m": WIDTH_DELTA_M,
-                       "depth_m": DEPTH_DELTA_M, "press_index": PRESS_DELTA},
+                       "press_index": PRESS_DELTA},
         "limits": list(LIMITS),
     }
