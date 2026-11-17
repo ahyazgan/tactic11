@@ -11,6 +11,7 @@ akış tek başına sürüklenir (ölçüldü: 3 sn'de 13 m).
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
@@ -161,9 +162,10 @@ class TrackFrame:
 class BroadcastTracker:
     """Kareleri zaman sırasıyla ve sabit sıklıkla alır; her kare için duruş ya da neden döner."""
 
-    def __init__(self, fps: float = 15.0, *, filters: bool = True) -> None:
+    def __init__(self, fps: float = 15.0, *, filters: bool = True, anchor: Callable[..., Any] | None = None) -> None:
         self._fps = fps
         self._filters = filters         # False: çekim ayırıcı ve tekrar izleyici duruş kesmez (3. tur ön kaydı)
+        self._anchor = anchor           # None: tek kare yayın çapası; ikinci geçişte kamera önselli çapa
         self._h: np.ndarray | None = None
         self._coast = 0
         self._count = 0
@@ -233,7 +235,7 @@ class BroadcastTracker:
         if self._since_search < ANCHOR_EVERY_FRAMES:
             return TrackFrame(None, "searching")
         self._since_search = 0
-        res = find_broadcast_anchor(mask, gray)
+        res = (self._anchor or find_broadcast_anchor)(mask, gray)
         if res.accepted and res.homography is not None:
             self._h, self._coast, self._origin = res.homography, 0, "anchor"
             self._reloc.add(gray, res.homography)
@@ -257,8 +259,8 @@ class BackfillingTracker:
     Kapıyı kısa süre kaçıran kareler, takip kapıdan yeniden geçerse akış duruşuyla köprülenir.
     """
 
-    def __init__(self, fps: float = 15.0, *, filters: bool = True) -> None:
-        self._forward = BroadcastTracker(fps, filters=filters)
+    def __init__(self, fps: float = 15.0, *, filters: bool = True, anchor: Callable[..., Any] | None = None) -> None:
+        self._forward = BroadcastTracker(fps, filters=filters, anchor=anchor)
         self._buffer: deque[tuple[int, np.ndarray]] = deque(maxlen=BACKFILL_FRAMES)
         self._gap: list[tuple[int, np.ndarray]] = []
 
