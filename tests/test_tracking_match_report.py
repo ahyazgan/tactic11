@@ -101,3 +101,14 @@ def test_pdf_builder_names_sides_and_keeps_limits():
     report.update(match_id=1, slice_minutes=15.0, physical={"teams": {"home": None, "away": None}, "slices": [], "limits": ["fiziksel sınır"]})
     pdf = build_tracking_match_pdf(report, our_side="home", title="Beşiktaş – Antalyaspor", generated_at="2026-11-18")
     assert pdf.startswith(b"%PDF") and len(pdf) > 5000
+
+
+def test_pdf_title_uses_team_names_and_kickoff_date(session):
+    from app.api.tracking import _report_title
+    from app.db import models
+
+    _seed(session, frames=1)
+    session.add(models.Team(sport="football", external_id=217, name="Beşiktaş", tenant_id="t-default"))
+    session.commit()
+    title = _report_title(session, 9600)
+    assert title.startswith("Beşiktaş – Takım 213 · ") and title[-10:].count(".") == 2

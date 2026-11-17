@@ -53,6 +53,5 @@ ekibindir. Örnek: SoccerTrack 117093 ilk yarısından üretilen rapor
 
 ## Sunumdan önce yapılacaklar
 
-- Rapor başlığına takım adları ve maç tarihi (şu an maç numarası yazıyor).
 - Kulübün bir maç videosuyla uçtan uca koşu ve çıkan PDF'in analistle birlikte okunması.
 - Gece maçı için karar: ölçmek ya da pilot dışında bırakmak.

@@ -537,11 +537,23 @@ def tracking_match_report_pdf(
 
     report = _match_report(session, match_id, slice_minutes)
     try:
-        pdf = build_tracking_match_pdf(report, our_side=our_side)
+        pdf = build_tracking_match_pdf(report, our_side=our_side, title=_report_title(session, match_id))
     except ReportlabNotInstalled as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     return Response(content=pdf, media_type="application/pdf",
                     headers={"Content-Disposition": f'attachment; filename="mac_raporu_{match_id}.pdf"'})
+
+
+def _report_title(session: Session, match_id: int) -> str:
+    """"Ev – Deplasman · gg.aa.yyyy"; takım adı kayıtlı değilse takım kimliği yazılır."""
+    match = _match_or_404(session, match_id)
+    ids = (match.home_team_external_id, match.away_team_external_id)
+    names = dict(session.execute(
+        select(models.Team.external_id, models.Team.name).where(
+            models.Team.sport == football.SPORT_NAME, models.Team.external_id.in_(ids))
+    ).tuples().all())
+    home, away = (names.get(tid) or f"Takım {tid}" for tid in ids)
+    return f"{home} – {away} · {match.kickoff:%d.%m.%Y}"
 
 
 def _match_report(session: Session, match_id: int, slice_minutes: float) -> dict[str, Any]:

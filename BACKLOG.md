@@ -237,5 +237,5 @@
 - [ ] Fiziksel yük görülmemiş doğrulama: 132877 1800-2100 yükleme yolu koşusu sonrası `physical_load_vs_gt` (ön kayıt: docs/measurements/physical-load-vs-gt-132877-preregistration.json). Engel: bellek (14 GB boş commit).
 - [x] Maç sonu raporu PDF'i: `GET /tracking/matches/{id}/report.pdf` (aynı rapor, tek sayfa, Biz/Rakip `our_side`a göre, Vera yazı tipi ile Türkçe) ve maç raporu kartında "PDF indir". Gerçek gündüz çıktısıyla denendi: SoccerTrack 117093 ilk yarı (iş 0b9979c312) geçici SQLite'a yüklendi, iki uç 200, PDF tek sayfa. Sınır: arayüz düğmesi canlı modda tarayıcıda tıklanarak denenmedi (tsc + eslint temiz); rapor yalnız takım düzeyi, oyuncu bazında değil.
 - [x] Kulüp pilot belgesi `docs/KULUP-PILOT.md`: söz, kanıtlı sayılar (her biri ölçüm dosyasına bağlı), yapılmayanlar, pilot önerisi.
-- [ ] Maç raporu PDF başlığında takım adları ve maç tarihi (şu an "maç {id}"). Done when: uç takım adlarını veritabanından alır, yoksa kimliğe düşer; test.
+- [x] Maç raporu PDF başlığında takım adları ve maç tarihi; ad kayıtlı değilse "Takım {id}".
 - [ ] Kulübün kendi geniş açılı maç videosuyla uçtan uca koşu + PDF'in analistle okunması (video kullanıcıdan).
