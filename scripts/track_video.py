@@ -70,10 +70,6 @@ def main() -> int:
                    choices=["auto", "on", "off"],
                    help="Hareketli kamerada homografiyi her karede yeniden bul. "
                         "auto=kamera sabit değilse aç. Oturmayan kareler ATLANIR.")
-    p.add_argument("--broadcast-two-pass", action="store_true",
-                   help="Gündüz TV yayını, yalnız maç sonrası: video önce iki kez okunur, kamera konumu "
-                        "maçın kendisinden bulunur ve duruşlar hatta hazır verilir. Yavaştır "
-                        "(6 dk'lık kesit ~25 dk). Kamera bulunamazsa çıktı üretilmez.")
     p.add_argument("--reacquire", default="auto", choices=["auto", "on", "off"],
                    help="Kesmeden sonra ÇAPADAN yeniden yakala. auto=yayın "
                         "görüntüsünde aç. Kapalıyken ilk kesmede takip kopar ve "
@@ -127,8 +123,6 @@ def main() -> int:
         per_frame = False
     else:
         per_frame = moving
-    if args.broadcast_two_pass:
-        per_frame = True
     if calib is None and not per_frame:
         if args.per_frame_calibration == "off":
             print("HATA: kalibrasyon yok ve kare başına kalibrasyon kapalı — "
@@ -160,19 +154,8 @@ def main() -> int:
         reacquire = False
     else:
         reacquire = moving
-    if per_frame and reacquire and not args.broadcast_two_pass:
+    if per_frame and reacquire:
         print("kesmeden sonra yeniden yakalama: AÇIK (çapadan, %85 inlier şartı)")
-    calibrator = None
-    if args.broadcast_two_pass:
-        from app.tracking.broadcast_calibrator import calibrate_broadcast
-
-        print("iki geçişli yayın takibi: video iki kez okunuyor (hat bundan sonra başlar)")
-        calibrator = calibrate_broadcast(args.video, args.track_fps, args.max_seconds)
-        if calibrator.track.camera is None:
-            print("HATA: kamera konumu bulunamadı (ilk geçişte yeterli duruş yok) — duruş üretilmez")
-            return 2
-        print(f"  kamera {calibrator.track.camera.round(1).tolist()} m · duruşlu kare {len(calibrator.track.poses)} · "
-              f"bekçinin attığı {calibrator.track.guard_rejected}")
 
     cfg = PipelineConfig(
         tracker_backend=args.tracker, reid_model=args.reid_model,
@@ -181,8 +164,7 @@ def main() -> int:
         per_frame_calibration=per_frame,
         allow_reacquire=per_frame and reacquire,
         detect_cuts=per_frame and args.camera != "operated",
-        # İki geçişli kipte tekrar süzgeci kapalı: hat kareyi kalibratöre sormadan atlarsa sıra kayar.
-        detect_replays=per_frame and moving and args.camera != "operated" and not args.broadcast_two_pass,
+        detect_replays=per_frame and moving and args.camera != "operated",
         source_name=source_name,
         fps_out=args.fps, track_fps=args.track_fps, max_seconds=args.max_seconds,
         detector=DetectorConfig(model=args.model, threshold=args.threshold, tiles=args.tiles, resolution=args.resolution, weights=args.weights,
@@ -194,13 +176,7 @@ def main() -> int:
     frames, summary = process_video(
         args.video, calib, match_id=args.match_id,
         home_team_id=args.home_team, away_team_id=args.away_team, cfg=cfg, team_anchor=anchor,
-        calibrator=calibrator,
     )
-    if calibrator is not None:
-        summary["broadcast_two_pass"] = {
-            "camera_m": calibrator.track.camera.round(2).tolist(), "anchor_sources": calibrator.track.anchor_sources,
-            "guard_rejected": calibrator.track.guard_rejected, "replay_filter": "kapalı",
-        }
     # Etiketi GERÇEKLEŞENE göre düzelt — canlı hatla (scripts/track_live.py)
     # aynı kural. İki yolun aynı görüntüde farklı etiket üretmesi, karelerin bir
     # sınıfta yazılıp başka bir sınıfta yorumlanmasına yol açar.
