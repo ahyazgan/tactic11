@@ -1,0 +1,202 @@
+{
+  "measured": "2026-11-18, betimleyici; eşik ayarı yok",
+  "question": "Maç raporunun dilim sayıları ve 'öne çıkanlar' bulguları gerçek konumda da aynı mı çıkıyor?",
+  "tool": "scripts/soccertrack_v2/eval_match_report.py (aynı build_match_report: takip kareleri vs düzeltilmiş GSR'den kurulan kareler)",
+  "data": "SoccerTrack v2 132877 ve 132831, 600-1200 sn, gündüz, canlı yol takip kareleri (990741, 990751), düzeltilmiş GSR referansı. Her iki pencere geliştirmede daha önce görülmüş veridir.",
+  "baseline_commit": "25bd2b9",
+  "venues": {
+    "132877": {
+      "tracked_match": 990741,
+      "paired_frames": 7500,
+      "matched_player_pairs": 118794,
+      "slice_abs_error_1min": {
+        "width_m": {
+          "n": 20,
+          "median": 5.4,
+          "p90": 11.04,
+          "max": 15.3
+        },
+        "depth_m": {
+          "n": 20,
+          "median": 1.6,
+          "p90": 8.47,
+          "max": 19.7
+        },
+        "compactness_m": {
+          "n": 20,
+          "median": 1.3,
+          "p90": 2.63,
+          "max": 3.2
+        },
+        "press_index": {
+          "n": 19,
+          "median": 0.04,
+          "p90": 0.07,
+          "max": 0.13
+        }
+      },
+      "slice_abs_error_5min": {
+        "width_m": {
+          "n": 4,
+          "median": 5.2,
+          "p90": 9.63,
+          "max": 11.4
+        },
+        "depth_m": {
+          "n": 4,
+          "median": 3.15,
+          "p90": 5.19,
+          "max": 5.4
+        },
+        "compactness_m": {
+          "n": 4,
+          "median": 1.4,
+          "p90": 1.95,
+          "max": 2.1
+        },
+        "press_index": {
+          "n": 4,
+          "median": 0.03,
+          "p90": 0.03,
+          "max": 0.03
+        }
+      },
+      "findings_1min_before": {
+        "tracked": 30,
+        "reference": 18,
+        "both": 17,
+        "precision": 0.567,
+        "recall": 0.944,
+        "by_metric": {
+          "width_m": {
+            "tracked": 9,
+            "reference": 8,
+            "both": 7
+          },
+          "depth_m": {
+            "tracked": 12,
+            "reference": 4,
+            "both": 4
+          },
+          "compactness_m": {
+            "tracked": 2,
+            "reference": 0,
+            "both": 0
+          },
+          "press_index": {
+            "tracked": 7,
+            "reference": 6,
+            "both": 6
+          }
+        }
+      },
+      "findings_1min_after_depth_removed": {
+        "tracked": 18,
+        "reference": 14,
+        "both": 13,
+        "precision": 0.722,
+        "recall": 0.929
+      }
+    },
+    "132831": {
+      "tracked_match": 990751,
+      "paired_frames": 7500,
+      "matched_player_pairs": 97623,
+      "slice_abs_error_1min": {
+        "width_m": {
+          "n": 20,
+          "median": 3.45,
+          "p90": 8.96,
+          "max": 17.5
+        },
+        "depth_m": {
+          "n": 20,
+          "median": 16.85,
+          "p90": 23.67,
+          "max": 32.0
+        },
+        "compactness_m": {
+          "n": 20,
+          "median": 2.0,
+          "p90": 3.05,
+          "max": 3.8
+        },
+        "press_index": {
+          "n": 20,
+          "median": 0.06,
+          "p90": 0.15,
+          "max": 0.2
+        }
+      },
+      "slice_abs_error_5min": {
+        "width_m": {
+          "n": 4,
+          "median": 4.65,
+          "p90": 7.44,
+          "max": 7.8
+        },
+        "depth_m": {
+          "n": 4,
+          "median": 12.75,
+          "p90": 21.05,
+          "max": 21.8
+        },
+        "compactness_m": {
+          "n": 4,
+          "median": 1.95,
+          "p90": 2.07,
+          "max": 2.1
+        },
+        "press_index": {
+          "n": 4,
+          "median": 0.08,
+          "p90": 0.1,
+          "max": 0.11
+        }
+      },
+      "findings_1min_before": {
+        "tracked": 22,
+        "reference": 21,
+        "both": 9,
+        "precision": 0.409,
+        "recall": 0.429,
+        "by_metric": {
+          "width_m": {
+            "tracked": 7,
+            "reference": 6,
+            "both": 3
+          },
+          "depth_m": {
+            "tracked": 10,
+            "reference": 8,
+            "both": 2
+          },
+          "compactness_m": {
+            "tracked": 1,
+            "reference": 2,
+            "both": 1
+          },
+          "press_index": {
+            "tracked": 4,
+            "reference": 5,
+            "both": 3
+          }
+        }
+      },
+      "findings_1min_after_depth_removed": {
+        "tracked": 12,
+        "reference": 13,
+        "both": 7,
+        "precision": 0.583,
+        "recall": 0.538
+      }
+    }
+  },
+  "decision": "Derinlik bulguları iki sahada 22 bulgunun 6'sında doğru (%27) ve mutlak derinlik hatası 132831'de dakikalık medyan 16,9 m: rapor derinlik için bulgu üretmez, değer tabloda kalır ve sınırı yazılır. Aynı veri üzerinde görülerek alındığı için 'sonra' sayıları kanıtlanmış iyileşme değildir, yalnız kaldırılan çıktının etkisini gösterir.",
+  "limits": [
+    "İki maç, 10'ar dakika; görülmüş veri.",
+    "Dakikalık dilim; üründe dilim en az 5 dk. 5 dakikalık dilimle 10 dk'lık pencerede yalnız 2 dilim olduğundan bulgu karşılaştırması anlamsız (0 bulgu).",
+    "Referans kalecileri içerir; ürün kaleciyi ayıramaz.",
+    "Referans (GSR) kendi kalibrasyonumuzla düzeltildi; referansın kendi hatası ölçülmedi."
+  ]
+}

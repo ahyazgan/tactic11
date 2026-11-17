@@ -22,6 +22,7 @@ ekibindir. Örnek: SoccerTrack 117093 ilk yarısından üretilen rapor
 | Oyuncu bulma | Aynı koşu, 20 kare elle sayım | Oyuncuların %95,9'u işaretli, işaretlerin %2,8'i boş (sayan: yapay zekâ, insan değil) | `product-full-match-exam-hand-review-attempt4.json` |
 | Takım ayrımı | Sabit kamera, gündüz, 10 dk, referans konumlarla | Eşleşen oyuncuların %91,6'sında takım doğru | `daylight-132877-gsr-telestration.json` |
 | Savunma hattı konumu | Aynı ölçüm | Medyan hata 1,89 m; %90'ı 12,1 m içinde | `daylight-132877-gsr-telestration.json` |
+| Raporun "öne çıkanlar"ı | Sabit kamera, gündüz, 2 saha × 10 dk, dakikalık dilim, gerçek konuma karşı | Takipteki bulguların 132877'de %72'si, 132831'de %58'i gerçek konumda da var; derinlik bulguları (%27 doğru) rapordan çıkarıldı. Görülmüş veri, kanıtlanmış iyileşme değil | `match-report-vs-gt.json` |
 | TV yayınından saha konumu | J.League, gündüz, 2 maç × 6 dk, kör kontrol | Ana kamera karelerinin %81,2'sinde saha konumu bulundu; işaretlere göre medyan hata 0,40 m | `broadcast-track-round4-control-result.json` |
 
 ## Yapmadıkları ve bilinmeyenler
@@ -32,6 +33,7 @@ ekibindir. Örnek: SoccerTrack 117093 ilk yarısından üretilen rapor
   (`cross_segment_person_identity: false`); "10 numara kaç km koştu" sorusu yanıtlanmaz.
 - **Fiziksel yük gerçek konuma karşı doğrulanmadı.** Tempo ve hız payları takım düzeyinde,
   karşılaştırma amaçlıdır; GPS'in yerini tutmaz.
+- **Raporun mutlak şekil sayıları kaba.** Genişlik gerçek değerden 3–5 m, derinlik bir sahada medyan 17 m sapıyor; dilimler arası değişim mutlak değerden daha güvenilir (`match-report-vs-gt.json`). "Öne çıkanlar"ın yaklaşık üçte biri yanlış alarm olabilir.
 - **Saha yönü bilinmez.** Savunma hattı yüksekliği ve "blok önde/geride" raporda verilmez.
 - **TV yayını dar kapsamlı.** Yalnız J.League gündüz yayınında ölçüldü; ana kamera dışı kareler
   ve tekrarlar (J.League'e özgü işaretle) atılır, 90 sn'lik örnekte karelerin %39,5'i konumlandı.
