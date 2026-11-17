@@ -15,9 +15,9 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -522,6 +522,29 @@ def tracking_match_report(
     slice_minutes: float = Query(15.0, ge=5, le=45),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
+    return _match_report(session, match_id, slice_minutes)
+
+
+@router.get("/matches/{match_id}/report.pdf", summary="Maç raporu PDF: aynı rapor, tek belge (Biz/Rakip our_side'a göre)")
+def tracking_match_report_pdf(
+    match_id: int,
+    slice_minutes: float = Query(15.0, ge=5, le=45),
+    our_side: Literal["home", "away"] = Query("home"),
+    session: Session = Depends(get_session),
+) -> Response:
+    from app.reports.pdf import ReportlabNotInstalled
+    from app.reports.tracking_match_pdf import build_tracking_match_pdf
+
+    report = _match_report(session, match_id, slice_minutes)
+    try:
+        pdf = build_tracking_match_pdf(report, our_side=our_side)
+    except ReportlabNotInstalled as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return Response(content=pdf, media_type="application/pdf",
+                    headers={"Content-Disposition": f'attachment; filename="mac_raporu_{match_id}.pdf"'})
+
+
+def _match_report(session: Session, match_id: int, slice_minutes: float) -> dict[str, Any]:
     from app.engine.tracking.match_report import build_match_report
     from app.engine.tracking.physical_load import compute_physical_load
 
