@@ -4,11 +4,12 @@
  * Maç raporu — GET /tracking/matches/{id}/report.
  * Tüm maç dilimlere bölünür: özet, dilim tablosu, ortalamadan sapan dilimler ve
  * sunucunun bildirdiği sınırlar. Güvenilmez dilimler soluk gösterilir, özete girmez.
+ * "PDF indir": aynı rapor sunucuda tek belgeye dizilir (GET …/report.pdf), Biz/Rakip seçili tarafa göre.
  */
 
 import { useState } from "react";
 import useSWR from "swr";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiFetchResponse } from "@/lib/api";
 
 type Side = "home" | "away";
 interface TeamSlice {
@@ -111,16 +112,37 @@ function TeamCells({ t }: { t: TeamSlice }) {
 
 export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; ourSide: Side }) {
   const [sliceMinutes, setSliceMinutes] = useState<number>(15);
+  const [pdfState, setPdfState] = useState<"idle" | "busy" | "error">("idle");
   const key = matchId != null ? `/tracking/matches/${matchId}/report?slice_minutes=${sliceMinutes}` : null;
   const { data, error, isLoading } = useSWR<ReportResponse>(key, apiFetch, { revalidateOnFocus: false, shouldRetryOnError: false, keepPreviousData: true });
   if (!matchId) return null;
   const theirSide: Side = ourSide === "home" ? "away" : "home";
   const label = (side: Side) => (side === ourSide ? "Biz" : "Rakip");
   const columns = ["Oyuncu", "Gen.", "Der.", "Komp.", "Pres"];
+  const downloadPdf = async () => {
+    setPdfState("busy");
+    try {
+      const res = await apiFetchResponse(`/tracking/matches/${matchId}/report.pdf?slice_minutes=${sliceMinutes}&our_side=${ourSide}`);
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url; a.download = `mac_raporu_${matchId}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+      setPdfState("idle");
+    } catch {
+      setPdfState("error");
+    }
+  };
   return (
     <div className="rc" style={{ marginBottom: 12 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <h3 style={{ margin: 0 }}>Maç raporu <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 11 }}>· tüm maç, dilim dilim</span></h3>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {data && (
+          <button type="button" onClick={downloadPdf} disabled={pdfState === "busy"} data-testid="match-report-pdf" data-state={pdfState}
+            style={{ padding: "4px 10px", background: "var(--panel2)", color: pdfState === "error" ? "var(--crit)" : "var(--ink)", border: "1px solid var(--line)", borderRadius: 4, fontSize: 11.5, cursor: "pointer" }}>
+            {pdfState === "busy" ? "PDF hazırlanıyor…" : pdfState === "error" ? "PDF üretilemedi — tekrar dene" : "PDF indir"}
+          </button>
+        )}
         <label style={{ fontSize: 11, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }}>
           Dilim
           <select value={sliceMinutes} onChange={(e) => setSliceMinutes(Number(e.target.value))}
@@ -128,6 +150,7 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
             {SLICE_OPTIONS.map((m) => <option key={m} value={m}>{m} dk</option>)}
           </select>
         </label>
+        </div>
       </div>
       {error && <div style={{ fontSize: 11, color: "var(--crit)", marginTop: 6 }}>Rapor yüklenemedi: {String(error).slice(0, 120)}</div>}
       {!error && !data && isLoading && <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 6 }}>Rapor hesaplanıyor…</div>}

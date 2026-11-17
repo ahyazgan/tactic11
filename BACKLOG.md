@@ -235,3 +235,7 @@
 - [ ] Maç raporu bulgu eşikleri (2,5 m / 4 m / 0,15) canlı sinyal motorundan alındı, dilim ortalamaları için ölçülmedi; gerçek konum verisinde (132877) yanlış alarm payı ölçülmeli.
 - [x] Fiziksel yük (takım düzeyi): maç raporunda oyuncu-dakika başına metre, yüksek hız ve sprint payı, kapsama ve güvenilirlik; ham hız yerine 1 sn düzeltilmiş konum (ham hızda yükleme yolunda oyuncu-zamanın %8,5'i sprint görünüyordu). Geliştirme (canlı yol, 132877 600-1200): 121,7 vs GT 121,1 m/dk.
 - [ ] Fiziksel yük görülmemiş doğrulama: 132877 1800-2100 yükleme yolu koşusu sonrası `physical_load_vs_gt` (ön kayıt: docs/measurements/physical-load-vs-gt-132877-preregistration.json). Engel: bellek (14 GB boş commit).
+- [x] Maç sonu raporu PDF'i: `GET /tracking/matches/{id}/report.pdf` (aynı rapor, tek sayfa, Biz/Rakip `our_side`a göre, Vera yazı tipi ile Türkçe) ve maç raporu kartında "PDF indir". Gerçek gündüz çıktısıyla denendi: SoccerTrack 117093 ilk yarı (iş 0b9979c312) geçici SQLite'a yüklendi, iki uç 200, PDF tek sayfa. Sınır: arayüz düğmesi canlı modda tarayıcıda tıklanarak denenmedi (tsc + eslint temiz); rapor yalnız takım düzeyi, oyuncu bazında değil.
+- [x] Kulüp pilot belgesi `docs/KULUP-PILOT.md`: söz, kanıtlı sayılar (her biri ölçüm dosyasına bağlı), yapılmayanlar, pilot önerisi.
+- [x] Maç raporu PDF başlığında takım adları ve maç tarihi; ad kayıtlı değilse "Takım {id}".
+- [ ] Kulübün kendi geniş açılı maç videosuyla uçtan uca koşu + PDF'in analistle okunması (video kullanıcıdan).

@@ -83,3 +83,32 @@ def test_report_endpoint_slices_the_whole_match(session, client):  # noqa: F811
     assert [(s["from_minute"], s["frames"]) for s in body["slices"]] == [(0.0, 1), (15.0, 1), (30.0, 1)]
     assert body["teams"]["home"]["team_external_id"] == 217 and body["teams"]["home"]["summary"] is None
     assert client.get("/tracking/matches/424242/report").status_code == 404
+
+
+def test_report_pdf_renders_the_same_report_with_turkish_text(session, client):  # noqa: F811
+    _seed(session, frames=3)
+    r = client.get("/tracking/matches/9600/report.pdf?slice_minutes=15&our_side=away")
+    assert r.status_code == 200 and r.headers["content-type"] == "application/pdf"
+    assert r.content.startswith(b"%PDF") and b"BitstreamVera" in r.content
+    assert 'filename="mac_raporu_9600.pdf"' in r.headers["content-disposition"]
+    assert client.get("/tracking/matches/424242/report.pdf").status_code == 404
+
+
+def test_pdf_builder_names_sides_and_keeps_limits():
+    from app.reports.tracking_match_pdf import build_tracking_match_pdf
+
+    report = build_match_report(217, 213, [(0.0, 15.0, _frames(0.0, 40, 10.0)), (15.0, 30.0, _frames(15.0, 40, 16.0))])
+    report.update(match_id=1, slice_minutes=15.0, physical={"teams": {"home": None, "away": None}, "slices": [], "limits": ["fiziksel sınır"]})
+    pdf = build_tracking_match_pdf(report, our_side="home", title="Beşiktaş – Antalyaspor", generated_at="2026-11-18")
+    assert pdf.startswith(b"%PDF") and len(pdf) > 5000
+
+
+def test_pdf_title_uses_team_names_and_kickoff_date(session):
+    from app.api.tracking import _report_title
+    from app.db import models
+
+    _seed(session, frames=1)
+    session.add(models.Team(sport="football", external_id=217, name="Beşiktaş", tenant_id="t-default"))
+    session.commit()
+    title = _report_title(session, 9600)
+    assert title.startswith("Beşiktaş – Takım 213 · ") and title[-10:].count(".") == 2
