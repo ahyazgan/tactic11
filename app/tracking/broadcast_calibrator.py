@@ -2,8 +2,9 @@
 
 Hat (`pipeline.collect_observations`) dışarıdan kalibratör kabul eder; bu sınıf `PerFrameCalibrator`ın
 hattın kullandığı yüzünü taşır. Duruşlar hat koşmadan önce `track_two_pass` ile bulunur, hat sırasında
-görüntüye bakılmaz. Hat her kare için `process` çağırmalıdır: tekrar süzgeci kareyi kalibratöre sormadan
-atladığı için bu kiple birlikte kapatılır (`PipelineConfig.detect_replays=False`).
+görüntüye bakılmaz. Hat her kare için `process` çağırmalıdır: hattın tekrar süzgeci kareyi kalibratöre
+sormadan atladığı için bu kiple birlikte kapatılır (`PipelineConfig.detect_replays=False`). Tekrarlar
+iki geçişte süzülür: tekrar karesinde duruş yoktur, hat o kareyi kalibre edilememiş sayıp atlar.
 
 `scripts/track_video.py` hash'le dondurulmuş ölçüm kodudur; kip oraya yazılmaz. Ürün işçisi
 (`scripts/track_video_product.py --broadcast-two-pass`) `two_pass_process_video` ile bağlar.
@@ -17,7 +18,7 @@ from typing import Any
 
 import numpy as np
 
-from app.tracking.broadcast_two_pass import Frames, TwoPassTrack, track_two_pass
+from app.tracking.broadcast_two_pass import Frames, TwoPassTrack, frame_windows, track_two_pass
 from app.tracking.pitch_lines import FrameCalibration, calibration_from_homography
 
 NO_POSE = "iki geçişli yayın takibi bu karede duruş üretmedi"
@@ -65,12 +66,18 @@ def pipeline_frames(video: str | Path, track_fps: float, max_seconds: float | No
         yield order, cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
 
-def calibrate_broadcast(video: str | Path, track_fps: float, max_seconds: float | None = None) -> BroadcastPoseCalibrator:
-    """Videoyu iki kez okuyup hat için kalibratör kurar. Takip eşikleri 15 fps'te ölçüldü."""
+def replay_windows(replays: set[int], fps: float) -> list[list[float]]:
+    """Tekrar sayılan ardışık kareleri [başlangıç, bitiş] saniye aralıklarına toplar (denetim için)."""
+    return [[round(a / fps, 1), round((b + 1) / fps, 1)] for a, b in frame_windows(replays)]
+
+
+def calibrate_broadcast(video: str | Path, track_fps: float,
+                        max_seconds: float | None = None) -> tuple[BroadcastPoseCalibrator, float]:
+    """Videoyu iki kez okuyup hat için kalibratörü ve etkin takip hızını döner. Eşikler 15 fps'te ölçüldü."""
     from app.tracking.pipeline import effective_track_fps, video_info
 
     fps = effective_track_fps(video_info(video)["fps"], track_fps)
-    return BroadcastPoseCalibrator(track_two_pass(lambda: pipeline_frames(video, track_fps, max_seconds), fps))
+    return BroadcastPoseCalibrator(track_two_pass(lambda: pipeline_frames(video, track_fps, max_seconds), fps)), fps
 
 
 def two_pass_process_video(process_video: Callable[..., Any]) -> Callable[..., Any]:
@@ -85,18 +92,22 @@ def two_pass_process_video(process_video: Callable[..., Any]) -> Callable[..., A
             print("HATA: iki geçişli yayın takibi yalnız yayın kamerasında çalışır (--camera broadcast)")
             raise SystemExit(EXIT_NO_CAMERA)
         print("iki geçişli yayın takibi: video iki kez okunuyor (hat bundan sonra başlar)", flush=True)
-        calibrator = calibrate_broadcast(video_path, cfg.track_fps, cfg.max_seconds)
+        calibrator, fps = calibrate_broadcast(video_path, cfg.track_fps, cfg.max_seconds)
         track = calibrator.track
         if track.camera is None:
             print("HATA: kamera konumu bulunamadı (ilk geçişte yeterli duruş yok) — duruş üretilmez")
             raise SystemExit(EXIT_NO_CAMERA)
         print(f"  kamera {track.camera.round(1).tolist()} m · duruşlu kare {len(track.poses)} · "
-              f"bekçinin attığı {track.guard_rejected}", flush=True)
+              f"bekçinin attığı {track.guard_rejected} · tekrar diye atılan {track.replay_rejected}", flush=True)
         frames, summary = process_video(video_path, calib, cfg=replace(cfg, detect_replays=False),
                                         calibrator=calibrator, **kwargs)
         summary["broadcast_two_pass"] = {
             "camera_m": track.camera.round(2).tolist(), "anchor_sources": track.anchor_sources,
-            "guard_rejected": track.guard_rejected, "replay_filter": "kapalı",
+            "guard_rejected": track.guard_rejected,
+            "replay_filter": "kırmızı logo geçişi (J.League yayını); kapanışı görülmeyen pencere süzülmez",
+            "replay_frames": len(track.replays), "replay_rejected": track.replay_rejected,
+            "replay_windows_s": replay_windows(track.replays, fps),
+            "replay_unclosed_windows_s": replay_windows(track.unclosed_replays, fps),
         }
         return frames, summary
 

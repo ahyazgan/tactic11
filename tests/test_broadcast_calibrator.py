@@ -43,16 +43,19 @@ def wrapped(monkeypatch, track):
         calls.append(kwargs)
         return [], {}
 
-    monkeypatch.setattr(bc, "calibrate_broadcast", lambda *_: BroadcastPoseCalibrator(track))
+    monkeypatch.setattr(bc, "calibrate_broadcast", lambda *_: (BroadcastPoseCalibrator(track), 15.0))
     return bc.two_pass_process_video(process_video), calls
 
 
 def test_product_worker_hands_the_poses_to_the_pipeline_with_replay_filter_off(monkeypatch):
-    track = TwoPassTrack(CAMERA, SIZE, poses={0: main_poses(1)[0]}, guard_rejected=3)
+    track = TwoPassTrack(CAMERA, SIZE, poses={0: main_poses(1)[0]}, guard_rejected=3,
+                         replays={30, 31, 32, 90}, unclosed_replays={150, 151}, replay_rejected=2)
     run, calls = wrapped(monkeypatch, track)
     _, summary = run("v.mp4", None, cfg=Config(), match_id=1)
     assert calls[0]["cfg"].detect_replays is False and calls[0]["calibrator"].track is track and calls[0]["match_id"] == 1
-    assert summary["broadcast_two_pass"]["guard_rejected"] == 3
+    report = summary["broadcast_two_pass"]
+    assert (report["guard_rejected"], report["replay_frames"], report["replay_rejected"]) == (3, 4, 2)
+    assert report["replay_windows_s"] == [[2.0, 2.2], [6.0, 6.1]] and report["replay_unclosed_windows_s"] == [[10.0, 10.1]]
 
 
 def test_no_camera_or_fixed_camera_setup_produces_no_output(monkeypatch):
