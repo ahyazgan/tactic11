@@ -15,6 +15,7 @@ from dataclasses import replace
 import numpy as np
 
 from app.tracking.broadcast_anchor import (
+    BATCH_SIZE,
     MIN_VISIBLE_AT_SCORE_STEP,
     RIDGE_MIN_SHARE,
     SCORE_STEP_M,
@@ -26,7 +27,6 @@ from app.tracking.broadcast_anchor import (
     find_broadcast_anchor,
     physically_valid,
     ridge_share,
-    score_batch,
 )
 from app.tracking.homography_fit import (
     DEFAULT_TOLERANCE_PX,
@@ -159,6 +159,36 @@ def pose_grid(camera: np.ndarray, size: tuple[int, int]) -> np.ndarray:
     return np.concatenate(out)
 
 
+def grid_index(grid: np.ndarray, pts: np.ndarray, size: tuple[int, int]) -> tuple[np.ndarray, np.ndarray]:
+    """Izgara duruşlarının kadraja düşen model noktaları: (düz piksel indisleri, duruş başına sayı).
+
+    Kurallar `score_batch` ile aynıdır. Izgara maç boyunca sabit olduğu için izdüşüm bir kez hesaplanır;
+    kare başına yalnız uzaklık haritasına bakılır (ölçüldü: ikinci geçiş süresinin yarısı bu izdüşümdü).
+    """
+    width, height = size
+    hom = np.column_stack([pts, np.ones(len(pts))])
+    flat, visible = [], []
+    for start in range(0, len(grid), BATCH_SIZE):
+        proj = grid[start:start + BATCH_SIZE] @ hom.T
+        w = proj[:, 2, :]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            u, v = proj[:, 0, :] / w, proj[:, 1, :] / w
+        same_side = (w > 0).all(axis=1) | (w < 0).all(axis=1)
+        inside = np.isfinite(u) & np.isfinite(v) & (u >= 0) & (u < width) & (v >= 0) & (v < height)
+        inside &= same_side[:, None]
+        flat.append((v[inside].astype(int) * width + u[inside].astype(int)).astype(np.int32))
+        visible.append(inside.sum(axis=1))
+    return np.concatenate(flat), np.concatenate(visible)
+
+
+def grid_hits(dist_map: np.ndarray, flat: np.ndarray, visible: np.ndarray, tolerance: float) -> np.ndarray:
+    """(N,) duruş başına çizgiye düşen model noktası sayısı; `score_batch`'in ilk çıktısıyla aynı."""
+    near = np.ascontiguousarray(dist_map).ravel()[flat] <= tolerance
+    total = np.concatenate([[0], np.cumsum(near)])
+    ends = np.cumsum(visible)
+    return total[ends] - total[ends - visible]
+
+
 class CameraPriorAnchor:
     """`find_broadcast_anchor` ile aynı imza. `stats` kararların kaynağını sayar."""
 
@@ -166,6 +196,7 @@ class CameraPriorAnchor:
         self._camera = camera
         self._size = size
         self._grid = pose_grid(camera, size)
+        self._flat, self._visible = grid_index(self._grid, model_points(SCORE_STEP_M), size)
         self.stats = {"single_frame": 0, "best_pose": 0, "grid": 0, "rejected": 0}
 
     def __call__(self, mask: np.ndarray, gray: np.ndarray | None = None, tolerance_px: float | None = None) -> BroadcastAnchor:
@@ -201,7 +232,8 @@ class CameraPriorAnchor:
         return (inlier, explained) if inlier >= MIN_INLIER and explained >= MIN_EXPLAINED else None
 
     def _grid_winner(self, dist_map: np.ndarray, segments: np.ndarray, tol: float) -> np.ndarray | None:
-        hits, visible = score_batch(self._grid, dist_map, model_points(SCORE_STEP_M), COARSE_TOLERANCE_PX)
+        visible = self._visible
+        hits = grid_hits(dist_map, self._flat, visible, COARSE_TOLERANCE_PX)
         key = (hits - (visible - hits)).astype(float)
         key[visible < MIN_VISIBLE_AT_SCORE_STEP] = -np.inf
         picked: list[np.ndarray] = []
