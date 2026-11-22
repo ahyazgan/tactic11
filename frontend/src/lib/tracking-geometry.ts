@@ -232,17 +232,23 @@ export function visibleTracks(frame: TrackingFrame): number {
   return frame.players.length;
 }
 
-/** m/s → "~12 km/h"; hız yoksa null. */
-export function fmtKmh(mps: number | null | undefined): string | null {
-  if (mps == null) return null;
+/** Takip hattının hız tavanları (`app/tracking/pipeline.py` MAX_*_SPEED_MPS). Tavana yapışmış
+ *  değer ölçüm değil kırpılmış sıçramadır (kimlik değişimi, top izinde kopma); gösterilmez. */
+export const PLAYER_SPEED_CAP_MPS = 12;
+export const BALL_SPEED_CAP_MPS = 45;
+
+/** m/s → "~12 km/h"; hız yoksa ya da tavana yapışmışsa null. */
+export function fmtKmh(mps: number | null | undefined, capMps: number): string | null {
+  if (mps == null || mps >= capMps) return null;
   return `~${Math.round(mps * 3.6)} km/h`;
 }
 
-/** Karedeki en hızlı oyuncu (hız verisi olan kaynaklarda). */
+/** Karedeki en hızlı oyuncu (hız verisi olan kaynaklarda; tavana yapışmışlar sayılmaz). */
 export function fastestPlayer(frame: TrackingFrame): TrackingPlayer | null {
   let best: TrackingPlayer | null = null;
   for (const p of frame.players) {
-    if (p.velocity_mps != null && (best === null || p.velocity_mps > (best.velocity_mps ?? 0))) best = p;
+    if (p.velocity_mps == null || p.velocity_mps >= PLAYER_SPEED_CAP_MPS) continue;
+    if (best === null || p.velocity_mps > (best.velocity_mps ?? 0)) best = p;
   }
   return best;
 }
