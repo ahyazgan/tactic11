@@ -270,16 +270,16 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
 
           <h3 style={{ margin: "18px 0 0" }}>Fiziksel yük <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 11 }}>· takım düzeyi, oyuncu bazında değil</span></h3>
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginTop: 10 }}>
-            <LoadSummary name="Biz · güvenilir dilimler" color={US} load={data.physical.teams[ourSide]} />
-            <LoadSummary name="Rakip · güvenilir dilimler" color={THEM} load={data.physical.teams[theirSide]} />
+            <LoadSummary name={`${usName} · güvenilir dilimler`} color={US} load={data.physical.teams[ourSide]} />
+            <LoadSummary name={`${themName} · güvenilir dilimler`} color={THEM} load={data.physical.teams[theirSide]} />
           </div>
           <div style={{ overflowX: "auto", marginTop: 12 }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
               <thead>
                 <tr>
                   <th style={{ ...HEAD, textAlign: "left", padding: "4px 6px" }} rowSpan={2}>Dakika</th>
-                  <th style={{ ...HEAD, color: US, textAlign: "center", padding: "4px 6px" }} colSpan={4}>Biz</th>
-                  <th style={{ ...HEAD, color: THEM, textAlign: "center", padding: "4px 6px", borderLeft: "1px solid var(--line)" }} colSpan={4}>Rakip</th>
+                  <th style={{ ...HEAD, color: US, textAlign: "center", padding: "4px 6px" }} colSpan={4}>{usName}</th>
+                  <th style={{ ...HEAD, color: THEM, textAlign: "center", padding: "4px 6px", borderLeft: "1px solid var(--line)" }} colSpan={4}>{themName}</th>
                 </tr>
                 <tr>
                   {[ourSide, theirSide].flatMap((side) => ["Kapsama", "m/dk", "Y. hız", "Sprint"].map((c) => (
