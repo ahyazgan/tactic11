@@ -240,3 +240,4 @@
 - [x] Maç raporu PDF başlığında takım adları ve maç tarihi; ad kayıtlı değilse "Takım {id}".
 - [ ] Kulübün kendi geniş açılı maç videosuyla uçtan uca koşu + PDF'in analistle okunması (video kullanıcıdan).
 - [x] Maç raporu bulgu eşikleri gerçek konuma karşı (betimleyici, görülmüş veri): `scripts/soccertrack_v2/eval_match_report.py`, `docs/measurements/match-report-vs-gt.json`. Dakikalık dilimde bulgu kesinliği 132877 %57, 132831 %41; derinlik bulguları 22'de 6 doğru → rapordan çıkarıldı (sonra %72 / %58). Açık: üründeki 5 dk'lık dilimle tam maçta ölçüm (GT'li tam maç yok).
+- [x] İş durumu ucu yarış anında 500 veriyordu (`GET /tracking/jobs/{id}`): iş dosyası `open("w")` ile boşaltılıp yazılırken kilitsiz okunuyordu; CI'da iki kez düştü (PR 372 ilk koşu, main c0d548f). Düzeltme: yan dosyaya yazıp `os.replace`, okuma ve listeleme aynı kilitle. Regresyon testi eski kodda düşüyor.
