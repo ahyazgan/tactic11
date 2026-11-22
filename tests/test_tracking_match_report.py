@@ -151,16 +151,3 @@ def test_report_endpoint_passes_operator_direction(session, client):  # noqa: F8
     assert client.get("/tracking/matches/9600/report?home_attack=sol").status_code == 422
     pdf = client.get("/tracking/matches/9600/report.pdf?home_attack=x%2B")
     assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
-
-
-def test_phases_split_frames_by_possession_and_need_enough_frames():
-    owned = _frames(0, 40, 20.0, ball=True)  # ev sahibi topa sahip
-    loose = _frames(1, 40, 26.0)              # sahiplik yok → hiçbir faza girmez
-    report = build_match_report(HOME, AWAY, [(0.0, 15.0, owned + loose)], home_attack=1)
-    home, away = report["slices"][0]["home"]["phases"], report["slices"][0]["away"]["phases"]
-    assert home["in_possession"]["frames"] == 40 and home["in_possession"]["width_m"] == 40.0
-    assert home["out_of_possession"] is None
-    assert away["out_of_possession"]["frames"] == 40 and away["in_possession"] is None
-    assert away["out_of_possession"]["def_line_m"] == 35.0
-    summary = report["teams"]["home"]["summary"]["phases"]
-    assert summary["in_possession"]["width_m"] == 40.0 and summary["out_of_possession"] is None

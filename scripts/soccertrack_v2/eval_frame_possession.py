@@ -1,12 +1,15 @@
 """Takip karelerindeki sahiplik alanını (`possession_team_external_id`) dokunuş olaylarına karşı ölç (venv).
 
-Maç raporunun faz ayrımı (topa sahipken / değilken şekil) bu alana dayanır. Referans
+Raporun presi ve sahipliğe dayanan her analiz (faz ayrımı, geçiş anları) bu alana dayanır. Referans
 `eval_defending_events` ile aynıdır: aynı takımın ardışık iki dokunuşu arası (≤ 4 sn) top o
 takımdadır; takım değiştiren aralıklar sayılmaz. Olay takımı → takip takımı eşlemenin
 `team_side` alanından (taraf 0 = takip ev sahibi).
 
 Ölçülenler: sahiplik aralığındaki karelerin kaçında alan dolu (kapsama), dolu olanların
-kaçında doğru takım (isabet). Betimleyicidir; eşik ayarı yapmaz.
+kaçında doğru takım (isabet). Ayrıca top kaybı anları: olaylarda farklı takımın ardışık iki
+dokunuşu (≤ 4 sn) ikincisinin anında kayıptır; karelerde dolu sahiplik alanının takım
+değiştirdiği an (araya giren boş kareler atlanır, ≤ 4 sn) kayıptır; ±`TOLERANCE_S` içinde
+birebir eşleşme ile kesinlik ve duyarlılık. Betimleyicidir; eşik ayarı yapmaz.
 
     venv\\Scripts\\python.exe -X utf8 -m scripts.soccertrack_v2.eval_frame_possession \\
         --frames "data/tracking/live/990741/frames_ball/seg_*.json" \\
@@ -21,7 +24,49 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from scripts.soccertrack_v2.evaluate_ball_events import EventMapping, load_touches, possession_intervals
+from scripts.soccertrack_v2.evaluate_ball_events import (
+    POSSESSION_MAX_GAP_S,
+    EventMapping,
+    Touch,
+    load_touches,
+    possession_intervals,
+)
+
+TOLERANCE_S = 2.0
+
+
+def event_turnovers(touches: list[Touch]) -> list[float]:
+    return [b.t for a, b in zip(touches, touches[1:], strict=False)
+            if a.team != b.team and 0.0 < b.t - a.t <= POSSESSION_MAX_GAP_S]
+
+
+def frame_turnovers(frames: list[dict[str, Any]]) -> list[float]:
+    out: list[float] = []
+    last: tuple[float, int] | None = None
+    for f in frames:
+        owner = f.get("possession_team_external_id")
+        if owner is None:
+            continue
+        t = float(f["minute"]) * 60.0
+        if last is not None and owner != last[1] and t - last[0] <= POSSESSION_MAX_GAP_S:
+            out.append(t)
+        last = (t, owner)
+    return out
+
+
+def match_times(found: list[float], truth: list[float], tolerance: float = TOLERANCE_S) -> dict[str, Any]:
+    """Açgözlü birebir eşleşme (en yakın önce); kesinlik ve duyarlılık."""
+    pairs = sorted((abs(a - b), i, j) for i, a in enumerate(found) for j, b in enumerate(truth) if abs(a - b) <= tolerance)
+    used_f: set[int] = set()
+    used_t: set[int] = set()
+    for _d, i, j in pairs:
+        if i not in used_f and j not in used_t:
+            used_f.add(i)
+            used_t.add(j)
+    n = len(used_f)
+    return {"found": len(found), "truth": len(truth), "matched": n,
+            "precision": round(n / len(found), 3) if found else None,
+            "recall": round(n / len(truth), 3) if truth else None}
 
 
 def score(frames: list[dict[str, Any]], intervals: list[tuple[float, float, int]], home: int, away: int) -> dict[str, Any]:
@@ -54,8 +99,12 @@ def main() -> int:
     home, away = payloads[0]["home_team_external_id"], payloads[0]["away_team_external_id"]
     frames = sorted((f for d in payloads for f in d["frames"]), key=lambda f: f["minute"])
     mapping = EventMapping.load(args.mapping)
+    touches = load_touches(mapping)
+    lo, hi = float(frames[0]["minute"]) * 60.0, float(frames[-1]["minute"]) * 60.0
+    truth = [t for t in event_turnovers(touches) if lo <= t <= hi]
     report = {"frames": args.frames, "mapping": str(args.mapping), "frames_total": len(frames),
-              **score(frames, possession_intervals(load_touches(mapping), mapping.team_side), home, away)}
+              **score(frames, possession_intervals(touches, mapping.team_side), home, away),
+              "turnovers": {"tolerance_s": TOLERANCE_S, **match_times(frame_turnovers(frames), truth)}}
     args.out.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False))
     return 0

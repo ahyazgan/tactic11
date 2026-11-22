@@ -10,10 +10,6 @@ kaleci/en derin oyuncudan çıkarılır (space_map kuralı). Yön bilinen diliml
 yazılır: kaleci düşülmüş en geri hattın kendi kalesine uzaklığı (m, `shape_watch.sample_frame`),
 dilimdeki karelerin medyanı; blok etiketi telestrasyonla aynı eşiklerdendir.
 
-Faz: her dilimde takımın topa sahipken (`in_possession`) ve rakip topa sahipken
-(`out_of_possession`) kareleri ayrıca özetlenir (genişlik, kompaktlık, savunma hattı); sahiplik
-karenin `possession_team_external_id` alanındandır, boş kareler hiçbir faza girmez.
-
 Sınırlar (yanıtta `limits` olarak da döner):
   - `centroid_x` ham saha yüzdesidir, "blok yüksekliği" değildir.
   - Savunma hattı tüm karelerden alınır (topa sahipken de); sahiplik ayrımı yoktur.
@@ -46,8 +42,6 @@ MIN_SLICE_FRAMES = 30
 MIN_PRESS_FRAMES = 20
 MIN_FORMATION_SUPPORT = 0.5  # karelerin yarısından azında görülen yerleşim yazılmaz
 MIN_LINE_SAMPLES = 20        # savunma hattı için dilimde hat bulunan kare
-MIN_PHASE_FRAMES = 30        # faz özeti için dilimde o fazdaki kare
-PHASES = ("in_possession", "out_of_possession")
 
 NO_DIRECTION_LIMIT = "Saha yönü bilinmediği için savunma hattı ve blok yüksekliği verilmez."
 LINE_LIMITS = (
@@ -60,16 +54,11 @@ LINE_LIMITS = (
     "0,5–0,7 m sapar, blok etiketi dilimlerin %75–100'ünde aynı; tek dakikalık dilimde hat seyrek de "
     "olsa 25 m'ye varan hatayla yanlış oyuncu kümesine oturabilir (docs/measurements/match-report-def-line-vs-gt.json).",
 )
-PHASE_LIMIT = (
-    "Faz (topa sahipken / değilken) karedeki sahiplik alanından gelir; gerçek dokunuşlara karşı bir gündüz "
-    "maçında bu alan sahiplik anlarının %58'inde dolu, dolu olduğunda %85 doğru (docs/measurements/"
-    "match-report-phase-vs-gt.json). Boş kareler hiçbir faza girmez; ikinci saha ölçülemedi."
-)
 LIMITS = (
-    PHASE_LIMIT,
     "Takım ayrımı forma rengine dayanır; yanlış takıma düşen oyuncu genişlik ve derinliği büyütür.",
     "Dilimler video dakikasıdır; devre arası ve uzatma ayrılmaz.",
-    "Pres yalnız top görünürken ve rakip topa sahipken sayılır.",
+    "Pres yalnız top görünürken ve rakip topa sahipken sayılır; karedeki sahiplik bilgisi gerçek "
+    "dokunuşlara karşı bir gündüz maçında sahiplik anlarının %58'inde dolu, dolu olduğunda %85 doğru.",
     f"Yerleşim yalnız karelerin en az %{MIN_FORMATION_SUPPORT * 100:.0f}'sinde aynı çıkarsa yazılır; gerçek maçta çoğu dilimde boş kalır.",
     f"Güvenilir dilim: en az {MIN_SLICE_FRAMES} kare ve ortalama {MIN_PLAYERS:g} görünür oyuncu.",
     "Derinlik (takım boyu) bulgu üretmez: gerçek konuma karşı ölçümde bu bulguların çoğu yanlış çıktı; "
@@ -129,22 +118,6 @@ def _def_line(team_id: int, frames: Sequence[TrackingFrame], direction: Directio
     return (round(median(depths), 1) if len(depths) >= MIN_LINE_SAMPLES else None), len(depths)
 
 
-def _phase(team_id: int, frames: Sequence[TrackingFrame], direction: Direction) -> dict[str, Any] | None:
-    if len(frames) < MIN_PHASE_FRAMES:
-        return None
-    shape = compute_team_shape(team_id, frames).value
-    def_line, _n = _def_line(team_id, frames, direction)
-    return {"frames": len(frames), "width_m": shape.width_m, "compactness_m": shape.compactness_m,
-            "def_line_m": def_line}
-
-
-def _phases(team_id: int, frames: Sequence[TrackingFrame], direction: Direction) -> dict[str, Any]:
-    owned = [f for f in frames if f.possession_team_external_id == team_id]
-    other = [f for f in frames if f.possession_team_external_id not in (None, team_id)]
-    return {"in_possession": _phase(team_id, owned, direction),
-            "out_of_possession": _phase(team_id, other, direction)}
-
-
 def _team_slice(team_id: int, frames: Sequence[TrackingFrame], direction: Direction) -> dict[str, Any]:
     shape = asdict(compute_team_shape(team_id, frames).value)
     press = asdict(compute_pressure(team_id, frames).value)
@@ -162,7 +135,6 @@ def _team_slice(team_id: int, frames: Sequence[TrackingFrame], direction: Direct
         "def_line_m": def_line,
         "line_frames": line_frames,
         "block": block_label(def_line) if def_line is not None else None,
-        "phases": _phases(team_id, frames, direction),
     }
 
 
@@ -186,22 +158,7 @@ def _summary(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
         round(sum(r["def_line_m"] * r["line_frames"] for r in lines) / line_total, 1) if line_total else None
     )
     out["block"] = block_label(out["def_line_m"]) if out["def_line_m"] is not None else None
-    out["phases"] = {phase: _phase_summary([r["phases"][phase] for r in good]) for phase in PHASES}
     out["reliable_slices"] = len(good)
-    return out
-
-
-def _phase_summary(rows: list[dict[str, Any] | None]) -> dict[str, Any] | None:
-    """Faz satırlarının kare ağırlıklı ortalaması; savunma hattı yalnız dolu satırlardan."""
-    present = [r for r in rows if r is not None]
-    total = sum(r["frames"] for r in present)
-    if not total:
-        return None
-    out: dict[str, Any] = {"frames": total, **{
-        k: round(sum(r[k] * r["frames"] for r in present) / total, 1) for k in ("width_m", "compactness_m")}}
-    lines = [r for r in present if r["def_line_m"] is not None]
-    line_total = sum(r["frames"] for r in lines)
-    out["def_line_m"] = round(sum(r["def_line_m"] * r["frames"] for r in lines) / line_total, 1) if line_total else None
     return out
 
 

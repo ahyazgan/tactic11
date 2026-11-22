@@ -1,7 +1,7 @@
 """Rapor-gerçek karşılaştırma aracının bulgu uyumu hesabı."""
 from __future__ import annotations
 
-from scripts.soccertrack_v2.eval_match_report import compare, slices_of, with_event_possession
+from scripts.soccertrack_v2.eval_match_report import compare, slices_of
 from tests.test_tracking_match_report import AWAY, HOME, _frames
 
 
@@ -18,9 +18,3 @@ def test_operator_direction_reaches_both_reports_and_block_labels_are_compared()
     r = compare(frames, frames, HOME, AWAY, 1.0, home_attack=1)
     assert r["slice_abs_error"]["def_line_m"]["max"] == 0
     assert r["block_label_agreement"] == {"same": 4, "rate": 1.0}
-
-
-def test_event_possession_rewrites_only_frames_inside_intervals():
-    frames = _frames(0.0, 4, 10.0)  # 0., 1., 2., 3. saniye
-    out = with_event_possession(frames, [(1.0, 3.0, 1)], HOME, AWAY)
-    assert [f.possession_team_external_id for f in out] == [None, AWAY, AWAY, None]

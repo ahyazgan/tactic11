@@ -45,6 +45,9 @@ ekibindir. Örnek: SoccerTrack 117093 ilk yarısından üretilen rapor
   6 dakikalık kesit yaklaşık 25 dakika sürer. Kulübün kendi geniş açılı kaydı tercih edilmeli.
 - **Canlı mod yavaş ve eksik.** Prova: görüntüden yaklaşık 1,5–2 dk geride, segmentlerin %42'si
   işlendi (`live-rehearsal-990602-keep-up.json`). Pilotta canlı söz verilmez.
+- **Faz ayrımı ve geçiş anları yok.** Karedeki sahiplik bilgisi sahiplik anlarının %58'inde dolu,
+  %85 doğru; buna dayanan savunurken genişlik 8 m sapıyor, top kaybı anlarının yalnız %18'i gerçek
+  (`match-report-phase-vs-gt.json`). "Savunurken şu kadar daraldık" ve "kayıp sonrası pres" sözü verilmez.
 - **Elle sayım yapay zekâ tarafından yapıldı;** insan gözden geçirmesi yok.
 
 ## Pilot önerisi

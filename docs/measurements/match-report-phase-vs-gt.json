@@ -1,0 +1,123 @@
+{
+ "measured": "2026-11-22",
+ "question": "Karelerdeki sahiplik alanı faz ayrımına (topa sahipken/değilken şekil) ve geçiş anlarına (top kaybı) yetiyor mu?",
+ "data": "SoccerTrack v2 132877, 600-1200 sn, gündüz, 990741 takip kareleri (frames_ball); referans: düzeltilmiş GSR konumları + dokunuş olaylarından sahiplik (ball-events-mapping-132877.json, -0,28 sn). Görülmüş veri. 132831: olay takım eşlemesi geçersiz (ball-events-mapping-132831.json), ölçülemedi.",
+ "possession_field": {
+  "in_possession": 4687,
+  "labelled": 2708,
+  "correct": 2288,
+  "coverage": 0.578,
+  "accuracy": 0.845
+ },
+ "phase_split": {
+  "code": "4774cd0 (match_report faz alanı + eval_match_report --events-mapping); sonraki committe geri alındı",
+  "pre_registered": "Ölçümden önce yazıldı (sahiplik isabeti görüldükten sonra, faz çıktısı görülmeden): 5 dk dilimde savunurken savunma hattı medyan hata <= 3 m VE savunurken genişlik medyan hatası tüm karelerdeki genişlik hatasını en fazla 1 m aşar.",
+  "slice_abs_error_5min": {
+   "width_m": {
+    "n": 4,
+    "median": 5.2,
+    "p90": 9.63,
+    "max": 11.4
+   },
+   "def_line_m": {
+    "n": 4,
+    "median": 0.65,
+    "p90": 1.29,
+    "max": 1.5
+   },
+   "out_of_possession.width_m": {
+    "n": 4,
+    "median": 8.2,
+    "p90": 10.79,
+    "max": 11.9
+   },
+   "out_of_possession.def_line_m": {
+    "n": 4,
+    "median": 1.3,
+    "p90": 1.61,
+    "max": 1.7
+   },
+   "in_possession.width_m": {
+    "n": 4,
+    "median": 5.5,
+    "p90": 7.86,
+    "max": 8.7
+   },
+   "in_possession.def_line_m": {
+    "n": 4,
+    "median": 2.2,
+    "p90": 3.46,
+    "max": 3.7
+   },
+   "out_of_possession.compactness_m": {
+    "n": 4,
+    "median": 2.15,
+    "p90": 2.58,
+    "max": 2.7
+   }
+  },
+  "slice_abs_error_1min": {
+   "width_m": {
+    "n": 20,
+    "median": 5.4,
+    "p90": 11.04,
+    "max": 15.3
+   },
+   "def_line_m": {
+    "n": 20,
+    "median": 0.85,
+    "p90": 2.55,
+    "max": 3.7
+   },
+   "out_of_possession.width_m": {
+    "n": 19,
+    "median": 8.8,
+    "p90": 14.96,
+    "max": 15.7
+   },
+   "out_of_possession.def_line_m": {
+    "n": 19,
+    "median": 1.8,
+    "p90": 6.24,
+    "max": 13.0
+   },
+   "in_possession.width_m": {
+    "n": 19,
+    "median": 5.8,
+    "p90": 10.7,
+    "max": 12.0
+   },
+   "in_possession.def_line_m": {
+    "n": 19,
+    "median": 2.2,
+    "p90": 7.78,
+    "max": 15.6
+   },
+   "out_of_possession.compactness_m": {
+    "n": 19,
+    "median": 1.6,
+    "p90": 4.02,
+    "max": 4.8
+   }
+  },
+  "verdict": "KALDI: savunurken hat 1,3 m (geçti) ama savunurken genişlik 8,2 m, tüm kareler 5,2 m (+3,0 m > +1 m). Faz rapora eklenmedi."
+ },
+ "turnovers": {
+  "pre_registered": "Ölçümden önce yazıldı: karelerden bulunan top kayıpları olay kayıplarıyla ±2 sn birebir eşleşmede kesinlik >= %60 VE duyarlılık >= %50 ise geçiş anları kurulur.",
+  "tolerance_s": 2.0,
+  "found": 177,
+  "truth": 42,
+  "matched": 31,
+  "precision": 0.175,
+  "recall": 0.738,
+  "verdict": "KALDI: kesinlik %17,5 (177 bulunan, 42 gerçek), duyarlılık %73,8. Sahiplik alanı titrek; geçiş anları kurulmadı."
+ },
+ "tools": [
+  "scripts/soccertrack_v2/eval_frame_possession.py",
+  "scripts/soccertrack_v2/eval_match_report.py (4774cd0, --events-mapping)"
+ ],
+ "limits": [
+  "Tek saha, 10 dk; 5 dk dilim sayısı 4 (iki takım).",
+  "Olay referansı dokunuştan türetilmiş sahiplik; takım değiştiren aralıklar sayılmaz."
+ ]
+}
