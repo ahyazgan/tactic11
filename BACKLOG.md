@@ -246,6 +246,7 @@
 - [x] Video Analiz saha overlay'inde "~162 km/h" etiketi: top hızının 45 m/s tavanına yapışmış değeriydi (990809'da top örneklerinin 174/4679'u; oyuncuda 12 m/s tavanı 4207/163023 örnek, karelerin 3118/7496'sında "En hızlı ~43 km/h"). Tavandaki değer ölçüm değil kırpılmış sıçrama; arayüz artık göstermiyor (`lib/tracking-geometry.ts` fmtKmh/fastestPlayer).
 - [x] Fiziksel yükteki sprint/yüksek hız payı tavana yapışmış hız örneklerinden etkilenmiyor: `engine/tracking/physical_load.py` hattın `velocity_mps` alanını kullanmaz, hızı 1 sn düzeltilmiş konumlardan kendisi alır ve 12 m/sn üstü adımları atar (kod okumasıyla; ayrıca ölçülmedi).
 - [x] Maç raporuna saha yönü + savunma hattı/blok: operatör yönü (`home_attack`, `halftime_minute`) ya da kaleci/en derin oyuncu çıkarımı; rapor, PDF ve arayüz kartı. Gerçek konuma karşı 5 dk dilimde medyan 0,65/0,5 m, blok uyumu %100/%75 (ölçüt önceden yazılı geçti). docs/measurements/match-report-def-line-vs-gt.json
-- [ ] Faz ayrımı: raporda topa sahipken/değilken genişlik, kompaktlık, savunma hattı ayrı. Bitti sayılır: sahiplik doğruluğu gerçek konuma karşı ölçülmüş, fazlı sayılar ölçüt geçerse raporda.
-- [ ] Geçiş anları: top kaybı sonrası 5 sn pres tepkisi. Faz ayrımına bağlı.
+- [x] Faz ayrımı denendi, ölçüt KALDI (savunurken genişlik 8,2 m vs tüm kareler 5,2 m); rapora eklenmedi, kod 4774cd0'da. docs/measurements/match-report-phase-vs-gt.json
+- [x] Geçiş anları kapısı KALDI: karelerden top kaybı kesinliği %17,5 (şart %60); kurulmadı. Aynı ölçüm dosyası.
+- [ ] Sahiplik alanını sağlamlaştır (titreşim: 177 kayıp vs 42 gerçek). Telestratörün pencere çoğunluğu kuralı savunan takımda %81 veriyordu; aynı kuralla kare sahipliğini yeniden türetip `eval_frame_possession` ile ölç. Bitti sayılır: kayıp kesinliği >= %60 ya da yöntem elendi diye yazılı; sonra faz ve geçiş anları yeniden sınanır.
 - [ ] Rakip raporu: aynı hat rakip videosunda, "Rakip nasıl oynuyor" PDF'i.

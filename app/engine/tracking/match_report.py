@@ -57,7 +57,8 @@ LINE_LIMITS = (
 LIMITS = (
     "Takım ayrımı forma rengine dayanır; yanlış takıma düşen oyuncu genişlik ve derinliği büyütür.",
     "Dilimler video dakikasıdır; devre arası ve uzatma ayrılmaz.",
-    "Pres yalnız top görünürken ve rakip topa sahipken sayılır.",
+    "Pres yalnız top görünürken ve rakip topa sahipken sayılır; karedeki sahiplik bilgisi gerçek "
+    "dokunuşlara karşı bir gündüz maçında sahiplik anlarının %58'inde dolu, dolu olduğunda %85 doğru.",
     f"Yerleşim yalnız karelerin en az %{MIN_FORMATION_SUPPORT * 100:.0f}'sinde aynı çıkarsa yazılır; gerçek maçta çoğu dilimde boş kalır.",
     f"Güvenilir dilim: en az {MIN_SLICE_FRAMES} kare ve ortalama {MIN_PLAYERS:g} görünür oyuncu.",
     "Derinlik (takım boyu) bulgu üretmez: gerçek konuma karşı ölçümde bu bulguların çoğu yanlış çıktı; "
