@@ -14,6 +14,12 @@ maç ortalamasından ayrılan dilimler "öne çıkanlar" olarak listelenir. Yoru
 ekibindir. Örnek: SoccerTrack 117093 ilk yarısından üretilen rapor
 (`GET /tracking/matches/{id}/report.pdf`).
 
+**Rakip analizi:** aynı hat rakibin başka bir maçının videosunda koşar; PDF "İzlenen /
+Karşısındaki" diye adlandırır ve raporun sayılarından "Nasıl oynuyor" notları çıkarır (blok,
+hattın en geri/önde olduğu dilim, karşı takıma göre pres). İki takımın genişliği karşılaştırılmaz:
+gerçek konuma karşı bu fark güvenilmez çıktı; pres ve hat farkı gerçekle uyumluydu
+(`match-report-notes-vs-gt.json`). Notlar tek maçın sayılarıdır.
+
 ## Kanıtlı olanlar
 
 | Ne | Koşul | Sonuç | Kaynak |

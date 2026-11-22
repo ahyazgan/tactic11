@@ -536,7 +536,8 @@ def tracking_match_report(
 def tracking_match_report_pdf(
     match_id: int,
     slice_minutes: float = Query(15.0, ge=5, le=45),
-    our_side: Literal["home", "away"] = Query("home"),
+    our_side: Literal["home", "away"] = Query("home", description="Kendi maçımızda biz; rakip analizinde izlenen takım"),
+    perspective: Literal["ours", "scout"] = Query("ours", description="scout: video rakibin başka bir maçı"),
     home_attack: Literal["x+", "x-"] | None = Query(None, description=HOME_ATTACK_HELP),
     halftime_minute: float | None = Query(None, ge=0, description=HALFTIME_HELP),
     session: Session = Depends(get_session),
@@ -546,11 +547,16 @@ def tracking_match_report_pdf(
 
     report = _match_report(session, match_id, slice_minutes, home_attack, halftime_minute)
     try:
-        pdf = build_tracking_match_pdf(report, our_side=our_side, title=_report_title(session, match_id))
+        pdf = build_tracking_match_pdf(report, our_side=our_side, title=_report_title(session, match_id),
+                                       perspective=perspective)
     except ReportlabNotInstalled as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     return Response(content=pdf, media_type="application/pdf",
-                    headers={"Content-Disposition": f'attachment; filename="mac_raporu_{match_id}.pdf"'})
+                    headers={"Content-Disposition": f'attachment; filename="{_pdf_name(perspective)}_{match_id}.pdf"'})
+
+
+def _pdf_name(perspective: str) -> str:
+    return "rakip_analizi" if perspective == "scout" else "mac_raporu"
 
 
 def _report_title(session: Session, match_id: int) -> str:

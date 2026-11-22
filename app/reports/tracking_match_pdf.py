@@ -1,7 +1,9 @@
 """Maç sonu raporu PDF'i — takip verisinden otomatik, insan yorumu içermez.
 
 Girdi `GET /tracking/matches/{id}/report` yanıtının kendisidir; builder yeni sayı üretmez,
-yalnız dizer. Takımlar "Biz / Rakip" diye `our_side`a göre adlandırılır. Güvenilmez dilimler
+yalnız dizer. Takımlar "Biz / Rakip" diye `our_side`a göre adlandırılır. Rakip analizinde
+(`perspective="scout"`) video rakibin başka bir maçıdır: `our_side` izlenen takımdır, adlar
+"İzlenen / Karşısındaki" olur ve raporun `notes` cümleleri "Nasıl oynuyor" bölümüne dizilir. Güvenilmez dilimler
 tabloda işaretlenir; motorun ve fiziksel yükün sınırları raporun sonunda aynen yazılır.
 
 Yazı tipi: reportlab'ın içindeki Vera (Türkçe harfleri taşır; sistem fontuna bağımlılık yok).
@@ -20,6 +22,7 @@ from typing import Any, Literal
 from app.reports.pdf import REPORTLAB_AVAILABLE, ReportlabNotInstalled
 
 Side = Literal["home", "away"]
+Perspective = Literal["ours", "scout"]
 FONT, FONT_BOLD = "MatchVera", "MatchVeraBold"
 MAX_FINDINGS = 12
 US_COLOR, THEM_COLOR = "#1f6b4f", "#b5651d"
@@ -59,7 +62,7 @@ def _minutes(row: dict[str, Any]) -> str:
 
 
 def build_tracking_match_pdf(report: dict[str, Any], *, our_side: Side = "home", title: str | None = None,
-                             generated_at: str | None = None) -> bytes:
+                             generated_at: str | None = None, perspective: Perspective = "ours") -> bytes:
     if not REPORTLAB_AVAILABLE:
         raise ReportlabNotInstalled("reportlab kurulu değil — `pip install reportlab>=4.0`")
     from reportlab.lib import colors
@@ -77,9 +80,10 @@ def build_tracking_match_pdf(report: dict[str, Any], *, our_side: Side = "home",
 
     _register_fonts()
     their_side: Side = "away" if our_side == "home" else "home"
-    name = {our_side: "Biz", their_side: "Rakip"}
+    scout = perspective == "scout"
+    name = {our_side: "İzlenen", their_side: "Karşısındaki"} if scout else {our_side: "Biz", their_side: "Rakip"}
     color = {our_side: US_COLOR, their_side: THEM_COLOR}
-    title = title or f"Maç sonu raporu · maç {report.get('match_id', '')}".strip()
+    title = title or f"{'Rakip analizi' if scout else 'Maç sonu raporu'} · maç {report.get('match_id', '')}".strip()
     generated = generated_at or datetime.now(UTC).astimezone().strftime("%Y-%m-%d %H:%M")
 
     body = ParagraphStyle("MrBody", fontName=FONT, fontSize=9, leading=12.5)
@@ -112,7 +116,8 @@ def build_tracking_match_pdf(report: dict[str, Any], *, our_side: Side = "home",
     slices = report.get("slices") or []
     physical = report.get("physical") or {}
     story: list[Any] = [
-        p("TACTIC11 · TAKİP VERİSİNDEN OTOMATİK RAPOR", small), p(title, title_style),
+        p("TACTIC11 · " + ("RAKİP ANALİZİ · " if scout else "") + "TAKİP VERİSİNDEN OTOMATİK RAPOR", small),
+        p(title, title_style),
         p(f"Üretim: {generated} · dilim {report.get('slice_minutes', '—')} dk · {len(slices)} dilim. "
           "Bu sayfa makine çıktısıdır; yorum ve karar teknik ekibindir.", small),
         p("Maç ortalaması (güvenilir dilimler)", head),
@@ -130,6 +135,14 @@ def build_tracking_match_pdf(report: dict[str, Any], *, our_side: Side = "home",
     story.append(grid(summary_rows, [24 * mm, 40 * mm, 22 * mm, 22 * mm, 24 * mm, 20 * mm, 30 * mm]))
     if not (report.get("direction") or {}).get("known"):
         story.append(p("Saha yönü verilmediği için savunma hattı yazılmadı.", small))
+
+    if scout:
+        story.append(p("Nasıl oynuyor (bu maçın sayılarından)", head))
+        notes = (report.get("notes") or {}).get(our_side) or []
+        story.extend(p(f"• {note}", body) for note in notes)
+        if not notes:
+            story.append(p("Güvenilir dilim olmadığı için not çıkarılmadı.", body))
+        story.append(p("Tek maçtır; rakibin alışkanlığı için birkaç maçın raporu birlikte okunmalı.", small))
 
     story.append(p("Öne çıkanlar (maç ortalamasından eşik kadar sapan dilimler)", head))
     findings = report.get("findings") or []
