@@ -360,17 +360,26 @@ def _job_path(job_id: str) -> Path:
 
 
 def _write_job(job: dict[str, Any]) -> None:
+    """Önce yan dosyaya yazar, sonra yerine koyar: yarım yazılmış iş dosyası hiç görünmez.
+
+    Okuyan taraf aynı kilidi alır; Windows'ta açık dosyanın üstüne yazılamadığı için kilit şarttır.
+    """
     job["updated_at"] = datetime.now(UTC).isoformat()
-    with _jobs_lock, open(_job_path(job["id"]), "w", encoding="utf-8") as f:
-        json.dump(job, f, ensure_ascii=False, indent=1)
+    path = _job_path(job["id"])
+    tmp = path.with_suffix(".json.tmp")
+    with _jobs_lock:
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(job, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, path)
 
 
 def _read_job(job_id: str) -> dict[str, Any] | None:
     p = _job_path(job_id)
-    if not p.exists():
-        return None
-    with open(p, encoding="utf-8") as f:
-        return json.load(f)
+    with _jobs_lock:
+        if not p.exists():
+            return None
+        with open(p, encoding="utf-8") as f:
+            return json.load(f)
 
 
 def run_ingest(out_json: str, tenant_id: str, match_id: int) -> dict[str, Any]:
@@ -587,10 +596,11 @@ def list_jobs(limit: int = Query(50, ge=1, le=200), _user: models.User = Depends
     jobs = []
     for p in _dir("jobs").glob("*.json"):
         try:
-            with open(p, encoding="utf-8") as f:
-                jobs.append(_public(json.load(f)))
+            job = _read_job(p.stem)
         except (OSError, ValueError):
             continue
+        if job is not None:
+            jobs.append(_public(job))
     jobs.sort(key=lambda j: j.get("created_at", ""), reverse=True)
     return {"jobs": jobs[:limit], "total": len(jobs), "worker_python": worker_python(),
             "worker_available": bool(os.environ.get("TRACKING_WORKER_CMD")) or Path(worker_python()).exists(),

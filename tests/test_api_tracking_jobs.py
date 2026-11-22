@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import sys
+import threading
 import time
 from copy import deepcopy
 from datetime import UTC, datetime
@@ -460,3 +461,23 @@ def test_default_weights_prefers_v2_then_mixed(env, monkeypatch) -> None:
     assert tracking_jobs.default_weights() == str(models_dir / "rfdetr_mixed_small")
     monkeypatch.setenv("TRACKING_WEIGHTS", "elle")
     assert tracking_jobs.default_weights() == "elle"
+
+
+def test_a_reader_never_sees_a_half_written_job_file(env, monkeypatch):
+    """Durum sorgusu yazma anına denk gelince uç 500 veriyordu (boşaltılmış dosya okunuyordu)."""
+    job = {"id": "yaris01", "state": "running"}
+    tracking_jobs._write_job(job)
+    seen: list[dict | None] = []
+    real_dump = json.dump
+
+    def dump_then_peek(obj, f, **kwargs):
+        real_dump(obj, f, **kwargs)
+        f.flush()
+        monkeypatch.setattr(tracking_jobs, "_jobs_lock", threading.Lock())  # okuyan, yazanın kilidini beklemesin
+        seen.append(tracking_jobs._read_job("yaris01"))
+
+    monkeypatch.setattr(tracking_jobs.json, "dump", dump_then_peek)
+    tracking_jobs._write_job({**job, "state": "done"})
+    assert [s and s["state"] for s in seen] == ["running"]
+    assert tracking_jobs._read_job("yaris01")["state"] == "done"
+    assert not list(tracking_jobs._job_path("yaris01").parent.glob("*.tmp"))
