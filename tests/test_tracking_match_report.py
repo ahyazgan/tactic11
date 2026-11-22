@@ -112,3 +112,42 @@ def test_pdf_title_uses_team_names_and_kickoff_date(session):
     session.commit()
     title = _report_title(session, 9600)
     assert title.startswith("Beşiktaş – Takım 213 · ") and title[-10:].count(".") == 2
+
+
+def test_operator_direction_gives_defensive_line_and_block():
+    from app.engine.tracking.match_report import LINE_LIMITS, NO_DIRECTION_LIMIT
+
+    report = build_match_report(HOME, AWAY, [(0.0, 15.0, _frames(0, 60, 20.0))], home_attack=1)
+    row = report["slices"][0]
+    assert (row["home"]["def_line_m"], row["home"]["block"]) == (20.0, "Alçak blok")
+    assert (row["away"]["def_line_m"], row["away"]["block"]) == (35.0, "Orta blok")
+    assert report["teams"]["away"]["summary"]["def_line_m"] == 35.0
+    assert report["direction"]["parts"] == [{"period": 1, "after_halftime": False, "home_attack": 1, "method": "operator"}]
+    assert LINE_LIMITS[0] in report["limits"] and NO_DIRECTION_LIMIT not in report["limits"]
+
+
+def test_halftime_minute_reverses_the_operator_direction():
+    slices = [(0.0, 15.0, _frames(0, 60, 20.0)), (45.0, 60.0, _frames(45, 60, 20.0))]
+    report = build_match_report(HOME, AWAY, slices, home_attack=1, halftime_minute=45.0)
+    assert [s["home"]["def_line_m"] for s in report["slices"]] == [20.0, 75.0]
+    assert [p["home_attack"] for p in report["direction"]["parts"]] == [1, -1]
+
+
+def test_without_operator_direction_it_is_inferred_and_marked():
+    report = build_match_report(HOME, AWAY, [(0.0, 15.0, _frames(0, 60, 20.0))])
+    assert report["direction"]["parts"][0]["method"] == "deepest"
+    assert report["slices"][0]["home"]["def_line_m"] == 20.0
+
+
+def test_too_few_line_frames_withhold_the_line():
+    report = build_match_report(HOME, AWAY, [(0.0, 15.0, _frames(0, 10, 20.0))], home_attack=1)
+    assert report["slices"][0]["home"]["def_line_m"] is None and report["slices"][0]["home"]["block"] is None
+
+
+def test_report_endpoint_passes_operator_direction(session, client):  # noqa: F811
+    _seed(session, frames=3)
+    body = client.get("/tracking/matches/9600/report?slice_minutes=15&home_attack=x-&halftime_minute=45").json()
+    assert body["direction"]["home_attack"] == -1 and body["direction"]["halftime_minute"] == 45
+    assert client.get("/tracking/matches/9600/report?home_attack=sol").status_code == 422
+    pdf = client.get("/tracking/matches/9600/report.pdf?home_attack=x%2B")
+    assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")

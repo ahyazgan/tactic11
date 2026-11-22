@@ -42,6 +42,7 @@ from typing import cast
 import numpy as np
 
 from app.domain import TrackingFrame
+from app.engine.shape_watch.compute import block_label
 from app.engine.space_map.compute import (
     LINE_CLUSTER_GAP_M,
     MIN_LINE_PLAYERS,
@@ -56,8 +57,6 @@ from app.tracking.person_filter import (
 )
 from app.tracking.pitch_model import PITCH_LENGTH_M, PITCH_WIDTH_M, pitch_segments
 
-LOW_BLOCK_MAX_M = 30.0       # savunma hattı kendi kalesine < 30 m → alçak blok
-MID_BLOCK_MAX_M = 45.0       # 30–45 m → orta blok; üstü yüksek blok
 PRESS_NEAREST_MAX_M = 3.0    # pres: en yakın savunan ≤ 3 m ...
 PRESS_MIN_PLAYERS = 2        # ... ve 5 m içinde en az 2 savunan
 POSSESSION_MAX_M = 4.0       # topa bu mesafeden uzak en yakın oyuncu sahiplik oyu vermez
@@ -434,16 +433,6 @@ class TelestrationConfig:
         if (not 0.0 < self.line_smoothing <= 1.0 or self.label_hold_s < 0 or self.min_track_s < 0
                 or self.min_team_players < 2):
             raise ValueError("geçersiz telestrasyon ayarı")
-
-
-def block_label(def_line_m: float, pressing: bool) -> str:
-    if def_line_m < LOW_BLOCK_MAX_M:
-        base = "Alçak blok"
-    elif def_line_m < MID_BLOCK_MAX_M:
-        base = "Orta blok"
-    else:
-        base = "Yüksek blok"
-    return f"{base} · pres" if pressing else base
 
 
 class Telestrator:

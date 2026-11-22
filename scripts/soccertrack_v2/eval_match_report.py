@@ -4,7 +4,9 @@ Aynı `build_match_report` iki girdiyle çalışır: takip kareleri ve aynı anl
 kurulmuş kareleri (`eval_shape_watch.gsr_frame_like`; takım eşlemesi konum eşleşmesinden, top
 takip karesinden). Ölçülenler:
 
-- dilim başına mutlak hata: genişlik, derinlik, kompaktlık, pres (iki tarafta da güvenilir dilim);
+- dilim başına mutlak hata: genişlik, derinlik, kompaktlık, pres, savunma hattı (iki tarafta da
+  güvenilir dilim); savunma hattı için hücum yönü referans kalecilerinden (`gt_attack_direction`)
+  alınıp iki rapora da operatör girdisi olarak verilir, blok etiketi uyumu ayrıca sayılır;
 - bulgu uyumu: takipteki bulguların (taraf, dilim, ölçü, yön) kaçı referansta da var (kesinlik),
   referanstakilerin kaçı takipte de var (duyarlılık).
 
@@ -37,6 +39,7 @@ from app.tracking.telestration import spots_from_frame
 from scripts.soccertrack_v2.eval_shape_watch import gsr_frame_like
 from scripts.soccertrack_v2.eval_telestration import (
     GT_KEEPER,
+    gt_attack_direction,
     gt_frame,
     gt_index,
     gt_metres,
@@ -44,12 +47,13 @@ from scripts.soccertrack_v2.eval_telestration import (
     match,
 )
 
-METRICS = ("width_m", "depth_m", "compactness_m", "press_index")
+METRICS = ("width_m", "depth_m", "compactness_m", "press_index", "def_line_m")
 
 
 def paired_frames(raw: list[dict[str, Any]], gt: dict[int, np.ndarray], delta: int, calib: PitchCalibration,
-                  home: int, away: int) -> tuple[list[TrackingFrame], list[TrackingFrame], int]:
-    """(takip kareleri, aynı anların referans kareleri, eşleşen oyuncu çifti sayısı)."""
+                  home: int, away: int) -> tuple[list[TrackingFrame], list[TrackingFrame], int, int]:
+    """(takip kareleri, aynı anların referans kareleri, eşleşen oyuncu çifti sayısı, ev sahibinin
+    referans kalecilerinden hücum yönü)."""
     frames = [TrackingFrame.model_validate(f) for f in raw]
     pairs: Counter[tuple[int, int]] = Counter()
     for f in frames:
@@ -69,7 +73,8 @@ def paired_frames(raw: list[dict[str, Any]], gt: dict[int, np.ndarray], delta: i
         if g is not None:
             tracked.append(f)
             ref.append(gsr_frame_like(d, g, team_of_gt, home, away))
-    return tracked, ref, sum(pairs.values())
+    home_attack = gt_attack_direction(gt, [gt_frame(f.minute, delta) for f in tracked], hg)
+    return tracked, ref, sum(pairs.values()), home_attack
 
 
 def slices_of(frames: list[TrackingFrame], minutes: float) -> list[tuple[float, float, list[TrackingFrame]]]:
@@ -83,10 +88,12 @@ def finding_keys(report: dict[str, Any]) -> set[tuple[str, float, str, int]]:
     return {(f["side"], f["from_minute"], f["metric"], 1 if f["delta"] > 0 else -1) for f in report["findings"]}
 
 
-def compare(tracked: list[TrackingFrame], ref: list[TrackingFrame], home: int, away: int, minutes: float) -> dict[str, Any]:
-    a = build_match_report(home, away, slices_of(tracked, minutes))
-    b = build_match_report(home, away, slices_of(ref, minutes))
+def compare(tracked: list[TrackingFrame], ref: list[TrackingFrame], home: int, away: int, minutes: float,
+            home_attack: int = 0) -> dict[str, Any]:
+    a = build_match_report(home, away, slices_of(tracked, minutes), home_attack=home_attack)
+    b = build_match_report(home, away, slices_of(ref, minutes), home_attack=home_attack)
     errors: dict[str, list[float]] = defaultdict(list)
+    blocks = Counter()
     for sa, sb in zip(a["slices"], b["slices"], strict=True):
         for side in ("home", "away"):
             ta, tb = sa[side], sb[side]
@@ -95,6 +102,8 @@ def compare(tracked: list[TrackingFrame], ref: list[TrackingFrame], home: int, a
             for m in METRICS:
                 if ta[m] is not None and tb[m] is not None:
                     errors[m].append(abs(ta[m] - tb[m]))
+            if ta["block"] is not None and tb["block"] is not None:
+                blocks["same" if ta["block"] == tb["block"] else "different"] += 1
     fa, fb = finding_keys(a), finding_keys(b)
     both = fa & fb
     return {
@@ -103,6 +112,7 @@ def compare(tracked: list[TrackingFrame], ref: list[TrackingFrame], home: int, a
         "slice_abs_error": {m: {"n": len(v), "median": round(median(v), 2), "p90": round(float(np.percentile(v, 90)), 2),
                                 "max": round(max(v), 2)} for m, v in errors.items() if v},
         "thresholds": a["thresholds"],
+        "block_label_agreement": {**blocks, "rate": round(blocks["same"] / sum(blocks.values()), 3) if blocks else None},
         "findings": {
             "tracked": len(fa), "reference": len(fb), "both": len(both),
             "precision": round(len(both) / len(fa), 3) if fa else None,
@@ -128,14 +138,16 @@ def main() -> int:
     home, away = payloads[0]["home_team_external_id"], payloads[0]["away_team_external_id"]
     raw = sorted((f for d in payloads for f in d["frames"]), key=lambda f: f["minute"])
     delta = int(json.loads(args.alignment.read_text(encoding="utf-8"))["delta_frames"])
-    tracked, ref, pairs = paired_frames(raw, gt_index(np.load(args.gt)), delta,
+    tracked, ref, pairs, home_attack = paired_frames(raw, gt_index(np.load(args.gt)), delta,
                                         PitchCalibration.load(args.calibration), home, away)
     out = {"frames": args.frames, "gt": str(args.gt), "paired_frames": len(tracked), "matched_player_pairs": pairs,
-           "by_slice_minutes": {f"{m:g}": compare(tracked, ref, home, away, m) for m in args.slice_minutes}}
+           "home_attack_from_gt_keepers": home_attack,
+           "by_slice_minutes": {f"{m:g}": compare(tracked, ref, home, away, m, home_attack) for m in args.slice_minutes}}
     args.out.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps({k: v for k, v in out.items() if k != "by_slice_minutes"}, ensure_ascii=False))
     for m, r in out["by_slice_minutes"].items():
-        print(m, "dk:", json.dumps({"err": r["slice_abs_error"], "findings": r["findings"]}, ensure_ascii=False))
+        print(m, "dk:", json.dumps({"err": r["slice_abs_error"], "blocks": r["block_label_agreement"],
+                                     "findings": r["findings"]}, ensure_ascii=False))
     return 0
 
 

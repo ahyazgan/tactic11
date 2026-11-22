@@ -1,0 +1,77 @@
+{
+ "measured": "2026-11-22, betimleyici",
+ "question": "Maç raporunun savunma hattı (kaleci düşülmüş en geri hattın kendi kalesine uzaklığı, dilim medyanı) ve blok etiketi gerçek konumda da aynı mı?",
+ "pre_registered": "Ölçümden önce yazıldı: iki sahada da 5 dk dilimde medyan mutlak hata <= 3 m VE blok etiketi uyumu >= %70 ise 'doğrulandı'; değilse raporda 'kaba' diye yazılır.",
+ "tool": "scripts/soccertrack_v2/eval_match_report.py --slice-minutes 1 5 (aynı build_match_report; yön iki rapora da GSR kalecilerinden operatör girdisi olarak verildi)",
+ "data": "SoccerTrack v2 132877 ve 132831, 600-1200 sn, gündüz, canlı yol takip kareleri (990741, 990751), düzeltilmiş GSR. Görülmüş veri.",
+ "venues": {
+  "132877": {
+   "tracked_match": 990741,
+   "paired_frames": 7500,
+   "home_attack_from_gt_keepers": -1,
+   "1min": {
+    "def_line_abs_error_m": {
+     "n": 20,
+     "median": 0.85,
+     "p90": 2.55,
+     "max": 3.7
+    },
+    "block_label_agreement": {
+     "same": 18,
+     "different": 2,
+     "rate": 0.9
+    }
+   },
+   "5min": {
+    "def_line_abs_error_m": {
+     "n": 4,
+     "median": 0.65,
+     "p90": 1.29,
+     "max": 1.5
+    },
+    "block_label_agreement": {
+     "same": 4,
+     "rate": 1.0
+    }
+   }
+  },
+  "132831": {
+   "tracked_match": 990751,
+   "paired_frames": 7500,
+   "home_attack_from_gt_keepers": 1,
+   "1min": {
+    "def_line_abs_error_m": {
+     "n": 20,
+     "median": 0.9,
+     "p90": 5.49,
+     "max": 25.5
+    },
+    "block_label_agreement": {
+     "same": 16,
+     "different": 4,
+     "rate": 0.8
+    }
+   },
+   "5min": {
+    "def_line_abs_error_m": {
+     "n": 4,
+     "median": 0.5,
+     "p90": 2.63,
+     "max": 3.5
+    },
+    "block_label_agreement": {
+     "same": 3,
+     "different": 1,
+     "rate": 0.75
+    }
+   }
+  }
+ },
+ "verdict": "Ölçüt geçti: 5 dk dilim medyan hata 0,65 m ve 0,5 m; blok uyumu %100 ve %75.",
+ "limits": [
+  "5 dk dilim sayısı saha başına 4 (iki takım toplamı); küçük örnek.",
+  "Yön operatör girdisi olarak verildi; otomatik yön çıkarımı bu klipte kaleciler görünmediği için ölçülmedi.",
+  "132831'de 1 dk dilimlerde en kötü hata 25,5 m (p90 5,5 m): tek dilimde hat yanlış oyuncu kümesine oturuyor.",
+  "Topa sahip olunan kareler de sayılıyor; faz ayrımı yok."
+ ]
+}

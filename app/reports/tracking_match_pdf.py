@@ -47,6 +47,13 @@ def _pct(value: Any) -> str:
     return "—" if value is None else f"%{value * 100:.1f}"
 
 
+def _line(summary: dict[str, Any]) -> str:
+    """"38.2 m · Orta blok"; yön bilinmiyorsa "—"."""
+    if summary.get("def_line_m") is None:
+        return "—"
+    return f"{_num(summary['def_line_m'])} m · {summary.get('block') or ''}".rstrip(" ·")
+
+
 def _minutes(row: dict[str, Any]) -> str:
     return f"{row['from_minute']:g}–{row['to_minute']:g}'"
 
@@ -110,16 +117,19 @@ def build_tracking_match_pdf(report: dict[str, Any], *, our_side: Side = "home",
           "Bu sayfa makine çıktısıdır; yorum ve karar teknik ekibindir.", small),
         p("Maç ortalaması (güvenilir dilimler)", head),
     ]
-    summary_rows: list[list[Any]] = [["", "Genişlik", "Derinlik", "Kompaktlık", "Pres", "Güvenilir dilim"]]
+    summary_rows: list[list[Any]] = [["", "Savunma hattı", "Genişlik", "Derinlik", "Kompaktlık", "Pres",
+                                      "Güvenilir dilim"]]
     for side in (our_side, their_side):
         s = (teams.get(side) or {}).get("summary")
         if s is None:
-            summary_rows.append([side_label(side), "—", "—", "—", "—", "0"])
+            summary_rows.append([side_label(side), "—", "—", "—", "—", "—", "0"])
         else:
-            summary_rows.append([side_label(side), f"{_num(s['width_m'])} m", f"{_num(s['depth_m'])} m",
+            summary_rows.append([side_label(side), _line(s), f"{_num(s['width_m'])} m", f"{_num(s['depth_m'])} m",
                                  f"{_num(s['compactness_m'])} m", _num(s.get("press_index"), 2),
                                  str(s.get("reliable_slices", "—"))])
-    story.append(grid(summary_rows, [30 * mm, 28 * mm, 28 * mm, 30 * mm, 24 * mm, 38 * mm]))
+    story.append(grid(summary_rows, [24 * mm, 40 * mm, 22 * mm, 22 * mm, 24 * mm, 20 * mm, 30 * mm]))
+    if not (report.get("direction") or {}).get("known"):
+        story.append(p("Saha yönü verilmediği için savunma hattı yazılmadı.", small))
 
     story.append(p("Öne çıkanlar (maç ortalamasından eşik kadar sapan dilimler)", head))
     findings = report.get("findings") or []
@@ -136,20 +146,20 @@ def build_tracking_match_pdf(report: dict[str, Any], *, our_side: Side = "home",
         story.append(p(f"… ve {len(findings) - MAX_FINDINGS} bulgu daha (arayüzde tam liste).", small))
 
     story.append(p("Dilim dilim takım şekli", head))
-    columns = ["Oyuncu", "Gen.", "Der.", "Komp.", "Pres"]
+    columns = ["Oyuncu", "Hat", "Gen.", "Der.", "Komp.", "Pres"]
     shape_rows: list[list[Any]] = [["Dakika", *columns, "", *columns]]
 
     def team_cells(t: dict[str, Any]) -> list[str]:
-        return [_num(t.get("players_mean")), _num(t.get("width_m")), _num(t.get("depth_m")),
+        return [_num(t.get("players_mean")), _num(t.get("def_line_m")), _num(t.get("width_m")), _num(t.get("depth_m")),
                 _num(t.get("compactness_m")), _num(t.get("press_index"), 2)]
 
     for row in slices:
         ours, theirs = row.get(our_side) or {}, row.get(their_side) or {}
         mark = "" if ours.get("reliable") and theirs.get("reliable") else " *"
         shape_rows.append([_minutes(row) + mark, *team_cells(ours), "", *team_cells(theirs)])
-    widths = [22 * mm] + [14 * mm] * 5 + [6 * mm] + [14 * mm] * 5
-    shape_head = [["", side_label(our_side), "", "", "", "", "", side_label(their_side), "", "", "", ""]]
-    story.append(_with_band(grid(shape_head + shape_rows, widths, header_rows=2), TableStyle, (1, 5), (7, 11)))
+    widths = [20 * mm] + [12.5 * mm] * 6 + [4 * mm] + [12.5 * mm] * 6
+    shape_head = [["", side_label(our_side), *[""] * 6, side_label(their_side), *[""] * 5]]
+    story.append(_with_band(grid(shape_head + shape_rows, widths, header_rows=2), TableStyle, (1, 6), (8, 13)))
     story.append(p("* güvenilmez dilim: az kare ya da az görünür oyuncu; maç ortalamasına girmez.", small))
 
     if physical:
