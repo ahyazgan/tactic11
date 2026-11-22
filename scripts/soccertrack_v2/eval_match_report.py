@@ -7,6 +7,9 @@ takip karesinden). Ölçülenler:
 - dilim başına mutlak hata: genişlik, derinlik, kompaktlık, pres, savunma hattı (iki tarafta da
   güvenilir dilim); savunma hattı için hücum yönü referans kalecilerinden (`gt_attack_direction`)
   alınıp iki rapora da operatör girdisi olarak verilir, blok etiketi uyumu ayrıca sayılır;
+- faz (`--events-mapping` verilirse): referans karelerin sahipliği dokunuş olaylarından
+  (`evaluate_ball_events.possession_intervals`), takip karelerininki kendi alanından; dilim başına
+  faz ölçülerinin mutlak hatası;
 - bulgu uyumu: takipteki bulguların (taraf, dilim, ölçü, yön) kaçı referansta da var (kesinlik),
   referanstakilerin kaçı takipte de var (duyarlılık).
 
@@ -37,6 +40,7 @@ from app.engine.tracking.match_report import build_match_report
 from app.tracking.calibration import PitchCalibration
 from app.tracking.telestration import spots_from_frame
 from scripts.soccertrack_v2.eval_shape_watch import gsr_frame_like
+from scripts.soccertrack_v2.evaluate_ball_events import EventMapping, load_touches, possession_intervals
 from scripts.soccertrack_v2.eval_telestration import (
     GT_KEEPER,
     gt_attack_direction,
@@ -48,6 +52,19 @@ from scripts.soccertrack_v2.eval_telestration import (
 )
 
 METRICS = ("width_m", "depth_m", "compactness_m", "press_index", "def_line_m")
+PHASE_METRICS = ("width_m", "compactness_m", "def_line_m")
+
+
+def with_event_possession(frames: list[TrackingFrame], intervals: list[tuple[float, float, int]],
+                          home: int, away: int) -> list[TrackingFrame]:
+    """Karelerin sahipliğini olay aralıklarından yeniden yaz (taraf 0 = ev); aralık dışı boş."""
+    side_team = {0: home, 1: away}
+    out = []
+    for f in frames:
+        t = f.minute * 60.0
+        side = next((s for a, b, s in intervals if a <= t < b), None)
+        out.append(f.model_copy(update={"possession_team_external_id": side_team[side] if side is not None else None}))
+    return out
 
 
 def paired_frames(raw: list[dict[str, Any]], gt: dict[int, np.ndarray], delta: int, calib: PitchCalibration,
@@ -102,6 +119,13 @@ def compare(tracked: list[TrackingFrame], ref: list[TrackingFrame], home: int, a
             for m in METRICS:
                 if ta[m] is not None and tb[m] is not None:
                     errors[m].append(abs(ta[m] - tb[m]))
+            for phase in ("in_possession", "out_of_possession"):
+                pa, pb = ta["phases"][phase], tb["phases"][phase]
+                if pa is None or pb is None:
+                    continue
+                for m in PHASE_METRICS:
+                    if pa[m] is not None and pb[m] is not None:
+                        errors[f"{phase}.{m}"].append(abs(pa[m] - pb[m]))
             if ta["block"] is not None and tb["block"] is not None:
                 blocks["same" if ta["block"] == tb["block"] else "different"] += 1
     fa, fb = finding_keys(a), finding_keys(b)
@@ -132,6 +156,7 @@ def main() -> int:
     p.add_argument("--alignment", type=Path, required=True)
     p.add_argument("--calibration", type=Path, required=True)
     p.add_argument("--slice-minutes", type=float, nargs="+", default=[1.0, 5.0])
+    p.add_argument("--events-mapping", type=Path, help="referans sahipliği için olay eşlemesi (yoksa takipteki)")
     p.add_argument("--out", type=Path, required=True)
     args = p.parse_args()
     payloads = [json.loads(Path(path).read_text(encoding="utf-8")) for path in sorted(glob.glob(args.frames))]
@@ -140,7 +165,10 @@ def main() -> int:
     delta = int(json.loads(args.alignment.read_text(encoding="utf-8"))["delta_frames"])
     tracked, ref, pairs, home_attack = paired_frames(raw, gt_index(np.load(args.gt)), delta,
                                         PitchCalibration.load(args.calibration), home, away)
-    out = {"frames": args.frames, "gt": str(args.gt), "paired_frames": len(tracked), "matched_player_pairs": pairs,
+    if args.events_mapping:
+        mapping = EventMapping.load(args.events_mapping)
+        ref = with_event_possession(ref, possession_intervals(load_touches(mapping), mapping.team_side), home, away)
+    out = {"frames": args.frames, "events_mapping": str(args.events_mapping) if args.events_mapping else None, "gt": str(args.gt), "paired_frames": len(tracked), "matched_player_pairs": pairs,
            "home_attack_from_gt_keepers": home_attack,
            "by_slice_minutes": {f"{m:g}": compare(tracked, ref, home, away, m, home_attack) for m in args.slice_minutes}}
     args.out.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
