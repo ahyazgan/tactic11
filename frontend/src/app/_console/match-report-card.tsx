@@ -16,8 +16,13 @@ interface TeamSlice {
   reliable: boolean; frames_used: number; players_mean: number;
   width_m: number; depth_m: number; compactness_m: number;
   formation: string | null; press_index: number | null;
+  def_line_m: number | null; block: string | null;
 }
-interface Summary { width_m: number; depth_m: number; compactness_m: number; press_index: number | null; reliable_slices: number }
+interface Summary {
+  width_m: number; depth_m: number; compactness_m: number; press_index: number | null; reliable_slices: number;
+  def_line_m: number | null; block: string | null;
+}
+interface Direction { known: boolean; parts: { period: number; after_halftime: boolean; home_attack: number; method: string }[] }
 interface Finding { side: Side; from_minute: number; to_minute: number; metric: string; delta: number; text: string }
 interface ReportSlice { from_minute: number; to_minute: number; frames: number; home: TeamSlice; away: TeamSlice }
 interface LoadRates { player_minutes: number; m_per_player_min: number | null; hsr_share: number | null; sprint_share: number | null }
@@ -30,10 +35,13 @@ interface PhysicalReport {
 interface ReportResponse {
   teams: Record<Side, { team_external_id: number; summary: Summary | null }>;
   slices: ReportSlice[]; findings: Finding[]; limits: string[];
-  physical: PhysicalReport;
+  physical: PhysicalReport; direction: Direction;
 }
 
 const SLICE_OPTIONS = [5, 10, 15] as const;
+// Saha görünümünde x soldan sağa artar; operatör ev sahibinin videonun ilk yarısındaki yönünü seçer.
+const ATTACK_OPTIONS = [["", "Otomatik"], ["x+", "Ev sahibi sağa"], ["x-", "Ev sahibi sola"]] as const;
+const METHOD_TR: Record<string, string> = { operator: "seçiminizden", keeper: "kalecilerden", deepest: "en geri oyunculardan", unknown: "bulunamadı" };
 const MONO = "JetBrains Mono, monospace";
 const US = "var(--accent)";
 const THEM = "var(--high)";
@@ -81,14 +89,16 @@ function SummaryBlock({ name, color, summary }: { name: string; color: string; s
     <div style={{ flex: "1 1 220px", minWidth: 0 }}>
       <div style={{ ...HEAD, color }}>{name}</div>
       {summary ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 8, marginTop: 4 }}>
-          {[["Genişlik", `${num(summary.width_m)} m`], ["Derinlik", `${num(summary.depth_m)} m`],
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 8, marginTop: 4 }}>
+          {[["Savunma hattı", summary.def_line_m == null ? "—" : `${num(summary.def_line_m)} m`],
+            ["Genişlik", `${num(summary.width_m)} m`], ["Derinlik", `${num(summary.depth_m)} m`],
             ["Kompaktlık", `${num(summary.compactness_m)} m`], ["Pres", num(summary.press_index, 2)]].map(([label, value]) => (
             <div key={label}>
               <div style={{ fontFamily: MONO, fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>{value}</div>
               <div style={{ fontSize: 10, color: "var(--muted)" }}>{label}</div>
             </div>
           ))}
+          {summary.block && <div style={{ gridColumn: "1 / -1", fontSize: 11, color: "var(--ink)", fontWeight: 700 }}>{summary.block}</div>}
         </div>
       ) : (
         <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4 }}>Güvenilir dilim yok; özet verilmiyor.</div>
@@ -102,6 +112,7 @@ function TeamCells({ t }: { t: TeamSlice }) {
   return (
     <>
       <td style={style}>{num(t.players_mean)}</td>
+      <td style={style} title={t.block ?? undefined}>{num(t.def_line_m)}</td>
       <td style={style}>{num(t.width_m)}</td>
       <td style={style}>{num(t.depth_m)}</td>
       <td style={style}>{num(t.compactness_m)}</td>
@@ -113,16 +124,21 @@ function TeamCells({ t }: { t: TeamSlice }) {
 export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; ourSide: Side }) {
   const [sliceMinutes, setSliceMinutes] = useState<number>(15);
   const [pdfState, setPdfState] = useState<"idle" | "busy" | "error">("idle");
-  const key = matchId != null ? `/tracking/matches/${matchId}/report?slice_minutes=${sliceMinutes}` : null;
+  const [homeAttack, setHomeAttack] = useState<string>("");
+  const [halftime, setHalftime] = useState<string>("");
+  const params = new URLSearchParams({ slice_minutes: String(sliceMinutes) });
+  if (homeAttack) params.set("home_attack", homeAttack);
+  if (homeAttack && halftime !== "" && Number(halftime) > 0) params.set("halftime_minute", halftime);
+  const key = matchId != null ? `/tracking/matches/${matchId}/report?${params}` : null;
   const { data, error, isLoading } = useSWR<ReportResponse>(key, apiFetch, { revalidateOnFocus: false, shouldRetryOnError: false, keepPreviousData: true });
   if (!matchId) return null;
   const theirSide: Side = ourSide === "home" ? "away" : "home";
   const label = (side: Side) => (side === ourSide ? "Biz" : "Rakip");
-  const columns = ["Oyuncu", "Gen.", "Der.", "Komp.", "Pres"];
+  const columns = ["Oyuncu", "Hat", "Gen.", "Der.", "Komp.", "Pres"];
   const downloadPdf = async () => {
     setPdfState("busy");
     try {
-      const res = await apiFetchResponse(`/tracking/matches/${matchId}/report.pdf?slice_minutes=${sliceMinutes}&our_side=${ourSide}`);
+      const res = await apiFetchResponse(`/tracking/matches/${matchId}/report.pdf?${params}&our_side=${ourSide}`);
       const url = URL.createObjectURL(await res.blob());
       const a = document.createElement("a");
       a.href = url; a.download = `mac_raporu_${matchId}.pdf`; a.click();
@@ -144,6 +160,20 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
           </button>
         )}
         <label style={{ fontSize: 11, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }}>
+          1. yarı yön
+          <select value={homeAttack} onChange={(e) => setHomeAttack(e.target.value)} data-testid="match-report-attack"
+            style={{ padding: "4px 6px", background: "var(--panel2)", color: "var(--ink)", border: "1px solid var(--line)", borderRadius: 4, fontSize: 11.5 }}>
+            {ATTACK_OPTIONS.map(([v, text]) => <option key={v} value={v}>{text}</option>)}
+          </select>
+        </label>
+        {homeAttack && (
+          <label style={{ fontSize: 11, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }} title="Tam maç tek videoysa devre arasının video dakikası; boş bırakılırsa yön tüm video boyunca aynı kabul edilir">
+            Devre arası
+            <input type="number" min={1} value={halftime} onChange={(e) => setHalftime(e.target.value)} placeholder="dk"
+              style={{ width: 52, padding: "4px 6px", background: "var(--panel2)", color: "var(--ink)", border: "1px solid var(--line)", borderRadius: 4, fontSize: 11.5 }} />
+          </label>
+        )}
+        <label style={{ fontSize: 11, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }}>
           Dilim
           <select value={sliceMinutes} onChange={(e) => setSliceMinutes(Number(e.target.value))}
             style={{ padding: "4px 6px", background: "var(--panel2)", color: "var(--ink)", border: "1px solid var(--line)", borderRadius: 4, fontSize: 11.5 }}>
@@ -159,6 +189,10 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginTop: 10 }}>
             <SummaryBlock name="Biz · maç ortalaması" color={US} summary={data.teams[ourSide].summary} />
             <SummaryBlock name="Rakip · maç ortalaması" color={THEM} summary={data.teams[theirSide].summary} />
+          </div>
+          <div style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 6 }} data-testid="match-report-direction">
+            Saha yönü: {data.direction.parts.map((d) => METHOD_TR[d.method] ?? d.method).join(" / ")}
+            {!data.direction.known && " — savunma hattı için 1. yarı yönünü seçin"}
           </div>
 
           <div style={{ ...HEAD, marginTop: 14 }}>Öne çıkanlar</div>
@@ -182,8 +216,8 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
               <thead>
                 <tr>
                   <th style={{ ...HEAD, textAlign: "left", padding: "4px 6px" }} rowSpan={2}>Dakika</th>
-                  <th style={{ ...HEAD, color: US, textAlign: "center", padding: "4px 6px" }} colSpan={5}>Biz</th>
-                  <th style={{ ...HEAD, color: THEM, textAlign: "center", padding: "4px 6px", borderLeft: "1px solid var(--line)" }} colSpan={5}>Rakip</th>
+                  <th style={{ ...HEAD, color: US, textAlign: "center", padding: "4px 6px" }} colSpan={6}>Biz</th>
+                  <th style={{ ...HEAD, color: THEM, textAlign: "center", padding: "4px 6px", borderLeft: "1px solid var(--line)" }} colSpan={6}>Rakip</th>
                 </tr>
                 <tr>
                   {[ourSide, theirSide].flatMap((side) => columns.map((c) => (

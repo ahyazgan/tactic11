@@ -8,7 +8,8 @@ altındaki bir ölçüm dosyasına dayanır; dosya adı satırın sonunda yazıl
 
 **Maç videosunu akşam yükleyin; sabah tek sayfalık taktik rapor (PDF) hazır olsun.**
 
-Rapor takım düzeyindedir: dilim dilim genişlik, derinlik, kompaktlık, pres ve takım temposu;
+Rapor takım düzeyindedir: dilim dilim savunma hattı ve blok (alçak/orta/yüksek), genişlik,
+derinlik, kompaktlık, pres ve takım temposu;
 maç ortalamasından ayrılan dilimler "öne çıkanlar" olarak listelenir. Yorum ve karar teknik
 ekibindir. Örnek: SoccerTrack 117093 ilk yarısından üretilen rapor
 (`GET /tracking/matches/{id}/report.pdf`).
@@ -23,6 +24,7 @@ ekibindir. Örnek: SoccerTrack 117093 ilk yarısından üretilen rapor
 | Takım ayrımı | Sabit kamera, gündüz, 10 dk, referans konumlarla | Eşleşen oyuncuların %91,6'sında takım doğru | `daylight-132877-gsr-telestration.json` |
 | Savunma hattı konumu | Aynı ölçüm | Medyan hata 1,89 m; %90'ı 12,1 m içinde | `daylight-132877-gsr-telestration.json` |
 | Raporun "öne çıkanlar"ı | Sabit kamera, gündüz, 2 saha × 10 dk, dakikalık dilim, gerçek konuma karşı | Takipteki bulguların 132877'de %72'si, 132831'de %58'i gerçek konumda da var; derinlik bulguları (%27 doğru) rapordan çıkarıldı. Görülmüş veri, kanıtlanmış iyileşme değil | `match-report-vs-gt.json` |
+| Savunma hattı ve blok | Sabit kamera, gündüz, 2 saha × 10 dk, 5 dk dilim, hücum yönü operatörden | Medyan hata 0,65 m ve 0,5 m; blok etiketi dilimlerin %100'ünde ve %75'inde gerçek konumla aynı. Ölçüt ölçümden önce yazıldı; görülmüş veri, saha başına 4 dilim | `match-report-def-line-vs-gt.json` |
 | TV yayınından saha konumu | J.League, gündüz, 2 maç × 6 dk, kör kontrol | Ana kamera karelerinin %81,2'sinde saha konumu bulundu; işaretlere göre medyan hata 0,40 m | `broadcast-track-round4-control-result.json` |
 
 ## Yapmadıkları ve bilinmeyenler
@@ -34,7 +36,10 @@ ekibindir. Örnek: SoccerTrack 117093 ilk yarısından üretilen rapor
 - **Fiziksel yük gerçek konuma karşı doğrulanmadı.** Tempo ve hız payları takım düzeyinde,
   karşılaştırma amaçlıdır; GPS'in yerini tutmaz.
 - **Raporun mutlak şekil sayıları kaba.** Genişlik gerçek değerden 3–5 m, derinlik bir sahada medyan 17 m sapıyor; dilimler arası değişim mutlak değerden daha güvenilir (`match-report-vs-gt.json`). "Öne çıkanlar"ın yaklaşık üçte biri yanlış alarm olabilir.
-- **Saha yönü bilinmez.** Savunma hattı yüksekliği ve "blok önde/geride" raporda verilmez.
+- **Saha yönü operatörden gelir.** Yükleyen kişi "1. yarıda ev sahibi hangi yöne hücum etti"
+  sorusunu yanıtlar; tam maç tek videoysa devre arası dakikası da girilir. Yanıt yoksa yön
+  kalecilerden çıkarılmaya çalışılır, gerçek görüntüde çoğu zaman başarısız olur ve savunma hattı
+  yazılmaz. Savunma hattı topa sahip olunan anları da içerir.
 - **TV yayını dar kapsamlı.** Yalnız J.League gündüz yayınında ölçüldü; ana kamera dışı kareler
   ve tekrarlar (J.League'e özgü işaretle) atılır, 90 sn'lik örnekte karelerin %39,5'i konumlandı.
   6 dakikalık kesit yaklaşık 25 dakika sürer. Kulübün kendi geniş açılı kaydı tercih edilmeli.
@@ -48,7 +53,8 @@ ekibindir. Örnek: SoccerTrack 117093 ilk yarısından üretilen rapor
 2. **Teslim:** maç sonrası sabah 08:00'e kadar PDF rapor + arayüzde dilim dilim tablo.
 3. **Başarı ölçütü (baştan yazılı):** analistin aynı maç için kendi notlarıyla karşılaştırdığında
    "öne çıkanlar"ın en az yarısını doğru/işe yarar bulması; teslim saatinin tutması.
-4. **Kulüpten istenen:** maç videosu (geniş açı), takımların forma renkleri, saha ölçüleri.
+4. **Kulüpten istenen:** maç videosu (geniş açı), takımların forma renkleri, saha ölçüleri,
+   ilk yarıdaki hücum yönü.
 5. **Veri ve haklar:** video ve takip verisi kulübün sunucusunda/bilgisayarında işlenir,
    dışarı gönderilmez. Oyuncu kimliği tutulmaz (takım düzeyi), KVKK açısından kişisel veri
    işlenmesi asgaridir; yine de kulübün hukuk birimiyle teyit edilmelidir.

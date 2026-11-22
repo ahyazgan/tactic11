@@ -53,6 +53,18 @@ MIN_TEAM_PLAYERS = 6          # savunan takımdan görünür oyuncu (kaleci hari
 MIN_SAMPLES = 20              # pencere başına savunma karesi
 THRESHOLDS_M = {"block_depth": 6.0, "width": 6.0, "line_gap": 4.0, "length": 6.0}
 METRICS = ("block_depth", "width", "line_gap", "length")
+LOW_BLOCK_MAX_M = 30.0        # savunma hattı kendi kalesine < 30 m → alçak blok
+MID_BLOCK_MAX_M = 45.0        # 30–45 m → orta blok; üstü yüksek blok
+
+
+def block_label(def_line_m: float, pressing: bool = False) -> str:
+    if def_line_m < LOW_BLOCK_MAX_M:
+        base = "Alçak blok"
+    elif def_line_m < MID_BLOCK_MAX_M:
+        base = "Orta blok"
+    else:
+        base = "Yüksek blok"
+    return f"{base} · pres" if pressing else base
 
 
 @dataclass(frozen=True)

@@ -516,13 +516,20 @@ def tracking_shape(
     return out
 
 
+HOME_ATTACK_HELP = ("Ev sahibinin videonun ilk yarısındaki hücum yönü: x+ (saha x artan) ya da x-; "
+                    "verilmezse kaleci/en derin oyuncudan çıkarılır")
+HALFTIME_HELP = "Tam maç tek videoysa devre arasının video dakikası; sonrasında yön ters kabul edilir"
+
+
 @router.get("/matches/{match_id}/report", summary="Maç raporu: dilim dilim takım şekli + pres ve sapmalar")
 def tracking_match_report(
     match_id: int,
     slice_minutes: float = Query(15.0, ge=5, le=45),
+    home_attack: Literal["x+", "x-"] | None = Query(None, description=HOME_ATTACK_HELP),
+    halftime_minute: float | None = Query(None, ge=0, description=HALFTIME_HELP),
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    return _match_report(session, match_id, slice_minutes)
+    return _match_report(session, match_id, slice_minutes, home_attack, halftime_minute)
 
 
 @router.get("/matches/{match_id}/report.pdf", summary="Maç raporu PDF: aynı rapor, tek belge (Biz/Rakip our_side'a göre)")
@@ -530,12 +537,14 @@ def tracking_match_report_pdf(
     match_id: int,
     slice_minutes: float = Query(15.0, ge=5, le=45),
     our_side: Literal["home", "away"] = Query("home"),
+    home_attack: Literal["x+", "x-"] | None = Query(None, description=HOME_ATTACK_HELP),
+    halftime_minute: float | None = Query(None, ge=0, description=HALFTIME_HELP),
     session: Session = Depends(get_session),
 ) -> Response:
     from app.reports.pdf import ReportlabNotInstalled
     from app.reports.tracking_match_pdf import build_tracking_match_pdf
 
-    report = _match_report(session, match_id, slice_minutes)
+    report = _match_report(session, match_id, slice_minutes, home_attack, halftime_minute)
     try:
         pdf = build_tracking_match_pdf(report, our_side=our_side, title=_report_title(session, match_id))
     except ReportlabNotInstalled as exc:
@@ -556,7 +565,8 @@ def _report_title(session: Session, match_id: int) -> str:
     return f"{home} – {away} · {match.kickoff:%d.%m.%Y}"
 
 
-def _match_report(session: Session, match_id: int, slice_minutes: float) -> dict[str, Any]:
+def _match_report(session: Session, match_id: int, slice_minutes: float,
+                  home_attack: str | None = None, halftime_minute: float | None = None) -> dict[str, Any]:
     from app.engine.tracking.match_report import build_match_report
     from app.engine.tracking.physical_load import compute_physical_load
 
@@ -577,7 +587,8 @@ def _match_report(session: Session, match_id: int, slice_minutes: float) -> dict
         start = end
     home, away = match.home_team_external_id, match.away_team_external_id
     return {"match_id": match_id, "slice_minutes": slice_minutes, "frames_per_slice_cap": SHAPE_MAX_FRAMES,
-            **build_match_report(home, away, slices),
+            **build_match_report(home, away, slices, home_attack={"x+": 1, "x-": -1}.get(home_attack or "", 0),
+                                 halftime_minute=halftime_minute),
             "physical": compute_physical_load(_track_samples(session, match_id), home, away,
                                               [(start, end) for start, end, _frames in slices])}
 
