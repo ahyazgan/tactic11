@@ -6,8 +6,26 @@ eder. `dev_api.py` uvicorn'dan önce bunu çağırır → "npm run dev" ile her 
 """
 from __future__ import annotations
 
+import importlib
+
 DEMO_MATCH_ID = 16029
 DEMO_TENANT = "t-default"
+# Tablo tanımlayan her modül. `create_all` yalnız içe aktarılmış modellerin tablosunu açar;
+# listede olmayan modülün tablosu boş veritabanında oluşmaz ve ucu 500 verir
+# (yaşandı: `physical_tests` yokken ana sayfanın kadro listesi).
+MODEL_MODULES = (
+    "app.db.models",
+    "app.db.match_load",
+    "app.db.performance_target",
+    "app.db.physical_test",
+    "app.db.session_load",
+    "app.db.wellness_entry",
+)
+
+
+def load_models() -> None:
+    for name in MODEL_MODULES:
+        importlib.import_module(name)
 
 
 def _sync_missing_columns(engine) -> list[str]:
@@ -57,6 +75,7 @@ def ensure_demo_data(match_id: int = DEMO_MATCH_ID, tenant: str = DEMO_TENANT) -
     from app.db.base import Base
     from app.db.session import SessionLocal, engine
 
+    load_models()
     Base.metadata.create_all(engine)
     synced = _sync_missing_columns(engine)
     if synced:
