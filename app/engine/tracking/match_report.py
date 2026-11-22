@@ -10,6 +10,12 @@ kaleci/en derin oyuncudan çıkarılır (space_map kuralı). Yön bilinen diliml
 yazılır: kaleci düşülmüş en geri hattın kendi kalesine uzaklığı (m, `shape_watch.sample_frame`),
 dilimdeki karelerin medyanı; blok etiketi telestrasyonla aynı eşiklerdendir.
 
+Oyun notları (`notes`): her takım için raporun kendi sayılarından türeyen düz cümleler (blok,
+hattın en geri/en önde olduğu dilim, karşı takıma göre pres, öne çıkanlar). Yeni sayı üretmez;
+rakip analizinde "nasıl oynuyor" bölümü budur. İki takımın genişliği karşılaştırılmaz: gerçek
+konuma karşı iki sahada takipteki fark 5,2 ve 9,4 m, gerçek fark 0,6 ve 4,5 m çıktı (pres ve hat
+farkı ise gerçekle uyumlu; docs/measurements/match-report-notes-vs-gt.json).
+
 Sınırlar (yanıtta `limits` olarak da döner):
   - `centroid_x` ham saha yüzdesidir, "blok yüksekliği" değildir.
   - Savunma hattı tüm karelerden alınır (topa sahipken de); sahiplik ayrımı yoktur.
@@ -42,6 +48,8 @@ MIN_SLICE_FRAMES = 30
 MIN_PRESS_FRAMES = 20
 MIN_FORMATION_SUPPORT = 0.5  # karelerin yarısından azında görülen yerleşim yazılmaz
 MIN_LINE_SAMPLES = 20        # savunma hattı için dilimde hat bulunan kare
+BLOCK_SHIFT_M = 6.0          # hattın dilimler arası oynaması notu (shape_watch blok eşiği)
+MAX_NOTE_FINDINGS = 3
 
 NO_DIRECTION_LIMIT = "Saha yönü bilinmediği için savunma hattı ve blok yüksekliği verilmez."
 LINE_LIMITS = (
@@ -180,6 +188,38 @@ def _findings(side: str, rows: list[dict[str, Any]], mean: dict[str, Any], bound
     return out
 
 
+def _minutes(row: dict[str, Any]) -> str:
+    return f"{row['from_minute']:g}–{row['to_minute']:g}'"
+
+
+def team_notes(report: dict[str, Any], side: str) -> list[str]:
+    """`side` takımının oyununu raporun sayılarıyla anlatan cümleler; özet yoksa boş."""
+    other = "away" if side == "home" else "home"
+    ours, theirs = report["teams"][side]["summary"], report["teams"][other]["summary"]
+    if ours is None:
+        return []
+    notes: list[str] = []
+    if ours["def_line_m"] is not None:
+        notes.append(f"Savunma hattı kendi kalesinden ortalama {ours['def_line_m']:.0f} m: {ours['block'].lower()}.")
+        lines = [(r[side]["def_line_m"], r) for r in report["slices"]
+                 if r[side]["reliable"] and r[side]["def_line_m"] is not None]
+        if len(lines) >= 2:
+            (low, low_row), (high, high_row) = min(lines, key=lambda x: x[0]), max(lines, key=lambda x: x[0])
+            if high - low >= BLOCK_SHIFT_M:
+                notes.append(f"Hat en geride {_minutes(low_row)} ({low:.0f} m), en önde {_minutes(high_row)} ({high:.0f} m).")
+    if theirs is not None and ours["press_index"] is not None and theirs["press_index"] is not None:
+        press = ours["press_index"] - theirs["press_index"]
+        notes.append(f"Karşısındaki takımdan {'daha çok' if press > 0 else 'daha az'} pres yapıyor "
+                     f"({ours['press_index']:.2f} / {theirs['press_index']:.2f})."
+                     if abs(press) >= PRESS_DELTA else "Pres yoğunluğu karşısındaki takıma yakın.")
+    shifts = [f for f in report["findings"] if f["side"] == side]
+    if shifts:
+        listed = "; ".join(f"{_minutes(f)} {f['text']}" for f in shifts[:MAX_NOTE_FINDINGS])
+        more = f" ve {len(shifts) - MAX_NOTE_FINDINGS} dilim daha" if len(shifts) > MAX_NOTE_FINDINGS else ""
+        notes.append(f"Maç içinde ortalamasından ayrıldığı dilimler: {listed}{more}.")
+    return notes
+
+
 def build_match_report(home_team_id: int, away_team_id: int, slices: Sequence[Slice], *,
                        home_attack: int = 0, halftime_minute: float | None = None) -> dict[str, Any]:
     """Dilimler: (başlangıç dk, bitiş dk, kareler). Çıktı JSON'a hazır sözlüktür."""
@@ -195,7 +235,7 @@ def build_match_report(home_team_id: int, away_team_id: int, slices: Sequence[Sl
         mean = summary[side]
         if mean is not None:
             findings += _findings(side, rows, mean, bounds)
-    return {
+    report = {
         "teams": {side: {"team_external_id": tid, "summary": summary[side]} for side, tid in teams.items()},
         "slices": [
             {"from_minute": start, "to_minute": end, "frames": len(frames),
@@ -208,3 +248,5 @@ def build_match_report(home_team_id: int, away_team_id: int, slices: Sequence[Sl
         "direction": direction_info,
         "limits": [*(LINE_LIMITS if direction_info["known"] else (NO_DIRECTION_LIMIT,)), *LIMITS],
     }
+    report["notes"] = {side: team_notes(report, side) for side in teams}
+    return report

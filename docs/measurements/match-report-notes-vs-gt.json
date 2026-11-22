@@ -1,0 +1,40 @@
+{
+ "measured": "2026-11-22, betimleyici",
+ "question": "Rakip analizi notlarındaki iki takım karşılaştırmaları (genişlik, pres, savunma hattı) gerçek konumda da aynı mı?",
+ "source": "match-report-def-line-vs-gt.json ile aynı koşu (eval_match_report, 5 dk dilim, yön GSR kalecilerinden); maç özetlerinin ev−deplasman farkı",
+ "venues": {
+  "132877": {
+   "width_m": {
+    "tracked_home_minus_away": 5.2,
+    "reference_home_minus_away": 0.6
+   },
+   "press_index": {
+    "tracked_home_minus_away": 0.08,
+    "reference_home_minus_away": 0.09
+   },
+   "def_line_m": {
+    "tracked_home_minus_away": 12.8,
+    "reference_home_minus_away": 12.8
+   }
+  },
+  "132831": {
+   "width_m": {
+    "tracked_home_minus_away": 9.4,
+    "reference_home_minus_away": 4.5
+   },
+   "press_index": {
+    "tracked_home_minus_away": -0.14,
+    "reference_home_minus_away": -0.12
+   },
+   "def_line_m": {
+    "tracked_home_minus_away": 1.8,
+    "reference_home_minus_away": 3.3
+   }
+  }
+ },
+ "decision": "Genişlik karşılaştırma notu çıkarıldı (132877: takip 5,2 m, gerçek 0,6 m — gerçekte olmayan fark). Pres ve hat karşılaştırması kaldı (işaret ve büyüklük uyumlu). Karar veriyi gördükten sonra verildi; yalnız bir şeyi kaldırdı, eklemedi.",
+ "limits": [
+  "İki saha, birer 10 dk pencere; tek fark değeri saha başına.",
+  "Görülmüş veri."
+ ]
+}

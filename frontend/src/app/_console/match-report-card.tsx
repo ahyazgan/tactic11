@@ -5,6 +5,8 @@
  * Tüm maç dilimlere bölünür: özet, dilim tablosu, ortalamadan sapan dilimler ve
  * sunucunun bildirdiği sınırlar. Güvenilmez dilimler soluk gösterilir, özete girmez.
  * "PDF indir": aynı rapor sunucuda tek belgeye dizilir (GET …/report.pdf), Biz/Rakip seçili tarafa göre.
+ * "Rakip analizi": video rakibin başka bir maçıdır; seçili taraf izlenen takımdır, raporun
+ * `notes` cümleleri "Nasıl oynuyor" olarak gösterilir ve PDF aynı görünümle iner.
  */
 
 import { useState } from "react";
@@ -35,7 +37,7 @@ interface PhysicalReport {
 interface ReportResponse {
   teams: Record<Side, { team_external_id: number; summary: Summary | null }>;
   slices: ReportSlice[]; findings: Finding[]; limits: string[];
-  physical: PhysicalReport; direction: Direction;
+  physical: PhysicalReport; direction: Direction; notes: Record<Side, string[]>;
 }
 
 const SLICE_OPTIONS = [5, 10, 15] as const;
@@ -125,6 +127,7 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
   const [sliceMinutes, setSliceMinutes] = useState<number>(15);
   const [pdfState, setPdfState] = useState<"idle" | "busy" | "error">("idle");
   const [homeAttack, setHomeAttack] = useState<string>("");
+  const [scout, setScout] = useState(false);
   const [halftime, setHalftime] = useState<string>("");
   const params = new URLSearchParams({ slice_minutes: String(sliceMinutes) });
   if (homeAttack) params.set("home_attack", homeAttack);
@@ -133,15 +136,16 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
   const { data, error, isLoading } = useSWR<ReportResponse>(key, apiFetch, { revalidateOnFocus: false, shouldRetryOnError: false, keepPreviousData: true });
   if (!matchId) return null;
   const theirSide: Side = ourSide === "home" ? "away" : "home";
-  const label = (side: Side) => (side === ourSide ? "Biz" : "Rakip");
+  const [usName, themName] = scout ? ["İzlenen", "Karşısındaki"] : ["Biz", "Rakip"];
+  const label = (side: Side) => (side === ourSide ? usName : themName);
   const columns = ["Oyuncu", "Hat", "Gen.", "Der.", "Komp.", "Pres"];
   const downloadPdf = async () => {
     setPdfState("busy");
     try {
-      const res = await apiFetchResponse(`/tracking/matches/${matchId}/report.pdf?${params}&our_side=${ourSide}`);
+      const res = await apiFetchResponse(`/tracking/matches/${matchId}/report.pdf?${params}&our_side=${ourSide}&perspective=${scout ? "scout" : "ours"}`);
       const url = URL.createObjectURL(await res.blob());
       const a = document.createElement("a");
-      a.href = url; a.download = `mac_raporu_${matchId}.pdf`; a.click();
+      a.href = url; a.download = `${scout ? "rakip_analizi" : "mac_raporu"}_${matchId}.pdf`; a.click();
       URL.revokeObjectURL(url);
       setPdfState("idle");
     } catch {
@@ -159,6 +163,11 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
             {pdfState === "busy" ? "PDF hazırlanıyor…" : pdfState === "error" ? "PDF üretilemedi — tekrar dene" : "PDF indir"}
           </button>
         )}
+        <label style={{ fontSize: 11, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }}
+          title="Video rakibin başka bir maçıysa: seçili taraf izlenen takım olur, PDF rakip analizi olarak iner">
+          <input type="checkbox" checked={scout} onChange={(e) => setScout(e.target.checked)} data-testid="match-report-scout" />
+          Rakip analizi
+        </label>
         <label style={{ fontSize: 11, color: "var(--muted)", display: "flex", alignItems: "center", gap: 6 }}>
           1. yarı yön
           <select value={homeAttack} onChange={(e) => setHomeAttack(e.target.value)} data-testid="match-report-attack"
@@ -187,13 +196,27 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
       {data && (
         <>
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginTop: 10 }}>
-            <SummaryBlock name="Biz · maç ortalaması" color={US} summary={data.teams[ourSide].summary} />
-            <SummaryBlock name="Rakip · maç ortalaması" color={THEM} summary={data.teams[theirSide].summary} />
+            <SummaryBlock name={`${usName} · maç ortalaması`} color={US} summary={data.teams[ourSide].summary} />
+            <SummaryBlock name={`${themName} · maç ortalaması`} color={THEM} summary={data.teams[theirSide].summary} />
           </div>
           <div style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 6 }} data-testid="match-report-direction">
             Saha yönü: {data.direction.parts.map((d) => METHOD_TR[d.method] ?? d.method).join(" / ")}
             {!data.direction.known && " — savunma hattı için 1. yarı yönünü seçin"}
           </div>
+
+          {scout && (
+            <div data-testid="match-report-notes">
+              <div style={{ ...HEAD, marginTop: 14 }}>Nasıl oynuyor</div>
+              {data.notes[ourSide].length === 0 ? (
+                <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4 }}>Güvenilir dilim olmadığı için not çıkarılmadı.</div>
+              ) : (
+                <ul style={{ margin: "4px 0 0", paddingLeft: 16 }}>
+                  {data.notes[ourSide].map((n) => <li key={n} style={{ fontSize: 12, color: "var(--ink)", padding: "2px 0" }}>{n}</li>)}
+                </ul>
+              )}
+              <div style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 4 }}>Tek maçtır; alışkanlık için birkaç maçın raporu birlikte okunmalı.</div>
+            </div>
+          )}
 
           <div style={{ ...HEAD, marginTop: 14 }}>Öne çıkanlar</div>
           {data.findings.length === 0 ? (
@@ -216,8 +239,8 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
               <thead>
                 <tr>
                   <th style={{ ...HEAD, textAlign: "left", padding: "4px 6px" }} rowSpan={2}>Dakika</th>
-                  <th style={{ ...HEAD, color: US, textAlign: "center", padding: "4px 6px" }} colSpan={6}>Biz</th>
-                  <th style={{ ...HEAD, color: THEM, textAlign: "center", padding: "4px 6px", borderLeft: "1px solid var(--line)" }} colSpan={6}>Rakip</th>
+                  <th style={{ ...HEAD, color: US, textAlign: "center", padding: "4px 6px" }} colSpan={6}>{usName}</th>
+                  <th style={{ ...HEAD, color: THEM, textAlign: "center", padding: "4px 6px", borderLeft: "1px solid var(--line)" }} colSpan={6}>{themName}</th>
                 </tr>
                 <tr>
                   {[ourSide, theirSide].flatMap((side) => columns.map((c) => (
@@ -247,16 +270,16 @@ export function MatchReportCard({ matchId, ourSide }: { matchId: number | null; 
 
           <h3 style={{ margin: "18px 0 0" }}>Fiziksel yük <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 11 }}>· takım düzeyi, oyuncu bazında değil</span></h3>
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginTop: 10 }}>
-            <LoadSummary name="Biz · güvenilir dilimler" color={US} load={data.physical.teams[ourSide]} />
-            <LoadSummary name="Rakip · güvenilir dilimler" color={THEM} load={data.physical.teams[theirSide]} />
+            <LoadSummary name={`${usName} · güvenilir dilimler`} color={US} load={data.physical.teams[ourSide]} />
+            <LoadSummary name={`${themName} · güvenilir dilimler`} color={THEM} load={data.physical.teams[theirSide]} />
           </div>
           <div style={{ overflowX: "auto", marginTop: 12 }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
               <thead>
                 <tr>
                   <th style={{ ...HEAD, textAlign: "left", padding: "4px 6px" }} rowSpan={2}>Dakika</th>
-                  <th style={{ ...HEAD, color: US, textAlign: "center", padding: "4px 6px" }} colSpan={4}>Biz</th>
-                  <th style={{ ...HEAD, color: THEM, textAlign: "center", padding: "4px 6px", borderLeft: "1px solid var(--line)" }} colSpan={4}>Rakip</th>
+                  <th style={{ ...HEAD, color: US, textAlign: "center", padding: "4px 6px" }} colSpan={4}>{usName}</th>
+                  <th style={{ ...HEAD, color: THEM, textAlign: "center", padding: "4px 6px", borderLeft: "1px solid var(--line)" }} colSpan={4}>{themName}</th>
                 </tr>
                 <tr>
                   {[ourSide, theirSide].flatMap((side) => ["Kapsama", "m/dk", "Y. hız", "Sprint"].map((c) => (

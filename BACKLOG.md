@@ -249,4 +249,4 @@
 - [x] Faz ayrımı denendi, ölçüt KALDI (savunurken genişlik 8,2 m vs tüm kareler 5,2 m); rapora eklenmedi, kod 4774cd0'da. docs/measurements/match-report-phase-vs-gt.json
 - [x] Geçiş anları kapısı KALDI: karelerden top kaybı kesinliği %17,5 (şart %60); kurulmadı. Aynı ölçüm dosyası.
 - [ ] Sahiplik alanını sağlamlaştır (titreşim: 177 kayıp vs 42 gerçek). Telestratörün pencere çoğunluğu kuralı savunan takımda %81 veriyordu; aynı kuralla kare sahipliğini yeniden türetip `eval_frame_possession` ile ölç. Bitti sayılır: kayıp kesinliği >= %60 ya da yöntem elendi diye yazılı; sonra faz ve geçiş anları yeniden sınanır.
-- [ ] Rakip raporu: aynı hat rakip videosunda, "Rakip nasıl oynuyor" PDF'i.
+- [x] Rakip raporu: `perspective=scout` PDF'i ("İzlenen / Karşısındaki", raporun sayılarından "Nasıl oynuyor" notları) + arayüzde "Rakip analizi" kutusu. Notlar yeni ölçüm değil; çok maçlı rakip profili yok.

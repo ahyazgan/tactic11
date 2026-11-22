@@ -151,3 +151,47 @@ def test_report_endpoint_passes_operator_direction(session, client):  # noqa: F8
     assert client.get("/tracking/matches/9600/report?home_attack=sol").status_code == 422
     pdf = client.get("/tracking/matches/9600/report.pdf?home_attack=x%2B")
     assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
+
+
+def test_notes_describe_block_and_shifts_but_never_compare_width():
+    slices = [(0.0, 15.0, _frames(0, 60, 20.0, ball=True)), (15.0, 30.0, _frames(15, 60, 26.0, ball=True))]
+    report = build_match_report(HOME, AWAY, slices, home_attack=1)
+    notes = report["notes"]["home"]
+    assert notes[0] == "Savunma hattı kendi kalesinden ortalama 20 m: alçak blok."
+    assert not any("geniş yayılıyor" in n or "dar yayılıyor" in n for n in notes)  # genişlik kıyası verilmez
+    assert not any("pres" in n for n in notes)  # ev topa sahip → ev presi ölçülmedi, kıyas yazılmaz
+    assert any(n.startswith("Maç içinde ortalamasından ayrıldığı dilimler: 0–15' daraldı") for n in notes)
+    assert report["notes"]["away"][0].endswith("orta blok.")
+
+
+def test_notes_are_empty_without_a_reliable_summary():
+    assert build_match_report(HOME, AWAY, [(0.0, 15.0, _frames(0, 5, 20.0))])["notes"] == {"home": [], "away": []}
+
+
+def test_scout_pdf_is_named_and_labelled_for_opponent_analysis(session, client):  # noqa: F811
+    _seed(session, frames=3)
+    r = client.get("/tracking/matches/9600/report.pdf?perspective=scout&our_side=away")
+    assert r.status_code == 200 and 'filename="rakip_analizi_9600.pdf"' in r.headers["content-disposition"]
+    assert client.get("/tracking/matches/9600/report.pdf?perspective=bizim").status_code == 422
+
+
+def test_scout_pdf_builder_renders_notes():
+    from app.reports.tracking_match_pdf import build_tracking_match_pdf
+
+    report = build_match_report(217, 213, [(0.0, 15.0, _frames(0.0, 40, 10.0))], home_attack=1)
+    report.update(match_id=1, slice_minutes=15.0, physical={})
+    pdf = build_tracking_match_pdf(report, our_side="home", perspective="scout", generated_at="2026-11-22")
+    assert pdf.startswith(b"%PDF") and len(pdf) > 5000
+
+
+def test_press_note_compares_with_the_other_team_only_beyond_threshold():
+    from app.engine.tracking.match_report import team_notes
+
+    def report(ours: float, theirs: float) -> dict:
+        summary = {"def_line_m": None, "width_m": 40.0}
+        return {"teams": {"home": {"summary": {**summary, "press_index": ours}},
+                          "away": {"summary": {**summary, "press_index": theirs}}},
+                "slices": [], "findings": []}
+
+    assert team_notes(report(0.60, 0.30), "home") == ["Karşısındaki takımdan daha çok pres yapıyor (0.60 / 0.30)."]
+    assert team_notes(report(0.40, 0.35), "away") == ["Pres yoğunluğu karşısındaki takıma yakın."]
