@@ -1,0 +1,37 @@
+{
+ "measured": "2026-11-23",
+ "question": "Telestratörün 1,0 sn pencere çoğunluğu kuralıyla yeniden türetilen kare sahipliği top kaybı anlarını yakalıyor mu?",
+ "data": "SoccerTrack v2 132877, 600-1200 sn, gündüz, 990741 frames_ball; referans dokunuş olaylarından sahiplik (ball-events-mapping-132877.json). Görülmüş veri.",
+ "pre_registered": "f976b4c (ölçümden önce): yalnız 1,0 sn; top kaybı kesinliği >= %60 VE duyarlılık >= %50 ise faz ayrımı ve geçiş anları yeniden sınanır, değilse yöntem elenir.",
+ "raw_field": {
+  "coverage": 0.578,
+  "accuracy": 0.845,
+  "turnovers": {
+   "found": 177,
+   "truth": 42,
+   "precision": 0.175,
+   "recall": 0.738
+  }
+ },
+ "window_1s": {
+  "in_possession": 4687,
+  "labelled": 4687,
+  "correct": 3841,
+  "coverage": 1.0,
+  "accuracy": 0.82,
+  "turnovers": {
+   "tolerance_s": 2.0,
+   "found": 63,
+   "truth": 42,
+   "matched": 22,
+   "precision": 0.349,
+   "recall": 0.524
+  }
+ },
+ "verdict": "KALDI: kesinlik %34,9 (63 bulunan, 22 eşleşen), duyarlılık %52,4. Pencere titreşimi yarıya indirdi ama bulunan kayıpların üçte ikisi hâlâ yanlış; isabet %84,5 → %82. Yöntem elendi; faz ve geçiş anları yeniden sınanmadı.",
+ "tool": "venv\\Scripts\\python.exe -X utf8 -m scripts.soccertrack_v2.eval_frame_possession --frames \"data/tracking/live/990741/frames_ball/seg_*.json\" --mapping docs/measurements/ball-events-mapping-132877.json --window-s 1.0 --out sahiplik.json",
+ "limits": [
+  "Tek saha, 10 dk, 42 gerçek kayıp.",
+  "Yalnız ön kayıtlı pencere denendi; başka pencere aynı veride ayarlama olurdu."
+ ]
+}
