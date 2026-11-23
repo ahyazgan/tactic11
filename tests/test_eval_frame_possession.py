@@ -23,3 +23,13 @@ def test_frame_turnovers_skip_empty_frames_but_not_long_gaps():
 def test_match_times_is_one_to_one_within_tolerance():
     r = match_times([1.0, 1.5, 9.0], [1.2, 20.0])
     assert (r["matched"], r["precision"], r["recall"]) == (1, 0.333, 0.5)
+
+
+def test_window_owners_takes_majority_of_recent_votes_and_fills_gaps():
+    from scripts.soccertrack_v2.eval_frame_possession import window_owners
+
+    owners = [1, 1, 2, None, 1, 2, 2, 2]
+    frames = [{"minute": i / 60.0, "possession_team_external_id": o} for i, o in enumerate(owners)]
+    got = [f["possession_team_external_id"] for f in window_owners(frames, window_s=3.0)]
+    assert got == [1, 1, 1, 1, 1, 2, 2, 2]
+    assert window_owners([{"minute": 0.0, "possession_team_external_id": None}], 1.0)[0]["possession_team_external_id"] is None
