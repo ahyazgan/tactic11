@@ -131,7 +131,7 @@
 
 ## Later (lower priority — only if Now + Next clear)
 
-- [ ] PDF report export for scout_report_generator
+- [x] PDF report export for scout_report_generator — modül yok; rakip analizi PDF'i `perspective=scout` ile geldi (PR 382)
 - [ ] Push/email delivery for digests (currently pull-only)
 - [ ] i18n scaffold for English UI
 - [x] Security headers (CSP / HSTS / X-Frame-Options / X-Content-Type-Options)  (b067175)
@@ -167,7 +167,7 @@
 - [x] GSR–kalibrasyon 2–3 m en kayması çözüldü: resmî saha işaretlerine karşı GSR dönüşümü 5–9 m sapıyor, bizimki 1,5 m → kayma GSR tarafında (gsr-reference-geometry.json).
 - [x] GSR referansı saha işaretlerine göre düzeltildi (correct_gsr_positions); gündüz ve üçüncü saha karnesi yeniden hesaplandı. Gece (117092) GSR görüntüsü panorama kırpımı değil — düzeltilemedi.
 - [ ] Aday izi 132831'de yanlış topu +5 puan artırdı (ön kayıtlı sınır +2): yeni sahada adayları seçicilik ayarı, yeni ön kayıtla.
-- [ ] Aday izi sonrası aktör/sahip alanları eski topta kalıyor (veri tutarlılığı; ölçülen etki yok).
+- [x] Aday izi sonrası aktör/sahip alanları eski topta kalıyor — bilinçli: `recompute_actors` iki ön kayıtlı kontrolde kaldı (ball_track.py başlığı, TOP-TESPITI-OLAY-OLCUMU §7); pencere çoğunluğu da kaldı (frame-possession-window-vs-gt.json).
 - [x] Şekil bekçisi eşikleri referansa karşı ölçüldü: blok 6 m ve hat aralığı 4 m gündüz güvenilir, gecede sınırda; genişlik 6 m ve boy 6 m gürültü içinde (SEKIL-BEKCISI-OLCUMU.md).
 - [ ] (diğer oturum) genişlik → %10–90 aralığı + eşik 8 m; boy → p90 derinlik − geri hat; hat aralığı eşiği 5 m; sonra aynı araçla yeniden ölç.
 - [x] USB kamera (Insta360 X5) ile canlı hat ilk koşu: segment/dedektör/DB ön kontrolü tamam; sahasız görüntüde kare yazılmaz (otomatik çapa bulunamaz, doğru davranış) — docs/measurements/live-rehearsal-990771-usb-camera.json
@@ -186,7 +186,7 @@
 - [x] Yayın iki geçiş kipi, tekrar süzme: ilk geçişin tekrar saydığı (kırmızı J.League logo geçişi) karede duruş üretilmez; kapanış geçişi görülmeyen pencerede (izleyicinin 60 sn tavanına dayanan) duruş atılmaz, pencere özette `replay_unclosed_windows_s` ile bildirilir. Ölçüm (iki gündüz kesiti, 6'şar dk): kobe_shonan 3 pencere, atılan duruş 0 (2629 → 2629); kashima_machida 2 kapalı pencere, atılan duruş 3 (1083 → 1080), 1 kapanmamış pencere (80–140. sn). Kapanmamış pencere kuralı olmadan kashima'da 188 duruş atılıyordu; örnek karelerde atılan 4 duruşun dördü de (105, 108, 135, 138. sn) canlı oyundu: kapanış geçişi kırmızı formalı yakın çekimle birleşip (kırmızı dilim 4 sn, sınır 1,2 sn) kaçıyor. Sınır: atılan 3 karenin gerçekten tekrar olduğuna tek tek bakılmadı; bu iki kesitte duruşlu ana kamera tekrarı neredeyse yok, süzgecin yararı bu veriyle gösterilemedi.
 - [ ] Yayın tekrar izleyici: kapanış geçişi kırmızı içerikle birleşince kaçıyor (kashima_machida 89–93. sn); o pencere süzülmeden kalıyor ve ilk geçişte (kamera bulma) 60 sn canlı oyun tekrar sayılıyor. `shot_filter.py` dondurulmuş; yeni geçiş kuralı ayrı modülde ve yeni maçlarla ön kayıtlı ölçülmeli. İşaret yalnız J.League yayınına özgü. Done when: kırmızı formalı en az 2 yeni gündüz maçında kaçan geçiş sayısı ölçülür ve kural ya düzeltilir ya da bırakılır.
 - [ ] Yayın iki geçiş kipi: kamera konumu kısa videoda oynuyor (90 sn: 51,0; 104,0; 17,8 — 6 dk: 52,1; 107,8; 17,6). Done when: en az video süresi ölçülüp yazılır ya da kip kısa videoyu reddeder.
-- [ ] Yayın iki geçiş kipi: tam maç koşusu (süre, bellek, kapsama) ve 90 sn'de 23 takipçi sıfırlamasının kimlik sürekliliğine etkisi. Done when: bir tam gündüz maçı uçtan uca koşulur, sayılar yazılır.
+- [ ] (engel: yerelde tam uzunlukta gündüz yayın maçı yok; yalnız kısa J.League klipleri) Yayın iki geçiş kipi: tam maç koşusu (süre, bellek, kapsama) ve 90 sn'de 23 takipçi sıfırlamasının kimlik sürekliliğine etkisi. Done when: bir tam gündüz maçı uçtan uca koşulur, sayılar yazılır.
 - [ ] Yayın takibi 2. tur: uzun köprü geliştirmede kaldı, aynı 3 maçta %66,2 → %60,1, kod geri alındı; sonraki adım kullanıcı kararında — docs/measurements/broadcast-track-round2-development-result.json
 - [ ] Yayın takibi kapsama tanısı: kayıp %39,4 çapa eksik (maç farkının ana kaynağı, 0-26 örnek), %50,0 çekim ayırıcı + tekrar; filtresiz 3 maçta %53,8 → %81,3 ama verdy other 4/39; gölge açıklamıyor; taşınan duruş aramayı engelliyor (long_search 215/309, long_block 184/309). hiroshima_kyoto ve kashiwa_hiroshima_final artık geliştirme verisi, bir daha kontrol olamaz. 3. tur taslağı kullanıcı onayında — docs/measurements/broadcast-track-coverage-diagnosis.json
 - [ ] Yayın takibi 3. tur: filtre engellemez + sabit kamera bekçisi geliştirmede kaldı, main 326/468 = %69,7 (şart %70), kashima_marinos %44,9 (şart %50), other %2,4; kod geri alındı; kullanıcı yönü önce çapa — docs/measurements/broadcast-track-round3-development-result.json
