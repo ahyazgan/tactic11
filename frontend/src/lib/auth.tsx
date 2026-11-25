@@ -38,6 +38,8 @@ export interface RequireRoleProps {
   fallback?: React.ReactNode;
 }
 
+const noopSubscribe = () => () => {};
+
 export function RequireRole({ roles, children, fallback }: RequireRoleProps) {
   const { user, isLoading } = useCurrentUser();
   const router = useRouter();
@@ -48,7 +50,11 @@ export function RequireRole({ roles, children, fallback }: RequireRoleProps) {
     }
   }, [user, isLoading, roles, router]);
 
-  if (isLoading) {
+  // Sunucuda token okunamaz (anahtar null → "Giriş gerekli."), istemcide yükleniyor: ilk çizim
+  // iki tarafta aynı olsun diye hidrasyon bitene kadar kontrol metni basılır.
+  const hydrated = React.useSyncExternalStore(noopSubscribe, () => true, () => false);
+
+  if (!hydrated || isLoading) {
     return (
       <div className="p-4 text-textmut text-[13px]">Yetki kontrol ediliyor...</div>
     );
