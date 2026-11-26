@@ -234,7 +234,10 @@
 - [x] (PR 380, c5ab236: operatör 1. yarı yönü + devre arası) Maç raporunda saha yönü: hücum yönü bilinmeden blok yüksekliği ve geri hat verilemiyor; yön kaynağı (operatör seçimi ya da ölçülmüş otomatik yön) bağlanınca eklenir.
 - [x] Maç raporu bulgu eşikleri gerçek konumda ölçüldü (aşağıdaki madde, match-report-vs-gt.json).
 - [x] Fiziksel yük (takım düzeyi): maç raporunda oyuncu-dakika başına metre, yüksek hız ve sprint payı, kapsama ve güvenilirlik; ham hız yerine 1 sn düzeltilmiş konum (ham hızda yükleme yolunda oyuncu-zamanın %8,5'i sprint görünüyordu). Geliştirme (canlı yol, 132877 600-1200): 121,7 vs GT 121,1 m/dk.
-- [ ] Fiziksel yük görülmemiş doğrulama: 132877 1800-2100 yükleme yolu koşusu sonrası `physical_load_vs_gt` (ön kayıt: docs/measurements/physical-load-vs-gt-132877-preregistration.json). Engel: bellek (14 GB boş commit).
+- [x] Fiziksel yük görülmemiş doğrulama GEÇTİ (132877 1800-2100, yükleme yolu): tempo 118,2 vs GT 115,0 m/dk (%2,8), yüksek hız %2,90 vs %2,64, sprint %0,95 vs %0,85. docs/measurements/physical-load-vs-gt-132877-result.json
+- [x] Ürün konum/takım görülmemiş doğrulama (aynı koşu) 4/5: duyarlılık %82,8, ortanca 1,23 m, takım %89,6, takımsız %11,7 geçti; kesinlik %67,9 KALDI (şart %80). docs/measurements/product-vs-gt-132877-result.json
+- [ ] Fazla işaret (karede 26,8 vs 22): hakem/kenar kişisi payını ayrıştır; ayar gerekirse 132877'nin başka penceresinde ön kayıtla sına.
+- [ ] Yükleme yolu hızı 8,2x (urun_mac_sinavi şartı 6x): 5 dk klip 41 dk sürdü.
 - [x] Maç sonu raporu PDF'i: `GET /tracking/matches/{id}/report.pdf` (aynı rapor, tek sayfa, Biz/Rakip `our_side`a göre, Vera yazı tipi ile Türkçe) ve maç raporu kartında "PDF indir". Gerçek gündüz çıktısıyla denendi: SoccerTrack 117093 ilk yarı (iş 0b9979c312) geçici SQLite'a yüklendi, iki uç 200, PDF tek sayfa. Sınır: arayüz düğmesi canlı modda tarayıcıda tıklanarak denenmedi (tsc + eslint temiz); rapor yalnız takım düzeyi, oyuncu bazında değil.
 - [x] Kulüp pilot belgesi `docs/KULUP-PILOT.md`: söz, kanıtlı sayılar (her biri ölçüm dosyasına bağlı), yapılmayanlar, pilot önerisi.
 - [x] Maç raporu PDF başlığında takım adları ve maç tarihi; ad kayıtlı değilse "Takım {id}".

@@ -1,0 +1,56 @@
+{
+ "measured": "2026-11-26",
+ "data": "SoccerTrack v2 132877 ilk yarı 1800-2100 sn, gündüz panorama; bu pencere daha önce hiçbir ölçümde kullanılmadı",
+ "product_run": {
+  "path": "POST /tracking/jobs varsayılanları, scripts/urun_mac_sinavi.py",
+  "job_id": "2419044399",
+  "elapsed_seconds": 2466.1,
+  "processing_ratio": 8.22,
+  "frames_written": 1250,
+  "players_per_frame_mean": 26.9,
+  "note": "Hız bu ön kayıtların şartı değil; urun_mac_sinavi'nin kendi 6x hız şartı 8,22x ile kaldı (bellek boşaltılmış makinede)."
+ },
+ "pre_registered": "docs/measurements/product-vs-gt-132877-preregistration.json (6ad43ae, koşudan önce)",
+ "held_out_corrected_reference": {
+  "frames_evaluated": 1000,
+  "gt_players": 22000,
+  "product_players": 26839,
+  "matched": 18221,
+  "recall": 0.8282,
+  "precision": 0.6789,
+  "median_distance_m": 1.229,
+  "p90_distance_m": 2.528,
+  "team_agreement": 0.8956,
+  "matched_without_team_share": 0.117,
+  "final_delta_frames": -28
+ },
+ "held_out_raw_gsr": {
+  "frames_evaluated": 1000,
+  "gt_players": 22000,
+  "product_players": 26839,
+  "matched": 15870,
+  "recall": 0.7214,
+  "precision": 0.5913,
+  "median_distance_m": 1.666,
+  "p90_distance_m": 2.706,
+  "team_agreement": 0.8851,
+  "matched_without_team_share": 0.0807,
+  "final_delta_frames": -40
+ },
+ "checks": {
+  "recall>=0.80": true,
+  "precision>=0.80": false,
+  "median_distance_m<=2.0": true,
+  "team_agreement>=0.85": true,
+  "matched_without_team_share<=0.15": true
+ },
+ "verdict": "KALDI (tek şart): kesinlik %67.9 (şart %80). Duyarlılık %82.8, ortanca mesafe 1.23 m, takım uyumu %89.6, takımsız eşleşme %11.7 geçti.",
+ "reading": "Ürün karede ortalama 26,8 işaret veriyor, GT 22 oyuncu+kaleci. GT hakemleri içermez; fazlalığın bir kısmı hakem ve saha kenarındaki kişiler olabilir. Bu ayrıştırılmadı; ön kayıt gereği bu pencerede ayar yapılmaz.",
+ "claim_allowed": "Görülmemiş gündüz penceresinde gerçek oyuncuların %83'ü 3 m içinde (ortanca 1,2 m) ve eşleşenlerin %90'ı doğru takımda bulundu. 'Konum doğrulandı' denmez: işaretlerin %32'si gerçek oyuncuya denk gelmiyor.",
+ "limits": [
+  "Tek maç, 5 dk (ölçüm 240 sn)",
+  "Düzeltilmiş referans ürünle aynı kalibrasyonu kullanır; kalibrasyon hatası (1,5 m) görünmez",
+  "Kare kayması her karede aranır: konum hatası biraz iyimser",
+  "Pencere tüketildi; sonraki deneme başka pencerede"
+ ]
+}

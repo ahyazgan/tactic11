@@ -11,7 +11,8 @@ Sınırlar (yanıtta `limits` olarak da döner):
   - Yalnız izlenen oyuncu-zaman sayılır; izlenmeyen oyuncunun koşusu yoktur.
   - Takım ayrımı forma rengine dayanır; hakem ya da rakip takıma karışabilir.
   - `MAX_SPEED_MPS` üstü adımlar (kimlik sıçraması) atılır.
-  - Yükleme yolunda gerçek konuma karşı doğrulanmadı.
+  - Yükleme yolunda gerçek konuma karşı yalnız bir gündüz penceresinde doğrulandı (132877, 5 dk;
+    docs/measurements/physical-load-vs-gt-132877-result.json); başka maç ve kamerada sınanmadı.
 """
 from __future__ import annotations
 
@@ -33,7 +34,8 @@ LIMITS = (
     "Yalnız izlenen oyuncu-zaman sayılır; kapsama düşükse dilim güvenilmez işaretlenir.",
     f"Hız, konumun {SMOOTH_SECONDS:g} sn'lik kayan ortalamasından alınır; {MAX_SPEED_MPS:g} m/sn üstü adımlar atılır.",
     f"Yüksek hız > {HSR_MPS:g} m/sn, sprint > {SPRINT_MPS:g} m/sn; paylar izlenen oyuncu-zamana göredir.",
-    "Yükleme yolunda gerçek konuma karşı henüz doğrulanmadı.",
+    "Gerçek konuma karşı yalnız bir gündüz maçının 5 dakikasında doğrulandı (tempo %2,8, yüksek hız 0,3 puan,"
+    " sprint 0,1 puan sapma); başka maç ve kamerada sınanmadı.",
 )
 
 # İz örneği: (saniye, x metre, y metre, takım kimliği ya da None)
