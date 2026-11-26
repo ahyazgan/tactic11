@@ -1,0 +1,50 @@
+{
+ "measured": "2026-11-26",
+ "data": "SoccerTrack v2 132877 ilk yarı 1800-2100 sn, gündüz panorama; bu pencere daha önce hiçbir ölçümde kullanılmadı",
+ "product_run": {
+  "path": "POST /tracking/jobs varsayılanları, scripts/urun_mac_sinavi.py",
+  "job_id": "2419044399",
+  "elapsed_seconds": 2466.1,
+  "processing_ratio": 8.22,
+  "frames_written": 1250,
+  "players_per_frame_mean": 26.9,
+  "note": "Hız bu ön kayıtların şartı değil; urun_mac_sinavi'nin kendi 6x hız şartı 8,22x ile kaldı (bellek boşaltılmış makinede)."
+ },
+ "pre_registered": "docs/measurements/physical-load-vs-gt-132877-preregistration.json (koşudan önce)",
+ "result": {
+  "gates": {
+   "m_per_player_min_relative": 0.15,
+   "hsr_share_abs": 0.015,
+   "sprint_share_abs": 0.0075
+  },
+  "product": {
+   "player_minutes": 107.1,
+   "m_per_player_min": 118.2,
+   "hsr_share": 0.029,
+   "sprint_share": 0.0095
+  },
+  "ground_truth": {
+   "player_minutes": 118.7,
+   "m_per_player_min": 115.0,
+   "hsr_share": 0.0264,
+   "sprint_share": 0.0085
+  },
+  "m_per_player_min_relative_error": 0.0278,
+  "hsr_share_error": 0.0026,
+  "sprint_share_error": 0.001,
+  "checks": {
+   "m_per_player_min": true,
+   "hsr_share": true,
+   "sprint_share": true
+  },
+  "passed": true
+ },
+ "verdict": "GEÇTİ: oyuncu-dakika başına metre %2,8 sapma (şart %15), yüksek hız payı 0,26 puan (şart 1,5), sprint payı 0,10 puan (şart 0,75).",
+ "claim_allowed": "Takım düzeyi koşu temposu ve hız bölgesi payları bir gündüz maçının 5 dakikasında gerçek konum verisine karşı doğrulandı (yükleme yolu).",
+ "limits": [
+  "Tek maç, 5 dk, takım ayrımsız toplam oran",
+  "Oyuncu bazında iddia yok",
+  "Ürün tarafında takıma karışmış hakem olabilir",
+  "Düzeltilmiş referans ürünle aynı kalibrasyonu kullanır"
+ ]
+}
