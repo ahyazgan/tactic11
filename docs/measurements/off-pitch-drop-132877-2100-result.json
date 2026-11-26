@@ -1,0 +1,158 @@
+{
+ "measured": "2026-11-26",
+ "pre_registered": "docs/measurements/off-pitch-drop-132877-2100-preregistration.json (0f6565e, koşudan önce)",
+ "product_run": {
+  "job_id": "c3221c9a89",
+  "elapsed_seconds": 2486.3,
+  "processing_ratio": 8.288,
+  "frames_written": 1250,
+  "players_per_frame_written": 22.21,
+  "markers_on_clamped_lines": 0,
+  "note": "job_summary.players_per_frame_mean (27,0) kare kurulmadan önce sayılır; yazılan karelerde 22,2. Kural uygulandı: çizgide 0 işaret."
+ },
+ "held_out_corrected_reference": {
+  "frames_evaluated": 1000,
+  "gt_players": 22000,
+  "product_players": 22436,
+  "matched": 17665,
+  "recall": 0.803,
+  "precision": 0.7874,
+  "median_distance_m": 1.42,
+  "p90_distance_m": 2.624,
+  "team_labelled_pairs": 16013,
+  "team_agreement": 0.9088,
+  "matched_without_team_share": 0.0935,
+  "final_delta_frames": -34
+ },
+ "held_out_raw_gsr": {
+  "frames_evaluated": 1000,
+  "gt_players": 22000,
+  "product_players": 22436,
+  "matched": 15437,
+  "recall": 0.7017,
+  "precision": 0.688,
+  "median_distance_m": 1.7,
+  "p90_distance_m": 2.707,
+  "team_labelled_pairs": 14188,
+  "team_agreement": 0.8994,
+  "matched_without_team_share": 0.0809,
+  "final_delta_frames": -21
+ },
+ "checks": {
+  "recall>=0.80": true,
+  "precision>=0.80": false,
+  "median_distance_m<=2.0": true,
+  "team_agreement>=0.85": true,
+  "matched_without_team_share<=0.15": true
+ },
+ "verdict": "KALDI (tek şart): kesinlik %78,7 (şart %80). Duyarlılık %80,3, ortanca 1,42 m, takım %90,9, takımsız %9,4 geçti. Ön kayıt gereği kural geri alındı.",
+ "excess_after_rule": {
+  "frames_evaluated": 1000,
+  "product_markers": 22436,
+  "unmatched": 4771,
+  "unmatched_per_frame": 4.77,
+  "precision": 0.7874,
+  "clamped_markers_all": 10,
+  "precision_without_clamped": 0.7877,
+  "by_class": {
+   "clamped": {
+    "count": 9,
+    "per_frame": 0.01,
+    "share_of_unmatched": 0.002,
+    "team": {
+     "home": 0,
+     "away": 0,
+     "none": 9
+    }
+   },
+   "duplicate": {
+    "count": 112,
+    "per_frame": 0.11,
+    "share_of_unmatched": 0.023,
+    "team": {
+     "home": 47,
+     "away": 51,
+     "none": 14
+    }
+   },
+   "near_miss": {
+    "count": 3262,
+    "per_frame": 3.26,
+    "share_of_unmatched": 0.684,
+    "team": {
+     "home": 1485,
+     "away": 1492,
+     "none": 285
+    }
+   },
+   "alone_line": {
+    "count": 288,
+    "per_frame": 0.29,
+    "share_of_unmatched": 0.06,
+    "team": {
+     "home": 98,
+     "away": 87,
+     "none": 103
+    }
+   },
+   "alone_inside": {
+    "count": 637,
+    "per_frame": 0.64,
+    "share_of_unmatched": 0.134,
+    "team": {
+     "home": 531,
+     "away": 106,
+     "none": 0
+    }
+   },
+   "other": {
+    "count": 463,
+    "per_frame": 0.46,
+    "share_of_unmatched": 0.097,
+    "team": {
+     "home": 377,
+     "away": 74,
+     "none": 12
+    }
+   }
+  }
+ },
+ "reading": "Kural çizgiye yapışan kişileri sildi (karede 0,01 kaldı). Kalan eşsiz işaretlerin %68'i bir GT oyuncusuna 3-6 m (konum hatası 3 m eşleşme yarıçapını aşıyor), %13'ü saha içinde yalnız (çoğu ev sahibine atanmış, orta hakem adayı). Kesinlik kaybının artık ana kaynağı konum hatası.",
+ "not_measured": "Kuralsız karşılaştırma koşusu yapılmadı (ön kayıtta yazılı); kuralın bu penceredeki katkısı ayrıca ölçülmedi.",
+ "secondary_replication_physical_load": {
+  "gates": {
+   "m_per_player_min_relative": 0.15,
+   "hsr_share_abs": 0.015,
+   "sprint_share_abs": 0.0075
+  },
+  "product": {
+   "player_minutes": 101.8,
+   "m_per_player_min": 113.1,
+   "hsr_share": 0.0318,
+   "sprint_share": 0.0074
+  },
+  "ground_truth": {
+   "player_minutes": 118.8,
+   "m_per_player_min": 104.1,
+   "hsr_share": 0.0267,
+   "sprint_share": 0.0059
+  },
+  "m_per_player_min_relative_error": 0.0865,
+  "hsr_share_error": 0.0051,
+  "sprint_share_error": 0.0015,
+  "checks": {
+   "m_per_player_min": true,
+   "hsr_share": true,
+   "sprint_share": true
+  },
+  "passed": true
+ },
+ "secondary_verdict": "GEÇTİ 3/3 (kural açıkken): tempo 113,1 vs 104,1 m/dk (%8,7), yüksek hız 3,18 vs 2,67 (0,51 puan), sprint 0,74 vs 0,59 (0,15 puan). İkinci görülmemiş pencerede tekrar etti; tempo hatası %2,8'den %8,7'ye çıktı.",
+ "decision": "Kural ürün işçisinden kaldırıldı (iyileştirmeyen geliştirme eklenmez: şart geçilemedi). 2100-2400 penceresi tüketildi.",
+ "limits": [
+  "Tek maç, 5 dk",
+  "Düzeltilmiş referans ürünle aynı kalibrasyonu kullanır",
+  "Kare kayması her karede aranır: konum hatası biraz iyimser",
+  "Fiziksel yük tekrarı kural açıkken koşuldu; kuralsız ürünle aynı olduğu varsayılamaz"
+ ]
+}

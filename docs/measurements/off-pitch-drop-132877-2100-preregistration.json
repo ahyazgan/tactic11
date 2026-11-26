@@ -1,0 +1,43 @@
+{
+ "status": "frozen_before_any_run_of_this_window",
+ "written": "2026-11-26, 132877 2100-2400 sn klibi kesilip GT çıkarılırken; bu pencerenin hiçbir karesi ya da GT satırı açılmadan",
+ "decided_by": "Kullanıcı 'Başla' dedi (2026-11-26); kural, pencere ve şartlar Claude'un",
+ "question": "Ürün işçisi ayak noktası saha çizgilerinin dışına düşen kişileri atınca, görülmemiş gündüz penceresinde konum/takım şartlarının beşi de geçiyor mu?",
+ "why": "1800-2100 koşusunda kesinlik %67,9 ile kaldı. Tanı (docs/measurements/product-excess-markers-132877.json): ürün 2 m pay ile saha dışını kabul edip 0..100'e kırpıyor; çizgiye yapışan 4175 işaretin %99,8'i gerçek oyuncuya eşleşmedi. Kural o pencerede görüldükten sonra seçildi; kanıt bu ön kayıtlı koşudur.",
+ "change": {
+  "rule": "Ürün işçisinde (scripts/track_video_product.py -> app/tracking/pitch_bounds.py install()) oyuncu gözlemi, ayak noktasının saha izdüşümü çizgilerin dışındaysa (pay 0,0 m) kareye yazılmadan atılır. Top kuralı (5 m pay) değişmez.",
+  "frozen_code_untouched": "frames.py, pipeline.py ve ölçüm betikleri aynen kalır; ad yalnız ürün işçisi sürecinde yeniden bağlanır.",
+  "margin_choice": "0,0 m ayarlanmadı: 'çizginin dışı saha dışıdır' tanımı. Başka pay denenmeyecek."
+ },
+ "data": {
+  "match": "SoccerTrack v2 132877, ilk yarı panoraması (CC BY 4.0)",
+  "window_seconds": [2100, 2400],
+  "seen_before": "Hayır. 132877'de kullanılan pencereler 600-1200 (2026-11-01) ve 1800-2100 (2026-11-26). GT dosyası 52200-60300 karelerini kapsar; ilk 600 kare (2088-2112 sn) kare kayması araması için pay, 1800-2100 GT dosyasıyla 2088-2112 sn örtüşür.",
+  "ground_truth": "export_gt (image-id-base 3919000000) + correct_gsr_positions (soccertrack_v2_132877_landmarks); ham GSR sonucu yanında yazılır",
+  "dev_seconds": 60,
+  "held_out_seconds": 240
+ },
+ "run": "scripts/urun_mac_sinavi.py, POST /tracking/jobs varsayılanları, --video soccertrack_132877_2100_2400.mp4 --calibration soccertrack_v2_132877_landmarks --expected-seconds 300; sonra product_vs_gt --clip-start 2100 ve physical_load_vs_gt",
+ "primary_gates_on_held_out_corrected_reference": {
+  "recall": ">= 0,80",
+  "precision": ">= 0,80",
+  "median_distance_m": "<= 2,0",
+  "team_agreement": ">= 0,85",
+  "matched_without_team_share": "<= 0,15"
+ },
+ "secondary_replication": {
+  "what": "Fiziksel yük şartları (physical-load-vs-gt-132877-preregistration.json ile aynı) bu pencerede de koşulur: tempo göreli hata <= 0,15, yüksek hız payı farkı <= 0,015, sprint payı farkı <= 0,0075.",
+  "note": "Kural takım atanmış izleri de etkiler; sonuç ayrı yazılır, birincil kararı değiştirmez."
+ },
+ "expectation_declared": "Kesinliğin %80 civarına çıkması bekleniyor (görülmüş pencerede %80,4 hesaplandı, pay dar). Duyarlılığın 1 puandan az düşmesi bekleniyor (çizgiye yapışanlardan yalnız 9'u eşleşmişti). Orta hakem ve 3-6 m konum hatası bu kuralla düzelmez.",
+ "decision": {
+  "if_all_pass": "Kural ürün işçisinde kalır; 'iki görülmemiş gündüz penceresinden ikincisinde konum ve takım gerçek veriye karşı 5/5 geçti' denebilir. Tam maç iddiası değildir.",
+  "if_any_fails": "Kural geri alınır (iyileştirmeyen geliştirme eklenmez); kalan şart sınır olarak yazılır. Bu pencerede başka pay ya da kural denenmez."
+ },
+ "limits": [
+  "Tek maç, 5 dk; aynı kamera ve kalibrasyon",
+  "Düzeltilmiş referans ürünle aynı kalibrasyonu kullanır: kalibrasyon hatası (1,5 m) görünmez",
+  "Kare kayması her karede +-60 kare içinde aranır: konum hatası biraz iyimser",
+  "Kuralsız karşılaştırma koşusu yapılmaz (40 dk); kuralın katkısı ayrıca ölçülmez, yalnız şartlar sınanır"
+ ]
+}
