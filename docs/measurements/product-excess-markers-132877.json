@@ -1,0 +1,92 @@
+{
+ "measured": "2026-11-26",
+ "question": "132877 ürün koşusunda kesinliği düşüren (%67,9) fazladan işaretler nedir?",
+ "data": "SoccerTrack v2 132877 1800-2100 sn, iş 2419044399, düzeltilmiş GSR; ölçüm 240 sn. Pencere ön kayıtlı ölçümde tüketildi: bu bir tanıdır, ayar ya da kanıt değildir.",
+ "tool": "venv\\Scripts\\python.exe -X utf8 -m scripts.soccertrack_v2.excess_markers --frames job_2419044399_frames.json --gt-rows bench/gsr_132877_1800_2100_corrected.npy --clip-start 1800 --out sonuc.json",
+ "result": {
+  "alignment_from_dev": {
+   "flip_x": false,
+   "flip_y": false,
+   "delta_frames": -27,
+   "team_crossed": true
+  },
+  "held_out": {
+   "frames_evaluated": 1000,
+   "product_markers": 26839,
+   "unmatched": 8618,
+   "unmatched_per_frame": 8.62,
+   "precision": 0.6789,
+   "clamped_markers_all": 4175,
+   "precision_without_clamped": 0.804,
+   "by_class": {
+    "clamped": {
+     "count": 4166,
+     "per_frame": 4.17,
+     "share_of_unmatched": 0.483,
+     "team": {
+      "home": 931,
+      "away": 42,
+      "none": 3193
+     }
+    },
+    "duplicate": {
+     "count": 118,
+     "per_frame": 0.12,
+     "share_of_unmatched": 0.014,
+     "team": {
+      "home": 71,
+      "away": 39,
+      "none": 8
+     }
+    },
+    "near_miss": {
+     "count": 2817,
+     "per_frame": 2.82,
+     "share_of_unmatched": 0.327,
+     "team": {
+      "home": 1751,
+      "away": 932,
+      "none": 134
+     }
+    },
+    "alone_line": {
+     "count": 199,
+     "per_frame": 0.2,
+     "share_of_unmatched": 0.023,
+     "team": {
+      "home": 12,
+      "away": 145,
+      "none": 42
+     }
+    },
+    "alone_inside": {
+     "count": 681,
+     "per_frame": 0.68,
+     "share_of_unmatched": 0.079,
+     "team": {
+      "home": 551,
+      "away": 118,
+      "none": 12
+     }
+    },
+    "other": {
+     "count": 637,
+     "per_frame": 0.64,
+     "share_of_unmatched": 0.074,
+     "team": {
+      "home": 591,
+      "away": 34,
+      "none": 12
+     }
+    }
+   }
+  }
+ },
+ "finding": [
+  "Ürün koordinatı 0..100'e kırpar (app/tracking/calibration.py image_to_normalized clamp=True). Saha dışındaki kişiler çizgiye yapışır: işaretlerin 4175'i tam çizgide, bunların 4166'sı (%99,8) hiçbir gerçek oyuncuya eşleşmedi.",
+  "Eşleşmeyen işaretlerin %48'i çizgiye kırpılmış saha dışı kişi (karede 4,2; %77'si takımsız), %33'ü 3-6 m konum hatası (karede 2,8), %8'i saha içinde yalnız (karede 0,7; çoğu ev sahibi takıma atanmış: orta hakem adayı), %2'si çizgi yakınında yalnız, %1'i çift işaret, %7'si diğer.",
+  "Kırpılmış işaretler atılsaydı kesinlik %67,9 -> %80,4 olurdu (aynı pencere; görülmüş veride hesap, kanıt değil)."
+ ],
+ "not_concluded": "Hakem kimliği GT'de yok; 'hakem' konuma dayalı tahmindir. Çizgiye kırpılmış bir işaretin gerçekten saha dışı olduğu görüntüde tek tek doğrulanmadı.",
+ "next": "Saha dışı (kırpılmadan önce çizgi dışında kalan) işaretleri atan düzeltme, ön kayıtla 132877'nin kullanılmamış bir penceresinde sınanmalı (şart: kesinlik >= %80 ve duyarlılık düşüşü <= 1 puan)."
+}
