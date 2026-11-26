@@ -4,6 +4,7 @@ Argümanlar `scripts.track_video` ile aynıdır, iki fark vardır. `scripts.trac
 `pipeline.py` dondurulmuş ölçüm kodu olduğu için bu davranışlar oraya yazılmadı.
 
 - Tekrar süzgeci eskiyen referansı yeniden öğrenir (`app/tracking/replay_relearn.py`).
+- Ayak noktası saha çizgilerinin dışındaki kişiler kareye yazılmaz (`app/tracking/pitch_bounds.py`).
 - `--broadcast-two-pass`: gündüz TV yayını, yalnız maç sonrası. Video önce iki kez okunur, kamera
   konumu maçın kendisinden bulunur ve duruşlar hatta hazır verilir
   (`app/tracking/broadcast_calibrator.py`). `--camera broadcast` ile birlikte verilir. Yavaştır
@@ -13,14 +14,15 @@ from __future__ import annotations
 
 import sys
 
+from app.tracking import pitch_bounds, replay_relearn
 from app.tracking.broadcast_calibrator import FLAG, two_pass_process_video
-from app.tracking.replay_relearn import install
 from scripts import track_video
 
 
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
-    install()
+    replay_relearn.install()
+    pitch_bounds.install()
     if FLAG in args:
         args.remove(FLAG)
         setattr(track_video, "process_video", two_pass_process_video(track_video.process_video))  # noqa: B010
