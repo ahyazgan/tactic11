@@ -238,7 +238,9 @@
 - [x] Ürün konum/takım görülmemiş doğrulama (aynı koşu) 4/5: duyarlılık %82,8, ortanca 1,23 m, takım %89,6, takımsız %11,7 geçti; kesinlik %67,9 KALDI (şart %80). docs/measurements/product-vs-gt-132877-result.json
 - [x] Fazla işaret ayrıştırıldı: eşleşmeyenlerin %48'i 0..100 kırpmasıyla çizgiye yapışmış saha dışı kişi (çizgideki işaretlerin %99,8'i eşsiz), %33'ü 3-6 m konum hatası, %8'i saha içinde yalnız (hakem adayı). Kırpılmışlar atılsa kesinlik %80,4 (görülmüş veri). docs/measurements/product-excess-markers-132877.json
 - [x] Saha dışı işaretleri atma KALDI (132877 2100-2400, ön kayıtlı): kesinlik %78,7 (şart %80), diğer 4 şart geçti; kural geri alındı. Fiziksel yük ikinci pencerede de 3/3 geçti (tempo %8,7). docs/measurements/off-pitch-drop-132877-2100-result.json
-- [ ] Kesinlik kaybının ana kaynağı artık 3-6 m konum hatası (eşsizlerin %68'i) ve orta hakem (%13); ikisi de yeni ön kayıtla, yeni pencerede.
+- [x] 3-6 m konum hatası tanısı: gecikme ve bölgesel kalibrasyon değil; kaçan işaretin ayak noktası ~10 px yukarıda, kutu boyu normal (kısa kutu varsayımı reddedildi, kural ön kayda alınmadı). docs/measurements/near-miss-diagnosis-132877.json
+- [ ] Uzak kenarda ~10 px yukarı kayan kutuların nedenini kare görüntüsünde ayırt et (kalabalıkta komşuya kayma / izleyici sürüklenmesi / GSR etiket farkı); neden bulunmadan kural yazma.
+- [ ] Orta hakem (eşsizlerin %13'ü): yeni ön kayıtla, yeni pencerede.
 - [ ] Yükleme yolu hızı 8,2x (urun_mac_sinavi şartı 6x): 5 dk klip 41 dk sürdü.
 - [x] Maç sonu raporu PDF'i: `GET /tracking/matches/{id}/report.pdf` (aynı rapor, tek sayfa, Biz/Rakip `our_side`a göre, Vera yazı tipi ile Türkçe) ve maç raporu kartında "PDF indir". Gerçek gündüz çıktısıyla denendi: SoccerTrack 117093 ilk yarı (iş 0b9979c312) geçici SQLite'a yüklendi, iki uç 200, PDF tek sayfa. Sınır: arayüz düğmesi canlı modda tarayıcıda tıklanarak denenmedi (tsc + eslint temiz); rapor yalnız takım düzeyi, oyuncu bazında değil.
 - [x] Kulüp pilot belgesi `docs/KULUP-PILOT.md`: söz, kanıtlı sayılar (her biri ölçüm dosyasına bağlı), yapılmayanlar, pilot önerisi.
