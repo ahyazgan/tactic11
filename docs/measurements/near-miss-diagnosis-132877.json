@@ -1,0 +1,15 @@
+{
+ "measured": "2026-11-27",
+ "kind": "tanı (görülmüş pencereler 1800-2100 ve 2100-2400); ölçüt değildir, kural seçilmedi",
+ "question": "Eşi olmayan ürün işaretlerinin %68'i bir GT oyuncusuna 3-6 m uzakta (near_miss). Bu konum hatasının kaynağı ne?",
+ "reference": "düzeltilmiş GSR (ürünle aynı kalibrasyon: soccertrack_v2_132877_landmarks); hizalama product_vs_gt ile aynı, yalnız ilk 60 sn'den",
+ "findings": {
+  "not_latency": "Kaymanın GT hız yönündeki bileşeni ortanca -0,13 m (2100) / -0,12 m (1800); eşleşenlerde 0,0. Gecikme değil.",
+  "regional": "near_miss işaretleri uzak yan çizgi (y 0-22,7 m) ve orta üçte birde toplanır: 2100'de 2897 işaretin 1903'ü y<22,7, 1770'i x 35-70; ortalama kayma y'de -3,69 m (orta). 1800'de aynı desen (-3,53 m, 1754/2518 y<22,7). Eşleşenlerde orta bölge kayması -1,0 m.",
+  "pixel_offset": "Kayma görüntüye çevrildiğinde near_miss ayak noktası GT'den ortanca 9,7 px yukarıda ve derinliğe göre sabit (y 0-10: -9,2; 10-22,7: -10,3; 22,7-45,3: -8,9 px). Eşleşenlerde -1,5 px. Bölgesel kalibrasyon hatası değil, ayak noktası farkı.",
+  "short_box_hypothesis_rejected": "2100 klibinin ilk 120 sn'si kutu dökümüyle yeniden işlendi (son 60 sn değerlendirildi). Kutu boyunun aynı derinlikteki (±15 px) komşu ortancasına oranı near_miss'te 1,01, eşleşenlerde 1,01. Oranı <0,75 olan near_miss %14,6 (eşleşenlerde %7,9); bunların yarısı (%49,6) uzatmayla eşleşirdi. Toplam near_miss'in ~%7'si: kısa kutuyu uzatma kuralı ön kayda alınmadı."
+ },
+ "reading": "Kaçan işaretlerin kutusu normal boyda ama bütünüyle ~10 px yukarıda. Olası nedenler (sınanmadı): kalabalıkta kutunun arkadaki oyuncuya kayması, izleyicinin kutu tahmininin sürüklenmesi, ya da GSR etiket kutularının uzak kenarda daha aşağı çizilmesi. Ayırt etmek için kare görüntüsünde kutu-etiket karşılaştırması gerekir.",
+ "limits": ["Tek maç, tek kamera", "Kutu dökümü yalnız 60 sn değerlendirmeli kesit", "Referans ürünle aynı kalibrasyonu kullanır"],
+ "reproduce": "scratch tanı betikleri (nearmiss_diag, pixel_bias, dump_boxes, box_height_diag) repo dışında; sonuçlar bu dosyada"
+}
