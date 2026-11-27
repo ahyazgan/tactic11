@@ -1,0 +1,39 @@
+{
+ "status": "frozen_before_any_run_of_this_window",
+ "written": "2026-11-27; 132877 1200-1500 sn klibi kesilmeden ve GT çıkarılmadan önce",
+ "decided_by": "Kullanıcı 'Kutu-etiket karşılaştırması' dedi (2026-11-27); kural, pencere ve şartlar Claude'un",
+ "question": "Ürün işçisi iç içe gövde parçası kutularını (aynı oyuncunun baş/üst gövde kutusu) kare kurulmadan atınca, görülmemiş gündüz penceresinde kesinlik duyarlılığı bozmadan artıyor mu?",
+ "why": "Tanı (docs/measurements/near-miss-diagnosis-132877.json ve bu PR'daki box-vs-label tanısı, görülmüş 2100-2400): ürün kutularının %9,3'ü başka bir ürün kutusunun içinde (örnek başına 2,5); bunların %87'si GT'ye eşleşmiyor. Mevcut süzgeç (app/tracking/person_parts.py nested_person_mask) yalnız kimlik iyileştirme açıkken çalışıyor; bu kalibrasyonda kapalı (duplicate_parts_removed 0). Görülmüş 60 sn'de süzgeç kesinliği %62,9 -> %68,2 (+5,4 puan), duyarlılığı %76,9 -> %76,0 yaptı. Kural o pencerede görüldükten sonra seçildi; kanıt bu ön kayıtlı koşudur.",
+ "change": {
+  "rule": "Ürün işçisinde (scripts/track_video_product.py -> app/tracking/part_filter.py install()) her örneğin izlenmiş kişi kutularına nested_person_mask uygulanır; parça kutular kareye yazılmaz. Süzgecin eşikleri (yükseklik <= 0,55, alan <= 0,4, en <= 1,15, kapsanma >= 0,8) mevcut koddur, ayarlanmadı.",
+  "frozen_code_untouched": "pipeline.py, frames.py, person_parts.py ve ölçüm betikleri aynen kalır; build_frames adı yalnız ürün işçisi sürecinde yeniden bağlanır.",
+  "not_included": "Saha dışı atma kuralı (off-pitch-drop-132877-2100, KALDI) bu koşuda yoktur."
+ },
+ "data": {
+  "match": "SoccerTrack v2 132877, ilk yarı panoraması (CC BY 4.0)",
+  "window_seconds": [1200, 1500],
+  "seen_before": "Hayır. 132877'de kullanılan pencereler 600-1200, 1800-2100, 2100-2400. GT dosyası 29700-37800 karelerini kapsar; ilk 300 kare (1188-1200 sn) 600-1200 GT dosyasıyla örtüşür ve yalnız kare kayması araması içindir.",
+  "ground_truth": "export_gt (image-id-base 3919000000) + correct_gsr_positions (soccertrack_v2_132877_landmarks)",
+  "dev_seconds": 60,
+  "held_out_seconds": 240
+ },
+ "run": "Tek koşu: scripts.track_video_product, POST /tracking/jobs varsayılanları (fps 5, track-fps 15, tiles 6, threshold 0,3, ball-threshold 0,3; 300 sn klip ürün yolunda tek parça). Aynı izlenmiş örneklerden iki çıktı yazılır: ürün (süzgeçli) ve süzgeçsiz karşılaştırma (özgün build_frames). Sonra her ikisine product_vs_gt --clip-start 1200.",
+ "primary_gates_paired_on_held_out_corrected_reference": {
+  "precision_gain": ">= +0,03 (süzgeçli - süzgeçsiz)",
+  "recall_drop": "<= 0,015",
+  "median_distance_m_increase": "<= 0,10",
+  "team_agreement_drop": "<= 0,01"
+ },
+ "secondary_reported_not_decisive": "Süzgeçli ürünün mutlak beş şartı (kesinlik >= 0,80, duyarlılık >= 0,80, ortanca <= 2,0 m, takım >= 0,85, takımsız <= 0,15) ve ham GSR sonucu yazılır.",
+ "expectation_declared": "Kesinlik +4..+6 puan, duyarlılık -1 puan civarı. Mutlak kesinliğin %80'e ulaşması beklenmiyor (saha dışı işaretler bu kuralla gitmez).",
+ "decision": {
+  "if_all_pass": "Süzgeç ürün işçisinde kalır; 'görülmemiş pencerede kesinliği +X puan artırdı' denir. Mutlak şart iddiası değildir.",
+  "if_any_fails": "Süzgeç geri alınır (iyileştirmeyen geliştirme eklenmez). Bu pencerede başka eşik denenmez."
+ },
+ "limits": [
+  "Tek maç, 5 dk; aynı kamera ve kalibrasyon",
+  "Düzeltilmiş referans ürünle aynı kalibrasyonu kullanır",
+  "Karşılaştırma aynı izlenmiş örneklerden: süzgeç izleyiciden sonra uygulanır, izleyicinin parça kutuları görmemesinin etkisi ölçülmez",
+  "Tanıda görüldü: uzak kenarda GT etiket kutuları oyuncudan birkaç piksel kayık ve bazı oyuncular etiketsiz; bu, kesinliği her iki varyantta da aynı yönde düşürür"
+ ]
+}
